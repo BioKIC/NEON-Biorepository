@@ -107,7 +107,7 @@ $dwcManager = new DwcArchiverCore();
 			supplied by the owning institution should take precedence over the general terms posted on the website.
 		</div>
 		<div style='margin:30px 15px;'>
-			<form name="downloadform" action="downloadhandler.php" method="post" onsubmit="return validateDownloadForm(this);">
+			<form name="downloadform" action="emlhandler.php" method="post" onsubmit="return validateDownloadForm(this);">
 				<fieldset>
 					<legend>
 						<?php
