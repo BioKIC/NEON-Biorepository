@@ -673,7 +673,7 @@ class OccurrenceHarvester{
 					if(!empty($sampleArr['sex'])){
 						if($sampleArr['sex'] == 'M') $dwcArr['sex'] = 'Male';
 						elseif($sampleArr['sex'] == 'F') $dwcArr['sex'] = 'Female';
-						elseif($$sampleArr['sex'] == 'U') $dwcArr['sex'] = 'Unknown';
+						elseif($sampleArr['sex'] == 'U') $dwcArr['sex'] = 'Unknown';
 					}
 				}
 				if($prepArr) $dwcArr['preparations'] = implode(', ',$prepArr);
