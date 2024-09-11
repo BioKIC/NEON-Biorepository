@@ -81,13 +81,6 @@ class TaxonomyController extends Controller{
 	 *		 @OA\Schema(type="string")
 	 *	 ),
 	 *	 @OA\Parameter(
-	 *		 name="taxon",
-	 *		 in="query",
-	 *		 description="Taxon searh term",
-	 *		 required=true,
-	 *		 @OA\Schema(type="string")
-	 *	 ),
-	 *	 @OA\Parameter(
 	 *		 name="type",
 	 *		 in="query",
 	 *		 description="Type of search",
@@ -143,8 +136,8 @@ class TaxonomyController extends Controller{
 		}
 		elseif($type == 'WHOLEWORD'){
 			$taxaModel->where('unitname1', $request->taxon)
-				->orWhere('unitname2', $request->taxon)
-				->orWhere('unitname3', $request->taxon);
+			->orWhere('unitname2', $request->taxon)
+			->orWhere('unitname3', $request->taxon);
 		}
 		else{
 			//Exact match
