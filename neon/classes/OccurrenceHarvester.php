@@ -1708,11 +1708,56 @@ class OccurrenceHarvester{
 		return $status;
 	}
 
-	private function setDatasetIndexing($datasetName, $occid){
-		if($datasetName && $occid){
-			$sql = 'INSERT IGNORE INTO omoccurdatasetlink(datasetid, occid) SELECT datasetid, '.$occid.' FROM omoccurdatasets WHERE name = "'.$datasetName.'"';
-			if(!$this->conn->query($sql)){
-				if($this->conn->errno != 1062) $this->errorStr = 'ERROR assigning occurrence to '.$datasetName.' dataset: '.$this->conn->errno.' - '.$this->conn->error;
+	private function setDatasetIndexing($datasetName, $occid) {
+		if ($datasetName && $occid) {
+			// get dataset id
+			$datasetID = null;
+			$selectDatasetID = 'SELECT datasetid FROM omoccurdatasets WHERE name = "'.$datasetName.'"';
+			
+			$result = $this->conn->query($selectDatasetID);
+			if ($result && $row = $result->fetch_assoc()) {
+				$datasetID = $row['datasetid'];
+			}
+			
+			if (!$datasetID) {
+				$this->errorStr = 'ERROR: Dataset "'.$datasetName.'" not found.';
+				return;
+			}
+	
+			if ($datasetID <= 20){
+				// Delete existing entries for the given occid, if necesary
+				$deleteSql = 'DELETE FROM omoccurdatasetlink 
+						  WHERE occid = '.$occid.' 
+						  AND datasetid != '.$datasetID.'
+						  AND datasetid <=20';
+			
+				if (!$this->conn->query($deleteSql)) {
+					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
+					return; 
+				}
+			}
+
+			if ($datasetID >= 33 AND $datasetID <=133){
+				// Delete existing entries for the given occid, if necesary
+				$deleteSql = 'DELETE FROM omoccurdatasetlink 
+						  WHERE occid = '.$occid.' 
+						  AND datasetid != '.$datasetID.'
+						  AND datasetid >=33 AND datasetid <=133';
+			
+				if (!$this->conn->query($deleteSql)) {
+					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
+					return; // Stop execution if there's an error with the DELETE
+				}
+			}
+
+			// Insert the correct datasetID and occid if not already present
+			$insertSql = 'INSERT IGNORE INTO omoccurdatasetlink (datasetid, occid) 
+						  VALUES ('.$datasetID.', '.$occid.')';
+			
+			if (!$this->conn->query($insertSql)) {
+				if ($this->conn->errno != 1062) { 
+					$this->errorStr = 'ERROR assigning occurrence to '.$datasetName.' dataset: '.$this->conn->errno.' - '.$this->conn->error;
+				}
 			}
 		}
 	}
