@@ -428,7 +428,7 @@ $traitArr = $indManager->getTraitArr();
 								
 									if($IS_ADMIN){
 										if($catTag == 'NEON sampleCode (barcode)' || $catTag == 'NEON sampleID'){
-											echo '<span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . array_pop($catValueArr) . '" target="_blank">Go to Manifest</a></span>';
+											echo '<span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $occid. '" target="_blank">Go to Manifest</a></span>';
 										}
 									}
 									echo '</div>';

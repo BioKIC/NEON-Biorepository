@@ -10,7 +10,6 @@ if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT
 $shipmentPK = array_key_exists('shipmentPK', $_REQUEST) ? filter_var($_REQUEST['shipmentPK'], FILTER_SANITIZE_NUMBER_INT) : '';
 $sampleFilter = isset($_REQUEST['sampleFilter']) ? $_REQUEST['sampleFilter'] : '';
 $quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
-$quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
 $sortableTable = isset($_REQUEST['sortabletable']) ? filter_var($_REQUEST['sortabletable'], FILTER_SANITIZE_NUMBER_INT) : false;
 $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 
@@ -821,7 +820,11 @@ include($SERVER_ROOT.'/includes/header.php');
 													echo '<td style="text-align:center">';
 													if(array_key_exists('occid',$sampleArr) && $sampleArr['occid']){
 														echo '<span title="harvested '.(isset($sampleArr['harvestTimestamp'])?$sampleArr['harvestTimestamp']:'').'">';
-														echo '<a href="../../collections/individual/index.php?occid='.$sampleArr['occid'].'" target="_blank">'.$sampleArr['occid'].'</a>';
+														if ($quickSearchTerm === $sampleArr['occid']) {
+															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank"><strong>' . $sampleArr['occid'] . '</strong></a>';
+														} else {
+															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank">' . $sampleArr['occid'] . '</a>';
+														}
 														echo '</br>';
 														echo '</br>';
 														echo '<a href="../../collections/editor/occurrenceeditor.php?occid='.$sampleArr['occid'].'" target="_blank"><img src="../../images/edit.png" style="width:13px" /></a>';

@@ -1328,18 +1328,67 @@ class ShipmentManager{
 		if(is_numeric($id)) $this->shipmentPK = $id;
 	}
 
-	public function setQuickSearchTerm($term){
+	public function setQuickSearchTerm($term) {
 		$cleanTerm = $this->cleanInStr($term);
-		$sql = 'SELECT s.shipmentPK '.
-			'FROM NeonShipment s LEFT JOIN NeonSample m ON s.shipmentPK = m.shipmentPK '.
-			'WHERE (s.shipmentid LIKE "'.$cleanTerm.'%" OR m.sampleid = "'.$cleanTerm.'" OR m.alternativeSampleID = "'.$cleanTerm.'" OR m.sampleCode = "'.$cleanTerm.'")';
+	
+		// Try match by occid
+		$sql = 'SELECT s.shipmentPK 
+				FROM NeonShipment s 
+				LEFT JOIN NeonSample m ON s.shipmentPK = m.shipmentPK 
+				WHERE m.occid = "' . $cleanTerm . '"';
 		$rs = $this->conn->query($sql);
-		if($r = $rs->fetch_object()){
+		
+		if ($r = $rs->fetch_object()) {
+			$this->shipmentPK = $r->shipmentPK;
+			$rs->free();
+			return $this->shipmentPK;
+		}
+		$rs->free();
+
+				// Try match by catalogNumber
+				$sql = 'SELECT s.shipmentPK 
+				FROM NeonShipment s 
+				LEFT JOIN NeonSample m ON s.shipmentPK = m.shipmentPK 
+				LEFT JOIN omoccurrences o ON m.occid = o.occid
+				WHERE o.catalogNumber = "' . $cleanTerm . '"';
+		$rs = $this->conn->query($sql);
+		
+		if ($r = $rs->fetch_object()) {
+			$this->shipmentPK = $r->shipmentPK;
+			$rs->free();
+			return $this->shipmentPK;
+		}
+		$rs->free();
+	
+		// Try match by sampleCode
+		$sql = 'SELECT s.shipmentPK 
+				FROM NeonShipment s 
+				LEFT JOIN NeonSample m ON s.shipmentPK = m.shipmentPK 
+				WHERE m.sampleCode = "' . $cleanTerm . '"';
+		$rs = $this->conn->query($sql);
+		
+		if ($r = $rs->fetch_object()) {
+			$this->shipmentPK = $r->shipmentPK;
+			$rs->free();
+			return $this->shipmentPK;
+		}
+		$rs->free();
+	
+		// Try match by sampleID
+		$sql = 'SELECT s.shipmentPK 
+				FROM NeonShipment s 
+				LEFT JOIN NeonSample m ON s.shipmentPK = m.shipmentPK 
+				WHERE m.sampleid = "' . $cleanTerm . '"';
+		$rs = $this->conn->query($sql);
+		
+		if ($r = $rs->fetch_object()) {
 			$this->shipmentPK = $r->shipmentPK;
 		}
 		$rs->free();
+	
 		return $this->shipmentPK;
 	}
+
 
 	public function setUploadFileName($name){
 		$this->uploadFileName = $name;
