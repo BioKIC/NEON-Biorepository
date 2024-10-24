@@ -363,6 +363,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		if(array_key_exists('catnum',$this->searchTermArr)){
 			$catStr = $this->cleanInStr($this->searchTermArr['catnum']);
 			$includeOtherCatNum = array_key_exists('includeothercatnum',$this->searchTermArr)?true:false;
+			$includeMaterialSample = array_key_exists('includematerialsample',$this->searchTermArr)?true:false;
 
 			$catArr = explode(',',str_replace(';',',',$catStr));
 			$betweenFrag = array();
@@ -375,21 +376,25 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 					if(is_numeric($term1) && is_numeric($term2)){
 						$betweenFrag[] = '(o.catalogNumber BETWEEN '.$term1.' AND '.$term2.')';
 						if($includeOtherCatNum){
-							$betweenFrag[] = '(o.othercatalognumbers BETWEEN '.$term1.' AND '.$term2.')';
+							//$betweenFrag[] = '(o.othercatalognumbers BETWEEN '.$term1.' AND '.$term2.')';
+							$betweenFrag[] .= '(o.occid BETWEEN '.$term1.' AND '.$term2.')';
 							//$betweenFrag[] = '(oi.identifiervalue BETWEEN '.$term1.' AND '.$term2.')';
-							$identFrag[] = '(identifiervalue BETWEEN '.$term1.' AND '.$term2.')';
+							//$identFrag[] = '(oi.identifiervalue BETWEEN '.$term1.' AND '.$term2.')';
 						}
+						// if($includeMaterialSample){
+						// 	$identFrag[] = '(m.catalogNumber BETWEEN '.$term1.' AND '.$term2.')';
+						// }
 					}
-					else{
-						$catTerm = 'o.catalogNumber BETWEEN "'.$term1.'" AND "'.$term2.'"';
-						if(strlen($term1) == strlen($term2)) $catTerm .= ' AND length(o.catalogNumber) = '.strlen($term2);
-						$betweenFrag[] = '('.$catTerm.')';
-						if($includeOtherCatNum){
-							$betweenFrag[] = '(o.othercatalognumbers BETWEEN "'.$term1.'" AND "'.$term2.'")';
-							//$betweenFrag[] = '(oi.identifiervalue BETWEEN "'.$term1.'" AND "'.$term2.'")';
-							$identFrag[] = '(identifiervalue BETWEEN "'.$term1.'" AND "'.$term2.'")';
-						}
-					}
+					// else{
+					// 	$catTerm = 'o.catalogNumber BETWEEN "'.$term1.'" AND "'.$term2.'"';
+					// 	if(strlen($term1) == strlen($term2)) $catTerm .= ' AND length(o.catalogNumber) = '.strlen($term2);
+					// 	$betweenFrag[] = '('.$catTerm.')';
+					// 	if($includeOtherCatNum){
+					// 		$betweenFrag[] = '(o.othercatalognumbers BETWEEN "'.$term1.'" AND "'.$term2.'")';
+					// 		//$betweenFrag[] = '(oi.identifiervalue BETWEEN "'.$term1.'" AND "'.$term2.'")';
+					// 		$identFrag[] = '(oi.identifiervalue BETWEEN "'.$term1.'" AND "'.$term2.'")';
+					// 	}
+					// }
 				}
 				else{
 					$vStr = trim($v);
@@ -411,11 +416,14 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 					$catWhere .= 'OR (o.occurrenceID IN("'.implode('","',$inFrag).'")) ';
 					$catWhere .= 'OR (o.recordID IN("'.implode('","',$inFrag).'")) ';
 					//$catWhere .= 'OR (oi.identifiervalue IN("'.implode('","',$inFrag).'")) ';
-					$identFrag[] = '(identifiervalue IN("'.implode('","',$inFrag).'"))';
+					$identFrag[] = '(oi.identifiervalue IN("'.implode('","',$inFrag).'"))';
+				}
+				if($includeMaterialSample){
+					$identFrag[] = '(m.catalogNumber IN("'.implode('","',$inFrag).'"))';
 				}
 			}
 			if($identFrag){
-				$occidList = $this->getAdditionIdentifiers($identFrag);
+				$occidList = $this->getAdditionIdentifiers($identFrag,$includeMaterialSample);
 				if($occidList) $catWhere .= 'OR (o.occid IN('.implode(',',$occidList).')) ';
 			}
 			$sqlWhere .= 'AND ('.substr($catWhere,3).') ';
@@ -444,10 +452,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		if($sqlWhere){
 			if(!array_key_exists("includecult",$this->searchTermArr)){
 				$sqlWhere .= "AND (o.cultivationStatus IS NULL OR o.cultivationStatus = 0) ";
-				$this->displaySearchArr[] = 'excluding cultivated/captive occurrences';
+				//$this->displaySearchArr[] = 'excluding cultivated/captive occurrences';
 			}
 			else{
-				$this->displaySearchArr[] = 'includes cultivated/captive occurrences';
+				//$this->displaySearchArr[] = 'includes cultivated/captive occurrences';
 			}
 		}
 		if(array_key_exists('attr',$this->searchTermArr)){
@@ -546,10 +554,19 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 	}
 	
 	
-	private function getAdditionIdentifiers($identFrag){
+	private function getAdditionIdentifiers($identFrag,$includeMaterialSample){
 		$retArr = array();
 		if($identFrag){
-			$sql = 'SELECT occid FROM omoccuridentifiers WHERE '.implode(' OR ',$identFrag);
+			if(!$includeMaterialSample){
+				$sql = 'SELECT oi.occid FROM omoccuridentifiers oi 
+						WHERE '.implode(' OR ',$identFrag);
+			}
+			if($includeMaterialSample){
+				$sql = 'SELECT oi.occid FROM omoccuridentifiers oi 
+						RIGHT JOIN ommaterialsample m
+						ON oi.occid=m.occid
+						WHERE '.implode(' OR ',$identFrag);
+			}
 			$rs = $this->conn->query($sql);
 			if($rs){
 				while($r = $rs->fetch_object()){
@@ -896,10 +913,15 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		if(array_key_exists('catnum',$_REQUEST)){
 			$catNum = $this->cleanInputStr(str_replace(array(',', "\n", "\r\n", "\r"), '; ', $_REQUEST['catnum']));
-			if($catNum){
+			if($catNum) {
 				$this->searchTermArr['catnum'] = $catNum;
-				if(array_key_exists('includeothercatnum',$_REQUEST)) $this->searchTermArr['includeothercatnum'] = '1';
-			}
+				if(array_key_exists('includeothercatnum', $_REQUEST)) {
+					$this->searchTermArr['includeothercatnum'] = '1';
+				}		
+				if(array_key_exists('includematerialsample', $_REQUEST)) {
+					$this->searchTermArr['includematerialsample'] = '1';
+				}
+			} 
 			else{
 				unset($this->searchTermArr['catnum']);
 			}

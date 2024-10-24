@@ -15,6 +15,7 @@ let paramNames = [
   'catnum',
   'collector',
   'includeothercatnum',
+  'includematerialsample',
   'hasimages',
   'hasgenetic',
   'state',

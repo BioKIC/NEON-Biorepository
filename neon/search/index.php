@@ -205,6 +205,10 @@ $siteData = new DatasetsMetadata();
 									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" data-chip="Include other IDs" checked>
 									<label for="includeothercatnum">Include other sample identifiers (e.g. Sample Tag (sampleID), Barcode (sampleCode), sampleUuid, occid)</label>
 								</div>
+								<div>
+									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material sample IDs" >
+									<label for="includematerialsample">Include material sample catalog numbers</label>
+								</div>
 								<div class="text-area-container">
 									<label for="" class="text-area--outlined">
 										<textarea name="catnum" data-chip="Catalog Number" style="width: 100%"></textarea>
