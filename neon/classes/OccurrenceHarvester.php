@@ -123,7 +123,7 @@ class OccurrenceHarvester{
 				$sampleArr['sampleCode'] = $r->sampleCode ?? '';
 				$sampleArr['sampleClass'] = $r->sampleClass ?? '';
 				$sampleArr['taxonID'] = $r->taxonID ?? '';
-				$sampleArr['individualCount'] = $r->individualCount ?? '';
+				//$sampleArr['individualCount'] = $r->individualCount ?? '';
 				$sampleArr['filterVolume'] = $r->filterVolume ?? '';
 				$sampleArr['namedLocation'] = $r->namedLocation ?? '';
 				$sampleArr['collectDate'] = $r->collectDate ?? '';
@@ -514,7 +514,20 @@ class OccurrenceHarvester{
 						elseif($fArr['smsKey'] == 'collected_by' && $fArr['smsValue']) $tableArr['collected_by'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'collect_start_date' && $fArr['smsValue']) $tableArr['collect_start_date'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'collect_end_date' && $fArr['smsValue']) $tableArr['collect_end_date'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'specimen_count' && $fArr['smsValue']) $tableArr['specimen_count'] = $fArr['smsValue'];
+						elseif (
+							$fArr['smsKey'] == 'specimen_count' && 
+							$fArr['smsValue'] && 
+							!(
+								strpos($tableName, 'bet_') !== false || 
+								strpos($tableName, 'ptx_') !== false || 
+								strpos($tableName, 'cfc_') !== false || 
+								strpos($tableName, 'mic_') !== false || 
+								strpos($tableName, 'sls_') !== false || 
+								strpos($tableName, 'metabarcode') !== false
+							)
+						) {
+							$tableArr['specimen_count'] = $fArr['smsValue'];
+						}												
 						elseif($fArr['smsKey'] == 'temperature' && $fArr['smsValue']) $tableArr['temperature'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'decimal_latitude' && $fArr['smsValue']) $tableArr['decimal_latitude'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'decimal_longitude' && $fArr['smsValue']) $tableArr['decimal_longitude'] = $fArr['smsValue'];
@@ -526,7 +539,20 @@ class OccurrenceHarvester{
 						elseif($fArr['smsKey'] == 'maximum_depth_in_meters' && $fArr['smsValue']) $tableArr['maximum_depth_in_meters'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'reproductive_condition' && $fArr['smsValue']) $tableArr['reproductive_condition'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'sex' && $fArr['smsValue']) $tableArr['sex'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'life_stage' && $fArr['smsValue']) $tableArr['life_stage'] = $fArr['smsValue'];
+						elseif (
+							$fArr['smsKey'] == 'life_stage' && 
+							$fArr['smsValue'] && 
+							!(
+								strpos($tableName, 'bet_') !== false || 
+								strpos($tableName, 'ptx_') !== false || 
+								strpos($tableName, 'cfc_') !== false || 
+								strpos($tableName, 'mic_') !== false || 
+								strpos($tableName, 'sls_') !== false || 
+								strpos($tableName, 'metabarcode') !== false
+							)
+						) {
+							$tableArr['life_stage'] = $fArr['smsValue'];
+						}								
 						elseif($fArr['smsKey'] == 'associated_taxa' && $fArr['smsValue']) $tableArr['associated_taxa'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'remarks' && $fArr['smsValue'] && !in_array($tableName,array('ptx_taxonomy_in'))) $tableArr['remarks'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'preservative_concentration' && $fArr['smsValue']) $tableArr['preservative_concentration'] = $fArr['smsValue'];
@@ -1024,13 +1050,6 @@ class OccurrenceHarvester{
 		}
 		elseif(in_array($dwcArr['collid'], array(29,39,44,63,65,66,71,75,82,90,91,95))) {
 			$dwcArr['individualCount'] = 1;
-		}
-		elseif(in_array($dwcArr['collid'], array(11,12,14,15,17,18,46,62))){
-			$dwcArr['individualCount'] = NULL;
-		}
-		elseif(in_array($dwcArr['collid'], array(45,61))){
-			$dwcArr['individualCount'] = NULL;
-			$dwcArr['lifeStage'] = NULL;
 		}
 	}
 
