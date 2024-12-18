@@ -113,6 +113,7 @@ $LANG['LOADING_DATA'] = 'Cargar Datos a Symbiota';
 $LANG['VER_MAPPING'] = 'Verificar Mapeo';
 $LANG['SAVE_MAP'] = 'Guardar Mapeo';
 $LANG['VERSION_DATA_CHANGES'] = 'Version data changes';
+$LANG['OVERWRITE_DATA'] = 'Sobrescribir datos existentes';
 $LANG['VER_LINKS_MEDIA'] = 'Verificar enlaces de imágenes en el campo associatedMedia';
 $LANG['SKEL_EXPLAIN'] = 'Los Archivos Esqueléticos consisten en un conjunnto de datos que son fáciles de capturar por lote durante el procesamiento de imágenes.
 	Los datos son utilizados para crear nuevos registros a los cuales las imágenes son vinculados.
