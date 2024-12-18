@@ -630,8 +630,13 @@ include($SERVER_ROOT.'/includes/header.php');
 							if($isLiveData){
 								?>
 								<div style="margin:10px 0px;">
+									<!-- Start NEON customization -->
+									<!--
 									<input name="versiondata" type="checkbox" value="1">
-									<?php echo (isset($LANG['VERSION_DATA_CHANGES'])?$LANG['VERSION_DATA_CHANGES']:'Version data changes'); ?>
+									-->
+									<input name="versiondata" type="checkbox" value="1" checked />
+									<!-- End NEON customization -->
+									<?php echo (isset($LANG['VERSION_DATA_CHANGES']) ? $LANG['VERSION_DATA_CHANGES'] : 'Version data changes'); ?>
 								</div>
 								<?php
 							}
