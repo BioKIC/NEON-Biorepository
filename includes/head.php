@@ -154,7 +154,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
             }
 
             const newImage1 = createClickableImage(
-                '<?php echo $CLIENT_ROOT; ?>/images/layout/logo_symbiota.png',
+                '<?php echo $CLIENT_ROOT; ?>/images/layout/logo_symbiota_white_text.png',
                 60,
                 167,
                 'https://symbiota.org/'
