@@ -524,6 +524,33 @@ class OccurrenceIndividual extends Manager{
 								if ($key === 'NEON sampleCode (barcode)' || $key === 'Originating NEON barcode') {
 									$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
 								}
+
+								if ($key === 'NEON sampleID') {
+									$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ' . $this->occArr['occid'];
+									
+									if ($rs = $this->conn->query($sql)) {
+										if ($r = $rs->fetch_assoc()) {
+											$sampleClass = $r['sampleClass'];
+											$indUrl .= '&sampleClass=' . urlencode($sampleClass);
+										}
+										$rs->free();
+									}
+								}
+								
+								if ($key === 'Originating NEON sampleID') {
+									$sql = "SELECT s.sampleClass FROM NeonSample s
+											LEFT JOIN omoccurassociations a
+											ON s.occid=a.occid WHERE 
+											a.relationship LIKE '%originatingSampleOf%' and a.occidAssociate=" . $this->occArr['occid'];
+									if ($rs = $this->conn->query($sql)) {
+										if ($r = $rs->fetch_assoc()) {
+											$sampleClass = $r['sampleClass'];
+											$indUrl .= '&sampleClass=' . urlencode($sampleClass);
+										}
+										$rs->free();
+									}
+								}
+
 								break; 
 							}
 						}
