@@ -944,10 +944,29 @@ class OccurrenceHarvester{
 	}
 
 	private function setNeonLocationData(&$dwcArr, $locationName){
-		$url = $this->neonApiBaseUrl.'/locations/'.urlencode($locationName).'?apiToken='.$this->neonApiKey;
+		$url = $this->neonApiBaseUrl.'/locations/'.urlencode($locationName).'?history=true&apiToken='.$this->neonApiKey;
 		//echo 'loc url: '.$url.'<br/>';
 		$resultArr = $this->getNeonApiArr($url);
+
+		$eventDate = $dwcArr['eventDate'];
+		$matchingIndex = null;
+
 		if(!$resultArr) return false;
+
+		foreach ($resultArr['locationHistory'] as $index => $location) {
+    	
+			$startDate = $location['locationStartDate'];
+			$endDate = $location['locationEndDate'];
+
+    	// Check if eventDate falls within the location history date range
+    		if ($eventDate >= $startDate && (empty($endDate) || $eventDate <= $endDate)) {
+        	$matchingIndex = $index;
+        	break; 
+   	 		}
+		}
+
+		if ($matchingIndex == null) $matchingIndex = 0;
+
 		if(isset($resultArr['locationType']) && $resultArr['locationType']){
 			if($resultArr['locationType'] == 'SITE') $dwcArr['siteID'] = $resultArr['locationName'];
 			elseif($resultArr['locationType'] == 'DOMAIN') $dwcArr['domainID'] = $resultArr['locationName'];
@@ -966,82 +985,106 @@ class OccurrenceHarvester{
 			}
 		}
 
-		if(!isset($dwcArr['decimalLatitude']) && isset($resultArr['locationDecimalLatitude']) && $resultArr['locationDecimalLatitude']){
-			$dwcArr['decimalLatitude'] = $resultArr['locationDecimalLatitude'];
+		$resultArr_history = $resultArr['locationHistory'][$matchingIndex];
+
+		if(!isset($dwcArr['decimalLatitude']) && isset($resultArr_history['locationDecimalLatitude']) && $resultArr_history['locationDecimalLatitude']){
+			$dwcArr['decimalLatitude'] = $resultArr_history['locationDecimalLatitude'];
 		}
-		if(!isset($dwcArr['decimalLongitude']) && isset($resultArr['locationDecimalLongitude']) && $resultArr['locationDecimalLongitude']){
-			$dwcArr['decimalLongitude'] = $resultArr['locationDecimalLongitude'];
+		if(!isset($dwcArr['decimalLongitude']) && isset($resultArr_history['locationDecimalLongitude']) && $resultArr_history['locationDecimalLongitude']){
+			$dwcArr['decimalLongitude'] = $resultArr_history['locationDecimalLongitude'];
 		}
-		if(!isset($dwcArr['verbatimCoordinates']) && isset($resultArr['locationUtmEasting']) && $resultArr['locationUtmEasting']){
-			$dwcArr['verbatimCoordinates'] = trim($resultArr['locationUtmZone'].$resultArr['locationUtmHemisphere'].' '.$resultArr['locationUtmEasting'].'E '.$resultArr['locationUtmNorthing'].'N');
+		if(!isset($dwcArr['verbatimCoordinates']) && isset($resultArr_history['locationUtmEasting']) && $resultArr_history['locationUtmEasting']){
+			$dwcArr['verbatimCoordinates'] = trim($resultArr_history['locationUtmZone'].$resultArr_history['locationUtmHemisphere'].' '.$resultArr_history['locationUtmEasting'].'E '.$resultArr_history['locationUtmNorthing'].'N');
 		}
-		$elevMin = '';
-		$elevMax = '';
-		$elevUncertainty = '';
-		if(isset($resultArr['locationElevation']) && $resultArr['locationElevation']){
-			$elevMin = round($resultArr['locationElevation']);
-		}
-		if(isset($resultArr['elevation_uncertainty']) && $resultArr['elevation_uncertainty']){
-			$elevUncertainty = $resultArr['elevation_uncertainty'];
-		}
+
+		$locPropArr_history = $resultArr_history['locationProperties'];
 		$locPropArr = $resultArr['locationProperties'];
-		if($locPropArr){
+		
+		if ($locPropArr || $locPropArr_history) {
 			$habitatArr = array();
-			foreach($locPropArr as $propArr){
-				if(!isset($dwcArr['georeferenceSources']) && $propArr['locationPropertyName'] == 'Value for Coordinate source'){
-					$dwcArr['georeferenceSources'] = $propArr['locationPropertyValue'];
-				}
-				elseif(!isset($dwcArr['coordinateUncertaintyInMeters']) && $propArr['locationPropertyName'] == 'Value for Coordinate uncertainty'){
-					$dwcArr['coordinateUncertaintyInMeters'] = $propArr['locationPropertyValue'];
-				}
-				elseif($propArr['locationPropertyName'] == 'Value for Minimum elevation'){
-					$elevMin = round($propArr['locationPropertyValue']);
-				}
-				elseif($propArr['locationPropertyName'] == 'Value for Maximum elevation'){
-					$elevMax = round($propArr['locationPropertyValue']);
-				}
-				elseif(!isset($dwcArr['country']) && $propArr['locationPropertyName'] == 'Value for Country'){
-					$countryValue = $propArr['locationPropertyValue'];
-					if($countryValue == 'unitedStates') $countryValue = 'United States';
-					elseif($countryValue == 'USA') $countryValue = 'United States';
+			$elevMin = '';
+			$elevMax = '';
+			$elevUncertainty = '';
+			$fullPropArr = array_merge($locPropArr_history, $locPropArr);
+			
+			foreach ($fullPropArr as $propArr) {
+				$propName = $propArr['locationPropertyName'];
+				$propValue = $propArr['locationPropertyValue'];
+				
+				if (!isset($dwcArr['georeferenceSources']) && $propName == 'Value for Coordinate source') {
+					$dwcArr['georeferenceSources'] = $propValue;
+				} elseif (!isset($dwcArr['coordinateUncertaintyInMeters']) && $propName == 'Value for Coordinate uncertainty') {
+					$dwcArr['coordinateUncertaintyInMeters'] = $propValue;
+				} elseif ($elevMin == '' && $propName == 'Value for Minimum elevation') {
+					$elevMin = round($propValue);
+				} elseif ($elevMax == '' && $propName == 'Value for Maximum elevation') {
+					$elevMax = round($propValue);
+				} elseif ($elevUncertainty == '' && $propName == 'Value for Elevation uncertainty') {
+					$elevUncertainty = round($propValue);
+				} elseif (!isset($dwcArr['country']) && $propName == 'Value for Country') {
+					$countryValue = ($propValue == 'unitedStates' || $propValue == 'USA') ? 'United States' : $propValue;
 					$dwcArr['country'] = $countryValue;
-				}
-				elseif(!isset($dwcArr['county']) && $propArr['locationPropertyName'] == 'Value for County'){
-					$dwcArr['county'] = $propArr['locationPropertyValue'];
-				}
-				elseif(!isset($dwcArr['geodeticDatum']) && $propArr['locationPropertyName'] == 'Value for Geodetic datum'){
-					$dwcArr['geodeticDatum'] = $propArr['locationPropertyValue'];
-				}
-				elseif(!isset($dwcArr['plotDim']) && $propArr['locationPropertyName'] == 'Value for Plot dimensions'){
-					$dwcArr['plotDim'] = ' (plot dimensions: '.$propArr['locationPropertyValue'].')';
-				}
-				elseif(!isset($habitatArr['landcover']) && strpos($propArr['locationPropertyName'],'Value for National Land Cover Database') !== false){
-					$habitatArr['landcover'] = $propArr['locationPropertyValue'];
-				}
-				elseif(!isset($habitatArr['aspect']) && $propArr['locationPropertyName'] == 'Value for Slope aspect'){
-					$habitatArr['aspect'] = 'slope aspect: '.$propArr['locationPropertyValue'];
-				}
-				elseif(!isset($habitatArr['gradient']) && $propArr['locationPropertyName'] == 'Value for Slope gradient'){
-					$habitatArr['gradient'] = 'slope gradient: '.$propArr['locationPropertyValue'];
-				}
-				elseif(!isset($habitatArr['soil']) && $propArr['locationPropertyName'] == 'Value for Soil type order'){
-					if($dwcArr['collid'] == 30 && !isset($dwcArr['identifications'])){
-						$dwcArr['identifications'][] = array('sciname' => $propArr['locationPropertyValue']);
+				} elseif (!isset($dwcArr['county']) && $propName == 'Value for County') {
+					$dwcArr['county'] = $propValue;
+				} elseif (!isset($dwcArr['geodeticDatum']) && $propName == 'Value for Geodetic datum') {
+					$dwcArr['geodeticDatum'] = $propValue;
+				} elseif (!isset($dwcArr['plotDim']) && $propName == 'Value for Plot dimensions') {
+					$dwcArr['plotDim'] = ' (plot dimensions: ' . $propValue . ')';
+				} elseif (!isset($habitatArr['landcover']) && strpos($propName, 'Value for National Land Cover Database') !== false) {
+					$habitatArr['landcover'] = $propValue;
+				} elseif (!isset($habitatArr['aspect']) && $propName == 'Value for Slope aspect') {
+					$habitatArr['aspect'] = 'slope aspect: ' . $propValue;
+				} elseif (!isset($habitatArr['gradient']) && $propName == 'Value for Slope gradient') {
+					$habitatArr['gradient'] = 'slope gradient: ' . $propValue;
+				} elseif (!isset($habitatArr['soil']) && $propName == 'Value for Soil type order') {
+					if ($dwcArr['collid'] == 30 && !isset($dwcArr['identifications'])) {
+						$dwcArr['identifications'][] = array('sciname' => $propValue);
 					}
-					$habitatArr['soil'] = 'soil type order: '.$propArr['locationPropertyValue'];
-				}
-				elseif(!isset($dwcArr['stateProvince']) && $propArr['locationPropertyName'] == 'Value for State province'){
-					$stateStr = $propArr['locationPropertyValue'];
-					if(array_key_exists($stateStr, $this->stateArr)) $stateStr = $this->stateArr[$stateStr];
+					$habitatArr['soil'] = 'soil type order: ' . $propValue;
+				} elseif (!isset($dwcArr['stateProvince']) && $propName == 'Value for State province') {
+					$stateStr = $propValue;
+					if (array_key_exists($stateStr, $this->stateArr)) {
+						$stateStr = $this->stateArr[$stateStr];
+					}
 					$this->setTimezone($stateStr);
 					$dwcArr['stateProvince'] = $stateStr;
-				}
+				}			
 			}
-			if($habitatArr) $dwcArr['habitat'] = implode('; ',$habitatArr);
-		}
-		if($elevMin && !isset($dwcArr['minimumElevationInMeters'])) $dwcArr['minimumElevationInMeters'] = $elevMin;
-		if($elevMax && $elevMax != $elevMin && !isset($dwcArr['maximumElevationInMeters'])) $dwcArr['maximumElevationInMeters'] = $elevMax;
-		if($elevUncertainty) $dwcArr['verbatimElevation'] = trim($elevMin.' - '.$elevMax,' -').' ('.$elevUncertainty.')';
+			if ($habitatArr) {
+				if (isset($habitatArr['landcover'])) {
+					$landcover = $habitatArr['landcover'];
+					unset($habitatArr['landcover']); 
+					array_unshift($habitatArr, $landcover);
+				}
+				$dwcArr['habitat'] = implode('; ', $habitatArr);
+			}
+			if($elevMin === '' && !isset($dwcArr['minimumElevationInMeters'])) {
+				$elevMin = round($resultArr_history['locationElevation']);
+			}
+			if ($elevMin !== '' && !isset($dwcArr['minimumElevationInMeters'])) {
+				$dwcArr['minimumElevationInMeters'] = $elevMin;
+			}
+			
+			if ($elevMax && $elevMax != $elevMin && !isset($dwcArr['maximumElevationInMeters'])) {
+				$dwcArr['maximumElevationInMeters'] = $elevMax;
+			}
+			
+			// new code if we wanted to use the verbatim elevation field in the future
+			// if ($elevMin !== '' || $elevMax !== '' || $elevUncertainty !== '') {
+			// 	$verbatimParts = [];
+			// 	if ($elevMin !== '') {
+			// 		$verbatimParts[] = $elevMin;
+			// 	}			
+			// 	if ($elevMax !== '' && $elevMax != $elevMin) {
+			// 		$verbatimParts[] = $elevMax;
+			// 	}
+			// 	if (!empty($elevUncertainty)) {
+			// 		$verbatimParts[] = "($elevUncertainty)";
+			// 	}
+			// 	$dwcArr['verbatimElevation'] = implode(' - ', $verbatimParts);
+			// }
+			
+		}		
 
 		if(isset($resultArr['locationParent']) && $resultArr['locationParent']){
 			if($resultArr['locationParent'] != 'REALM'){
