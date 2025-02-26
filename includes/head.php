@@ -16,7 +16,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 ?>
 
 <!--neon react links-->
-<!--React last updated: 2/6/2025, 4:26:25 PM-->
+<!--React last updated: 2/26/2025, 5:47:50 PM-->
 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-fonts" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-fonts.css"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-theme.e26dccb4b915a92adb9c77ae139e9824.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script><script>window.gtmDataLayer=[{page_category:"Core Components"}]</script><script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a),r="&l="+n;m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-K4S83R2"+r,g.parentNode.insertBefore(m,g)}(window,document,"script","gtmDataLayer")</script><script>window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script><link href="<?php echo $CLIENT_ROOT; ?>/neon-react/static/css/main.24d10e69.css" rel="stylesheet">
 <!--end of neon react links-->
 
@@ -42,7 +42,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
         //javascript code created by React
         var reactScript = document.createElement('script');
-        reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.9904c6af.js';
+        reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.e70dd88f.js';
         reactScript.defer = true;
 
         reactScript.onload = function() {
@@ -176,6 +176,8 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                 // blue div
                 var neonPageContent = document.querySelector('div[data-selenium="neon-page.content"]');
                 var neonPageContentWidth = neonPageContent.offsetWidth;
+                var computedStyle = window.getComputedStyle(neonPageContent);
+                var leftPadding = parseFloat(computedStyle.getPropertyValue('padding-left'));
 
                 var muiContainer = document.querySelector('div.MuiContainer-root');
                 var muiContainerStyle = window.getComputedStyle(muiContainer);
@@ -183,9 +185,15 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
                 var neonPageContentStyle = window.getComputedStyle(neonPageContent);
                 var neonPageContentpaddingLeft = parseFloat(neonPageContentStyle.paddingLeft);
+                
+                var innerTextDiv = document.getElementById('innertext');
+                var computedStyle = window.getComputedStyle(innerTextDiv);
+                var leftMargin = parseFloat(computedStyle.getPropertyValue('margin-left'));
 
                 document.getElementById('blue-div').style.width = (neonPageContentWidth + muiContainerRightMargin) + 'px';
+                document.getElementById('blue-div').style.right = (leftPadding + leftMargin) + 'px';
                 document.getElementById('statistics-container').style.width = (neonPageContentWidth - (2* neonPageContentpaddingLeft)) + 'px';
+                document.getElementById('statistics-container').style.right = (leftPadding + leftMargin) + 'px';
             }
 
             var blueDiv = document.getElementById('blue-div');
