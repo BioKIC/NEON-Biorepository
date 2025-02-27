@@ -55,9 +55,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         function updateBreadcrumbHash() {
             const breadcrumbLink = document.querySelector('nav a[href="../misc/neoncollprofiles.php?collid=#"]');
             if (breadcrumbLink) {
-                setTimeout(function() {
-                    breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?php echo isset($collid) ? $collid : '#'; ?>');
-                }, 500);
+                breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?php echo isset($collid) ? $collid : '#'; ?>');
             }
         }
         
@@ -74,7 +72,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         }
     
         waitForElement('.neon__sidebar-sticky', updateElementWidth);
-        waitForElement('nav a[href="../misc/neoncollprofiles.php?collid=#"]', updateBreadcrumbHash);
+        waitForElement('.neon__sidebar-sticky', updateBreadcrumbHash);
         window.addEventListener('resize', updateElementWidth);
         
         // Create biorepo-page div
