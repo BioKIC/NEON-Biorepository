@@ -467,7 +467,7 @@ span.accent-color-darker {
   content: "\e313";
   position: absolute;
   right: 20px;
-  top: 10px;
+  bottom: 1px;
 }
 
 .accordions .content {
