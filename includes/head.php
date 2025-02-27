@@ -72,7 +72,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         }
     
         waitForElement('.neon__sidebar-sticky', updateElementWidth);
-        waitForElement('.MuiBreadcrumbs-li', updateBreadcrumbHash);
+        waitForElement('nav a[href="../misc/neoncollprofiles.php?collid=#"]', updateBreadcrumbHash);
         window.addEventListener('resize', updateElementWidth);
         
         // Create biorepo-page div
