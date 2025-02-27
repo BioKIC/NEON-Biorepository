@@ -523,9 +523,9 @@ button:not([class^="Mui"]):not([class*=" Mui"]).inverse-color {
   padding: 0.5rem 0.9rem;
 }
 
-body:not([class^="Mui"]):not([class*=" Mui"]) button,
+body:not([class^="Mui"]):not([class*=" Mui"]) button:not([class^="Mui"]):not([class*=" Mui"]),
 body:not([class^="Mui"]):not([class*=" Mui"]) button.ui-button.ui-widget.ui-corner-all,
-body:not([class^="Mui"]):not([class*=" Mui"]) input[type='submit' i] {
+body:not([class^="Mui"]):not([class*=" Mui"]) input[type='submit' i]:not([class^="Mui"]):not([class*=" Mui"]) {
   font-family: 'Inter', sans-serif !important;
   font-size: 0.7rem;
   font-weight: 600;
