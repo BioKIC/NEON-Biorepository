@@ -530,7 +530,7 @@ ER  -
 				<?php
 				echo '<h1 class="text-3xl font-bold text-left mb-4">' . $collData['collectionname'] . '</h1>';
 				?>
-				<div class="flex justify-left space-x-3">
+				<div class="flex justify-left space-x-3 mt-4">
 					<?php
 					if ($datasetKey) {
 						echo '<iframe src="https://www.gbif.org/api/widgets/literature/button?gbifDatasetKey=' . $datasetKey . '" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="false" style="width: 140px; height: 24px;"></iframe>';
@@ -549,7 +549,7 @@ ER  -
 					}
 					?>
 					<a href="<?php echo $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>">
-						<button class="bg-blue-500 text-white font-normal px-4 rounded" style="height: 24px;">Browse Collection</button>
+						<button class="" style="height: 24px;">Browse Collection</button>
 					</a>
 					
 				</div>
@@ -573,7 +573,7 @@ ER  -
 					}
 					?>
 					<a href="https://www.neonscience.org/about/contact-neon-biorepository">
-						<button class="bg-blue-500 text-white font-normal px-4 rounded" style="height: 24px;">
+						<button class="tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800" style="height: 24px;">
 							Contact the Biorepository
 						</button>
 					</a>
@@ -675,21 +675,21 @@ ER  -
 						}
 						?>
 							<div class="flex space-x-2" style="padding-left: 16px;">
-								<button id="copyButton" data-tooltip-id="tooltip-copy" onclick="copyCitation()" class="tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
+								<button id="copyButton" data-tooltip-id="tooltip-copy" onclick="copyCitation()" class="Mui tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
 									<i class="fas fa-copy mr-2"></i>
 									<span>COPY</span>
 									<span id="tooltip-copy" style="display:none; width:20rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base">
 										Click to copy the above plain text citation to the clipboard
 									</span>
 								</button>
-								<button id="bibButton" data-tooltip-id="tooltip-bib" onclick="downloadBib()" class="tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
+								<button id="bibButton" data-tooltip-id="tooltip-bib" onclick="downloadBib()" class="Mui tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
 									<i class="fas fa-file-download mr-2"></i>
 									<span>DOWNLOAD (BIBTEX)</span>
 									<span id="tooltip-bib" style="display:none; width:20rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base">
 										Click to download the citation as a file in BibTex format
 									</span>
 								</button>
-								<button id="risButton" data-tooltip-id="tooltip-ris" onclick="downloadRis()"class="tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
+								<button id="risButton" data-tooltip-id="tooltip-ris" onclick="downloadRis()"class="Mui tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
 									<i class="fas fa-file-download mr-2"></i>
 									<span>DOWNLOAD (RIS)</span>
 									<span id="tooltip-ris" style="display:none; width:25rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base">
