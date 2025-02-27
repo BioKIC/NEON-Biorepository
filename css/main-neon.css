@@ -737,7 +737,6 @@ table.styledtable tr.alt td {
 .fieldset-like h3 {
   margin: 0;
   display: flex;
-  position: absolute;
   top: 0;
   left: 0;
   width: 100%;

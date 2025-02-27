@@ -128,7 +128,7 @@ if(!$schemaVersion){
 			<!--	</li>-->
 			<!--</ul>-->
 
-			<section id="admin" class="fieldset-like" style="padding: 1.6rem 0 0 0">
+			<section id="admin" class="fieldset-like" style="padding: 0 0 0 0">
 				<h1>
 					<span>
 						<?= $LANG['MANAGTOOL'] ?>
