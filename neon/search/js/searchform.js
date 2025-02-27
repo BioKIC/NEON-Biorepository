@@ -131,6 +131,7 @@ function addChip(element) {
   let chipBtn = document.createElement('button');
   chipBtn.setAttribute('type', 'button');
   chipBtn.classList.add('chip-remove-btn');
+  chipBtn.classList.add('Mui');
   // if element is domain or site, pass other content
   if (element.name == 'some-datasetid') {
     if (element.text != '') {

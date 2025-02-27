@@ -174,7 +174,8 @@ select {
 }
 
 #criteria-panel {
-  display: block;
+  display: flex;
+  flex-direction: column;
   background-color: #f5f6f7;
   padding: 0.5rem 1rem;
 }
@@ -361,6 +362,13 @@ span.accent-color-darker {
   cursor: pointer;
   font: inherit;
   line-height: 20px;
+  text-transform: uppercase;
+  background-color: #005dab !important;
+  transition: background-color 250mscubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250mscubic-bezier(0.4, 0, 0.2, 1) 0ms, border 250mscubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  transition-property: background-color, box-shadow, border;
+  transition-duration: 250ms, 250ms, 250ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1),cubic-bezier(0.4, 0, 0.2, 1),cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0ms, 0ms, 0ms;
 }
 
 .chip-remove-btn:after {
