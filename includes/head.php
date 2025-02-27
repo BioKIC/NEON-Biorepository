@@ -22,6 +22,54 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        
+        // image resizings for homepage
+        function updateElementWidth() {
+            // blue div
+            var neonPageContent = document.querySelector('div[data-selenium="neon-page.content"]');
+            var neonPageContentWidth = neonPageContent.offsetWidth;
+            var computedStyle = window.getComputedStyle(neonPageContent);
+            var leftPadding = parseFloat(computedStyle.getPropertyValue('padding-left'));
+
+            var muiContainer = document.querySelector('div.MuiContainer-root');
+            var muiContainerStyle = window.getComputedStyle(muiContainer);
+            var muiContainerRightMargin = parseFloat(muiContainerStyle.marginRight);
+
+            var neonPageContentStyle = window.getComputedStyle(neonPageContent);
+            var neonPageContentpaddingLeft = parseFloat(neonPageContentStyle.paddingLeft);
+            
+            var innerTextDiv = document.getElementById('innertext');
+            var computedStyle = window.getComputedStyle(innerTextDiv);
+            var leftMargin = parseFloat(computedStyle.getPropertyValue('margin-left'));
+
+            document.getElementById('blue-div').style.width = (neonPageContentWidth + muiContainerRightMargin) + 'px';
+            document.getElementById('blue-div').style.right = (leftPadding + leftMargin) + 'px';
+            document.getElementById('statistics-container').style.width = (neonPageContentWidth - (2* neonPageContentpaddingLeft)) + 'px';
+            document.getElementById('statistics-container').style.right = (leftPadding + leftMargin) + 'px';
+        }
+        
+        function updateBreadcrumbHash() {
+            const breadcrumbLink = document.querySelector('nav a[href="../misc/neoncollprofiles.php?collid=#"]');
+            if (breadcrumbLink) {
+                breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?php echo isset($collid) ? $collid : '#'; ?>');
+            }
+        }
+        
+        function waitForElement(selector, callback) {
+            const observer = new MutationObserver(() => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    observer.disconnect();
+                    callback();
+                }
+            });
+    
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+    
+        waitForElement('.neon__sidebar-sticky', updateElementWidth);
+        waitForElement('.MuiBreadcrumbs-ol', updateBreadcrumbHash);
+        
         // Create biorepo-page div
         // A page must have the innertext div
         var biorepoPage = document.createElement("div");
@@ -75,6 +123,11 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
             const navpath = document.querySelector('.navpath');
             if (navpath) {
                 navpath.remove();
+            }
+            
+            var blueDiv = document.getElementById('blue-div');
+            if (blueDiv) {
+                window.addEventListener('resize', updateElementWidth);
             }
 
             // Edit footer
@@ -171,39 +224,6 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                 footerLogoDiv.appendChild(newImage2);
             }
 
-            // image resizings for homepage
-            function updateElementWidth() {
-                // blue div
-                var neonPageContent = document.querySelector('div[data-selenium="neon-page.content"]');
-                var neonPageContentWidth = neonPageContent.offsetWidth;
-                var computedStyle = window.getComputedStyle(neonPageContent);
-                var leftPadding = parseFloat(computedStyle.getPropertyValue('padding-left'));
-
-                var muiContainer = document.querySelector('div.MuiContainer-root');
-                var muiContainerStyle = window.getComputedStyle(muiContainer);
-                var muiContainerRightMargin = parseFloat(muiContainerStyle.marginRight);
-
-                var neonPageContentStyle = window.getComputedStyle(neonPageContent);
-                var neonPageContentpaddingLeft = parseFloat(neonPageContentStyle.paddingLeft);
-                
-                var innerTextDiv = document.getElementById('innertext');
-                var computedStyle = window.getComputedStyle(innerTextDiv);
-                var leftMargin = parseFloat(computedStyle.getPropertyValue('margin-left'));
-
-                document.getElementById('blue-div').style.width = (neonPageContentWidth + muiContainerRightMargin) + 'px';
-                document.getElementById('blue-div').style.right = (leftPadding + leftMargin) + 'px';
-                document.getElementById('statistics-container').style.width = (neonPageContentWidth - (2* neonPageContentpaddingLeft)) + 'px';
-                document.getElementById('statistics-container').style.right = (leftPadding + leftMargin) + 'px';
-            }
-
-            var blueDiv = document.getElementById('blue-div');
-            if (blueDiv) {
-                // Update the width on initial load
-                updateElementWidth();
-
-                // Update the width on window resize
-                window.addEventListener('resize', updateElementWidth);
-            }
             //sign in and sign out
             <?php
             if ($SYMB_UID) {
@@ -382,16 +402,10 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
             ?>
         };
 
-    document.body.appendChild(reactScript);
+        document.body.appendChild(reactScript);
 
     });
 
-    window.onload = function () {
-        const breadcrumbLink = document.querySelector('nav a[href="https://biorepo.neonscience.org/prodreview/collections/misc/neoncollprofiles.php?collid=#"]');
-        if (breadcrumbLink) {
-            breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?php echo isset($collid) ? $collid : '#'; ?>');
-        }
-    };
 </script>
 <!--end-->
 
