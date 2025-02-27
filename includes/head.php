@@ -55,7 +55,9 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         function updateBreadcrumbHash() {
             const breadcrumbLink = document.querySelector('nav a[href="../misc/neoncollprofiles.php?collid=#"]');
             if (breadcrumbLink) {
-                breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?php echo isset($collid) ? $collid : '#'; ?>');
+                setTimeout(function() {
+                    breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?php echo isset($collid) ? $collid : '#'; ?>');
+                }, 500);
             }
         }
         
