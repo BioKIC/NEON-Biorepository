@@ -56,21 +56,21 @@
 
 /******* 1. GENERAL ********/
 
-html {
+html:not([class^="Mui"]):not([class*=" Mui"]) {
   font-size: 1.2em;
   font-weight: 400;
   line-height: 1.5em;
 }
 
-body {
+body:not([class^="Mui"]):not([class*=" Mui"]) {
   color: var(--black, black);
   margin-top: 0px;
 }
 
-h1,
-h2,
-h3,
-h4 {
+h1:not([class^="Mui"]):not([class*=" Mui"]),
+h2:not([class^="Mui"]):not([class*=" Mui"]),
+h3:not([class^="Mui"]):not([class*=" Mui"]),
+h4:not([class^="Mui"]):not([class*=" Mui"]) {
   color: var(--black, black);
 }
 
@@ -390,7 +390,7 @@ h4 {
   font-family: 'Inter', sans-serif !important;
 }
 
-button {
+button:not([class^="Mui"]):not([class*=" Mui"]) {
   background-color: var(--darkest-color);
   border: none;
   border-radius: 5px;
@@ -423,17 +423,17 @@ button {
   box-sizing: border-box;  
 }
 
-button:hover {
+button:not([class^="Mui"]):not([class*=" Mui"]):hover {
   background-color: var(--medium-color);
   color: var(--light-color);
 }
 
-button:disabled {
+button:not([class^="Mui"]):not([class*=" Mui"]):disabled {
   background-color: var(--light-color);
   color: var(--medium-color);
 }
 
-button.icon-button {
+button:not([class^="Mui"]):not([class*=" Mui"]).icon-button {
   margin: 2px 5px;
   padding: 6px;
   border-width: 1px;
@@ -441,15 +441,15 @@ button.icon-button {
   border-color: buttonborder;
 }
 
-button.icon-button > svg {
+button:not([class^="Mui"]):not([class*=" Mui"]).icon-button > svg {
   fill: var(--light-color);
 }
 
-button.icon-button:hover {
+button:not([class^="Mui"]):not([class*=" Mui"]).icon-button:hover {
   background: var(--medium-color);
 }
 
-button.inverse-color {
+button:not([class^="Mui"]):not([class*=" Mui"]).inverse-color {
     background-color: var(--light-color);
     color: var(--darkest-color);
 }
@@ -555,24 +555,24 @@ body:not(.home-page) input[type='submit' i] {
   transition-delay: 0ms, 0ms, 0ms;
 }
 
-button:hover {
+button:not([class^="Mui"]):not([class*=" Mui"]):hover {
   background-color: #0092e2 !important;
   box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%),
     0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);
 }
 
-input[type='text'],
-input[type='number'],
-textarea,
-select {
+input[type='text']:not([class^="Mui"]):not([class*=" Mui"]),
+input[type='number']:not([class^="Mui"]):not([class*=" Mui"]),
+textarea:not([class^="Mui"]):not([class*=" Mui"]),
+select:not([class^="Mui"]):not([class*=" Mui"]) {
   border: 1px solid #d0d0d0 !important;
   border-radius: 0;
   color: #333333;
 }
 
-input[type='text']:focus,
-textarea:focus,
-select:focus {
+input[type='text']:not([class^="Mui"]):not([class*=" Mui"]):focus,
+textarea:not([class^="Mui"]):not([class*=" Mui"]):focus,
+select:not([class^="Mui"]):not([class*=" Mui"]):focus {
   border-radius: 0 !important;
 }
 
@@ -595,17 +595,17 @@ span.tox-tbtn__select-label {
 
 /* Links inside buttons */
 
-button > a {
+button:not([class^="Mui"]):not([class*=" Mui"]) > a {
   color: #ffffff !important;
 }
 
-button > a:hover {
+button:not([class^="Mui"]):not([class*=" Mui"]) > a:hover {
   text-decoration: none !important;
 }
 
 /******* 5. TABLES ********/
 
-table,
+table:not([class^="Mui"]):not([class*=" Mui"]),
 .ui-widget {
   font-family: 'Inter', sans-serif !important;
   font-size: 1em;

@@ -50,8 +50,8 @@ Jan 2021
 
 /******* 2. GENERAL ********/
 
-html,
-input {
+html:not([class^="Mui"]):not([class*=" Mui"]),
+input:not([class^="Mui"]):not([class*=" Mui"]) {
   font-family: 'Inter', sans-serif;
 }
 
@@ -60,51 +60,51 @@ input {
   font-size: 100%;
 } */
 
-footer,
-header,
-nav {
+footer:not([class^="Mui"]):not([class*=" Mui"]),
+header:not([class^="Mui"]):not([class*=" Mui"]),
+nav:not([class^="Mui"]):not([class*=" Mui"]) {
   display: block;
 }
 
 
 /******* 3. TYPOGRAPHY ********/
 
-h1 {
+h1:not([class^="Mui"]):not([class*=" Mui"]) {
   font-size: 2.4rem;
   line-height: 1.1;
   margin: 0;
   font-weight: 400;
 }
 
-h2 {
+h2:not([class^="Mui"]):not([class*=" Mui"]) {
   font-size: 1.875rem;
   line-height: 1;
   font-weight: normal;
 }
 
-h3 {
+h3:not([class^="Mui"]):not([class*=" Mui"]) {
   font-size: 1.2rem;
   line-height: 1;
   font-weight: normal;
 }
 
-p {
+p:not([class^="Mui"]):not([class*=" Mui"]) {
   font-size: 1rem;
   line-height: 1.6;
   margin: 1em 0;
   color: #565a5c;
 }
 
-a {
+a:not([class^="Mui"]):not([class*=" Mui"]) {
   color: #0073cf;
   cursor: pointer;
 }
 
-p a {
+p:not([class^="Mui"]):not([class*=" Mui"]) a:not([class^="Mui"]):not([class*=" Mui"]) {
   text-decoration: underline;
 }
 
-li {
+li:not([class^="Mui"]):not([class*=" Mui"]) {
   font-size: 1rem;
   line-height: 1.6;
   color: #565a5c;
