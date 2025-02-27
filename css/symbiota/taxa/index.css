@@ -247,7 +247,7 @@ fieldset legend{
 }
 
 #centralimage img{
-	max-width:	450px;
+	max-width:	450px !important;
 	max-height:	320px;
 	width: 		expression(this.width >= this.height ? 320: true);
 	height:		expression(this.height >= this.width ? 320: true);
