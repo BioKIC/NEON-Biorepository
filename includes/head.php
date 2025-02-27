@@ -25,27 +25,31 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         
         // image resizings for homepage
         function updateElementWidth() {
-            // blue div
-            var neonPageContent = document.querySelector('div[data-selenium="neon-page.content"]');
-            var neonPageContentWidth = neonPageContent.offsetWidth;
-            var computedStyle = window.getComputedStyle(neonPageContent);
-            var leftPadding = parseFloat(computedStyle.getPropertyValue('padding-left'));
-
-            var muiContainer = document.querySelector('div.MuiContainer-root');
-            var muiContainerStyle = window.getComputedStyle(muiContainer);
-            var muiContainerRightMargin = parseFloat(muiContainerStyle.marginRight);
-
-            var neonPageContentStyle = window.getComputedStyle(neonPageContent);
-            var neonPageContentpaddingLeft = parseFloat(neonPageContentStyle.paddingLeft);
+            const blueDiv = document.getElementById('blue-div');
             
-            var innerTextDiv = document.getElementById('innertext');
-            var computedStyle = window.getComputedStyle(innerTextDiv);
-            var leftMargin = parseFloat(computedStyle.getPropertyValue('margin-left'));
-
-            document.getElementById('blue-div').style.width = (neonPageContentWidth + muiContainerRightMargin) + 'px';
-            document.getElementById('blue-div').style.right = (leftPadding + leftMargin) + 'px';
-            document.getElementById('statistics-container').style.width = (neonPageContentWidth - (2* neonPageContentpaddingLeft)) + 'px';
-            document.getElementById('statistics-container').style.right = (leftPadding + leftMargin) + 'px';
+            if (blueDiv) {
+                // blue div
+                var neonPageContent = document.querySelector('div[data-selenium="neon-page.content"]');
+                var neonPageContentWidth = neonPageContent.offsetWidth;
+                var computedStyle = window.getComputedStyle(neonPageContent);
+                var leftPadding = parseFloat(computedStyle.getPropertyValue('padding-left'));
+    
+                var muiContainer = document.querySelector('div.MuiContainer-root');
+                var muiContainerStyle = window.getComputedStyle(muiContainer);
+                var muiContainerRightMargin = parseFloat(muiContainerStyle.marginRight);
+    
+                var neonPageContentStyle = window.getComputedStyle(neonPageContent);
+                var neonPageContentpaddingLeft = parseFloat(neonPageContentStyle.paddingLeft);
+                
+                var innerTextDiv = document.getElementById('innertext');
+                var computedStyle = window.getComputedStyle(innerTextDiv);
+                var leftMargin = parseFloat(computedStyle.getPropertyValue('margin-left'));
+                
+                document.getElementById('blue-div').style.width = (neonPageContentWidth + muiContainerRightMargin) + 'px';
+                document.getElementById('blue-div').style.right = (leftPadding + leftMargin) + 'px';
+                document.getElementById('statistics-container').style.width = (neonPageContentWidth - (2* neonPageContentpaddingLeft)) + 'px';
+                document.getElementById('statistics-container').style.right = (leftPadding + leftMargin) + 'px';
+            }
         }
         
         function updateBreadcrumbHash() {
@@ -69,6 +73,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
     
         waitForElement('.neon__sidebar-sticky', updateElementWidth);
         waitForElement('.MuiBreadcrumbs-ol', updateBreadcrumbHash);
+        window.addEventListener('resize', updateElementWidth);
         
         // Create biorepo-page div
         // A page must have the innertext div
@@ -123,11 +128,6 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
             const navpath = document.querySelector('.navpath');
             if (navpath) {
                 navpath.remove();
-            }
-            
-            var blueDiv = document.getElementById('blue-div');
-            if (blueDiv) {
-                window.addEventListener('resize', updateElementWidth);
             }
 
             // Edit footer
