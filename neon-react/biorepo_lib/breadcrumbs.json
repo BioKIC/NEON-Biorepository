@@ -33,7 +33,7 @@
     ],
   "/misc/sampleguidelines.php": [
     { "name": "Data & Samples", "href": "https://www.neonscience.org/data-samples" },
-    { "name": "Sample Portal", "href": "../portal/index.php" },
+    { "name": "Sample Portal", "href": "../index.php" },
     { "name": "Sample Guidelines and Policies" }
     ],
   "/misc/cite.php": [
