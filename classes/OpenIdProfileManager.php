@@ -75,6 +75,7 @@ class OpenIdProfileManager extends ProfileManager{
 					//user does not exist in user table, create user
 					$username = $username ?? $email;
 					$firstname = $firstname ?? $email;
+					$lastname = $lastname ?? '';
 					$sql = 'INSERT INTO users (firstName, lastName, email, username) VALUES(?,?,?,?)';
 					$this->resetConnection();
 					if($stmt = $this->conn->prepare($sql)) {
