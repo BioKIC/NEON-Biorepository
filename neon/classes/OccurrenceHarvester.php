@@ -180,7 +180,7 @@ class OccurrenceHarvester{
 					if(in_array(73, $collArr)) {$collArr[] = 106;}
 					$collManager = new OccurrenceCollectionProfile();
 					foreach($collArr as $collID){
-						echo '<li style="margin-left:15px">Stat update for collection <a href="'.$GLOBALS['CLIENT_ROOT'].'/collections/misc/collprofiles.php?collid='.$collID.'" target="_blank">#'.$collID.'</a>...</li>';
+						echo '<li style="margin-left:15px">Stat update for collection <a href="'.$GLOBALS['CLIENT_ROOT'].'/collections/misc/neoncollprofiles.php?collid='.$collID.'" target="_blank">#'.$collID.'</a>...</li>';
 						$collManager->setCollid($collID);
 						$collManager->updateStatistics(false);
 						flush();
