@@ -720,7 +720,6 @@ ER  -
 			<div class="border-t-2 border-gray-200 mt-6 pt-4">
 			  <h2 class="text-xl mb-2">External Links</h2>
 			  <div class="mb-4">
-				<div id="biorepo-collection-page-content"></div>
 				<?php
 				if (isset($collData['resourcejson'])) {
 					if ($resourceArr = json_decode($collData['resourcejson'], true)) {
@@ -734,8 +733,23 @@ ER  -
 							echo '<div class="MuiListItem-container">';
 							echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">';
 							echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
-							echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true">';
-							echo '                <path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"></path>';
+							echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
+							echo '                <g>';
+							echo '                    <g>';
+							echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
+							echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
+							echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
+							echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
+							echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
+							echo '                    </g>';
+							echo '                    <g>';
+							echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
+							echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
+							echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
+							echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
+							echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
+							echo '                    </g>';
+							echo '                </g>';
 							echo '            </svg>';
 							echo '        </div>';
 							echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
@@ -762,54 +776,241 @@ ER  -
 					}
 				}
 				?>
+				<div id="biorepo-collection-page-content"></div>
 
 			  <div class="border-t-2 border-gray-200 mt-6 pt-4">
 				<h2 class="text-xl mb-2">Collection Data</h2>
-				<ul class="list-disc ml-5">
-					<?php
-					if ($collData['dwcaurl']) {
-						$dwcaUrl = $collData['dwcaurl'];
-						$outStr = '<li class="mb-1">';
-						$outStr .= '<span class="label">' . (isset($LANG['DWCA_PUB']) ? $LANG['DWCA_PUB'] : 'DwC-Archive Access Point') . ':</span> ';
-						$outStr .= '<a href="' . $dwcaUrl . '">' . $dwcaUrl . '</a>';
-						$outStr .= '</li>';
-						echo($outStr);
-					}
-					$outStr = '<li class="mb-1"><span class="label">' . (isset($LANG['DIGITAL_METADATA']) ? $LANG['DIGITAL_METADATA'] : 'Digital Metadata') . ':</span> <a href="../datasets/emlhandler.php?collid=' . $collData['collid'] . '" target="_blank">EML File</a></li>';
-					echo($outStr);
-					if ($collData['publishtogbif'] && $datasetKey) {
-						$dataUrl = 'http://www.gbif.org/dataset/' . $datasetKey;
-					?>
-						<li class="mb-1">
-							<div><b><?php echo (isset($LANG['GBIF_DATASET']) ? $LANG['GBIF_DATASET'] : 'GBIF Dataset page'); ?>:</b> <a href="<?php echo $dataUrl; ?>" target="_blank"><?php echo $dataUrl; ?></a></div>
-						</li>
-					<?php
-					} elseif ($collData['dynamicproperties'] && array_key_exists('edi', json_decode($collData['dynamicproperties'], true))) {
-						$doiNum = json_decode($collData['dynamicproperties'], true)['edi'];
-						if (substr($doiNum, 0, 4) === 'doi:') {
+				<?php
+				if (isset($collData['dwcaurl'])) {
+					$dwcaUrl = htmlspecialchars($collData['dwcaurl']);
+					$dwcaLabel = isset($LANG['DWCA_PUB']) ? $LANG['DWCA_PUB'] : 'DwC-Archive Access Point';
+					$dwcFile = basename($dwcaUrl);
+				
+					echo '<div class="MuiListItem-container">';
+					echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
+					echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
+					echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
+					echo '                <g>';
+					echo '                    <g>';
+					echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
+					echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
+					echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
+					echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
+					echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
+					echo '                    </g>';
+					echo '                    <g>';
+					echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
+					echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
+					echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
+					echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
+					echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
+					echo '                    </g>';
+					echo '                </g>';
+					echo '            </svg>';
+					echo '        </div>';
+					echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
+					echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($dwcaLabel) . '</span>';
+					echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
+					echo '                <span title="' . htmlspecialchars($dwcFile) . '" style="white-space: break-spaces;">' . htmlspecialchars($dwcFile) . '</span>';
+					echo '            </p>';
+					echo '        </div>';
+					echo '    </div>';
+					echo '    <div class="MuiListItemSecondaryAction-root">';
+					echo '        <a href="' . $dwcaUrl . '" target="_blank" rel="noopener noreferrer">';
+					echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+					echo '                <span class="MuiButton-label">Open</span>';
+					echo '            </button>';
+					echo '        </a>';
+					echo '    </div>';
+					echo '</div>';
+				}
+				
+				// Digital Metadata (EML File)
+				$emlUrl = "../datasets/emlhandler.php?collid=" . htmlspecialchars($collData['collid']);
+				$emlLabel = isset($LANG['DIGITAL_METADATA']) ? $LANG['DIGITAL_METADATA'] : 'Digital Metadata';
+				
+				echo '<div class="MuiListItem-container">';
+				echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
+				echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
+				echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
+				echo '                <g>';
+				echo '                    <g>';
+				echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
+				echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
+				echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
+				echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
+				echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
+				echo '                    </g>';
+				echo '                    <g>';
+				echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
+				echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
+				echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
+				echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
+				echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
+				echo '                    </g>';
+				echo '                </g>';
+				echo '            </svg>';
+				echo '        </div>';
+				echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
+				echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($emlLabel) . '</span>';
+				echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
+				echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">EML File</span>';
+				echo '            </p>';
+				echo '        </div>';
+				echo '    </div>';
+				echo '    <div class="MuiListItemSecondaryAction-root">';
+				echo '        <a href="' . $emlUrl . '" target="_blank" rel="noopener noreferrer">';
+				echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+				echo '                <span class="MuiButton-label">Open</span>';
+				echo '            </button>';
+				echo '        </a>';
+				echo '    </div>';
+				echo '</div>';
+				
+				// GBIF Dataset Page
+				if (!empty($collData['publishtogbif']) && !empty($datasetKey)) {
+					$gbifUrl = "http://www.gbif.org/dataset/" . htmlspecialchars($datasetKey);
+					$gbifLabel = isset($LANG['GBIF_DATASET']) ? $LANG['GBIF_DATASET'] : 'GBIF Dataset Page';
+				
+					echo '<div class="MuiListItem-container">';
+					echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
+					echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
+					echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
+					echo '                <g>';
+					echo '                    <g>';
+					echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
+					echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
+					echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
+					echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
+					echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
+					echo '                    </g>';
+					echo '                    <g>';
+					echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
+					echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
+					echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
+					echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
+					echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
+					echo '                    </g>';
+					echo '                </g>';
+					echo '            </svg>';
+					echo '        </div>';
+					echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
+					echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($gbifLabel) . '</span>';
+					//echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
+					//echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
+					//echo '            </p>';
+					echo '        </div>';
+					echo '    </div>';
+					echo '    <div class="MuiListItemSecondaryAction-root">';
+					echo '        <a href="' . $gbifUrl . '" target="_blank" rel="noopener noreferrer">';
+					echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+					echo '                <span class="MuiButton-label">Open</span>';
+					echo '            </button>';
+					echo '        </a>';
+					echo '    </div>';
+					echo '</div>';
+				}
+				
+				// EDI Dataset Page
+				if (!empty($collData['dynamicproperties'])) {
+					$dynamicProps = json_decode($collData['dynamicproperties'], true);
+					if (isset($dynamicProps['edi'])) {
+						$doiNum = $dynamicProps['edi'];
+						if (strpos($doiNum, 'doi:') === 0) {
 							$doiNum = substr($doiNum, 4);
 						}
-						$dataUrl = 'https://www.doi.org/' . $doiNum;
-					?>
-						<li class="mb-1">
-							<div><b>EDI Dataset page:</b> <a href="<?php echo $dataUrl; ?>" target="_blank"><?php echo $dataUrl; ?></a></div>
-						</li>
-						<?php
+						$ediUrl = "https://www.doi.org/" . htmlspecialchars($doiNum);
+						echo '<div class="MuiListItem-container">';
+						echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
+						echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
+						echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
+						echo '                <g>';
+						echo '                    <g>';
+						echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
+						echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
+						echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
+						echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
+						echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
+						echo '                    </g>';
+						echo '                    <g>';
+						echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
+						echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
+						echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
+						echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
+						echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
+						echo '                    </g>';
+						echo '                </g>';
+						echo '            </svg>';
+						echo '        </div>';
+						echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
+						echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">EDI Dataset Page</span>';
+						//echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
+						//echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
+						//echo '            </p>';
+						echo '        </div>';
+						echo '    </div>';
+						echo '    <div class="MuiListItemSecondaryAction-root">';
+						echo '        <a href="' . $ediUrl . '" target="_blank" rel="noopener noreferrer">';
+						echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+						echo '                <span class="MuiButton-label">Open</span>';
+						echo '            </button>';
+						echo '        </a>';
+						echo '    </div>';
+						echo '</div>';
 					}
-					if ($collData['publishtoidigbio']) {
-						$idigbioKey = $collManager->getIdigbioKey();
-						if (!$idigbioKey) $idigbioKey = $collManager->findIdigbioKey($collData['recordid']);
-						if ($idigbioKey) {
-							$dataUrl = 'https://www.idigbio.org/portal/recordsets/' . $idigbioKey;
-						?>
-							<div style="margin-top:5px;">
-								<div><b><?php echo (isset($LANG['IDIGBIO_DATASET']) ? $LANG['IDIGBIO_DATASET'] : 'iDigBio Dataset page'); ?>:</b> <a href="<?php echo $dataUrl; ?>" target="_blank"><?php echo $dataUrl; ?></a></div>
-							</div>
-						<?php
-						}
+				}
+				
+				// iDigBio Dataset Page
+				if (!empty($collData['publishtoidigbio'])) {
+					$idigbioKey = $collManager->getIdigbioKey();
+					if (!$idigbioKey) {
+						$idigbioKey = $collManager->findIdigbioKey($collData['recordid']);
 					}
-					?>
-				</ul>
+					if ($idigbioKey) {
+						$idigbioUrl = "https://www.idigbio.org/portal/recordsets/" . htmlspecialchars($idigbioKey);
+						$idigbioLabel = isset($LANG['IDIGBIO_DATASET']) ? $LANG['IDIGBIO_DATASET'] : 'iDigBio Dataset Page';
+				
+						echo '<div class="MuiListItem-container">';
+						echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
+						echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
+						echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
+						echo '                <g>';
+						echo '                    <g>';
+						echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
+						echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
+						echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
+						echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
+						echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
+						echo '                    </g>';
+						echo '                    <g>';
+						echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
+						echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
+						echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
+						echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
+						echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
+						echo '                    </g>';
+						echo '                </g>';
+						echo '            </svg>';
+						echo '        </div>';
+						echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
+						echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($idigbioLabel) . '</span>';
+						//echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
+						//echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
+						//echo '            </p>';
+						echo '        </div>';
+						echo '    </div>';
+						echo '    <div class="MuiListItemSecondaryAction-root">';
+						echo '        <a href="' . $idigbioUrl . '" target="_blank" rel="noopener noreferrer">';
+						echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+						echo '                <span class="MuiButton-label">Open</span>';
+						echo '            </button>';
+						echo '        </a>';
+						echo '    </div>';
+						echo '</div>';
+					}
+				}
+				?>
+
 			  </div>
 			</div>		
 			
