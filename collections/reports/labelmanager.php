@@ -217,11 +217,13 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								Record Number(s):
 								<input type="text" name="recordnumber" style="width:150px;" value="<?php echo (array_key_exists('recordnumber',$_REQUEST)?$_REQUEST['recordnumber']:''); ?>" />
 							</div>
-							<div style="float:left;margin-left:20px;" title="Separate multiple terms by comma and ranges by ' - ' (space before and after dash required), e.g.: 3542,3602,3700 - 3750">
-								Catalog Number(s):
-								<input type="text" name="identifier" style="width:150px;" value="<?php echo (array_key_exists('identifier',$_REQUEST)?$_REQUEST['identifier']:''); ?>" />
-							</div>
 						</div>
+						<!-- Start NEON customization -->
+						<div style="margin-top:10px;clear:both;" title="Separate multiple terms by comma, semicolon, or new line"> 
+								Catalog Number(s): <br>
+    							<textarea name="identifier" style="width:300px; height:80px;"><?php echo (array_key_exists('identifier',$_REQUEST) ? $_REQUEST['identifier'] : ''); ?></textarea>
+						</div>
+						<!-- End NEON customization -->
 						<div style="margin:3px;clear:both;">
 							<div style="float:left;">
 								Entered by:
@@ -273,6 +275,10 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 							echo '<span style="margin-left:15px;"><input name="extendedsearch" type="checkbox" value="1" '.(array_key_exists('extendedsearch', $_POST)?'checked':'').' /></span> ';
 							if($isGeneralObservation) echo 'Search outside user profile';
 							else echo 'Search within all collections';
+							// Start NEON customization
+							echo '<span style="margin-left:15px;"><input name="excludesubsamples" type="checkbox" value="1" ' . (isset($_POST['excludesubsamples']) || !isset($_POST['excludesubsamples']) ? 'checked' : '') . ' /></span>';
+							echo ' Exclude subsamples';
+							// End NEON customization
 							?>
 						</div>
 						<div style="clear:both;">
