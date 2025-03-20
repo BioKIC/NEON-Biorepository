@@ -17,6 +17,9 @@ $collManager->setCollid($collid);
 
 $collData = $collManager->getCollectionMetadata();
 $datasetKey = $collManager->getDatasetKey();
+$resourceJson = isset($collData[$collid]['resourcejson']) ? json_decode($collData[$collid]['resourcejson'], true) : [];
+$dataProductIds = array_map(fn($item) => basename($item['url']), $resourceJson);
+$encodedJson = json_encode(array_values($dataProductIds), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 $editCode = 0;		//0 = no permissions; 1 = CollEditor; 2 = CollAdmin; 3 = SuperAdmin
 if ($SYMB_UID) {
@@ -28,6 +31,15 @@ if ($SYMB_UID) {
 	}
 }
 ?>
+
+<script>
+  window.BiorepoCollectionData = '<?php echo $encodedJson; ?>';
+</script>
+
+<?php
+$collData = $collManager->getCollectionMetadata();
+?>
+
 <html>
 
 <head>
@@ -675,24 +687,27 @@ ER  -
 						}
 						?>
 							<div class="flex space-x-2" style="padding-left: 16px;">
-								<button id="copyButton" data-tooltip-id="tooltip-copy" onclick="copyCitation()" class="Mui tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
-									<i class="fas fa-copy mr-2"></i>
-									<span>COPY</span>
-									<span id="tooltip-copy" style="display:none; width:20rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base">
-										Click to copy the above plain text citation to the clipboard
-									</span>
+								<button id="copyButton" data-tooltip-id="tooltip-copy" 
+								  onclick="copyCitation()" 
+								  class="Mui tooltip-button bg-white-300 text-[#0073cf] py-2 px-4 rounded-[2px] inline-flex items-center border-2 border-[#0073cf] font-[600] leading-[1.75] tracking-[0.06em]">
+								  <i class="fas fa-copy mr-2"></i>
+								  <span>COPY</span>
+								  <span id="tooltip-copy" style="display:none; width:20rem; transform: translate(-15px, 65px);" 
+									class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base font-normal">
+									Click to copy the above plain text citation to the clipboard
+								  </span>
 								</button>
-								<button id="bibButton" data-tooltip-id="tooltip-bib" onclick="downloadBib()" class="Mui tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
-									<i class="fas fa-file-download mr-2"></i>
+								<button id="bibButton" data-tooltip-id="tooltip-bib" onclick="downloadBib()" class="Mui tooltip-button bg-white-300 text-[#0073cf] py-2 px-4 rounded-[2px] inline-flex items-center border-2 border-[#0073cf] font-[600] leading-[1.75] tracking-[0.06em]">
+									<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
 									<span>DOWNLOAD (BIBTEX)</span>
-									<span id="tooltip-bib" style="display:none; width:20rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base">
+									<span id="tooltip-bib" style="display:none; width:20rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base font-normal">
 										Click to download the citation as a file in BibTex format
 									</span>
 								</button>
-								<button id="risButton" data-tooltip-id="tooltip-ris" onclick="downloadRis()"class="Mui tooltip-button bg-white-300 text-blue-800 py-2 px-4 rounded-none inline-flex items-center border-2 border-blue-800">
-									<i class="fas fa-file-download mr-2"></i>
+								<button id="risButton" data-tooltip-id="tooltip-ris" onclick="downloadRis()" class="Mui tooltip-button bg-white-300 text-[#0073cf] py-2 px-4 rounded-[2px] inline-flex items-center border-2 border-[#0073cf] font-[600] leading-[1.75] tracking-[0.06em]">
+									<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
 									<span>DOWNLOAD (RIS)</span>
-									<span id="tooltip-ris" style="display:none; width:25rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base">
+									<span id="tooltip-ris" style="display:none; width:25rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base font-normal">
 										Click to download the citation as a file in Research Information Systems (RIS) format
 									</span>
 								</button>
@@ -705,6 +720,7 @@ ER  -
 			<div class="border-t-2 border-gray-200 mt-6 pt-4">
 			  <h2 class="text-xl font-semibold mb-2">External Links</h2>
 			  <div class="mb-4">
+				<div id="biorepo-collection-page-content"></div>
 				<?php
 				if (isset($collData['resourcejson'])) {
 					if ($resourceArr = json_decode($collData['resourcejson'], true)) {
