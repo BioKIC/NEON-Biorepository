@@ -686,7 +686,7 @@ ER  -
 							echo '</div>';
 						}
 						?>
-							<div class="flex space-x-2" style="padding-left: 16px;">
+							<div class="flex space-x-2">
 								<button id="copyButton" data-tooltip-id="tooltip-copy" 
 								  onclick="copyCitation()" 
 								  class="Mui tooltip-button bg-white-300 text-[#0073cf] py-2 px-4 rounded-[2px] inline-flex items-center border-2 border-[#0073cf] font-[600] leading-[1.75] tracking-[0.06em]">
@@ -718,39 +718,53 @@ ER  -
 			</div>
 			
 			<div class="border-t-2 border-gray-200 mt-6 pt-4">
-			  <h2 class="text-xl font-semibold mb-2">External Links</h2>
+			  <h2 class="text-xl mb-2">External Links</h2>
 			  <div class="mb-4">
 				<div id="biorepo-collection-page-content"></div>
 				<?php
 				if (isset($collData['resourcejson'])) {
 					if ($resourceArr = json_decode($collData['resourcejson'], true)) {
-						$groupedResources = [];
+						echo '<div class="mb-4">';
+				
 						foreach ($resourceArr as $rArr) {
-							$type = $rArr['resourceType'];
-							$groupedResources[$type][] = $rArr;
-						}
-
-						foreach ($groupedResources as $type => $resources) {
-							echo '<div class="mb-4">';
-							echo '<div class="text-lg font-semibold mb-3">' . htmlspecialchars($type) . '</div>';
-							echo '<ul class="list-disc ml-5">';
+							$title = $rArr['title'][$LANG_TAG] ?? "No Title Available";
+							$url = htmlspecialchars($rArr['url']);
+							$fileNumber = basename($rArr['url']);
 				
-							foreach ($resources as $rArr) {
-								$title = $rArr['title'][$LANG_TAG];
-								echo '<li class="mb-1">';
-								echo '<span class="label">' . htmlspecialchars($title) . ':</span> ';
-								echo '<a href="' . htmlspecialchars($rArr['url']) . '" target="_blank">' . htmlspecialchars($rArr['url']) . '</a>';
-								echo '</li>';
-							}
-				
-							echo '</ul>';
+							echo '<div class="MuiListItem-container">';
+							echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">';
+							echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
+							echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true">';
+							echo '                <path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"></path>';
+							echo '            </svg>';
+							echo '        </div>';
+							echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
+							echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">';
+							echo                  htmlspecialchars($title);
+							echo '            </span>';
+							echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
+							echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
+							echo '            </p>';
+							echo '        </div>';
+							echo '    </div>';
+							echo '    <div class="MuiListItemSecondaryAction-root">';
+							echo '        <a href="' . $url . '" target="_blank" rel="noopener noreferrer">';
+							echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
+							echo '                <span class="MuiButton-label">Explore</span>';
+							echo '                <span class="MuiTouchRipple-root"></span>';
+							echo '            </button>';
+							echo '        </a>';
+							echo '    </div>';
 							echo '</div>';
 						}
+				
+						echo '</div>';
 					}
 				}
 				?>
-			  <div class="mb-4">
-				<div class="text-lg font-semibold mb-2">Collection Data</div>
+
+			  <div class="border-t-2 border-gray-200 mt-6 pt-4">
+				<h2 class="text-xl mb-2">Collection Data</h2>
 				<ul class="list-disc ml-5">
 					<?php
 					if ($collData['dwcaurl']) {
