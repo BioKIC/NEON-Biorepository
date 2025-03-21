@@ -15,6 +15,9 @@ $LANG['EDIT_HISTORY'] = 'Historique des Modifications';
 $LANG['ON_LOAN'] = 'Le prêt à';
 $LANG['RELATED_OCCUR'] = 'Occurrences Associées';
 $LANG['CATALOG_NUMBER'] = 'N° de Catalogue';
+//start NEON customization
+$LANG['ARCHIVE_GUID'] = 'N° de Catalogue (archiveGUID)';
+//end NEON customization
 $LANG['OCCURRENCE_ID'] = 'Identification de l\'Occurrence';
 $LANG['OTHER_CATALOG_NUMBERS'] = 'N° Catalogue Secondaire';
 $LANG['TAXON'] = 'Taxon';
