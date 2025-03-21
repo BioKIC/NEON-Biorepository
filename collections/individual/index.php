@@ -381,12 +381,18 @@ $traitArr = $indManager->getTraitArr();
 							?>
 							<div id="cat-div">
 								<?php
-								echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
-								echo $occArr['catalognumber'];
+								// Start NEON Customization
 								// Check if occurrenceid is an IGSN
 								if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['catalognumber'])) {
+									echo '<label>'.(isset($LANG['ARCHIVE_GUID'])?$LANG['ARCHIVE_GUID']:'Catalog #').': </label>';
+									echo $occArr['catalognumber'];
 									echo '<span style="margin-left: 10px"><a href="https://doi.org/10.58052/' . $occArr['catalognumber'] . '" target="_blank">SESAR Record</a></span>';
 								}
+								else{								
+									echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
+									echo $occArr['catalognumber'];
+								}
+								// End NEON Customization
 								?>
 							</div>
 							<?php
