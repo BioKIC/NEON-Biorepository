@@ -94,7 +94,10 @@ class OccurrenceLabel{
 				}
 			}
 			if($postArr['identifier']){
-				$iArr = explode(',',$this->cleanInStr($postArr['identifier']));
+				// Start NEON customatization
+				$catNum = $this->cleanInStr(str_replace(array(',', "\n", "\r\n", "\r", ' '), ';', $postArr['identifier']));
+				$iArr = array_filter(array_map('trim', explode(';', $catNum)));
+				// End NEON customatization
 				$iBetweenFrag = array();
 				$iInFrag = array();
 				foreach($iArr as $v){
@@ -125,9 +128,19 @@ class OccurrenceLabel{
 				$sqlWhere .= 'AND (o.collid = '.$this->collid.') ';
 				if(!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= ' AND (o.observeruid = '.$GLOBALS['SYMB_UID'].') ';
 			}
-			elseif(!array_key_exists('extendedsearch', $postArr)){
-				$sqlWhere .= 'AND (o.collid = '.$this->collid.') ';
+			// Start NEON customization
+			elseif(array_key_exists('extendedsearch', $postArr)){
+				if(array_key_exists('excludesubsamples', $postArr)){
+					$sqlWhere .= 'AND (o.collid NOT BETWEEN 100 AND 111) ';
+				}
+			} else {
+				if(array_key_exists('excludesubsamples', $postArr) && $this->collid >= 100 && $this->collid <= 111){
+					$sqlWhere .= 'AND (1=0) '; 
+				} else {
+					$sqlWhere .= 'AND (o.collid = '.$this->collid.') ';
+				}
 			}
+			// End NEON customization
 			$sql = 'SELECT DISTINCT o.occid, o.collid, IFNULL(o.duplicatequantity,1) AS q, CONCAT_WS(" ",o.recordedby,IFNULL(o.recordnumber,o.eventdate)) AS collector, o.observeruid, '.
 				'o.family, o.sciname, CONCAT_WS("; ",o.country, o.stateProvince, o.county, o.locality) AS locality, IFNULL(o.localitySecurity,0) AS localitySecurity '.
 				'FROM omoccurrences o LEFT JOIN omoccuridentifiers i ON o.occid = i.occid ';
