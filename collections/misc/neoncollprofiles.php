@@ -754,7 +754,7 @@ ER  -
 							echo '        </div>';
 							echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
 							echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">';
-							echo                  htmlspecialchars($title);
+							echo                  ucwords(htmlspecialchars($title));
 							echo '            </span>';
 							echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
 							echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
@@ -939,15 +939,15 @@ ER  -
 						echo '        </div>';
 						echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
 						echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">EDI Dataset Page</span>';
-						//echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-						//echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
-						//echo '            </p>';
+						echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
+						echo '                <span title="' . htmlspecialchars($doiNum) . '" style="white-space: break-spaces;">DOI: ' . htmlspecialchars($doiNum) . '</span>';
+						echo '            </p>';
 						echo '        </div>';
 						echo '    </div>';
 						echo '    <div class="MuiListItemSecondaryAction-root">';
 						echo '        <a href="' . $ediUrl . '" target="_blank" rel="noopener noreferrer">';
 						echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
-						echo '                <span class="MuiButton-label">Open</span>';
+						echo '                <span class="MuiButton-label">Access</span>';
 						echo '            </button>';
 						echo '        </a>';
 						echo '    </div>';
