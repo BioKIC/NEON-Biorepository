@@ -759,7 +759,7 @@ ER  -
 							echo '            </span>';
 							echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
 							if ($title !== "Homepage") {
-								echo '<span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">File Number: ' . htmlspecialchars($fileNumber) . '</span>';
+								echo '<span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
 							} else {
 								echo '<span title="' . $url . '" style="white-space: break-spaces;">' . $url . '</span>';
 							}
