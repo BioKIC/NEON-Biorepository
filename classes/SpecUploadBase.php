@@ -16,6 +16,7 @@ class SpecUploadBase extends SpecUpload{
 	private $matchCatalogNumber = 1;
 	private $matchOtherCatalogNumbers = 0;
 	private $versionDataEdits = false;
+	private $overwriteData = false;
 	private $verifyImageUrls = false;
 	private $processingStatus = '';
 	protected $nfnIdentifier;
@@ -918,7 +919,14 @@ class SpecUploadBase extends SpecUpload{
 				$sqlFragArr[$v] = 'o.processingStatus = u.processingStatus';
 			}
 			elseif($this->uploadType == $this->SKELETAL || $this->uploadType == $this->NFNUPLOAD){
-				$sqlFragArr[$v] = 'o.'.$v.' = IFNULL(o.'.$v.',u.'.$v.')';
+				// start NEON customization
+				if($this->overwriteData){
+					$sqlFragArr[$v] = 'o.' . $v . ' = u.' . $v;
+				}
+				else{
+					$sqlFragArr[$v] = 'o.'.$v.' = IFNULL(o.'.$v.',u.'.$v.')';
+				}
+				// end NEON customization
 			}
 			else{
 				$sqlFragArr[$v] = 'o.'.$v.' = u.'.$v;
@@ -1013,8 +1021,16 @@ class SpecUploadBase extends SpecUpload{
 					foreach($this->targetFieldArr as $field){
 						if(in_array($field, $excludedFieldArr)) continue;
 						if($r[$field] != $r['old_'.$field]){
-							if($this->uploadType == $this->SKELETAL && $r['old_'.$field]) continue;
-							$this->insertOccurEdit($r['occid'], $field, $r[$field], $r['old_'.$field]);
+							// start NEON customization
+							if($this->uploadType == $this->SKELETAL){
+								if ($this->overwriteData || !$r['old_'.$field]) {
+									$this->insertOccurEdit($r['occid'], $field, $r[$field], $r['old_'.$field]);
+								}	
+								else {
+									continue;
+								}
+							}
+							// end NEON customization
 						}
 					}
 				}
@@ -2205,6 +2221,10 @@ class SpecUploadBase extends SpecUpload{
 
 	public function setVersionDataEdits($v){
 		$this->versionDataEdits = $v;
+	}
+
+	public function setOverwriteData($v){
+		$this->overwriteData = $v;
 	}
 
 	public function setVerifyImageUrls($v){
