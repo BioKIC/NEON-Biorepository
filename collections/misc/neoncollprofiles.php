@@ -48,6 +48,7 @@ $collData = $collManager->getCollectionMetadata();
 	<meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
 	<meta http-equiv="Pragma" content="no-cache">
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
+	<link href="../../neon/css/mui-overrides.css" type="text/css" rel="stylesheet">
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
@@ -757,7 +758,7 @@ ER  -
 							echo                  ucwords(htmlspecialchars($title));
 							echo '            </span>';
 							echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-							echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
+							echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">File Number: ' . htmlspecialchars($fileNumber) . '</span>';
 							echo '            </p>';
 							echo '        </div>';
 							echo '    </div>';
