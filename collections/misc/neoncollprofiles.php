@@ -758,7 +758,11 @@ ER  -
 							echo                  ucwords(htmlspecialchars($title));
 							echo '            </span>';
 							echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-							echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">File Number: ' . htmlspecialchars($fileNumber) . '</span>';
+							if ($title !== "Homepage") {
+								echo '<span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">File Number: ' . htmlspecialchars($fileNumber) . '</span>';
+							} else {
+								echo '<span title="' . $url . '" style="white-space: break-spaces;">' . $url . '</span>';
+							}
 							echo '            </p>';
 							echo '        </div>';
 							echo '    </div>';
