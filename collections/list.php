@@ -308,7 +308,9 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									if (isset($fieldArr['img'])) {
 										echo '<div style="float:right;margin:5px 25px;">';
-										echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
+										// neon edit
+										echo '<a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
+										// end edit
 										echo '<img src="' . $fieldArr['img'] . '" style="height:70px" /></a></div>';
 									}
 									echo '<div style="margin:4px;">';
@@ -341,7 +343,9 @@ $_SESSION['citationvar'] = $searchVar;
 									$localStr = trim($localStr, ' ,');
 									echo $localStr;
 									echo '</div><div style="margin:4px">';
-									echo '<b><a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
+									//neon edit
+									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
+									//end edit
 									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
 								}
 								?>
