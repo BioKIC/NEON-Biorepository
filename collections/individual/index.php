@@ -1020,7 +1020,7 @@ $traitArr = $indManager->getTraitArr();
 						</div>
 						<div style="margin:3px 0px;"><?php echo '<label>'.$LANG['RECORD_ID'].': </label>'.$occArr['recordid']; ?></div>
 						<?php
-						if(isset($occArr['source'])){
+						if(isset($occArr['source']['url']) && !empty($occArr['source']['url'])){
 							$recordType = (isset($occArr['source']['type'])?$occArr['source']['type']:'');
 							$displayTitle = $LANG['SOURCE_RECORD'];
 							if(isset($occArr['source']['title'])) $displayTitle = $occArr['source']['title'];
