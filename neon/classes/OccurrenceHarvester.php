@@ -1102,8 +1102,31 @@ class OccurrenceHarvester{
 			$dwcArr['lifeStage'] = 'Nymph';
 			$dwcArr['sex'] = '';
 		}
-		elseif(in_array($dwcArr['collid'], array(29,39,44,63,65,66,71,75,82,90,91,95))) {
+		elseif(in_array($dwcArr['collid'], array(29,39,44,63,65,66,71,82,90,91,95))) {
 			$dwcArr['individualCount'] = 1;
+		}
+		elseif(in_array($dwcArr['collid'],array(19,28))){
+			$dwcArr['preparations'] = '-20 degrees Celsius';
+			$dwcArr['dynamicProperties'] = 'totalLength: NA, tailLength: NA, hindfootLengthSU: NA, hindfootLengthCU: NA, earLength: NA, weight: NA, embryoCount: NA, crownRumpLength: NA, placentalScars: NA, testisLength: NA, testisWidth: NA, preparedBy: NAp, preparedDate: NAp';
+		}
+		elseif($dwcArr['collid']== 56) {
+			// Bulk identified mosquitos
+			if (!empty($dwcArr['eventDate'])) {
+				if($dwcArr['eventDate'] >= '2025-01-01'){
+					if (!empty($dwcArr['preparations'])) {
+						$dwcArr['preparations'] .= '; bloodfed individuals removed';
+					} else {
+						$dwcArr['preparations'] = 'bloodfed individuals removed';
+					}
+				}
+				elseif($dwcArr['eventDate'] < '2025-01-01'){
+					if (!empty($dwcArr['preparations'])) {
+						$dwcArr['preparations'] .= '; may contain bloodfed individuals';
+					} else {
+						$dwcArr['preparations'] = 'may contain bloodfed individuals';
+					}
+				}
+			}
 		}
 	}
 

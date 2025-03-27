@@ -20,7 +20,10 @@ $LANG['TRAITS'] = 'Traits';
 $LANG['EDIT_HISTORY'] = 'Edit History';
 $LANG['ON_LOAN'] = 'On Loan To';
 $LANG['RELATED_OCCUR'] = 'Related Occurrences';
-$LANG['CATALOG_NUMBER'] = 'Catalog Number (archiveGUID)';
+$LANG['CATALOG_NUMBER'] = 'Catalog Number';
+//start NEON customization
+$LANG['ARCHIVE_GUID'] = 'Catalog Number (archiveGUID)';
+//end NEON customization
 $LANG['OCCURRENCE_ID'] = 'Occurrence ID';
 $LANG['OTHER_CATALOG_NUMBERS'] = 'Secondary Catalog Number';
 $LANG['TAXON'] = 'Taxon';
