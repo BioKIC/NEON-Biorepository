@@ -58,12 +58,12 @@ if($isEditor){
 			f.dateShippedEnd.value = "";
 			f.dateCheckinStart.value = "";
 			f.dateCheckinEnd.value = "";
-			f.checkinUid.value = "";
-			f.checkinsampleUid.value = "";
+			$('select[name="checkinUid[]"]').val([]);
+			$('select[name="checkinsampleUid[]"]').val([]);
 			f.sessionData.value = "";
-			f.importedUid.value = "";
+			$('select[name="importedUid[]"]').val([]);
 			f.sampleCondition.value = "";
-			var radioList = document.getElementsByName('manifestStatus');
+			var radioList = document.getElementsByName('manifestStatus[]');
 			for(x = 0; x < radioList.length; x++){
 				radioList[x].checked = false;
 			}
