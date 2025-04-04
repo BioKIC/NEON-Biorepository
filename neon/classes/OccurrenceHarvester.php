@@ -810,12 +810,16 @@ class OccurrenceHarvester{
 								$taxonRemarks = 'Identification source: parsed from NEON sampleID';
 							}
 						}
-						// Should not ever need this for collid 30 anymore, but leaving in case it's useful
-						// if($dwcArr['collid'] == 30){
-						// 	$identArr[] = array('sciname' => $dwcArr['identifications'][0]['sciname'],
-						// 					  'identifiedBy' => 'NEON Lab',
-						// 					  'dateIdentified' => 's.d.');
-						// }
+						if ($dwcArr['collid'] == 30 && !empty($dwcArr['habitat'])) {                            
+							$pos = strpos($dwcArr['habitat'], 'soil type order: ');
+							if ($pos !== false) { 
+								$identArr[] = array(
+									'sciname' => substr($dwcArr['habitat'], $pos + strlen('soil type order: ')),
+									'identifiedBy' => $this->translatePersonnel($sampleArr['recorded_by']),
+									'dateIdentified' => $sampleArr['collectDate']
+								);
+							}
+						}								
 						elseif($dwcArr['collid'] == 56){
 							if(preg_match('/\.\d{4}\.\d{1,2}\.([A-Z]{2,15}\d{0,2})\./', $sampleArr['sampleID'], $m)){
 								$taxonCode = $m[1];
@@ -834,10 +838,13 @@ class OccurrenceHarvester{
 							$identArr[$hash] = array('sciname' => $taxonCode, 'identifiedBy' => 'sampleID', 'dateIdentified' => 's.d.', 'taxonRemarks' => $taxonRemarks);
 					}
 					if($identArr){
-						$isCurrentKey = 0;
+						$isCurrentKey = null;
 						$bestDate = 0;
 						foreach($identArr as $idKey => &$idArr){
-							if(!isset($idArr['sciname'])) unset($identArr[$idKey]);
+							if(!isset($idArr['sciname'])) {
+								unset($identArr[$idKey]);
+								continue;
+							}
 							//Translate NEON taxon codes or check/clean scientific name submitted
 							if(preg_match('/^[A-Z0-9]+$/', $idArr['sciname'])){
 								//Taxon is a NEON code that needs to be translated
@@ -852,13 +859,17 @@ class OccurrenceHarvester{
 								}
 							}
 							//Evaluate if any incoming determinations should be tagged as isCurrent
-							if(!$isCurrentKey) $isCurrentKey = $idKey;	//First determination is set as isCurrent as the default
+							if ($isCurrentKey === null) {
+								$isCurrentKey = $idKey; 
+							}
 							if(isset($idArr['dateIdentified']) && preg_match('/^\d{4}/', $idArr['dateIdentified']) && $idArr['dateIdentified'] > $bestDate){
 								$bestDate = $idArr['dateIdentified'];
 								$isCurrentKey = $idKey;
 							}
 						}
-						if($isCurrentKey) $identArr[$isCurrentKey]['isCurrent'] = 1;
+						if($isCurrentKey !== null){
+							$identArr[$isCurrentKey]['isCurrent'] = 1;
+						} 
 						$appendIdentArr = array();
 						foreach($identArr as $idKey => &$idArr){
 							//Check to see if any determination needs to be protected
@@ -1044,9 +1055,6 @@ class OccurrenceHarvester{
 				} elseif (!isset($habitatArr['gradient']) && $propName == 'Value for Slope gradient') {
 					$habitatArr['gradient'] = 'slope gradient: ' . $propValue;
 				} elseif (!isset($habitatArr['soil']) && $propName == 'Value for Soil type order') {
-					if ($dwcArr['collid'] == 30 && !isset($dwcArr['identifications'])) {
-						$dwcArr['identifications'][] = array('sciname' => $propValue);
-					}
 					$habitatArr['soil'] = 'soil type order: ' . $propValue;
 				} elseif (!isset($dwcArr['stateProvince']) && $propName == 'Value for State province') {
 					$stateStr = $propValue;
@@ -1757,9 +1765,9 @@ class OccurrenceHarvester{
 			//Remove invalid identifications
 			foreach($identArr as $k => $v){
 				if(!isset($v['sciname'])) unset($identArr[$k]);
-				elseif($v['identifiedBy'] == 'undefined' && $v['dateIdentified'] == 's.d.' && count($identArr) > 1){
-					//unset($identArr[$k]);
-				}
+				// elseif($v['identifiedBy'] == 'undefined' && $v['dateIdentified'] == 's.d.' && count($identArr) > 1){
+				// 	//unset($identArr[$k]);
+				// }
 			}
 			//Check to see if a current determination was explicitly set by a collection manager, which thus needs to be maintained as the central current determination
 			$currentDetArr = $this->getCurrentDeterminationArr($occid);
