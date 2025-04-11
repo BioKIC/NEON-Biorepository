@@ -507,7 +507,8 @@ class OccurrenceHarvester{
 						elseif($fArr['smsKey'] == 'collection_location' && $fArr['smsValue']) $tableArr['collection_location'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'fate_date' && $fArr['smsValue']) $fateDate = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'event_id' && $fArr['smsValue']) $tableArr['event_id'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'collected_by' && $fArr['smsValue']) $tableArr['collected_by'] = $fArr['smsValue'];
+						elseif($fArr['smsKey'] == 'collected_by' && $fArr['smsValue'] && $fArr['smsValue']!='National Ecological Observatory Network, United States') $tableArr['collected_by'] = $fArr['smsValue'];
+						elseif($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $tableArr['recorded_by'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'collect_start_date' && $fArr['smsValue']) $tableArr['collect_start_date'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'collect_end_date' && $fArr['smsValue']) $tableArr['collect_end_date'] = $fArr['smsValue'];
 						elseif (
@@ -564,7 +565,7 @@ class OccurrenceHarvester{
 							if(!strpos($fArr['smsValue'],'biorepo.neonscience.org/portal')) $assocMedia['url'] = $fArr['smsValue'];
 						}
 						elseif($fArr['smsKey'] == 'photographed_by') $assocMedia['photographer'] = $fArr['smsValue'];
-						if($harvestIdentifications && !($tableName == 'inv_pervial_in' && in_array($sampleArr['sampleClass'],array('inv_fielddata_in.sampleID','inv_persample_in.mixedInvertVialID','inv_persample_in.chironomidVialID','inv_persample_in.oligochaeteVialID')))){
+						if($harvestIdentifications && $tableName!='bet_archivepooling_in' && !($tableName == 'inv_pervial_in' && in_array($sampleArr['sampleClass'],array('inv_fielddata_in.sampleID','inv_persample_in.mixedInvertVialID','inv_persample_in.chironomidVialID','inv_persample_in.oligochaeteVialID')))){
 							if($fArr['smsKey'] == 'taxon' && $fArr['smsValue']){
 								$identArr['sciname'] = $fArr['smsValue'];
 								$identArr['taxon'] = $fArr['smsValue'];
@@ -587,6 +588,7 @@ class OccurrenceHarvester{
 								if(empty($identArr['taxonPublishedCode'])) $identArr['taxonPublishedCode'] = $fArr['smsValue'];
 							}
 							elseif($fArr['smsKey'] == 'identified_by' && $fArr['smsValue']) $identArr['identifiedBy'] = $this->translatePersonnel($fArr['smsValue']);
+							elseif($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $identArr['recordedBy'] = $this->translatePersonnel($fArr['smsValue']);
 							elseif($fArr['smsKey'] == 'identified_date' && $fArr['smsValue']) $identArr['dateIdentified'] = $fArr['smsValue'];
 							elseif(in_array($tableName,array('ptx_taxonomy_in'))){
 								if($fArr['smsKey'] == 'sample_type' && $fArr['smsValue']){
@@ -635,7 +637,10 @@ class OccurrenceHarvester{
 						else $identArr['dateIdentified'] = 's.d.';
 					}
 					if(empty($identArr['identifiedBy'])){
-						$identArr['identifiedBy'] = 'undefined';
+						if(!empty($identArr['recordedBy'])){
+							$identArr['identifiedBy'] = $identArr['recordedBy'];
+						}
+						else $identArr['identifiedBy'] = 'undefined';
 					}
 					$hash = hash('md5', str_replace(' ', '', $identArr['sciname'].$identArr['identifiedBy'].$identArr['dateIdentified']));
 					// allow for unique records for different life stages
@@ -737,6 +742,8 @@ class OccurrenceHarvester{
 				if($dynProp) $dwcArr['dynamicProperties'] = implode(', ',$dynProp);
 
 				if(!empty($sampleArr['collected_by'])) $dwcArr['recordedBy'] = $this->translatePersonnel($sampleArr['collected_by']);
+				elseif(!empty($sampleArr['recorded_by'])) $dwcArr['recordedBy'] = $this->translatePersonnel($sampleArr['recorded_by']);
+				else($dwcArr['recordedBy'] = 'NEON Technician');
 				if(!empty($sampleArr['collect_end_date'])){
 					if(!empty($sampleArr['collect_start_date']) && $sampleArr['collect_start_date'] != $sampleArr['collect_end_date']){
 						$dwcArr['eventDate'] = $sampleArr['collect_start_date'];
@@ -803,12 +810,16 @@ class OccurrenceHarvester{
 								$taxonRemarks = 'Identification source: parsed from NEON sampleID';
 							}
 						}
-						// Should not ever need this for collid 30 anymore, but leaving in case it's useful
-						// if($dwcArr['collid'] == 30){
-						// 	$identArr[] = array('sciname' => $dwcArr['identifications'][0]['sciname'],
-						// 					  'identifiedBy' => 'NEON Lab',
-						// 					  'dateIdentified' => 's.d.');
-						// }
+						if ($dwcArr['collid'] == 30 && !empty($dwcArr['habitat'])) {                            
+							$pos = strpos($dwcArr['habitat'], 'soil type order: ');
+							if ($pos !== false) { 
+								$identArr[] = array(
+									'sciname' => substr($dwcArr['habitat'], $pos + strlen('soil type order: ')),
+									'identifiedBy' => $this->translatePersonnel($sampleArr['recorded_by']),
+									'dateIdentified' => $sampleArr['collectDate']
+								);
+							}
+						}								
 						elseif($dwcArr['collid'] == 56){
 							if(preg_match('/\.\d{4}\.\d{1,2}\.([A-Z]{2,15}\d{0,2})\./', $sampleArr['sampleID'], $m)){
 								$taxonCode = $m[1];
@@ -827,10 +838,13 @@ class OccurrenceHarvester{
 							$identArr[$hash] = array('sciname' => $taxonCode, 'identifiedBy' => 'sampleID', 'dateIdentified' => 's.d.', 'taxonRemarks' => $taxonRemarks);
 					}
 					if($identArr){
-						$isCurrentKey = 0;
+						$isCurrentKey = null;
 						$bestDate = 0;
 						foreach($identArr as $idKey => &$idArr){
-							if(!isset($idArr['sciname'])) unset($identArr[$idKey]);
+							if(!isset($idArr['sciname'])) {
+								unset($identArr[$idKey]);
+								continue;
+							}
 							//Translate NEON taxon codes or check/clean scientific name submitted
 							if(preg_match('/^[A-Z0-9]+$/', $idArr['sciname'])){
 								//Taxon is a NEON code that needs to be translated
@@ -845,13 +859,17 @@ class OccurrenceHarvester{
 								}
 							}
 							//Evaluate if any incoming determinations should be tagged as isCurrent
-							if(!$isCurrentKey) $isCurrentKey = $idKey;	//First determination is set as isCurrent as the default
+							if ($isCurrentKey === null) {
+								$isCurrentKey = $idKey; 
+							}
 							if(isset($idArr['dateIdentified']) && preg_match('/^\d{4}/', $idArr['dateIdentified']) && $idArr['dateIdentified'] > $bestDate){
 								$bestDate = $idArr['dateIdentified'];
 								$isCurrentKey = $idKey;
 							}
 						}
-						if($isCurrentKey) $identArr[$isCurrentKey]['isCurrent'] = 1;
+						if($isCurrentKey !== null){
+							$identArr[$isCurrentKey]['isCurrent'] = 1;
+						} 
 						$appendIdentArr = array();
 						foreach($identArr as $idKey => &$idArr){
 							//Check to see if any determination needs to be protected
@@ -1037,9 +1055,6 @@ class OccurrenceHarvester{
 				} elseif (!isset($habitatArr['gradient']) && $propName == 'Value for Slope gradient') {
 					$habitatArr['gradient'] = 'slope gradient: ' . $propValue;
 				} elseif (!isset($habitatArr['soil']) && $propName == 'Value for Soil type order') {
-					if ($dwcArr['collid'] == 30 && !isset($dwcArr['identifications'])) {
-						$dwcArr['identifications'][] = array('sciname' => $propValue);
-					}
 					$habitatArr['soil'] = 'soil type order: ' . $propValue;
 				} elseif (!isset($dwcArr['stateProvince']) && $propName == 'Value for State province') {
 					$stateStr = $propValue;
@@ -1750,9 +1765,9 @@ class OccurrenceHarvester{
 			//Remove invalid identifications
 			foreach($identArr as $k => $v){
 				if(!isset($v['sciname'])) unset($identArr[$k]);
-				elseif($v['identifiedBy'] == 'undefined' && $v['dateIdentified'] == 's.d.' && count($identArr) > 1){
-					//unset($identArr[$k]);
-				}
+				// elseif($v['identifiedBy'] == 'undefined' && $v['dateIdentified'] == 's.d.' && count($identArr) > 1){
+				// 	//unset($identArr[$k]);
+				// }
 			}
 			//Check to see if a current determination was explicitly set by a collection manager, which thus needs to be maintained as the central current determination
 			$currentDetArr = $this->getCurrentDeterminationArr($occid);

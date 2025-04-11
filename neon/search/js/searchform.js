@@ -945,3 +945,5 @@ hideColCheckbox(110);
 hideColCheckbox(111);
 // Hides large invert collection for now
 hideColCheckbox(114);
+// Hides domain herbarium reference collection for now
+hideColCheckbox(115);
