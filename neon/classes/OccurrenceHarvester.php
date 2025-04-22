@@ -474,8 +474,8 @@ class OccurrenceHarvester{
 				//if(strpos($tableName,'identification')) continue;
 				//if(strpos($tableName,'sorting')) continue;
 				if(strpos($tableName,'scs_archive')) continue;
-				if(strpos($tableName,'mam_barcoding')) continue;
-				if(strpos($tableName,'bet_barcoding')) continue;
+				if($tableName == 'mam_barcoding_in') continue;
+				if($tableName == 'bet_barcoding_in') continue;
 				if(strpos($tableName,'dnaStandardTaxon')) continue;
 				if(strpos($tableName,'dnaExtraction')) continue;
 				if(strpos($tableName,'markerGeneSequencing')) continue;
@@ -485,7 +485,7 @@ class OccurrenceHarvester{
 				//if(strpos($tableName,'perarchivesample')) continue;
 				//if(strpos($tableName,'persample')) continue;
 				//if(strpos($tableName,'pertaxon')) continue;
-				if(strpos($tableName,'zoo_perVial_in')) continue;
+				if($tableName == 'zoo_perVial_in') continue;
 				if($tableName == 'mpr_perpitprofile_in') continue;
 				$fieldArr = $eArr['smsFieldEntries'];
 				$fateLocation = ''; $fateDate = '';
