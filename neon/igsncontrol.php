@@ -3,6 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/neon/classes/IgsnManager.php');
+include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 if(!$SYMB_UID) header('Location: ../profile/index.php?refurl='.$CLIENT_ROOT.'/neon/igsncontrol.php?'.$_SERVER['QUERY_STRING']);
 
@@ -16,6 +17,10 @@ $action = array_key_exists('action',$_REQUEST)?$_REQUEST['action']:'';
 $limit = filter_var($limit, FILTER_SANITIZE_NUMBER_INT);
 
 $igsnManager = new IgsnManager();
+$occurrenceSesar = new OccurrenceSesar();
+
+$accesstoken = $occurrenceSesar->getAccessToken($SYMB_UID);
+$refreshtoken = $occurrenceSesar->getRefreshToken($SYMB_UID);
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
@@ -58,7 +63,29 @@ if($isEditor){
 				if(f.recTarget.value != "notsubmitted") alert("Only 'Not Submitted' records can be tagged as Submitted to NEON");
 			}
 		}
+		function saveTokens(form) {
+			const accessToken = $(form.accessToken).val().trim();
+			const refreshToken = $(form.refreshToken).val().trim();
+		
+			$.post('rpc/savetokens.php', {
+				accessToken: accessToken,
+				refreshToken: refreshToken
+			})
+			.done(function(response) {
+				if (response.success) {
+					alert('Tokens saved successfully.');
+				} else {
+					alert('Failed to save tokens: ' + response.message);
+				}
+			})
+			.fail(function(xhr, status, error) {
+				console.error('Error saving tokens:', error);
+				alert('An error occurred while saving tokens.');
+			});
+		}
+
 	</script>
+
 	<style type="text/css">
 		fieldset{ padding:15px }
 		legend{ font-weight:bold; }
@@ -86,7 +113,36 @@ include($SERVER_ROOT.'/includes/header.php');
 		}
 		if($action != 'syncIGSNs'){
 			?>
-<!--token management here-->
+			<fieldset>
+				<legend>IGSN Registration</legend>
+				<div style="margin-bottom:10px;">
+					Blahblahblah stuff about tokens here
+				</div>
+				<form name="tokenManagement">
+					<legend>Current User Token Pair:</legend>
+					<div style="margin-left: 1em">
+					<p>
+						<div>
+							<span class="form-label">Access token:</span>
+							<div>
+								<textarea name="accessToken" rows="3" style="width: 95%"><?php echo htmlspecialchars($accesstoken); ?></textarea>
+							</div>
+						</div>
+						<div>
+							<span class="form-label">Refresh token:</span>
+							<div>
+								<textarea name="refreshToken" rows="3" style="width: 95%"><?php echo htmlspecialchars($refreshtoken); ?></textarea>
+							</div>
+						</div>
+					</p>
+					</div>
+					<div>
+						<button id="validate-button" type="button" onclick="validateTokens(this.form)">Validate Tokens</button>
+						<button id="refresh-button" type="button" onclick="refreshTokens(this.form)">Refresh Access Token</button>
+						<button id="save-button" type="button" onclick="saveTokens(this.form)">Save Tokens</button>
+					</div>
+				</form>
+			</fieldset>
 			<?php
 		}
 		if($action == 'syncIGSNs'){
