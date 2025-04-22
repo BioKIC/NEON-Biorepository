@@ -84,6 +84,23 @@ if($isEditor){
 			});
 		}
 
+	function validateTokens(form) {
+		const accessToken = $(form.accessToken).val().trim();
+		const refreshToken = $(form.refreshToken).val().trim();
+	
+		$.post('rpc/validatetokens.php', {
+			accessToken: accessToken,
+			refreshToken: refreshToken
+		})
+		.done(function(response) {
+			alert(response.message);
+		})
+		.fail(function(xhr, status, error) {
+			console.error('Token validation error:', error);
+			alert('An error occurred while validating tokens.');
+		});
+	}
+
 	</script>
 
 	<style type="text/css">
