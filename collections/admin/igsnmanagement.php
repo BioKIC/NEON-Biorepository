@@ -1,6 +1,7 @@
 <?php
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
+include_once($SERVER_ROOT.'/neon/classes/IgsnManager.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 ini_set('max_execution_time', 3600);
 
@@ -23,6 +24,7 @@ $isEditor = 0;
 if($IS_ADMIN || (array_key_exists('CollAdmin',$USER_RIGHTS) && in_array($collid,$USER_RIGHTS['CollAdmin']))){
 	$isEditor = 1;
 }
+$igsnManager = new IgsnManager();
 $guidManager = new OccurrenceSesar();
 $guidManager->setCollid($collid);
 $guidManager->setCollArr();
@@ -129,7 +131,30 @@ include($SERVER_ROOT.'/includes/header.php');
 </div>
 <div id="innertext">
 	<?php
-	if($isEditor && $collid){
+	if (!($collid)){
+	?>
+		<fieldset>
+			<legend><b>Collections Needing IGSNs</b></legend>
+			<div style="margin-bottom:10px;">IGSN can only be created for NEON samples that have been both Received and Accepted for Analysis</div>
+			<div style="">
+				<ul>
+					<?php
+					$taskList = $igsnManager->getIgsnTaskReport();
+					if($taskList){
+						foreach($taskList as $collid => $collArr){
+							echo '<li>'.$collArr['collname'].' ('.$collArr['collcode'].'): ';
+							echo '<a href="../admin/igsnmapper.php?collid='.$collid.'" target="_blank">'.$collArr['cnt'].'</a></li>';
+						}
+					}
+					else{
+						echo '<div style="margin:20px"><b>All collections have IGSN assigned</b></div>';
+					}
+					?>
+				</ul>
+			</div>
+		</fieldset>
+	<?php
+	} else if($isEditor){
 		echo '<h3>IGSN Management: '.$guidManager->getCollectionName().'</h3>';
 		if($statusStr){
 			?>
@@ -223,7 +248,7 @@ include($SERVER_ROOT.'/includes/header.php');
 			<?php
 		}
 	}
-	else echo '<h2>You are not authorized to access this page or collection identifier has not been set</h2>';
+	else echo '<h2>You are not authorized to access this page</h2>';
 	?>
 </div>
 <?php

@@ -86,26 +86,7 @@ include($SERVER_ROOT.'/includes/header.php');
 		}
 		if($action != 'syncIGSNs'){
 			?>
-			<fieldset>
-				<legend><b>Collections Needing IGSNs</b></legend>
-				<div style="margin-bottom:10px;">IGSN can only be created for NEON samples that have been both Received and Accepted for Analysis</div>
-				<div style="">
-					<ul>
-						<?php
-						$taskList = $igsnManager->getIgsnTaskReport();
-						if($taskList){
-							foreach($taskList as $collid => $collArr){
-								echo '<li>'.$collArr['collname'].' ('.$collArr['collcode'].'): ';
-								echo '<a href="../collections/admin/igsnmanagement.php?collid='.$collid.'" target="_blank">'.$collArr['cnt'].'</a></li>';
-							}
-						}
-						else{
-							echo '<div style="margin:20px"><b>All collections have IGSN assigned</b></div>';
-						}
-						?>
-					</ul>
-				</div>
-			</fieldset>
+<!--token management here-->
 			<?php
 		}
 		if($action == 'syncIGSNs'){
