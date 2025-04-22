@@ -1592,7 +1592,7 @@ class OccurrenceHarvester{
 				if($sciname){
 					$idDate = 's.d.';
 					if(!empty($dwcArr['eventDate'])) $idDate = $dwcArr['eventDate'];
-					if(!empty($dwcArr['recordedBy']) && in_array($dwcArr['collid'],array(30,31,69))) $idBy = $dwcArr['recordedBy'];
+					if(!empty($dwcArr['recordedBy']) && in_array($dwcArr['collid'],array(5,6,10,13,16,18,21,23,30,31,41,42,61,67,68,69,76,92,96))) $idBy = $dwcArr['recordedBy'];
 					else $idBy = 'NEON Lab';
 					$dwcArr['identifications'][] = array('sciname' => $sciname,'tidInterpreted'=>$tid, 'identifiedBy' => $idBy, 'dateIdentified' => $idDate, 'isCurrent' => 1);
 				}
