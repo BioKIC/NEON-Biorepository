@@ -101,6 +101,34 @@ if($isEditor){
 		});
 	}
 
+	function refreshTokens(form) {
+		const refreshToken = $(form.refreshToken).val().trim();
+	
+		if (!refreshToken) {
+			alert('Refresh token is missing.');
+			return;
+		}
+	
+		$.post('rpc/refreshtokens.php', {
+			refreshToken: refreshToken
+		})
+		.done(function(response) {
+			if (response.success) {
+				$(form.accessToken).val(response.newAccessToken);
+				$(form.refreshToken).val(response.newRefreshToken);
+				alert('Tokens refreshed successfully.');
+	
+				saveTokens(form);
+			} else {
+				alert('Failed to refresh tokens: ' + response.message);
+			}
+		})
+		.fail(function(xhr, status, error) {
+			console.error('Refresh token error:', error);
+			alert('An error occurred while refreshing the token.');
+		});
+	}
+
 	</script>
 
 	<style type="text/css">
@@ -155,8 +183,9 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 					<div>
 						<button id="validate-button" type="button" onclick="validateTokens(this.form)">Validate Tokens</button>
-						<button id="refresh-button" type="button" onclick="refreshTokens(this.form)">Refresh Access Token</button>
+						<button id="refresh-button" type="button" onclick="refreshTokens(this.form)">Refresh Tokens</button>
 						<button id="save-button" type="button" onclick="saveTokens(this.form)">Save Tokens</button>
+						<button id="assign-button" type="button" onclick="window.location.href='../collections/admin/igsnmanagement.php'">Assign IGSN IDs</button>
 					</div>
 				</form>
 			</fieldset>
