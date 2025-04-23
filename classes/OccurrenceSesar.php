@@ -81,38 +81,51 @@ class OccurrenceSesar extends Manager {
 		}
 	}
 
+	//Token management
+	function getAccessToken($uid) {
+		$uid = intval($uid);
+		$sql = "SELECT accessTokenSesar FROM users WHERE uid = $uid";
+		$result = $this->conn->query($sql);
+	
+		if ($result && $row = $result->fetch_assoc()) {
+			return $row['accessTokenSesar'] ?? '';
+		}
+	
+		$this->errorMessage = 'Database query error: ' . $this->conn->error;
+		return '';
+	}
+	
+	function getRefreshToken($uid) {
+		$uid = intval($uid);
+		$sql = "SELECT refreshTokenSesar FROM users WHERE uid = $uid";
+		$result = $this->conn->query($sql);
+	
+		if ($result && $row = $result->fetch_assoc()) {
+			return $row['refreshTokenSesar'] ?? '';
+		}
+	
+		$this->errorMessage = 'Database query error: ' . $this->conn->error;
+		return '';
+	}
+	
 	//Processing functions
 	public function batchProcessIdentifiers($processingCount){
 		$status = false;
-		if($this->registrationMethod == 'api') $this->setVerboseMode(3);
-		else  $this->setVerboseMode(1);
+		$this->setVerboseMode(3);
 		$logPath = $GLOBALS['SERVER_ROOT'].(substr($GLOBALS['SERVER_ROOT'],-1)=='/'?'':'/').'content/logs/igsn/IGSN_'.date('Y-m-d').'.log';
 		$this->setLogFH($logPath);
 		$this->logOrEcho('Starting batch IGSN processing ('.date('Y-m-d H:i:s').')');
-		$this->logOrEcho('sesarUser: '.$this->sesarUser);
-		$this->logOrEcho('namespace: '.$this->namespace);
-		$this->logOrEcho('registrationMethod: '.$this->registrationMethod);
-		$this->logOrEcho('generationMethod locally: '.$this->generationMethod);
-		if(!$this->namespace){
-			$this->errorMessage = 'FATAL ERROR batch assigning IDs: namespace not set';
+		$baseTenID = '';
+		if(!$this->igsnSeed){
+			$this->errorMessage = 'FATAL ERROR batch assigning IDs: IGSN seed not set';
 			$this->logOrEcho($this->errorMessage);
 			return false;
 		}
-		$baseTenID = '';
-		if($this->generationMethod == 'inhouse'){
-			if(!$this->igsnSeed){
-				$this->errorMessage = 'FATAL ERROR batch assigning IDs: IGSN seed not set';
-				$this->logOrEcho($this->errorMessage);
-				return false;
-			}
-			$baseTenID = base_convert($this->igsnSeed,36,10);
-		}
-		if($this->registrationMethod == 'api'){
-			if(!$this->validateUser()){
-				$this->errorMessage = 'SESAR username and password failed to validate';
-				$this->logOrEcho($this->errorMessage);
-				return false;
-			}
+		$baseTenID = base_convert($this->igsnSeed,36,10);
+		if(!$this->validateUser()){
+			$this->errorMessage = 'SESAR tokens failed to validate';
+			$this->logOrEcho($this->errorMessage);
+			return false;
 		}
 
 		//Batch assign GUIDs
@@ -130,13 +143,11 @@ class OccurrenceSesar extends Manager {
 		while($r = $rs->fetch_assoc()){
 			if(!$this->igsnDom) $this->initiateDom();
 			$igsn = '';
-			if($this->generationMethod == 'inhouse'){
-				$igsn = base_convert($baseTenID,10,36);
-				$igsn = str_pad($igsn, (9-strlen($this->namespace)), '0', STR_PAD_LEFT);
-				$igsn = strtoupper($igsn);
-				//$igsn = $this->namespace.$igsn;
-				$baseTenID++;
-			}
+			$igsn = base_convert($baseTenID,10,36);
+			$igsn = str_pad($igsn, (9-strlen($this->namespace)), '0', STR_PAD_LEFT);
+			$igsn = strtoupper($igsn);
+			//$igsn = $this->namespace.$igsn;
+			$baseTenID++;
 			//Set Symbiota record values
 			$this->fieldMap['occid']['value'] = $r['occid'];
 			foreach($this->fieldMap as $symbField => $fieldArr){
@@ -146,37 +157,14 @@ class OccurrenceSesar extends Manager {
 
 			if(!$this->igsnExists($igsn)) $this->setSampleXmlNode($igsn);
 			//$this->logOrEcho('#'.$increment.': IGSN created for <a href="../editor/occurrenceeditor.php?occid='.$this->fieldMap['occid']['value'].'" target="_blank">'.$this->fieldMap['catalogNumber']['value'].'</a>',1);
-			if($this->registrationMethod == 'api'){
-				if($this->registerIdentifiersViaApi()){
-					$this->logOrEcho('#'.$increment.': IGSN registered: <a href="../editor/occurrenceeditor.php?occid='.$r['occid'].'" target="_blank">'.$igsn.'</a>',1);
-				}
-				$this->igsnDom = null;
+			if($this->registerIdentifiersViaApi()){
+				$this->logOrEcho('#'.$increment.': IGSN registered: <a href="../editor/occurrenceeditor.php?occid='.$r['occid'].'" target="_blank">'.$igsn.'</a>',1);
 			}
+			$this->igsnDom = null;
 			$status = true;
 			$increment++;
 		}
 		$rs->free();
-
-		if($this->igsnDom){
-			//Register identifier with SESAR
-			if($this->registrationMethod == 'csv'){
-
-			}
-			elseif($this->registrationMethod == 'xml'){
-				$this->logOrEcho('XML document created');
-				header('Content-Description: ');
-				header('Content-Type: application/xml');
-				header('Content-Disposition: attachment; filename=SESAR_IGSN_registration_'.date('Y-m-d_His').'.xml');
-				header('Content-Transfer-Encoding: UTF-8');
-				header('Expires: 0');
-				header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-				header('Pragma: public');
-				$this->igsnDom->preserveWhiteSpace = false;
-				$this->igsnDom->formatOutput = true;
-				//echo $this->igsnDom->saveXML();
-				$this->igsnDom->save('php://output');
-			}
-		}
 
 		$this->logOrEcho('Finished ('.date('Y-m-d H:i:s').')');
 		return $status;
@@ -206,56 +194,85 @@ class OccurrenceSesar extends Manager {
 	// SESAR web service calls (http://www.geosamples.org/interop)
 	// End point: https://app.geosamples.org/webservices/
 	// Test end point: https://sesardev.geosamples.org/webservices/
-	public function validateUser(){
+	public function validateUser() {
+		global $SYMB_UID;
+		
 		$userCodeArr = array();
 		$baseUrl = 'https://app.geosamples.org/webservices/credentials_service_v2.php';
-		if(!$this->sesarUser || !$this->sesarPwd){
-			$this->errorMessage = 'Fatal Error validating user: SESAR username or password not set';
+
+		$accessToken = $this->getAccessToken($SYMB_UID);
+		if (!$accessToken) {
+			$this->errorMessage = 'Fatal Error validating user: Access token not set';
 			return false;
 		}
-		$requestData = array ('username' => $this->sesarUser, 'password' => $this->sesarPwd);
-		$resArr = $this->getSesarApiData($baseUrl, 'post', $requestData);
-		if(isset($resArr['retStr']) && $resArr['retStr']){
+	
+		$headers = [
+			'Authorization: Bearer ' . $accessToken
+		];
+	
+		$resArr = $this->getSesarApiData($baseUrl, 'get', null, $headers);
+	
+		if (isset($resArr['retStr']) && $resArr['retStr']) {
 			$dom = new DOMDocument('1.0','UTF-8');
-			if($dom->loadXML($resArr['retStr'])){
+			if ($dom->loadXML($resArr['retStr'])) {
 				$validElemList = $dom->getElementsByTagName('valid');
-				if($validElemList[0]->nodeValue == 'yes'){
+				if ($validElemList[0]->nodeValue == 'yes') {
 					$userCodeList = $dom->getElementsByTagName('user_code');
 					foreach ($userCodeList as $UserCodeElem) {
 						$userCodeArr[] = $UserCodeElem->nodeValue;
 					}
-				}
-				else{
+				} else {
 					$errCodeList = $dom->getElementsByTagName('error');
-					$this->logOrEcho('Fatal Error validating user: '.$errCodeList[0]->nodeValue);
+					$this->logOrEcho('Fatal Error validating user: ' . $errCodeList[0]->nodeValue);
 					$userCodeArr = false;
 				}
-			}
-			else{
-				$this->logOrEcho('FATAL ERROR parsing response XML (validateUser): '.htmlentities($resArr['retStr']));
+			} else {
+				$this->logOrEcho('FATAL ERROR parsing response XML (validateUser): ' . htmlentities($resArr['retStr']));
 				$userCodeArr = false;
 			}
-		}
-		else{
+		} else {
 			$this->logOrEcho($this->errorMessage);
 			$userCodeArr = false;
 		}
+	
 		return $userCodeArr;
 	}
 
-	private function registerIdentifiersViaApi(){
+	private function registerIdentifiersViaApi() {
 		$status = false;
-		//$this->logOrEcho('Submitting XML to SESAR Systems');
+	
+		global $SYMB_UID;
 		$baseUrl = 'https://app.geosamples.org/webservices/upload.php';
-		if(!$this->productionMode) $baseUrl = 'https://app-sandbox.geosamples.org/webservices/upload.php';		// TEST URI
-		$contentStr = $this->igsnDom->saveXML();
-		$requestData = array ('username' => $this->sesarUser, 'password' => $this->sesarPwd, 'content' => $contentStr);
-		$resArr = $this->getSesarApiData($baseUrl, 'post', $requestData);
-		if(isset($resArr['retStr']) && $resArr['retStr']){
+		if (!$this->productionMode) {
+			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/upload.php';
+		}
+	
+		$accessToken = $this->getAccessToken($SYMB_UID);
+		if (!$accessToken) {
+			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
+			return false;
+		}
+		
+		
+		//$test = 'content='.$this->igsnDom->saveXML();
+		$postData = http_build_query([
+			'content' => $this->igsnDom->saveXML()
+		]);
+	
+		$headers = [
+			'Content-Type: application/x-www-form-urlencoded',
+			'Authorization: Bearer ' . $accessToken
+		];
+	
+		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
+	
+		if (isset($resArr['retStr']) && $resArr['retStr']) {
 			$status = $this->processRegistrationResponse($resArr['retStr']);
 		}
+	
 		return $status;
 	}
+
 
 	private function processRegistrationResponse($responseXML){
 		$status = true;
@@ -730,22 +747,34 @@ class OccurrenceSesar extends Manager {
 		return $retArr;
 	}
 
-	private function getSesarApiData($url, $method = 'get', $requestData = null){
+	private function getSesarApiData($url, $method = 'get', $requestData = null, $customHeaders = []) {
 		$retArr = array();
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	
+		//curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		//curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array ( 'Accept: application/json' ));
-		if($method == 'post') curl_setopt($ch, CURLOPT_POST, true);
-		if($requestData) curl_setopt($ch, CURLOPT_POSTFIELDS, $requestData);
+	
+		$headers = !empty($customHeaders) ? $customHeaders : [];
+	
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+	
+		if (strtolower($method) === 'post') {
+			curl_setopt($ch, CURLOPT_POST, true);
+		}
+	
+		if ($requestData) {
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $requestData);
+		}
+	
 		$retArr['retStr'] = curl_exec($ch);
 		$retArr['retCode'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		if($retArr['retCode'] != 200){
-			$this->errorMessage = 'FATAL CURL ERROR : '.curl_error($ch).' (#'.curl_errno($ch).')';
-			//$header = curl_getinfo($ch);
+	
+		if ($retArr['retCode'] != 200) {
+			$this->errorMessage = 'FATAL CURL ERROR: ' . curl_error($ch) . ' (#' . curl_errno($ch) . ')';
 		}
+	
 		curl_close($ch);
 		return $retArr;
 	}
@@ -810,7 +839,7 @@ class OccurrenceSesar extends Manager {
 	public function getCollectionName(){
 		if($this->collArr) return $this->collArr['collectionName'];
 	}
-
+	
 	public function setSesarUser($user){
 		$this->sesarUser = $user;
 	}
