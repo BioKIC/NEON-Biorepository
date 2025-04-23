@@ -36,15 +36,28 @@ if ($httpCode === 200 && $result) {
 		]);
 		exit;
 	} else {
+		$errorMsg = $response['error'] ?? 'Unknown error';
+		if (strpos($errorMsg, 'Invalid or expired refresh token.') !== false) {
+			$errorMsg .= ' Refresh tokens must be generated through MySESAR and entered here manually.';
+		}
 		echo json_encode([
 			'success' => false,
-			'message' => 'Expected tokens not found in response.'
+			'message' => $errorMsg
 		]);
 		exit;
 	}
 } else {
+	// $response might not be defined if json_decode didn't happen
+	$errorMsg = 'Unknown error';
+	if (isset($response['error'])) {
+		$errorMsg = $response['error'];
+		if (strpos($errorMsg, 'Invalid or expired refresh token.') !== false) {
+			$errorMsg .= ' Refresh tokens must be generated through MySESAR and entered here manually.';
+		}
+	}
 	echo json_encode([
 		'success' => false,
-		'message' => 'Token refresh request failed.'
+		'message' => $errorMsg
 	]);
 }
+
