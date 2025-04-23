@@ -13,19 +13,19 @@ function decodeJwtPayload($jwt) {
 	return json_decode($payload, true);
 }
 
-$refreshTokenValid = false;
-if ($refreshToken) {
-	$payload = decodeJwtPayload($refreshToken);
-	if ($payload && isset($payload['exp']) && $payload['exp'] > time()) {
-		$refreshTokenValid = true;
-	}
-}
+//$refreshTokenValid = false;
+//if ($refreshToken) {
+//	$payload = decodeJwtPayload($refreshToken);
+//	if ($payload && isset($payload['exp']) && $payload['exp'] > time()) {
+//		$refreshTokenValid = true;
+//	}
+//}
 
-if (!$refreshTokenValid) {
-	$message = 'Both tokens are invalid or expired.';
-	echo json_encode(['message' => $message]);
-	exit;
-}
+//if (!$refreshTokenValid) {
+//	$message = 'Both tokens are invalid or expired.';
+//	echo json_encode(['message' => $message]);
+//	exit;
+//}
 
 $accessTokenValid = false;
 if ($accessToken) {
@@ -45,6 +45,7 @@ if ($accessToken) {
 
 $message = $accessTokenValid
 	? 'Both tokens are valid.'
-	: 'Refresh token is valid, but access token is invalid or expired.';
+	: 'Access token is invalid, please refresh';
+//	: 'Refresh token is valid, but access token is invalid or expired.';
 
 echo json_encode(['message' => $message]);
