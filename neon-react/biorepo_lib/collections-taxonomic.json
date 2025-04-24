@@ -446,12 +446,12 @@
           },
           {
             "id": 73,
-            "name": "Pathogen Extracts (from Blood)",
+            "name": "Genomic Extracts for Pathogen Testing (from Blood)",
             "collid": 91
           },
           {
             "id": 74,
-            "name": "Pathogen Extracts (from Ear Tissue)",
+            "name": "Genomic Extracts for Pathogen Testing (from Ear Tissue)",
             "collid": 90
           },
           {
@@ -466,7 +466,7 @@
           },
           {
             "id": 77,
-            "name": "Specimens (Opportunistic)",
+            "name": "Specimens (Outside of Standard Sampling)",
             "collid": 19
           },
           {
