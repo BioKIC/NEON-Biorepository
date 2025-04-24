@@ -742,7 +742,7 @@ class TaxonProfile extends Manager {
 
 	private function getNeonCollidArr(){
 		$retStr = array();
-		$sql = 'SELECT GROUP_CONCAT(collid) as collidStr FROM omcollections WHERE institutionCode = "NEON"';
+		$sql = 'SELECT GROUP_CONCAT(collid) as collidStr FROM omcollections WHERE institutionCode IN ("NEON","ASU")';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
 			$retStr = $r->collidStr;
