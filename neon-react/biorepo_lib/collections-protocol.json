@@ -357,7 +357,7 @@
       },
       {
         "id": 53,
-        "name": "Mammal DNA Extracts",
+        "name": "Mammal DNA Extracts (from Ear Tissue)",
         "collid": 71
       },
       {
@@ -382,12 +382,12 @@
       },
       {
         "id": 58,
-        "name": "Mammal Pathogen Extracts (from Blood)",
+        "name": "Mammal Genomic Extracts for Pathogen Testing (from Blood)",
         "collid": 91
       },
       {
         "id": 59,
-        "name": "Mammal Pathogen Extracts (from Ear Tissue)",
+        "name": "Mammal Genomic Extracts for Pathogen Testing (from Ear Tissue)",
         "collid": 90
       },
       {
@@ -397,7 +397,7 @@
       },
       {
         "id": 61,
-        "name": "Mammal Specimens (Opportunistic)",
+        "name": "Mammal Specimens (Outside of Standard Sampling)",
         "collid": 19
       },
       {
