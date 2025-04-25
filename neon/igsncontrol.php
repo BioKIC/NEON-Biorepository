@@ -170,13 +170,13 @@ include($SERVER_ROOT.'/includes/header.php');
 						<div>
 							<span class="form-label">Access token:</span>
 							<div>
-								<textarea name="accessToken" rows="3" style="width: 95%"><?php echo htmlspecialchars($accesstoken); ?></textarea>
+								<textarea name="accessToken" rows="4" style="width: 95%"><?php echo htmlspecialchars($accesstoken); ?></textarea>
 							</div>
 						</div>
 						<div>
 							<span class="form-label">Refresh token:</span>
 							<div>
-								<textarea name="refreshToken" rows="3" style="width: 95%"><?php echo htmlspecialchars($refreshtoken); ?></textarea>
+								<textarea name="refreshToken" rows="4" style="width: 95%"><?php echo htmlspecialchars($refreshtoken); ?></textarea>
 							</div>
 						</div>
 					</p>
