@@ -154,6 +154,14 @@ class OccurrenceSesar extends Manager {
 				$this->fieldMap[$symbField]['value'] = $r[$symbField];
 			}
 			$this->cleanFieldValues();
+			
+			$this->otherNames = [];
+			
+			$sql2 = "SELECT identifiervalue FROM omoccuridentifiers WHERE occid = " . $r['occid'];
+			$rs2 = $this->conn->query($sql2);
+			while ($r2 = $rs2->fetch_assoc()) {
+				$this->otherNames[] = $r2['identifiervalue'];
+			}
 
 			if(!$this->igsnExists($igsn)) $this->setSampleXmlNode($igsn);
 			//$this->logOrEcho('#'.$increment.': IGSN created for <a href="../editor/occurrenceeditor.php?occid='.$this->fieldMap['occid']['value'].'" target="_blank">'.$this->fieldMap['catalogNumber']['value'].'</a>',1);
@@ -182,6 +190,7 @@ class OccurrenceSesar extends Manager {
 		$this->fieldMap['country']['sesar'] = 'country';
 		$this->fieldMap['stateProvince']['sesar'] = 'province';
 		$this->fieldMap['county']['sesar'] = 'county';
+		$this->fieldMap['locality']['sesar'] = 'locality';
 		$this->fieldMap['decimalLatitude']['sesar'] = 'latitude';
 		$this->fieldMap['decimalLatitude']['sql'] = 'ROUND(o.decimalLatitude,6) AS decimalLatitude';
 		$this->fieldMap['decimalLongitude']['sesar'] = 'longitude';
@@ -209,7 +218,7 @@ class OccurrenceSesar extends Manager {
 		$headers = [
 			'Authorization: Bearer ' . $accessToken
 		];
-	
+		
 		$resArr = $this->getSesarApiData($baseUrl, 'get', null, $headers);
 	
 		if (isset($resArr['retStr']) && $resArr['retStr']) {
@@ -252,9 +261,7 @@ class OccurrenceSesar extends Manager {
 			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
 			return false;
 		}
-		
-		
-		//$test = 'content='.$this->igsnDom->saveXML();
+		$xmldata = $this->igsnDom->saveXML();
 		$postData = http_build_query([
 			'content' => $this->igsnDom->saveXML()
 		]);
@@ -263,7 +270,7 @@ class OccurrenceSesar extends Manager {
 			'Content-Type: application/x-www-form-urlencoded',
 			'Authorization: Bearer ' . $accessToken
 		];
-	
+		$baseUrl="https://app.geosamples.org/webservices/upload.php";
 		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
 	
 		if (isset($resArr['retStr']) && $resArr['retStr']) {
@@ -373,9 +380,7 @@ class OccurrenceSesar extends Manager {
 	private function setSampleXmlNode($igsn){
 		$sampleElem = $this->igsnDom->createElement('sample');
 
-		$ns = $this->namespace;
-		if($ns == 'NEON') $ns = 'NEO';
-		$this->addSampleElem($this->igsnDom, $sampleElem, 'user_code', $ns);		//Required
+		$this->addSampleElem($this->igsnDom, $sampleElem, 'sesar_code', 'NEO');		//Required
 		$this->addSampleElem($this->igsnDom, $sampleElem, 'sample_type', 'Individual Sample');		//Required
 		$this->addSampleElem($this->igsnDom, $sampleElem, 'sample_subtype', 'Specimen');		//Required
 		$this->addSampleElem($this->igsnDom, $sampleElem, 'material', 'Biology');		//Required
@@ -386,7 +391,10 @@ class OccurrenceSesar extends Manager {
 
 		$classificationElem = $this->igsnDom->createElement('classification');
 		$biologyElem = $this->igsnDom->createElement('Biology');
-		$biologyElem->appendChild($this->igsnDom->createElement('Macrobiology'));
+		$macrobiologyElem = $this->igsnDom->createElement('Macrobiology');
+		//there is no vocabulary for MacrobiologyType
+		//$this->addSampleElem($this->igsnDom, $macrobiologyElem, 'MacrobiologyType', 'Coral');
+		$biologyElem->appendChild($macrobiologyElem);
 		$classificationElem->appendChild($biologyElem);
 		$sampleElem->appendChild($classificationElem);
 
@@ -399,10 +407,18 @@ class OccurrenceSesar extends Manager {
 
 		if(isset($this->fieldMap['minimumElevationInMeters']['value']) && $this->fieldMap['minimumElevationInMeters']['value'] !== '') $this->addSampleElem($this->igsnDom, $sampleElem, 'elevation_unit', 'meters');
 		$this->addSampleElem($this->igsnDom, $sampleElem, 'current_archive', $this->collArr['collectionName']);
-		$this->addSampleElem($this->igsnDom, $sampleElem, 'current_archive_contact', $this->collArr['contact'].($this->collArr['email']?' ('.$this->collArr['email'].')':''));
-
+		$this->addSampleElem($this->igsnDom, $sampleElem, 'current_archive_contact', 'biorepo@asu.edu');
+		
+		if (!empty($this->otherNames)) {
+			$sampleOtherNamesElem = $this->igsnDom->createElement('sample_other_names');
+			foreach ($this->otherNames as $name) {
+				$nameElem = $this->igsnDom->createElement('sample_other_name', htmlspecialchars($name));
+				$sampleOtherNamesElem->appendChild($nameElem);
+			}
+			$sampleElem->appendChild($sampleOtherNamesElem);
+		}	
+		
 		$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
-		//$baseUrl = 'http://swbiodiversity.org/seinet/';
 		$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
 		$externalUrlsElem = $this->igsnDom->createElement('external_urls');
 		$externalUrlElem = $this->igsnDom->createElement('external_url');
