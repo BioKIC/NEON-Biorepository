@@ -904,11 +904,13 @@ class OccurrenceHarvester{
 							}
 							//Check to see if current taxon is the most current taxon
 							if(!empty($idArr['isCurrent'])){
-								if(isset($this->taxonArr[$idArr['sciname']]['accepted'])){
-									if($idArr['sciname'] != $this->taxonArr[$idArr['sciname']]['accepted']){
-										$idArr['scientificNameAuthorship'] = $this->taxonArr[$idArr['sciname']]['acceptedAuthor'];
-										$idArr['tidInterpreted'] = $this->taxonArr[$idArr['sciname']]['acceptedTid'];
-										$idArr['sciname'] = $this->taxonArr[$idArr['sciname']]['accepted'];
+								if(!strpos($idArr['sciname'],"/")){
+									if(isset($this->taxonArr[$idArr['sciname']]['accepted'])){
+										if($idArr['sciname'] != $this->taxonArr[$idArr['sciname']]['accepted']){
+											$idArr['scientificNameAuthorship'] = $this->taxonArr[$idArr['sciname']]['acceptedAuthor'];
+											$idArr['tidInterpreted'] = $this->taxonArr[$idArr['sciname']]['acceptedTid'];
+											$idArr['sciname'] = $this->taxonArr[$idArr['sciname']]['accepted'];
+										}
 									}
 								}
 							}
