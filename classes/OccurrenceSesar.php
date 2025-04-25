@@ -407,7 +407,7 @@ class OccurrenceSesar extends Manager {
 
 		if(isset($this->fieldMap['minimumElevationInMeters']['value']) && $this->fieldMap['minimumElevationInMeters']['value'] !== '') $this->addSampleElem($this->igsnDom, $sampleElem, 'elevation_unit', 'meters');
 		$this->addSampleElem($this->igsnDom, $sampleElem, 'current_archive', $this->collArr['collectionName']);
-		$this->addSampleElem($this->igsnDom, $sampleElem, 'current_archive_contact', 'biorepo@asu.edu');
+		$this->addSampleElem($this->igsnDom, $sampleElem, 'current_archive_contact', 'NEON Biorepository (biorepo@asu.edu)');
 		
 		if (!empty($this->otherNames)) {
 			$sampleOtherNamesElem = $this->igsnDom->createElement('sample_other_names');
