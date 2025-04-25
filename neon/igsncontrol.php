@@ -128,6 +128,13 @@ if($isEditor){
 			alert('An error occurred while refreshing the token.');
 		});
 	}
+	
+	function toggleTokenInfo(toggleElem) {
+		const content = toggleElem.nextElementSibling;
+		const arrow = toggleElem.querySelector('.arrow');
+		content.classList.toggle('open');
+		arrow.innerHTML = content.classList.contains('open') ? '&#9650;' : '&#9660;';
+	}
 
 	</script>
 
@@ -138,6 +145,31 @@ if($isEditor){
 		.fieldDiv{ float:left; }
 		label{ font-weight: bold; }
 		button{ width: 250px; }
+
+		.token-info-toggle {
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			font-weight: bold;
+		}
+		.token-info-toggle span.arrow {
+			margin-left: 10px;
+			transition: transform 0.2s ease;
+		}
+		.token-info-content {
+			display: none;
+			margin-top: 10px;
+		}
+		.token-info-content.open {
+			display: block;
+		}
+		.token-info-box {
+			border: 1px solid #ccc;
+			padding: 20px;
+			margin-bottom: 10px;
+			background-color: #f9f9f9;
+			border-radius: 8px;
+		}
 	</style>
 </head>
 <body>
@@ -160,9 +192,39 @@ include($SERVER_ROOT.'/includes/header.php');
 			?>
 			<fieldset>
 				<legend>IGSN Registration</legend>
-				<div style="margin-bottom:10px;">
-					Blahblahblah stuff about tokens here
-				</div>
+				<div class="token-info-box">
+					<div class="token-info-toggle" onclick="toggleTokenInfo(this)">
+						Using JWT Tokens for IGSN Registration
+						<span class="arrow">&#9660;</span>
+					</div>
+					<div class="token-info-content">
+						<p>
+							To register IGSNs via the SESAR API, you need to authenticate using your unique <strong>access token</strong>.
+						</p>
+						<ul>
+							<li><strong>Access Token:</strong> Grants temporary access to the registration services. It expires after one day.</li>
+							<li><strong>Refresh Token:</strong> Used to generate a new access token when the old one expires. It lasts for up to one year. </li>
+						</ul>
+						<h4>How to Use the Token Tools</h4>
+						<ol>
+							<li>
+								<strong>Validate Access Token:</strong> Click <em>Validate Access Token</em> to check if your current access token is valid.
+							</li>
+							<li>
+								<strong>Refresh Tokens:</strong> If validation fails, click <em>Refresh Tokens</em> to use your refresh token to get a new access token. You will also get a new refresh token.
+								<ul>
+									<li>If your refresh token has expired (after one year), you will need to visit <a href="https://app.geosamples.org/" target="_blank">https://app.geosamples.org/</a> to log in and generate a new token pair.</li>
+								</ul>
+							</li>
+							<li>
+								<strong>Save Tokens:</strong> After manually editing your access or refresh tokens, click "Save Tokens" to store the updated values.
+							</li>
+						</ol>
+					</div>
+				</div>				
+				
+				
+				
 				<form name="tokenManagement">
 					<legend>Current User Token Pair:</legend>
 					<div style="margin-left: 1em">
