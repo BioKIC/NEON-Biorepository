@@ -253,7 +253,8 @@ class OccurrenceSesar extends Manager {
 		global $SYMB_UID;
 		$baseUrl = 'https://app.geosamples.org/webservices/upload.php';
 		if (!$this->productionMode) {
-			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/upload.php';
+			//$baseUrl = 'https://app-sandbox.geosamples.org/webservices/upload.php';
+			$baseUrl = 'https://app.geosamples.org/webservices/upload.php';
 		}
 	
 		$accessToken = $this->getAccessToken($SYMB_UID);
@@ -261,7 +262,7 @@ class OccurrenceSesar extends Manager {
 			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
 			return false;
 		}
-		$xmldata = $this->igsnDom->saveXML();
+		//$xmldata = $this->igsnDom->saveXML();
 		$postData = http_build_query([
 			'content' => $this->igsnDom->saveXML()
 		]);
@@ -270,7 +271,7 @@ class OccurrenceSesar extends Manager {
 			'Content-Type: application/x-www-form-urlencoded',
 			'Authorization: Bearer ' . $accessToken
 		];
-		$baseUrl="https://app.geosamples.org/webservices/upload.php";
+
 		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
 	
 		if (isset($resArr['retStr']) && $resArr['retStr']) {
@@ -283,19 +284,18 @@ class OccurrenceSesar extends Manager {
 
 	private function processRegistrationResponse($responseXML){
 		$status = true;
-		//$this->logOrEcho('Processing response');
 		$dom = new DOMDocument('1.0','UTF-8');
 		if($dom->loadXML($responseXML)){
 			$rootElem = $dom->documentElement;
 			$resultNodeList = $rootElem->childNodes;
+	
 			foreach($resultNodeList as $resultNode){
 				if(isset($resultNode->nodeName)){
 					if($resultNode->nodeName == 'valid'){
 						if($resultNode->nodeValue == 'no'){
 							$errCodeList = $rootElem->getElementsByTagName('error');
 							$this->errorMessage = 'ERROR registering IGSN ('.$resultNode->getAttribute('code').'): '.$errCodeList[0]->nodeValue;
-						}
-						else{
+						} else {
 							$this->errorMessage = 'ERROR registering IGSN: unknown1';
 						}
 						$this->logOrEcho('FAILED processing: '.$this->errorMessage,1);
@@ -306,65 +306,65 @@ class OccurrenceSesar extends Manager {
 						$sampleArr = array();
 						if($resultNode->hasAttribute('name')) $sampleArr['catnum'] = $resultNode->getAttribute('name');
 						$childNodeList = $resultNode->childNodes;
+	
 						foreach($childNodeList as $childNode){
-							//if($childNode->nodeName == 'valid') $sampleArr['valid'] = $childNode->nodeValue.': '.$childNode->attribute->getNamedItem('code')->nodeValue;
-							if($childNode->nodeName == 'valid') $sampleArr['valid'] = $childNode->nodeValue.': '.$childNode->getAttribute('code');
-							else $sampleArr[$childNode->nodeName] = $childNode->nodeValue;
+							if($childNode->nodeName == 'valid'){
+								$sampleArr['valid'] = $childNode->nodeValue.': '.$childNode->getAttribute('code');
+							} else {
+								$sampleArr[$childNode->nodeName] = $childNode->nodeValue;
+							}
 						}
-						if(isset($sampleArr['valid'])){
+	
+						if(isset($sampleArr['valid']) && strpos($sampleArr['valid'], 'no') !== false){
 							$status = false;
 							$occid = 0;
 							$igsn = '';
 							$msgStr = 'valid = '.$sampleArr['valid'];
+	
 							if(isset($sampleArr['catnum']) && $sampleArr['catnum']){
 								$msgStr .= '; ID = '.$sampleArr['catnum'];
 								$occid = trim($sampleArr['catnum'], '[] ');
 							}
 							if(isset($sampleArr['error']) && $sampleArr['error']){
 								$msgStr .= '; error = '.$sampleArr['error'];
-								if(preg_match('/(NEON[A-Z0-9]{5})/', $sampleArr['error'],$m)){
+								if(preg_match('/(NEON[A-Z0-9]{5})/', $sampleArr['error'], $m)){
 									$igsn = $m[1];
 								}
 							}
-							if($occid && $igsn){
-								$status = $this->updateOccurrenceID($igsn, $occid);
-							}
-							if(!$status) $this->logOrEcho('FAILED: '.$msgStr,1);
+							if(!$status) $this->logOrEcho('FAILED: '.$msgStr, 1);
 						}
 						elseif(isset($sampleArr['igsn']) && $sampleArr['igsn']){
 							$occid = 0;
 							$dbStatus = false;
-							if(preg_match('/\[\s*(\d+)\s*\]\s*$/', $sampleArr['name'],$m1)){
+							if(preg_match('/\[\s*(\d+)\s*\]\s*$/', $sampleArr['catnum'], $m1)){
 								$occid = $m1[1];
-								if(preg_match('/(NEON[A-Z0-9]{5})/', $sampleArr['igsn'],$m2)){
+								if(preg_match('/(NEON[A-Z0-9]{5})/', $sampleArr['igsn'], $m2)){
 									$igsn = $m2[1];
 									$dbStatus = $this->updateOccurrenceID($igsn, $occid);
 								}
-							}
-							else{
-								$this->errorMessage = 'WARNING: unable to extract occid to add igsn ('.$sampleArr['name'].')';
-								//$this->logOrEcho('WARNING: unable to extract occid to add igsn ('.$sampleArr['name'].')',2);
+							} else {
+								$this->errorMessage = 'WARNING: unable to extract occid to add igsn ('.$sampleArr['catnum'].')';
 							}
 							if(!$dbStatus){
 								$status = false;
-								$this->logOrEcho($this->errorMessage,2);
+								$this->logOrEcho($this->errorMessage, 2);
 							}
 						}
 					}
 				}
 			}
-		}
-		else{
+		} else {
 			$this->logOrEcho('ERROR parsing response XML (processRegistrationResponse): '.htmlentities($responseXML));
-			//Try to manually parse out occid and igsn
-			if(preg_match('/\[\s(\d+)\s\]\] was saved successfully with IGSN \[(NEON[A-Z0-9]{5})\]/',$responseXML,$m)){
+			if(preg_match('/\[\s(\d+)\s\]\] was saved successfully with IGSN \[(NEON[A-Z0-9]{5})\]/', $responseXML, $m)){
 				$dbStatus = $this->updateOccurrenceID($m[2], $m[1]);
 				$this->logOrEcho('Error resolved: success parsing occid ('.$m[1].') and IGSN ('.$m[2].') from response and appended to database',1);
+			} else {
+				$status = false;
 			}
-			else $status = false;
 		}
 		return $status;
 	}
+
 
 	private function initiateDom(){
 		$this->igsnDom = new DOMDocument('1.0','UTF-8');

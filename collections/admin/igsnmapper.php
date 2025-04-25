@@ -94,7 +94,7 @@ include($SERVER_ROOT.'/includes/header.php');
 			<?php
 		}
 		if(!$guidManager->getProductionMode()){
-			echo '<h2 style="color:orange">-- In Development Mode --</h2>';
+			echo '<h2 style="color:orange">-- In Development Mode: Warning-Registering IGSNs in development mode will register them in the live system --</h2>';
 		}
 		if($action == 'populateGUIDs'){
 			echo '<fieldset>';
