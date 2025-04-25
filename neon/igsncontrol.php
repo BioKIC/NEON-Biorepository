@@ -217,7 +217,7 @@ include($SERVER_ROOT.'/includes/header.php');
 								</ul>
 							</li>
 							<li>
-								<strong>Save Tokens:</strong> After manually editing your access or refresh tokens, click "Save Tokens" to store the updated values.
+								<strong>Save Tokens:</strong> After manually editing your access or refresh tokens, click <em>Save Tokens</em> to store the updated values.
 							</li>
 						</ol>
 					</div>
