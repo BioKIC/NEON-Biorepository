@@ -108,6 +108,32 @@ class OccurrenceSesar extends Manager {
 		return '';
 	}
 	
+	function getDevelopmentAccessToken($uid) {
+		$uid = intval($uid);
+		$sql = "SELECT developmentAccessTokenSesar FROM users WHERE uid = $uid";
+		$result = $this->conn->query($sql);
+	
+		if ($result && $row = $result->fetch_assoc()) {
+			return $row['developmentAccessTokenSesar'] ?? '';
+		}
+	
+		$this->errorMessage = 'Database query error: ' . $this->conn->error;
+		return '';
+	}
+	
+	function getDevelopmentRefreshToken($uid) {
+		$uid = intval($uid);
+		$sql = "SELECT developmentRefreshTokenSesar FROM users WHERE uid = $uid";
+		$result = $this->conn->query($sql);
+	
+		if ($result && $row = $result->fetch_assoc()) {
+			return $row['developmentRefreshTokenSesar'] ?? '';
+		}
+	
+		$this->errorMessage = 'Database query error: ' . $this->conn->error;
+		return '';
+	}
+	
 	//Processing functions
 	public function batchProcessIdentifiers($processingCount){
 		$status = false;
@@ -202,14 +228,18 @@ class OccurrenceSesar extends Manager {
 
 	// SESAR web service calls (http://www.geosamples.org/interop)
 	// End point: https://app.geosamples.org/webservices/
-	// Test end point: https://sesardev.geosamples.org/webservices/
+	// Test end point: https://app-sandbox.geosamples.org/webservices/
 	public function validateUser() {
 		global $SYMB_UID;
 		
 		$userCodeArr = array();
 		$baseUrl = 'https://app.geosamples.org/webservices/credentials_service_v2.php';
-
 		$accessToken = $this->getAccessToken($SYMB_UID);
+		if (!$this->productionMode) {
+			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/credentials_service_v2.php';
+			$accessToken = $this->getDevelopmentAccessToken($SYMB_UID);
+		}
+
 		if (!$accessToken) {
 			$this->errorMessage = 'Fatal Error validating user: Access token not set';
 			return false;
@@ -252,12 +282,13 @@ class OccurrenceSesar extends Manager {
 	
 		global $SYMB_UID;
 		$baseUrl = 'https://app.geosamples.org/webservices/upload.php';
+		$accessToken = $this->getAccessToken($SYMB_UID);
 		if (!$this->productionMode) {
-			//$baseUrl = 'https://app-sandbox.geosamples.org/webservices/upload.php';
-			$baseUrl = 'https://app.geosamples.org/webservices/upload.php';
+			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/upload.php';
+			$accessToken = $this->getDevelopmentAccessToken($SYMB_UID);
 		}
 	
-		$accessToken = $this->getAccessToken($SYMB_UID);
+		
 		if (!$accessToken) {
 			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
 			return false;
@@ -296,7 +327,7 @@ class OccurrenceSesar extends Manager {
 							$errCodeList = $rootElem->getElementsByTagName('error');
 							$this->errorMessage = 'ERROR registering IGSN ('.$resultNode->getAttribute('code').'): '.$errCodeList[0]->nodeValue;
 						} else {
-							$this->errorMessage = 'ERROR registering IGSN: unknown1';
+							$this->errorMessage = 'ERROR registering IGSN: unknown';
 						}
 						$this->logOrEcho('FAILED processing: '.$this->errorMessage,1);
 						$status = false;
@@ -304,7 +335,6 @@ class OccurrenceSesar extends Manager {
 					}
 					elseif($resultNode->nodeName == 'sample'){
 						$sampleArr = array();
-						if($resultNode->hasAttribute('name')) $sampleArr['catnum'] = $resultNode->getAttribute('name');
 						$childNodeList = $resultNode->childNodes;
 	
 						foreach($childNodeList as $childNode){
@@ -320,10 +350,10 @@ class OccurrenceSesar extends Manager {
 							$occid = 0;
 							$igsn = '';
 							$msgStr = 'valid = '.$sampleArr['valid'];
-	
-							if(isset($sampleArr['catnum']) && $sampleArr['catnum']){
-								$msgStr .= '; ID = '.$sampleArr['catnum'];
-								$occid = trim($sampleArr['catnum'], '[] ');
+
+							if(isset($sampleArr['name']) && $sampleArr['name']){
+								$msgStr .= '; ID = '.$sampleArr['name'];
+								$occid = trim($sampleArr['name'], '[] ');
 							}
 							if(isset($sampleArr['error']) && $sampleArr['error']){
 								$msgStr .= '; error = '.$sampleArr['error'];
@@ -336,14 +366,14 @@ class OccurrenceSesar extends Manager {
 						elseif(isset($sampleArr['igsn']) && $sampleArr['igsn']){
 							$occid = 0;
 							$dbStatus = false;
-							if(preg_match('/\[\s*(\d+)\s*\]\s*$/', $sampleArr['catnum'], $m1)){
+							if(preg_match('/\[\s*(\d+)\s*\]\s*$/', $sampleArr['name'], $m1)){
 								$occid = $m1[1];
 								if(preg_match('/(NEON[A-Z0-9]{5})/', $sampleArr['igsn'], $m2)){
 									$igsn = $m2[1];
 									$dbStatus = $this->updateOccurrenceID($igsn, $occid);
 								}
 							} else {
-								$this->errorMessage = 'WARNING: unable to extract occid to add igsn ('.$sampleArr['catnum'].')';
+								$this->errorMessage = 'WARNING: unable to extract occid to add igsn ('.$sampleArr['igsn'].')';
 							}
 							if(!$dbStatus){
 								$status = false;
@@ -597,10 +627,8 @@ class OccurrenceSesar extends Manager {
 		$batchLimit = 1000;
 		$cnt = 0;
 		$ns = substr($this->namespace,0,3);
-		//$url = 'https://api.geosamples.org/v1/igsns/usercode/'.$ns.'?limit='.$batchLimit.'&pagenum='.$pageNumber;
-		//if(!$this->productionMode) $url = 'http://grg-doc-dev.ldeo.columbia.edu:8082/v1/igsns/usercode/'.$ns.'?limit='.$batchLimit.'&pagenum='.$pageNumber;
 		$url = 'https://app.geosamples.org/samples/user_code/NEO?limit='.$batchLimit.'&page_no='.$pageNumber;
-		//if(!$this->productionMode) $url = 'https://sesardev.geosamples.org/samples/user_code/'.$ns.'?limit='.$batchLimit.'&page_no='.$pageNumber;
+		if(!$this->productionMode) $url = 'https://app-sandbox.geosamples.org/samples/user_code/NEO?limit='.$batchLimit.'&page_no='.$pageNumber;
 		$headers = [
 			'Accept: application/json'
 		];
@@ -654,7 +682,7 @@ class OccurrenceSesar extends Manager {
 		//Grab SESAR meta for unmatched IGSNs
 		$this->logOrEcho(count($sesarResultArr['missing']).' records unlink IGSNs found. Getting metadata from SESAR Systems...',1);
 		$url = 'https://app.geosamples.org/sample/igsn/10.58052/';
-		//if(!$this->productionMode) $url = 'https://sesardev.geosamples.org/webservices/display.php?igsn=';
+		if(!$this->productionMode) $url = 'https://app-sandbox.geosamples.org/sample/igsn/10.58052/';
 		$headers = [
 			'Accept: application/json'
 		];	

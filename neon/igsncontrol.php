@@ -19,8 +19,15 @@ $limit = filter_var($limit, FILTER_SANITIZE_NUMBER_INT);
 $igsnManager = new IgsnManager();
 $occurrenceSesar = new OccurrenceSesar();
 
-$accesstoken = $occurrenceSesar->getAccessToken($SYMB_UID);
-$refreshtoken = $occurrenceSesar->getRefreshToken($SYMB_UID);
+if (!$occurrenceSesar->getProductionMode()) {
+    $accesstoken = $occurrenceSesar->getDevelopmentAccessToken($SYMB_UID);
+    $refreshtoken = $occurrenceSesar->getDevelopmentRefreshToken($SYMB_UID);
+	$modeLabel = " (Development)";
+} else {
+    $accesstoken = $occurrenceSesar->getAccessToken($SYMB_UID);
+    $refreshtoken = $occurrenceSesar->getRefreshToken($SYMB_UID);
+	$modeLabel = "";
+}
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
@@ -185,6 +192,9 @@ include($SERVER_ROOT.'/includes/header.php');
 <div id="innertext">
 	<?php
 	if($isEditor){
+		if(!$occurrenceSesar->getProductionMode()){
+			echo '<h2 style="color:orange">-- In Development Mode --</h2>';
+		}
 		if($statusStr){
 			echo '<div style="color:red">'.$statusStr.'</div>';
 		}
@@ -213,13 +223,28 @@ include($SERVER_ROOT.'/includes/header.php');
 							<li>
 								<strong>Refresh Tokens:</strong> If validation fails, click <em>Refresh Tokens</em> to use your refresh token to get a new access token. You will also get a new refresh token.
 								<ul>
-									<li>If your refresh token has expired (after one year), you will need to visit <a href="https://app.geosamples.org/" target="_blank">https://app.geosamples.org/</a> to log in and generate a new token pair.</li>
+									<li>
+										If your refresh token has expired (after one year), visit the MySESAR
+										<a href="https://app.geosamples.org/" target="_blank"><strong>Production server</strong></a> 
+										or the 
+										<a href="https://app-sandbox.geosamples.org/" target="_blank"><strong>Development server</strong></a> 
+										to log in and generate a new token pair.
+									</li>
 								</ul>
 							</li>
 							<li>
 								<strong>Save Tokens:</strong> After manually editing your access or refresh tokens, click <em>Save Tokens</em> to store the updated values.
 							</li>
 						</ol>
+						<h4>Development vs. Production Mode</h4>
+						<p>
+							The SESAR system operates with two separate environments: a <strong>production server</strong> and a <strong>sandbox (development) server</strong>. 
+							When using development mode, all token operations are directed to the sandbox server (<a href="https://app-sandbox.geosamples.org/" target="_blank">https://app-sandbox.geosamples.org/</a>), and a separate set of development tokens is used. 
+							In production mode, operations connect to the main SESAR server (<a href="https://app.geosamples.org/" target="_blank">https://app.geosamples.org/</a>).
+						</p>
+						<p>
+							The interface will automatically detect whether you are in development or production mode and display the appropriate access and refresh tokens accordingly. These are stored separately in the MySQL database.
+						</p>
 					</div>
 				</div>				
 				
@@ -230,13 +255,13 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div style="margin-left: 1em">
 					<p>
 						<div>
-							<span class="form-label">Access token:</span>
+							<span class="form-label">Access token<?php echo $modeLabel; ?>:</span>
 							<div>
 								<textarea name="accessToken" rows="4" style="width: 95%"><?php echo htmlspecialchars($accesstoken); ?></textarea>
 							</div>
 						</div>
 						<div>
-							<span class="form-label">Refresh token:</span>
+							 <span class="form-label">Refresh token<?php echo $modeLabel; ?>:</span>
 							<div>
 								<textarea name="refreshToken" rows="4" style="width: 95%"><?php echo htmlspecialchars($refreshtoken); ?></textarea>
 							</div>

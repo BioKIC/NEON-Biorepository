@@ -84,6 +84,9 @@ include($SERVER_ROOT.'/includes/header.php');
 <div id="innertext">
 	<?php
 	if($isEditor && $collid){
+		if(!$guidManager->getProductionMode()){
+			echo '<h2 style="color:orange">-- In Development Mode --</h2>';
+		}
 		echo '<h3>'.$guidManager->getCollectionName().'</h3>';
 		if($statusStr){
 			?>
@@ -92,9 +95,6 @@ include($SERVER_ROOT.'/includes/header.php');
 				<?php echo $statusStr; ?>
 			</fieldset>
 			<?php
-		}
-		if(!$guidManager->getProductionMode()){
-			echo '<h2 style="color:orange">-- In Development Mode: Warning-Registering IGSNs in development mode will register them in the live system --</h2>';
 		}
 		if($action == 'populateGUIDs'){
 			echo '<fieldset>';
@@ -120,16 +120,6 @@ include($SERVER_ROOT.'/includes/header.php');
 							<span style=""><a href="#" onclick="generateIgsnSeed();return false;"><img src="../../images/refresh.png" style="width:14px;vertical-align: middle;" /></a></span>
 						</p>
 					</div>
-					<!--<p>-->
-					<!--	<span class="form-label">Registration method:</span>-->
-					<!--	<select name="registrationMethod">-->
-					<!--		<option value=''>-- Select Method --</option>-->
-					<!--		<option value=''>----------------------------</option>-->
-					<!--		<option value='api' <?php echo ($registrationMethod=='api'?'SELECTED':''); ?>>SESAR API</option>-->
-					<!--		<!--  <option value='csv' <?php echo ($registrationMethod=='csv'?'SELECTED':''); ?>>Export CSV</option>  -->
-					<!--		<option value='xml' <?php echo ($registrationMethod=='xml'?'SELECTED':''); ?>>Export XML</option>-->
-					<!--	</select>-->
-					<!--</p>-->
 					<p>
 						<span class="form-label">Number of identifiers to generate: </span>
 						<input name="processingCount" type="text" value="10" /> (leave blank to process all specimens)

@@ -1,5 +1,8 @@
 <?php
 header('Content-Type: application/json');
+include_once('../../config/symbini.php');
+include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
+$guidManager = new OccurrenceSesar();
 
 $accessToken = $_POST['accessToken'] ?? '';
 $refreshToken = $_POST['refreshToken'] ?? '';
@@ -13,23 +16,12 @@ function decodeJwtPayload($jwt) {
 	return json_decode($payload, true);
 }
 
-//$refreshTokenValid = false;
-//if ($refreshToken) {
-//	$payload = decodeJwtPayload($refreshToken);
-//	if ($payload && isset($payload['exp']) && $payload['exp'] > time()) {
-//		$refreshTokenValid = true;
-//	}
-//}
-
-//if (!$refreshTokenValid) {
-//	$message = 'Both tokens are invalid or expired.';
-//	echo json_encode(['message' => $message]);
-//	exit;
-//}
-
 $accessTokenValid = false;
 if ($accessToken) {
-	$ch = curl_init('https://app.geosamples.org/webservices/credentials_service_v2.php');
+	$url = 'https://app.geosamples.org/webservices/credentials_service_v2.php';
+	if(!$guidManager->getProductionMode()) $url = 'https://app-sandbox.geosamples.org/webservices/credentials_service_v2.php';
+
+	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, [
 		'Authorization: Bearer ' . $accessToken
@@ -46,6 +38,5 @@ if ($accessToken) {
 $message = $accessTokenValid
 	? 'Both tokens are valid.'
 	: 'Access token is invalid, please refresh';
-//	: 'Refresh token is valid, but access token is invalid or expired.';
 
 echo json_encode(['message' => $message]);

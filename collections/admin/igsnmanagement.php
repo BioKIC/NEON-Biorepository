@@ -131,6 +131,9 @@ include($SERVER_ROOT.'/includes/header.php');
 </div>
 <div id="innertext">
 	<?php
+	if(!$guidManager->getProductionMode()){
+		echo '<h2 style="color:orange">-- In Development Mode --</h2>';
+	}
 	if (!($collid)){
 	?>
 		<fieldset>

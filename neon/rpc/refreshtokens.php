@@ -1,5 +1,8 @@
 <?php
 header('Content-Type: application/json');
+include_once('../../config/symbini.php');
+include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
+$guidManager = new OccurrenceSesar();
 
 $refreshToken = $_POST['refreshToken'] ?? '';
 
@@ -12,8 +15,17 @@ if (!$refreshToken) {
 }
 
 $url = 'https://app.geosamples.org/webservices/refresh_token.php';
+if(!$guidManager->getProductionMode()) $url = 'https://app-sandbox.geosamples.org/webservices/refresh_token.php';
 $data = http_build_query(['refresh' => $refreshToken]);
 
+
+if ($guidManager->getProductionMode()) {
+    $loginUrl = 'https://app.geosamples.org/';
+    $modeText = 'Production';
+} else {
+    $loginUrl = 'https://app-sandbox.geosamples.org/';
+    $modeText = 'Development';
+}
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
@@ -38,7 +50,7 @@ if ($httpCode === 200 && $result) {
 	} else {
 		$errorMsg = $response['error'] ?? 'Unknown error';
 		if (strpos($errorMsg, 'Invalid or expired refresh token.') !== false) {
-			$errorMsg .= ' Refresh tokens must be generated through MySESAR and entered here manually.';
+			$errorMsg .= ' Refresh tokens must be generated through <a href="' . $loginUrl . '" target="_blank">' . htmlspecialchars($loginUrl) . '</a> (' . $modeText . ' server) and entered here manually.';
 		}
 		echo json_encode([
 			'success' => false,
@@ -47,12 +59,11 @@ if ($httpCode === 200 && $result) {
 		exit;
 	}
 } else {
-	// $response might not be defined if json_decode didn't happen
 	$errorMsg = 'Unknown error';
 	if (isset($response['error'])) {
 		$errorMsg = $response['error'];
 		if (strpos($errorMsg, 'Invalid or expired refresh token.') !== false) {
-			$errorMsg .= ' Refresh tokens must be generated through MySESAR and entered here manually.';
+			$errorMsg .= ' Refresh tokens must be generated through <a href="' . $loginUrl . '" target="_blank">' . htmlspecialchars($loginUrl) . '</a> (' . $modeText . ' server) and entered here manually.';
 		}
 	}
 	echo json_encode([

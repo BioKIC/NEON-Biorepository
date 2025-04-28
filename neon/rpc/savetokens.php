@@ -4,6 +4,9 @@ include_once('../../config/dbconnection.php');
 $conn = MySQLiConnectionFactory::getCon("write");
 header('Content-Type: application/json');
 
+include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
+$guidManager = new OccurrenceSesar();
+
 $accessToken = $_POST['accessToken'] ?? '';
 $refreshToken = $_POST['refreshToken'] ?? '';
 $uid = $SYMB_UID ?? null;
@@ -17,7 +20,17 @@ $accessToken = trim($accessToken);
 $refreshToken = trim($refreshToken);
 $uid = intval($uid);
 
-$stmt = $conn->prepare("UPDATE users SET accessTokenSesar = ?, refreshTokenSesar = ? WHERE uid = ?");
+if (!$guidManager->getProductionMode()) {
+    $accessField = 'developmentaccessTokenSesar';
+    $refreshField = 'developmentrefreshTokenSesar';
+} else {
+    $accessField = 'accessTokenSesar';
+    $refreshField = 'refreshTokenSesar';
+}
+
+$sql = "UPDATE users SET {$accessField} = ?, {$refreshField} = ? WHERE uid = ?";
+
+$stmt = $conn->prepare($sql);
 if ($stmt) {
 	$stmt->bind_param("ssi", $accessToken, $refreshToken, $uid);
 	$success = $stmt->execute();
