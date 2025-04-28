@@ -140,7 +140,7 @@ class OccurrenceSesar extends Manager {
 		$this->setVerboseMode(3);
 		$logPath = $GLOBALS['SERVER_ROOT'].(substr($GLOBALS['SERVER_ROOT'],-1)=='/'?'':'/').'content/logs/igsn/IGSN_'.date('Y-m-d').'.log';
 		$this->setLogFH($logPath);
-		$this->logOrEcho('Starting batch IGSN processing ('.date('Y-m-d H:i:s').')');
+		$this->logOrEcho('Starting batch IGSN processing for collection: ' . $this->collArr['collectionName'] . ' (' . $this->collid . ') at ' . date('Y-m-d H:i:s'));
 		$baseTenID = '';
 		if(!$this->igsnSeed){
 			$this->errorMessage = 'FATAL ERROR batch assigning IDs: IGSN seed not set';
