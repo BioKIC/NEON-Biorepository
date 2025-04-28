@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
-include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
+include_once('../../../../config/symbini.php');
+include_once($SERVER_ROOT.'/neon/classes/OccurrenceSesar.php');
 $guidManager = new OccurrenceSesar();
 
 $accessToken = $_POST['accessToken'] ?? '';

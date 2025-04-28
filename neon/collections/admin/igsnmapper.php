@@ -1,6 +1,6 @@
 <?php
-include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
+include_once('../../../config/symbini.php');
+include_once($SERVER_ROOT.'/neon/classes/OccurrenceSesar.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 ini_set('max_execution_time', 3600);
 
@@ -35,7 +35,7 @@ else $igsnSeed = $guidManager->getIgsnSeed();
 	<?php
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
-	<script type="text/javascript" src="../../js/jquery.js"></script>
+	<script type="text/javascript" src="../../../js/jquery.js"></script>
 	<script type="text/javascript">
 		function generateIgsnSeed(){
 			var f = document.guidform;
@@ -75,9 +75,10 @@ $displayLeftMenu = 'false';
 include($SERVER_ROOT.'/includes/header.php');
 ?>
 <div class='navpath'>
-	<a href="../../index.php">Home</a> &gt;&gt;
-	<a href="../misc/collprofiles.php?collid=<?php echo $collid; ?>&emode=1">Collection Management</a> &gt;&gt;
-	<a href="igsnmanagement.php?collid=<?php echo $collid; ?>">IGSN GUID Management</a> &gt;&gt;
+	<a href="../../../index.php">Home</a> &gt;&gt;
+	<a href="../../index.php">NEON Biorepository Tools</a> &gt;&gt;
+	<a href="../../igsncontrol.php">NEON IGSN Control Panel</a> &gt;&gt;
+	<a href="igsnmanagement.php">IGSN Management</a> &gt;&gt;
 	<b>IGSN Mapper</b>
 </div>
 <!-- This is inner text! -->
@@ -117,7 +118,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						<p>
 							<span class="form-label">IGSN seed:</span>
 							<input name="igsnSeed" type="text" value="<?php echo $igsnSeed; ?>" />
-							<span style=""><a href="#" onclick="generateIgsnSeed();return false;"><img src="../../images/refresh.png" style="width:14px;vertical-align: middle;" /></a></span>
+							<span style=""><a href="#" onclick="generateIgsnSeed();return false;"><img src="../../../images/refresh.png" style="width:14px;vertical-align: middle;" /></a></span>
 						</p>
 					</div>
 					<p>

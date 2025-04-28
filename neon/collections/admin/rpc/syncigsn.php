@@ -1,6 +1,6 @@
 <?php
-include_once('../../../config/symbini.php');
-include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
+include_once('../../../../config/symbini.php');
+include_once($SERVER_ROOT.'/neon/classes/OccurrenceSesar.php');
 
 $occid = trim($_REQUEST['occid']);
 $catalogNumber = trim($_REQUEST['catnum']);

@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/neon/classes/IgsnManager.php');
-include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
+include_once($SERVER_ROOT.'/neon/classes/OccurrenceSesar.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 if(!$SYMB_UID) header('Location: ../profile/index.php?refurl='.$CLIENT_ROOT.'/neon/igsncontrol.php?'.$_SERVER['QUERY_STRING']);
 
@@ -74,7 +74,7 @@ if($isEditor){
 			const accessToken = $(form.accessToken).val().trim();
 			const refreshToken = $(form.refreshToken).val().trim();
 		
-			$.post('rpc/savetokens.php', {
+			$.post('collections/admin/rpc/savetokens.php', {
 				accessToken: accessToken,
 				refreshToken: refreshToken
 			})
@@ -95,7 +95,7 @@ if($isEditor){
 		const accessToken = $(form.accessToken).val().trim();
 		const refreshToken = $(form.refreshToken).val().trim();
 	
-		$.post('rpc/validatetokens.php', {
+		$.post('collections/admin/rpc/validatetokens.php', {
 			accessToken: accessToken,
 			refreshToken: refreshToken
 		})
@@ -116,7 +116,7 @@ if($isEditor){
 			return;
 		}
 	
-		$.post('rpc/refreshtokens.php', {
+		$.post('collections/admin/rpc/refreshtokens.php', {
 			refreshToken: refreshToken
 		})
 		.done(function(response) {
@@ -272,7 +272,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						<button id="validate-button" type="button" onclick="validateTokens(this.form)">Validate Access Token</button>
 						<button id="refresh-button" type="button" onclick="refreshTokens(this.form)">Refresh Tokens</button>
 						<button id="save-button" type="button" onclick="saveTokens(this.form)">Save Tokens</button>
-						<button id="assign-button" type="button" onclick="window.location.href='../collections/admin/igsnmanagement.php'">Assign IGSN IDs</button>
+						<button id="assign-button" type="button" onclick="window.location.href='./collections/admin/igsnmanagement.php'">Assign IGSN IDs</button>
 					</div>
 				</form>
 			</fieldset>
@@ -294,7 +294,7 @@ include($SERVER_ROOT.'/includes/header.php');
 				This tool will harvest all NEON IGSNs from the SESAR system, insert them into a local tables, and then run comparisons with the IGSNs stored within the Biorepo to
 				locate inconsistencies. In particular, it is looking for multiple IGSNs assigned to a single specimen, IGSNs within SESAR and not the Biorepo, and in Biorepo and not in SESAR.
 			</div>
-			<form name="" method="post" action="../collections/admin/igsnverification.php">
+			<form name="" method="post" action="collections/admin/igsnverification.php">
 				<input name="namespace" type="hidden" value="NEO" />
 				<button name="formsubmit" type="submit" value="verifysesar">NEON IGSN Verification</button>
 			</form>
