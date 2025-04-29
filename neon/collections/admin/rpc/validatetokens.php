@@ -9,13 +9,6 @@ $refreshToken = $_POST['refreshToken'] ?? '';
 
 $message = '';
 
-function decodeJwtPayload($jwt) {
-	$parts = explode('.', $jwt);
-	if (count($parts) < 2) return null;
-	$payload = base64_decode(strtr($parts[1], '-_', '+/'));
-	return json_decode($payload, true);
-}
-
 $accessTokenValid = false;
 if ($accessToken) {
 	$url = 'https://app.geosamples.org/webservices/credentials_service_v2.php';
@@ -27,6 +20,7 @@ if ($accessToken) {
 		'Authorization: Bearer ' . $accessToken
 	]);
 	curl_exec($ch);
+	$result = curl_exec($ch);
 	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	curl_close($ch);
 

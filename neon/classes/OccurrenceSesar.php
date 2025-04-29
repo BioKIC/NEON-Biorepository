@@ -134,6 +134,88 @@ class OccurrenceSesar extends Manager {
 		return '';
 	}
 	
+	public function isAccessTokenValid($accessToken) {
+		if (!$accessToken) return false;
+	
+		$url = $this->getProductionMode()
+			? 'https://app.geosamples.org/webservices/credentials_service_v2.php'
+			: 'https://app-sandbox.geosamples.org/webservices/credentials_service_v2.php';
+	
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, [
+			'Authorization: Bearer ' . $accessToken
+		]);
+		curl_exec($ch);
+		$result = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+	
+		return $httpCode === 200;
+	}
+	
+	public function refreshAccessToken($refreshToken, $symbUid = null) {
+		if (!$refreshToken) return false;
+	
+		$url = $this->getProductionMode()
+			? 'https://app.geosamples.org/webservices/refresh_token.php'
+			: 'https://app-sandbox.geosamples.org/webservices/refresh_token.php';
+	
+		$data = http_build_query(['refresh' => $refreshToken]);
+	
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, [
+			'Content-Type: application/x-www-form-urlencoded'
+		]);
+	
+		$result = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+	
+		if ($httpCode === 200 && $result) {
+			$response = json_decode($result, true);
+			if (isset($response['access']) && isset($response['refresh'])) {
+				$newAccessToken = $response['access'];
+				$newRefreshToken = $response['refresh'];
+	
+				if ($symbUid) {
+					$this->saveTokens($symbUid, $newAccessToken, $newRefreshToken);
+				}
+	
+				return $newAccessToken;
+			}
+		}
+	
+		return false;
+	}
+
+	public function saveTokens($uid, $accessToken, $refreshToken) {
+		if (!$uid || !$accessToken || !$refreshToken) return false;
+	
+		include_once($GLOBALS['SERVER_ROOT'].'/config/dbconnection.php');
+		$conn = MySQLiConnectionFactory::getCon("write");
+	
+		if (!$this->getProductionMode()) {
+			$accessField = 'developmentaccessTokenSesar';
+			$refreshField = 'developmentrefreshTokenSesar';
+		} else {
+			$accessField = 'accessTokenSesar';
+			$refreshField = 'refreshTokenSesar';
+		}
+	
+		$sql = "UPDATE users SET {$accessField} = ?, {$refreshField} = ? WHERE uid = ?";
+		$stmt = $conn->prepare($sql);
+		if (!$stmt) return false;
+	
+		$stmt->bind_param("ssi", $accessToken, $refreshToken, $uid);
+		$success = $stmt->execute();
+		$stmt->close();
+		return $success;
+	}
+	
 	//Processing functions
 	public function batchProcessIdentifiers($processingCount){
 		$status = false;
@@ -192,6 +274,7 @@ class OccurrenceSesar extends Manager {
 			if(!$this->igsnExists($igsn)) $this->setSampleXmlNode($igsn);
 			//$this->logOrEcho('#'.$increment.': IGSN created for <a href="../editor/occurrenceeditor.php?occid='.$this->fieldMap['occid']['value'].'" target="_blank">'.$this->fieldMap['catalogNumber']['value'].'</a>',1);
 			if($this->registerIdentifiersViaApi()){
+				//this link won't work when called by igsnhandler.php, only igsnmapper.php
 				$this->logOrEcho('#'.$increment.': IGSN registered: <a href="../../../collections/editor/occurrenceeditor.php?occid='.$r['occid'].'" target="_blank">'.$igsn.'</a>',1);
 			}
 			$this->igsnDom = null;
@@ -912,9 +995,9 @@ class OccurrenceSesar extends Manager {
 		$igsnSeed = '';
 		$this->getSesarProfile();
 		//Get maximum identifier
-		if($this->collid && $this->namespace){
+		if($this->collid){
 			$seed = 0;
-			$sql = 'SELECT MAX(occurrenceID) as maxid FROM omoccurrences WHERE occurrenceID LIKE "'.$this->namespace.'%" AND length(occurrenceID) = 9';
+			$sql = 'SELECT MAX(occurrenceID) as maxid FROM omoccurrences WHERE occurrenceID LIKE "NEO%" AND length(occurrenceID) = 9';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
 				$seed = $r->maxid;
@@ -924,11 +1007,11 @@ class OccurrenceSesar extends Manager {
 			if($seed){
 				$seedBaseTen = base_convert($seed,36,10);
 				$igsn = base_convert($seedBaseTen+1,10,36);
-				$igsn = str_pad($igsn, (9-strlen($this->namespace)), '0', STR_PAD_LEFT);
+				$igsn = str_pad($igsn, (6), '0', STR_PAD_LEFT);
 				$igsnSeed = strtoupper($igsn);
 			}
 			else{
-				$igsnSeed = $this->namespace.str_pad('1', (9-strlen($this->namespace)), '0', STR_PAD_LEFT);
+				$igsnSeed = $this->namespace.str_pad('1', (6), '0', STR_PAD_LEFT);
 			}
 		}
 		return $igsnSeed;
