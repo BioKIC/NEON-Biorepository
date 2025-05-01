@@ -169,7 +169,16 @@ class TaxonProfile extends Manager {
 			*/
 			echo '</a></div>';
 			echo '<div class="photographer">';
-			if($imgObj['photographer']) echo $imgObj['photographer'];
+			// START NEON CUSTOMIZATION //
+			if($imgObj['photographer']) {
+				if ($imgObj['owner']){
+					echo $imgObj['photographer'], ', ', $imgObj['owner'];
+				}
+				else {
+					echo $imgObj['photographer'];
+				}
+			}
+			// END NEON CUSTOMIZATION //
 			echo '</div>';
 			echo '</div>';
 			$status = true;
@@ -191,13 +200,15 @@ class TaxonProfile extends Manager {
 			$rs1->free();
 
 			$tidStr = implode(",",$tidArr);
-			$sql = 'SELECT t.sciname, i.imgid, i.url, i.thumbnailurl, i.originalurl, i.caption, i.occid, i.photographer, CONCAT_WS(" ",u.firstname,u.lastname) AS photographerLinked '.
+			// START NEON CUSTOMIZATION //
+			$sql = 'SELECT t.sciname, i.imgid, i.url, i.thumbnailurl, i.originalurl, i.caption, i.occid,i.owner, i.photographer, CONCAT_WS(" ",u.firstname,u.lastname) AS photographerLinked '.
 				'FROM images i LEFT JOIN users u ON i.photographeruid = u.uid '.
 				'INNER JOIN taxstatus ts ON i.tid = ts.tid '.
 				'INNER JOIN taxa t ON i.tid = t.tid '.
 				'WHERE (ts.taxauthid = 1 AND ts.tidaccepted IN ('.$tidStr.')) AND i.SortSequence < 500 AND i.thumbnailurl IS NOT NULL ';
 			if(!$this->displayLocality) $sql .= 'AND i.occid IS NULL ';
 			$sql .= 'ORDER BY i.sortsequence, i.sortOccurrence LIMIT 100';
+			// END NEON CUSTOMIZATION //
 			/*
 			$sql = 'SELECT t.sciname, i.imgid, i.url, i.thumbnailurl, i.originalurl, i.caption, i.occid, IFNULL(i.photographer,CONCAT_WS(" ",u.firstname,u.lastname)) AS photographer '.
 				'FROM images i LEFT JOIN users u ON i.photographeruid = u.uid '.
@@ -220,6 +231,9 @@ class TaxonProfile extends Manager {
 				$this->imageArr[$row->imgid]['thumbnailurl'] = $row->thumbnailurl;
 				if($row->photographerLinked) $this->imageArr[$row->imgid]['photographer'] = $row->photographerLinked;
 				else $this->imageArr[$row->imgid]['photographer'] = $row->photographer;
+				// START NEON CUSTOMIZATION //
+				$this->imageArr[$row->imgid]['owner'] =$row->owner;
+				// END NEON CUSTOMIZATION //
 				$this->imageArr[$row->imgid]['caption'] = $row->caption;
 				$this->imageArr[$row->imgid]['occid'] = $row->occid;
 				$this->imageArr[$row->imgid]['sciname'] = $row->sciname;
