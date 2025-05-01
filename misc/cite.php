@@ -65,7 +65,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			</li>
 			<li><a href="#h.3">Acknowledging and citing NEON data generally</a></li>
 			<li><a href="#h.4">Occurrence Record Use Policy</a></li>
-			<li><a href="#h.5">Images</a></li>
+			<li><a href="#h.5">Image Attribution</a></li>
 		</ol>
 		<hr>
 		<!-- End of Table of Contents -->
@@ -73,7 +73,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<h3 class="anchor" id="h.1">1. Acknowledging the NEON Biorepository as a resource used in scientific publications</h3>
 			<h4 class="anchor" id="h.1.a">1A. Generic <i>acknowledgment</i> of the NEON Biorepository as a resource</h4>
 			<p>You can promote use of NEON Biorepository resources with the following statement in the acknowledgement section of your relevant publications:</p>
-			<blockquote>"The National Ecological Observatory Network Biorepository at Arizona State University provided samples and data collected as part of the NEON Program."</blockquote>
+			<blockquote>"The National Ecological Observatory Network is a program sponsored by the U.S. National Science Foundation and operated under cooperative agreement by Battelle. This material uses specimens and/or samples collected as part of the NEON Program and provided by the NEON Biorepository at Arizona State University."</blockquote>
 			<h4 class="anchor" id="h.1.b">1B. Generic <i>citation</i> of the NEON Biorepository as a resource</h4>
 			<p>If the sampling scheme, design, or operations  of the NEON Biorepository has been integral to facilitating your research, we encourage you to also cite the following publications that outline its conceptualization and implementation:</p>
             <blockquote>Thibault KM, Laney CM, Yule KM, Franz NM, Mabee PM. (2023). The US National Ecological Observatory Network and the Global Biodiversity Framework: National research infrastructure with a global reach. Journal of Ecology and Environment. 47:21. <a href="https://doi.org/10.5141/jee.23.076" target="_blank" rel="noopener noreferrer">https://doi.org/10.5141/jee.23.076</a></blockquote>
@@ -98,7 +98,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<p>When your work relies on occurrence data from particular NEON Biorepository collections, use the preferred citation format published on the relevant collection details page under "Cite This Collection".</p>
 			<h4 class="anchor" id="h.2.c">2C. Citing a NEON Biorepository <i>published research</i> or <i>special collections dataset</i></h4>
 			<p>To cite the use of occurrence records from an <a href="https://biorepo.neonscience.org/portal/collections/datasets/publiclist.php" target="_blank" rel="noopener noreferrer">existing published research or special collections dataset</a>, include the citations available from the relevant dataset page under "Cite This Dataset".</p>
-			<p>In many cases, you should also cite the original publication associated with the dataset. Citations to the publication are available within the dataset description page.</p>
+			<p>In most cases, you should also cite the original publication associated with the dataset. Citations to the publication are available within the dataset description page.</p>
 		</article>
 		<article>
 			<h3 class="anchor" id="h.3">3. Acknowledging and citing NEON data generally</h3>
@@ -114,8 +114,11 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			</ul>
 		</article>
 		<article>
-			<h3 class="anchor" id="h.5">5. Images</h3>
+			<h3 class="anchor" id="h.5">5. Image Attribution</h3>
 			<p>Images within this website have been generously contributed by their owners to promote education and research. These contributors retain the full copyright for their images. Unless stated otherwise, images are made available under the Creative Commons Attribution-ShareAlike (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CCBY-SA</a>). Users are allowed to copy, transmit, reuse, and/or adapt content, as long as attribution regarding the source of the content is made. If the content is altered, transformed, or enhanced, it may be re-distributed only under the same or similar license by which it was acquired.</p>
+			<p>Use the following template to cite images accessed via the NEON Biorepository Data Portal:</p>
+			<blockquote><b>Template:</b> [NEON (National Ecological Observatory Network) or Creator]. [PUBLICATION YEAR].[IMAGE TITLE]. [IMAGE TYPE (e.g., Photograph)]. [URL]</blockquote>
+			<blockquote><b>Example:</b> Steger, L. 2021. B00000021553_1611185823_lg. Photograph. <a href="https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg" target="+_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg</a></blockquote>
 		</article>
 	</div>
 	<?php
