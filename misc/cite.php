@@ -120,7 +120,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<blockquote><b>Template:</b>  [Creator (if known), Creator affiliation or program funding imaging]. [DATE ACCESSED]. [IMAGE TITLE or FILENAME]. [IMAGE TYPE (e.g., Photograph)]. [URL]</blockquote>
 			<blockquote> <b> Example:</b>
 			<?php
-					echo 'Steger, L., NEON (National Ecological Observatory Network) Biorepository. ' . date('Y-m-d') . '. B00000021553_1611185823_lg. Photograph. <a href="http//:biorepo.neonscience.org/" target="_blank" rel="noopener noreferrer"><a href="https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg" target="+_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg</a>';
+					echo 'Steger, L., NEON (National Ecological Observatory Network) Biorepository. Accessed via NEON (National Ecological Observatory Network) Biorepository data portal [' . date('Y-m-d') . '] . B00000021553_1611185823_lg. Photograph. <a href="http//:biorepo.neonscience.org/" target="_blank" rel="noopener noreferrer"><a href="https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg" target="+_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg</a>';
 			?>
 			</blockquote>
 		</article>
