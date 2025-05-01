@@ -116,7 +116,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h3 class="anchor" id="h.5">5. Image Attribution</h3>
 			<p>Images within this website have been generously contributed by their owners to promote education and research. These contributors retain the full copyright for their images. Unless stated otherwise, images are made available under the Creative Commons Attribution-ShareAlike (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CCBY-SA</a>). Users are allowed to copy, transmit, reuse, and/or adapt content, as long as attribution regarding the source of the content is made. If the content is altered, transformed, or enhanced, it may be re-distributed only under the same or similar license by which it was acquired.</p>
-			<p>Use the following to cite images accessed via the NEON Biorepository Data Portal:</p>
+			<p>Use the following template to cite images accessed via the NEON Biorepository Data Portal:</p>
 			<blockquote><b>Template:</b> [NEON (National Ecological Observatory Network) or Creator]. [PUBLICATION YEAR].[IMAGE TITLE]. [IMAGE TYPE (e.g., Photograph)]. [URL]</blockquote>
 			<blockquote><b>Example:</b> Steger, L. 2021. B00000021553_1611185823_lg. Photograph. <a href="https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg" target="+_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg</a></blockquote>
 		</article>
