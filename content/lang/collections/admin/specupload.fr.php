@@ -112,6 +112,7 @@ $LANG['LEARN_MORE'] = 'Pour en savoir plus sur la cartographie des champs Symbio
 $LANG['LOADING_DATA'] = 'Chargement Données dans Symbiota';
 $LANG['VER_MAPPING'] = 'Vérifier Mappage';
 $LANG['VERSION_DATA_CHANGES'] = 'Version data changes';
+$LANG['OVERWRITE_DATA'] = 'Ecraser les données existantes';
 $LANG['SAVE_MAP'] = 'Enregistrer Mappage';
 $LANG['VER_LINKS_MEDIA'] = "Vérifier les liens d'image à partir du champ associatedMedia (Média Associé)";
 $LANG['SKEL_EXPLAIN'] = "Les fichiers squelettes sont constitués de données stub faciles à capturer en masse pendant le processus d'imagerie.
