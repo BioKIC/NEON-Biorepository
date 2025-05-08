@@ -33,7 +33,7 @@ class IgsnManager{
 		return $retArr;
 	}
 
-	private function setNullNeonIdentifiers(){
+	public function setNullNeonIdentifiers(){
 		$sql = 'UPDATE omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid '.
 			'SET o.catalognumber = o.occurrenceID '.
 			'WHERE o.occurrenceID LIKE "NEON%" AND o.catalognumber IS NULL';
