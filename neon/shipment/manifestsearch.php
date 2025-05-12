@@ -124,10 +124,12 @@ include($SERVER_ROOT.'/includes/header.php');
 						<b>Shipment ID:</b> <input name="shipmentID" type="text" value="<?php echo (isset($searchArgumentArr['shipmentID'])?$searchArgumentArr['shipmentID']:''); ?>" />
 					</div>
 					<div class="fieldDiv">
-						<b>Sample ID:</b> <input name="sampleID" type="text" value="<?php echo (isset($searchArgumentArr['sampleID'])?$searchArgumentArr['sampleID']:''); ?>" style="width:225px" />
+    					<b>Sample ID:</b><br />
+   						 <textarea name="sampleID" style="width:225px; height:80px;"><?php echo isset($searchArgumentArr['sampleID']) ? $searchArgumentArr['sampleID'] : ''; ?></textarea>
 					</div>
 					<div class="fieldDiv">
-						<b>Sample Code:</b> <input name="sampleCode" type="text" value="<?php echo (isset($searchArgumentArr['sampleCode'])?$searchArgumentArr['sampleCode']:''); ?>" />
+    					<b>Sample Code:</b><br />
+   						 <textarea name="sampleCode" style="width:225px; height:80px;"><?php echo isset($searchArgumentArr['sampleCode']) ? $searchArgumentArr['sampleCode'] : ''; ?></textarea>
 					</div>
 				</div>
 				<div class="fieldGroupDiv">
@@ -155,8 +157,9 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 				</div>
 				<div class="fieldGroupDiv">
-					<div class="fieldDiv">
-						<b>occid:</b> <input name="occid" type="text" value="<?php echo (isset($searchArgumentArr['occid'])?$searchArgumentArr['occid']:''); ?>" />
+				<div class="fieldDiv">
+    					<b>occid:</b><br />
+   						 <textarea name="occid" style="width:225px; height:80px;"><?php echo isset($searchArgumentArr['occid']) ? $searchArgumentArr['occid'] : ''; ?></textarea>
 					</div>
 				</div>
 				<div class="fieldGroupDiv">

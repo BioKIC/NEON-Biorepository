@@ -927,13 +927,37 @@ class ShipmentManager{
 				$sqlWhere .= 'AND (s.shipmentID LIKE "'.$this->cleanInStr($_REQUEST['shipmentID']).'%") ';
 				$this->searchArr['shipmentID'] = $_REQUEST['shipmentID'];
 			}
-			if(isset($_REQUEST['sampleID']) && $_REQUEST['sampleID']){
-				$sqlWhere .= 'AND ((m.sampleID LIKE "%'.$this->cleanInStr($_REQUEST['sampleID']).'%") OR (m.alternativeSampleID LIKE "%'.$this->cleanInStr($_REQUEST['sampleID']).'%")) ';
-				$this->searchArr['sampleID'] = $_REQUEST['sampleID'];
+			if (isset($_REQUEST['sampleID']) && $_REQUEST['sampleID']) {
+				$rawInput = $_REQUEST['sampleID'];
+				$sampleIDs = preg_split('/[\r\n,]+/', $rawInput, -1, PREG_SPLIT_NO_EMPTY);
+			
+				$likeConditions = [];
+				foreach ($sampleIDs as $id) {
+					$id = trim($this->cleanInStr($id));
+					$likeConditions[] = "(m.sampleID LIKE '%$id%' OR m.alternativeSampleID LIKE '%$id%')";
+				}
+			
+				if (!empty($likeConditions)) {
+					$sqlWhere .= 'AND (' . implode(' OR ', $likeConditions) . ') ';
+				}
+			
+				$this->searchArr['sampleID'] = $rawInput;
 			}
-			if(isset($_REQUEST['sampleCode']) && $_REQUEST['sampleCode']){
-				$sqlWhere .= 'AND (m.sampleCode = "'.$this->cleanInStr($_REQUEST['sampleCode']).'") ';
-				$this->searchArr['sampleCode'] = $_REQUEST['sampleCode'];
+			if (isset($_REQUEST['sampleCode']) && $_REQUEST['sampleCode']) {
+				$rawInput = $_REQUEST['sampleCode'];
+				$sampleCodes = preg_split('/[\r\n,]+/', $rawInput, -1, PREG_SPLIT_NO_EMPTY);
+			
+				$conditions = [];
+				foreach ($sampleCodes as $code) {
+					$code = trim($this->cleanInStr($code));
+					$conditions[] = "(m.sampleCode = '$code')";
+				}
+			
+				if (!empty($conditions)) {
+					$sqlWhere .= 'AND (' . implode(' OR ', $conditions) . ') ';
+				}
+			
+				$this->searchArr['sampleCode'] = $rawInput;
 			}
 			if(isset($_REQUEST['domainID']) && $_REQUEST['domainID']){
 				$sqlWhere .= 'AND (s.domainID = "'.$_REQUEST['domainID'].'") ';
@@ -965,9 +989,21 @@ class ShipmentManager{
 				$sqlWhere .= 'AND (m.dynamicProperties LIKE "%'.$this->cleanInStr($_REQUEST['dynamicProperties']).'%") ';
 				$this->searchArr['dynamicProperties'] = $_REQUEST['dynamicProperties'];
 			}
-			if(isset($_REQUEST['occid']) && $_REQUEST['occid']){
-				$sqlWhere .= 'AND (m.occid = "'.$_REQUEST['occid'].'") ';
-				$this->searchArr['occid'] = $_REQUEST['occid'];
+			if (isset($_REQUEST['occid']) && $_REQUEST['occid']) {
+				$rawInput = $_REQUEST['occid'];
+				$occids = preg_split('/[\r\n,]+/', $rawInput, -1, PREG_SPLIT_NO_EMPTY);
+			
+				$conditions = [];
+				foreach ($occids as $id) {
+					$id = trim($this->cleanInStr($id));
+					$conditions[] = "(m.occid = '$id')";
+				}
+			
+				if (!empty($conditions)) {
+					$sqlWhere .= 'AND (' . implode(' OR ', $conditions) . ') ';
+				}
+			
+				$this->searchArr['occid'] = $rawInput;
 			}
 			if(isset($_REQUEST['dateShippedStart']) && $_REQUEST['dateShippedStart']){
 				$sqlWhere .= 'AND (s.dateShipped > "'.$_REQUEST['dateShippedStart'].'") ';
@@ -1113,9 +1149,9 @@ class ShipmentManager{
 		$fileName = 'occurrenceExport_';
 		if($this->shipmentPK) $fileName .= $this->shipmentPK.'_';
 		$fileName .= date('Y-m-d').'.csv';
-		$sql = 'SELECT m.samplePK, m.sampleID, m.alternativeSampleID, m.sampleCode, m.sampleClass, m.taxonID, m.individualCount, m.filterVolume, m.namedlocation, '.
+		$sql = 'SELECT m.samplePK, o.occid, o.occurrenceID,m.sampleID, m.alternativeSampleID, m.sampleCode, m.sampleClass, m.taxonID, m.individualCount, m.filterVolume, m.namedlocation, '.
 			'm.domainremarks, m.collectdate, m.quarantineStatus, m.sampleReceived, m.acceptedForAnalysis, m.sampleCondition, m.dynamicProperties, m.symbiotaTarget, '.
-			'm.errorMessage, m.notes, m.occid, CONCAT_WS(", ",u.lastname, u.firstname) AS checkinUser, m.checkinTimestamp, m.initialtimestamp, '.
+			'm.errorMessage, m.notes, CONCAT_WS(", ",u.lastname, u.firstname) AS checkinUser, m.checkinTimestamp, m.initialtimestamp, '.
 			'o.catalogNumber, o.sciname, o.scientificNameAuthorship, o.identifiedBy, o.dateIdentified, o.recordedBy, o.recordNumber, o.eventDate, '.
 			'o.country, o.stateProvince, o.county, o.locality, o.decimalLatitude, o.decimalLongitude, o.coordinateUncertaintyInMeters, o.minimumElevationInMeters, '.
 			'o.habitat, o.dateEntered, o.dateLastModified '.
