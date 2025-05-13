@@ -2303,14 +2303,14 @@ class OccurrenceHarvester{
 			7 => 'PLANT', 8 => 'PLANT', 9 => 'PLANT', 18 => 'PLANT', 40 => 'PLANT', 54 => 'PLANT', 107 => 'PLANT', 108 => 'PLANT', 109 => 'PLANT', 115 => 'PLANT',
 			17 => 'SMALL_MAMMAL', 19 => 'SMALL_MAMMAL', 24 => 'SMALL_MAMMAL', 25 => 'SMALL_MAMMAL', 26 => 'SMALL_MAMMAL', 27 => 'SMALL_MAMMAL', 28 => 'SMALL_MAMMAL', 64 => 'SMALL_MAMMAL', 71 => 'SMALL_MAMMAL', 74 => 'SMALL_MAMMAL', 90 => 'SMALL_MAMMAL', 91 => 'SMALL_MAMMAL',
 			30 => 'SOIL', 79 => 'SOIL', 80 =>'SOIL',
-			75 => 'TICK', 83 => 'TICK'
+			75 => 'TICK', 83 => 'TICK', 116 =>'TICK'
 		);
 		if(array_key_exists($collid, $taxonGroup)) return $taxonGroup[$collid];
 		return false;
 	}
 
 	private function getKingdomName(){
-		if(in_array($this->activeCollid, array(4,11,12,13,14,15,16,17,19,20,21,22,24,25,26,27,28,29,39,44,48,52,53,56,57,58,59,61,63,64,65,66,70,71,74,75,82,83,84,85,90,91,95,97,100,102,102,101,103 ))) return 'Animalia';
+		if(in_array($this->activeCollid, array(4,11,12,13,14,15,16,17,19,20,21,22,24,25,26,27,28,29,39,44,48,52,53,56,57,58,59,61,63,64,65,66,70,71,74,75,82,83,84,85,90,91,95,97,100,102,102,101,103,116 ))) return 'Animalia';
 		elseif(in_array($this->activeCollid, array( 7,8,9,10,18,23,40,54,76,93,98,107,108,109,115 ))) return 'Plantae';
 		//Let's use Plantae for algae group, which works for now
 		elseif(in_array($this->activeCollid, array( 46,49,50,73,105,106 ))) return 'Plantae';
