@@ -181,7 +181,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						
 							<!-- Column 3 - Textarea -->
 							<div class="col-2">
-								<textarea name="occid" class="form-control h-100" style="min-height: 208px;resize: none;" placeholder="Occurrence ID"><?php echo isset($searchArgumentArr['occid']) ? $searchArgumentArr['occid'] : ''; ?></textarea>
+								<textarea name="occid" class="form-control h-100" style="min-height: 208px;resize: none;" placeholder="occid"><?php echo isset($searchArgumentArr['occid']) ? $searchArgumentArr['occid'] : ''; ?></textarea>
 							</div>
 						
 							<!-- Column 4 - Textarea -->
