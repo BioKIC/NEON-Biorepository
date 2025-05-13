@@ -24,7 +24,8 @@ labels.forEach((label) => {
 	cArr.forEach((catNum) => {
 		if (catNum.includes("barcode")) {
 			let barcode = catNum.match(/(?<=barcode\): ).*/)[0].trim();
-            newBcSrc = "getBarcodeCode128.php?bcheight=40&bctext=" + barcode;
+            //newBcSrc = "getBarcodeCode128.php?bcheight=40&bctext=" + barcode;
+			newBcSrc = "https://barcode.tec-it.com/barcode.ashx?data=" + barcode + "&code=Code128";
 			return true;
 		}
 	});
