@@ -178,6 +178,10 @@ class TaxonProfile extends Manager {
 					echo $imgObj['photographer'];
 				}
 			}
+			elseif($imgArr['owner']) {
+				echo $imgObj['owner'];
+
+			}
 			// END NEON CUSTOMIZATION //
 			echo '</div>';
 			echo '</div>';
