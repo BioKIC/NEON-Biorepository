@@ -1040,7 +1040,7 @@ class ShipmentManager{
 				$this->searchArr['checkinsampleUid'] = $_REQUEST['checkinsampleUid'];
 			}
 			if(isset($_REQUEST['importedUid']) && $_REQUEST['importedUid']){
-				$sqlWhere .= 'AND ((s.importUid IN ("' . implode('","', $_REQUEST['importUid']) .'") OR (s.modifiedByUid IN ("' . implode('","', $_REQUEST['importUid']).'")) ';
+				$sqlWhere .= 'AND (s.importUid IN ("' . implode('","', $_REQUEST['importedUid']) .'") OR s.modifiedByUid IN ("' . implode('","', $_REQUEST['importedUid']).'")) ';
 				$this->searchArr['importedUid'] = $_REQUEST['importedUid'];
 			}
 			/*
