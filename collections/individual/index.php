@@ -324,7 +324,7 @@ $traitArr = $indManager->getTraitArr();
 					<div  id="occur-div">
 						<div id="availability-div">
 							<?php 
-							if (in_array($occArr['collid'], array(44,74,79,80,82,83,95,97))){
+							if (in_array($occArr['collid'], array(44,74,79,80,82,83,95,97,115))){
 								echo "<strong><span style='color:green;'>Contact holding institution for information about loans</span></strong>";
 							}
 							elseif ($occArr['availability'] == 1 ) {
