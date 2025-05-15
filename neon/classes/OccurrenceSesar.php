@@ -360,7 +360,7 @@ class OccurrenceSesar extends Manager {
 		return $userCodeArr;
 	}
 
-	private function registerIdentifiersViaApi() {
+	private function registerIdentifiersViaApi($retryCount = 0) {
 		$status = false;
 	
 		global $SYMB_UID;
@@ -387,11 +387,17 @@ class OccurrenceSesar extends Manager {
 		];
 
 		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
-	
-		if (isset($resArr['retStr']) && $resArr['retStr']) {
-			$status = $this->processRegistrationResponse($resArr['retStr']);
+		if ($retryCount >= 3) {
+			$this->logOrEcho('Retry limit reached. Not retrying.');
+			$status = false;
+		} else {
+			if (isset($resArr['retStr']) && $resArr['retStr']) {
+				$status = $this->processRegistrationResponse($resArr['retStr']);
+				if ($status == "retry") {
+					$this->registerIdentifiersViaApi($retryCount + 1);
+				}
+			}
 		}
-	
 		return $status;
 	}
 
@@ -468,6 +474,12 @@ class OccurrenceSesar extends Manager {
 			}
 		} else {
 			$this->logOrEcho('ERROR parsing response XML (processRegistrationResponse): '.htmlentities($responseXML));
+			// Retry if "too many requests" is found
+			if (stripos(htmlentities($responseXML), 'too many requests') !== false) {
+				$this->logOrEcho('Waiting 30 seconds before retry...', 1);
+				sleep(30);
+				$status = "retry";
+			}
 			if(preg_match('/\[\s(\d+)\s\]\] was saved successfully with IGSN \[(NEON[A-Z0-9]{5})\]/', $responseXML, $m)){
 				$dbStatus = $this->updateOccurrenceID($m[2], $m[1]);
 				$this->logOrEcho('Error resolved: success parsing occid ('.$m[1].') and IGSN ('.$m[2].') from response and appended to database',1);
