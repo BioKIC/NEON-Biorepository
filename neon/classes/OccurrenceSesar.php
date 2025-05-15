@@ -392,17 +392,14 @@ class OccurrenceSesar extends Manager {
 			$status = false;
 		} else {
 			if (isset($resArr['retStr']) && $resArr['retStr']) {
-				$status = $this->processRegistrationResponse($resArr['retStr']);
-				if ($status == "retry") {
-					$this->registerIdentifiersViaApi($retryCount + 1);
-				}
+				$status = $this->processRegistrationResponse($resArr['retStr'], $retryCount);
 			}
 		}
 		return $status;
 	}
 
 
-	private function processRegistrationResponse($responseXML){
+	private function processRegistrationResponse($responseXML, $retryCount = 0){
 		$status = true;
 		$dom = new DOMDocument('1.0','UTF-8');
 		if($dom->loadXML($responseXML)){
@@ -474,11 +471,17 @@ class OccurrenceSesar extends Manager {
 			}
 		} else {
 			$this->logOrEcho('ERROR parsing response XML (processRegistrationResponse): '.htmlentities($responseXML));
-			// Retry if "too many requests" is found
-			if (stripos(htmlentities($responseXML), 'too many requests') !== false) {
-				$this->logOrEcho('Waiting 30 seconds before retry...', 1);
+			// Check for "too many requests"
+			if (stripos($responseXML, 'too many requests') !== false) {
+				if ($retryCount >= 3) {
+					$this->logOrEcho('Retry limit reached. Not retrying.');
+					return false;
+				}
+				$this->logOrEcho('Too many requests detected. Waiting 30 seconds...', 1);
 				sleep(30);
-				$status = "retry";
+	
+				// Retry the API request with incremented retryCount
+				$status = $this->registerIdentifiersViaApi($retryCount + 1);
 			}
 			if(preg_match('/\[\s(\d+)\s\]\] was saved successfully with IGSN \[(NEON[A-Z0-9]{5})\]/', $responseXML, $m)){
 				$dbStatus = $this->updateOccurrenceID($m[2], $m[1]);
