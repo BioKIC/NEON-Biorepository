@@ -1,10 +1,7 @@
 <?php
-include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/classes/OccurrenceSesar.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/admin/igsnmanagement.'.$LANG_TAG.'.php'))
-	include_once($SERVER_ROOT.'/content/lang/collections/admin/igsnmanagement.'.$LANG_TAG.'.php');
-else
-	include_once($SERVER_ROOT.'/content/lang/collections/admin/igsnmanagement.en.php');
+include_once('../../../config/symbini.php');
+include_once($SERVER_ROOT.'/neon/classes/OccurrenceSesar.php');
+include_once($SERVER_ROOT.'/neon/classes/IgsnManager.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 ini_set('max_execution_time', 3600);
 
@@ -27,6 +24,7 @@ $isEditor = 0;
 if($IS_ADMIN || (array_key_exists('CollAdmin',$USER_RIGHTS) && in_array($collid,$USER_RIGHTS['CollAdmin']))){
 	$isEditor = 1;
 }
+$igsnManager = new IgsnManager();
 $guidManager = new OccurrenceSesar();
 $guidManager->setCollid($collid);
 $guidManager->setCollArr();
@@ -58,7 +56,7 @@ if(isset($sesarProfile['generationMethod'])) $generationMethod = $sesarProfile['
 	<?php
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
-	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="../../../js/jquery.js"></script>
 	<script type="text/javascript">
 
 		function validateCredentials(f){
@@ -128,16 +126,42 @@ $displayLeftMenu = false;
 include($SERVER_ROOT.'/includes/header.php');
 ?>
 <div class='navpath'>
-	<a href="../../index.php"> <?php echo $LANG['HOME'] ?></a> &gt;&gt;
-	<a href="../misc/collprofiles.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>&emode=1"> <?php echo $LANG['COLL_MANAGE'] ?></a> &gt;&gt;
-	<a href="igsnmapper.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"> <?php echo $LANG['IGSN_GUID_GEN'] ?></a> &gt;&gt;
-	<b><?php echo $LANG['IGSN_MANAGE'] ?></b>
+	<a href="../../../index.php">Home</a> &gt;&gt;
+	<a href="../../index.php">NEON Biorepository Tools</a> &gt;&gt;
+	<a href="../../igsncontrol.php">NEON IGSN Control Panel</a> &gt;&gt;
+	<b>IGSN Management</b>
 </div>
 <div role="main" id="innertext">
 	<h1 class="page-heading"><?= $LANG['IGSN_MANAGE']; ?></h1>
 	<?php
-	if($isEditor && $collid){
-		echo '<h3>' . $LANG['IGSN_MANAGE'] . ': '.$guidManager->getCollectionName().'</h3>';
+	if(!$guidManager->getProductionMode()){
+		echo '<h2 style="color:orange">-- In Development Mode --</h2>';
+	}
+	if (!($collid)){
+	?>
+		<fieldset>
+			<legend><b>Collections Needing IGSNs</b></legend>
+			<div style="margin-bottom:10px;">IGSN can only be created for NEON samples that have been both Received and Accepted for Analysis</div>
+			<div style="">
+				<ul>
+					<?php
+					$taskList = $igsnManager->getIgsnTaskReport();
+					if($taskList){
+						foreach($taskList as $collid => $collArr){
+							echo '<li>'.$collArr['collname'].' ('.$collArr['collcode'].'): ';
+							echo '<a href="../admin/igsnmapper.php?collid='.$collid.'" target="_blank">'.$collArr['cnt'].'</a></li>';
+						}
+					}
+					else{
+						echo '<div style="margin:20px"><b>All collections have IGSN assigned</b></div>';
+					}
+					?>
+				</ul>
+			</div>
+		</fieldset>
+	<?php
+	} else if($isEditor){
+		echo '<h3>IGSN Management: '.$guidManager->getCollectionName().'</h3>';
 		if($statusStr){
 			?>
 			<fieldset>
@@ -230,7 +254,7 @@ include($SERVER_ROOT.'/includes/header.php');
 			<?php
 		}
 	}
-	else echo '<h2>' . $LANG['NOT_AUTH'] . ' </h2>';
+	else echo '<h2>You are not authorized to access this page</h2>';
 	?>
 </div>
 <?php

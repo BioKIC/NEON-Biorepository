@@ -1085,7 +1085,9 @@ class ImageLocalProcessor {
 			}
 			if(!isset($imgArr['format'])) $imgArr['format'] = 'image/jpeg';
 			if(isset($this->collArr[$this->activeCollid]['collname'])){
-				if(!isset($imgArr['owner'])) $imgArr['owner'] = $this->collArr[$this->activeCollid]['collname'];
+				// START NEON CUSTOMIZATION //
+				if(!isset($imgArr['owner'])) $imgArr['owner'] = 'NEON (National Ecological Observatory Network) Biorepository';
+				// END NEON CUSTOMIZATION //
 				if(!isset($imgArr['imagetype'])) $imgArr['imagetype'] = 'specimen';
 			}
 			$this->setImageTableMap();

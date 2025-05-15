@@ -474,7 +474,8 @@ class OccurrenceHarvester{
 				//if(strpos($tableName,'identification')) continue;
 				//if(strpos($tableName,'sorting')) continue;
 				if(strpos($tableName,'scs_archive')) continue;
-				//if(strpos($tableName,'barcoding')) continue;
+				if($tableName == 'mam_barcoding_in') continue;
+				if($tableName == 'bet_barcoding_in') continue;
 				if(strpos($tableName,'dnaStandardTaxon')) continue;
 				if(strpos($tableName,'dnaExtraction')) continue;
 				if(strpos($tableName,'markerGeneSequencing')) continue;
@@ -484,7 +485,7 @@ class OccurrenceHarvester{
 				//if(strpos($tableName,'perarchivesample')) continue;
 				//if(strpos($tableName,'persample')) continue;
 				//if(strpos($tableName,'pertaxon')) continue;
-				if(strpos($tableName,'zoo_perVial_in')) continue;
+				if($tableName == 'zoo_perVial_in') continue;
 				if($tableName == 'mpr_perpitprofile_in') continue;
 				$fieldArr = $eArr['smsFieldEntries'];
 				$fateLocation = ''; $fateDate = '';
@@ -536,6 +537,7 @@ class OccurrenceHarvester{
 						elseif($fArr['smsKey'] == 'minimum_depth_in_meters' && $fArr['smsValue']) $tableArr['minimum_depth_in_meters'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'maximum_depth_in_meters' && $fArr['smsValue']) $tableArr['maximum_depth_in_meters'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'reproductive_condition' && $fArr['smsValue']) $tableArr['reproductive_condition'] = $fArr['smsValue'];
+						elseif($fArr['smsKey'] == 'sampling_protocol' && $fArr['smsValue']) $tableArr['sampling_protocol'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'sex' && $fArr['smsValue']) $tableArr['sex'] = $fArr['smsValue'];
 						elseif (
 							$fArr['smsKey'] == 'life_stage' &&
@@ -687,6 +689,7 @@ class OccurrenceHarvester{
 				if(isset($sampleArr['specimen_count'])) $dwcArr['individualCount'] = $sampleArr['specimen_count'];
 				elseif(isset($sampleArr['individualCount'])) $dwcArr['individualCount'] = $sampleArr['individualCount'];
 				if(isset($sampleArr['reproductive_condition'])) $dwcArr['reproductiveCondition'] = $sampleArr['reproductive_condition'];
+				if(isset($sampleArr['sampling_protocol'])) $dwcArr['samplingProtocol'] = $sampleArr['sampling_protocol'];
 				if(isset($sampleArr['sex'])) $dwcArr['sex'] = $sampleArr['sex'];
 				if(isset($sampleArr['life_stage'])) $dwcArr['lifeStage'] = $sampleArr['life_stage'];
 				if(isset($sampleArr['associated_taxa'])) $dwcArr['associatedTaxa'] = $this->translateAssociatedTaxa($sampleArr['associated_taxa']);
@@ -901,11 +904,13 @@ class OccurrenceHarvester{
 							}
 							//Check to see if current taxon is the most current taxon
 							if(!empty($idArr['isCurrent'])){
-								if(isset($this->taxonArr[$idArr['sciname']]['accepted'])){
-									if($idArr['sciname'] != $this->taxonArr[$idArr['sciname']]['accepted']){
-										$idArr['scientificNameAuthorship'] = $this->taxonArr[$idArr['sciname']]['acceptedAuthor'];
-										$idArr['tidInterpreted'] = $this->taxonArr[$idArr['sciname']]['acceptedTid'];
-										$idArr['sciname'] = $this->taxonArr[$idArr['sciname']]['accepted'];
+								if(!strpos($idArr['sciname'],"/")){
+									if(isset($this->taxonArr[$idArr['sciname']]['accepted'])){
+										if($idArr['sciname'] != $this->taxonArr[$idArr['sciname']]['accepted']){
+											$idArr['scientificNameAuthorship'] = $this->taxonArr[$idArr['sciname']]['acceptedAuthor'];
+											$idArr['tidInterpreted'] = $this->taxonArr[$idArr['sciname']]['acceptedTid'];
+											$idArr['sciname'] = $this->taxonArr[$idArr['sciname']]['accepted'];
+										}
 									}
 								}
 							}
@@ -1589,7 +1594,9 @@ class OccurrenceHarvester{
 				if($sciname){
 					$idDate = 's.d.';
 					if(!empty($dwcArr['eventDate'])) $idDate = $dwcArr['eventDate'];
-					$dwcArr['identifications'][] = array('sciname' => $sciname,'tidInterpreted'=>$tid, 'identifiedBy' => 'NEON Lab', 'dateIdentified' => $idDate, 'isCurrent' => 1);
+					if(!empty($dwcArr['recordedBy']) && in_array($dwcArr['collid'],array(5,6,10,13,16,18,21,23,30,31,41,42,61,67,68,69,76,92,96))) $idBy = $dwcArr['recordedBy'];
+					else $idBy = 'NEON Lab';
+					$dwcArr['identifications'][] = array('sciname' => $sciname,'tidInterpreted'=>$tid, 'identifiedBy' => $idBy, 'dateIdentified' => $idDate, 'isCurrent' => 1);
 				}
 			}
 			$numericFieldArr = array('collid','decimalLatitude','decimalLongitude','minimumElevationInMeters','maximumElevationInMeters');
@@ -2293,7 +2300,7 @@ class OccurrenceHarvester{
 			12 => 'HERPETOLOGY', 15 => 'HERPETOLOGY', 70 => 'HERPETOLOGY',
 			21 => 'MACROINVERTEBRATE', 22 => 'MACROINVERTEBRATE', 45 => 'MACROINVERTEBRATE', 48 => 'MACROINVERTEBRATE', 52 => 'MACROINVERTEBRATE', 53 => 'MACROINVERTEBRATE', 55 => 'MACROINVERTEBRATE', 57 => 'MACROINVERTEBRATE', 60 => 'MACROINVERTEBRATE', 61 => 'MACROINVERTEBRATE', 62 => 'MACROINVERTEBRATE', 84 => 'MACROINVERTEBRATE', 100 => 'MACROINVERTEBRATE', 101 => 'MACROINVERTEBRATE', 102 => 'MACROINVERTEBRATE', 103 => 'MACROINVERTEBRATE',
 			29 => 'MOSQUITO', 56 => 'MOSQUITO', 58 => 'MOSQUITO', 59 => 'MOSQUITO', 65 => 'MOSQUITO',
-			7 => 'PLANT', 8 => 'PLANT', 9 => 'PLANT', 18 => 'PLANT', 40 => 'PLANT', 54 => 'PLANT', 107 => 'PLANT', 108 => 'PLANT', 109 => 'PLANT',
+			7 => 'PLANT', 8 => 'PLANT', 9 => 'PLANT', 18 => 'PLANT', 40 => 'PLANT', 54 => 'PLANT', 107 => 'PLANT', 108 => 'PLANT', 109 => 'PLANT', 115 => 'PLANT',
 			17 => 'SMALL_MAMMAL', 19 => 'SMALL_MAMMAL', 24 => 'SMALL_MAMMAL', 25 => 'SMALL_MAMMAL', 26 => 'SMALL_MAMMAL', 27 => 'SMALL_MAMMAL', 28 => 'SMALL_MAMMAL', 64 => 'SMALL_MAMMAL', 71 => 'SMALL_MAMMAL', 74 => 'SMALL_MAMMAL', 90 => 'SMALL_MAMMAL', 91 => 'SMALL_MAMMAL',
 			30 => 'SOIL', 79 => 'SOIL', 80 =>'SOIL',
 			75 => 'TICK', 83 => 'TICK'
@@ -2304,7 +2311,7 @@ class OccurrenceHarvester{
 
 	private function getKingdomName(){
 		if(in_array($this->activeCollid, array(4,11,12,13,14,15,16,17,19,20,21,22,24,25,26,27,28,29,39,44,48,52,53,56,57,58,59,61,63,64,65,66,70,71,74,75,82,83,84,85,90,91,95,97,100,102,102,101,103 ))) return 'Animalia';
-		elseif(in_array($this->activeCollid, array( 7,8,9,10,18,23,40,54,76,93,98,107,108,109 ))) return 'Plantae';
+		elseif(in_array($this->activeCollid, array( 7,8,9,10,18,23,40,54,76,93,98,107,108,109,115 ))) return 'Plantae';
 		//Let's use Plantae for algae group, which works for now
 		elseif(in_array($this->activeCollid, array( 46,49,50,73,105,106 ))) return 'Plantae';
 		elseif(in_array($this->activeCollid, array( 30,79,80 ))) return 'Soil';
