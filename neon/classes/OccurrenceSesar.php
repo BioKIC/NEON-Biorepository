@@ -470,7 +470,7 @@ class OccurrenceSesar extends Manager {
 				}
 			}
 		} else {
-			$this->logOrEcho('ERROR parsing response XML (processRegistrationResponse): '.htmlentities($responseXML), 2);
+			$this->logOrEcho('ERROR parsing response XML (processRegistrationResponse): '.htmlentities($responseXML));
 			// Check for "too many requests"
 			if (stripos($responseXML, 'too many requests') !== false) {
 				if ($retryCount >= 3) {
