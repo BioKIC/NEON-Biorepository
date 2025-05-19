@@ -272,6 +272,7 @@ class OccurrenceSesar extends Manager {
 			$igsn = base_convert($baseTenID,10,36);
 			$igsn = str_pad($igsn, (9-strlen($this->namespace)), '0', STR_PAD_LEFT);
 			$igsn = strtoupper($igsn);
+			$this->occidBatch[] = $r['occid'];
 			//$igsn = $this->namespace.$igsn;
 			$baseTenID++;
 			//Set Symbiota record values
@@ -493,6 +494,9 @@ class OccurrenceSesar extends Manager {
 		} else {
 			if (isset($resArr['retStr']) && $resArr['retStr']) {
 				$status = $this->processRegistrationResponse($resArr['retStr'], $retryCount);
+				if ($status) {
+					$status = $this->updateSqlSesarDate();
+				}
 			}
 		}
 		return $status;
@@ -514,7 +518,7 @@ class OccurrenceSesar extends Manager {
 			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
 			return false;
 		}
-		$xmldata = $this->igsnDom->saveXML();
+		//$xmldata = $this->igsnDom->saveXML();
 		$postData = http_build_query([
 			'content' => $this->igsnDom->saveXML()
 		]);
