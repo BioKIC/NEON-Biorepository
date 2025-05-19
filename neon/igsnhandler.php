@@ -1,6 +1,6 @@
 <?php
 $_SERVER['SERVER_PORT'] = 443;
-$_SERVER['SERVER_NAME'] = 'biorepo.neonscience.org/portal';
+$_SERVER['SERVER_NAME'] = 'biorepo.neonscience.org';
 include_once(__DIR__ .'/../config/symbini.php');
 require_once('classes/OccurrenceSesar.php'); 
 require_once('classes/IgsnManager.php');
