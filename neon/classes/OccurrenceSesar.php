@@ -154,8 +154,11 @@ class OccurrenceSesar extends Manager {
 		return $httpCode === 200;
 	}
 	
-	public function refreshAccessToken($refreshToken, $symbUid = null) {
-		if (!$refreshToken) return false;
+	public function refreshAccessToken($refreshToken, $symbUid = null, $logFH = null) {
+		if (!$refreshToken) {
+			if ($logFH) logMessage("No refresh token provided.", $logFH);
+			return false;
+		}
 	
 		$url = $this->getProductionMode()
 			? 'https://app.geosamples.org/webservices/refresh_token.php'
@@ -173,7 +176,16 @@ class OccurrenceSesar extends Manager {
 	
 		$result = curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$curlError = curl_error($ch);
 		curl_close($ch);
+	
+		if ($logFH) {
+			logMessage("Refresh token HTTP code: $httpCode", $logFH);
+			logMessage("Raw response: " . ($result ?: 'NULL'), $logFH);
+			if ($curlError) {
+				logMessage("cURL error: $curlError", $logFH);
+			}
+		}
 	
 		if ($httpCode === 200 && $result) {
 			$response = json_decode($result, true);
@@ -185,12 +197,18 @@ class OccurrenceSesar extends Manager {
 					$this->saveTokens($symbUid, $newAccessToken, $newRefreshToken);
 				}
 	
+				if ($logFH) logMessage("Access token refresh successful.", $logFH);
 				return $newAccessToken;
+			} else {
+				if ($logFH) logMessage("Invalid response structure: " . json_encode($response), $logFH);
 			}
+		} else {
+			if ($logFH) logMessage("Token refresh failed. HTTP status: $httpCode", $logFH);
 		}
 	
 		return false;
 	}
+
 
 	public function saveTokens($uid, $accessToken, $refreshToken) {
 		if (!$uid || !$accessToken || !$refreshToken) return false;
