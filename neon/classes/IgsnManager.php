@@ -33,6 +33,32 @@ class IgsnManager{
 		return $retArr;
 	}
 
+	public function getIgsnUpdateReport(){
+		$this->setNullNeonIdentifiers();
+		$retArr = array();
+		$sql = 'SELECT 
+					c.collid, 
+					CONCAT_WS("-", c.institutioncode, c.collectioncode) AS collcode, 
+					c.collectionname, 
+					COUNT(o.occid) AS cnt
+				FROM omoccurrences o
+				INNER JOIN omcollections c ON o.collid = c.collid
+				INNER JOIN NeonSample s ON o.occid = s.occid
+				WHERE c.institutionCode = "NEON"
+					AND c.collid NOT IN (44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115)
+					AND s.sampleReceived = 1
+					AND o.dateLastModified > IFNULL(s.sampleLastUpdatedSESAR, \'1900-01-01\')
+				GROUP BY c.collid';
+		$rs = $this->conn->query($sql);
+		while($r = $rs->fetch_object()){
+			$retArr[$r->collid]['collcode'] = $r->collcode;
+			$retArr[$r->collid]['collname'] = $r->collectionname;
+			$retArr[$r->collid]['cnt'] = $r->cnt;
+		}
+		$rs->free();
+		return $retArr;
+	}
+	
 	public function setNullNeonIdentifiers(){
 		$sql = 'UPDATE omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid '.
 			'SET o.catalognumber = o.occurrenceID '.

@@ -154,8 +154,11 @@ class OccurrenceSesar extends Manager {
 		return $httpCode === 200;
 	}
 	
-	public function refreshAccessToken($refreshToken, $symbUid = null) {
-		if (!$refreshToken) return false;
+	public function refreshAccessToken($refreshToken, $symbUid = null, $logFH = null) {
+		if (!$refreshToken) {
+			if ($logFH) logMessage("No refresh token provided.", $logFH);
+			return false;
+		}
 	
 		$url = $this->getProductionMode()
 			? 'https://app.geosamples.org/webservices/refresh_token.php'
@@ -173,7 +176,16 @@ class OccurrenceSesar extends Manager {
 	
 		$result = curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$curlError = curl_error($ch);
 		curl_close($ch);
+	
+		if ($logFH) {
+			logMessage("Refresh token HTTP code: $httpCode", $logFH);
+			logMessage("Raw response: " . ($result ?: 'NULL'), $logFH);
+			if ($curlError) {
+				logMessage("cURL error: $curlError", $logFH);
+			}
+		}
 	
 		if ($httpCode === 200 && $result) {
 			$response = json_decode($result, true);
@@ -185,12 +197,18 @@ class OccurrenceSesar extends Manager {
 					$this->saveTokens($symbUid, $newAccessToken, $newRefreshToken);
 				}
 	
+				if ($logFH) logMessage("Access token refresh successful.", $logFH);
 				return $newAccessToken;
+			} else {
+				if ($logFH) logMessage("Invalid response structure: " . json_encode($response), $logFH);
 			}
+		} else {
+			if ($logFH) logMessage("Token refresh failed. HTTP status: $httpCode", $logFH);
 		}
 	
 		return false;
 	}
+
 
 	public function saveTokens($uid, $accessToken, $refreshToken) {
 		if (!$uid || !$accessToken || !$refreshToken) return false;
@@ -262,7 +280,6 @@ class OccurrenceSesar extends Manager {
 				$this->fieldMap[$symbField]['value'] = $r[$symbField];
 			}
 			$this->cleanFieldValues();
-			
 			$this->otherNames = [];
 			
 			$sql2 = "SELECT identifiervalue FROM omoccuridentifiers WHERE occid = " . $r['occid'];
@@ -271,7 +288,7 @@ class OccurrenceSesar extends Manager {
 				$this->otherNames[] = $r2['identifiervalue'];
 			}
 
-			if(!$this->igsnExists($igsn)) $this->setSampleXmlNode($igsn);
+			if(!$this->igsnExists($igsn)) $this->setSampleXmlNode($igsn, "new");
 			//$this->logOrEcho('#'.$increment.': IGSN created for <a href="../editor/occurrenceeditor.php?occid='.$this->fieldMap['occid']['value'].'" target="_blank">'.$this->fieldMap['catalogNumber']['value'].'</a>',1);
 			if($this->registerIdentifiersViaApi()){
 				//this link won't work when called by igsnhandler.php, only igsnmapper.php
@@ -287,6 +304,89 @@ class OccurrenceSesar extends Manager {
 		return $status;
 	}
 
+	public function batchUpdateIdentifiers($processingCount, $parallelCount=1){
+		$status = false;
+		$this->setVerboseMode(3);
+		$logPath = $GLOBALS['SERVER_ROOT'].(substr($GLOBALS['SERVER_ROOT'],-1)=='/'?'':'/').'content/logs/igsn/Update_'.date('Y-m-d').'.log';
+		$this->setLogFH($logPath);
+		$this->logOrEcho('Starting batch sample update for collection: ' . $this->collArr['collectionName'] . ' (' . $this->collid . ') at ' . date('Y-m-d H:i:s'));
+		if(!$this->validateUser()){
+			$this->errorMessage = 'SESAR tokens failed to validate';
+			$this->logOrEcho($this->errorMessage);
+			return false;
+		}
+
+		//Batch update GUIDs
+		$this->logOrEcho('Updating Sample Metadata');
+		$this->setFieldMap();
+		$increment = 1;
+		$sql = 'SELECT o.occid, o.occurrenceID';
+		foreach($this->fieldMap as $symbField => $mapArr){
+			if(isset($mapArr['sql'])) $sql .= ','.$mapArr['sql'];
+			else $sql .= ',o.'.$symbField;
+		}
+		$sql .= ' '.$this->getSqlBaseNeedsUpdate();
+		if($processingCount) $sql .= 'LIMIT '.$processingCount;
+		
+		$rs = $this->conn->query($sql);
+		$batchCounter = 0;
+		$increment = 1;
+		
+		
+		while ($r = $rs->fetch_assoc()) {
+			if ($batchCounter === 0) {
+				$this->initiateDom();  // Start a new XML doc for the batch
+				$this->occidBatch = [];
+			}
+			$igsn = $r['occurrenceID'];
+			$this->occidBatch[] = $r['occid'];
+		
+			// Set Symbiota record values
+			$this->fieldMap['occid']['value'] = $r['occid'];
+			foreach ($this->fieldMap as $symbField => $fieldArr) {
+				$this->fieldMap[$symbField]['value'] = $r[$symbField];
+			}
+			$this->cleanFieldValues();
+		
+			// Load other identifiers
+			$this->otherNames = [];
+			$sql2 = "SELECT identifiervalue FROM omoccuridentifiers WHERE occid = " . $r['occid'];
+			$rs2 = $this->conn->query($sql2);
+			while ($r2 = $rs2->fetch_assoc()) {
+				$this->otherNames[] = $r2['identifiervalue'];
+			}
+		
+			// Add the sample node to the current DOM
+			$this->setSampleXmlNode($igsn, "update");
+			$batchCounter++;
+			$increment++;
+		
+			// If we've reached the parallelCount, send the batch
+			if ($batchCounter >= $parallelCount) {
+				if ($this->updateMetadataViaApi()) {
+					$urlPrefix = $this->productionMode ? 'https://app.geosamples.org' : 'https://app-sandbox.geosamples.org';
+					$this->logOrEcho('#' . ($increment - $batchCounter) . '–' . ($increment - 1) . ': IGSN batch updated (' . $batchCounter . ' samples)', 1);
+				}
+				$this->igsnDom = null;
+				$batchCounter = 0;
+			}
+		}
+		
+		// If any remaining samples after the last batch
+		if ($batchCounter > 0) {
+			if ($this->updateMetadataViaApi()) {
+				$this->logOrEcho('#' . ($increment - $batchCounter) . '–' . ($increment - 1) . ': IGSN final batch updated (' . $batchCounter . ' samples)', 1);
+			}
+			$this->igsnDom = null;
+		}
+		
+		$rs->free();
+
+
+		$this->logOrEcho('Finished ('.date('Y-m-d H:i:s').')');
+		return $status;
+	}	
+	
 	private function setFieldMap(){
 		$this->fieldMap['basisOfRecord']['sesar'] = 'collection_method_descr';
 		$this->fieldMap['catalogNumber']['sesar'] = 'name';
@@ -398,6 +498,44 @@ class OccurrenceSesar extends Manager {
 		return $status;
 	}
 
+	private function updateMetadataViaApi($retryCount = 0) {
+		$status = false;
+	
+		global $SYMB_UID;
+		$baseUrl = 'https://app.geosamples.org/webservices/update.php';
+		$accessToken = $this->getAccessToken($SYMB_UID);
+		if (!$this->productionMode) {
+			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/update.php';
+			$accessToken = $this->getDevelopmentAccessToken($SYMB_UID);
+		}
+	
+		
+		if (!$accessToken) {
+			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
+			return false;
+		}
+		$xmldata = $this->igsnDom->saveXML();
+		$postData = http_build_query([
+			'content' => $this->igsnDom->saveXML()
+		]);
+	
+		$headers = [
+			'Content-Type: application/x-www-form-urlencoded',
+			'Authorization: Bearer ' . $accessToken
+		];
+
+		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
+		if ($retryCount >= 3) {
+			$this->logOrEcho('Retry limit reached. Not retrying.');
+			$status = false;
+		} else if (isset($resArr['retStr']) && $resArr['retStr']) {
+				$status = $this->processRegistrationResponse($resArr['retStr'], $retryCount);
+				if ($status) {
+					$status = $this->updateSqlSesarDate();
+				}
+		}
+		return $status;
+	}
 
 	private function processRegistrationResponse($responseXML, $retryCount = 0){
 		$status = true;
@@ -492,6 +630,21 @@ class OccurrenceSesar extends Manager {
 		}
 		return $status;
 	}
+	
+	private function updateSqlSesarDate() {
+		$status = true;
+		$occidList = array_map('intval', $this->occidBatch);
+		$occidStr = implode(',', $occidList);
+	
+		$sql = "UPDATE NeonSample SET sampleLastUpdatedSESAR = NOW() WHERE occid IN ($occidStr)";
+	
+		if (!$this->conn->query($sql)) {
+			$this->errorMessage = 'ERROR updating sampleLastUpdatedSESAR: ' . $this->conn->error;
+			$status = false;
+		}
+	
+		return $status;
+	}
 
 
 	private function initiateDom(){
@@ -505,17 +658,22 @@ class OccurrenceSesar extends Manager {
 		$this->igsnDom->appendChild($rootElem);
 	}
 
-	private function setSampleXmlNode($igsn){
+	private function setSampleXmlNode($igsn, $newOrUpdate){
 		$sampleElem = $this->igsnDom->createElement('sample');
-
-		$this->addSampleElem($this->igsnDom, $sampleElem, 'sesar_code', 'NEO');		//Required
+		
+		if ($newOrUpdate === 'new') {
+			$this->addSampleElem($this->igsnDom, $sampleElem, 'sesar_code', 'NEO'); // Required for new only
+		} else if ($newOrUpdate === 'update') {
+			$this->addSampleElem($this->igsnDom, $sampleElem, 'igsn', $igsn); // Required for update only
+		}
 		$this->addSampleElem($this->igsnDom, $sampleElem, 'sample_type', 'Individual Sample');		//Required
 		$this->addSampleElem($this->igsnDom, $sampleElem, 'sample_subtype', 'Specimen');		//Required
 		$this->addSampleElem($this->igsnDom, $sampleElem, 'material', 'Biology');		//Required
-		$igsnElem = $this->igsnDom->createElement('igsn');		//If blank, SESAR will generate new IGSN
-		$igsnElem->appendChild($this->igsnDom->createTextNode($igsn));
-		$sampleElem->appendChild($igsnElem);
-
+		if ($newOrUpdate === 'new') {
+			$igsnElem = $this->igsnDom->createElement('igsn');		//If blank, SESAR will generate new IGSN
+			$igsnElem->appendChild($this->igsnDom->createTextNode($igsn));
+			$sampleElem->appendChild($igsnElem);
+		}
 
 		$classificationElem = $this->igsnDom->createElement('classification');
 		$biologyElem = $this->igsnDom->createElement('Biology');
@@ -544,24 +702,27 @@ class OccurrenceSesar extends Manager {
 				$sampleOtherNamesElem->appendChild($nameElem);
 			}
 			$sampleElem->appendChild($sampleOtherNamesElem);
-		}	
+		}
 		
-		$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
-		$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
-		$externalUrlsElem = $this->igsnDom->createElement('external_urls');
-		$externalUrlElem = $this->igsnDom->createElement('external_url');
-		$urlElem = $this->igsnDom->createElement('url');
-		$urlElem->appendChild($this->igsnDom->createTextNode($url));
-		$externalUrlElem->appendChild($urlElem);
-		$descriptionElem = $this->igsnDom->createElement('description');
-		$descriptionElem->appendChild($this->igsnDom->createTextNode('Source Reference URL'));
-		$externalUrlElem->appendChild($descriptionElem);
-		$urlTypeElem = $this->igsnDom->createElement('url_type');
-		$urlTypeElem->appendChild($this->igsnDom->createTextNode('regular URL'));
-		$externalUrlElem->appendChild($urlTypeElem);
-		$externalUrlsElem->appendChild($externalUrlElem);
-		$sampleElem->appendChild($externalUrlsElem);
-
+		//I'm not going to deal with updating urls since you need to specify the old url to update and we don't really have a way of (nicely) getting that information. The hope is that the occid will never change. 
+		if ($newOrUpdate === 'new') {
+			$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
+			$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+			$externalUrlsElem = $this->igsnDom->createElement('external_urls');
+			$externalUrlElem = $this->igsnDom->createElement('external_url');
+			$urlElem = $this->igsnDom->createElement('url');
+			$urlElem->appendChild($this->igsnDom->createTextNode($url));
+			$externalUrlElem->appendChild($urlElem);
+			$descriptionElem = $this->igsnDom->createElement('description');
+			$descriptionElem->appendChild($this->igsnDom->createTextNode('Source Reference URL'));
+			$externalUrlElem->appendChild($descriptionElem);
+			$urlTypeElem = $this->igsnDom->createElement('url_type');
+			$urlTypeElem->appendChild($this->igsnDom->createTextNode('regular URL'));
+			$externalUrlElem->appendChild($urlTypeElem);
+			$externalUrlsElem->appendChild($externalUrlElem);
+			$sampleElem->appendChild($externalUrlsElem);
+		}
+		
 		$rootElem = $this->igsnDom->documentElement;
 		$rootElem->appendChild($sampleElem);
 	}
@@ -957,13 +1118,37 @@ class OccurrenceSesar extends Manager {
 	}
 
 	private function getSqlBase(){
-		$sqlBase = 'FROM omoccurrences o WHERE (o.occurrenceid IS NULL) ';
-		if($this->namespace && $this->namespace == 'NEON'){
-			$sqlBase = 'FROM omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid
-				WHERE (o.occurrenceid IS NULL) AND (s.sampleReceived = 1) AND (s.acceptedForAnalysis = 1)
-				AND (s.checkinUid IS NOT NULL) AND (s.occid = s.occidOriginal) ';
-		}
+		$sqlBase = 'FROM omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid
+			WHERE (o.occurrenceid IS NULL) AND (s.sampleReceived = 1) AND (s.acceptedForAnalysis = 1)
+			AND (s.checkinUid IS NOT NULL) AND (s.occid = s.occidOriginal) ';
 		if($this->collid) $sqlBase .= 'AND (o.collid = '.$this->collid.') ';
+		return $sqlBase;
+	}
+	
+	public function getNeedsUpdateCount(){
+		$cnt = 0;
+		$sql = 'SELECT COUNT(o.occid) AS cnt ' . $this->getSqlBaseNeedsUpdate();
+		$rs = $this->conn->query($sql);
+		if($r = $rs->fetch_object()){
+			$cnt = $r->cnt;
+		}
+		$rs->free();
+		return $cnt;
+	}
+	
+	private function getSqlBaseNeedsUpdate(){
+		$sqlBase = 'FROM omoccurrences o 
+			INNER JOIN omcollections c ON o.collid = c.collid
+			INNER JOIN NeonSample s ON o.occid = s.occid
+			WHERE c.institutionCode = "NEON"
+			AND c.collid NOT IN (44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115)
+			AND s.sampleReceived = 1
+			AND o.dateLastModified > IFNULL(s.sampleLastUpdatedSESAR, "1900-01-01") ';
+	
+		if($this->collid){
+			$sqlBase .= 'AND o.collid = ' . intval($this->collid) . ' ';
+		}
+	
 		return $sqlBase;
 	}
 

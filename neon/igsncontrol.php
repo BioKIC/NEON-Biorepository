@@ -201,7 +201,7 @@ include($SERVER_ROOT.'/includes/header.php');
 		if($action != 'syncIGSNs'){
 			?>
 			<fieldset>
-				<legend>IGSN Registration</legend>
+				<legend>Token Management</legend>
 				<div class="token-info-box">
 					<div class="token-info-toggle" onclick="toggleTokenInfo(this)">
 						Using JWT Tokens for IGSN Registration
@@ -272,7 +272,6 @@ include($SERVER_ROOT.'/includes/header.php');
 						<button id="validate-button" type="button" onclick="validateTokens(this.form)">Validate Access Token</button>
 						<button id="refresh-button" type="button" onclick="refreshTokens(this.form)">Refresh Tokens</button>
 						<button id="save-button" type="button" onclick="saveTokens(this.form)">Save Tokens</button>
-						<button id="assign-button" type="button" onclick="window.location.href='./collections/admin/igsnmanagement.php'">Assign IGSN IDs</button>
 					</div>
 				</form>
 			</fieldset>
@@ -288,6 +287,17 @@ include($SERVER_ROOT.'/includes/header.php');
 			echo '</fieldset>';
 		}
 		?>
+		<fieldset>
+			<legend>IGSN Management</legend>
+            <div style="margin-bottom:10px;">
+                To register or update samples via the SESAR system, you must have a valid <strong>access token</strong>. 
+                Ensure your token is up to date using the tools above before proceeding with sample registration or updates.
+            </div>
+            <div>
+                <button id="assign-button" type="button" onclick="window.location.href='./collections/admin/igsnmanagement.php'">Register New Samples</button>
+                <button id="udpate-button" type="button" onclick="window.location.href='./collections/admin/igsnupdate.php'">Update Existing Samples</button>
+            </div>
+		</fieldset>
 		<fieldset>
 			<legend>SESAR Synchronization</legend>
 			<div style="margin-bottom:10px;">

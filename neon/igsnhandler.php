@@ -61,11 +61,8 @@ if ($taskList) {
 
         if (!$guidManager->isAccessTokenValid($accessToken)) {
             logMessage("Access token expired for UID $SYMB_UID. Attempting refresh...", $logFH);
-            $accessToken = $guidManager->refreshAccessToken($refreshToken, $SYMB_UID);
-            if ($accessToken) {
-                logMessage("Token refresh successful.", $logFH);
-            } else {
-                logMessage("Token refresh failed. Aborting batch.", $logFH);
+            $accessToken = $guidManager->refreshAccessToken($refreshToken, $SYMB_UID, $logFH);
+            if (!$accessToken) {
                 if ($logFH) fclose($logFH);
                 exit(1);
             }
@@ -73,10 +70,10 @@ if ($taskList) {
 
         $guidManager->setIgsnSeed($igsnSeed);
         $guidManager->batchProcessIdentifiers(0);
+        //transfer over occurrenceIDs to catalognum
+        $igsnManager->setNullNeonIdentifiers();
     //break;
     }
-    //transfer over occurrenceIDs to catalognum
-    $igsnManager->setNullNeonIdentifiers();
 }
 logMessage("Finished auto-batch IGSN processing", $logFH);
 ?>
