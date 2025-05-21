@@ -67,7 +67,7 @@ class OccurrenceListManager extends OccurrenceManager{
 				$retArr[$row->occid]['catnum'] = $this->cleanOutStr($row->catalognumber);
 				$retArr[$row->occid]['family'] = $this->cleanOutStr($row->family);
 				$retArr[$row->occid]['sciname'] = ($row->sciname?$this->cleanOutStr($row->sciname):'undetermined');
-				$retArr[$row->occid]['tid'] = $row->tidinterpreted;
+				$retArr[$row->occid]['tidInterpreted'] = $row->tidinterpreted;
 				$retArr[$row->occid]['scientificNameAuthorship'] = $this->cleanOutStr($row->scientificnameauthorship);
 				$retArr[$row->occid]['collector'] = $this->cleanOutStr($row->recordedby);
 				$retArr[$row->occid]['country'] = $this->cleanOutStr($row->country);
