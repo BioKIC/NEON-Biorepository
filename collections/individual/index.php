@@ -165,8 +165,8 @@ $traitArr = $indManager->getTraitArr();
 	?>
 	<link href="<?php echo $CSS_BASE_PATH; ?>/symbiota/collections/individual/index.css?ver=2" type="text/css" rel="stylesheet" >
 	<link href="<?php echo $CSS_BASE_PATH; ?>/symbiota/collections/individual/popup.css" type="text/css" rel="stylesheet" >
-	<script src="../../js/jquery.js" type="text/javascript"></script>
-	<script src="../../js/jquery-ui.js" type="text/javascript"></script>
+	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 	<script src="//maps.googleapis.com/maps/api/js?<?php echo (isset($GOOGLE_MAP_KEY) && $GOOGLE_MAP_KEY?'key='.$GOOGLE_MAP_KEY:''); ?>"></script>
 	<script type="text/javascript">
 		var tabIndex = <?php echo $tabIndex; ?>;
