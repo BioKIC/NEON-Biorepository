@@ -384,54 +384,89 @@ $_SESSION['citationvar'] = $searchVar;
 			</div>
 			<div id="maps" style="min-height:400px;margin-bottom:10px;">
 				<form action="download/index.php" method="post" style="float:right" onsubmit="targetPopup(this)">
-					<button class="icon-button" title="<?php echo $LANG['DOWNLOAD_SPECIMEN_DATA']; ?>">
-						<img src="../../images/dl2.png" srcset="../images/download.svg" class="svg-icon" style="width:15px; height:15px" />
+					<button class="icon-button" aria-label="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>" title="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>">
+						<svg style="width:1.3em" alt="<?= $LANG['IMG_DWNL_DATA']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+							<path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
+						</svg>
 					</button>
 					<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
 					<input name="dltype" type="hidden" value="georef" />
 				</form>
 
 				<div style='margin-top:10px;'>
-					<h2><?php echo $LANG['GOOGLE_MAP_HEADER']; ?></h2>
+					<h2><?php echo $LANG['MAP_HEADER']; ?></h2>
 				</div>
-				<div style='margin:10 0 0 20;'>
-					<button>
-						<a href="#" onclick="openMapPU();">
-							<?php echo $LANG['GOOGLE_MAP_DISPLAY']; ?>
-						</a>
+				<div>
+					<?php echo $LANG['MAP_DESCRIPTION']; ?>
+				</div>
+				<div style='margin-top:10px;'>
+						<button onclick="openMapPU('<?= $searchVar ?>');">
+						<?php echo $LANG['MAP_DISPLAY']; ?>
 					</button>
 				</div>
-				<div style='margin:10 0 0 20;'>
-					<?php echo $LANG['GOOGLE_MAP_DESCRIPTION']; ?>
-				</div>
-
 				<div style='margin-top:10px;'>
-					<h2><?php echo $LANG['GOOGLE_EARTH_HEADER']; ?></h2>
+					<h2><?php echo $LANG['KML_HEADER']; ?></h2>
 				</div>
 				<form name="kmlform" action="map/kmlhandler.php" method="post">
-					<div style='margin:10 0 0 20;'>
-						<?php echo $LANG['GOOGLE_EARTH_DESCRIPTION']; ?>
+					<div>
+						<?php echo $LANG['KML_DESCRIPTION']; ?>
 					</div>
-					<div style="margin:20px;">
+					<div style="margin:10px 0;">
 						<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
 						<button name="formsubmit" type="submit" value="createKML"><?php echo $LANG['CREATE_KML']; ?></button>
 					</div>
-					<div style='margin:10 0 0 20;'>
+					<div>
 						<a href="#" onclick="toggleFieldBox('fieldBox');">
-							<?php echo $LANG['GOOGLE_EARTH_EXTRA']; ?>
+							<?php echo $LANG['KML_EXTRA']; ?>
 						</a>
 					</div>
 					<div id="fieldBox" style="display:none;">
 						<fieldset>
 							<?php
 							$occFieldArr = array(
-								'occurrenceid', 'identifiedby', 'dateidentified', 'identificationreferences',
-								'identificationremarks', 'taxonremarks', 'recordedby', 'recordnumber', 'associatedcollectors', 'eventdate', 'year', 'month', 'day',
-								'verbatimeventdate', 'habitat', 'substrate', 'occurrenceremarks', 'associatedtaxa', 'verbatimattributes',
-								'reproductivecondition', 'cultivationstatus', 'establishmentmeans', 'lifestage', 'sex', 'individualcount', 'samplingprotocol', 'preparations',
-								'country', 'stateprovince', 'county', 'municipality', 'locality', 'locationremarks', 'coordinateuncertaintyinmeters',
-								'verbatimcoordinates', 'georeferencedby', 'georeferenceprotocol', 'georeferencesources', 'georeferenceverificationstatus', 'georeferenceremarks',
-								'minimumelevationinmeters', 'maximumelevationinmeters', 'verbatimelevation'
+								'occurrenceid',
+								'identifiedby',
+								'dateidentified',
+								'identificationreferences',
+								'identificationremarks',
+								'taxonremarks',
+								'recordedby',
+								'recordnumber',
+								'associatedcollectors',
+								'eventdate',
+								'year',
+								'month',
+								'day',
+								'verbatimeventdate',
+								'habitat',
+								'substrate',
+								'occurrenceremarks',
+								'associatedtaxa',
+								'verbatimattributes',
+								'reproductivecondition',
+								'cultivationstatus',
+								'establishmentmeans',
+								'lifestage',
+								'sex',
+								'individualcount',
+								'samplingprotocol',
+								'preparations',
+								'country',
+								'stateprovince',
+								'county',
+								'municipality',
+								'locality',
+								'locationremarks',
+								'coordinateuncertaintyinmeters',
+								'verbatimcoordinates',
+								'georeferencedby',
+								'georeferenceprotocol',
+								'georeferencesources',
+								'georeferenceverificationstatus',
+								'georeferenceremarks',
+								'minimumelevationinmeters',
+								'maximumelevationinmeters',
+								'verbatimelevation'
 							);
 							foreach ($occFieldArr as $k => $v) {
 								echo '<div style="float:left;margin-right:5px;">';
