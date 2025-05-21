@@ -728,8 +728,7 @@ table.styledtable tr.alt td {
   border: 0.2rem solid;
   border-top: none;
   margin: 2rem 0 1rem 1rem;
-  padding: 0.8rem;
-  padding-top: 1.5rem;
+  padding: 0 0 0 0;
 }
 
 .fieldset-like h1,
@@ -746,6 +745,7 @@ table.styledtable tr.alt td {
 .fieldset-like h2 span,
 .fieldset-like h3 span {
   margin: 0 0.3rem;
+  transform: translateY(-50%);
 }
 
 .fieldset-like h1 span,
