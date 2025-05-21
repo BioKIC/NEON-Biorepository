@@ -95,7 +95,7 @@ p:not([class^="Mui"]):not([class*=" Mui"]) {
   color: #565a5c;
 }
 
-a:not([class^="Mui"]):not([class*=" Mui"]) {
+a:not([class^="Mui"]):not([class*=" Mui"]):not([class^="ui-"]) {
   color: #0073cf;
   cursor: pointer;
 }
@@ -104,7 +104,7 @@ p:not([class^="Mui"]):not([class*=" Mui"]) a:not([class^="Mui"]):not([class*=" M
   text-decoration: underline;
 }
 
-li:not([class^="Mui"]):not([class*=" Mui"]) {
+li:not([class^="Mui"]):not([class*=" Mui"]):not([class^="ui-"]) {
   font-size: 1rem;
   line-height: 1.6;
   color: #565a5c;
