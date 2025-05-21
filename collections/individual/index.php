@@ -399,7 +399,7 @@ $traitArr = $indManager->getTraitArr();
 											$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
 											$response = file_get_contents($gbifApiUrl);
 											$data = json_decode($response, true);
-											if (isset($data['count']) && $data['count'] > 0 && isset($data['results'][0]['key'])) {
+											if (isset($data['count']) && $data['count'] == 1 && isset($data['results'][0]['key'])) {
 												$gbifID = $data['results'][0]['key'];
 												$gbifUrl = "https://www.gbif.org/occurrence/$gbifID";
 												echo '<span style="margin-left: 10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
