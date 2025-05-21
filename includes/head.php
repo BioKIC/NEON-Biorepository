@@ -21,8 +21,8 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 <!--end of neon react links-->
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        
+    document.addEventListener('DOMContentLoaded', function() {      
+        //this code happens before react is loaded
         // image resizings for homepage
         function updateElementWidth() {
             const blueDiv = document.getElementById('blue-div');
@@ -97,8 +97,14 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         var reactScript = document.createElement('script');
         reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.5fced446.js';
         reactScript.defer = true;
-
+        
+        // this code happens after Reach is loaded
         reactScript.onload = function() {
+            // edit home image link
+            var logoLink = document.getElementById("block-neon-site-branding");
+            if (logoLink) {
+              logoLink.href = "https://www.neonscience.org/";
+            }  
             // To move innertext into neon-page.content
             var innerTextDiv = document.getElementById('innertext');
             var targetDiv = document.querySelector('div[data-selenium="neon-page.content"]');
