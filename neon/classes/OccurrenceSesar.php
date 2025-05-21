@@ -477,7 +477,7 @@ class OccurrenceSesar extends Manager {
 			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
 			return false;
 		}
-		//$xmldata = $this->igsnDom->saveXML();
+		$xmldata = $this->igsnDom->saveXML();
 		$postData = http_build_query([
 			'content' => $this->igsnDom->saveXML()
 		]);
@@ -518,7 +518,7 @@ class OccurrenceSesar extends Manager {
 			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
 			return false;
 		}
-		//$xmldata = $this->igsnDom->saveXML();
+		$xmldata = $this->igsnDom->saveXML();
 		$postData = http_build_query([
 			'content' => $this->igsnDom->saveXML()
 		]);
