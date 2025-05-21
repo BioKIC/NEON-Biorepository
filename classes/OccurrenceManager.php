@@ -1033,10 +1033,12 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			if($_REQUEST['hasgenetic']) $this->searchTermArr['hasgenetic'] = true;
 			else unset($this->searchTermArr['hasgenetic']);
 		}
+		// NEON customization - addition
 		if(array_key_exists('availableforloan',$_REQUEST)){
 			if($_REQUEST['availableforloan']) $this->searchTermArr['availableforloan'] = true;
 			else unset($this->searchTermArr['availableforloan']);
 		}
+		// End of NEON Customization
 		if(array_key_exists('hascoords',$_REQUEST)){
 			if($_REQUEST['hascoords']) $this->searchTermArr['hascoords'] = true;
 			else unset($this->searchTermArr['hascoords']);
