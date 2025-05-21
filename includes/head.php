@@ -22,7 +22,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {      
-        //this code happens before react is loaded
+        //this code happens after content but before header and sidebar
         // image resizings for homepage
         function updateElementWidth() {
             const blueDiv = document.getElementById('blue-div');
@@ -98,7 +98,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.5fced446.js';
         reactScript.defer = true;
         
-        // this code happens after Reach is loaded
+        // this code happens after header is rendered but before sidebar
         reactScript.onload = function() {
             // edit home image link
             var logoLink = document.getElementById("block-neon-site-branding");

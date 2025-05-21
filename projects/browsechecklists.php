@@ -11,12 +11,25 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 	</head>
 	
 	<script>
+		function waitForElement(selector, callback) {
+			const observer = new MutationObserver(() => {
+				const element = document.querySelector(selector);
+				if (element) {
+					observer.disconnect();
+					callback();
+				}
+			});
+	
+			observer.observe(document.body, { childList: true, subtree: true });
+		}
 		window.onload = function() {
 			function updateElementWidth() {	
 				// hero image
 				var neonPageContent = document.querySelector('div[data-selenium="neon-page.content"]');
 				var neonPageContentWidth = neonPageContent.offsetWidth;
-	
+                var computedStyle = window.getComputedStyle(neonPageContent);
+                var leftPadding = parseFloat(computedStyle.getPropertyValue('padding-left'));
+				
 				var muiContainer = document.querySelector('div.MuiContainer-root');
 				var muiContainerStyle = window.getComputedStyle(muiContainer);
 				var muiContainerRightMargin = parseFloat(muiContainerStyle.marginRight);
@@ -24,16 +37,24 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 				var neonPageContentStyle = window.getComputedStyle(neonPageContent);
 				var neonPageContentpaddingLeft = parseFloat(neonPageContentStyle.paddingLeft);
 				
+                var innerTextDiv = document.getElementById('innertext');
+                var computedStyle = window.getComputedStyle(innerTextDiv);
+                var leftMargin = parseFloat(computedStyle.getPropertyValue('margin-left'));
+				
 				document.getElementById('heroimage-div').style.width = (neonPageContentWidth + muiContainerRightMargin) + 'px';
+				document.getElementById('heroimage-div').style.right = (leftPadding + leftMargin) + 'px';
 			}
 			
 			var heroDiv = document.getElementById('heroimage-div');
-			if (heroDiv) {
+			if (heroDiv) {			
 				// Update the width on initial load
-				updateElementWidth();
-			
-				// Update the width on window resize
-				window.addEventListener('resize', updateElementWidth);
+				waitForElement('.neon__sidebar-sticky', updateElementWidth);
+				// wait a little after snapping
+				let resizeTimeout;
+				window.addEventListener('resize', function () {
+				  clearTimeout(resizeTimeout);
+				  resizeTimeout = setTimeout(updateElementWidth, 50);
+				});
 			}
 		}
 	</script>

@@ -11,6 +11,17 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 	</head>
 	
 	<script>
+		function waitForElement(selector, callback) {
+			const observer = new MutationObserver(() => {
+				const element = document.querySelector(selector);
+				if (element) {
+					observer.disconnect();
+					callback();
+				}
+			});
+	
+			observer.observe(document.body, { childList: true, subtree: true });
+		}
 		window.onload = function() {
 			function updateElementWidth() {	
 				// hero image
@@ -35,11 +46,10 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 			}
 			
 			var heroDiv = document.getElementById('heroimage-div');
-			if (heroDiv) {
+			if (heroDiv) {			
 				// Update the width on initial load
-				updateElementWidth();
-			
-				// Update the width on window resize
+				waitForElement('.neon__sidebar-sticky', updateElementWidth);
+				// wait a little after snapping
 				let resizeTimeout;
 				window.addEventListener('resize', function () {
 				  clearTimeout(resizeTimeout);
