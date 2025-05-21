@@ -57,6 +57,7 @@ if($isEditor){
 			</ul>
 			<h3>Data Management</h3>
 			<ul>
+				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
 				<?php
 				if($IS_ADMIN){
