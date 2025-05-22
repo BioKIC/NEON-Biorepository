@@ -200,20 +200,20 @@ include($SERVER_ROOT.'/includes/header.php');
 					<legend style="font-size:1rem;">Dates</legend>
 					<div class="container mt-3" style="max-width: 100%;margin-top:0 !important;">
 						<div class="row align-items-left">
-							<div class="col-2">
+							<div class="col-3">
 								<p>Date Shipped:</p>
 							</div>
 						
-							<div class="col-10">
+							<div class="col-9 d-flex align-items-center">
 							  <div class="row">
-								<div class="col-3">
+								<div class="col-5">
 								  <input name="dateShippedStart" class="form-control" type="date"
 										 value="<?php echo (isset($searchArgumentArr['dateShippedStart']) ? $searchArgumentArr['dateShippedStart'] : ''); ?>" />
 								</div>
 								<div class="col-1 text-center">
 								  -
 								</div>
-								<div class="col-3">
+								<div class="col-5">
 								  <input name="dateShippedEnd" class="form-control" type="date"
 										 value="<?php echo (isset($searchArgumentArr['dateShippedEnd']) ? $searchArgumentArr['dateShippedEnd'] : ''); ?>" />
 								</div>
@@ -221,19 +221,19 @@ include($SERVER_ROOT.'/includes/header.php');
 							</div>
 						</div>
 						<div class="row align-items-left">
-							<div class="col-2">
+							<div class="col-3">
 								<p>Sample Check-in Date:</p>
 							</div>
-							<div class="col-10">
+							<div class="col-9 d-flex align-items-center">
 							  <div class="row">
-								<div class="col-3">
+								<div class="col-5">
 								  <input name="dateCheckinStart" class="form-control" type="date"
 										 value="<?php echo (isset($searchArgumentArr['dateCheckinStart']) ? $searchArgumentArr['dateCheckinStart'] : ''); ?>" />
 								</div>
 								<div class="col-1 text-center">
 								  -
 								</div>
-								<div class="col-3">
+								<div class="col-5">
 								  <input name="dateCheckinEnd" class="form-control" type="date"
 										 value="<?php echo (isset($searchArgumentArr['dateCheckinEnd']) ? $searchArgumentArr['dateCheckinEnd'] : ''); ?>" />
 								</div>
@@ -246,11 +246,11 @@ include($SERVER_ROOT.'/includes/header.php');
 					<legend style="font-size:1rem;">Staff Activity</legend>
 					<div class="container mt-3" style="max-width: 100%;margin-top:0 !important;">
 						<div class="row align-items-left">
-							<div class="col-2">
+							<div class="col-3">
 								<p>Imported/Modified by:</p>
 							</div>
 						
-							<div class="col-5">
+							<div class="col-5 d-flex align-items-center">
 								<select name="importedUid[]" class="form-control" multiple multiselect-search="true">
 									<?php
 									$userImportArr = $shipManager->getImportUserArr();
@@ -262,11 +262,11 @@ include($SERVER_ROOT.'/includes/header.php');
 							</div>
 						</div>
 						<div class="row align-items-left">
-							<div class="col-2">
+							<div class="col-3">
 								<p>Shipment Checked In by:</p>
 							</div>
 						
-							<div class="col-5">
+							<div class="col-5 d-flex align-items-center">
 								<select name="checkinUid[]" multiple class="form-control" multiselect-search="true">
 									<?php
 									$usercheckinArr = $shipManager->getCheckinUserArr();
@@ -278,11 +278,11 @@ include($SERVER_ROOT.'/includes/header.php');
 							</div>
 						</div>
 						<div class="row align-items-left">
-							<div class="col-2">
+							<div class="col-3">
 								<p>Samples Checked In by:</p>
 							</div>
 						
-							<div class="col-5">
+							<div class="col-5 d-flex align-items-center">
 								<select name="checkinsampleUid[]" multiple class="form-control" multiselect-search="true">
 									<?php
 									$usercheckinArr = $shipManager->getCheckinUserArr();
@@ -303,7 +303,7 @@ include($SERVER_ROOT.'/includes/header.php');
 								<p>Session:</p>
 							</div>
 						
-							<div class="col-3">
+							<div class="col-3 d-flex align-items-center">
 								<select name="sessionData" class="form-control">
 									<option value="">All Records</option>
 									<option value="">------------------------</option>
@@ -321,11 +321,11 @@ include($SERVER_ROOT.'/includes/header.php');
 					<legend style="font-size:1rem;">Sample Properties</legend>
 					<div class="container mt-3" style="max-width: 100%;margin-top:0 !important;">
 						<div class="row align-items-left">
-							<div class="col-2">
+							<div class="col-3">
 								<p>Sample Condition:</p>
 							</div>
 						
-							<div class="col-3">
+							<div class="col-3 d-flex align-items-center">
 								<select name="sampleCondition" class="form-control">
 									<option value="">All Records</option>
 									<option value="">------------------------</option>
@@ -343,11 +343,11 @@ include($SERVER_ROOT.'/includes/header.php');
 							</div>
 						</div>
 						<div class="row align-items-left">
-							<div class="col-2">
+							<div class="col-3">
 								<p>Dynamic Properties:</p>
 							</div>
 						
-							<div class="col-3">
+							<div class="col-3 d-flex align-items-center">
 								<input name="dynamicProperties" class="form-control" type="text" value="<?php echo (isset($searchArgumentArr['dynamicProperties'])?$searchArgumentArr['dynamicProperties']:''); ?>" />
 							</div>
 						</div>
