@@ -4,10 +4,10 @@
  *
  * To rebuild or modify this file with the latest versions of the included
  * software please visit:
- *   https://datatables.net/download/#dt/dt-2.3.1/fc-5.0.4/fh-4.0.2/r-3.0.4/sc-2.4.3
+ *   https://datatables.net/download/#dt/dt-2.3.1/b-3.2.3/b-colvis-3.2.3
  *
  * Included libraries:
- *   DataTables 2.3.1, FixedColumns 5.0.4, FixedHeader 4.0.2, Responsive 3.0.4, Scroller 2.4.3
+ *   DataTables 2.3.1, Buttons 3.2.3, Column visibility 3.2.3
  */
 
 /*! DataTables 2.3.1
@@ -513,7 +513,7 @@
 		 *
 		 *  @type string
 		 */
-		builder: "dt/dt-2.3.1/fc-5.0.4/fh-4.0.2/r-3.0.4/sc-2.4.3",
+		builder: "dt/dt-2.3.1/b-3.2.3/b-colvis-3.2.3",
 	
 		/**
 		 * Buttons. For use with the Buttons extension for DataTables. This is
@@ -14122,539 +14122,7 @@ return DataTable;
 }));
 
 
-/*! FixedColumns 5.0.4
- * © SpryMedia Ltd - datatables.net/license
- */
-
-(function( factory ){
-	if ( typeof define === 'function' && define.amd ) {
-		// AMD
-		define( ['jquery', 'datatables.net'], function ( $ ) {
-			return factory( $, window, document );
-		} );
-	}
-	else if ( typeof exports === 'object' ) {
-		// CommonJS
-		var jq = require('jquery');
-		var cjsRequires = function (root, $) {
-			if ( ! $.fn.dataTable ) {
-				require('datatables.net')(root, $);
-			}
-		};
-
-		if (typeof window === 'undefined') {
-			module.exports = function (root, $) {
-				if ( ! root ) {
-					// CommonJS environments without a window global must pass a
-					// root. This will give an error otherwise
-					root = window;
-				}
-
-				if ( ! $ ) {
-					$ = jq( root );
-				}
-
-				cjsRequires( root, $ );
-				return factory( $, root, root.document );
-			};
-		}
-		else {
-			cjsRequires( window, jq );
-			module.exports = factory( jq, window, window.document );
-		}
-	}
-	else {
-		// Browser
-		factory( jQuery, window, document );
-	}
-}(function( $, window, document ) {
-'use strict';
-var DataTable = $.fn.dataTable;
-
-
-(function () {
-    'use strict';
-
-    var $$1;
-    var DataTable$1;
-    function setJQuery(jq) {
-        $$1 = jq;
-        DataTable$1 = $$1.fn.dataTable;
-    }
-    var FixedColumns = /** @class */ (function () {
-        function FixedColumns(settings, opts) {
-            var _this = this;
-            // Check that the required version of DataTables is included
-            if (!DataTable$1 ||
-                !DataTable$1.versionCheck ||
-                !DataTable$1.versionCheck('2')) {
-                throw new Error('FixedColumns requires DataTables 2 or newer');
-            }
-            var table = new DataTable$1.Api(settings);
-            this.classes = $$1.extend(true, {}, FixedColumns.classes);
-            // Get options from user
-            this.c = $$1.extend(true, {}, FixedColumns.defaults, opts);
-            this.s = {
-                dt: table,
-                rtl: $$1(table.table().node()).css('direction') === 'rtl'
-            };
-            // Backwards compatibility for deprecated options
-            if (opts && opts.leftColumns !== undefined) {
-                opts.left = opts.leftColumns;
-            }
-            if (opts && opts.left !== undefined) {
-                this.c[this.s.rtl ? 'end' : 'start'] = opts.left;
-            }
-            if (opts && opts.rightColumns !== undefined) {
-                opts.right = opts.rightColumns;
-            }
-            if (opts && opts.right !== undefined) {
-                this.c[this.s.rtl ? 'start' : 'end'] = opts.right;
-            }
-            this.dom = {
-                bottomBlocker: $$1('<div>').addClass(this.classes.bottomBlocker),
-                topBlocker: $$1('<div>').addClass(this.classes.topBlocker),
-                scroller: $$1('div.dt-scroll-body', this.s.dt.table().container())
-            };
-            if (this.s.dt.settings()[0]._bInitComplete) {
-                // Fixed Columns Initialisation
-                this._addStyles();
-                this._setKeyTableListener();
-            }
-            else {
-                table.one('init.dt.dtfc', function () {
-                    // Fixed Columns Initialisation
-                    _this._addStyles();
-                    _this._setKeyTableListener();
-                });
-            }
-            // Lots or reasons to redraw the column styles
-            table.on('column-sizing.dt.dtfc column-reorder.dt.dtfc draw.dt.dtfc', function () { return _this._addStyles(); });
-            // Column visibility can trigger a number of times quickly, so we debounce it
-            var debounced = DataTable$1.util.debounce(function () {
-                _this._addStyles();
-            }, 50);
-            table.on('column-visibility.dt.dtfc', function () {
-                debounced();
-            });
-            // Add classes to indicate scrolling state for styling
-            this.dom.scroller.on('scroll.dtfc', function () { return _this._scroll(); });
-            this._scroll();
-            // Make class available through dt object
-            table.settings()[0]._fixedColumns = this;
-            table.on('destroy', function () { return _this._destroy(); });
-            return this;
-        }
-        FixedColumns.prototype.end = function (newVal) {
-            // If the value is to change
-            if (newVal !== undefined) {
-                if (newVal >= 0 && newVal <= this.s.dt.columns().count()) {
-                    // Set the new values and redraw the columns
-                    this.c.end = newVal;
-                    this._addStyles();
-                }
-                return this;
-            }
-            return this.c.end;
-        };
-        /**
-         * Left fix - accounting for RTL
-         *
-         * @param count Columns to fix, or undefined for getter
-         */
-        FixedColumns.prototype.left = function (count) {
-            return this.s.rtl
-                ? this.end(count)
-                : this.start(count);
-        };
-        /**
-         * Right fix - accounting for RTL
-         *
-         * @param count Columns to fix, or undefined for getter
-         */
-        FixedColumns.prototype.right = function (count) {
-            return this.s.rtl
-                ? this.start(count)
-                : this.end(count);
-        };
-        FixedColumns.prototype.start = function (newVal) {
-            // If the value is to change
-            if (newVal !== undefined) {
-                if (newVal >= 0 && newVal <= this.s.dt.columns().count()) {
-                    // Set the new values and redraw the columns
-                    this.c.start = newVal;
-                    this._addStyles();
-                }
-                return this;
-            }
-            return this.c.start;
-        };
-        /**
-         * Iterates over the columns, fixing the appropriate ones to the left and right
-         */
-        FixedColumns.prototype._addStyles = function () {
-            var dt = this.s.dt;
-            var that = this;
-            var colCount = this.s.dt.columns(':visible').count();
-            var headerStruct = dt.table().header.structure(':visible');
-            var footerStruct = dt.table().footer.structure(':visible');
-            var widths = dt.columns(':visible').widths().toArray();
-            var wrapper = $$1(dt.table().node()).closest('div.dt-scroll');
-            var scroller = $$1(dt.table().node()).closest('div.dt-scroll-body')[0];
-            var rtl = this.s.rtl;
-            var start = this.c.start;
-            var end = this.c.end;
-            var left = rtl ? end : start;
-            var right = rtl ? start : end;
-            var barWidth = dt.settings()[0].oBrowser.barWidth; // dt internal
-            // Do nothing if no scrolling in the DataTable
-            if (wrapper.length === 0) {
-                return this;
-            }
-            // Bar not needed - no vertical scrolling
-            if (scroller.offsetWidth === scroller.clientWidth) {
-                barWidth = 0;
-            }
-            // Loop over the visible columns, setting their state
-            dt.columns().every(function (colIdx) {
-                var visIdx = dt.column.index('toVisible', colIdx);
-                var offset;
-                // Skip the hidden columns
-                if (visIdx === null) {
-                    return;
-                }
-                if (visIdx < start) {
-                    // Fix to the start
-                    offset = that._sum(widths, visIdx);
-                    that._fixColumn(visIdx, offset, 'start', headerStruct, footerStruct, barWidth);
-                }
-                else if (visIdx >= colCount - end) {
-                    // Fix to the end
-                    offset = that._sum(widths, colCount - visIdx - 1, true);
-                    that._fixColumn(visIdx, offset, 'end', headerStruct, footerStruct, barWidth);
-                }
-                else {
-                    // Release
-                    that._fixColumn(visIdx, 0, 'none', headerStruct, footerStruct, barWidth);
-                }
-            });
-            // Apply classes to table to indicate what state we are in
-            $$1(dt.table().node())
-                .toggleClass(that.classes.tableFixedStart, start > 0)
-                .toggleClass(that.classes.tableFixedEnd, end > 0)
-                .toggleClass(that.classes.tableFixedLeft, left > 0)
-                .toggleClass(that.classes.tableFixedRight, right > 0);
-            // Blocker elements for when scroll bars are always visible
-            var headerEl = dt.table().header();
-            var footerEl = dt.table().footer();
-            var headerHeight = $$1(headerEl).outerHeight();
-            var footerHeight = $$1(footerEl).outerHeight();
-            this.dom.topBlocker
-                .appendTo(wrapper)
-                .css('top', 0)
-                .css(this.s.rtl ? 'left' : 'right', 0)
-                .css('height', headerHeight)
-                .css('width', barWidth + 1)
-                .css('display', barWidth ? 'block' : 'none');
-            if (footerEl) {
-                this.dom.bottomBlocker
-                    .appendTo(wrapper)
-                    .css('bottom', 0)
-                    .css(this.s.rtl ? 'left' : 'right', 0)
-                    .css('height', footerHeight)
-                    .css('width', barWidth + 1)
-                    .css('display', barWidth ? 'block' : 'none');
-            }
-        };
-        /**
-         * Clean up
-         */
-        FixedColumns.prototype._destroy = function () {
-            this.s.dt.off('.dtfc');
-            this.dom.scroller.off('.dtfc');
-            $$1(this.s.dt.table().node())
-                .removeClass(this.classes.tableScrollingEnd + ' ' +
-                this.classes.tableScrollingLeft + ' ' +
-                this.classes.tableScrollingStart + ' ' +
-                this.classes.tableScrollingRight);
-            this.dom.bottomBlocker.remove();
-            this.dom.topBlocker.remove();
-        };
-        /**
-         * Fix or unfix a column
-         *
-         * @param idx Column visible index to operate on
-         * @param offset Offset from the start (pixels)
-         * @param side start, end or none to unfix a column
-         * @param header DT header structure object
-         * @param footer DT footer structure object
-         */
-        FixedColumns.prototype._fixColumn = function (idx, offset, side, header, footer, barWidth) {
-            var _this = this;
-            var dt = this.s.dt;
-            var applyStyles = function (jq, part) {
-                if (side === 'none') {
-                    jq.css('position', '')
-                        .css('left', '')
-                        .css('right', '')
-                        .removeClass(_this.classes.fixedEnd + ' ' +
-                        _this.classes.fixedLeft + ' ' +
-                        _this.classes.fixedRight + ' ' +
-                        _this.classes.fixedStart);
-                }
-                else {
-                    var positionSide = side === 'start' ? 'left' : 'right';
-                    if (_this.s.rtl) {
-                        positionSide = side === 'start' ? 'right' : 'left';
-                    }
-                    var off = offset;
-                    if (side === 'end' && (part === 'header' || part === 'footer')) {
-                        off += barWidth;
-                    }
-                    jq.css('position', 'sticky')
-                        .css(positionSide, off)
-                        .addClass(side === 'start'
-                        ? _this.classes.fixedStart
-                        : _this.classes.fixedEnd)
-                        .addClass(positionSide === 'left'
-                        ? _this.classes.fixedLeft
-                        : _this.classes.fixedRight);
-                }
-            };
-            header.forEach(function (row) {
-                if (row[idx]) {
-                    applyStyles($$1(row[idx].cell), 'header');
-                }
-            });
-            applyStyles(dt.column(idx + ':visible', { page: 'current' }).nodes().to$(), 'body');
-            if (footer) {
-                footer.forEach(function (row) {
-                    if (row[idx]) {
-                        applyStyles($$1(row[idx].cell), 'footer');
-                    }
-                });
-            }
-        };
-        /**
-         * Update classes on the table to indicate if the table is scrolling or not
-         */
-        FixedColumns.prototype._scroll = function () {
-            var scroller = this.dom.scroller[0];
-            // Not a scrolling table
-            if (!scroller) {
-                return;
-            }
-            // Need to update the classes on potentially multiple table tags. There is the
-            // main one, the scrolling ones and if FixedHeader is active, the holding
-            // position ones! jQuery will deduplicate for us.
-            var table = $$1(this.s.dt.table().node())
-                .add(this.s.dt.table().header().parentNode)
-                .add(this.s.dt.table().footer().parentNode)
-                .add('div.dt-scroll-headInner table', this.s.dt.table().container())
-                .add('div.dt-scroll-footInner table', this.s.dt.table().container());
-            var scrollLeft = scroller.scrollLeft; // 0 when fully scrolled left
-            var ltr = !this.s.rtl;
-            var scrollStart = scrollLeft !== 0;
-            var scrollEnd = scroller.scrollWidth > (scroller.clientWidth + Math.abs(scrollLeft) + 1); // extra 1 for Chrome
-            table.toggleClass(this.classes.tableScrollingStart, scrollStart);
-            table.toggleClass(this.classes.tableScrollingEnd, scrollEnd);
-            table.toggleClass(this.classes.tableScrollingLeft, (scrollStart && ltr) || (scrollEnd && !ltr));
-            table.toggleClass(this.classes.tableScrollingRight, (scrollEnd && ltr) || (scrollStart && !ltr));
-        };
-        FixedColumns.prototype._setKeyTableListener = function () {
-            var _this = this;
-            this.s.dt.on('key-focus.dt.dtfc', function (e, dt, cell) {
-                var currScroll;
-                var cellPos = $$1(cell.node()).offset();
-                var scroller = _this.dom.scroller[0];
-                var scroll = $$1($$1(_this.s.dt.table().node()).closest('div.dt-scroll-body'));
-                // If there are fixed columns to the left
-                if (_this.c.start > 0) {
-                    // Get the rightmost left fixed column header, it's position and it's width
-                    var rightMost = $$1(_this.s.dt.column(_this.c.start - 1).header());
-                    var rightMostPos = rightMost.offset();
-                    var rightMostWidth = rightMost.outerWidth();
-                    // If the current highlighted cell is left of the rightmost cell on the screen
-                    if ($$1(cell.node()).hasClass(_this.classes.fixedLeft)) {
-                        // Fixed columns have the scrollbar at the start, always
-                        scroll.scrollLeft(0);
-                    }
-                    else if (cellPos.left < rightMostPos.left + rightMostWidth) {
-                        // Scroll it into view
-                        currScroll = scroll.scrollLeft();
-                        scroll.scrollLeft(currScroll -
-                            (rightMostPos.left + rightMostWidth - cellPos.left));
-                    }
-                }
-                // If there are fixed columns to the right
-                if (_this.c.end > 0) {
-                    // Get the number of columns and the width of the cell as doing right side calc
-                    var numCols = _this.s.dt.columns().data().toArray().length;
-                    var cellWidth = $$1(cell.node()).outerWidth();
-                    // Get the leftmost right fixed column header and it's position
-                    var leftMost = $$1(_this.s.dt.column(numCols - _this.c.end).header());
-                    var leftMostPos = leftMost.offset();
-                    // If the current highlighted cell is right of the leftmost cell on the screen
-                    if ($$1(cell.node()).hasClass(_this.classes.fixedRight)) {
-                        scroll.scrollLeft(scroller.scrollWidth - scroller.clientWidth);
-                    }
-                    else if (cellPos.left + cellWidth > leftMostPos.left) {
-                        // Scroll it into view
-                        currScroll = scroll.scrollLeft();
-                        scroll.scrollLeft(currScroll -
-                            (leftMostPos.left - (cellPos.left + cellWidth)));
-                    }
-                }
-            });
-        };
-        /**
-         * Sum a range of values from an array
-         *
-         * @param widths
-         * @param index
-         * @returns
-         */
-        FixedColumns.prototype._sum = function (widths, index, reverse) {
-            if (reverse === void 0) { reverse = false; }
-            if (reverse) {
-                widths = widths.slice().reverse();
-            }
-            return widths.slice(0, index).reduce(function (accum, val) { return accum + val; }, 0);
-        };
-        FixedColumns.version = '5.0.4';
-        FixedColumns.classes = {
-            bottomBlocker: 'dtfc-bottom-blocker',
-            fixedEnd: 'dtfc-fixed-end',
-            fixedLeft: 'dtfc-fixed-left',
-            fixedRight: 'dtfc-fixed-right',
-            fixedStart: 'dtfc-fixed-start',
-            tableFixedEnd: 'dtfc-has-end',
-            tableFixedLeft: 'dtfc-has-left',
-            tableFixedRight: 'dtfc-has-right',
-            tableFixedStart: 'dtfc-has-start',
-            tableScrollingEnd: 'dtfc-scrolling-end',
-            tableScrollingLeft: 'dtfc-scrolling-left',
-            tableScrollingRight: 'dtfc-scrolling-right',
-            tableScrollingStart: 'dtfc-scrolling-start',
-            topBlocker: 'dtfc-top-blocker'
-        };
-        FixedColumns.defaults = {
-            i18n: {
-                button: 'FixedColumns'
-            },
-            start: 1,
-            end: 0
-        };
-        return FixedColumns;
-    }());
-
-    /*! FixedColumns 5.0.4
-     * © SpryMedia Ltd - datatables.net/license
-     */
-    setJQuery($);
-    $.fn.dataTable.FixedColumns = FixedColumns;
-    $.fn.DataTable.FixedColumns = FixedColumns;
-    var apiRegister = DataTable.Api.register;
-    apiRegister('fixedColumns()', function () {
-        return this;
-    });
-    apiRegister('fixedColumns().start()', function (newVal) {
-        var ctx = this.context[0];
-        if (newVal !== undefined) {
-            ctx._fixedColumns.start(newVal);
-            return this;
-        }
-        else {
-            return ctx._fixedColumns.start();
-        }
-    });
-    apiRegister('fixedColumns().end()', function (newVal) {
-        var ctx = this.context[0];
-        if (newVal !== undefined) {
-            ctx._fixedColumns.end(newVal);
-            return this;
-        }
-        else {
-            return ctx._fixedColumns.end();
-        }
-    });
-    apiRegister('fixedColumns().left()', function (newVal) {
-        var ctx = this.context[0];
-        if (newVal !== undefined) {
-            ctx._fixedColumns.left(newVal);
-            return this;
-        }
-        else {
-            return ctx._fixedColumns.left();
-        }
-    });
-    apiRegister('fixedColumns().right()', function (newVal) {
-        var ctx = this.context[0];
-        if (newVal !== undefined) {
-            ctx._fixedColumns.right(newVal);
-            return this;
-        }
-        else {
-            return ctx._fixedColumns.right();
-        }
-    });
-    DataTable.ext.buttons.fixedColumns = {
-        action: function (e, dt, node, config) {
-            if ($(node).attr('active')) {
-                $(node).removeAttr('active').removeClass('active');
-                dt.fixedColumns().start(0);
-                dt.fixedColumns().end(0);
-            }
-            else {
-                $(node).attr('active', 'true').addClass('active');
-                dt.fixedColumns().start(config.config.start);
-                dt.fixedColumns().end(config.config.end);
-            }
-        },
-        config: {
-            start: 1,
-            end: 0
-        },
-        init: function (dt, node, config) {
-            if (dt.settings()[0]._fixedColumns === undefined) {
-                _init(dt.settings(), config);
-            }
-            $(node).attr('active', 'true').addClass('active');
-            dt.button(node).text(config.text || dt.i18n('buttons.fixedColumns', dt.settings()[0]._fixedColumns.c.i18n.button));
-        },
-        text: null
-    };
-    function _init(settings, options) {
-        if (options === void 0) { options = null; }
-        var api = new DataTable.Api(settings);
-        var opts = options
-            ? options
-            : api.init().fixedColumns || DataTable.defaults.fixedColumns;
-        var fixedColumns = new FixedColumns(api, opts);
-        return fixedColumns;
-    }
-    // Attach a listener to the document which listens for DataTables initialisation
-    // events so we can automatically initialise
-    $(document).on('plugin-init.dt', function (e, settings) {
-        if (e.namespace !== 'dt') {
-            return;
-        }
-        if (settings.oInit.fixedColumns ||
-            DataTable.defaults.fixedColumns) {
-            if (!settings._fixedColumns) {
-                _init(settings, null);
-            }
-        }
-    });
-
-})();
-
-
-return DataTable;
-}));
-
-
-/*! FixedHeader 4.0.2
+/*! Buttons for DataTables 3.2.3
  * © SpryMedia Ltd - datatables.net/license
  */
 
@@ -14705,34 +14173,67 @@ var DataTable = $.fn.dataTable;
 
 
 
-/**
- * @summary     FixedHeader
- * @description Fix a table's header or footer, so it is always visible while
- *              scrolling
- * @version     4.0.2
- * @author      SpryMedia Ltd
- * @contact     datatables.net
- *
- * This source file is free software, available under the following license:
- *   MIT license - http://datatables.net/license/mit
- *
- * This source file is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the license files for details.
- *
- * For details please refer to: http://www.datatables.net
- */
-
+// Used for namespacing events added to the document by each instance, so they
+// can be removed on destroy
 var _instCounter = 0;
 
-var FixedHeader = function (dt, config) {
+// Button namespacing counter for namespacing events on individual buttons
+var _buttonCounter = 0;
+
+var _dtButtons = DataTable.ext.buttons;
+
+// Custom entity decoder for data export
+var _entityDecoder = null;
+
+// Allow for jQuery slim
+function _fadeIn(el, duration, fn) {
+	if ($.fn.animate) {
+		el.stop().fadeIn(duration, fn);
+	}
+	else {
+		el.css('display', 'block');
+
+		if (fn) {
+			fn.call(el);
+		}
+	}
+}
+
+function _fadeOut(el, duration, fn) {
+	if ($.fn.animate) {
+		el.stop().fadeOut(duration, fn);
+	}
+	else {
+		el.css('display', 'none');
+
+		if (fn) {
+			fn.call(el);
+		}
+	}
+}
+
+/**
+ * [Buttons description]
+ * @param {[type]}
+ * @param {[type]}
+ */
+var Buttons = function (dt, config) {
 	if (!DataTable.versionCheck('2')) {
-		throw 'Warning: FixedHeader requires DataTables 2 or newer';
+		throw 'Warning: Buttons requires DataTables 2 or newer';
 	}
 
-	// Sanity check - you just know it will happen
-	if (!(this instanceof FixedHeader)) {
-		throw "FixedHeader must be initialised with the 'new' keyword.";
+	// If not created with a `new` keyword then we return a wrapper function that
+	// will take the settings object for a DT. This allows easy use of new instances
+	// with the `layout` option - e.g. `topLeft: $.fn.dataTable.Buttons( ... )`.
+	if (!(this instanceof Buttons)) {
+		return function (settings) {
+			return new Buttons(settings, dt).container();
+		};
+	}
+
+	// If there is no config set it to an empty object
+	if (typeof config === 'undefined') {
+		config = {};
 	}
 
 	// Allow a boolean true for defaults
@@ -14740,2965 +14241,2841 @@ var FixedHeader = function (dt, config) {
 		config = {};
 	}
 
-	dt = new DataTable.Api(dt);
+	// For easy configuration of buttons an array can be given
+	if (Array.isArray(config)) {
+		config = { buttons: config };
+	}
 
-	this.c = $.extend(true, {}, FixedHeader.defaults, config);
+	this.c = $.extend(true, {}, Buttons.defaults, config);
+
+	// Don't want a deep copy for the buttons
+	if (config.buttons) {
+		this.c.buttons = config.buttons;
+	}
 
 	this.s = {
-		dt: dt,
-		position: {
-			theadTop: 0,
-			tbodyTop: 0,
-			tfootTop: 0,
-			tfootBottom: 0,
-			width: 0,
-			left: 0,
-			tfootHeight: 0,
-			theadHeight: 0,
-			windowHeight: $(window).height(),
-			visible: true
-		},
-		headerMode: null,
-		footerMode: null,
-		autoWidth: dt.settings()[0].oFeatures.bAutoWidth,
-		namespace: '.dtfc' + _instCounter++,
-		scrollLeft: {
-			header: -1,
-			footer: -1
-		},
-		enable: true,
-		autoDisable: false
+		dt: new DataTable.Api(dt),
+		buttons: [],
+		listenKeys: '',
+		namespace: 'dtb' + _instCounter++
 	};
 
 	this.dom = {
-		floatingHeader: null,
-		thead: $(dt.table().header()),
-		tbody: $(dt.table().body()),
-		tfoot: $(dt.table().footer()),
-		header: {
-			host: null,
-			floating: null,
-			floatingParent: $('<div class="dtfh-floatingparent"><div></div></div>'),
-			placeholder: null
-		},
-		footer: {
-			host: null,
-			floating: null,
-			floatingParent: $('<div class="dtfh-floatingparent"><div></div></div>'),
-			placeholder: null
-		}
+		container: $('<' + this.c.dom.container.tag + '/>').addClass(
+			this.c.dom.container.className
+		)
 	};
-
-	this.dom.header.host = this.dom.thead.parent();
-	this.dom.footer.host = this.dom.tfoot.parent();
-
-	var dtSettings = dt.settings()[0];
-	if (dtSettings._fixedHeader) {
-		throw (
-			'FixedHeader already initialised on table ' + dtSettings.nTable.id
-		);
-	}
-
-	dtSettings._fixedHeader = this;
 
 	this._constructor();
 };
 
-/*
- * Variable: FixedHeader
- * Purpose:  Prototype for FixedHeader
- * Scope:    global
- */
-$.extend(FixedHeader.prototype, {
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * API methods
+$.extend(Buttons.prototype, {
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	 * Public methods
 	 */
 
 	/**
-	 * Kill off FH and any events
+	 * Get the action of a button
+	 * @param  {int|string} Button index
+	 * @return {function}
+	 */ /**
+	 * Set the action of a button
+	 * @param  {node} node Button element
+	 * @param  {function} action Function to set
+	 * @return {Buttons} Self for chaining
 	 */
-	destroy: function () {
-		var dom = this.dom;
+	action: function (node, action) {
+		var button = this._nodeToButton(node);
 
-		this.s.dt.off('.dtfc');
-		$(window).off(this.s.namespace);
-
-		// Remove clones of FC blockers
-		if (dom.header.rightBlocker) {
-			dom.header.rightBlocker.remove();
-		}
-		if (dom.header.leftBlocker) {
-			dom.header.leftBlocker.remove();
-		}
-		if (dom.footer.rightBlocker) {
-			dom.footer.rightBlocker.remove();
-		}
-		if (dom.footer.leftBlocker) {
-			dom.footer.leftBlocker.remove();
+		if (action === undefined) {
+			return button.conf.action;
 		}
 
-		if (this.c.header) {
-			this._modeChange('in-place', 'header', true);
-		}
+		button.conf.action = action;
 
-		if (this.c.footer && dom.tfoot.length) {
-			this._modeChange('in-place', 'footer', true);
-		}
+		return this;
 	},
 
 	/**
-	 * Enable / disable the fixed elements
-	 *
-	 * @param  {boolean} enable `true` to enable, `false` to disable
+	 * Add an active class to the button to make to look active or get current
+	 * active state.
+	 * @param  {node} node Button element
+	 * @param  {boolean} [flag] Enable / disable flag
+	 * @return {Buttons} Self for chaining or boolean for getter
 	 */
-	enable: function (enable, update, type) {
-		this.s.enable = enable;
+	active: function (node, flag) {
+		var button = this._nodeToButton(node);
+		var klass = this.c.dom.button.active;
+		var jqNode = $(button.node);
 
-		this.s.enableType = type;
-
-		if (update || update === undefined) {
-			this._positions();
-			this._scroll(true);
+		if (
+			button.inCollection &&
+			this.c.dom.collection.button &&
+			this.c.dom.collection.button.active !== undefined
+		) {
+			klass = this.c.dom.collection.button.active;
 		}
+
+		if (flag === undefined) {
+			return jqNode.hasClass(klass);
+		}
+
+		jqNode.toggleClass(klass, flag === undefined ? true : flag);
+
+		return this;
 	},
 
 	/**
-	 * Get enabled status
+	 * Add a new button
+	 * @param {object} config Button configuration object, base string name or function
+	 * @param {int|string} [idx] Button index for where to insert the button
+	 * @param {boolean} [draw=true] Trigger a draw. Set a false when adding
+	 *   lots of buttons, until the last button.
+	 * @return {Buttons} Self for chaining
 	 */
-	enabled: function () {
-		return this.s.enable;
+	add: function (config, idx, draw) {
+		var buttons = this.s.buttons;
+
+		if (typeof idx === 'string') {
+			var split = idx.split('-');
+			var base = this.s;
+
+			for (var i = 0, ien = split.length - 1; i < ien; i++) {
+				base = base.buttons[split[i] * 1];
+			}
+
+			buttons = base.buttons;
+			idx = split[split.length - 1] * 1;
+		}
+
+		this._expandButton(
+			buttons,
+			config,
+			config !== undefined ? config.split : undefined,
+			(config === undefined ||
+				config.split === undefined ||
+				config.split.length === 0) &&
+				base !== undefined,
+			false,
+			idx
+		);
+
+		if (draw === undefined || draw === true) {
+			this._draw();
+		}
+
+		return this;
 	},
 
 	/**
-	 * Set header offset
-	 *
-	 * @param  {int} new value for headerOffset
+	 * Clear buttons from a collection and then insert new buttons
 	 */
-	headerOffset: function (offset) {
-		if (offset !== undefined) {
-			this.c.headerOffset = offset;
-			this.update();
+	collectionRebuild: function (node, newButtons) {
+		var button = this._nodeToButton(node);
+
+		if (newButtons !== undefined) {
+			var i;
+			// Need to reverse the array
+			for (i = button.buttons.length - 1; i >= 0; i--) {
+				this.remove(button.buttons[i].node);
+			}
+
+			// If the collection has prefix and / or postfix buttons we need to add them in
+			if (button.conf.prefixButtons) {
+				newButtons.unshift.apply(newButtons, button.conf.prefixButtons);
+			}
+
+			if (button.conf.postfixButtons) {
+				newButtons.push.apply(newButtons, button.conf.postfixButtons);
+			}
+
+			for (i = 0; i < newButtons.length; i++) {
+				var newBtn = newButtons[i];
+
+				this._expandButton(
+					button.buttons,
+					newBtn,
+					newBtn !== undefined &&
+						newBtn.config !== undefined &&
+						newBtn.config.split !== undefined,
+					true,
+					newBtn.parentConf !== undefined &&
+						newBtn.parentConf.split !== undefined,
+					null,
+					newBtn.parentConf
+				);
+			}
 		}
 
-		return this.c.headerOffset;
+		this._draw(button.collection, button.buttons);
 	},
 
 	/**
-	 * Set footer offset
-	 *
-	 * @param  {int} new value for footerOffset
+	 * Get the container node for the buttons
+	 * @return {jQuery} Buttons node
 	 */
-	footerOffset: function (offset) {
-		if (offset !== undefined) {
-			this.c.footerOffset = offset;
-			this.update();
-		}
-
-		return this.c.footerOffset;
+	container: function () {
+		return this.dom.container;
 	},
 
 	/**
-	 * Recalculate the position of the fixed elements and force them into place
+	 * Disable a button
+	 * @param  {node} node Button node
+	 * @return {Buttons} Self for chaining
 	 */
-	update: function (force) {
-		var table = this.s.dt.table().node();
+	disable: function (node) {
+		var button = this._nodeToButton(node);
 
-		// Update should only do something if enabled by the dev.
-		if (!this.s.enable && !this.s.autoDisable) {
-			return;
-		}
-
-		if ($(table).is(':visible')) {
-			this.s.autoDisable = false;
-			this.enable(true, false);
+		if (button.isSplit) {
+			$(button.node.childNodes[0])
+				.addClass(this.c.dom.button.disabled)
+				.prop('disabled', true);
 		}
 		else {
-			this.s.autoDisable = true;
-			this.enable(false, false);
+			$(button.node)
+				.addClass(this.c.dom.button.disabled)
+				.prop('disabled', true);
 		}
 
-		// Don't update if header is not in the document atm (due to
-		// async events)
-		if ($(table).children('thead').length === 0) {
-			return;
-		}
+		button.disabled = true;
 
-		this._positions();
-		this._scroll(force !== undefined ? force : true);
-		this._widths(this.dom.header);
-		this._widths(this.dom.footer);
+		this._checkSplitEnable();
+
+		return this;
 	},
 
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	/**
+	 * Destroy the instance, cleaning up event handlers and removing DOM
+	 * elements
+	 * @return {Buttons} Self for chaining
+	 */
+	destroy: function () {
+		// Key event listener
+		$('body').off('keyup.' + this.s.namespace);
+
+		// Individual button destroy (so they can remove their own events if
+		// needed). Take a copy as the array is modified by `remove`
+		var buttons = this.s.buttons.slice();
+		var i, ien;
+
+		for (i = 0, ien = buttons.length; i < ien; i++) {
+			this.remove(buttons[i].node);
+		}
+
+		// Container
+		this.dom.container.remove();
+
+		// Remove from the settings object collection
+		var buttonInsts = this.s.dt.settings()[0];
+
+		for (i = 0, ien = buttonInsts.length; i < ien; i++) {
+			if (buttonInsts.inst === this) {
+				buttonInsts.splice(i, 1);
+				break;
+			}
+		}
+
+		return this;
+	},
+
+	/**
+	 * Enable / disable a button
+	 * @param  {node} node Button node
+	 * @param  {boolean} [flag=true] Enable / disable flag
+	 * @return {Buttons} Self for chaining
+	 */
+	enable: function (node, flag) {
+		if (flag === false) {
+			return this.disable(node);
+		}
+
+		var button = this._nodeToButton(node);
+
+		if (button.isSplit) {
+			$(button.node.childNodes[0])
+				.removeClass(this.c.dom.button.disabled)
+				.prop('disabled', false);
+		}
+		else {
+			$(button.node)
+				.removeClass(this.c.dom.button.disabled)
+				.prop('disabled', false);
+		}
+
+		button.disabled = false;
+
+		this._checkSplitEnable();
+
+		return this;
+	},
+
+	/**
+	 * Get a button's index
+	 *
+	 * This is internally recursive
+	 * @param {element} node Button to get the index of
+	 * @return {string} Button index
+	 */
+	index: function (node, nested, buttons) {
+		if (!nested) {
+			nested = '';
+			buttons = this.s.buttons;
+		}
+
+		for (var i = 0, ien = buttons.length; i < ien; i++) {
+			var inner = buttons[i].buttons;
+
+			if (buttons[i].node === node) {
+				return nested + i;
+			}
+
+			if (inner && inner.length) {
+				var match = this.index(node, i + '-', inner);
+
+				if (match !== null) {
+					return match;
+				}
+			}
+		}
+
+		return null;
+	},
+
+	/**
+	 * Get the instance name for the button set selector
+	 * @return {string} Instance name
+	 */
+	name: function () {
+		return this.c.name;
+	},
+
+	/**
+	 * Get a button's node of the buttons container if no button is given
+	 * @param  {node} [node] Button node
+	 * @return {jQuery} Button element, or container
+	 */
+	node: function (node) {
+		if (!node) {
+			return this.dom.container;
+		}
+
+		var button = this._nodeToButton(node);
+		return $(button.node);
+	},
+
+	/**
+	 * Set / get a processing class on the selected button
+	 * @param {element} node Triggering button node
+	 * @param  {boolean} flag true to add, false to remove, undefined to get
+	 * @return {boolean|Buttons} Getter value or this if a setter.
+	 */
+	processing: function (node, flag) {
+		var dt = this.s.dt;
+		var button = this._nodeToButton(node);
+
+		if (flag === undefined) {
+			return $(button.node).hasClass('processing');
+		}
+
+		$(button.node).toggleClass('processing', flag);
+
+		$(dt.table().node()).triggerHandler('buttons-processing.dt', [
+			flag,
+			dt.button(node),
+			dt,
+			$(node),
+			button.conf
+		]);
+
+		return this;
+	},
+
+	/**
+	 * Remove a button.
+	 * @param  {node} node Button node
+	 * @return {Buttons} Self for chaining
+	 */
+	remove: function (node) {
+		var button = this._nodeToButton(node);
+		var host = this._nodeToHost(node);
+		var dt = this.s.dt;
+
+		// Remove any child buttons first
+		if (button.buttons.length) {
+			for (var i = button.buttons.length - 1; i >= 0; i--) {
+				this.remove(button.buttons[i].node);
+			}
+		}
+
+		button.conf.destroying = true;
+
+		// Allow the button to remove event handlers, etc
+		if (button.conf.destroy) {
+			button.conf.destroy.call(dt.button(node), dt, $(node), button.conf);
+		}
+
+		this._removeKey(button.conf);
+
+		$(button.node).remove();
+
+		if (button.inserter) {
+			$(button.inserter).remove();
+		}
+
+		var idx = $.inArray(button, host);
+		host.splice(idx, 1);
+
+		return this;
+	},
+
+	/**
+	 * Get the text for a button
+	 * @param  {int|string} node Button index
+	 * @return {string} Button text
+	 */ /**
+	 * Set the text for a button
+	 * @param  {int|string|function} node Button index
+	 * @param  {string} label Text
+	 * @return {Buttons} Self for chaining
+	 */
+	text: function (node, label) {
+		var button = this._nodeToButton(node);
+		var textNode = button.textNode;
+		var dt = this.s.dt;
+		var jqNode = $(button.node);
+		var text = function (opt) {
+			return typeof opt === 'function'
+				? opt(dt, jqNode, button.conf)
+				: opt;
+		};
+
+		if (label === undefined) {
+			return text(button.conf.text);
+		}
+
+		button.conf.text = label;
+		textNode.html(text(label));
+
+		return this;
+	},
+
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Constructor
 	 */
 
 	/**
-	 * FixedHeader constructor - adding the required event listeners and
-	 * simple initialisation
-	 *
+	 * Buttons constructor
 	 * @private
 	 */
 	_constructor: function () {
 		var that = this;
 		var dt = this.s.dt;
+		var dtSettings = dt.settings()[0];
+		var buttons = this.c.buttons;
 
-		$(window)
-			.on('scroll' + this.s.namespace, function () {
-				that._scroll();
-			})
-			.on(
-				'resize' + this.s.namespace,
-				DataTable.util.throttle(function () {
-					that.s.position.windowHeight = $(window).height();
-					that.update();
-				}, 50)
-			);
-
-		var autoHeader = $('.fh-fixedHeader');
-		if (!this.c.headerOffset && autoHeader.length) {
-			this.c.headerOffset = autoHeader.outerHeight();
+		if (!dtSettings._buttons) {
+			dtSettings._buttons = [];
 		}
 
-		var autoFooter = $('.fh-fixedFooter');
-		if (!this.c.footerOffset && autoFooter.length) {
-			this.c.footerOffset = autoFooter.outerHeight();
+		dtSettings._buttons.push({
+			inst: this,
+			name: this.c.name
+		});
+
+		for (var i = 0, ien = buttons.length; i < ien; i++) {
+			this.add(buttons[i]);
 		}
 
-		dt.on(
-			'column-reorder.dt.dtfc column-visibility.dt.dtfc column-sizing.dt.dtfc responsive-display.dt.dtfc',
-			function (e, ctx) {
-				that.update();
+		dt.on('destroy', function (e, settings) {
+			if (settings === dtSettings) {
+				that.destroy();
 			}
-		).on('draw.dt.dtfc', function (e, ctx) {
-			// For updates from our own table, don't reclone, but for all others, do
-			that.update(ctx === dt.settings()[0] ? false : true);
 		});
 
-		dt.on('destroy.dtfc', function () {
-			that.destroy();
-		});
+		// Global key event binding to listen for button keys
+		$('body').on('keyup.' + this.s.namespace, function (e) {
+			if (
+				!document.activeElement ||
+				document.activeElement === document.body
+			) {
+				// SUse a string of characters for fast lookup of if we need to
+				// handle this
+				var character = String.fromCharCode(e.keyCode).toLowerCase();
 
-		this._positions();
-		this._scroll();
+				if (that.s.listenKeys.toLowerCase().indexOf(character) !== -1) {
+					that._keypress(character, e);
+				}
+			}
+		});
 	},
 
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Private methods
 	 */
 
 	/**
-	 * Clone a fixed item to act as a place holder for the original element
-	 * which is moved into a clone of the table element, and moved around the
-	 * document to give the fixed effect.
-	 *
-	 * @param  {string}  item  'header' or 'footer'
-	 * @param  {boolean} force Force the clone to happen, or allow automatic
-	 *   decision (reuse existing if available)
+	 * Add a new button to the key press listener
+	 * @param {object} conf Resolved button configuration object
 	 * @private
 	 */
-	_clone: function (item, force) {
-		var that = this;
+	_addKey: function (conf) {
+		if (conf.key) {
+			this.s.listenKeys += $.isPlainObject(conf.key)
+				? conf.key.key
+				: conf.key;
+		}
+	},
+
+	/**
+	 * Insert the buttons into the container. Call without parameters!
+	 * @param  {node} [container] Recursive only - Insert point
+	 * @param  {array} [buttons] Recursive only - Buttons array
+	 * @private
+	 */
+	_draw: function (container, buttons) {
+		if (!container) {
+			container = this.dom.container;
+			buttons = this.s.buttons;
+		}
+
+		container.children().detach();
+
+		for (var i = 0, ien = buttons.length; i < ien; i++) {
+			container.append(buttons[i].inserter);
+			container.append(' ');
+
+			if (buttons[i].buttons && buttons[i].buttons.length) {
+				this._draw(buttons[i].collection, buttons[i].buttons);
+			}
+		}
+	},
+
+	/**
+	 * Create buttons from an array of buttons
+	 * @param  {array} attachTo Buttons array to attach to
+	 * @param  {object} button Button definition
+	 * @param  {boolean} inCollection true if the button is in a collection
+	 * @private
+	 */
+	_expandButton: function (
+		attachTo,
+		button,
+		split,
+		inCollection,
+		inSplit,
+		attachPoint,
+		parentConf
+	) {
 		var dt = this.s.dt;
-		var itemDom = this.dom[item];
-		var itemElement = item === 'header' ? this.dom.thead : this.dom.tfoot;
+		var isSplit = false;
+		var domCollection = this.c.dom.collection;
+		var buttons = !Array.isArray(button) ? [button] : button;
 
-		// If footer and scrolling is enabled then we don't clone
-		// Instead the table's height is decreased accordingly - see `_scroll()`
-		if (item === 'footer' && this._scrollEnabled()) {
-			return;
+		if (button === undefined) {
+			buttons = !Array.isArray(split) ? [split] : split;
 		}
 
-		if (!force && itemDom.floating) {
-			// existing floating element - reuse it
-			itemDom.floating.removeClass(
-				'fixedHeader-floating fixedHeader-locked'
+		for (var i = 0, ien = buttons.length; i < ien; i++) {
+			var conf = this._resolveExtends(buttons[i]);
+
+			if (!conf) {
+				continue;
+			}
+
+			isSplit = conf.config && conf.config.split ? true : false;
+
+			// If the configuration is an array, then expand the buttons at this
+			// point
+			if (Array.isArray(conf)) {
+				this._expandButton(
+					attachTo,
+					conf,
+					built !== undefined && built.conf !== undefined
+						? built.conf.split
+						: undefined,
+					inCollection,
+					parentConf !== undefined && parentConf.split !== undefined,
+					attachPoint,
+					parentConf
+				);
+				continue;
+			}
+
+			var built = this._buildButton(
+				conf,
+				inCollection,
+				conf.split !== undefined ||
+					(conf.config !== undefined &&
+						conf.config.split !== undefined),
+				inSplit
 			);
-		}
-		else {
-			if (itemDom.floating) {
-				if (itemDom.placeholder !== null) {
-					itemDom.placeholder.remove();
-				}
-
-				itemDom.floating.children().detach();
-				itemDom.floating.remove();
+			if (!built) {
+				continue;
 			}
 
-			var tableNode = $(dt.table().node());
-			var scrollBody = $(tableNode.parent());
-			var scrollEnabled = this._scrollEnabled();
-
-			itemDom.floating = $(dt.table().node().cloneNode(false))
-				.attr('aria-hidden', 'true')
-				.css({
-					top: 0,
-					left: 0
-				})
-				.removeAttr('id');
-
-			itemDom.floatingParent
-				.css({
-					width: scrollBody[0].offsetWidth,
-					overflow: 'hidden',
-					height: 'fit-content',
-					position: 'fixed',
-					left: scrollEnabled
-						? tableNode.offset().left + scrollBody.scrollLeft()
-						: 0
-				})
-				.css(
-					item === 'header'
-						? {
-								top: this.c.headerOffset,
-								bottom: ''
-						}
-						: {
-								top: '',
-								bottom: this.c.footerOffset
-						}
-				)
-				.addClass(
-					item === 'footer'
-						? 'dtfh-floatingparent-foot'
-						: 'dtfh-floatingparent-head'
-				)
-				.appendTo('body')
-				.children()
-				.eq(0)
-				.append(itemDom.floating);
-
-			this._stickyPosition(itemDom.floating, '-');
-
-			var scrollLeftUpdate = function () {
-				var scrollLeft = scrollBody.scrollLeft();
-				that.s.scrollLeft = { footer: scrollLeft, header: scrollLeft };
-				itemDom.floatingParent.scrollLeft(that.s.scrollLeft.header);
-			};
-
-			scrollLeftUpdate();
-			scrollBody.off('scroll.dtfh').on('scroll.dtfh', scrollLeftUpdate);
-
-			// Need padding on the header's container to allow for a scrollbar,
-			// just like how DataTables handles it
-			itemDom.floatingParent.children().css({
-				width: 'fit-content',
-				paddingRight: that.s.dt.settings()[0].oBrowser.barWidth
-			});
-
-			// Blocker to hide the table behind the scrollbar - this needs to use
-			// fixed positioning in the container since we don't have an outer wrapper
-			let blocker = $(
-				item === 'footer'
-					? 'div.dtfc-bottom-blocker'
-					: 'div.dtfc-top-blocker',
-				dt.table().container()
-			);
-
-			if (blocker.length) {
-				blocker
-					.clone()
-					.appendTo(itemDom.floatingParent)
-					.css({
-						position: 'fixed',
-						right: blocker.width()
-					});
-			}
-
-			// Insert a fake thead/tfoot into the DataTable to stop it jumping around
-			itemDom.placeholder = itemElement.clone(false);
-			itemDom.placeholder.find('*[id]').removeAttr('id');
-
-			// Move the thead / tfoot elements around - original into the floating
-			// element and clone into the original table
-			itemDom.host.prepend(itemDom.placeholder);
-			itemDom.floating.append(itemElement);
-
-			this._widths(itemDom);
-		}
-	},
-
-	/**
-	 * This method sets the sticky position of the header elements to match fixed columns
-	 * @param {JQuery<HTMLElement>} el
-	 * @param {string} sign
-	 */
-	_stickyPosition: function (el, sign) {
-		if (this._scrollEnabled()) {
-			var that = this;
-			var rtl = $(that.s.dt.table().node()).css('direction') === 'rtl';
-
-			el.find('th').each(function () {
-				// Find out if fixed header has previously set this column
-				if ($(this).css('position') === 'sticky') {
-					var right = $(this).css('right');
-					var left = $(this).css('left');
-					var potential;
-
-					if (right !== 'auto' && !rtl) {
-						potential = +right.replace(/px/g, '')
-
-						$(this).css('right', potential > 0 ? potential : 0);
-					}
-					else if (left !== 'auto' && rtl) {
-						potential = +left.replace(/px/g, '');
-
-						$(this).css('left', potential > 0 ? potential : 0);
-					}
-				}
-			});
-		}
-	},
-
-	/**
-	 * Reposition the floating elements to take account of horizontal page
-	 * scroll
-	 *
-	 * @param  {string} item       The `header` or `footer`
-	 * @param  {int}    scrollLeft Document scrollLeft
-	 * @private
-	 */
-	_horizontal: function (item, scrollLeft) {
-		var itemDom = this.dom[item];
-		var lastScrollLeft = this.s.scrollLeft;
-
-		if (itemDom.floating && lastScrollLeft[item] !== scrollLeft) {
-			// If scrolling is enabled we need to match the floating header to the body
-			if (this._scrollEnabled()) {
-				var newScrollLeft = $(
-					$(this.s.dt.table().node()).parent()
-				).scrollLeft();
-				itemDom.floating.scrollLeft(newScrollLeft);
-				itemDom.floatingParent.scrollLeft(newScrollLeft);
-			}
-
-			lastScrollLeft[item] = scrollLeft;
-		}
-	},
-
-	/**
-	 * Change from one display mode to another. Each fixed item can be in one
-	 * of:
-	 *
-	 * * `in-place` - In the main DataTable
-	 * * `in` - Floating over the DataTable
-	 * * `below` - (Header only) Fixed to the bottom of the table body
-	 * * `above` - (Footer only) Fixed to the top of the table body
-	 *
-	 * @param  {string}  mode        Mode that the item should be shown in
-	 * @param  {string}  item        'header' or 'footer'
-	 * @param  {boolean} forceChange Force a redraw of the mode, even if already
-	 *     in that mode.
-	 * @private
-	 */
-	_modeChange: function (mode, item, forceChange) {
-		var itemDom = this.dom[item];
-		var position = this.s.position;
-
-		// Just determine if scroll is enabled once
-		var scrollEnabled = this._scrollEnabled();
-
-		// If footer and scrolling is enabled then we don't clone
-		// Instead the table's height is decreased accordingly - see `_scroll()`
-		if (item === 'footer' && scrollEnabled) {
-			return;
-		}
-
-		// It isn't trivial to add a !important css attribute...
-		var importantWidth = function (w) {
-			itemDom.floating[0].style.setProperty('width', w + 'px', 'important');
-
-			// If not scrolling also have to update the floatingParent
-			if (!scrollEnabled) {
-				itemDom.floatingParent[0].style.setProperty('width', w + 'px', 'important');
-			}
-		};
-
-		// Record focus. Browser's will cause input elements to loose focus if
-		// they are inserted else where in the doc
-		var tablePart = this.dom[item === 'footer' ? 'tfoot' : 'thead'];
-		var focus = $.contains(tablePart[0], document.activeElement)
-			? document.activeElement
-			: null;
-		var scrollBody = $($(this.s.dt.table().node()).parent());
-
-		if (mode === 'in-place') {
-			// Insert the header back into the table's real header
-			if (itemDom.placeholder) {
-				itemDom.placeholder.remove();
-				itemDom.placeholder = null;
-			}
-
-			if (!$.contains(itemDom.host[0], tablePart[0])) {
-				if (item === 'header') {
-					itemDom.host.prepend(tablePart);
-				}
-				else {
-					itemDom.host.append(tablePart);
-				}
-			}
-
-			if (itemDom.floating) {
-				itemDom.floating.remove();
-				itemDom.floating = null;
-				this._stickyPosition(itemDom.host, '+');
-			}
-
-			if (itemDom.floatingParent) {
-				itemDom.floatingParent.find('div.dtfc-top-blocker').remove();
-				itemDom.floatingParent.remove();
-			}
-
-			$($(itemDom.host.parent()).parent()).scrollLeft(
-				scrollBody.scrollLeft()
-			);
-		}
-		else if (mode === 'in') {
-			// Remove the header from the real table and insert into a fixed
-			// positioned floating table clone
-			this._clone(item, forceChange);
-
-			// Get useful position values
-			var scrollOffset = scrollBody.offset();
-			var windowTop = $(document).scrollTop();
-			var windowHeight = $(window).height();
-			var windowBottom = windowTop + windowHeight;
-			var bodyTop = scrollEnabled ? scrollOffset.top : position.tbodyTop;
-			var bodyBottom = scrollEnabled
-				? scrollOffset.top + scrollBody.outerHeight()
-				: position.tfootTop;
-
-			// Calculate the amount that the footer or header needs to be shuffled
-			var shuffle;
-
-			if (item === 'footer') {
-				shuffle =
-					bodyTop > windowBottom
-						? position.tfootHeight // Yes - push the footer below
-						: bodyTop + position.tfootHeight - windowBottom; // No
+			if (attachPoint !== undefined && attachPoint !== null) {
+				attachTo.splice(attachPoint, 0, built);
+				attachPoint++;
 			}
 			else {
-				// Otherwise must be a header so get the difference from the bottom of the
-				//  desired floating header and the bottom of the table body
-				shuffle =
-					windowTop +
-					this.c.headerOffset +
-					position.theadHeight -
-					bodyBottom;
+				attachTo.push(built);
 			}
 
-			// Set the top or bottom based off of the offset and the shuffle value
-			var prop = item === 'header' ? 'top' : 'bottom';
-			var val = this.c[item + 'Offset'] - (shuffle > 0 ? shuffle : 0);
+			// Any button type can have a drop icon set
+			if (built.conf.dropIcon && ! built.conf.split) {
+				$(built.node)
+					.addClass(this.c.dom.button.dropClass)
+					.append(this.c.dom.button.dropHtml);
+			}
 
-			itemDom.floating.addClass('fixedHeader-floating');
-			itemDom.floatingParent
-				.css(prop, val)
-				.css({
-					left: position.left,
-					'z-index': 3
+			// Create the dropdown for a collection
+			if (built.conf.buttons) {
+				built.collection = $(
+					'<' + domCollection.container.content.tag + '/>'
+				);
+				built.conf._collection = built.collection;
+
+				this._expandButton(
+					built.buttons,
+					built.conf.buttons,
+					built.conf.split,
+					!isSplit,
+					isSplit,
+					attachPoint,
+					built.conf
+				);
+			}
+
+			// And the split collection
+			if (built.conf.split) {
+				built.collection = $('<' + domCollection.container.tag + '/>');
+				built.conf._collection = built.collection;
+
+				for (var j = 0; j < built.conf.split.length; j++) {
+					var item = built.conf.split[j];
+
+					if (typeof item === 'object') {
+						item.parent = parentConf;
+
+						if (item.collectionLayout === undefined) {
+							item.collectionLayout = built.conf.collectionLayout;
+						}
+
+						if (item.dropup === undefined) {
+							item.dropup = built.conf.dropup;
+						}
+
+						if (item.fade === undefined) {
+							item.fade = built.conf.fade;
+						}
+					}
+				}
+
+				this._expandButton(
+					built.buttons,
+					built.conf.buttons,
+					built.conf.split,
+					!isSplit,
+					isSplit,
+					attachPoint,
+					built.conf
+				);
+			}
+
+			built.conf.parent = parentConf;
+
+			// init call is made here, rather than buildButton as it needs to
+			// be selectable, and for that it needs to be in the buttons array
+			if (conf.init) {
+				conf.init.call(dt.button(built.node), dt, $(built.node), conf);
+			}
+		}
+	},
+
+	/**
+	 * Create an individual button
+	 * @param  {object} config            Resolved button configuration
+	 * @param  {boolean} inCollection `true` if a collection button
+	 * @return {object} Completed button description object
+	 * @private
+	 */
+	_buildButton: function (config, inCollection, isSplit, inSplit) {
+		var that = this;
+		var configDom = this.c.dom;
+		var textNode;
+		var dt = this.s.dt;
+		var text = function (opt) {
+			return typeof opt === 'function' ? opt(dt, button, config) : opt;
+		};
+
+		// Create an object that describes the button which can be in `dom.button`, or
+		// `dom.collection.button` or `dom.split.button` or `dom.collection.split.button`!
+		// Each should extend from `dom.button`.
+		var dom = $.extend(true, {}, configDom.button);
+
+		if (inCollection && isSplit && configDom.collection.split) {
+			$.extend(true, dom, configDom.collection.split.action);
+		}
+		else if (inSplit || inCollection) {
+			$.extend(true, dom, configDom.collection.button);
+		}
+		else if (isSplit) {
+			$.extend(true, dom, configDom.split.button);
+		}
+
+		// Spacers don't do much other than insert an element into the DOM
+		if (config.spacer) {
+			var spacer = $('<' + dom.spacer.tag + '/>')
+				.addClass(
+					'dt-button-spacer ' +
+						config.style +
+						' ' +
+						dom.spacer.className
+				)
+				.html(text(config.text));
+
+			return {
+				conf: config,
+				node: spacer,
+				nodeChild: null,
+				inserter: spacer,
+				buttons: [],
+				inCollection: inCollection,
+				isSplit: isSplit,
+				collection: null,
+				textNode: spacer
+			};
+		}
+
+		// Make sure that the button is available based on whatever requirements
+		// it has. For example, PDF button require pdfmake
+		if (
+			config.available &&
+			!config.available(dt, config) &&
+			!config.html
+		) {
+			return false;
+		}
+
+		var button;
+
+		if (!config.html) {
+			var run = function (e, dt, button, config, done) {
+				config.action.call(dt.button(button), e, dt, button, config, done);
+
+				$(dt.table().node()).triggerHandler('buttons-action.dt', [
+					dt.button(button),
+					dt,
+					button,
+					config
+				]);
+			};
+
+			var action = function(e, dt, button, config) {
+				if (config.async) {
+					that.processing(button[0], true);
+
+					setTimeout(function () {
+						run(e, dt, button, config, function () {
+							that.processing(button[0], false);
+						});
+					}, config.async);
+				}
+				else {
+					run(e, dt, button, config, function () {});
+				}
+			};
+
+			var tag = config.tag || dom.tag;
+			var clickBlurs =
+				config.clickBlurs === undefined ? true : config.clickBlurs;
+
+			button = $('<' + tag + '/>')
+				.addClass(dom.className)
+				.attr('tabindex', this.s.dt.settings()[0].iTabIndex)
+				.attr('aria-controls', this.s.dt.table().node().id)
+				.on('click.dtb', function (e) {
+					e.preventDefault();
+
+					if (!button.hasClass(dom.disabled) && config.action) {
+						action(e, dt, button, config);
+					}
+
+					if (clickBlurs) {
+						button.trigger('blur');
+					}
+				})
+				.on('keypress.dtb', function (e) {
+					if (e.keyCode === 13) {
+						e.preventDefault();
+
+						if (!button.hasClass(dom.disabled) && config.action) {
+							action(e, dt, button, config);
+						}
+					}
 				});
 
-			importantWidth(position.width);
-
-			if (item === 'footer') {
-				itemDom.floating.css('top', '');
+			// Make `a` tags act like a link
+			if (tag.toLowerCase() === 'a') {
+				button.attr('href', '#');
 			}
-		}
-		else if (mode === 'below') {
-			// only used for the header
-			// Fix the position of the floating header at base of the table body
-			this._clone(item, forceChange);
 
-			itemDom.floating.addClass('fixedHeader-locked');
-			itemDom.floatingParent.css({
-				position: 'absolute',
-				top: position.tfootTop - position.theadHeight,
-				left: position.left + 'px'
-			});
+			// Button tags should have `type=button` so they don't have any default behaviour
+			if (tag.toLowerCase() === 'button') {
+				button.attr('type', 'button');
+			}
 
-			importantWidth(position.width);
-		}
-		else if (mode === 'above') {
-			// only used for the footer
-			// Fix the position of the floating footer at top of the table body
-			this._clone(item, forceChange);
+			if (dom.liner.tag) {
+				var liner = $('<' + dom.liner.tag + '/>')
+					.html(text(config.text))
+					.addClass(dom.liner.className);
 
-			itemDom.floating.addClass('fixedHeader-locked');
-			itemDom.floatingParent.css({
-				position: 'absolute',
-				top: position.tbodyTop,
-				left: position.left + 'px'
-			});
+				if (dom.liner.tag.toLowerCase() === 'a') {
+					liner.attr('href', '#');
+				}
 
-			importantWidth(position.width);
-		}
+				button.append(liner);
+				textNode = liner;
+			}
+			else {
+				button.html(text(config.text));
+				textNode = button;
+			}
 
-		// Restore focus if it was lost
-		if (focus && focus !== document.activeElement) {
-			setTimeout(function () {
-				focus.focus();
-			}, 10);
-		}
+			if (config.enabled === false) {
+				button.addClass(dom.disabled);
+			}
 
-		this.s.scrollLeft.header = -1;
-		this.s.scrollLeft.footer = -1;
-		this.s[item + 'Mode'] = mode;
-	},
+			if (config.className) {
+				button.addClass(config.className);
+			}
 
-	/**
-	 * Cache the positional information that is required for the mode
-	 * calculations that FixedHeader performs.
-	 *
-	 * @private
-	 */
-	_positions: function () {
-		var dt = this.s.dt;
-		var table = dt.table();
-		var position = this.s.position;
-		var dom = this.dom;
-		var tableNode = $(table.node());
-		var scrollEnabled = this._scrollEnabled();
+			if (config.titleAttr) {
+				button.attr('title', text(config.titleAttr));
+			}
 
-		// Need to use the header and footer that are in the main table,
-		// regardless of if they are clones, since they hold the positions we
-		// want to measure from
-		var thead = $(dt.table().header());
-		var tfoot = $(dt.table().footer());
-		var tbody = dom.tbody;
-		var scrollBody = tableNode.parent();
+			if (config.attr) {
+				button.attr(config.attr);
+			}
 
-		position.visible = tableNode.is(':visible');
-		position.width = tableNode.outerWidth();
-		position.left = tableNode.offset().left;
-		position.theadTop = thead.offset().top;
-		position.tbodyTop = scrollEnabled
-			? scrollBody.offset().top
-			: tbody.offset().top;
-		position.tbodyHeight = scrollEnabled
-			? scrollBody.outerHeight()
-			: tbody.outerHeight();
-		position.theadHeight = thead.outerHeight();
-		position.theadBottom = position.theadTop + position.theadHeight;
-		position.tfootTop = position.tbodyTop + position.tbodyHeight; //tfoot.offset().top;
+			if (!config.namespace) {
+				config.namespace = '.dt-button-' + _buttonCounter++;
+			}
 
-		if (tfoot.length) {
-			position.tfootBottom = position.tfootTop + tfoot.outerHeight();
-			position.tfootHeight = tfoot.outerHeight();
+			if (config.config !== undefined && config.config.split) {
+				config.split = config.config.split;
+			}
 		}
 		else {
-			position.tfootBottom = position.tfootTop;
-			position.tfootHeight = 0;
+			button = $(config.html);
+		}
+
+		var buttonContainer = this.c.dom.buttonContainer;
+		var inserter;
+		if (buttonContainer && buttonContainer.tag) {
+			inserter = $('<' + buttonContainer.tag + '/>')
+				.addClass(buttonContainer.className)
+				.append(button);
+		}
+		else {
+			inserter = button;
+		}
+
+		this._addKey(config);
+
+		// Style integration callback for DOM manipulation
+		// Note that this is _not_ documented. It is currently
+		// for style integration only
+		if (this.c.buttonCreated) {
+			inserter = this.c.buttonCreated(config, inserter);
+		}
+
+		var splitDiv;
+
+		if (isSplit) {
+			var dropdownConf = inCollection
+				? $.extend(true, this.c.dom.split, this.c.dom.collection.split)
+				: this.c.dom.split;
+			var wrapperConf = dropdownConf.wrapper;
+
+			splitDiv = $('<' + wrapperConf.tag + '/>')
+				.addClass(wrapperConf.className)
+				.append(button);
+
+			var dropButtonConfig = $.extend(config, {
+				autoClose: true,
+				align: dropdownConf.dropdown.align,
+				attr: {
+					'aria-haspopup': 'dialog',
+					'aria-expanded': false
+				},
+				className: dropdownConf.dropdown.className,
+				closeButton: false,
+				splitAlignClass: dropdownConf.dropdown.splitAlignClass,
+				text: dropdownConf.dropdown.text
+			});
+
+			this._addKey(dropButtonConfig);
+
+			var splitAction = function (e, dt, button, config) {
+				_dtButtons.split.action.call(
+					dt.button(splitDiv),
+					e,
+					dt,
+					button,
+					config
+				);
+
+				$(dt.table().node()).triggerHandler('buttons-action.dt', [
+					dt.button(button),
+					dt,
+					button,
+					config
+				]);
+				button.attr('aria-expanded', true);
+			};
+
+			var dropButton = $(
+				'<button class="' +
+					dropdownConf.dropdown.className +
+					' dt-button"></button>'
+			)
+				.html(this.c.dom.button.dropHtml)
+				.addClass(this.c.dom.button.dropClass)
+				.on('click.dtb', function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+
+					if (!dropButton.hasClass(dom.disabled)) {
+						splitAction(e, dt, dropButton, dropButtonConfig);
+					}
+					if (clickBlurs) {
+						dropButton.trigger('blur');
+					}
+				})
+				.on('keypress.dtb', function (e) {
+					if (e.keyCode === 13) {
+						e.preventDefault();
+
+						if (!dropButton.hasClass(dom.disabled)) {
+							splitAction(e, dt, dropButton, dropButtonConfig);
+						}
+					}
+				});
+
+			if (config.split.length === 0) {
+				dropButton.addClass('dtb-hide-drop');
+			}
+
+			splitDiv.append(dropButton).attr(dropButtonConfig.attr);
+		}
+
+		var node = isSplit ? splitDiv.get(0) : button.get(0);
+
+		return {
+			conf: config,
+			node: node,
+			nodeChild: node && node.children && node.children.length ? node.children[0] : null,
+			inserter: isSplit ? splitDiv : inserter,
+			buttons: [],
+			inCollection: inCollection,
+			isSplit: isSplit,
+			inSplit: inSplit,
+			collection: null,
+			textNode: textNode
+		};
+	},
+
+	/**
+	 * Spin over buttons checking if splits should be enabled or not.
+	 * @param {*} buttons Array of buttons to check
+	 */
+	_checkSplitEnable: function (buttons) {
+		if (! buttons) {
+			buttons = this.s.buttons;
+		}
+
+		for (var i=0 ; i<buttons.length ; i++) {
+			var button = buttons[i];
+
+			// Check if the button is a split one and if so, determine
+			// its state
+			if (button.isSplit) {
+				var splitBtn = button.node.childNodes[1];
+
+				if (this._checkAnyEnabled(button.buttons)) {
+					// Enable the split
+					$(splitBtn)
+						.removeClass(this.c.dom.button.disabled)
+						.prop('disabled', false);
+				}
+				else {
+					$(splitBtn)
+						.addClass(this.c.dom.button.disabled)
+						.prop('disabled', false);
+				}
+			}
+			else if (button.isCollection) {
+				// Nest down into collections
+				this._checkSplitEnable(button.buttons);
+			}
 		}
 	},
 
 	/**
-	 * Mode calculation - determine what mode the fixed items should be placed
-	 * into.
-	 *
-	 * @param  {boolean} forceChange Force a redraw of the mode, even if already
-	 *     in that mode.
-	 * @private
+	 * Check an array of buttons and see if any are enabled in it
+	 * @param {*} buttons Button array
+	 * @returns true if a button is enabled, false otherwise
 	 */
-	_scroll: function (forceChange) {
-		if (this.s.dt.settings()[0].bDestroying) {
-			return;
-		}
-
-		// ScrollBody details
-		var scrollEnabled = this._scrollEnabled();
-		var scrollBody = $(this.s.dt.table().node()).parent();
-		var scrollOffset = scrollBody.offset();
-		var scrollHeight = scrollBody.outerHeight();
-
-		// Window details
-		var windowLeft = $(document).scrollLeft();
-		var windowTop = $(document).scrollTop();
-		var windowHeight = $(window).height();
-		var windowBottom = windowHeight + windowTop;
-
-		var position = this.s.position;
-		var headerMode, footerMode;
-
-		// Body Details
-		var bodyTop = scrollEnabled ? scrollOffset.top : position.tbodyTop;
-		var bodyLeft = scrollEnabled ? scrollOffset.left : position.left;
-		var bodyBottom = scrollEnabled
-			? scrollOffset.top + scrollHeight
-			: position.tfootTop;
-		var bodyWidth = scrollEnabled
-			? scrollBody.outerWidth()
-			: position.tbodyWidth;
-
-		if (this.c.header) {
-			if (!this.s.enable) {
-				headerMode = 'in-place';
-			}
-			// The header is in it's normal place if the body top is lower than
-			//  the scroll of the window plus the headerOffset and the height of the header
-			else if (
-				!position.visible ||
-				windowTop + this.c.headerOffset + position.theadHeight <=
-					bodyTop
-			) {
-				headerMode = 'in-place';
-			}
-			// The header should be floated if
-			else if (
-				// The scrolling plus the header offset plus the height of the header is lower than the top of the body
-				windowTop + this.c.headerOffset + position.theadHeight >
-					bodyTop &&
-				// And the scrolling at the top plus the header offset is above the bottom of the body
-				windowTop + this.c.headerOffset + position.theadHeight <
-					bodyBottom
-			) {
-				headerMode = 'in';
-
-				// Further to the above, If the scrolling plus the header offset plus the header height is lower
-				// than the bottom of the table a shuffle is required so have to force the calculation
-				if (
-					windowTop + this.c.headerOffset + position.theadHeight >
-						bodyBottom ||
-					this.dom.header.floatingParent === undefined
-				) {
-					forceChange = true;
-				}
-				else {
-					var child = this.dom.header.floatingParent
-						.css({
-							top: this.c.headerOffset,
-							position: 'fixed'
-						})
-						.children()
-						.eq(0);
-
-					if (child.find(this.dom.header.floating).length === 0) {
-						child.append(this.dom.header.floating);
-					}
-				}
-			}
-			// Anything else and the view is below the table
-			else {
-				headerMode = 'below';
-			}
-
-			if (forceChange || headerMode !== this.s.headerMode) {
-				this._modeChange(headerMode, 'header', forceChange);
-			}
-
-			this._horizontal('header', windowLeft);
-		}
-
-		var header = {
-			offset: { top: 0, left: 0 },
-			height: 0
-		};
-		var footer = {
-			offset: { top: 0, left: 0 },
-			height: 0
-		};
-
-		if (
-			this.c.footer &&
-			this.dom.tfoot.length &&
-			this.dom.tfoot.find('th, td').length
-		) {
-			if (!this.s.enable) {
-				footerMode = 'in-place';
-			}
-			else if (
-				!position.visible ||
-				position.tfootBottom + this.c.footerOffset <= windowBottom
-			) {
-				footerMode = 'in-place';
-			}
-			else if (
-				bodyBottom + position.tfootHeight + this.c.footerOffset >
-					windowBottom &&
-				bodyTop + this.c.footerOffset < windowBottom
-			) {
-				footerMode = 'in';
-				forceChange = true;
-			}
-			else {
-				footerMode = 'above';
-			}
-
-			if (forceChange || footerMode !== this.s.footerMode) {
-				this._modeChange(footerMode, 'footer', forceChange);
-			}
-
-			this._horizontal('footer', windowLeft);
-
-			var getOffsetHeight = function (el) {
-				return {
-					offset: el.offset(),
-					height: el.outerHeight()
-				};
-			};
-
-			header = this.dom.header.floating
-				? getOffsetHeight(this.dom.header.floating)
-				: getOffsetHeight(this.dom.thead);
-			footer = this.dom.footer.floating
-				? getOffsetHeight(this.dom.footer.floating)
-				: getOffsetHeight(this.dom.tfoot);
-
-			// If scrolling is enabled and the footer is off the screen
-			if (scrollEnabled && footer.offset.top > windowTop) {
-				// && footer.offset.top >= windowBottom) {
-				// Calculate the gap between the top of the scrollBody and the top of the window
-				var overlap = windowTop - scrollOffset.top;
-				// The new height is the bottom of the window
-				var newHeight =
-					windowBottom +
-					// If the gap between the top of the scrollbody and the window is more than
-					//  the height of the header then the top of the table is still visible so add that gap
-					// Doing this has effectively calculated the height from the top of the table to the bottom of the current page
-					(overlap > -header.height ? overlap : 0) -
-					// Take from that
-					// The top of the header plus
-					(header.offset.top +
-						// The header height if the standard header is present
-						(overlap < -header.height ? header.height : 0) +
-						// And the height of the footer
-						footer.height);
-
-				// Don't want a negative height
-				if (newHeight < 0) {
-					newHeight = 0;
-				}
-
-				// At the end of the above calculation the space between the header (top of the page if floating)
-				// and the point just above the footer should be the new value for the height of the table.
-				scrollBody.outerHeight(newHeight);
-
-				// Need some rounding here as sometimes very small decimal places are encountered
-				// If the actual height is bigger or equal to the height we just applied then the footer is "Floating"
-				if (
-					Math.round(scrollBody.outerHeight()) >=
-					Math.round(newHeight)
-				) {
-					$(this.dom.tfoot.parent()).addClass('fixedHeader-floating');
-				}
-				// Otherwise max-width has kicked in so it is not floating
-				else {
-					$(this.dom.tfoot.parent()).removeClass(
-						'fixedHeader-floating'
-					);
-				}
+	_checkAnyEnabled: function (buttons) {
+		for (var i=0 ; i<buttons.length ; i++) {
+			if (! buttons[i].disabled) {
+				return true;
 			}
 		}
 
-		if (this.dom.header.floating) {
-			this.dom.header.floatingParent.css('left', bodyLeft - windowLeft);
-		}
-		if (this.dom.footer.floating) {
-			this.dom.footer.floatingParent.css('left', bodyLeft - windowLeft);
-		}
-
-		// If fixed columns is being used on this table then the blockers need to be copied across
-		// Cloning these is cleaner than creating as our own as it will keep consistency with fixedColumns automatically
-		// ASSUMING that the class remains the same
-		if (this.s.dt.settings()[0]._fixedColumns !== undefined) {
-			var adjustBlocker = function (side, end, el) {
-				if (el === undefined) {
-					var blocker = $(
-						'div.dtfc-' + side + '-' + end + '-blocker'
-					);
-
-					el =
-						blocker.length === 0
-							? null
-							: blocker.clone().css('z-index', 1);
-				}
-
-				if (el !== null) {
-					if (headerMode === 'in' || headerMode === 'below') {
-						el.appendTo('body').css({
-							top:
-								end === 'top'
-									? header.offset.top
-									: footer.offset.top,
-							left:
-								side === 'right'
-									? bodyLeft + bodyWidth - el.width()
-									: bodyLeft
-						});
-					}
-					else {
-						el.detach();
-					}
-				}
-
-				return el;
-			};
-
-			// Adjust all blockers
-			this.dom.header.rightBlocker = adjustBlocker(
-				'right',
-				'top',
-				this.dom.header.rightBlocker
-			);
-			this.dom.header.leftBlocker = adjustBlocker(
-				'left',
-				'top',
-				this.dom.header.leftBlocker
-			);
-			this.dom.footer.rightBlocker = adjustBlocker(
-				'right',
-				'bottom',
-				this.dom.footer.rightBlocker
-			);
-			this.dom.footer.leftBlocker = adjustBlocker(
-				'left',
-				'bottom',
-				this.dom.footer.leftBlocker
-			);
-		}
-	},
-
-	/**
-	 * Function to check if scrolling is enabled on the table or not
-	 * @returns Boolean value indicating if scrolling on the table is enabled or not
-	 */
-	_scrollEnabled: function () {
-		var oScroll = this.s.dt.settings()[0].oScroll;
-		if (oScroll.sY !== '' || oScroll.sX !== '') {
-			return true;
-		}
 		return false;
 	},
 
 	/**
-	 * Realign columns by using the colgroup tag and
-	 * checking column widths
+	 * Get the button object from a node (recursive)
+	 * @param  {node} node Button node
+	 * @param  {array} [buttons] Button array, uses base if not defined
+	 * @return {object} Button object
+	 * @private
 	 */
-	_widths: function (itemDom) {
-		if (! itemDom || ! itemDom.placeholder) {
+	_nodeToButton: function (node, buttons) {
+		if (!buttons) {
+			buttons = this.s.buttons;
+		}
+
+		for (var i = 0, ien = buttons.length; i < ien; i++) {
+			if (buttons[i].node === node || buttons[i].nodeChild === node) {
+				return buttons[i];
+			}
+
+			if (buttons[i].buttons.length) {
+				var ret = this._nodeToButton(node, buttons[i].buttons);
+
+				if (ret) {
+					return ret;
+				}
+			}
+		}
+	},
+
+	/**
+	 * Get container array for a button from a button node (recursive)
+	 * @param  {node} node Button node
+	 * @param  {array} [buttons] Button array, uses base if not defined
+	 * @return {array} Button's host array
+	 * @private
+	 */
+	_nodeToHost: function (node, buttons) {
+		if (!buttons) {
+			buttons = this.s.buttons;
+		}
+
+		for (var i = 0, ien = buttons.length; i < ien; i++) {
+			if (buttons[i].node === node) {
+				return buttons;
+			}
+
+			if (buttons[i].buttons.length) {
+				var ret = this._nodeToHost(node, buttons[i].buttons);
+
+				if (ret) {
+					return ret;
+				}
+			}
+		}
+	},
+
+	/**
+	 * Handle a key press - determine if any button's key configured matches
+	 * what was typed and trigger the action if so.
+	 * @param  {string} character The character pressed
+	 * @param  {object} e Key event that triggered this call
+	 * @private
+	 */
+	_keypress: function (character, e) {
+		// Check if this button press already activated on another instance of Buttons
+		if (e._buttonsHandled) {
 			return;
 		}
 
-		// Match the table overall width
-		var tableNode = $(this.s.dt.table().node());
-		var scrollBody = $(tableNode.parent());
-
-		itemDom.floatingParent.css('width', scrollBody[0].offsetWidth);
-		itemDom.floating.css('width', tableNode[0].offsetWidth);
-
-		// Strip out the old colgroup
-		$('colgroup', itemDom.floating).remove();
-
-		// Copy the `colgroup` element to define the number of columns - needed
-		// for complex header cases where a column might not have a unique
-		// header
-		var cols = itemDom.placeholder
-			.parent()
-			.find('colgroup')
-			.clone()
-			.appendTo(itemDom.floating)
-			.find('col');
-
-		// However, the widths defined in the colgroup from the DataTable might
-		// not exactly reflect the actual widths of the columns (content can
-		// force it to stretch). So we need to copy the actual widths into the
-		// colgroup / col's used for the floating header.
-		var widths = this.s.dt.columns(':visible').widths();
-
-		for (var i=0 ; i<widths.length ; i++) {
-			cols.eq(i).css('width', widths[i]);
-		}
-	}
-});
-
-/**
- * Version
- * @type {String}
- * @static
- */
-FixedHeader.version = '4.0.2';
-
-/**
- * Defaults
- * @type {Object}
- * @static
- */
-FixedHeader.defaults = {
-	header: true,
-	footer: false,
-	headerOffset: 0,
-	footerOffset: 0
-};
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * DataTables interfaces
- */
-
-// Attach for constructor access
-$.fn.dataTable.FixedHeader = FixedHeader;
-$.fn.DataTable.FixedHeader = FixedHeader;
-
-// DataTables creation - check if the FixedHeader option has been defined on the
-// table and if so, initialise
-$(document).on('init.dt.dtfh', function (e, settings, json) {
-	if (e.namespace !== 'dt') {
-		return;
-	}
-
-	var init = settings.oInit.fixedHeader;
-	var defaults = DataTable.defaults.fixedHeader;
-
-	if ((init || defaults) && !settings._fixedHeader) {
-		var opts = $.extend({}, defaults, init);
-
-		if (init !== false) {
-			new FixedHeader(settings, opts);
-		}
-	}
-});
-
-// DataTables API methods
-DataTable.Api.register('fixedHeader()', function () { });
-
-DataTable.Api.register('fixedHeader.adjust()', function () {
-	return this.iterator('table', function (ctx) {
-		var fh = ctx._fixedHeader;
-
-		if (fh) {
-			fh.update();
-		}
-	});
-});
-
-DataTable.Api.register('fixedHeader.enable()', function (flag) {
-	return this.iterator('table', function (ctx) {
-		var fh = ctx._fixedHeader;
-
-		flag = flag !== undefined ? flag : true;
-		if (fh && flag !== fh.enabled()) {
-			fh.enable(flag);
-		}
-	});
-});
-
-DataTable.Api.register('fixedHeader.enabled()', function () {
-	if (this.context.length) {
-		var fh = this.context[0]._fixedHeader;
-
-		if (fh) {
-			return fh.enabled();
-		}
-	}
-
-	return false;
-});
-
-DataTable.Api.register('fixedHeader.disable()', function () {
-	return this.iterator('table', function (ctx) {
-		var fh = ctx._fixedHeader;
-
-		if (fh && fh.enabled()) {
-			fh.enable(false);
-		}
-	});
-});
-
-$.each(['header', 'footer'], function (i, el) {
-	DataTable.Api.register('fixedHeader.' + el + 'Offset()', function (offset) {
-		var ctx = this.context;
-
-		if (offset === undefined) {
-			return ctx.length && ctx[0]._fixedHeader
-				? ctx[0]._fixedHeader[el + 'Offset']()
-				: undefined;
-		}
-
-		return this.iterator('table', function (ctx) {
-			var fh = ctx._fixedHeader;
-
-			if (fh) {
-				fh[el + 'Offset'](offset);
-			}
-		});
-	});
-});
-
-
-return DataTable;
-}));
-
-
-/*! Responsive 3.0.4
- * © SpryMedia Ltd - datatables.net/license
- */
-
-(function( factory ){
-	if ( typeof define === 'function' && define.amd ) {
-		// AMD
-		define( ['jquery', 'datatables.net'], function ( $ ) {
-			return factory( $, window, document );
-		} );
-	}
-	else if ( typeof exports === 'object' ) {
-		// CommonJS
-		var jq = require('jquery');
-		var cjsRequires = function (root, $) {
-			if ( ! $.fn.dataTable ) {
-				require('datatables.net')(root, $);
-			}
-		};
-
-		if (typeof window === 'undefined') {
-			module.exports = function (root, $) {
-				if ( ! root ) {
-					// CommonJS environments without a window global must pass a
-					// root. This will give an error otherwise
-					root = window;
-				}
-
-				if ( ! $ ) {
-					$ = jq( root );
-				}
-
-				cjsRequires( root, $ );
-				return factory( $, root, root.document );
-			};
-		}
-		else {
-			cjsRequires( window, jq );
-			module.exports = factory( jq, window, window.document );
-		}
-	}
-	else {
-		// Browser
-		factory( jQuery, window, document );
-	}
-}(function( $, window, document ) {
-'use strict';
-var DataTable = $.fn.dataTable;
-
-
-
-/**
- * @summary     Responsive
- * @description Responsive tables plug-in for DataTables
- * @version     3.0.4
- * @author      SpryMedia Ltd
- * @copyright   SpryMedia Ltd.
- *
- * This source file is free software, available under the following license:
- *   MIT license - http://datatables.net/license/mit
- *
- * This source file is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the license files for details.
- *
- * For details please refer to: http://www.datatables.net
- */
-
-/**
- * Responsive is a plug-in for the DataTables library that makes use of
- * DataTables' ability to change the visibility of columns, changing the
- * visibility of columns so the displayed columns fit into the table container.
- * The end result is that complex tables will be dynamically adjusted to fit
- * into the viewport, be it on a desktop, tablet or mobile browser.
- *
- * Responsive for DataTables has two modes of operation, which can used
- * individually or combined:
- *
- * * Class name based control - columns assigned class names that match the
- *   breakpoint logic can be shown / hidden as required for each breakpoint.
- * * Automatic control - columns are automatically hidden when there is no
- *   room left to display them. Columns removed from the right.
- *
- * In additional to column visibility control, Responsive also has built into
- * options to use DataTables' child row display to show / hide the information
- * from the table that has been hidden. There are also two modes of operation
- * for this child row display:
- *
- * * Inline - when the control element that the user can use to show / hide
- *   child rows is displayed inside the first column of the table.
- * * Column - where a whole column is dedicated to be the show / hide control.
- *
- * Initialisation of Responsive is performed by:
- *
- * * Adding the class `responsive` or `dt-responsive` to the table. In this case
- *   Responsive will automatically be initialised with the default configuration
- *   options when the DataTable is created.
- * * Using the `responsive` option in the DataTables configuration options. This
- *   can also be used to specify the configuration options, or simply set to
- *   `true` to use the defaults.
- *
- *  @class
- *  @param {object} settings DataTables settings object for the host table
- *  @param {object} [opts] Configuration options
- *  @requires jQuery 1.7+
- *  @requires DataTables 2.0.0+
- *
- *  @example
- *      $('#example').DataTable( {
- *        responsive: true
- *      } );
- *    } );
- */
-var Responsive = function (settings, opts) {
-	// Sanity check that we are using DataTables 2.0.0 or newer
-	if (!DataTable.versionCheck || !DataTable.versionCheck('2')) {
-		throw 'DataTables Responsive requires DataTables 2 or newer';
-	}
-
-	this.s = {
-		childNodeStore: {},
-		columns: [],
-		current: [],
-		dt: new DataTable.Api(settings)
-	};
-
-	// Check if responsive has already been initialised on this table
-	if (this.s.dt.settings()[0].responsive) {
-		return;
-	}
-
-	// details is an object, but for simplicity the user can give it as a string
-	// or a boolean
-	if (opts && typeof opts.details === 'string') {
-		opts.details = { type: opts.details };
-	}
-	else if (opts && opts.details === false) {
-		opts.details = { type: false };
-	}
-	else if (opts && opts.details === true) {
-		opts.details = { type: 'inline' };
-	}
-
-	this.c = $.extend(
-		true,
-		{},
-		Responsive.defaults,
-		DataTable.defaults.responsive,
-		opts
-	);
-	settings.responsive = this;
-	this._constructor();
-};
-
-$.extend(Responsive.prototype, {
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Constructor
-	 */
-
-	/**
-	 * Initialise the Responsive instance
-	 *
-	 * @private
-	 */
-	_constructor: function () {
-		var that = this;
-		var dt = this.s.dt;
-		var oldWindowWidth = $(window).innerWidth();
-
-		dt.settings()[0]._responsive = this;
-
-		// Use DataTables' throttle function to avoid processor thrashing
-		$(window).on(
-			'orientationchange.dtr',
-			DataTable.util.throttle(function () {
-				// iOS has a bug whereby resize can fire when only scrolling
-				// See: http://stackoverflow.com/questions/8898412
-				var width = $(window).innerWidth();
-
-				if (width !== oldWindowWidth) {
-					that._resize();
-					oldWindowWidth = width;
-				}
-			})
-		);
-
-		// Handle new rows being dynamically added - needed as responsive
-		// updates all rows (shown or not) a responsive change, rather than
-		// per draw.
-		dt.on('row-created.dtr', function (e, tr, data, idx) {
-			if ($.inArray(false, that.s.current) !== -1) {
-				$('>td, >th', tr).each(function (i) {
-					var idx = dt.column.index('toData', i);
-
-					if (that.s.current[idx] === false) {
-						$(this)
-							.css('display', 'none')
-							.addClass('dtr-hidden');
-					}
-				});
-			}
-		});
-
-		// Destroy event handler
-		dt.on('destroy.dtr', function () {
-			dt.off('.dtr');
-			$(dt.table().body()).off('.dtr');
-			$(window).off('resize.dtr orientationchange.dtr');
-			dt.cells('.dtr-control').nodes().to$().removeClass('dtr-control');
-			$(dt.table().node()).removeClass('dtr-inline collapsed');
-
-			// Restore the columns that we've hidden
-			$.each(that.s.current, function (i, val) {
-				if (val === false) {
-					that._setColumnVis(i, true);
-				}
-			});
-		});
-
-		// Reorder the breakpoints array here in case they have been added out
-		// of order
-		this.c.breakpoints.sort(function (a, b) {
-			return a.width < b.width ? 1 : a.width > b.width ? -1 : 0;
-		});
-
-		this._classLogic();
-
-		// Details handler
-		var details = this.c.details;
-
-		if (details.type !== false) {
-			that._detailsInit();
-
-			// DataTables will trigger this event on every column it shows and
-			// hides individually
-			dt.on('column-visibility.dtr', function () {
-				// Use a small debounce to allow multiple columns to be set together
-				if (that._timer) {
-					clearTimeout(that._timer);
-				}
-
-				that._timer = setTimeout(function () {
-					that._timer = null;
-
-					that._classLogic();
-					that._resizeAuto();
-					that._resize(true);
-
-					that._redrawChildren();
-				}, 100);
-			});
-
-			// Redraw the details box on each draw which will happen if the data
-			// has changed. This is used until DataTables implements a native
-			// `updated` event for rows
-			dt.on('draw.dtr', function () {
-				that._redrawChildren();
-			});
-
-			$(dt.table().node()).addClass('dtr-' + details.type);
-		}
-
-		// DT2 let's us tell it if we are hiding columns
-		dt.on('column-calc.dt', function (e, d) {
-			var curr = that.s.current;
-
-			for (var i = 0; i < curr.length; i++) {
-				var idx = d.visible.indexOf(i);
-
-				if (curr[i] === false && idx >= 0) {
-					d.visible.splice(idx, 1);
-				}
-			}
-		});
-
-		// On Ajax reload we want to reopen any child rows which are displayed
-		// by responsive
-		dt.on('preXhr.dtr', function () {
-			var rowIds = [];
-			dt.rows().every(function () {
-				if (this.child.isShown()) {
-					rowIds.push(this.id(true));
-				}
-			});
-
-			dt.one('draw.dtr', function () {
-				that._resizeAuto();
-				that._resize();
-
-				dt.rows(rowIds).every(function () {
-					that._detailsDisplay(this, false);
-				});
-			});
-		});
-
-		// First pass when the table is ready
-		dt
-			.on('draw.dtr', function () {
-				that._controlClass();
-			})
-			.ready(function () {
-				that._resizeAuto();
-				that._resize();
-
-				// Attach listeners after first pass
-				dt.on('column-reorder.dtr', function (e, settings, details) {
-					that._classLogic();
-					that._resizeAuto();
-					that._resize(true);
-				});
-
-				// Change in column sizes means we need to calc
-				dt.on('column-sizing.dtr', function () {
-					that._resizeAuto();
-					that._resize();
-				});
-			});
-	},
-
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Private methods
-	 */
-
-	/**
-	 * Insert a `col` tag into the correct location in a `colgroup`.
-	 *
-	 * @param {jQuery} colGroup The `colgroup` tag
-	 * @param {jQuery} colEl The `col` tag
-	 */
-	_colGroupAttach: function (colGroup, colEls, idx) {
-		var found = null;
-
-		// No need to do anything if already attached
-		if (colEls[idx].get(0).parentNode === colGroup[0]) {
-			return;
-		}
-
-		// Find the first `col` after our own which is already attached
-		for (var i = idx+1; i < colEls.length; i++) {
-			if (colGroup[0] === colEls[i].get(0).parentNode) {
-				found = i;
-				break;
-			}
-		}
-
-		if (found !== null) {
-			// Insert before
-			colEls[idx].insertBefore(colEls[found][0]);
-		}
-		else {
-			// If wasn't found, insert at the end
-			colGroup.append(colEls[idx]);
-		}
-	},
-
-	/**
-	 * Get and store nodes from a cell - use for node moving renderers
-	 *
-	 * @param {*} dt DT instance
-	 * @param {*} row Row index
-	 * @param {*} col Column index
-	 */
-	_childNodes: function (dt, row, col) {
-		var name = row + '-' + col;
-
-		if (this.s.childNodeStore[name]) {
-			return this.s.childNodeStore[name];
-		}
-
-		// https://jsperf.com/childnodes-array-slice-vs-loop
-		var nodes = [];
-		var children = dt.cell(row, col).node().childNodes;
-		for (var i = 0, ien = children.length; i < ien; i++) {
-			nodes.push(children[i]);
-		}
-
-		this.s.childNodeStore[name] = nodes;
-
-		return nodes;
-	},
-
-	/**
-	 * Restore nodes from the cache to a table cell
-	 *
-	 * @param {*} dt DT instance
-	 * @param {*} row Row index
-	 * @param {*} col Column index
-	 */
-	_childNodesRestore: function (dt, row, col) {
-		var name = row + '-' + col;
-
-		if (!this.s.childNodeStore[name]) {
-			return;
-		}
-
-		var node = dt.cell(row, col).node();
-		var store = this.s.childNodeStore[name];
-		if (store.length > 0) {
-			var parent = store[0].parentNode;
-			var parentChildren = parent.childNodes;
-			var a = [];
-
-			for (var i = 0, ien = parentChildren.length; i < ien; i++) {
-				a.push(parentChildren[i]);
-			}
-
-			for (var j = 0, jen = a.length; j < jen; j++) {
-				node.appendChild(a[j]);
-			}
-		}
-
-		this.s.childNodeStore[name] = undefined;
-	},
-
-	/**
-	 * Calculate the visibility for the columns in a table for a given
-	 * breakpoint. The result is pre-determined based on the class logic if
-	 * class names are used to control all columns, but the width of the table
-	 * is also used if there are columns which are to be automatically shown
-	 * and hidden.
-	 *
-	 * @param  {string} breakpoint Breakpoint name to use for the calculation
-	 * @return {array} Array of boolean values initiating the visibility of each
-	 *   column.
-	 *  @private
-	 */
-	_columnsVisiblity: function (breakpoint) {
-		var dt = this.s.dt;
-		var columns = this.s.columns;
-		var i, ien;
-
-		// Create an array that defines the column ordering based first on the
-		// column's priority, and secondly the column index. This allows the
-		// columns to be removed from the right if the priority matches
-		var order = columns
-			.map(function (col, idx) {
-				return {
-					columnIdx: idx,
-					priority: col.priority
-				};
-			})
-			.sort(function (a, b) {
-				if (a.priority !== b.priority) {
-					return a.priority - b.priority;
-				}
-				return a.columnIdx - b.columnIdx;
-			});
-
-		// Class logic - determine which columns are in this breakpoint based
-		// on the classes. If no class control (i.e. `auto`) then `-` is used
-		// to indicate this to the rest of the function
-		var display = $.map(columns, function (col, i) {
-			if (dt.column(i).visible() === false) {
-				return 'not-visible';
-			}
-			return col.auto && col.minWidth === null
-				? false
-				: col.auto === true
-				? '-'
-				: $.inArray(breakpoint, col.includeIn) !== -1;
-		});
-
-		// Auto column control - first pass: how much width is taken by the
-		// ones that must be included from the non-auto columns
-		var requiredWidth = 0;
-		for (i = 0, ien = display.length; i < ien; i++) {
-			if (display[i] === true) {
-				requiredWidth += columns[i].minWidth;
-			}
-		}
-
-		// Second pass, use up any remaining width for other columns. For
-		// scrolling tables we need to subtract the width of the scrollbar. It
-		// may not be requires which makes this sub-optimal, but it would
-		// require another full redraw to make complete use of those extra few
-		// pixels
-		var scrolling = dt.settings()[0].oScroll;
-		var bar = scrolling.sY || scrolling.sX ? scrolling.iBarWidth : 0;
-		var widthAvailable = dt.table().container().offsetWidth - bar;
-		var usedWidth = widthAvailable - requiredWidth;
-
-		// Control column needs to always be included. This makes it sub-
-		// optimal in terms of using the available with, but to stop layout
-		// thrashing or overflow. Also we need to account for the control column
-		// width first so we know how much width is available for the other
-		// columns, since the control column might not be the first one shown
-		for (i = 0, ien = display.length; i < ien; i++) {
-			if (columns[i].control) {
-				usedWidth -= columns[i].minWidth;
-			}
-		}
-
-		// Allow columns to be shown (counting by priority and then right to
-		// left) until we run out of room
-		var empty = false;
-		for (i = 0, ien = order.length; i < ien; i++) {
-			var colIdx = order[i].columnIdx;
-
-			if (
-				display[colIdx] === '-' &&
-				!columns[colIdx].control &&
-				columns[colIdx].minWidth
-			) {
-				// Once we've found a column that won't fit we don't let any
-				// others display either, or columns might disappear in the
-				// middle of the table
-				if (empty || usedWidth - columns[colIdx].minWidth < 0) {
-					empty = true;
-					display[colIdx] = false;
-				}
-				else {
-					display[colIdx] = true;
-				}
-
-				usedWidth -= columns[colIdx].minWidth;
-			}
-		}
-
-		// Determine if the 'control' column should be shown (if there is one).
-		// This is the case when there is a hidden column (that is not the
-		// control column). The two loops look inefficient here, but they are
-		// trivial and will fly through. We need to know the outcome from the
-		// first , before the action in the second can be taken
-		var showControl = false;
-
-		for (i = 0, ien = columns.length; i < ien; i++) {
-			if (
-				!columns[i].control &&
-				!columns[i].never &&
-				display[i] === false
-			) {
-				showControl = true;
-				break;
-			}
-		}
-
-		for (i = 0, ien = columns.length; i < ien; i++) {
-			if (columns[i].control) {
-				display[i] = showControl;
-			}
-
-			// Replace not visible string with false from the control column detection above
-			if (display[i] === 'not-visible') {
-				display[i] = false;
-			}
-		}
-
-		// Finally we need to make sure that there is at least one column that
-		// is visible
-		if ($.inArray(true, display) === -1) {
-			display[0] = true;
-		}
-
-		return display;
-	},
-
-	/**
-	 * Create the internal `columns` array with information about the columns
-	 * for the table. This includes determining which breakpoints the column
-	 * will appear in, based upon class names in the column, which makes up the
-	 * vast majority of this method.
-	 *
-	 * @private
-	 */
-	_classLogic: function () {
-		var that = this;
-		var breakpoints = this.c.breakpoints;
-		var dt = this.s.dt;
-		var columns = dt
-			.columns()
-			.eq(0)
-			.map(function (i) {
-				var column = this.column(i);
-				var className = column.header().className;
-				var priority = column.init().responsivePriority;
-				var dataPriority = column
-					.header()
-					.getAttribute('data-priority');
-
-				if (priority === undefined) {
-					priority =
-						dataPriority === undefined || dataPriority === null
-							? 10000
-							: dataPriority * 1;
-				}
-
-				return {
-					className: className,
-					includeIn: [],
-					auto: false,
-					control: false,
-					never: className.match(/\b(dtr\-)?never\b/) ? true : false,
-					priority: priority
-				};
-			});
-
-		// Simply add a breakpoint to `includeIn` array, ensuring that there are
-		// no duplicates
-		var add = function (colIdx, name) {
-			var includeIn = columns[colIdx].includeIn;
-
-			if ($.inArray(name, includeIn) === -1) {
-				includeIn.push(name);
-			}
-		};
-
-		var column = function (colIdx, name, operator, matched) {
-			var size, i, ien;
-
-			if (!operator) {
-				columns[colIdx].includeIn.push(name);
-			}
-			else if (operator === 'max-') {
-				// Add this breakpoint and all smaller
-				size = that._find(name).width;
-
-				for (i = 0, ien = breakpoints.length; i < ien; i++) {
-					if (breakpoints[i].width <= size) {
-						add(colIdx, breakpoints[i].name);
-					}
-				}
-			}
-			else if (operator === 'min-') {
-				// Add this breakpoint and all larger
-				size = that._find(name).width;
-
-				for (i = 0, ien = breakpoints.length; i < ien; i++) {
-					if (breakpoints[i].width >= size) {
-						add(colIdx, breakpoints[i].name);
-					}
-				}
-			}
-			else if (operator === 'not-') {
-				// Add all but this breakpoint
-				for (i = 0, ien = breakpoints.length; i < ien; i++) {
-					if (breakpoints[i].name.indexOf(matched) === -1) {
-						add(colIdx, breakpoints[i].name);
-					}
-				}
-			}
-		};
-
-		// Loop over each column and determine if it has a responsive control
-		// class
-		columns.each(function (col, i) {
-			var classNames = col.className.split(' ');
-			var hasClass = false;
-
-			// Split the class name up so multiple rules can be applied if needed
-			for (var k = 0, ken = classNames.length; k < ken; k++) {
-				var className = classNames[k].trim();
-
-				if (className === 'all' || className === 'dtr-all') {
-					// Include in all
-					hasClass = true;
-					col.includeIn = $.map(breakpoints, function (a) {
-						return a.name;
-					});
-					return;
-				}
-				else if (
-					className === 'none' ||
-					className === 'dtr-none' ||
-					col.never
-				) {
-					// Include in none (default) and no auto
-					hasClass = true;
-					return;
-				}
-				else if (
-					className === 'control' ||
-					className === 'dtr-control'
-				) {
-					// Special column that is only visible, when one of the other
-					// columns is hidden. This is used for the details control
-					hasClass = true;
-					col.control = true;
-					return;
-				}
-
-				$.each(breakpoints, function (j, breakpoint) {
-					// Does this column have a class that matches this breakpoint?
-					var brokenPoint = breakpoint.name.split('-');
-					var re = new RegExp(
-						'(min\\-|max\\-|not\\-)?(' +
-							brokenPoint[0] +
-							')(\\-[_a-zA-Z0-9])?'
-					);
-					var match = className.match(re);
-
-					if (match) {
-						hasClass = true;
-
-						if (
-							match[2] === brokenPoint[0] &&
-							match[3] === '-' + brokenPoint[1]
-						) {
-							// Class name matches breakpoint name fully
-							column(
-								i,
-								breakpoint.name,
-								match[1],
-								match[2] + match[3]
-							);
-						}
-						else if (match[2] === brokenPoint[0] && !match[3]) {
-							// Class name matched primary breakpoint name with no qualifier
-							column(i, breakpoint.name, match[1], match[2]);
-						}
-					}
-				});
-			}
-
-			// If there was no control class, then automatic sizing is used
-			if (!hasClass) {
-				col.auto = true;
-			}
-		});
-
-		this.s.columns = columns;
-	},
-
-	/**
-	 * Update the cells to show the correct control class / button
-	 * @private
-	 */
-	_controlClass: function () {
-		if (this.c.details.type === 'inline') {
-			var dt = this.s.dt;
-			var columnsVis = this.s.current;
-			var firstVisible = $.inArray(true, columnsVis);
-
-			// Remove from any cells which shouldn't have it
-			dt.cells(
-				null,
-				function (idx) {
-					return idx !== firstVisible;
-				},
-				{ page: 'current' }
-			)
-				.nodes()
-				.to$()
-				.filter('.dtr-control')
-				.removeClass('dtr-control');
-
-			if (firstVisible >= 0) {
-				dt.cells(null, firstVisible, { page: 'current' })
-					.nodes()
-					.to$()
-					.addClass('dtr-control');
-			}
-		}
-
-		this._tabIndexes();
-	},
-
-	/**
-	 * Show the details for the child row
-	 *
-	 * @param  {DataTables.Api} row    API instance for the row
-	 * @param  {boolean}        update Update flag
-	 * @private
-	 */
-	_detailsDisplay: function (row, update) {
-		var that = this;
-		var dt = this.s.dt;
-		var details = this.c.details;
-		var event = function (res) {
-			$(row.node()).toggleClass('dtr-expanded', res !== false);
-			$(dt.table().node()).triggerHandler('responsive-display.dt', [
-				dt,
-				row,
-				res,
-				update
-			]);
-		};
-
-		if (details && details.type !== false) {
-			var renderer =
-				typeof details.renderer === 'string'
-					? Responsive.renderer[details.renderer]()
-					: details.renderer;
-
-			var res = details.display(
-				row,
-				update,
-				function () {
-					return renderer.call(
-						that,
-						dt,
-						row[0][0],
-						that._detailsObj(row[0])
-					);
-				},
-				function () {
-					event(false);
-				}
-			);
-
-			if (typeof res === 'boolean') {
-				event(res);
-			}
-		}
-	},
-
-	/**
-	 * Initialisation for the details handler
-	 *
-	 * @private
-	 */
-	_detailsInit: function () {
-		var that = this;
-		var dt = this.s.dt;
-		var details = this.c.details;
-
-		// The inline type always uses the first child as the target
-		if (details.type === 'inline') {
-			details.target = 'td.dtr-control, th.dtr-control';
-		}
-
-		$(dt.table().body()).on('keyup.dtr', 'td, th', function (e) {
-			if (e.keyCode === 13 && $(this).data('dtr-keyboard')) {
-				$(this).click();
-			}
-		});
-
-		// type.target can be a string jQuery selector or a column index
-		var target = details.target;
-		var selector = typeof target === 'string' ? target : 'td, th';
-
-		if (target !== undefined || target !== null) {
-			// Click handler to show / hide the details rows when they are available
-			$(dt.table().body()).on(
-				'click.dtr mousedown.dtr mouseup.dtr',
-				selector,
-				function (e) {
-					// If the table is not collapsed (i.e. there is no hidden columns)
-					// then take no action
-					if (!$(dt.table().node()).hasClass('collapsed')) {
-						return;
-					}
-
-					// Check that the row is actually a DataTable's controlled node
-					if (
-						$.inArray(
-							$(this).closest('tr').get(0),
-							dt.rows().nodes().toArray()
-						) === -1
-					) {
-						return;
-					}
-
-					// For column index, we determine if we should act or not in the
-					// handler - otherwise it is already okay
-					if (typeof target === 'number') {
-						var targetIdx =
-							target < 0
-								? dt.columns().eq(0).length + target
-								: target;
-
-						if (dt.cell(this).index().column !== targetIdx) {
-							return;
-						}
-					}
-
-					// $().closest() includes itself in its check
-					var row = dt.row($(this).closest('tr'));
-
-					// Check event type to do an action
-					if (e.type === 'click') {
-						// The renderer is given as a function so the caller can execute it
-						// only when they need (i.e. if hiding there is no point is running
-						// the renderer)
-						that._detailsDisplay(row, false);
-					}
-					else if (e.type === 'mousedown') {
-						// For mouse users, prevent the focus ring from showing
-						$(this).css('outline', 'none');
-					}
-					else if (e.type === 'mouseup') {
-						// And then re-allow at the end of the click
-						$(this).trigger('blur').css('outline', '');
-					}
-				}
-			);
-		}
-	},
-
-	/**
-	 * Get the details to pass to a renderer for a row
-	 * @param  {int} rowIdx Row index
-	 * @private
-	 */
-	_detailsObj: function (rowIdx) {
-		var that = this;
-		var dt = this.s.dt;
-
-		return $.map(this.s.columns, function (col, i) {
-			// Never and control columns should not be passed to the renderer
-			if (col.never || col.control) {
+		var run = function (conf, node) {
+			if (!conf.key) {
 				return;
 			}
 
-			var dtCol = dt.settings()[0].aoColumns[i];
+			if (conf.key === character) {
+				e._buttonsHandled = true;
+				$(node).click();
+			}
+			else if ($.isPlainObject(conf.key)) {
+				if (conf.key.key !== character) {
+					return;
+				}
 
-			return {
-				className: dtCol.sClass,
-				columnIndex: i,
-				data: dt.cell(rowIdx, i).render(that.c.orthogonal),
-				hidden: dt.column(i).visible() && !that.s.current[i],
-				rowIndex: rowIdx,
-				title: dt.column(i).title()
-			};
-		});
+				if (conf.key.shiftKey && !e.shiftKey) {
+					return;
+				}
+
+				if (conf.key.altKey && !e.altKey) {
+					return;
+				}
+
+				if (conf.key.ctrlKey && !e.ctrlKey) {
+					return;
+				}
+
+				if (conf.key.metaKey && !e.metaKey) {
+					return;
+				}
+
+				// Made it this far - it is good
+				e._buttonsHandled = true;
+				$(node).click();
+			}
+		};
+
+		var recurse = function (a) {
+			for (var i = 0, ien = a.length; i < ien; i++) {
+				run(a[i].conf, a[i].node);
+
+				if (a[i].buttons.length) {
+					recurse(a[i].buttons);
+				}
+			}
+		};
+
+		recurse(this.s.buttons);
 	},
 
 	/**
-	 * Find a breakpoint object from a name
-	 *
-	 * @param  {string} name Breakpoint name to find
-	 * @return {object}      Breakpoint description object
+	 * Remove a key from the key listener for this instance (to be used when a
+	 * button is removed)
+	 * @param  {object} conf Button configuration
 	 * @private
 	 */
-	_find: function (name) {
-		var breakpoints = this.c.breakpoints;
+	_removeKey: function (conf) {
+		if (conf.key) {
+			var character = $.isPlainObject(conf.key) ? conf.key.key : conf.key;
 
-		for (var i = 0, ien = breakpoints.length; i < ien; i++) {
-			if (breakpoints[i].name === name) {
-				return breakpoints[i];
-			}
+			// Remove only one character, as multiple buttons could have the
+			// same listening key
+			var a = this.s.listenKeys.split('');
+			var idx = $.inArray(character, a);
+			a.splice(idx, 1);
+			this.s.listenKeys = a.join('');
 		}
 	},
 
 	/**
-	 * Re-create the contents of the child rows as the display has changed in
-	 * some way.
-	 *
+	 * Resolve a button configuration
+	 * @param  {string|function|object} conf Button config to resolve
+	 * @return {object} Button configuration
 	 * @private
 	 */
-	_redrawChildren: function () {
+	_resolveExtends: function (conf) {
 		var that = this;
 		var dt = this.s.dt;
-
-		dt.rows({ page: 'current' }).iterator('row', function (settings, idx) {
-			that._detailsDisplay(dt.row(idx), true);
-		});
-	},
-
-	/**
-	 * Alter the table display for a resized viewport. This involves first
-	 * determining what breakpoint the window currently is in, getting the
-	 * column visibilities to apply and then setting them.
-	 *
-	 * @param  {boolean} forceRedraw Force a redraw
-	 * @private
-	 */
-	_resize: function (forceRedraw) {
-		var that = this;
-		var dt = this.s.dt;
-		var width = $(window).innerWidth();
-		var breakpoints = this.c.breakpoints;
-		var breakpoint = breakpoints[0].name;
-		var columns = this.s.columns;
 		var i, ien;
-		var oldVis = this.s.current.slice();
+		var toConfObject = function (base) {
+			var loop = 0;
 
-		// Determine what breakpoint we are currently at
-		for (i = breakpoints.length - 1; i >= 0; i--) {
-			if (width <= breakpoints[i].width) {
-				breakpoint = breakpoints[i].name;
-				break;
-			}
-		}
-
-		// Show the columns for that break point
-		var columnsVis = this._columnsVisiblity(breakpoint);
-		this.s.current = columnsVis;
-
-		// Set the class before the column visibility is changed so event
-		// listeners know what the state is. Need to determine if there are
-		// any columns that are not visible but can be shown
-		var collapsedClass = false;
-
-		for (i = 0, ien = columns.length; i < ien; i++) {
-			if (
-				columnsVis[i] === false &&
-				!columns[i].never &&
-				!columns[i].control &&
-				!dt.column(i).visible() === false
-			) {
-				collapsedClass = true;
-				break;
-			}
-		}
-
-		$(dt.table().node()).toggleClass('collapsed', collapsedClass);
-
-		var changed = false;
-		var visible = 0;
-		var dtSettings = dt.settings()[0];
-		var colGroup = $(dt.table().node()).children('colgroup');
-		var colEls = dtSettings.aoColumns.map(function (col) {
-			return col.colEl;
-		});
-
-		dt.columns()
-			.eq(0)
-			.each(function (colIdx, i) {
-				// Do nothing on DataTables' hidden column - DT removes it from the table
-				// so we need to slide back
-				if (! dt.column(colIdx).visible()) {
+			// Loop until we have resolved to a button configuration, or an
+			// array of button configurations (which will be iterated
+			// separately)
+			while (!$.isPlainObject(base) && !Array.isArray(base)) {
+				if (base === undefined) {
 					return;
 				}
 
-				if (columnsVis[i] === true) {
-					visible++;
+				if (typeof base === 'function') {
+					base = base.call(that, dt, conf);
+
+					if (!base) {
+						return false;
+					}
+				}
+				else if (typeof base === 'string') {
+					if (!_dtButtons[base]) {
+						return { html: base };
+					}
+
+					base = _dtButtons[base];
 				}
 
-				if (forceRedraw || columnsVis[i] !== oldVis[i]) {
-					changed = true;
-					that._setColumnVis(colIdx, columnsVis[i]);
+				loop++;
+				if (loop > 30) {
+					// Protect against misconfiguration killing the browser
+					throw 'Buttons: Too many iterations';
 				}
+			}
 
-				// DataTables 2 uses `col` to define the width for a column
-				// and this needs to run each time, as DataTables will change
-				// the column width. We may need to reattach if we've removed
-				// an element previously.
-				if (! columnsVis[i]) {
-					colEls[i].detach();
-				}
-				else {
-					that._colGroupAttach(colGroup, colEls, i);
-				}
-			});
+			return Array.isArray(base) ? base : $.extend({}, base);
+		};
 
-		if (changed) {
-			dt.columns.adjust();
+		conf = toConfObject(conf);
 
-			this._redrawChildren();
+		while (conf && conf.extend) {
+			// Use `toConfObject` in case the button definition being extended
+			// is itself a string or a function
+			if (!_dtButtons[conf.extend]) {
+				throw 'Cannot extend unknown button type: ' + conf.extend;
+			}
 
-			// Inform listeners of the change
-			$(dt.table().node()).trigger('responsive-resize.dt', [
-				dt,
-				this._responsiveOnlyHidden()
-			]);
+			var objArray = toConfObject(_dtButtons[conf.extend]);
+			if (Array.isArray(objArray)) {
+				return objArray;
+			}
+			else if (!objArray) {
+				// This is a little brutal as it might be possible to have a
+				// valid button without the extend, but if there is no extend
+				// then the host button would be acting in an undefined state
+				return false;
+			}
 
-			// If no records, update the "No records" display element
-			if (dt.page.info().recordsDisplay === 0) {
-				$('td', dt.table().body()).eq(0).attr('colspan', visible);
+			// Stash the current class name
+			var originalClassName = objArray.className;
+
+			if (conf.config !== undefined && objArray.config !== undefined) {
+				conf.config = $.extend({}, objArray.config, conf.config);
+			}
+
+			conf = $.extend({}, objArray, conf);
+
+			// The extend will have overwritten the original class name if the
+			// `conf` object also assigned a class, but we want to concatenate
+			// them so they are list that is combined from all extended buttons
+			if (originalClassName && conf.className !== originalClassName) {
+				conf.className = originalClassName + ' ' + conf.className;
+			}
+
+			// Although we want the `conf` object to overwrite almost all of
+			// the properties of the object being extended, the `extend`
+			// property should come from the object being extended
+			conf.extend = objArray.extend;
+		}
+
+		// Buttons to be added to a collection  -gives the ability to define
+		// if buttons should be added to the start or end of a collection
+		var postfixButtons = conf.postfixButtons;
+		if (postfixButtons) {
+			if (!conf.buttons) {
+				conf.buttons = [];
+			}
+
+			for (i = 0, ien = postfixButtons.length; i < ien; i++) {
+				conf.buttons.push(postfixButtons[i]);
 			}
 		}
 
-		that._controlClass();
+		var prefixButtons = conf.prefixButtons;
+		if (prefixButtons) {
+			if (!conf.buttons) {
+				conf.buttons = [];
+			}
+
+			for (i = 0, ien = prefixButtons.length; i < ien; i++) {
+				conf.buttons.splice(i, 0, prefixButtons[i]);
+			}
+		}
+
+		return conf;
 	},
 
 	/**
-	 * Determine the width of each column in the table so the auto column hiding
-	 * has that information to work with. This method is never going to be 100%
-	 * perfect since column widths can change slightly per page, but without
-	 * seriously compromising performance this is quite effective.
-	 *
-	 * @private
+	 * Display (and replace if there is an existing one) a popover attached to a button
+	 * @param {string|node} content Content to show
+	 * @param {DataTable.Api} hostButton DT API instance of the button
+	 * @param {object} inOpts Options (see object below for all options)
 	 */
-	_resizeAuto: function () {
-		var dt = this.s.dt;
-		var columns = this.s.columns;
-		var that = this;
-		var visibleColumns = dt
-			.columns()
-			.indexes()
-			.filter(function (idx) {
-				return dt.column(idx).visible();
+	_popover: function (content, hostButton, inOpts) {
+		var dt = hostButton;
+		var c = this.c;
+		var closed = false;
+		var options = $.extend(
+			{
+				align: 'button-left', // button-right, dt-container, split-left, split-right
+				autoClose: false,
+				background: true,
+				backgroundClassName: 'dt-button-background',
+				closeButton: true,
+				containerClassName: c.dom.collection.container.className,
+				contentClassName: c.dom.collection.container.content.className,
+				collectionLayout: '',
+				collectionTitle: '',
+				dropup: false,
+				fade: 400,
+				popoverTitle: '',
+				rightAlignClassName: 'dt-button-right',
+				tag: c.dom.collection.container.tag
+			},
+			inOpts
+		);
+
+		var containerSelector =
+			options.tag + '.' + options.containerClassName.replace(/ /g, '.');
+		var hostButtonNode = hostButton.node();
+		var hostNode = options.collectionLayout.includes('fixed') ? $('body') : hostButton.node();
+
+		var close = function () {
+			closed = true;
+
+			_fadeOut($(containerSelector), options.fade, function () {
+				$(this).detach();
 			});
 
-		// Are we allowed to do auto sizing?
-		if (!this.c.auto) {
+			$(
+				dt
+					.buttons('[aria-haspopup="dialog"][aria-expanded="true"]')
+					.nodes()
+			).attr('aria-expanded', 'false');
+
+			$('div.dt-button-background').off('click.dtb-collection');
+			Buttons.background(
+				false,
+				options.backgroundClassName,
+				options.fade,
+				hostNode
+			);
+
+			$(window).off('resize.resize.dtb-collection');
+			$('body').off('.dtb-collection');
+			dt.off('buttons-action.b-internal');
+			dt.off('destroy');
+
+			$('body').trigger('buttons-popover-hide.dt');
+		};
+
+		if (content === false) {
+			close();
 			return;
 		}
 
-		// Are there any columns that actually need auto-sizing, or do they all
-		// have classes defined
-		if (
-			$.inArray(
-				true,
-				$.map(columns, function (c) {
-					return c.auto;
+		var existingExpanded = $(
+			dt.buttons('[aria-haspopup="dialog"][aria-expanded="true"]').nodes()
+		);
+		if (existingExpanded.length) {
+			// Reuse the current position if the button that was triggered is inside an existing collection
+			if (hostNode.closest(containerSelector).length) {
+				hostNode = existingExpanded.eq(0);
+			}
+
+			close();
+		}
+
+		// Sort buttons if defined
+		if (options.sort) {
+			var elements = $('button', content)
+				.map(function (idx, el) {
+					return {
+						text: $(el).text(),
+						el: el
+					};
 				})
-			) === -1
-		) {
-			return;
+				.toArray();
+
+			elements.sort(function (a, b) {
+				return a.text.localeCompare(b.text);
+			});
+
+			$(content).append(elements.map(function (v) {
+				return v.el;
+			}));
 		}
 
-		// Clone the table with the current data in it
-		var clonedTable = dt.table().node().cloneNode(false);
-		var clonedHeader = $(dt.table().header().cloneNode(false)).appendTo(
-			clonedTable
+		// Try to be smart about the layout
+		var cnt = $('.dt-button', content).length;
+		var mod = '';
+
+		if (cnt === 3) {
+			mod = 'dtb-b3';
+		}
+		else if (cnt === 2) {
+			mod = 'dtb-b2';
+		}
+		else if (cnt === 1) {
+			mod = 'dtb-b1';
+		}
+
+		var display = $('<' + options.tag + '/>')
+			.addClass(options.containerClassName)
+			.addClass(options.collectionLayout)
+			.addClass(options.splitAlignClass)
+			.addClass(mod)
+			.css('display', 'none')
+			.attr({
+				'aria-modal': true,
+				role: 'dialog'
+			});
+
+		content = $(content)
+			.addClass(options.contentClassName)
+			.attr('role', 'menu')
+			.appendTo(display);
+
+		hostButtonNode.attr('aria-expanded', 'true');
+
+		if (hostNode.parents('body')[0] !== document.body) {
+			hostNode = $(document.body).children('div, section, p').last();
+		}
+
+		if (options.popoverTitle) {
+			display.prepend(
+				'<div class="dt-button-collection-title">' +
+					options.popoverTitle +
+					'</div>'
+			);
+		}
+		else if (options.collectionTitle) {
+			display.prepend(
+				'<div class="dt-button-collection-title">' +
+					options.collectionTitle +
+					'</div>'
+			);
+		}
+
+		if (options.closeButton) {
+			display
+				.prepend('<div class="dtb-popover-close">&times;</div>')
+				.addClass('dtb-collection-closeable');
+		}
+
+		_fadeIn(display.insertAfter(hostNode), options.fade);
+
+		var tableContainer = $(hostButton.table().container());
+		var position = display.css('position');
+
+		if (options.span === 'container' || options.align === 'dt-container') {
+			hostNode = hostNode.parent();
+			display.css('width', tableContainer.width());
+		}
+
+		// Align the popover relative to the DataTables container
+		// Useful for wide popovers such as SearchPanes
+		if (position === 'absolute') {
+			// Align relative to the host button
+			var offsetParent = $(hostNode[0].offsetParent);
+			var buttonPosition = hostNode.position();
+			var buttonOffset = hostNode.offset();
+			var tableSizes = offsetParent.offset();
+			var containerPosition = offsetParent.position();
+			var computed = window.getComputedStyle(offsetParent[0]);
+
+			tableSizes.height = offsetParent.outerHeight();
+			tableSizes.width =
+				offsetParent.width() + parseFloat(computed.paddingLeft);
+			tableSizes.right = tableSizes.left + tableSizes.width;
+			tableSizes.bottom = tableSizes.top + tableSizes.height;
+
+			// Set the initial position so we can read height / width
+			var top = buttonPosition.top + hostNode.outerHeight();
+			var left = buttonPosition.left;
+
+			display.css({
+				top: top,
+				left: left
+			});
+
+			// Get the popover position
+			computed = window.getComputedStyle(display[0]);
+			var popoverSizes = display.offset();
+
+			popoverSizes.height = display.outerHeight();
+			popoverSizes.width = display.outerWidth();
+			popoverSizes.right = popoverSizes.left + popoverSizes.width;
+			popoverSizes.bottom = popoverSizes.top + popoverSizes.height;
+			popoverSizes.marginTop = parseFloat(computed.marginTop);
+			popoverSizes.marginBottom = parseFloat(computed.marginBottom);
+
+			// First position per the class requirements - pop up and right align
+			if (options.dropup) {
+				top =
+					buttonPosition.top -
+					popoverSizes.height -
+					popoverSizes.marginTop -
+					popoverSizes.marginBottom;
+			}
+
+			if (
+				options.align === 'button-right' ||
+				display.hasClass(options.rightAlignClassName)
+			) {
+				left =
+					buttonPosition.left -
+					popoverSizes.width +
+					hostNode.outerWidth();
+			}
+
+			// Container alignment - make sure it doesn't overflow the table container
+			if (
+				options.align === 'dt-container' ||
+				options.align === 'container'
+			) {
+				if (left < buttonPosition.left) {
+					left = -buttonPosition.left;
+				}
+			}
+
+			// Window adjustment
+			if (
+				containerPosition.left + left + popoverSizes.width >
+				$(window).width()
+			) {
+				// Overflowing the document to the right
+				left =
+					$(window).width() -
+					popoverSizes.width -
+					containerPosition.left;
+			}
+
+			if (buttonOffset.left + left < 0) {
+				// Off to the left of the document
+				left = -buttonOffset.left;
+			}
+
+			if (
+				containerPosition.top + top + popoverSizes.height >
+				$(window).height() + $(window).scrollTop()
+			) {
+				// Pop up if otherwise we'd need the user to scroll down
+				top =
+					buttonPosition.top -
+					popoverSizes.height -
+					popoverSizes.marginTop -
+					popoverSizes.marginBottom;
+			}
+
+			if (offsetParent.offset().top + top < $(window).scrollTop()) {
+				// Correction for when the top is beyond the top of the page
+				top = buttonPosition.top + hostNode.outerHeight();
+			}
+
+			// Calculations all done - now set it
+			display.css({
+				top: top,
+				left: left
+			});
+		}
+		else {
+			// Fix position - centre on screen
+			var place = function () {
+				var half = $(window).height() / 2;
+
+				var top = display.height() / 2;
+				if (top > half) {
+					top = half;
+				}
+
+				display.css('marginTop', top * -1);
+			};
+
+			place();
+
+			$(window).on('resize.dtb-collection', function () {
+				place();
+			});
+		}
+
+		if (options.background) {
+			Buttons.background(
+				true,
+				options.backgroundClassName,
+				options.fade,
+				options.backgroundHost || hostNode
+			);
+		}
+
+		// This is bonkers, but if we don't have a click listener on the
+		// background element, iOS Safari will ignore the body click
+		// listener below. An empty function here is all that is
+		// required to make it work...
+		$('div.dt-button-background').on(
+			'click.dtb-collection',
+			function () {}
 		);
-		var clonedFooter = $(dt.table().footer().cloneNode(false)).appendTo(
-			clonedTable
-		);
-		var clonedBody = $(dt.table().body())
-			.clone(false, false)
-			.empty()
-			.appendTo(clonedTable); // use jQuery because of IE8
 
-		clonedTable.style.width = 'auto';
-
-		// Header
-		dt.table()
-			.header.structure(visibleColumns)
-			.forEach((row) => {
-				var cells = row
-					.filter(function (el) {
-						return el ? true : false;
-					})
-					.map(function (el) {
-						return $(el.cell)
-							.clone(false)
-							.css('display', 'table-cell')
-							.css('width', 'auto')
-							.css('min-width', 0);
-					});
-
-				$('<tr/>').append(cells).appendTo(clonedHeader);
-			});
-
-		// Always need an empty row that we can read widths from
-		var emptyRow = $('<tr/>').appendTo(clonedBody);
-
-		for (var i = 0; i < visibleColumns.count(); i++) {
-			emptyRow.append('<td/>');
-		}
-
-		// Body rows
-		if (this.c.details.renderer._responsiveMovesNodes) {
-			// Slow but it allows for moving elements around the document
-			dt.rows({ page: 'current' }).every(function (rowIdx) {
-				var node = this.node();
-
-				if (! node) {
-					return;
-				}
-
-				// We clone the table's rows and cells to create the sizing table
-				var tr = node.cloneNode(false);
-
-				dt.cells(rowIdx, visibleColumns).every(function (rowIdx2, colIdx) {
-					// If nodes have been moved out (listHiddenNodes), we need to
-					// clone from the store
-					var store = that.s.childNodeStore[rowIdx + '-' + colIdx];
-
-					if (store) {
-						$(this.node().cloneNode(false))
-							.append($(store).clone())
-							.appendTo(tr);
+		if (options.autoClose) {
+			setTimeout(function () {
+				dt.on('buttons-action.b-internal', function (e, btn, dt, node) {
+					if (node[0] === hostNode[0]) {
+						return;
 					}
-					else {
-						$(this.node()).clone(false).appendTo(tr);
-					}
+					close();
 				});
-
-				clonedBody.append(tr);
-			});
-		}
-		else {
-			// This is much faster, but it doesn't account for moving nodes around
-			$(clonedBody)
-				.append( $(dt.rows( { page: 'current' } ).nodes()).clone( false ) )
-				.find( 'th, td' ).css( 'display', '' );
+			}, 0);
 		}
 
-		// Any cells which were hidden by Responsive in the host table, need to
-		// be visible here for the calculations
-		clonedBody.find('th, td').css('display', '');
+		$(display).trigger('buttons-popover.dt');
 
-		// Footer
-		dt.table()
-			.footer.structure(visibleColumns)
-			.forEach((row) => {
-				var cells = row
-					.filter(function (el) {
-						return el ? true : false;
-					})
-					.map(function (el) {
-						return $(el.cell)
-							.clone(false)
-							.css('display', 'table-cell')
-							.css('width', 'auto')
-							.css('min-width', 0);
-					});
+		dt.on('destroy', close);
 
-				$('<tr/>').append(cells).appendTo(clonedFooter);
-			});
-
-		// In the inline case extra padding is applied to the first column to
-		// give space for the show / hide icon. We need to use this in the
-		// calculation
-		if (this.c.details.type === 'inline') {
-			$(clonedTable).addClass('dtr-inline collapsed');
-		}
-
-		// It is unsafe to insert elements with the same name into the DOM
-		// multiple times. For example, cloning and inserting a checked radio
-		// clears the chcecked state of the original radio.
-		$(clonedTable).find('[name]').removeAttr('name');
-
-		// A position absolute table would take the table out of the flow of
-		// our container element, bypassing the height and width (Scroller)
-		$(clonedTable).css('position', 'relative');
-
-		var inserted = $('<div/>')
-			.css({
-				width: 1,
-				height: 1,
-				overflow: 'hidden',
-				clear: 'both'
-			})
-			.append(clonedTable);
-
-		inserted.insertBefore(dt.table().node());
-
-		// The cloned table now contains the smallest that each column can be
-		emptyRow.children().each(function (i) {
-			var idx = dt.column.index('fromVisible', i);
-			columns[idx].minWidth = this.offsetWidth || 0;
-		});
-
-		inserted.remove();
-	},
-
-	/**
-	 * Get the state of the current hidden columns - controlled by Responsive only
-	 */
-	_responsiveOnlyHidden: function () {
-		var dt = this.s.dt;
-
-		return $.map(this.s.current, function (v, i) {
-			// If the column is hidden by DataTables then it can't be hidden by
-			// Responsive!
-			if (dt.column(i).visible() === false) {
-				return true;
-			}
-			return v;
-		});
-	},
-
-	/**
-	 * Set a column's visibility.
-	 *
-	 * We don't use DataTables' column visibility controls in order to ensure
-	 * that column visibility can Responsive can no-exist. Since only IE8+ is
-	 * supported (and all evergreen browsers of course) the control of the
-	 * display attribute works well.
-	 *
-	 * @param {integer} col      Column index
-	 * @param {boolean} showHide Show or hide (true or false)
-	 * @private
-	 */
-	_setColumnVis: function (col, showHide) {
-		var that = this;
-		var dt = this.s.dt;
-		var display = showHide ? '' : 'none'; // empty string will remove the attr
-
-		this._setHeaderVis(col, showHide, dt.table().header.structure());
-		this._setHeaderVis(col, showHide, dt.table().footer.structure());
-
-		dt.column(col)
-			.nodes()
-			.to$()
-			.css('display', display)
-			.toggleClass('dtr-hidden', !showHide);
-
-		// If the are child nodes stored, we might need to reinsert them
-		if (!$.isEmptyObject(this.s.childNodeStore)) {
-			dt.cells(null, col)
-				.indexes()
-				.each(function (idx) {
-					that._childNodesRestore(dt, idx.row, idx.column);
-				});
-		}
-	},
-
-	/**
-	 * Set the a column's visibility, taking into account multiple rows
-	 * in a header / footer and colspan attributes
-	 * @param {*} col
-	 * @param {*} showHide
-	 * @param {*} structure
-	 */
-	_setHeaderVis: function (col, showHide, structure) {
-		var that = this;
-		var display = showHide ? '' : 'none';
-
-		// We use the `null`s in the structure array to indicate that a cell
-		// should expand over that one if there is a colspan, but it might
-		// also have been filled by a rowspan, so we need to expand the
-		// rowspan cells down through the structure
-		structure.forEach(function (row, rowIdx) {
-			for (var col = 0; col < row.length; col++) {
-				if (row[col] && row[col].rowspan > 1) {
-					var span = row[col].rowspan;
-
-					for (var i=1 ; i<span ; i++) {
-						structure[rowIdx + i][col] = {};
-					}
-				}
-			}
-		});
-
-		structure.forEach(function (row) {
-			if (row[col] && row[col].cell) {
-				$(row[col].cell)
-					.css('display', display)
-					.toggleClass('dtr-hidden', !showHide);
-			}
-			else {
-				// In a colspan - need to rewind calc the new span since
-				// display:none elements do not count as being spanned over
-				var search = col;
-
-				while (search >= 0) {
-					if (row[search] && row[search].cell) {
-						row[search].cell.colSpan = that._colspan(row, search);
-						break;
+		setTimeout(function () {
+			closed = false;
+			$('body')
+				.on('click.dtb-collection', function (e) {
+					if (closed) {
+						return;
 					}
 
-					search--;
-				}
-			}
-		});
-	},
+					// andSelf is deprecated in jQ1.8, but we want 1.7 compat
+					var back = $.fn.addBack ? 'addBack' : 'andSelf';
+					var parent = $(e.target).parent()[0];
 
-	/**
-	 * How many columns should this cell span
-	 *
-	 * @param {*} row Header structure row
-	 * @param {*} idx The column index of the cell to span
-	 */
-	_colspan: function (row, idx) {
-		var colspan = 1;
-
-		for (var col = idx + 1; col < row.length; col++) {
-			if (row[col] === null && this.s.current[col]) {
-				// colspan and not hidden by Responsive
-				colspan++;
-			}
-			else if (row[col]) {
-				// Got the next cell, jump out
-				break;
-			}
-		}
-
-		return colspan;
-	},
-
-	/**
-	 * Update the cell tab indexes for keyboard accessibility. This is called on
-	 * every table draw - that is potentially inefficient, but also the least
-	 * complex option given that column visibility can change on the fly. Its a
-	 * shame user-focus was removed from CSS 3 UI, as it would have solved this
-	 * issue with a single CSS statement.
-	 *
-	 * @private
-	 */
-	_tabIndexes: function () {
-		var dt = this.s.dt;
-		var cells = dt.cells({ page: 'current' }).nodes().to$();
-		var ctx = dt.settings()[0];
-		var target = this.c.details.target;
-
-		cells.filter('[data-dtr-keyboard]').removeData('[data-dtr-keyboard]');
-
-		if (typeof target === 'number') {
-			dt.cells(null, target, { page: 'current' })
-				.nodes()
-				.to$()
-				.attr('tabIndex', ctx.iTabIndex)
-				.data('dtr-keyboard', 1);
-		}
-		else {
-			// This is a bit of a hack - we need to limit the selected nodes to just
-			// those of this table
-			if (target === 'td:first-child, th:first-child') {
-				target = '>td:first-child, >th:first-child';
-			}
-
-			var rows = dt.rows({ page: 'current' }).nodes();
-			var nodes = target === 'tr'
-				? $(rows)
-				: $(target, rows);
-
-			nodes
-				.attr('tabIndex', ctx.iTabIndex)
-				.data('dtr-keyboard', 1);
-		}
-	}
-});
-
-/**
- * List of default breakpoints. Each item in the array is an object with two
- * properties:
- *
- * * `name` - the breakpoint name.
- * * `width` - the breakpoint width
- *
- * @name Responsive.breakpoints
- * @static
- */
-Responsive.breakpoints = [
-	{ name: 'desktop', width: Infinity },
-	{ name: 'tablet-l', width: 1024 },
-	{ name: 'tablet-p', width: 768 },
-	{ name: 'mobile-l', width: 480 },
-	{ name: 'mobile-p', width: 320 }
-];
-
-/**
- * Display methods - functions which define how the hidden data should be shown
- * in the table.
- *
- * @namespace
- * @name Responsive.defaults
- * @static
- */
-Responsive.display = {
-	childRow: function (row, update, render) {
-		var rowNode = $(row.node());
-
-		if (update) {
-			if (rowNode.hasClass('dtr-expanded')) {
-				row.child(render(), 'child').show();
-
-				return true;
-			}
-		}
-		else {
-			if (!rowNode.hasClass('dtr-expanded')) {
-				var rendered = render();
-
-				if (rendered === false) {
-					return false;
-				}
-
-				row.child(rendered, 'child').show();
-				return true;
-			}
-			else {
-				row.child(false);
-
-				return false;
-			}
-		}
-	},
-
-	childRowImmediate: function (row, update, render) {
-		var rowNode = $(row.node());
-
-		if (
-			(!update && rowNode.hasClass('dtr-expanded')) ||
-			!row.responsive.hasHidden()
-		) {
-			// User interaction and the row is show, or nothing to show
-			row.child(false);
-
-			return false;
-		}
-		else {
-			// Display
-			var rendered = render();
-
-			if (rendered === false) {
-				return false;
-			}
-
-			row.child(rendered, 'child').show();
-
-			return true;
-		}
-	},
-
-	// This is a wrapper so the modal options for Bootstrap and jQuery UI can
-	// have options passed into them. This specific one doesn't need to be a
-	// function but it is for consistency in the `modal` name
-	modal: function (options) {
-		return function (row, update, render, closeCallback) {
-			var modal;
-			var rendered = render();
-
-			if (rendered === false) {
-				return false;
-			}
-
-			if (!update) {
-				// Show a modal
-				var close = function () {
-					modal.remove(); // will tidy events for us
-					$(document).off('keypress.dtr');
-					$(row.node()).removeClass('dtr-expanded');
-
-					closeCallback();
-				};
-
-				modal = $('<div class="dtr-modal"/>')
-					.append(
-						$('<div class="dtr-modal-display"/>')
-							.append(
-								$('<div class="dtr-modal-content"/>')
-									.data('dtr-row-idx', row.index())
-									.append(rendered)
-							)
-							.append(
-								$(
-									'<div class="dtr-modal-close">&times;</div>'
-								).click(function () {
-									close();
-								})
-							)
-					)
-					.append(
-						$('<div class="dtr-modal-background"/>').click(
-							function () {
-								close();
-							}
-						)
-					)
-					.appendTo('body');
-
-				$(row.node()).addClass('dtr-expanded');
-
-				$(document).on('keyup.dtr', function (e) {
-					if (e.keyCode === 27) {
-						e.stopPropagation();
-
+					if (
+						(!$(e.target).parents()[back]().filter(content)
+							.length &&
+							!$(parent).hasClass('dt-buttons')) ||
+						$(e.target).hasClass('dt-button-background')
+					) {
 						close();
 					}
+				})
+				.on('keyup.dtb-collection', function (e) {
+					if (e.keyCode === 27) {
+						close();
+					}
+				})
+				.on('keydown.dtb-collection', function (e) {
+					// Focus trap for tab key
+					var elements = $('a, button', content);
+					var active = document.activeElement;
+
+					if (e.keyCode !== 9) {
+						// tab
+						return;
+					}
+
+					if (elements.index(active) === -1) {
+						// If current focus is not inside the popover
+						elements.first().focus();
+						e.preventDefault();
+					}
+					else if (e.shiftKey) {
+						// Reverse tabbing order when shift key is pressed
+						if (active === elements[0]) {
+							elements.last().focus();
+							e.preventDefault();
+						}
+					}
+					else {
+						if (active === elements.last()[0]) {
+							elements.first().focus();
+							e.preventDefault();
+						}
+					}
 				});
+		}, 0);
+	}
+});
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Statics
+ */
+
+/**
+ * Show / hide a background layer behind a collection
+ * @param  {boolean} Flag to indicate if the background should be shown or
+ *   hidden
+ * @param  {string} Class to assign to the background
+ * @static
+ */
+Buttons.background = function (show, className, fade, insertPoint) {
+	if (fade === undefined) {
+		fade = 400;
+	}
+	if (!insertPoint) {
+		insertPoint = document.body;
+	}
+
+	if (show) {
+		_fadeIn(
+			$('<div/>')
+				.addClass(className)
+				.css('display', 'none')
+				.insertAfter(insertPoint),
+			fade
+		);
+	}
+	else {
+		_fadeOut($('div.' + className), fade, function () {
+			$(this).removeClass(className).remove();
+		});
+	}
+};
+
+/**
+ * Instance selector - select Buttons instances based on an instance selector
+ * value from the buttons assigned to a DataTable. This is only useful if
+ * multiple instances are attached to a DataTable.
+ * @param  {string|int|array} Instance selector - see `instance-selector`
+ *   documentation on the DataTables site
+ * @param  {array} Button instance array that was attached to the DataTables
+ *   settings object
+ * @return {array} Buttons instances
+ * @static
+ */
+Buttons.instanceSelector = function (group, buttons) {
+	if (group === undefined || group === null) {
+		return $.map(buttons, function (v) {
+			return v.inst;
+		});
+	}
+
+	var ret = [];
+	var names = $.map(buttons, function (v) {
+		return v.name;
+	});
+
+	// Flatten the group selector into an array of single options
+	var process = function (input) {
+		if (Array.isArray(input)) {
+			for (var i = 0, ien = input.length; i < ien; i++) {
+				process(input[i]);
+			}
+			return;
+		}
+
+		if (typeof input === 'string') {
+			if (input.indexOf(',') !== -1) {
+				// String selector, list of names
+				process(input.split(','));
 			}
 			else {
-				modal = $('div.dtr-modal-content');
+				// String selector individual name
+				var idx = $.inArray(input.trim(), names);
 
-				if (modal.length && row.index() === modal.data('dtr-row-idx')) {
-					modal.empty().append(rendered);
-				}
-				else {
-					// Modal not shown, nothing to update
-					return null;
+				if (idx !== -1) {
+					ret.push(buttons[idx].inst);
 				}
 			}
-
-			if (options && options.header) {
-				$('div.dtr-modal-content').prepend(
-					'<h2>' + options.header(row) + '</h2>'
-				);
-			}
-
-			return true;
-		};
-	}
-};
-
-/**
- * Display methods - functions which define how the hidden data should be shown
- * in the table.
- *
- * @namespace
- * @name Responsive.defaults
- * @static
- */
-Responsive.renderer = {
-	listHiddenNodes: function () {
-		var fn = function (api, rowIdx, columns) {
-			var that = this;
-			var ul = $(
-				'<ul data-dtr-index="' + rowIdx + '" class="dtr-details"/>'
-			);
-			var found = false;
-
-			$.each(columns, function (i, col) {
-				if (col.hidden) {
-					var klass = col.className
-						? 'class="' + col.className + '"'
-						: '';
-
-					$(
-						'<li ' +
-							klass +
-							' data-dtr-index="' +
-							col.columnIndex +
-							'" data-dt-row="' +
-							col.rowIndex +
-							'" data-dt-column="' +
-							col.columnIndex +
-							'">' +
-							'<span class="dtr-title">' +
-							col.title +
-							'</span> ' +
-							'</li>'
-					)
-						.append(
-							$('<span class="dtr-data"/>').append(
-								that._childNodes(
-									api,
-									col.rowIndex,
-									col.columnIndex
-								)
-							)
-						) // api.cell( col.rowIndex, col.columnIndex ).node().childNodes ) )
-						.appendTo(ul);
-
-					found = true;
+		}
+		else if (typeof input === 'number') {
+			// Index selector
+			ret.push(buttons[input].inst);
+		}
+		else if (typeof input === 'object' && input.nodeName) {
+			// Element selector
+			for (var j = 0; j < buttons.length; j++) {
+				if (buttons[j].inst.dom.container[0] === input) {
+					ret.push(buttons[j].inst);
 				}
-			});
-
-			return found ? ul : false;
-		};
-
-		fn._responsiveMovesNodes = true;
-
-		return fn;
-	},
-
-	listHidden: function () {
-		return function (api, rowIdx, columns) {
-			var data = $.map(columns, function (col) {
-				var klass = col.className
-					? 'class="' + col.className + '"'
-					: '';
-
-				return col.hidden
-					? '<li ' +
-							klass +
-							' data-dtr-index="' +
-							col.columnIndex +
-							'" data-dt-row="' +
-							col.rowIndex +
-							'" data-dt-column="' +
-							col.columnIndex +
-							'">' +
-							'<span class="dtr-title">' +
-							col.title +
-							'</span> ' +
-							'<span class="dtr-data">' +
-							col.data +
-							'</span>' +
-							'</li>'
-					: '';
-			}).join('');
-
-			return data
-				? $(
-						'<ul data-dtr-index="' +
-							rowIdx +
-							'" class="dtr-details"/>'
-				).append(data)
-				: false;
-		};
-	},
-
-	tableAll: function (options) {
-		options = $.extend(
-			{
-				tableClass: ''
-			},
-			options
-		);
-
-		return function (api, rowIdx, columns) {
-			var data = $.map(columns, function (col) {
-				var klass = col.className
-					? 'class="' + col.className + '"'
-					: '';
-
-				return (
-					'<tr ' +
-					klass +
-					' data-dt-row="' +
-					col.rowIndex +
-					'" data-dt-column="' +
-					col.columnIndex +
-					'">' +
-					'<td>' +
-					( '' !== col.title
-						? col.title + ':'
-						: ''
-					) +
-					'</td> ' +
-					'<td>' +
-					col.data +
-					'</td>' +
-					'</tr>'
-				);
-			}).join('');
-
-			return $(
-				'<table class="' +
-					options.tableClass +
-					' dtr-details" width="100%"/>'
-			).append(data);
-		};
-	}
-};
-
-/**
- * Responsive default settings for initialisation
- *
- * @namespace
- * @name Responsive.defaults
- * @static
- */
-Responsive.defaults = {
-	/**
-	 * List of breakpoints for the instance. Note that this means that each
-	 * instance can have its own breakpoints. Additionally, the breakpoints
-	 * cannot be changed once an instance has been creased.
-	 *
-	 * @type {Array}
-	 * @default Takes the value of `Responsive.breakpoints`
-	 */
-	breakpoints: Responsive.breakpoints,
-
-	/**
-	 * Enable / disable auto hiding calculations. It can help to increase
-	 * performance slightly if you disable this option, but all columns would
-	 * need to have breakpoint classes assigned to them
-	 *
-	 * @type {Boolean}
-	 * @default  `true`
-	 */
-	auto: true,
-
-	/**
-	 * Details control. If given as a string value, the `type` property of the
-	 * default object is set to that value, and the defaults used for the rest
-	 * of the object - this is for ease of implementation.
-	 *
-	 * The object consists of the following properties:
-	 *
-	 * * `display` - A function that is used to show and hide the hidden details
-	 * * `renderer` - function that is called for display of the child row data.
-	 *   The default function will show the data from the hidden columns
-	 * * `target` - Used as the selector for what objects to attach the child
-	 *   open / close to
-	 * * `type` - `false` to disable the details display, `inline` or `column`
-	 *   for the two control types
-	 *
-	 * @type {Object|string}
-	 */
-	details: {
-		display: Responsive.display.childRow,
-
-		renderer: Responsive.renderer.listHidden(),
-
-		target: 0,
-
-		type: 'inline'
-	},
-
-	/**
-	 * Orthogonal data request option. This is used to define the data type
-	 * requested when Responsive gets the data to show in the child row.
-	 *
-	 * @type {String}
-	 */
-	orthogonal: 'display'
-};
-
-/*
- * API
- */
-var Api = $.fn.dataTable.Api;
-
-// Doesn't do anything - work around for a bug in DT... Not documented
-Api.register('responsive()', function () {
-	return this;
-});
-
-Api.register('responsive.index()', function (li) {
-	li = $(li);
-
-	return {
-		column: li.data('dtr-index'),
-		row: li.parent().data('dtr-index')
+			}
+		}
+		else if (typeof input === 'object') {
+			// Actual instance selector
+			ret.push(input);
+		}
 	};
-});
 
-Api.register('responsive.rebuild()', function () {
-	return this.iterator('table', function (ctx) {
-		if (ctx._responsive) {
-			ctx._responsive._classLogic();
+	process(group);
+
+	return ret;
+};
+
+/**
+ * Button selector - select one or more buttons from a selector input so some
+ * operation can be performed on them.
+ * @param  {array} Button instances array that the selector should operate on
+ * @param  {string|int|node|jQuery|array} Button selector - see
+ *   `button-selector` documentation on the DataTables site
+ * @return {array} Array of objects containing `inst` and `idx` properties of
+ *   the selected buttons so you know which instance each button belongs to.
+ * @static
+ */
+Buttons.buttonSelector = function (insts, selector) {
+	var ret = [];
+	var nodeBuilder = function (a, buttons, baseIdx) {
+		var button;
+		var idx;
+
+		for (var i = 0, ien = buttons.length; i < ien; i++) {
+			button = buttons[i];
+
+			if (button) {
+				idx = baseIdx !== undefined ? baseIdx + i : i + '';
+
+				a.push({
+					node: button.node,
+					name: button.conf.name,
+					idx: idx
+				});
+
+				if (button.buttons) {
+					nodeBuilder(a, button.buttons, idx + '-');
+				}
+			}
 		}
-	});
-});
+	};
 
-Api.register('responsive.recalc()', function () {
-	return this.iterator('table', function (ctx) {
-		if (ctx._responsive) {
-			ctx._responsive._resizeAuto();
-			ctx._responsive._resize();
+	var run = function (selector, inst) {
+		var i, ien;
+		var buttons = [];
+		nodeBuilder(buttons, inst.s.buttons);
+
+		var nodes = $.map(buttons, function (v) {
+			return v.node;
+		});
+
+		if (Array.isArray(selector) || selector instanceof $) {
+			for (i = 0, ien = selector.length; i < ien; i++) {
+				run(selector[i], inst);
+			}
+			return;
 		}
-	});
-});
 
-Api.register('responsive.hasHidden()', function () {
-	var ctx = this.context[0];
+		if (selector === null || selector === undefined || selector === '*') {
+			// Select all
+			for (i = 0, ien = buttons.length; i < ien; i++) {
+				ret.push({
+					inst: inst,
+					node: buttons[i].node
+				});
+			}
+		}
+		else if (typeof selector === 'number') {
+			// Main button index selector
+			if (inst.s.buttons[selector]) {
+				ret.push({
+					inst: inst,
+					node: inst.s.buttons[selector].node
+				});
+			}
+		}
+		else if (typeof selector === 'string') {
+			if (selector.indexOf(',') !== -1) {
+				// Split
+				var a = selector.split(',');
 
-	return ctx._responsive
-		? $.inArray(false, ctx._responsive._responsiveOnlyHidden()) !== -1
-		: false;
-});
+				for (i = 0, ien = a.length; i < ien; i++) {
+					run(a[i].trim(), inst);
+				}
+			}
+			else if (selector.match(/^\d+(\-\d+)*$/)) {
+				// Sub-button index selector
+				var indexes = $.map(buttons, function (v) {
+					return v.idx;
+				});
 
-Api.registerPlural(
-	'columns().responsiveHidden()',
-	'column().responsiveHidden()',
-	function () {
-		return this.iterator(
-			'column',
-			function (settings, column) {
-				return settings._responsive
-					? settings._responsive._responsiveOnlyHidden()[column]
-					: false;
-			},
-			1
-		);
+				ret.push({
+					inst: inst,
+					node: buttons[$.inArray(selector, indexes)].node
+				});
+			}
+			else if (selector.indexOf(':name') !== -1) {
+				// Button name selector
+				var name = selector.replace(':name', '');
+
+				for (i = 0, ien = buttons.length; i < ien; i++) {
+					if (buttons[i].name === name) {
+						ret.push({
+							inst: inst,
+							node: buttons[i].node
+						});
+					}
+				}
+			}
+			else {
+				// jQuery selector on the nodes
+				$(nodes)
+					.filter(selector)
+					.each(function () {
+						ret.push({
+							inst: inst,
+							node: this
+						});
+					});
+			}
+		}
+		else if (typeof selector === 'object' && selector.nodeName) {
+			// Node selector
+			var idx = $.inArray(selector, nodes);
+
+			if (idx !== -1) {
+				ret.push({
+					inst: inst,
+					node: nodes[idx]
+				});
+			}
+		}
+	};
+
+	for (var i = 0, ien = insts.length; i < ien; i++) {
+		var inst = insts[i];
+
+		run(selector, inst);
 	}
-);
+
+	return ret;
+};
+
+/**
+ * Default function used for formatting output data.
+ * @param {*} str Data to strip
+ */
+Buttons.stripData = function (str, config) {
+	// If the input is an HTML element, we can use the HTML from it (HTML might be stripped below).
+	if (str !== null && typeof str === 'object' && str.nodeName && str.nodeType) {
+		str = str.innerHTML;
+	}
+
+	if (typeof str !== 'string') {
+		return str;
+	}
+
+	// Always remove script tags
+	str = Buttons.stripHtmlScript(str);
+
+	// Always remove comments
+	str = Buttons.stripHtmlComments(str);
+
+	if (!config || config.stripHtml) {
+		str = DataTable.util.stripHtml(str);
+	}
+
+	if (!config || config.trim) {
+		str = str.trim();
+	}
+
+	if (!config || config.stripNewlines) {
+		str = str.replace(/\n/g, ' ');
+	}
+
+	if (!config || config.decodeEntities) {
+		if (_entityDecoder) {
+			str = _entityDecoder(str);
+		}
+		else {
+			_exportTextarea.innerHTML = str;
+			str = _exportTextarea.value;
+		}
+	}
+
+	// Prevent Excel from running a formula
+	if (!config || config.escapeExcelFormula) {
+		if (str.match(/^[=+\-@\t\r]/)) {
+			console.log('matching and updateing');
+			str = "'" + str;
+		}
+	}
+
+	return str;
+};
+
+/**
+ * Provide a custom entity decoding function - e.g. a regex one, which can be
+ * much faster than the built in DOM option, but also larger code size.
+ * @param {function} fn
+ */
+Buttons.entityDecoder = function (fn) {
+	_entityDecoder = fn;
+};
+
+/**
+ * Common function for stripping HTML comments
+ *
+ * @param {*} input 
+ * @returns 
+ */
+Buttons.stripHtmlComments = function (input) {
+	var previous;  
+	
+	do {  
+		previous = input;
+		input = input.replace(/(<!--.*?--!?>)|(<!--[\S\s]+?--!?>)|(<!--[\S\s]*?$)/g, '');
+	} while (input !== previous);  
+
+	return input;  
+};
+
+/**
+ * Common function for stripping HTML script tags
+ *
+ * @param {*} input 
+ * @returns 
+ */
+Buttons.stripHtmlScript = function (input) {
+	var previous;  
+	
+	do {  
+		previous = input;
+		input = input.replace(/<script\b[^<]*(?:(?!<\/script[^>]*>)<[^<]*)*<\/script[^>]*>/gi, '');
+	} while (input !== previous);  
+
+	return input;  
+};
+
+/**
+ * Buttons defaults. For full documentation, please refer to the docs/option
+ * directory or the DataTables site.
+ * @type {Object}
+ * @static
+ */
+Buttons.defaults = {
+	buttons: ['copy', 'excel', 'csv', 'pdf', 'print'],
+	name: 'main',
+	tabIndex: 0,
+	dom: {
+		container: {
+			tag: 'div',
+			className: 'dt-buttons'
+		},
+		collection: {
+			container: {
+				// The element used for the dropdown
+				className: 'dt-button-collection',
+				content: {
+					className: '',
+					tag: 'div'
+				},
+				tag: 'div'
+			}
+			// optionally
+			// , button: IButton - buttons inside the collection container
+			// , split: ISplit - splits inside the collection container
+		},
+		button: {
+			tag: 'button',
+			className: 'dt-button',
+			active: 'dt-button-active', // class name
+			disabled: 'disabled', // class name
+			spacer: {
+				className: 'dt-button-spacer',
+				tag: 'span'
+			},
+			liner: {
+				tag: 'span',
+				className: ''
+			},
+			dropClass: '',
+			dropHtml: '<span class="dt-button-down-arrow">&#x25BC;</span>'
+		},
+		split: {
+			action: {
+				// action button
+				className: 'dt-button-split-drop-button dt-button',
+				tag: 'button'
+			},
+			dropdown: {
+				// button to trigger the dropdown
+				align: 'split-right',
+				className: 'dt-button-split-drop',
+				splitAlignClass: 'dt-button-split-left',
+				tag: 'button'
+			},
+			wrapper: {
+				// wrap around both
+				className: 'dt-button-split',
+				tag: 'div'
+			}
+		}
+	}
+};
 
 /**
  * Version information
- *
- * @name Responsive.version
+ * @type {string}
  * @static
  */
-Responsive.version = '3.0.4';
+Buttons.version = '3.2.3';
 
-$.fn.dataTable.Responsive = Responsive;
-$.fn.DataTable.Responsive = Responsive;
+$.extend(_dtButtons, {
+	collection: {
+		text: function (dt) {
+			return dt.i18n('buttons.collection', 'Collection');
+		},
+		className: 'buttons-collection',
+		closeButton: false,
+		dropIcon: true,
+		init: function (dt, button) {
+			button.attr('aria-expanded', false);
+		},
+		action: function (e, dt, button, config) {
+			if (config._collection.parents('body').length) {
+				this.popover(false, config);
+			}
+			else {
+				this.popover(config._collection, config);
+			}
 
-// Attach a listener to the document which listens for DataTables initialisation
-// events so we can automatically initialise
-$(document).on('preInit.dt.dtr', function (e, settings, json) {
+			// When activated using a key - auto focus on the
+			// first item in the popover
+			if (e.type === 'keypress') {
+				$('a, button', config._collection).eq(0).focus();
+			}
+		},
+		attr: {
+			'aria-haspopup': 'dialog'
+		}
+		// Also the popover options, defined in Buttons.popover
+	},
+	split: {
+		text: function (dt) {
+			return dt.i18n('buttons.split', 'Split');
+		},
+		className: 'buttons-split',
+		closeButton: false,
+		init: function (dt, button) {
+			return button.attr('aria-expanded', false);
+		},
+		action: function (e, dt, button, config) {
+			this.popover(config._collection, config);
+		},
+		attr: {
+			'aria-haspopup': 'dialog'
+		}
+		// Also the popover options, defined in Buttons.popover
+	},
+	copy: function () {
+		if (_dtButtons.copyHtml5) {
+			return 'copyHtml5';
+		}
+	},
+	csv: function (dt, conf) {
+		if (_dtButtons.csvHtml5 && _dtButtons.csvHtml5.available(dt, conf)) {
+			return 'csvHtml5';
+		}
+	},
+	excel: function (dt, conf) {
+		if (
+			_dtButtons.excelHtml5 &&
+			_dtButtons.excelHtml5.available(dt, conf)
+		) {
+			return 'excelHtml5';
+		}
+	},
+	pdf: function (dt, conf) {
+		if (_dtButtons.pdfHtml5 && _dtButtons.pdfHtml5.available(dt, conf)) {
+			return 'pdfHtml5';
+		}
+	},
+	pageLength: function (dt) {
+		var lengthMenu = dt.settings()[0].aLengthMenu;
+		var vals = [];
+		var lang = [];
+		var text = function (dt) {
+			return dt.i18n(
+				'buttons.pageLength',
+				{
+					'-1': 'Show all rows',
+					_: 'Show %d rows'
+				},
+				dt.page.len()
+			);
+		};
+
+		// Support for DataTables 1.x 2D array
+		if (Array.isArray(lengthMenu[0])) {
+			vals = lengthMenu[0];
+			lang = lengthMenu[1];
+		}
+		else {
+			for (var i = 0; i < lengthMenu.length; i++) {
+				var option = lengthMenu[i];
+
+				// Support for DataTables 2 object in the array
+				if ($.isPlainObject(option)) {
+					vals.push(option.value);
+					lang.push(option.label);
+				}
+				else {
+					vals.push(option);
+					lang.push(option);
+				}
+			}
+		}
+
+		return {
+			extend: 'collection',
+			text: text,
+			className: 'buttons-page-length',
+			autoClose: true,
+			buttons: $.map(vals, function (val, i) {
+				return {
+					text: lang[i],
+					className: 'button-page-length',
+					action: function (e, dt) {
+						dt.page.len(val).draw();
+					},
+					init: function (dt, node, conf) {
+						var that = this;
+						var fn = function () {
+							that.active(dt.page.len() === val);
+						};
+
+						dt.on('length.dt' + conf.namespace, fn);
+						fn();
+					},
+					destroy: function (dt, node, conf) {
+						dt.off('length.dt' + conf.namespace);
+					}
+				};
+			}),
+			init: function (dt, node, conf) {
+				var that = this;
+				dt.on('length.dt' + conf.namespace, function () {
+					that.text(conf.text);
+				});
+			},
+			destroy: function (dt, node, conf) {
+				dt.off('length.dt' + conf.namespace);
+			}
+		};
+	},
+	spacer: {
+		style: 'empty',
+		spacer: true,
+		text: function (dt) {
+			return dt.i18n('buttons.spacer', '');
+		}
+	}
+});
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * DataTables API
+ *
+ * For complete documentation, please refer to the docs/api directory or the
+ * DataTables site
+ */
+
+// Buttons group and individual button selector
+DataTable.Api.register('buttons()', function (group, selector) {
+	// Argument shifting
+	if (selector === undefined) {
+		selector = group;
+		group = undefined;
+	}
+
+	this.selector.buttonGroup = group;
+
+	var res = this.iterator(
+		true,
+		'table',
+		function (ctx) {
+			if (ctx._buttons) {
+				return Buttons.buttonSelector(
+					Buttons.instanceSelector(group, ctx._buttons),
+					selector
+				);
+			}
+		},
+		true
+	);
+
+	res._groupSelector = group;
+	return res;
+});
+
+// Individual button selector
+DataTable.Api.register('button()', function (group, selector) {
+	// just run buttons() and truncate
+	var buttons = this.buttons(group, selector);
+
+	if (buttons.length > 1) {
+		buttons.splice(1, buttons.length);
+	}
+
+	return buttons;
+});
+
+// Active buttons
+DataTable.Api.registerPlural(
+	'buttons().active()',
+	'button().active()',
+	function (flag) {
+		if (flag === undefined) {
+			return this.map(function (set) {
+				return set.inst.active(set.node);
+			});
+		}
+
+		return this.each(function (set) {
+			set.inst.active(set.node, flag);
+		});
+	}
+);
+
+// Get / set button action
+DataTable.Api.registerPlural(
+	'buttons().action()',
+	'button().action()',
+	function (action) {
+		if (action === undefined) {
+			return this.map(function (set) {
+				return set.inst.action(set.node);
+			});
+		}
+
+		return this.each(function (set) {
+			set.inst.action(set.node, action);
+		});
+	}
+);
+
+// Collection control
+DataTable.Api.registerPlural(
+	'buttons().collectionRebuild()',
+	'button().collectionRebuild()',
+	function (buttons) {
+		return this.each(function (set) {
+			for (var i = 0; i < buttons.length; i++) {
+				if (typeof buttons[i] === 'object') {
+					buttons[i].parentConf = set;
+				}
+			}
+			set.inst.collectionRebuild(set.node, buttons);
+		});
+	}
+);
+
+// Enable / disable buttons
+DataTable.Api.register(
+	['buttons().enable()', 'button().enable()'],
+	function (flag) {
+		return this.each(function (set) {
+			set.inst.enable(set.node, flag);
+		});
+	}
+);
+
+// Disable buttons
+DataTable.Api.register(
+	['buttons().disable()', 'button().disable()'],
+	function () {
+		return this.each(function (set) {
+			set.inst.disable(set.node);
+		});
+	}
+);
+
+// Button index
+DataTable.Api.register('button().index()', function () {
+	var idx = null;
+
+	this.each(function (set) {
+		var res = set.inst.index(set.node);
+
+		if (res !== null) {
+			idx = res;
+		}
+	});
+
+	return idx;
+});
+
+// Get button nodes
+DataTable.Api.registerPlural(
+	'buttons().nodes()',
+	'button().node()',
+	function () {
+		var jq = $();
+
+		// jQuery will automatically reduce duplicates to a single entry
+		$(
+			this.each(function (set) {
+				jq = jq.add(set.inst.node(set.node));
+			})
+		);
+
+		return jq;
+	}
+);
+
+// Get / set button processing state
+DataTable.Api.registerPlural(
+	'buttons().processing()',
+	'button().processing()',
+	function (flag) {
+		if (flag === undefined) {
+			return this.map(function (set) {
+				return set.inst.processing(set.node);
+			});
+		}
+
+		return this.each(function (set) {
+			set.inst.processing(set.node, flag);
+		});
+	}
+);
+
+// Get / set button text (i.e. the button labels)
+DataTable.Api.registerPlural(
+	'buttons().text()',
+	'button().text()',
+	function (label) {
+		if (label === undefined) {
+			return this.map(function (set) {
+				return set.inst.text(set.node);
+			});
+		}
+
+		return this.each(function (set) {
+			set.inst.text(set.node, label);
+		});
+	}
+);
+
+// Trigger a button's action
+DataTable.Api.registerPlural(
+	'buttons().trigger()',
+	'button().trigger()',
+	function () {
+		return this.each(function (set) {
+			set.inst.node(set.node).trigger('click');
+		});
+	}
+);
+
+// Button resolver to the popover
+DataTable.Api.register('button().popover()', function (content, options) {
+	return this.map(function (set) {
+		return set.inst._popover(content, this.button(this[0].node), options);
+	});
+});
+
+// Get the container elements
+DataTable.Api.register('buttons().containers()', function () {
+	var jq = $();
+	var groupSelector = this._groupSelector;
+
+	// We need to use the group selector directly, since if there are no buttons
+	// the result set will be empty
+	this.iterator(true, 'table', function (ctx) {
+		if (ctx._buttons) {
+			var insts = Buttons.instanceSelector(groupSelector, ctx._buttons);
+
+			for (var i = 0, ien = insts.length; i < ien; i++) {
+				jq = jq.add(insts[i].container());
+			}
+		}
+	});
+
+	return jq;
+});
+
+DataTable.Api.register('buttons().container()', function () {
+	// API level of nesting is `buttons()` so we can zip into the containers method
+	return this.containers().eq(0);
+});
+
+// Add a new button
+DataTable.Api.register('button().add()', function (idx, conf, draw) {
+	var ctx = this.context;
+
+	// Don't use `this` as it could be empty - select the instances directly
+	if (ctx.length) {
+		var inst = Buttons.instanceSelector(
+			this._groupSelector,
+			ctx[0]._buttons
+		);
+
+		if (inst.length) {
+			inst[0].add(conf, idx, draw);
+		}
+	}
+
+	return this.button(this._groupSelector, idx);
+});
+
+// Destroy the button sets selected
+DataTable.Api.register('buttons().destroy()', function () {
+	this.pluck('inst')
+		.unique()
+		.each(function (inst) {
+			inst.destroy();
+		});
+
+	return this;
+});
+
+// Remove a button
+DataTable.Api.registerPlural(
+	'buttons().remove()',
+	'buttons().remove()',
+	function () {
+		this.each(function (set) {
+			set.inst.remove(set.node);
+		});
+
+		return this;
+	}
+);
+
+// Information box that can be used by buttons
+var _infoTimer;
+DataTable.Api.register('buttons.info()', function (title, message, time) {
+	var that = this;
+
+	if (title === false) {
+		this.off('destroy.btn-info');
+		_fadeOut($('#datatables_buttons_info'), 400, function () {
+			$(this).remove();
+		});
+		clearTimeout(_infoTimer);
+		_infoTimer = null;
+
+		return this;
+	}
+
+	if (_infoTimer) {
+		clearTimeout(_infoTimer);
+	}
+
+	if ($('#datatables_buttons_info').length) {
+		$('#datatables_buttons_info').remove();
+	}
+
+	title = title ? '<h2>' + title + '</h2>' : '';
+
+	_fadeIn(
+		$('<div id="datatables_buttons_info" class="dt-button-info"/>')
+			.html(title)
+			.append(
+				$('<div/>')[typeof message === 'string' ? 'html' : 'append'](
+					message
+				)
+			)
+			.css('display', 'none')
+			.appendTo('body')
+	);
+
+	if (time !== undefined && time !== 0) {
+		_infoTimer = setTimeout(function () {
+			that.buttons.info(false);
+		}, time);
+	}
+
+	this.on('destroy.btn-info', function () {
+		that.buttons.info(false);
+	});
+
+	return this;
+});
+
+// Get data from the table for export - this is common to a number of plug-in
+// buttons so it is included in the Buttons core library
+DataTable.Api.register('buttons.exportData()', function (options) {
+	if (this.context.length) {
+		return _exportData(new DataTable.Api(this.context[0]), options);
+	}
+});
+
+// Get information about the export that is common to many of the export data
+// types (DRY)
+DataTable.Api.register('buttons.exportInfo()', function (conf) {
+	if (!conf) {
+		conf = {};
+	}
+
+	return {
+		filename: _filename(conf, this),
+		title: _title(conf, this),
+		messageTop: _message(this, conf, conf.message || conf.messageTop, 'top'),
+		messageBottom: _message(this, conf, conf.messageBottom, 'bottom')
+	};
+});
+
+/**
+ * Get the file name for an exported file.
+ *
+ * @param {object} config Button configuration
+ * @param {object} dt DataTable instance
+ */
+var _filename = function (config, dt) {
+	// Backwards compatibility
+	var filename =
+		config.filename === '*' &&
+		config.title !== '*' &&
+		config.title !== undefined &&
+		config.title !== null &&
+		config.title !== ''
+			? config.title
+			: config.filename;
+
+	if (typeof filename === 'function') {
+		filename = filename(config, dt);
+	}
+
+	if (filename === undefined || filename === null) {
+		return null;
+	}
+
+	if (filename.indexOf('*') !== -1) {
+		filename = filename.replace(/\*/g, $('head > title').text()).trim();
+	}
+
+	// Strip characters which the OS will object to
+	filename = filename.replace(/[^a-zA-Z0-9_\u00A1-\uFFFF\.,\-_ !\(\)]/g, '');
+
+	var extension = _stringOrFunction(config.extension, config, dt);
+	if (!extension) {
+		extension = '';
+	}
+
+	return filename + extension;
+};
+
+/**
+ * Simply utility method to allow parameters to be given as a function
+ *
+ * @param {undefined|string|function} option Option
+ * @return {null|string} Resolved value
+ */
+var _stringOrFunction = function (option, config, dt) {
+	if (option === null || option === undefined) {
+		return null;
+	}
+	else if (typeof option === 'function') {
+		return option(config, dt);
+	}
+	return option;
+};
+
+/**
+ * Get the title for an exported file.
+ *
+ * @param {object} config	Button configuration
+ */
+var _title = function (config, dt) {
+	var title = _stringOrFunction(config.title, config, dt);
+
+	return title === null
+		? null
+		: title.indexOf('*') !== -1
+		? title.replace(/\*/g, $('head > title').text() || 'Exported data')
+		: title;
+};
+
+var _message = function (dt, config, option, position) {
+	var message = _stringOrFunction(option, config, dt);
+	if (message === null) {
+		return null;
+	}
+
+	var caption = $('caption', dt.table().container()).eq(0);
+	if (message === '*') {
+		var side = caption.css('caption-side');
+		if (side !== position) {
+			return null;
+		}
+
+		return caption.length ? caption.text() : '';
+	}
+
+	return message;
+};
+
+var _exportTextarea = $('<textarea/>')[0];
+var _exportData = function (dt, inOpts) {
+	var config = $.extend(
+		true,
+		{},
+		{
+			rows: null,
+			columns: '',
+			modifier: {
+				search: 'applied',
+				order: 'applied'
+			},
+			orthogonal: 'display',
+			stripHtml: true,
+			stripNewlines: true,
+			decodeEntities: true,
+			escapeExcelFormula: false,
+			trim: true,
+			format: {
+				header: function (d) {
+					return Buttons.stripData(d, config);
+				},
+				footer: function (d) {
+					return Buttons.stripData(d, config);
+				},
+				body: function (d) {
+					return Buttons.stripData(d, config);
+				}
+			},
+			customizeData: null,
+			customizeZip: null
+		},
+		inOpts
+	);
+
+	var header = dt
+		.columns(config.columns)
+		.indexes()
+		.map(function (idx) {
+			var col = dt.column(idx);
+			return config.format.header(col.title(), idx, col.header());
+		})
+		.toArray();
+
+	var footer = dt.table().footer()
+		? dt
+				.columns(config.columns)
+				.indexes()
+				.map(function (idx) {
+					var el = dt.column(idx).footer();
+					var val = '';
+
+					if (el) {
+						var inner = $('.dt-column-title', el);
+
+						val = inner.length
+							? inner.html()
+							: $(el).html();
+					}
+
+					return config.format.footer(val, idx, el);
+				})
+				.toArray()
+		: null;
+
+	// If Select is available on this table, and any rows are selected, limit the export
+	// to the selected rows. If no rows are selected, all rows will be exported. Specify
+	// a `selected` modifier to control directly.
+	var modifier = $.extend({}, config.modifier);
+	if (
+		dt.select &&
+		typeof dt.select.info === 'function' &&
+		modifier.selected === undefined
+	) {
+		if (
+			dt.rows(config.rows, $.extend({ selected: true }, modifier)).any()
+		) {
+			$.extend(modifier, { selected: true });
+		}
+	}
+
+	var rowIndexes = dt.rows(config.rows, modifier).indexes().toArray();
+	var selectedCells = dt.cells(rowIndexes, config.columns, {
+		order: modifier.order
+	});
+	var cells = selectedCells.render(config.orthogonal).toArray();
+	var cellNodes = selectedCells.nodes().toArray();
+	var cellIndexes = selectedCells.indexes().toArray();
+
+	var columns = dt.columns(config.columns).count();
+	var rows = columns > 0 ? cells.length / columns : 0;
+	var body = [];
+	var cellCounter = 0;
+
+	for (var i = 0, ien = rows; i < ien; i++) {
+		var row = [columns];
+
+		for (var j = 0; j < columns; j++) {
+			row[j] = config.format.body(
+				cells[cellCounter],
+				cellIndexes[cellCounter].row,
+				cellIndexes[cellCounter].column,
+				cellNodes[cellCounter]
+			);
+			cellCounter++;
+		}
+
+		body[i] = row;
+	}
+
+	var data = {
+		header: header,
+		headerStructure: _headerFormatter(
+			config.format.header,
+			dt.table().header.structure(config.columns)
+		),
+		footer: footer,
+		footerStructure: _headerFormatter(
+			config.format.footer,
+			dt.table().footer.structure(config.columns)
+		),
+		body: body
+	};
+
+	if (config.customizeData) {
+		config.customizeData(data);
+	}
+
+	return data;
+};
+
+function _headerFormatter(formatter, struct) {
+	for (var i=0 ; i<struct.length ; i++) {
+		for (var j=0 ; j<struct[i].length ; j++) {
+			var item = struct[i][j];
+
+			if (item) {
+				item.title = formatter(
+					item.title,
+					j,
+					item.cell
+				);
+			}
+		}
+	}
+
+	return struct;
+}
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * DataTables interface
+ */
+
+// Attach to DataTables objects for global access
+$.fn.dataTable.Buttons = Buttons;
+$.fn.DataTable.Buttons = Buttons;
+
+// DataTables creation - check if the buttons have been defined for this table,
+// they will have been if the `B` option was used in `dom`, otherwise we should
+// create the buttons instance here so they can be inserted into the document
+// using the API. Listen for `init` for compatibility with pre 1.10.10, but to
+// be removed in future.
+$(document).on('init.dt plugin-init.dt', function (e, settings) {
 	if (e.namespace !== 'dt') {
 		return;
 	}
 
-	if (
-		$(settings.nTable).hasClass('responsive') ||
-		$(settings.nTable).hasClass('dt-responsive') ||
-		settings.oInit.responsive ||
-		DataTable.defaults.responsive
-	) {
-		var init = settings.oInit.responsive;
+	var opts = settings.oInit.buttons || DataTable.defaults.buttons;
 
-		if (init !== false) {
-			new Responsive(settings, $.isPlainObject(init) ? init : {});
-		}
+	if (opts && !settings._buttons) {
+		new Buttons(settings, opts).container();
 	}
 });
+
+function _init(settings, options) {
+	var api = new DataTable.Api(settings);
+	var opts = options
+		? options
+		: api.init().buttons || DataTable.defaults.buttons;
+
+	return new Buttons(api, opts).container();
+}
+
+// DataTables 1 `dom` feature option
+DataTable.ext.feature.push({
+	fnInit: _init,
+	cFeature: 'B'
+});
+
+// DataTables 2 layout feature
+if (DataTable.feature) {
+	DataTable.feature.register('buttons', _init);
+}
 
 
 return DataTable;
 }));
 
 
-/*! DataTables styling wrapper for Responsive
+/*! DataTables styling wrapper for Buttons
  * © SpryMedia Ltd - datatables.net/license
  */
 
 (function( factory ){
 	if ( typeof define === 'function' && define.amd ) {
 		// AMD
-		define( ['jquery', 'datatables.net-dt', 'datatables.net-responsive'], function ( $ ) {
+		define( ['jquery', 'datatables.net-dt', 'datatables.net-buttons'], function ( $ ) {
 			return factory( $, window, document );
 		} );
 	}
@@ -17710,8 +17087,8 @@ return DataTable;
 				require('datatables.net-dt')(root, $);
 			}
 
-			if ( ! $.fn.dataTable.Responsive ) {
-				require('datatables.net-responsive')(root, $);
+			if ( ! $.fn.dataTable.Buttons ) {
+				require('datatables.net-buttons')(root, $);
 			}
 		};
 
@@ -17751,14 +17128,15 @@ return DataTable;
 }));
 
 
-/*! Scroller 2.4.3
+/*!
+ * Column visibility buttons for Buttons and DataTables.
  * © SpryMedia Ltd - datatables.net/license
  */
 
 (function( factory ){
 	if ( typeof define === 'function' && define.amd ) {
 		// AMD
-		define( ['jquery', 'datatables.net'], function ( $ ) {
+		define( ['jquery', 'datatables.net', 'datatables.net-buttons'], function ( $ ) {
 			return factory( $, window, document );
 		} );
 	}
@@ -17768,6 +17146,10 @@ return DataTable;
 		var cjsRequires = function (root, $) {
 			if ( ! $.fn.dataTable ) {
 				require('datatables.net')(root, $);
+			}
+
+			if ( ! $.fn.dataTable.Buttons ) {
+				require('datatables.net-buttons')(root, $);
 			}
 		};
 
@@ -17802,1349 +17184,210 @@ var DataTable = $.fn.dataTable;
 
 
 
-/**
- * @summary     Scroller
- * @description Virtual rendering for DataTables
- * @version     2.4.3
- * @copyright   SpryMedia Ltd.
- *
- * This source file is free software, available under the following license:
- *   MIT license - http://datatables.net/license/mit
- *
- * This source file is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the license files for details.
- *
- * For details please refer to: http://www.datatables.net
- */
+$.extend(DataTable.ext.buttons, {
+	// A collection of column visibility buttons
+	colvis: function (dt, conf) {
+		var node = null;
+		var buttonConf = {
+			extend: 'collection',
+			init: function (dt, n) {
+				node = n;
+			},
+			text: function (dt) {
+				return dt.i18n('buttons.colvis', 'Column visibility');
+			},
+			className: 'buttons-colvis',
+			closeButton: false,
+			buttons: [
+				{
+					extend: 'columnsToggle',
+					columns: conf.columns,
+					columnText: conf.columnText
+				}
+			]
+		};
 
-/**
- * Scroller is a virtual rendering plug-in for DataTables which allows large
- * datasets to be drawn on screen very quickly. What the virtual rendering means
- * is that only the visible portion of the table (and a bit to either side to make
- * the scrolling smooth) is drawn, while the scrolling container gives the
- * visual impression that the whole table is visible. This is done by making use
- * of the pagination abilities of DataTables and moving the table around in the
- * scrolling container DataTables adds to the page. The scrolling container is
- * forced to the height it would be for the full table display using an extra
- * element.
- *
- * Note that rows in the table MUST all be the same height. Information in a cell
- * which expands on to multiple lines will cause some odd behaviour in the scrolling.
- *
- * Scroller is initialised by simply including the letter 'S' in the sDom for the
- * table you want to have this feature enabled on. Note that the 'S' must come
- * AFTER the 't' parameter in `dom`.
- *
- * Key features include:
- *   <ul class="limit_length">
- *     <li>Speed! The aim of Scroller for DataTables is to make rendering large data sets fast</li>
- *     <li>Full compatibility with deferred rendering in DataTables for maximum speed</li>
- *     <li>Display millions of rows</li>
- *     <li>Integration with state saving in DataTables (scrolling position is saved)</li>
- *     <li>Easy to use</li>
- *   </ul>
- *
- *  @class
- *  @constructor
- *  @global
- *  @param {object} dt DataTables settings object or API instance
- *  @param {object} [opts={}] Configuration object for Scroller. Options
- *    are defined by {@link Scroller.defaults}
- *
- *  @requires jQuery 1.7+
- *  @requires DataTables 1.11.0+
- */
-var Scroller = function (dt, opts) {
-	/* Sanity check - you just know it will happen */
-	if (!(this instanceof Scroller)) {
-		alert(
-			"Scroller warning: Scroller must be initialised with the 'new' keyword."
-		);
-		return;
-	}
+		// Rebuild the collection with the new column structure if columns are reordered
+		dt.on('column-reorder.dt' + conf.namespace, function () {
+			dt.button(null, dt.button(null, node).node()).collectionRebuild([
+				{
+					extend: 'columnsToggle',
+					columns: conf.columns,
+					columnText: conf.columnText
+				}
+			]);
+		});
 
-	if (opts === undefined) {
-		opts = {};
-	}
-
-	var dtApi = $.fn.dataTable.Api(dt);
-
-	/**
-	 * Settings object which contains customisable information for the Scroller instance
-	 * @namespace
-	 * @private
-	 * @extends Scroller.defaults
-	 */
-	this.s = {
-		/**
-		 * DataTables settings object
-		 *  @type     object
-		 *  @default  Passed in as first parameter to constructor
-		 */
-		dt: dtApi.settings()[0],
-
-		/**
-		 * DataTables API instance
-		 *  @type     DataTable.Api
-		 */
-		dtApi: dtApi,
-
-		/**
-		 * Pixel location of the top of the drawn table in the viewport
-		 *  @type     int
-		 *  @default  0
-		 */
-		tableTop: 0,
-
-		/**
-		 * Pixel location of the bottom of the drawn table in the viewport
-		 *  @type     int
-		 *  @default  0
-		 */
-		tableBottom: 0,
-
-		/**
-		 * Pixel location of the boundary for when the next data set should be loaded and drawn
-		 * when scrolling up the way.
-		 *  @type     int
-		 *  @default  0
-		 *  @private
-		 */
-		redrawTop: 0,
-
-		/**
-		 * Pixel location of the boundary for when the next data set should be loaded and drawn
-		 * when scrolling down the way. Note that this is actually calculated as the offset from
-		 * the top.
-		 *  @type     int
-		 *  @default  0
-		 *  @private
-		 */
-		redrawBottom: 0,
-
-		/**
-		 * Auto row height or not indicator
-		 *  @type     bool
-		 *  @default  0
-		 */
-		autoHeight: true,
-
-		/**
-		 * Number of rows calculated as visible in the visible viewport
-		 *  @type     int
-		 *  @default  0
-		 */
-		viewportRows: 0,
-
-		/**
-		 * setTimeout reference for state saving, used when state saving is enabled in the DataTable
-		 * and when the user scrolls the viewport in order to stop the cookie set taking too much
-		 * CPU!
-		 *  @type     int
-		 *  @default  0
-		 */
-		stateTO: null,
-
-		stateSaveThrottle: function () {},
-
-		/**
-		 * setTimeout reference for the redraw, used when server-side processing is enabled in the
-		 * DataTables in order to prevent DoSing the server
-		 *  @type     int
-		 *  @default  null
-		 */
-		drawTO: null,
-
-		heights: {
-			jump: null,
-			page: null,
-			virtual: null,
-			scroll: null,
-
-			/**
-			 * Height of rows in the table
-			 *  @type     int
-			 *  @default  0
-			 */
-			row: null,
-
-			/**
-			 * Pixel height of the viewport
-			 *  @type     int
-			 *  @default  0
-			 */
-			viewport: null,
-			labelHeight: 0,
-			xbar: 0
-		},
-
-		topRowFloat: 0,
-		scrollDrawDiff: null,
-		loaderVisible: false,
-		forceReposition: false,
-		baseRowTop: 0,
-		baseScrollTop: 0,
-		mousedown: false,
-		lastScrollTop: 0
-	};
-
-	// @todo The defaults should extend a `c` property and the internal settings
-	// only held in the `s` property. At the moment they are mixed
-	this.s = $.extend(this.s, Scroller.oDefaults, opts);
-
-	// Workaround for row height being read from height object (see above comment)
-	this.s.heights.row = this.s.rowHeight;
-
-	/**
-	 * DOM elements used by the class instance
-	 * @private
-	 * @namespace
-	 *
-	 */
-	this.dom = {
-		force: document.createElement('div'),
-		label: $('<div class="dts_label">0</div>'),
-		scroller: null,
-		table: null,
-		loader: null
-	};
-
-	// Attach the instance to the DataTables instance so it can be accessed in
-	// future. Don't initialise Scroller twice on the same table
-	if (this.s.dt.oScroller) {
-		return;
-	}
-
-	this.s.dt.oScroller = this;
-
-	/* Let's do it */
-	this.construct();
-};
-
-$.extend(Scroller.prototype, {
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Public methods - to be exposed via the DataTables API
-	 */
-
-	/**
-	 * Calculate and store information about how many rows are to be displayed
-	 * in the scrolling viewport, based on current dimensions in the browser's
-	 * rendering. This can be particularly useful if the table is initially
-	 * drawn in a hidden element - for example in a tab.
-	 *  @param {bool} [redraw=true] Redraw the table automatically after the recalculation, with
-	 *    the new dimensions forming the basis for the draw.
-	 *  @returns {void}
-	 */
-	measure: function (redraw) {
-		if (this.s.autoHeight) {
-			this._calcRowHeight();
-		}
-
-		var heights = this.s.heights;
-
-		if (heights.row) {
-			heights.viewport = this._parseHeight(
-				$(this.dom.scroller).css('max-height')
-			);
-
-			this.s.viewportRows =
-				parseInt(heights.viewport / heights.row, 10) + 1;
-			this.s.dt._iDisplayLength =
-				this.s.viewportRows * this.s.displayBuffer;
-		}
-
-		var label = this.dom.label.outerHeight();
-
-		heights.xbar =
-			this.dom.scroller.offsetHeight - this.dom.scroller.clientHeight;
-		heights.labelHeight = label;
-
-		if (redraw === undefined || redraw) {
-			this.s.dtApi.draw(false);
-		}
+		return buttonConf;
 	},
 
-	/**
-	 * Get information about current displayed record range. This corresponds to
-	 * the information usually displayed in the "Info" block of the table.
-	 *
-	 * @returns {object} info as an object:
-	 *  {
-	 *      start: {int}, // the 0-indexed record at the top of the viewport
-	 *      end:   {int}, // the 0-indexed record at the bottom of the viewport
-	 *  }
-	 */
-	pageInfo: function () {
-		var dt = this.s.dt,
-			iScrollTop = this.dom.scroller.scrollTop,
-			iTotal = dt.fnRecordsDisplay(),
-			iPossibleEnd = Math.ceil(
-				this.pixelsToRow(
-					iScrollTop + this.s.heights.viewport,
-					false,
-					this.s.ani
-				)
-			);
+	// Selected columns with individual buttons - toggle column visibility
+	columnsToggle: function (dt, conf) {
+		var columns = dt
+			.columns(conf.columns)
+			.indexes()
+			.map(function (idx) {
+				return {
+					extend: 'columnToggle',
+					columns: idx,
+					columnText: conf.columnText
+				};
+			})
+			.toArray();
 
+		return columns;
+	},
+
+	// Single button to toggle column visibility
+	columnToggle: function (dt, conf) {
 		return {
-			start: Math.floor(this.pixelsToRow(iScrollTop, false, this.s.ani)),
-			end: iTotal < iPossibleEnd ? iTotal - 1 : iPossibleEnd - 1
+			extend: 'columnVisibility',
+			columns: conf.columns,
+			columnText: conf.columnText
 		};
 	},
 
-	/**
-	 * Calculate the row number that will be found at the given pixel position
-	 * (y-scroll).
-	 *
-	 * Please note that when the height of the full table exceeds 1 million
-	 * pixels, Scroller switches into a non-linear mode for the scrollbar to fit
-	 * all of the records into a finite area, but this function returns a linear
-	 * value (relative to the last non-linear positioning).
-	 *  @param {int} pixels Offset from top to calculate the row number of
-	 *  @param {int} [intParse=true] If an integer value should be returned
-	 *  @param {int} [virtual=false] Perform the calculations in the virtual domain
-	 *  @returns {int} Row index
-	 */
-	pixelsToRow: function (pixels, intParse, virtual) {
-		var diff = pixels - this.s.baseScrollTop;
-		var row = virtual
-			? (this._domain('physicalToVirtual', this.s.baseScrollTop) + diff) /
-				this.s.heights.row
-			: diff / this.s.heights.row + this.s.baseRowTop;
-
-		return intParse || intParse === undefined ? parseInt(row, 10) : row;
-	},
-
-	/**
-	 * Calculate the pixel position from the top of the scrolling container for
-	 * a given row
-	 *  @param {int} iRow Row number to calculate the position of
-	 *  @returns {int} Pixels
-	 */
-	rowToPixels: function (rowIdx, intParse, virtual) {
-		var pixels;
-		var diff = rowIdx - this.s.baseRowTop;
-
-		if (virtual) {
-			pixels = this._domain('virtualToPhysical', this.s.baseScrollTop);
-			pixels += diff * this.s.heights.row;
-		}
-		else {
-			pixels = this.s.baseScrollTop;
-			pixels += diff * this.s.heights.row;
-		}
-
-		return intParse || intParse === undefined
-			? parseInt(pixels, 10)
-			: pixels;
-	},
-
-	/**
-	 * Calculate the row number that will be found at the given pixel position (y-scroll)
-	 *  @param {int} row Row index to scroll to
-	 *  @param {bool} [animate=true] Animate the transition or not
-	 *  @returns {void}
-	 */
-	scrollToRow: function (row, animate) {
-		var that = this;
-		var ani = false;
-		var px = this.rowToPixels(row);
-
-		// We need to know if the table will redraw or not before doing the
-		// scroll. If it will not redraw, then we need to use the currently
-		// displayed table, and scroll with the physical pixels. Otherwise, we
-		// need to calculate the table's new position from the virtual
-		// transform.
-		var preRows = ((this.s.displayBuffer - 1) / 2) * this.s.viewportRows;
-		var drawRow = row - preRows;
-		if (drawRow < 0) {
-			drawRow = 0;
-		}
-
-		if (
-			(px > this.s.redrawBottom || px < this.s.redrawTop) &&
-			this.s.dt._iDisplayStart !== drawRow
-		) {
-			ani = true;
-			px = this._domain('virtualToPhysical', row * this.s.heights.row);
-
-			// If we need records outside the current draw region, but the new
-			// scrolling position is inside that (due to the non-linear nature
-			// for larger numbers of records), we need to force position update.
-			if (this.s.redrawTop < px && px < this.s.redrawBottom) {
-				this.s.forceReposition = true;
-				animate = false;
-			}
-		}
-
-		if (animate === undefined || animate) {
-			this.s.ani = ani;
-			$(this.dom.scroller).animate(
-				{
-					scrollTop: px
-				},
-				function () {
-					// This needs to happen after the animation has completed and
-					// the final scroll event fired
-					setTimeout(function () {
-						that.s.ani = false;
-					}, 250);
-				}
-			);
-		}
-		else {
-			$(this.dom.scroller).scrollTop(px);
-		}
-	},
-
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Constructor
-	 */
-
-	/**
-	 * Initialisation for Scroller
-	 *  @returns {void}
-	 *  @private
-	 */
-	construct: function () {
-		var that = this;
-		var dt = this.s.dtApi;
-
-		/* Sanity check */
-		if (!this.s.dt.oFeatures.bPaginate) {
-			throw new Error(
-				'Pagination must be enabled for Scroller to operate'
-			);
-		}
-
-		/* Insert a div element that we can use to force the DT scrolling container to
-		 * the height that would be required if the whole table was being displayed
-		 */
-		this.dom.force.style.position = 'relative';
-		this.dom.force.style.top = '0px';
-		this.dom.force.style.left = '0px';
-		this.dom.force.style.width = '1px';
-
-		this.dom.scroller = dt.table().node().parentNode;
-		this.dom.scroller.appendChild(this.dom.force);
-		this.dom.scroller.style.position = 'relative';
-
-		this.dom.table = $('>table', this.dom.scroller)[0];
-		this.dom.table.style.position = 'absolute';
-		this.dom.table.style.top = '0px';
-		this.dom.table.style.left = '0px';
-
-		// Add class to 'announce' that we are a Scroller table
-		$(dt.table().container()).addClass('dts DTS');
-
-		this.dom.label.appendTo(this.dom.scroller);
-
-		/* Initial size calculations */
-		if (this.s.heights.row && this.s.heights.row != 'auto') {
-			this.s.autoHeight = false;
-		}
-
-		// Scrolling callback to see if a page change is needed
-		this.s.ingnoreScroll = true;
-		$(this.dom.scroller).on('scroll.dt-scroller', function (e) {
-			that._scroll.call(that);
-		});
-
-		// In iOS we catch the touchstart event in case the user tries to scroll
-		// while the display is already scrolling
-		$(this.dom.scroller).on('touchstart.dt-scroller', function () {
-			that._scroll.call(that);
-		});
-
-		$(this.dom.scroller)
-			.on('mousedown.dt-scroller', function () {
-				that.s.mousedown = true;
+	// Selected columns with individual buttons - set column visibility
+	columnsVisibility: function (dt, conf) {
+		var columns = dt
+			.columns(conf.columns)
+			.indexes()
+			.map(function (idx) {
+				return {
+					extend: 'columnVisibility',
+					columns: idx,
+					visibility: conf.visibility,
+					columnText: conf.columnText
+				};
 			})
-			.on('mouseup.dt-scroller', function () {
-				that.s.labelVisible = false;
-				that.s.mousedown = false;
-				that.dom.label.css('display', 'none');
-			});
+			.toArray();
 
-		// On resize, update the information element, since the number of rows shown might change
-		$(window).on('resize.dt-scroller', function () {
-			that.measure(false);
-			that._info();
-		});
-
-		// Add a state saving parameter to the DT state saving so we can restore the exact
-		// position of the scrolling.
-		var initialStateSave = true;
-		var loadedState = dt.state.loaded();
-
-		dt.on('stateSaveParams.scroller', function (e, settings, data) {
-			if (initialStateSave && loadedState) {
-				data.scroller = loadedState.scroller;
-				initialStateSave = false;
-
-				if (data.scroller) {
-					that.s.lastScrollTop = data.scroller.scrollTop;
-				}
-			}
-			else {
-				// Need to used the saved position on init
-				data.scroller = {
-					topRow: that.s.topRowFloat,
-					baseRowTop: that.s.baseRowTop
-				};
-			}
-		});
-
-		dt.on('stateLoadParams.scroller', function (e, settings, data) {
-			if (data.scroller !== undefined) {
-				that.scrollToRow(data.scroller.topRow);
-			}
-		});
-
-		this.measure(false);
-
-		if (loadedState && loadedState.scroller) {
-			this.s.topRowFloat = loadedState.scroller.topRow;
-			this.s.baseRowTop = loadedState.scroller.baseRowTop;
-
-			// Reconstruct the scroll positions from the rows - it is possible the
-			// row height has changed e.g. if the styling framework has changed.
-			// The scroll top is used in `_draw` further down.
-			this.s.baseScrollTop = this.s.baseRowTop * this.s.heights.row;			
-			loadedState.scroller.scrollTop = this._domain('physicalToVirtual', this.s.topRowFloat * this.s.heights.row);
-		}
-
-		that.s.stateSaveThrottle = DataTable.util.throttle(function () {
-			that.s.dtApi.state.save();
-		}, 500);
-
-		dt.on('init.scroller', function () {
-			that.measure(false);
-
-			// Setting to `jump` will instruct _draw to calculate the scroll top
-			// position
-			that.s.scrollType = 'jump';
-			that._draw();
-
-			// Update the scroller when the DataTable is redrawn
-			dt.on('draw.scroller', function () {
-				that._draw();
-			});
-		});
-
-		// Set height before the draw happens, allowing everything else to update
-		// on draw complete without worry for roder.
-		dt.on('preDraw.dt.scroller', function () {
-			that._scrollForce();
-		});
-
-		// Destructor
-		dt.on('destroy.scroller', function () {
-			$(window).off('resize.dt-scroller');
-			$(that.dom.scroller).off('.dt-scroller');
-			$(that.s.dt.nTable).off('.scroller');
-
-			$(that.s.dt.nTableWrapper).removeClass('DTS');
-			$('div.DTS_Loading', that.dom.scroller.parentNode).remove();
-
-			that.dom.table.style.position = '';
-			that.dom.table.style.top = '';
-			that.dom.table.style.left = '';
-		});
+		return columns;
 	},
 
-	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-	 * Private methods
-	 */
+	// Single button to set column visibility
+	columnVisibility: {
+		columns: undefined, // column selector
+		text: function (dt, button, conf) {
+			return conf._columnText(dt, conf);
+		},
+		className: 'buttons-columnVisibility',
+		action: function (e, dt, button, conf) {
+			var col = dt.columns(conf.columns);
+			var curr = col.visible();
 
-	/**
-	 * Automatic calculation of table row height. This is just a little tricky here as using
-	 * initialisation DataTables has tale the table out of the document, so we need to create
-	 * a new table and insert it into the document, calculate the row height and then whip the
-	 * table out.
-	 *  @returns {void}
-	 *  @private
-	 */
-	_calcRowHeight: function () {
-		var dt = this.s.dt;
-		var origTable = dt.nTable;
-		var nTable = origTable.cloneNode(false);
-		var tbody = $('<tbody/>').appendTo(nTable);
-		var dtClasses = dt.oClasses;
+			col.visible(
+				conf.visibility !== undefined ? conf.visibility : !(curr.length ? curr[0] : false)
+			);
+		},
+		init: function (dt, button, conf) {
+			var that = this;
+			var column = dt.column(conf.columns);
 
-		// Different locations for classes in DT2
-		var classes = DataTable.versionCheck('2')
-			? {
-					container: dtClasses.container,
-					scroller: dtClasses.scrolling.container,
-					body: dtClasses.scrolling.body
-			}
-			: {
-					container: dtClasses.sWrapper,
-					scroller: dtClasses.sScrollWrapper,
-					body: dtClasses.sScrollBody
-			};
+			button.attr('data-cv-idx', conf.columns);
 
-		var container = $(
-			'<div class="' +
-				classes.container +
-				' DTS"><div class="' +
-				classes.scroller +
-				'"><div class="' +
-				classes.body +
-				'"></div></div></div>'
-		);
-
-		// Want 3 rows in the sizing table so :first-child and :last-child
-		// CSS styles don't come into play - take the size of the middle row
-		$('tbody tr:lt(4)', origTable).clone().appendTo(tbody);
-		var rowsCount = $('tr', tbody).length;
-
-		if (rowsCount === 1) {
-			tbody.prepend('<tr><td>&#160;</td></tr>');
-			tbody.append('<tr><td>&#160;</td></tr>');
-		}
-		else {
-			for (; rowsCount < 3; rowsCount++) {
-				tbody.append('<tr><td>&#160;</td></tr>');
-			}
-		}
-
-		$('div.' + classes.body, container).append(nTable);
-
-		// If initialised using `dom`, use the holding element as the insert point
-		var insertEl = this.s.dt.nHolding || origTable.parentNode;
-
-		if (!$(insertEl).is(':visible')) {
-			insertEl = 'body';
-		}
-
-		// Remove form element links as they might select over others (particularly radio and checkboxes)
-		container.find('input').removeAttr('name');
-
-		container.appendTo(insertEl);
-		this.s.heights.row = $('tr', tbody).eq(1).outerHeight();
-
-		container.remove();
-	},
-
-	/**
-	 * Draw callback function which is fired when the DataTable is redrawn. The main function of
-	 * this method is to position the drawn table correctly the scrolling container for the rows
-	 * that is displays as a result of the scrolling position.
-	 *  @returns {void}
-	 *  @private
-	 */
-	_draw: function () {
-		var that = this,
-			heights = this.s.heights,
-			iScrollTop = this.dom.scroller.scrollTop,
-			iTableHeight = $(this.s.dt.nTable).height(),
-			displayStart = this.s.dt._iDisplayStart,
-			displayLen = this.s.dt._iDisplayLength,
-			displayEnd = this.s.dt.fnRecordsDisplay(),
-			viewportEndY = iScrollTop + heights.viewport;
-
-		// Disable the scroll event listener while we are updating the DOM
-		this.s.skip = true;
-
-		// If paging is reset
-		if (
-			(this.s.dt.bSorted || this.s.dt.bFiltered) &&
-			displayStart === 0 &&
-			!this.s.dt._drawHold
-		) {
-			this.s.topRowFloat = 0;
-		}
-
-		iScrollTop =
-			this.s.scrollType === 'jump'
-				? this._domain(
-					'virtualToPhysical',
-					this.s.topRowFloat * heights.row
-				)
-				: iScrollTop;
-
-		// Store positional information so positional calculations can be based
-		// upon the current table draw position
-		this.s.baseScrollTop = iScrollTop;
-		this.s.baseRowTop = this.s.topRowFloat;
-
-		// Position the table in the virtual scroller
-		var tableTop =
-			iScrollTop - (this.s.topRowFloat - displayStart) * heights.row;
-		if (displayStart === 0) {
-			tableTop = 0;
-		}
-		else if (displayStart + displayLen >= displayEnd) {
-			tableTop = heights.scroll - iTableHeight;
-		}
-		else {
-			var iTableBottomY = tableTop + iTableHeight;
-			if (iTableBottomY < viewportEndY) {
-				// The last row of the data is above the end of the viewport.
-				// This means the background is visible, which is not what the user expects.
-				var newTableTop = viewportEndY - iTableHeight;
-				var diffPx = newTableTop - tableTop;
-				this.s.baseScrollTop += diffPx + 1; // Update start row number in footer.
-				tableTop = newTableTop; // Move table so last line of data is at the bottom of the viewport.
-			}
-		}
-
-		this.dom.table.style.top = tableTop + 'px';
-
-		/* Cache some information for the scroller */
-		this.s.tableTop = tableTop;
-		this.s.tableBottom = iTableHeight + this.s.tableTop;
-
-		// Calculate the boundaries for where a redraw will be triggered by the
-		// scroll event listener
-		var boundaryPx = (iScrollTop - this.s.tableTop) * this.s.boundaryScale;
-		this.s.redrawTop = iScrollTop - boundaryPx;
-		this.s.redrawBottom =
-			iScrollTop + boundaryPx >
-			heights.scroll - heights.viewport - heights.row
-				? heights.scroll - heights.viewport - heights.row
-				: iScrollTop + boundaryPx;
-
-		this.s.skip = false;
-
-		if (that.s.ingnoreScroll) {
-			// Restore the scrolling position that was saved by DataTable's state
-			// saving Note that this is done on the second draw when data is Ajax
-			// sourced, and the first draw when DOM soured
-			if (
-				this.s.dt.oFeatures.bStateSave &&
-				this.s.dt.oLoadedState !== null &&
-				typeof this.s.dt.oLoadedState.scroller != 'undefined'
-			) {
-				// A quirk of DataTables is that the draw callback will occur on an
-				// empty set if Ajax sourced, but not if server-side processing.
-				var ajaxSourced =
-					(this.s.dt.sAjaxSource || that.s.dt.ajax) &&
-					!this.s.dt.oFeatures.bServerSide
-						? true
-						: false;
-
+			dt.on('column-visibility.dt' + conf.namespace, function (e, settings, index, state) {
 				if (
-					(ajaxSourced && this.s.dt.iDraw >= 2) ||
-					(!ajaxSourced && this.s.dt.iDraw >= 1)
+					column.index() === index &&
+					!settings.bDestroying &&
+					settings.nTable == dt.settings()[0].nTable
 				) {
-					setTimeout(function () {
-						$(that.dom.scroller).scrollTop(
-							that.s.dt.oLoadedState.scroller.scrollTop
-						);
-
-						// In order to prevent layout thrashing we need another
-						// small delay
-						setTimeout(function () {
-							that.s.ingnoreScroll = false;
-						}, 0);
-					}, 0);
+					that.active(state);
 				}
-			}
-			else {
-				that.s.ingnoreScroll = false;
-			}
-		}
+			}).on('column-reorder.dt' + conf.namespace, function () {
+				// Button has been removed from the DOM
+				if (conf.destroying) {
+					return;
+				}
 
-		// Because of the order of the DT callbacks, the info update will
-		// take precedence over the one we want here. So a 'thread' break is
-		// needed.  Only add the thread break if bInfo is set
-		if (this.s.dt.oFeatures.bInfo) {
-			setTimeout(function () {
-				that._info.call(that);
-			}, 0);
-		}
+				if (dt.columns(conf.columns).count() !== 1) {
+					return;
+				}
 
-		$(this.s.dt.nTable).triggerHandler('position.dts.dt', tableTop);
-	},
+				// Reassign the column for the updated indexes
+				column = dt.column(conf.columns);
 
-	/**
-	 * Convert from one domain to another. The physical domain is the actual
-	 * pixel count on the screen, while the virtual is if we had browsers which
-	 * had scrolling containers of infinite height (i.e. the absolute value)
-	 *
-	 *  @param {string} dir Domain transform direction, `virtualToPhysical` or
-	 *    `physicalToVirtual`
-	 *  @returns {number} Calculated transform
-	 *  @private
-	 */
-	_domain: function (dir, val) {
-		var heights = this.s.heights;
-		var diff;
-		var magic = 10000; // the point at which the non-linear calculations start to happen
+				// This button controls the same column index but the text for the column has
+				// changed
+				that.text(conf._columnText(dt, conf));
 
-		// If the virtual and physical height match, then we use a linear
-		// transform between the two, allowing the scrollbar to be linear
-		if (heights.virtual === heights.scroll) {
-			return val;
-		}
+				// Since its a different column, we need to check its visibility
+				that.active(column.visible());
+			});
 
-		// In the first 10k pixels and the last 10k pixels, we want the scrolling
-		// to be linear. After that it can be non-linear. It would be unusual for
-		// anyone to mouse wheel through that much.
-		if (val < magic) {
-			return val;
-		}
-		else if (
-			dir === 'virtualToPhysical' &&
-			val >= heights.virtual - magic
-		) {
-			diff = heights.virtual - val;
-			return heights.scroll - diff;
-		}
-		else if (dir === 'physicalToVirtual' && val >= heights.scroll - magic) {
-			diff = heights.scroll - val;
-			return heights.virtual - diff;
-		}
-
-		// Otherwise, we want a non-linear scrollbar to take account of the
-		// redrawing regions at the start and end of the table, otherwise these
-		// can stutter badly - on large tables 30px (for example) scroll might
-		// be hundreds of rows, so the table would be redrawing every few px at
-		// the start and end. Use a simple linear eq. to stop this, effectively
-		// causing a kink in the scrolling ratio. It does mean the scrollbar is
-		// non-linear, but with such massive data sets, the scrollbar is going
-		// to be a best guess anyway
-		var m =
-			(heights.virtual - magic - magic) /
-			(heights.scroll - magic - magic);
-		var c = magic - m * magic;
-
-		return dir === 'virtualToPhysical' ? (val - c) / m : m * val + c;
-	},
-
-	/**
-	 * Update any information elements that are controlled by the DataTable based on the scrolling
-	 * viewport and what rows are visible in it. This function basically acts in the same way as
-	 * _fnUpdateInfo in DataTables, and effectively replaces that function.
-	 *  @returns {void}
-	 *  @private
-	 */
-	_info: function () {
-		if (!this.s.dt.oFeatures.bInfo) {
-			return;
-		}
-
-		var dt = this.s.dt,
-			dtApi = this.s.dtApi,
-			language = dt.oLanguage,
-			info = dtApi.page.info(),
-			total = info.recordsDisplay,
-			max = info.recordsTotal;
-
-		// If the scroll type is `cont` (continuous) we need to use `baseRowTop`, which
-		// also means we need to work out the difference between the current scroll position
-		// and the "base" for when it was required
-		var diffRows = (this.s.lastScrollTop - this.s.baseScrollTop) / this.s.heights.row;
-		var start = Math.floor(this.s.baseRowTop + diffRows) + 1;
-
-		// For a jump scroll type, we just use the straightforward calculation based on
-		// `topRowFloat`
-		if (this.s.scrollType === 'jump') {
-			start = Math.floor(this.s.topRowFloat) + 1;
-		}
-
-		var
-			possibleEnd = start + Math.floor(this.s.heights.viewport / this.s.heights.row),
-			end = possibleEnd > total ? total : possibleEnd,
-			result;
-
-		if (total === 0 && total == max) {
-			/* Empty record set */
-			result = language.sInfoEmpty + language.sInfoPostFix;
-		}
-		else if (total === 0) {
-			// Empty record set after filtering
-			result =
-				language.sInfoEmpty +
-				' ' +
-				language.sInfoFiltered +
-				language.sInfoPostFix;
-		}
-		else if (total == max) {
-			// Normal record set
-			result = language.sInfo + language.sInfoPostFix;
-		}
-		else {
-			// Record set after filtering
-			result = language.sInfo + ' ' + language.sInfoFiltered + language.sInfoPostFix;
-		}
-
-		result = this._macros(result, start, end, max, total);
-
-		var callback = language.fnInfoCallback;
-		if (callback) {
-			result = callback.call(
-				dt.oInstance,
-				dt,
-				start,
-				end,
-				max,
-				total,
-				result
+			this.active(column.visible());
+		},
+		destroy: function (dt, button, conf) {
+			dt.off('column-visibility.dt' + conf.namespace).off(
+				'column-reorder.dt' + conf.namespace
 			);
-		}
+		},
 
-		// DT 1.x features
-		var n = dt.aanFeatures.i;
-		if (typeof n != 'undefined') {
-			for (var i = 0, iLen = n.length; i < iLen; i++) {
-				$(n[i]).html(result);
+		_columnText: function (dt, conf) {
+			if (typeof conf.text === 'string') {
+				return conf.text;
 			}
 
-			$(dt.nTable).triggerHandler('info.dt');
-		}
+			var title = dt.column(conf.columns).title();
+			var idx = dt.column(conf.columns).index();
 
-		// DT 2.x features
-		$('div.dt-info', dtApi.table().container()).each(function () {
-			$(this).html(result);
-			dtApi.trigger('info', [dtApi.settings()[0], this, result]);
-		});
+			title = title
+				.replace(/\n/g, ' ') // remove new lines
+				.replace(/<br\s*\/?>/gi, ' ') // replace line breaks with spaces
+				.replace(/<select(.*?)<\/select\s*>/gi, ''); // remove select tags, including options text
+
+			// Strip HTML comments
+			title = DataTable.Buttons.stripHtmlComments(title);
+
+			// Use whatever HTML stripper DataTables is configured for
+			title = DataTable.util.stripHtml(title).trim();
+
+			return conf.columnText ? conf.columnText(dt, idx, title) : title;
+		}
 	},
 
-	/**
-	 * String replacement for info display. Basically the same as what DataTables does.
-	 *
-	 * @param {*} str
-	 * @param {*} start
-	 * @param {*} end
-	 * @param {*} max
-	 * @param {*} total
-	 * @returns Formatted string
-	 */
-	_macros: function (str, start, end, max, total) {
-		var api = this.s.dtApi;
-		var settings = this.s.dt;
-		var formatter = settings.fnFormatNumber;
+	colvisRestore: {
+		className: 'buttons-colvisRestore',
 
-		return str
-			.replace(/_START_/g, formatter.call(settings, start))
-			.replace(/_END_/g, formatter.call(settings, end))
-			.replace(/_MAX_/g, formatter.call(settings, max))
-			.replace(/_TOTAL_/g, formatter.call(settings, total))
-			.replace(/_ENTRIES_/g, api.i18n('entries', ''))
-			.replace(/_ENTRIES-MAX_/g, api.i18n('entries', '', max))
-			.replace(/_ENTRIES-TOTAL_/g, api.i18n('entries', '', total));
-	},
+		text: function (dt) {
+			return dt.i18n('buttons.colvisRestore', 'Restore visibility');
+		},
 
-	/**
-	 * Parse CSS height property string as number
-	 *
-	 * An attempt is made to parse the string as a number. Currently supported units are 'px',
-	 * 'vh', and 'rem'. 'em' is partially supported; it works as long as the parent element's
-	 * font size matches the body element. Zero is returned for unrecognized strings.
-	 *  @param {string} cssHeight CSS height property string
-	 *  @returns {number} height
-	 *  @private
-	 */
-	_parseHeight: function (cssHeight) {
-		var height;
-		var matches = /^([+-]?(?:\d+(?:\.\d+)?|\.\d+))(px|em|rem|vh)$/.exec(
-			cssHeight
-		);
+		init: function (dt, button, conf) {
+			// Use a private parameter on the column. This gets moved around with the
+			// column if ColReorder changes the order
+			dt.columns().every(function () {
+				var init = this.init();
 
-		if (matches === null) {
-			return 0;
-		}
-
-		var value = parseFloat(matches[1]);
-		var unit = matches[2];
-
-		if (unit === 'px') {
-			height = value;
-		}
-		else if (unit === 'vh') {
-			height = (value / 100) * $(window).height();
-		}
-		else if (unit === 'rem') {
-			height = value * parseFloat($(':root').css('font-size'));
-		}
-		else if (unit === 'em') {
-			height = value * parseFloat($('body').css('font-size'));
-		}
-
-		return height ? height : 0;
-	},
-
-	/**
-	 * Scrolling function - fired whenever the scrolling position is changed.
-	 * This method needs to use the stored values to see if the table should be
-	 * redrawn as we are moving towards the end of the information that is
-	 * currently drawn or not. If needed, then it will redraw the table based on
-	 * the new position.
-	 *  @returns {void}
-	 *  @private
-	 */
-	_scroll: function () {
-		var that = this,
-			heights = this.s.heights,
-			iScrollTop = this.dom.scroller.scrollTop,
-			iTopRow;
-
-		if (this.s.skip) {
-			return;
-		}
-
-		if (this.s.ingnoreScroll) {
-			return;
-		}
-
-		if (iScrollTop === this.s.lastScrollTop) {
-			return;
-		}
-
-		/* If the table has been sorted or filtered, then we use the redraw that
-		 * DataTables as done, rather than performing our own
-		 */
-		if (this.s.dt.bFiltered || this.s.dt.bSorted) {
-			this.s.lastScrollTop = 0;
-			return;
-		}
-
-		/* We don't want to state save on every scroll event - that's heavy
-		 * handed, so use a timeout to update the state saving only when the
-		 * scrolling has finished
-		 */
-		clearTimeout(this.s.stateTO);
-		this.s.stateTO = setTimeout(function () {
-			that.s.dtApi.state.save();
-
-			// We can also use this to ensure that the `info` element is correct
-			// since there can be a little scroll after the last scroll event!
-			that._info();
-		}, 250);
-
-		this.s.scrollType =
-			Math.abs(iScrollTop - this.s.lastScrollTop) > heights.viewport
-				? 'jump'
-				: 'cont';
-
-		this.s.topRowFloat =
-			this.s.scrollType === 'cont'
-				? this.pixelsToRow(iScrollTop, false, false)
-				: this._domain('physicalToVirtual', iScrollTop) / heights.row;
-
-		if (this.s.topRowFloat < 0) {
-			this.s.topRowFloat = 0;
-		}
-
-		/* Check if the scroll point is outside the trigger boundary which would required
-		 * a DataTables redraw
-		 */
-		if (
-			this.s.forceReposition ||
-			iScrollTop < this.s.redrawTop ||
-			iScrollTop > this.s.redrawBottom
-		) {
-			var preRows = Math.ceil(
-				((this.s.displayBuffer - 1) / 2) * this.s.viewportRows
-			);
-
-			iTopRow = parseInt(this.s.topRowFloat, 10) - preRows;
-			this.s.forceReposition = false;
-
-			if (iTopRow <= 0) {
-				/* At the start of the table */
-				iTopRow = 0;
-			}
-			else if (
-				iTopRow + this.s.dt._iDisplayLength >
-				this.s.dt.fnRecordsDisplay()
-			) {
-				/* At the end of the table */
-				iTopRow =
-					this.s.dt.fnRecordsDisplay() - this.s.dt._iDisplayLength;
-				if (iTopRow < 0) {
-					iTopRow = 0;
+				if (init.__visOriginal === undefined) {
+					init.__visOriginal = this.visible();
 				}
-			}
-			else if (iTopRow % 2 !== 0) {
-				// For the row-striping classes (odd/even) we want only to start
-				// on evens otherwise the stripes will change between draws and
-				// look rubbish
-				iTopRow++;
-			}
+			});
+		},
 
-			// Store calcuated value, in case the following condition is not met, but so
-			// that the draw function will still use it.
-			this.s.targetTop = iTopRow;
+		action: function (e, dt, button, conf) {
+			dt.columns().every(function (i) {
+				var init = this.init();
 
-			if (iTopRow != this.s.dt._iDisplayStart) {
-				/* Cache the new table position for quick lookups */
-				this.s.tableTop = $(this.s.dt.nTable).offset().top;
-				this.s.tableBottom =
-					$(this.s.dt.nTable).height() + this.s.tableTop;
-
-				var draw = function () {
-					that.s.dt._iDisplayStart = that.s.targetTop;
-					that.s.dtApi.draw('page');
-				};
-
-				/* Do the DataTables redraw based on the calculated start point - note that when
-				 * using server-side processing we introduce a small delay to not DoS the server...
-				 */
-				if (this.s.dt.oFeatures.bServerSide) {
-					this.s.forceReposition = true;
-
-					// This is used only for KeyTable and is not currently publicly
-					// documented. Open question - is it useful for anything else?
-					$(this.s.dt.nTable).triggerHandler('scroller-will-draw.dt');
-
-					if (DataTable.versionCheck('2')) {
-						that.s.dtApi.processing(true);
-					}
-					else {
-						this.s.dt.oApi._fnProcessingDisplay(this.s.dt, true);
-					}
-
-					clearTimeout(this.s.drawTO);
-					this.s.drawTO = setTimeout(draw, this.s.serverWait);
-				}
-				else {
-					draw();
-				}
-			}
-		}
-		else {
-			this.s.topRowFloat = this.pixelsToRow(iScrollTop, false, true);
-		}
-
-		/* Update the table's information display for what is now in the viewport */
-		this._info();
-
-		this.s.lastScrollTop = iScrollTop;
-		this.s.stateSaveThrottle();
-
-		if (this.s.scrollType === 'jump' && this.s.mousedown) {
-			this.s.labelVisible = true;
-		}
-		if (this.s.labelVisible) {
-			var labelFactor =
-				(heights.viewport - heights.labelHeight - heights.xbar) /
-				heights.scroll;
-
-			this.dom.label
-				.html(
-					this.s.dt.fnFormatNumber(
-						parseInt(this.s.topRowFloat, 10) + 1
-					)
-				)
-				.css('top', iScrollTop + iScrollTop * labelFactor)
-				.css('display', 'block');
+				this.visible(init.__visOriginal);
+			});
 		}
 	},
 
-	/**
-	 * Force the scrolling container to have height beyond that of just the
-	 * table that has been drawn so the user can scroll the whole data set.
-	 *
-	 * Note that if the calculated required scrolling height exceeds a maximum
-	 * value (1 million pixels - hard-coded) the forcing element will be set
-	 * only to that maximum value and virtual / physical domain transforms will
-	 * be used to allow Scroller to display tables of any number of records.
-	 *  @returns {void}
-	 *  @private
-	 */
-	_scrollForce: function () {
-		var heights = this.s.heights;
-		var max = 1000000;
+	colvisGroup: {
+		className: 'buttons-colvisGroup',
 
-		heights.virtual = heights.row * this.s.dt.fnRecordsDisplay();
-		heights.scroll = heights.virtual;
+		action: function (e, dt, button, conf) {
+			dt.columns(conf.show).visible(true, false);
+			dt.columns(conf.hide).visible(false, false);
 
-		if (heights.scroll > max) {
-			heights.scroll = max;
-		}
+			dt.columns.adjust();
+		},
 
-		// Minimum height so there is always a row visible (the 'no rows found'
-		// if reduced to zero filtering)
-		this.dom.force.style.height =
-			heights.scroll > this.s.heights.row
-				? heights.scroll + 'px'
-				: this.s.heights.row + 'px';
+		show: [],
+
+		hide: []
 	}
-});
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Statics
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-/**
- * Scroller default settings for initialisation
- *  @namespace
- *  @name Scroller.defaults
- *  @static
- */
-Scroller.defaults = {
-	/**
-	 * Scroller uses the boundary scaling factor to decide when to redraw the table - which it
-	 * typically does before you reach the end of the currently loaded data set (in order to
-	 * allow the data to look continuous to a user scrolling through the data). If given as 0
-	 * then the table will be redrawn whenever the viewport is scrolled, while 1 would not
-	 * redraw the table until the currently loaded data has all been shown. You will want
-	 * something in the middle - the default factor of 0.5 is usually suitable.
-	 *  @type     float
-	 *  @default  0.5
-	 *  @static
-	 */
-	boundaryScale: 0.5,
-
-	/**
-	 * The display buffer is what Scroller uses to calculate how many rows it should pre-fetch
-	 * for scrolling. Scroller automatically adjusts DataTables' display length to pre-fetch
-	 * rows that will be shown in "near scrolling" (i.e. just beyond the current display area).
-	 * The value is based upon the number of rows that can be displayed in the viewport (i.e.
-	 * a value of 1), and will apply the display range to records before before and after the
-	 * current viewport - i.e. a factor of 3 will allow Scroller to pre-fetch 1 viewport's worth
-	 * of rows before the current viewport, the current viewport's rows and 1 viewport's worth
-	 * of rows after the current viewport. Adjusting this value can be useful for ensuring
-	 * smooth scrolling based on your data set.
-	 *  @type     int
-	 *  @default  9
-	 *  @static
-	 */
-	displayBuffer: 9,
-
-	/**
-	 * Scroller will attempt to automatically calculate the height of rows for it's internal
-	 * calculations. However the height that is used can be overridden using this parameter.
-	 *  @type     int|string
-	 *  @default  auto
-	 *  @static
-	 */
-	rowHeight: 'auto',
-
-	/**
-	 * When using server-side processing, Scroller will wait a small amount of time to allow
-	 * the scrolling to finish before requesting more data from the server. This prevents
-	 * you from DoSing your own server! The wait time can be configured by this parameter.
-	 *  @type     int
-	 *  @default  200
-	 *  @static
-	 */
-	serverWait: 200
-};
-
-Scroller.oDefaults = Scroller.defaults;
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Constants
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-/**
- * Scroller version
- *  @type      String
- *  @default   See code
- *  @name      Scroller.version
- *  @static
- */
-Scroller.version = '2.4.3';
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Initialisation
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-// Attach a listener to the document which listens for DataTables initialisation
-// events so we can automatically initialise
-$(document).on('preInit.dt.dtscroller', function (e, settings) {
-	if (e.namespace !== 'dt') {
-		return;
-	}
-
-	var init = settings.oInit.scroller;
-	var defaults = DataTable.defaults.scroller;
-
-	if (init || defaults) {
-		var opts = $.extend({}, init, defaults);
-
-		if (init !== false) {
-			new Scroller(settings, opts);
-		}
-	}
-});
-
-// Attach Scroller to DataTables so it can be accessed as an 'extra'
-$.fn.dataTable.Scroller = Scroller;
-$.fn.DataTable.Scroller = Scroller;
-
-// DataTables 1.10 API method aliases
-var Api = $.fn.dataTable.Api;
-
-Api.register('scroller()', function () {
-	return this;
-});
-
-// Undocumented and deprecated - is it actually useful at all?
-Api.register('scroller().rowToPixels()', function (rowIdx, intParse, virtual) {
-	var ctx = this.context;
-
-	if (ctx.length && ctx[0].oScroller) {
-		return ctx[0].oScroller.rowToPixels(rowIdx, intParse, virtual);
-	}
-	// undefined
-});
-
-// Undocumented and deprecated - is it actually useful at all?
-Api.register('scroller().pixelsToRow()', function (pixels, intParse, virtual) {
-	var ctx = this.context;
-
-	if (ctx.length && ctx[0].oScroller) {
-		return ctx[0].oScroller.pixelsToRow(pixels, intParse, virtual);
-	}
-	// undefined
-});
-
-// `scroller().scrollToRow()` is undocumented and deprecated. Use `scroller.toPosition()
-Api.register(
-	['scroller().scrollToRow()', 'scroller.toPosition()'],
-	function (idx, ani) {
-		this.iterator('table', function (ctx) {
-			if (ctx.oScroller) {
-				ctx.oScroller.scrollToRow(idx, ani);
-			}
-		});
-
-		return this;
-	}
-);
-
-Api.register('row().scrollTo()', function (ani) {
-	var that = this;
-
-	this.iterator('row', function (ctx, rowIdx) {
-		if (ctx.oScroller) {
-			var displayIdx = that
-				.rows({ order: 'applied', search: 'applied' })
-				.indexes()
-				.indexOf(rowIdx);
-
-			ctx.oScroller.scrollToRow(displayIdx, ani);
-		}
-	});
-
-	return this;
-});
-
-Api.register('scroller.measure()', function (redraw) {
-	this.iterator('table', function (ctx) {
-		if (ctx.oScroller) {
-			ctx.oScroller.measure(redraw);
-		}
-	});
-
-	return this;
-});
-
-Api.register('scroller.page()', function () {
-	var ctx = this.context;
-
-	if (ctx.length && ctx[0].oScroller) {
-		return ctx[0].oScroller.pageInfo();
-	}
-	// undefined
 });
 
 
