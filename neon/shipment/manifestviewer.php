@@ -56,7 +56,6 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		?>
 		<link rel="stylesheet" href="../../js/datatables/datatables.css" />
 		<script src="../../js/datatables/datatables.js"></script>
-
 		<?php
 	}
 	?>
@@ -66,28 +65,34 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				var evt  = (evt) ? evt : ((event) ? event : null);
 				if ((evt.keyCode == 13)) { return false; }
 			});
-			<?php
-			if($sortableTable){
-				?>
-				$('#manifestTable').DataTable({
-					paging: false,
-					scrollCollapse: true,
-					fixedHeader: true,
-					scrollX: true,
-					columnDefs: [{ orderable: false, targets: [0, -1]}],
-					});
-				$("#manifestTable").DataTable().rows().every( function () {
-					var tr = $(this.node());
-					var childValue = tr.data('child-value');
-
-					if (childValue !== undefined) {
-						this.child(childValue).show();
-						tr.addClass('shown');
+			$('#manifestTable').DataTable({
+				scrollCollapse: true, //Allow the table to reduce in height when a limited number of rows are shown
+				columnDefs: [
+					{ targets: [0, -1], orderable: false }, // disables ordering for columns 0 and last
+					{ targets: 0, className: 'checkbox' }, // don't let people remove/add this column
+					{ targets: [-3, -4, -5, -6], visible: false } // make this column not visible on load
+				],
+				layout: {
+					topStart: {
+						buttons: [
+							{
+								extend: 'columnsToggle',
+								columns: ':not(.checkbox)'
+							}
+						]
 					}
-				});
-				<?php
-			}
-			?>
+				}
+			});
+			$("#manifestTable").DataTable().rows().every( function () {
+				var tr = $(this.node());
+				var childValue = tr.data('child-value');
+			
+				if (childValue !== undefined) {
+					this.child(childValue).show();
+					tr.addClass('shown');
+				}
+			});
+			$('#manifestTable').css('width', '100%');
 		});
 
 		function batchCheckinFormVerify(f){
@@ -471,9 +476,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		}
 	</script>
 	<style type="text/css">
-		#innertext{ max-width: 1400px; }
-		.fieldGroupDiv { clear:both; margin-top:2px; height: 25px; }
-		.fieldDiv { float:left; margin-left: 10px}
+		#innertext{margin-left: 0px; margin-right: 0px;}
 		.displayFieldDiv { margin-bottom: 3px }
 		fieldset legend { font-weight: bold; }
 		.sample-row td { white-space: break-spaces; }
@@ -680,31 +683,12 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
 							<legend>Sample Listing</legend>
-							<div>
-								<div style="float:left">Records displayed: <?php echo count($sampleList); ?></div>
-								<div style="float:left; margin-left: 50px;"><input name="sorthandler" type="checkbox" onchange="tableSortHandlerChanged(this)" <?= ($sortableTable ? 'checked' : '') ?> > Make table sortable</div>
-								<div style="float:right;">
-									<form name="filterSampleForm" action="manifestviewer.php#samplePanel" method="post" style="">
-										Filter by:
-										<select name="sampleFilter" onchange="this.form.submit()">
-											<option value="">All Records</option>
-											<option value="notCheckedIn" <?php echo ($sampleFilter=='notCheckedIn'?'SELECTED':''); ?>>Not Checked In</option>
-											<option value="missingOccid" <?php echo ($sampleFilter=='missingOccid'?'SELECTED':''); ?>>Missing Occurrences</option>
-											<option value="notAccepted" <?php echo ($sampleFilter=='notAccepted'?'SELECTED':''); ?>>Not Accepted for Analysis</option>
-											<option value="altIds" <?php echo ($sampleFilter=='altIds'?'SELECTED':''); ?>>Has Alternative IDs</option>
-											<option value="harvestingError" <?php echo ($sampleFilter=='harvestingError'?'SELECTED':''); ?>>Harvesting Errors</option>
-										</select>
-										<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
-									</form>
-								</div>
-							</div>
 							<div style="clear:both">
 								<?php
 								if($sampleList){
 									?>
 									<form name="sampleListingForm" action="manifestviewer.php" method="post" onsubmit="return batchCheckinFormVerify(this)">
-										<input name="sortabletable" type="hidden" value="<?= $sortableTable ?>">
-										<table id="manifestTable" class="styledtable">
+										<table id="manifestTable" class="stripe hover compact" style="width:100 !important;">
 											<thead>
 												<tr>
 													<?php

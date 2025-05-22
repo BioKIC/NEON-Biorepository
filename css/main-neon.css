@@ -390,7 +390,7 @@ h4:not([class^="Mui"]):not([class*=" Mui"]) {
   font-family: 'Inter', sans-serif !important;
 }
 
-button:not([class^="Mui"]):not([class*=" Mui"]):not(header button) {
+button:not([class^="Mui"]):not([class*=" Mui"]):not(header button):not([class^="dt-"]) {
   background-color: var(--darkest-color);
   border: none;
   border-radius: 5px;
@@ -423,7 +423,7 @@ button:not([class^="Mui"]):not([class*=" Mui"]):not(header button) {
   box-sizing: border-box;  
 }
 
-button:not([class^="Mui"]):not([class*=" Mui"]):hover {
+button:not([class^="Mui"]):not([class*=" Mui"]):not([class^="dt-"]):hover {
   background-color: var(--medium-color);
   color: var(--light-color);
 }
@@ -523,7 +523,7 @@ button:not([class^="Mui"]):not([class*=" Mui"]).inverse-color {
   padding: 0.5rem 0.9rem;
 }
 
-body:not([class^="Mui"]):not([class*=" Mui"]) button:not([class^="Mui"]):not([class*=" Mui"]):not(header button),
+body:not([class^="Mui"]):not([class*=" Mui"]) button:not([class^="Mui"]):not([class*=" Mui"]):not(header button):not([class^="dt-"]),
 body:not([class^="Mui"]):not([class*=" Mui"]) button.ui-button.ui-widget.ui-corner-all:not(header button),
 body:not([class^="Mui"]):not([class*=" Mui"]) input[type='submit' i]:not([class^="Mui"]):not([class*=" Mui"]):not(header input[type='submit']) {
   font-family: 'Inter', sans-serif !important;
@@ -555,7 +555,7 @@ body:not([class^="Mui"]):not([class*=" Mui"]) input[type='submit' i]:not([class^
   transition-delay: 0ms, 0ms, 0ms;
 }
 
-button:not([class^="Mui"]):not([class*=" Mui"]):hover {
+button:not([class^="Mui"]):not([class*=" Mui"]):not([class^="dt-"]):hover {
   background-color: #0092e2 !important;
   box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%),
     0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);
