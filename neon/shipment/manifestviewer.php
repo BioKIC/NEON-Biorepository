@@ -93,6 +93,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				}
 			});
 			$('#manifestTable').css('width', '100%');
+			$('th.dt-type-date').removeClass('dt-type-date');
 		});
 
 		function batchCheckinFormVerify(f){
