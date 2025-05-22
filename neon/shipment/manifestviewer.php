@@ -94,6 +94,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			});
 			$('#manifestTable').css('width', '100%');
 			$('th.dt-type-date').removeClass('dt-type-date');
+			$('td.dt-type-date').removeClass('dt-type-date');
 		});
 
 		function batchCheckinFormVerify(f){
@@ -695,9 +696,9 @@ include($SERVER_ROOT.'/includes/header.php');
 													<?php
 													$headerOutArr = current($sampleList);
 													echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
-													$headerArr = array('sampleID'=>'Sample ID', 'sampleCode'=>'Sample<br/>Code', 'sampleClass'=>'Sample<br/>Class', 'taxonID'=>'Taxon ID',
-														'namedLocation'=>'Named<br/>Location', 'collectDate'=>'Collection<br/>Date', 'quarantineStatus'=>'Quarantine<br/>Status','sampleReceived'=>'Sample<br/>Received',
-														'acceptedForAnalysis'=>'Accepted<br/>for<br/>Analysis','sampleCondition'=>'Sample<br/>Condition','checkinUser'=>'Check-in','occid'=>'occid');
+													$headerArr = array('sampleID'=>'Sample ID', 'sampleCode'=>'Sample Code', 'sampleClass'=>'Sample Class', 'taxonID'=>'Taxon ID',
+														'namedLocation'=>'Named Location', 'collectDate'=>'Collection Date', 'quarantineStatus'=>'Quarantine Status','sampleReceived'=>'Sample Received',
+														'acceptedForAnalysis'=>'Accepted for Analysis','sampleCondition'=>'Sample Condition','checkinUser'=>'Check-in','occid'=>'occid');
 														//'individualCount'=>'Individual Count', 'filterVolume'=>'Filter Volume', 'domainRemarks'=>'Domain Remarks', 'sampleNotes'=>'Sample Notes',
 													$rowCnt = 1;
 													foreach($headerArr as $fieldName => $headerTitle){
