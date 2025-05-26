@@ -59,7 +59,7 @@ if ($taskList) {
             $refreshToken = $guidManager->getDevelopmentRefreshToken($SYMB_UID);
         }
 
-        if (!$guidManager->isAccessTokenValid($accessToken)) {
+        if (!$guidManager->isAccessTokenValid($accessToken, $logFH)) {
             logMessage("Access token expired for UID $SYMB_UID. Attempting refresh...", $logFH);
             $accessToken = $guidManager->refreshAccessToken($refreshToken, $SYMB_UID, $logFH);
             if (!$accessToken) {
