@@ -1452,8 +1452,9 @@ class OccurrenceEditorManager {
 				if($sourceOccid != $this->occid && !in_array($this->occid,$retArr)){
 					$retArr[$this->occid] = $this->occid;
 					if(isset($postArr['assocrelation']) && $postArr['assocrelation']){
-						$sql = 'INSERT INTO omoccurassociations(occid, occidAssociate, relationship,createdUid) '.
-							'values('.$this->occid.','.$sourceOccid.',"'.$postArr['assocrelation'].'",'.$GLOBALS['SYMB_UID'].') ';
+						$sql = 'INSERT INTO omoccurassociations(occid, associationType, occidAssociate, relationship,createdUid) '.
+							'values('.$this->occid.', \'internalOccurrence\','.$sourceOccid.',"'.$postArr['assocrelation'].'",'.$GLOBALS['SYMB_UID'].') ';
+							
 						if(!$this->conn->query($sql)){
 							$this->errorArr[] = $LANG['ERROR_ADDING_REL'].': '.$this->conn->error;
 						}
