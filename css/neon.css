@@ -47,6 +47,10 @@ Jan 2021
   font-display: swap;
 }
 
+body {
+  font-feature-settings: "ss02" 1;
+}
+
 
 /******* 2. GENERAL ********/
 
