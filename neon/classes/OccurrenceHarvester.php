@@ -1541,7 +1541,7 @@ class OccurrenceHarvester{
 				}
 				if($dwcArr['collid'] == 23){
 					$sciname = 'Terrestrial Plant Litterfall';
-					$tid = 126842;
+					$tid = 126851;
 				}
 				elseif($dwcArr['collid'] == 6 || $dwcArr['collid'] == 68){
 					$sciname = 'Surface Water Microbe';
@@ -1578,10 +1578,6 @@ class OccurrenceHarvester{
 				elseif($dwcArr['collid'] == 10||$dwcArr['collid'] == 76){
 					$sciname = 'Belowground Biomass';
 					$tid = 126849;
-				}
-				elseif($dwcArr['collid']== 23){
-					$sciname = "Terrestrial Plant Litterfall";
-					$tid = 126851;
 				}
 				elseif($dwcArr['collid'] == 60|| $dwcArr['collid'] == 62){
 					$sciname = 'Zooplankton';
