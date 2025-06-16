@@ -20,6 +20,7 @@ $observerUid = array_key_exists('observeruid',$_POST)?$_POST['observeruid']:'';
 $matchCatNum = array_key_exists('matchcatnum',$_REQUEST)?true:false;
 $matchOtherCatNum = array_key_exists('matchothercatnum',$_REQUEST)&&$_REQUEST['matchothercatnum']?true:false;
 $versionData = array_key_exists('versiondata',$_REQUEST) && $_REQUEST['versiondata']?true:false;
+$overwriteData = array_key_exists('overwritedata',$_REQUEST) && $_REQUEST['overwritedata']?true:false;
 $verifyImages = array_key_exists('verifyimages',$_REQUEST)&&$_REQUEST['verifyimages']?true:false;
 $processingStatus = array_key_exists('processingstatus',$_REQUEST)?$_REQUEST['processingstatus']:'';
 $finalTransfer = array_key_exists('finaltransfer',$_REQUEST)?$_REQUEST['finaltransfer']:0;
@@ -41,6 +42,7 @@ if(!is_numeric($observerUid)) $observerUid = 0;
 if($matchCatNum !== true) $matchCatNum = false;
 if($matchOtherCatNum !== true) $matchOtherCatNum = false;
 if($versionData !== true) $versionData = false;
+if($overwriteData !== true) $overwriteData = false;
 if($verifyImages !== true) $verifyImages = false;
 if(!preg_match('/^[a-zA-Z0-9\s_-]+$/',$processingStatus)) $processingStatus = '';
 if(!is_numeric($finalTransfer)) $finalTransfer = 0;
@@ -83,6 +85,7 @@ $duManager->setObserverUid($observerUid);
 $duManager->setMatchCatalogNumber($matchCatNum);
 $duManager->setMatchOtherCatalogNumbers($matchOtherCatNum);
 $duManager->setVersionDataEdits($versionData);
+$duManager->setOverwriteData($overwriteData);
 $duManager->setVerifyImageUrls($verifyImages);
 $duManager->setProcessingStatus($processingStatus);
 
@@ -234,6 +237,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						<input type="hidden" name="uploadtype" value="<?php echo $uploadType; ?>" >
 						<input type="hidden" name="observeruid" value="<?php echo $observerUid; ?>" >
 						<input type="hidden" name="versiondata" value="<?php echo ($versionData?'1':'0'); ?>" >
+						<input type="hidden" name="overwritedata" value="<?php echo ($overwriteData?'1':'0'); ?>" >
 						<input type="hidden" name="verifyimages" value="<?php echo ($verifyImages?'1':'0'); ?>" >
 						<input type="hidden" name="processingstatus" value="<?php echo $processingStatus;?>" >
 						<input type="hidden" name="uspid" value="<?php echo $uspid;?>" >
