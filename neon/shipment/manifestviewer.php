@@ -89,9 +89,11 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			?>
 			
 			['prefix', 'identifier', 'suffix'].forEach(id => {
-			  document.getElementById(id).addEventListener('input', updateFullIdentifier);
-			});	
-			
+			  const el = document.getElementById(id);
+			  if (el) {
+				el.addEventListener('input', updateFullIdentifier);
+			  }
+			});
 		});
 
 		function batchCheckinFormVerify(f){
