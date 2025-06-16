@@ -519,15 +519,18 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		  display: flex;
 		  align-items: center;
 		}
-		
-		.input-addon.prefix {
-		  width: 120px;
-		}
 	  
 		.input-addon.suffix {
 		  border-left: none;
 		  border-right: 1px solid #ccc;
-		  width: 60px;
+		}
+		
+		#prefix {
+			width: 120px;
+		}		
+		
+		#suffix {
+			width: 60px;
 		}
 	  
 		.input-addon input {
