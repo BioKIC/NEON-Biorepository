@@ -598,14 +598,15 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		
 		#prefix {
 			width: 120px;
+			border: none !important;
 		}		
 		
 		#suffix {
 			width: 60px;
+			border: none !important;
 		}
 	  
 		.input-addon input {
-		  border: none !important;
 		  background: transparent;
 		  padding: 0;
 		  margin: 0;
