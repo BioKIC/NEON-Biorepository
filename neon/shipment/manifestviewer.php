@@ -615,7 +615,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 	  
 		.main-input {
 		  border: 1px solid #ccc;
-		  width: 350px;
+		  width: 285px;
 		  outline: none;
 		  margin-top: 0;
 		}
