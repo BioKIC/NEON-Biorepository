@@ -123,6 +123,8 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				}	
 			});
 			
+			
+			let firstDrawComplete = false;
 			table.on('draw', function() {
 				table.rows().every(function () {
 					const tr = $(this.node());
@@ -133,6 +135,8 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 						tr.addClass('shown');
 					}
 				});
+				if (firstDrawComplete) return;
+			
 				table.columns().every(function () {
 					const colIdx = this.index();
 					let hasData = false;
@@ -140,18 +144,16 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					this.data().each(function (value) {
 						if (value !== null && value !== '' && value !== '&nbsp;') {
 							hasData = true;
-							return false; // break loop
+							return false; // break
 						}
 					});
 			
-					// If column is empty, trigger a click to hide it via column visibility button
 					if (!hasData) {
-						const $button = $(`.dt-button[data-cv-idx="${colIdx}"]`);
-						if ($button.hasClass('dt-button-active')) {
-							$button.click(); // triggers the built-in column visibility toggle
-						}
+						table.column(colIdx).visible(false);
 					}
 				});
+			
+				firstDrawComplete = true;
 			});
 			
 			$('#sampleFilter').on('change', function() {
