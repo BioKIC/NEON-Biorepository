@@ -72,17 +72,15 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				],
 				layout: {
 					topStart: {
+						pageLength: {
+							menu: [10, 25, 50, { label: 'All', value: -1 }] //Change the options in the page length
+						},
 						buttons: [
 							{
 								extend: 'columnsToggle',
 								columns: ':not(.notoggle)'
 							}
 						]
-					},
-					bottomStart: {
-						pageLength: {
-							menu: [10, 25, 50, { label: 'All', value: -1 }] //Change the options in the page length
-						} 
 					}
 				},
 				createdRow: function(row, data, dataIndex) {
@@ -366,27 +364,6 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		function sampleReceivedChanged(f){
 			$(f.acceptedForAnalysis).prop("checked", false );
 			$('[name=sampleCondition]').val( '' );
-		}
-
-		function popoutCheckinBox(){
-			$("#sampleCheckinDiv").css('position', 'fixed');
-			$("#popoutDiv").hide();
-			$("#bindDiv").show();
-		}
-
-		function bindCheckinBox(){
-			$("#sampleCheckinDiv").css('position', 'static');
-			$("#popoutDiv").show();
-			$("#bindDiv").hide();
-		}
-
-		function tableSortHandlerChanged(cbElem){
-			let sortValue = 0;
-			if(cbElem.checked){
-				sortValue = 1;
-			}
-			document.getElementById('sortableTableID').value = sortValue;
-			document.refreshForm.submit();
 		}
 
 		function selectAll(cbObj){
@@ -746,8 +723,6 @@ include($SERVER_ROOT.'/includes/header.php');
 									<div class="timer">00:00:00</div>
 									<div class="sessionName"></div>
 									<form name="submitform" method="post" onsubmit="checkinSample(this); return false;">
-										<div id="popoutDiv" style="float:right"><a href="#" onclick="popoutCheckinBox();return false" title="Popout Sample Check-in Box">&gt;&gt;</a></div>
-										<div id="bindDiv" style="float:right;display:none"><a href="#" onclick="bindCheckinBox();return false" title="Bind Sample Check-in Box to top of form">&lt;&lt;</a></div>
 										<div>
 										  <label for="identifier"><strong>Identifier:</strong></label>
 										  <div id="checkinText" style="display:inline"></div>
