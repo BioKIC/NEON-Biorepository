@@ -9,19 +9,11 @@ if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT
 
 $shipmentPK = array_key_exists('shipmentPK', $_REQUEST) ? filter_var($_REQUEST['shipmentPK'], FILTER_SANITIZE_NUMBER_INT) : '';
 $sampleFilter = isset($_REQUEST['sampleFilter']) ? $_REQUEST['sampleFilter'] : '';
-$quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
-$sortableTable = isset($_REQUEST['sortabletable']) ? filter_var($_REQUEST['sortabletable'], FILTER_SANITIZE_NUMBER_INT) : false;
 $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 
 $shipManager = new ShipmentManager();
 if($shipmentPK) $shipManager->setShipmentPK($shipmentPK);
-elseif($quickSearchTerm) $shipmentPK = $shipManager->setQuickSearchTerm($quickSearchTerm);
 $sampleCntArr = $shipManager->getSampleCount();
-if($sortableTable === false){
-	//Variable has not been explicitly set by user, thus only turn on if manifest contains < 3000 samples
-	if($sampleCntArr['all'] < 3000) $sortableTable = 1;
-	else $sortableTable = 0;
-}
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEditor',$USER_RIGHTS)) $isEditor = true;
@@ -51,21 +43,25 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 	?>
 	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
-	<?php
-	if($sortableTable){
-		?>
-		<link rel="stylesheet" href="../../js/datatables/datatables.css" />
-		<script src="../../js/datatables/datatables.js"></script>
-		<?php
-	}
-	?>
+	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+	<script src="../../js/datatables/datatables.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("#shipCheckinComment").keydown(function(evt){
 				var evt  = (evt) ? evt : ((event) ? event : null);
 				if ((evt.keyCode == 13)) { return false; }
 			});
-			$('#manifestTable').DataTable({
+			var shipmentPK = <?php echo json_encode($shipmentPK); ?>;
+			var table = $('#manifestTable').DataTable({
+				serverSide: true, // turns on processing on the server (i.e., through SQL) vs through the browser
+				ajax: { //what is sent upon an action in the table
+					url: '../rpc/datatables_manifestview.php',
+					type: 'POST',
+					data: function (d) {
+						d.sampleFilter = $('#sampleFilter').val();
+						d.shipmentPK = shipmentPK;
+					}
+				},
 				scrollCollapse: true, //Allow the table to reduce in height when a limited number of rows are shown
 				columnDefs: [
 					{ targets: [0, -1], orderable: false }, // disables ordering for columns 0 and last
@@ -83,14 +79,17 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					}
 				}
 			});
-			$("#manifestTable").DataTable().rows().every( function () {
-				var tr = $(this.node());
-				var childValue = tr.data('child-value');
-			
-				if (childValue !== undefined) {
-					this.child(childValue).show();
-					tr.addClass('shown');
-				}
+			//$("#manifestTable").DataTable().rows().every( function () {
+			//	var tr = $(this.node());
+			//	var childValue = tr.data('child-value');
+			//
+			//	if (childValue !== undefined) {
+			//		this.child(childValue).show();
+			//		tr.addClass('shown');
+			//	}
+			//});
+			$('#sampleFilter').on('change', function() {
+				table.ajax.reload();
 			});
 			$('#manifestTable').css('width', '100%');
 			$('th.dt-type-date').removeClass('dt-type-date');
@@ -584,7 +583,6 @@ include($SERVER_ROOT.'/includes/header.php');
 							<b>Total Sample Count:</b> <?php echo ($sampleCntArr['all']); ?>
 							<form name="refreshForm" action="manifestviewer.php" method="get" style="display:inline;" title="Refresh Counts and Sample Table">
 								<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" >
-								<input id="sortableTableID" name="sortabletable" type="hidden" value="<?= $sortableTable ?>">
 								<input type="image" src="../../images/refresh.png" style="width:15px;" >
 							</form>
 						</div>
@@ -680,152 +678,65 @@ include($SERVER_ROOT.'/includes/header.php');
 				</div>
 				<?php
 				if($shipArr['checkinTimestamp'] || $sampleFilter == 'displaySamples'){
-					$sampleList = $shipManager->getSampleArr(null, $sampleFilter);
+					$headerList = $shipManager->getSampleHeaders(null, $sampleFilter);
 					?>
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
 							<legend>Sample Listing</legend>
+							<div>
+								<div style="float:right;">
+									<form id="filterSampleForm" style="">
+										Filter by:
+										<select name="sampleFilter" id="sampleFilter">
+											<option value="">All Records</option>
+											<option value="notCheckedIn">Not Checked In</option>
+											<option value="missingOccid">Missing Occurrences</option>
+											<option value="notAccepted">Not Accepted for Analysis</option>
+											<option value="altIds">Has Alternative IDs</option>
+											<option value="harvestingError">Harvesting Errors</option>
+										</select>
+										<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
+									</form>
+								</div>
+							</div>
 							<div style="clear:both">
 								<?php
-								if($sampleList){
+								if($headerList){
 									?>
 									<form name="sampleListingForm" action="manifestviewer.php" method="post" onsubmit="return batchCheckinFormVerify(this)">
 										<table id="manifestTable" class="stripe hover compact" style="width:100 !important;">
 											<thead>
 												<tr>
-													<?php
-													$headerOutArr = current($sampleList);
-													echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
-													$headerArr = array('sampleID'=>'Sample ID', 'sampleCode'=>'Sample Code', 'sampleClass'=>'Sample Class', 'taxonID'=>'Taxon ID',
-														'namedLocation'=>'Named Location', 'collectDate'=>'Collection Date', 'quarantineStatus'=>'Quarantine Status','sampleReceived'=>'Sample Received',
-														'acceptedForAnalysis'=>'Accepted for Analysis','sampleCondition'=>'Sample Condition','checkinUser'=>'Check-in','occid'=>'occid');
-														//'individualCount'=>'Individual Count', 'filterVolume'=>'Filter Volume', 'domainRemarks'=>'Domain Remarks', 'sampleNotes'=>'Sample Notes',
-													$rowCnt = 1;
-													foreach($headerArr as $fieldName => $headerTitle){
-														if(array_key_exists($fieldName, $headerOutArr) || $fieldName == 'checkinUser' || $fieldName == 'occid'){
-															echo '<th>'.$headerTitle.'</th>';
-															$rowCnt++;
-														}
-													}
-													?>
-												</tr>
-											</thead>
-											<tbody>
 												<?php
-												$tagArr = array();
-												foreach($sampleList as $samplePK => $sampleArr){
-													$classStr = '';
-													$propStr = '';
-													if(isset($sampleArr['dynamicProperties'])){
-														$dynPropArr = json_decode($sampleArr['dynamicProperties'],true);
-														foreach($dynPropArr as $category => $propValue){
-															if(strtolower($category) == 'containerid'){
-																$tagArr['containerid'][$propValue] = (isset($tagArr['containerid'][$propValue])?++$tagArr['containerid'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															elseif(strtolower($category) == 'plateid'){
-																$tagArr['plateid'][$propValue] = (isset($tagArr['plateid'][$propValue])?++$tagArr['plateid'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															elseif(strtolower($category) == 'platebarcode'){
-																$tagArr['platebarcode'][$propValue] = (isset($tagArr['platebarcode'][$propValue])?++$tagArr['platebarcode'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															$propStr .= $category.': '.$propValue.'; ';
-														}
-													}
-
-													$str = '';
-													if(!empty($sampleArr['alternativeSampleID'])) $str .= '<div>Alternative Sample ID: '.$sampleArr['alternativeSampleID'].'</div>';
-													if(!empty($sampleArr['hashedSampleID'])) $str .= '<div>Hashed Sample ID: '.$sampleArr['hashedSampleID'].'</div>';
-													if(!empty($sampleArr['individualCount'])) $str .= '<div>Individual Count: '.$sampleArr['individualCount'].'</div>';
-													if(!empty($sampleArr['filterVolume'])) $str .= '<div>Filter Volume: '.$sampleArr['filterVolume'].'</div>';
-													if(!empty($sampleArr['domainRemarks'])) $str .= '<div>Domain Remarks: '.$sampleArr['domainRemarks'].'</div>';
-													if(!empty($sampleArr['sampleNotes'])) $str .= '<div>Sample Notes: '.$sampleArr['sampleNotes'].'</div>';
-													if(!empty($sampleArr['checkinRemarks'])) $str .= '<div>Check-in Remarks: '.$sampleArr['checkinRemarks'].'</div>';
-													if(isset($sampleArr['dynamicProperties']) && $sampleArr['dynamicProperties']){
-														$str .= '<div>'.trim($propStr,'; ').'</div>';
-													}
-													if(isset($sampleArr['symbiotaTarget']) && $sampleArr['symbiotaTarget']){
-														$symbTargetArr = json_decode($sampleArr['symbiotaTarget'],true);
-														$symbStr = '';
-														foreach($symbTargetArr as $symbLabel => $symbValue){
-															$symbStr .= $symbLabel.': '.$symbValue.'; ';
-														}
-														$str .= '<div>Symbiota targeted data ['.trim($symbStr,'; ').']</div>';
-													}
-													if(!empty($sampleArr['occurErr'])) $str .= '<div>Occurrence Harvesting Error: '.$sampleArr['occurErr'].'</div>';		
+												$headerArr = array(
+													'samplePK' => 'Sample PK',
+													'sampleID' => 'Sample ID',
+													'sampleCode' => 'Sample Code',
+													'sampleClass' => 'Sample Class',
+													'taxonID' => 'Taxon ID',
+													'namedLocation' => 'Named Location',
+													'collectDate' => 'Collection Date',
+													'quarantineStatus' => 'Quarantine Status',
+													'sampleReceived' => 'Sample Received',
+													'acceptedForAnalysis' => 'Accepted for Analysis',
+													'sampleCondition' => 'Sample Condition',
+													'checkinTimestamp' => 'Check-in',
+													'occid' => 'occid'
+												);
 												
-													if($sortableTable){
-														if($str) {
-															echo '<tr class="sample-row" data-child-value="'.trim($str,'; ').'">';
-														} else {
-															echo '<tr class="sample-row">';
-														}															
+												//echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
+												$rowCnt = 1;
+												
+												foreach ($headerArr as $fieldName => $headerTitle) {
+													if ($fieldName === 'samplePK') {
+														echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
+													} else {
+														echo '<th>' . $headerTitle . '</th>';
 													}
-													
-													echo '<td>';
-													echo '<input id="scbox-'.$samplePK.'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$samplePK.'" />';
-													echo ' <a href="#" onclick="return openSampleEditor('.$samplePK.')"><img src="../../images/edit.png" style="width:12px" /></a>';
-													echo '</td>';
-													$sampleID = (array_key_exists('sampleID',$sampleArr)?$sampleArr['sampleID']:'');
-													if(array_key_exists('sampleID', $headerOutArr)){
-														if($quickSearchTerm == $sampleID) $sampleID = '<b>'.$sampleID.'</b>';
-														echo '<td>'.$sampleID.'</td>';
-													}
-													$sampleCode = (array_key_exists('sampleCode',$sampleArr)?$sampleArr['sampleCode']:'');
-													if(array_key_exists('sampleCode', $headerOutArr)){
-														if($quickSearchTerm == $sampleCode) $sampleCode = '<b>'.$sampleCode.'</b>';
-														echo '<td>'.$sampleCode.'</td>';
-													}
-													echo '<td>'.$sampleArr['sampleClass'].'</td>';
-													if(array_key_exists('taxonID',$sampleArr)) echo '<td>'.$sampleArr['taxonID'].'</td>';
-													if(array_key_exists('namedLocation', $sampleArr)){
-														$namedLocation = $sampleArr['namedLocation'];
-														if(isset($sampleArr['siteTitle']) && $sampleArr['siteTitle']) $namedLocation = '<span title="'.$sampleArr['siteTitle'].'">'.$namedLocation.'</span>';
-														echo '<td>'.$namedLocation.'</td>';
-													}
-													if(array_key_exists('collectDate', $sampleArr)) echo '<td>'.$sampleArr['collectDate'].'</td>';
-													echo '<td>'.$sampleArr['quarantineStatus'].'</td>';
-													if(array_key_exists('sampleReceived', $sampleArr)){
-														$sampleReceived = $sampleArr['sampleReceived'];
-														if($sampleArr['sampleReceived']==1) $sampleReceived = 'Y';
-														if($sampleArr['sampleReceived']==='0') $sampleReceived = 'N';
-														echo '<td>'.$sampleReceived.'</td>';
-													}
-													if(array_key_exists('acceptedForAnalysis', $sampleArr)){
-														$acceptedForAnalysis = $sampleArr['acceptedForAnalysis'];
-														if($sampleArr['acceptedForAnalysis']==1) $acceptedForAnalysis = 'Y';
-														if($sampleArr['acceptedForAnalysis']==='0') $acceptedForAnalysis = 'N';
-														echo '<td>'.$acceptedForAnalysis.'</td>';
-													}
-													if(array_key_exists('sampleCondition', $sampleArr)) echo '<td>'.$sampleArr['sampleCondition'].'</td>';
-													echo '<td title="'.$sampleArr['checkinUser'].'">';
-													echo '<span id="scSpan-'.$samplePK.'">'.$sampleArr['checkinTimestamp'].'</span> ';
-													if($sampleArr['checkinTimestamp']) echo '<a href="#" onclick="return openSampleCheckinEditor('.$samplePK.')"><img src="../../images/edit.png" style="width:13px" /></a>';
-													echo '</td>';
-													echo '<td style="text-align:center">';
-													if(array_key_exists('occid',$sampleArr) && $sampleArr['occid']){
-														echo '<span title="harvested '.(isset($sampleArr['harvestTimestamp'])?$sampleArr['harvestTimestamp']:'').'">';
-														if ($quickSearchTerm === $sampleArr['occid']) {
-															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank"><strong>' . $sampleArr['occid'] . '</strong></a>';
-														} else {
-															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank">' . $sampleArr['occid'] . '</a>';
-														}
-														echo '</br>';
-														echo '</br>';
-														echo '<a href="../../collections/editor/occurrenceeditor.php?occid='.$sampleArr['occid'].'" target="_blank"><img src="../../images/edit.png" style="width:13px" /></a>';
-														echo '</span>';
-													}
-													echo '</td>';
-													echo '</tr>';
-													if(!$sortableTable){
-														if($str) echo '<tr><td colspan="'.$rowCnt.'"><div style="margin-left:30px;">'.trim($str,'; ').'</div></td></tr>';
-													}
-
 												}
 												?>
-											</tbody>
+												</tr>
+											</thead>
 										</table>
 										<div style="margin:15px;float:left">
 											<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
@@ -892,6 +803,7 @@ include($SERVER_ROOT.'/includes/header.php');
 													</div>
 												</fieldset>
 												<?php
+												$tagArr = array();
 												if($tagArr){
 													?>
 													<fieldset style="margin:5px;float:left">
