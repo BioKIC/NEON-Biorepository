@@ -92,7 +92,18 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					if (safe(data[17])) str += `<div>Domain Remarks: ${data[17]}</div>`;
 					if (safe(data[18])) str += `<div>Sample Notes: ${data[18]}</div>`;
 					if (safe(data[19])) str += `<div>Check-in Remarks: ${data[19]}</div>`;
-					if (safe(data[20])) str += `<div>${data[20]}</div>`;
+					if (safe(data[20])) {
+						try {
+							const parsed = JSON.parse(data[20]);
+							const propStr = Object.entries(parsed)
+								.map(([key, val]) => `${key}: ${val}`)
+								.join('; ');
+							str += `<div>${propStr}</div>`;
+						} catch (e) {
+							console.warn("Invalid JSON in dynamicProperties:", data[20]);
+							str += `<div>${data[20]}</div>`; // fallback
+						}
+					}
 				
 					if (safe(data[21])) {
 						try {
