@@ -64,9 +64,11 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				},
 				scrollCollapse: true, //Allow the table to reduce in height when a limited number of rows are shown
 				columnDefs: [
-					{ targets: [0, -1], orderable: false }, // disables ordering for columns 0 and last
+					{ targets: [0, 12], orderable: false }, // disables ordering for columns 0 and last
 					{ targets: 0, className: 'checkbox' }, // don't let people remove/add this column
-					{ targets: [-3, -4, -5, -6], visible: false } // make this column not visible on load
+					{ targets: [7, 8, 9, 10], visible: false }, // make this column not visible on load
+					{ targets: [6], className: 'dt-left' }, // align date column to the left instead of the automatic right
+					{ targets: [13,14,15,16,17,18,19,20,21,22], visible: false, searchable: false, className: 'checkbox' } // child notes data
 				],
 				layout: {
 					topStart: {
@@ -77,23 +79,53 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 							}
 						]
 					}
-				}
+				},
+				createdRow: function(row, data, dataIndex) {
+					let str = '';
+				
+					const safe = val => val !== null && val !== undefined && val !== '';
+				
+					if (safe(data[13])) str += `<div>Alternative Sample ID: ${data[13]}</div>`;
+					if (safe(data[14])) str += `<div>Hashed Sample ID: ${data[14]}</div>`;
+					if (safe(data[15])) str += `<div>Individual Count: ${data[15]}</div>`;
+					if (safe(data[16])) str += `<div>Filter Volume: ${data[16]}</div>`;
+					if (safe(data[17])) str += `<div>Domain Remarks: ${data[17]}</div>`;
+					if (safe(data[18])) str += `<div>Sample Notes: ${data[18]}</div>`;
+					if (safe(data[19])) str += `<div>Check-in Remarks: ${data[19]}</div>`;
+					if (safe(data[20])) str += `<div>${data[20]}</div>`;
+				
+					if (safe(data[21])) {
+						try {
+							const parsed = JSON.parse(data[21]);
+							const symbStr = Object.entries(parsed).map(([label, val]) => `${label}: ${val}`).join('; ');
+							str += `<div>Symbiota targeted data [${symbStr}]</div>`;
+						} catch (e) {
+							console.warn("Invalid symbiotaTarget JSON:", data[21]);
+						}
+					}
+				
+					if (safe(data[22])) str += `<div>Occurrence Harvesting Error: ${data[22]}</div>`;
+				
+					if (str) {
+						$(row).attr('data-child-value', str);
+					}
+				}	
 			});
-			//$("#manifestTable").DataTable().rows().every( function () {
-			//	var tr = $(this.node());
-			//	var childValue = tr.data('child-value');
-			//
-			//	if (childValue !== undefined) {
-			//		this.child(childValue).show();
-			//		tr.addClass('shown');
-			//	}
-			//});
+			table.on('draw', function() {
+				table.rows().every(function () {
+					const tr = $(this.node());
+					const childValue = tr.data('child-value');
+			
+					if (childValue !== undefined) {
+						this.child(childValue).show();
+						tr.addClass('shown');
+					}
+				});
+			});
 			$('#sampleFilter').on('change', function() {
 				table.ajax.reload();
 			});
 			$('#manifestTable').css('width', '100%');
-			$('th.dt-type-date').removeClass('dt-type-date');
-			$('td.dt-type-date').removeClass('dt-type-date');
 		});
 
 		function batchCheckinFormVerify(f){

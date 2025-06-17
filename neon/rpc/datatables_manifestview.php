@@ -77,7 +77,18 @@ $columns = array(
     
             return $html;
         }
-    )
+    ),
+    #these are for the child notes row
+    array('db' => 'alternativeSampleID', 'dt' => 13),
+    array('db' => 'hashedSampleID',      'dt' => 14),
+    array('db' => 'individualCount',     'dt' => 15),
+    array('db' => 'filterVolume',        'dt' => 16),
+    array('db' => 'domainRemarks',       'dt' => 17),
+    array('db' => 'notes',               'dt' => 18),
+    array('db' => 'checkinRemarks',      'dt' => 19),
+    array('db' => 'dynamicProperties',   'dt' => 20),
+    array('db' => 'symbiotaTarget',      'dt' => 21),
+    array('db' => 'errorMessage',        'dt' => 22)
 );
 
 $shipmentPK = isset($_POST['shipmentPK']) && is_numeric($_POST['shipmentPK']) ? intval($_POST['shipmentPK']) : null;
