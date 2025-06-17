@@ -391,6 +391,21 @@ $traitArr = $indManager->getTraitArr();
 									echo '<label>'.(isset($LANG['ARCHIVE_GUID'])?$LANG['ARCHIVE_GUID']:'Catalog #').': </label>';
 									echo $occArr['catalognumber'];
 									echo '<span style="margin-left: 10px"><a href="https://doi.org/10.58052/' . $occArr['catalognumber'] . '" target="_blank">SESAR Record</a></span>';
+									
+									// Get GBIF recordID using GBIF API
+									if($occArr['occurrenceid']){
+										if ($collMetadata['publishtogbif'] == 1) {
+											$datasetKey = json_decode($collMetadata['aggkeysstr'])->datasetKey;
+											$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
+											$response = file_get_contents($gbifApiUrl);
+											$data = json_decode($response, true);
+											if (isset($data['count']) && $data['count'] == 1 && isset($data['results'][0]['key'])) {
+												$gbifID = $data['results'][0]['key'];
+												$gbifUrl = "https://www.gbif.org/occurrence/$gbifID";
+												echo '<span style="margin-left: 10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
+											}
+										}
+									}
 								}
 								else{								
 									echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';

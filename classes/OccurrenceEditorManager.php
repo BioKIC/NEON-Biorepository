@@ -1620,15 +1620,11 @@ class OccurrenceEditorManager {
 				if($sourceOccid != $this->occid && !in_array($this->occid,$retArr)){
 					$retArr[$this->occid] = $this->occid;
 					if(isset($postArr['assocrelation']) && $postArr['assocrelation']){
-						$sql = 'INSERT INTO omoccurassociations(occid, associationType, occidAssociate, relationship, createdUid, RecordID) VALUES(?, "internalOccurrence", ?, ?, ?, ? ) ';
-						if($stmt = $this->conn->prepare($sql)){
-							$guid = UuidFactory::getUuidV4();
-							$stmt->bind_param('iisis', $this->occid, $sourceOccid, $postArr['assocrelation'], $GLOBALS['SYMB_UID'], $guid);
-							$stmt->execute();
-							if($stmt->error){
-								$this->errorArr[] = $LANG['ERROR_ADDING_REL'].': '.$this->conn->error;
-							}
-							$stmt->close();
+						$sql = 'INSERT INTO omoccurassociations(occid, associationType, occidAssociate, relationship,createdUid) '.
+							'values('.$this->occid.', \'internalOccurrence\','.$sourceOccid.',"'.$postArr['assocrelation'].'",'.$GLOBALS['SYMB_UID'].') ';
+							
+						if(!$this->conn->query($sql)){
+							$this->errorArr[] = $LANG['ERROR_ADDING_REL'].': '.$this->conn->error;
 						}
 					}
 					if(isset($postArr['carryoverimages']) && $postArr['carryoverimages']){

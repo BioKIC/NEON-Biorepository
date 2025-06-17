@@ -849,7 +849,7 @@ class OccurrenceHarvester{
 								continue;
 							}
 							//Translate NEON taxon codes or check/clean scientific name submitted
-							if(preg_match('/^[A-Z0-9]+$/', $idArr['sciname'])){
+							if(preg_match('/^[A-Z0-9\/-]+$/', $idArr['sciname'])){
 								//Taxon is a NEON code that needs to be translated
 								if($taxaArr = $this->translateTaxonCode($idArr['sciname'])){
 									$idArr = array_merge($idArr, $taxaArr);
@@ -883,7 +883,7 @@ class OccurrenceHarvester{
 								else $idArrClone['sciname'] = $idArr['taxonPublishedCode'];
 								unset($idArrClone['scientificNameAuthorship']);
 								unset($idArrClone['family']);
-								if(preg_match('/^[A-Z0-9]+$/', $idArrClone['sciname'])){
+								if(preg_match('/^[A-Z0-9\/-]+$/', $idArrClone['sciname'])){
 									//Taxon is a NEON code that needs to be translated
 									if($taxaArr = $this->translateTaxonCode($idArrClone['sciname'])){
 										$idArrClone = array_merge($idArrClone, $taxaArr);
@@ -1541,7 +1541,7 @@ class OccurrenceHarvester{
 				}
 				if($dwcArr['collid'] == 23){
 					$sciname = 'Terrestrial Plant Litterfall';
-					$tid = 126842;
+					$tid = 126851;
 				}
 				elseif($dwcArr['collid'] == 6 || $dwcArr['collid'] == 68){
 					$sciname = 'Surface Water Microbe';
@@ -1578,10 +1578,6 @@ class OccurrenceHarvester{
 				elseif($dwcArr['collid'] == 10||$dwcArr['collid'] == 76){
 					$sciname = 'Belowground Biomass';
 					$tid = 126849;
-				}
-				elseif($dwcArr['collid']== 23){
-					$sciname = "Terrestrial Plant Litterfall";
-					$tid = 126851;
 				}
 				elseif($dwcArr['collid'] == 60|| $dwcArr['collid'] == 62){
 					$sciname = 'Zooplankton';

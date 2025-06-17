@@ -134,8 +134,11 @@ class OccurrenceSesar extends Manager {
 		return '';
 	}
 	
-	public function isAccessTokenValid($accessToken) {
-		if (!$accessToken) return false;
+	public function isAccessTokenValid($accessToken, $logFH) {
+		if (!$accessToken) {
+			logMessage("Access token is empty or null", $logFH);
+			return false;
+		}
 	
 		$url = $this->getProductionMode()
 			? 'https://app.geosamples.org/webservices/credentials_service_v2.php'
@@ -146,13 +149,30 @@ class OccurrenceSesar extends Manager {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, [
 			'Authorization: Bearer ' . $accessToken
 		]);
-		curl_exec($ch);
+	
+		$response = curl_exec($ch);
+	
+		if ($response === false) {
+			$error = curl_error($ch);
+			logMessage("cURL error: $error", $logFH);
+			curl_close($ch);
+			return false;
+		}
 		$result = curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 	
-		return $httpCode === 200;
+		logMessage("Raw response: " . ($result ?: 'NULL'), $logFH);
+	
+		if ($httpCode !== 200) {
+			logMessage("Access token validation failed", $logFH);
+			return false;
+		}
+	
+		logMessage("Access token is valid", $logFH);
+		return true;
 	}
+
 	
 	public function refreshAccessToken($refreshToken, $symbUid = null, $logFH = null) {
 		if (!$refreshToken) {
@@ -179,12 +199,8 @@ class OccurrenceSesar extends Manager {
 		$curlError = curl_error($ch);
 		curl_close($ch);
 	
-		if ($logFH) {
-			logMessage("Refresh token HTTP code: $httpCode", $logFH);
-			logMessage("Raw response: " . ($result ?: 'NULL'), $logFH);
-			if ($curlError) {
-				logMessage("cURL error: $curlError", $logFH);
-			}
+		if ($curlError) {
+			logMessage("cURL error: $curlError", $logFH);
 		}
 	
 		if ($httpCode === 200 && $result) {
@@ -477,7 +493,7 @@ class OccurrenceSesar extends Manager {
 			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
 			return false;
 		}
-		//$xmldata = $this->igsnDom->saveXML();
+		$xmldata = $this->igsnDom->saveXML();
 		$postData = http_build_query([
 			'content' => $this->igsnDom->saveXML()
 		]);
@@ -518,7 +534,7 @@ class OccurrenceSesar extends Manager {
 			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
 			return false;
 		}
-		//$xmldata = $this->igsnDom->saveXML();
+		$xmldata = $this->igsnDom->saveXML();
 		$postData = http_build_query([
 			'content' => $this->igsnDom->saveXML()
 		]);

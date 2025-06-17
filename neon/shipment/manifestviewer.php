@@ -160,6 +160,13 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				table.ajax.reload();
 			});
 			$('#manifestTable').css('width', '100%');
+			
+			['prefix', 'identifier', 'suffix'].forEach(id => {
+			  const el = document.getElementById(id);
+			  if (el) {
+				el.addEventListener('input', updateFullIdentifier);
+			  }
+			});
 		});
 
 		function batchCheckinFormVerify(f){
@@ -299,7 +306,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					return false;
 				}
 			}
-			var sampleIdentifier = f.identifier.value.trim();
+			var sampleIdentifier = document.getElementById('fullIdentifier').textContent.trim();
 			if(sampleIdentifier != ""){
 				//alert("rpc/checkinsample.php?shipmentpk=<?php echo $shipmentPK; ?>&identifier="+sampleIdentifier+"&received="+f.sampleReceived.value+"&accepted="+f.acceptedForAnalysis.value+"&condition="+f.sampleCondition.value+"&altSampleID="+f.alternativeSampleID.value+"&notes="+f.checkinRemarks.value);
 				$.ajax({
@@ -318,8 +325,12 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 						$("#checkinText").text('success!!!');
 						$("#scSpan-"+retJson.samplePK).html("checked in");
 						f.identifier.value = "";
+						updateFullIdentifier();
 						f.alternativeSampleID.value = "";
 						if(f.formReset.checked == true){
+							f.prefix.value = "";
+							f.suffix.value = "";
+							updateFullIdentifier();
 							f.sampleReceived.value = 1;
 							f.acceptedForAnalysis.value = 1;
 							f.sampleCondition.value = "ok";
@@ -541,6 +552,19 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				div.innerHTML  = '<strong>SessionID:</strong> ' + sessionName;
 			});	
 		}
+		
+		function updateFullIdentifier() {
+		  const prefix = document.getElementById('prefix').value.trim();
+		  const identifier = document.getElementById('identifier').value.trim();
+		  const suffix = document.getElementById('suffix').value.trim();
+	  
+		  let full = '';
+		  if (prefix) full += prefix;
+		  full += identifier;
+		  if (suffix) full += suffix;
+	  
+		  document.getElementById('fullIdentifier').textContent = full;
+		}
 	</script>
 	<style type="text/css">
 		#innertext{margin-left: 0px; margin-right: 0px;}
@@ -549,6 +573,55 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		.sample-row td { white-space: break-spaces; }
 		.sorting_1 {
 		  background-color: #c0c0c0a6 !important;
+		}
+		
+		.input-group {
+		  display: flex;
+		  align-items: stretch;
+		  width: fit-content;
+		}
+	  
+		.input-addon {
+		  padding-left: 0.5em;
+		  padding-right: 0.5em;
+		  background-color: #eee;
+		  border: 1px solid #ccc;
+		  border-right: none;
+		  display: flex;
+		  align-items: center;
+		}
+	  
+		.input-addon.suffix {
+		  border-left: none;
+		  border-right: 1px solid #ccc;
+		}
+		
+		#prefix {
+			width: 120px;
+		}		
+		
+		#suffix {
+			width: 60px;
+		}
+	  
+		.input-addon input {
+		  border: none !important;
+		  background: transparent;
+		  padding: 0;
+		  margin: 0;
+		  outline: none;
+		  font-family: inherit;
+		}
+	  
+		.main-input {
+		  border: 1px solid #ccc;
+		  width: 350px;
+		  outline: none;
+		  margin-top: 0;
+		}
+	  
+		.input-group input:focus {
+		  outline: 2px solid #88f;
 		}
 	</style>
 </head>
@@ -669,9 +742,22 @@ include($SERVER_ROOT.'/includes/header.php');
 									<form name="submitform" method="post" onsubmit="checkinSample(this); return false;">
 										<div id="popoutDiv" style="float:right"><a href="#" onclick="popoutCheckinBox();return false" title="Popout Sample Check-in Box">&gt;&gt;</a></div>
 										<div id="bindDiv" style="float:right;display:none"><a href="#" onclick="bindCheckinBox();return false" title="Bind Sample Check-in Box to top of form">&lt;&lt;</a></div>
-										<div class="displayFieldDiv">
-											<b>Identifier:</b> <input name="identifier" type="text" style="width:250px" required />
-											<div id="checkinText" style="display:inline"></div>
+										<div>
+										  <label for="identifier"><strong>Identifier:</strong></label>
+										  <div id="checkinText" style="display:inline"></div>
+										  <div class="input-group">
+											<span class="input-addon prefix">
+											  <input type="text" id="prefix" placeholder="Prefix" />
+											</span>
+											<input type="text" id="identifier" class="main-input" required />
+											<span class="input-addon suffix">
+											  <input type="text" id="suffix" placeholder="Suffix" />
+											</span>
+										  </div>
+										</div>
+										
+										<div>
+										  <strong>Full Identifier:</strong> <span id="fullIdentifier"></span>
 										</div>
 										<div class="displayFieldDiv">
 											<b>Sample Received:</b>
