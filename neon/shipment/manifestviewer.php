@@ -65,17 +65,17 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				scrollCollapse: true, //Allow the table to reduce in height when a limited number of rows are shown
 				columnDefs: [
 					{ targets: [0, 12], orderable: false }, // disables ordering for columns 0 and last
-					{ targets: 0, className: 'checkbox' }, // don't let people remove/add this column
+					{ targets: 0, className: 'notoggle' }, // don't let people remove/add this column
 					{ targets: [7, 8, 9, 10], visible: false }, // make this column not visible on load
 					{ targets: [6], className: 'dt-left' }, // align date column to the left instead of the automatic right
-					{ targets: [13,14,15,16,17,18,19,20,21,22], visible: false, searchable: false, className: 'checkbox' } // child notes data
+					{ targets: [13,14,15,16,17,18,19,20,21,22], visible: false, searchable: false, className: 'notoggle' } // child notes data
 				],
 				layout: {
 					topStart: {
 						buttons: [
 							{
 								extend: 'columnsToggle',
-								columns: ':not(.checkbox)'
+								columns: ':not(.notoggle)'
 							}
 						]
 					}
@@ -659,7 +659,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						<?php
 						if($shipArr['checkinTimestamp'] && $sampleCntArr[0]){
 							?>
-							<div id="sampleCheckinDiv" style="margin-top:15px;background-color:white;top:50px;right:200px">
+							<div id="sampleCheckinDiv" style="margin-top:15px;background-color:white;top:200px;right:200px">
 								<fieldset style="padding:10px;width:500px">
 									<legend>Sample Check-in</legend>
 									<input type="radio" class="start_session" name="session" value="start"> Start Session
