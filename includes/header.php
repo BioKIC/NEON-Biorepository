@@ -150,9 +150,6 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 						<li>
 							<a href="<?php echo $CLIENT_ROOT; ?>/neon/shipment/manifestloader.php" alt="Submit New Manifest">Submit New Manifest</a>
 						</li>
-						<li>
-							<a href="<?php echo $CLIENT_ROOT; ?>/neon/shipment/samplecheckin.php" alt="Sample Check-In">Sample Check-In</a>
-						</li>
 					</ul>
 				</li>
 			<?php
