@@ -78,6 +78,11 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 								columns: ':not(.notoggle)'
 							}
 						]
+					},
+					bottomStart: {
+						pageLength: {
+							menu: [10, 25, 50, { label: 'All', value: -1 }] //Change the options in the page length
+						} 
 					}
 				},
 				createdRow: function(row, data, dataIndex) {
