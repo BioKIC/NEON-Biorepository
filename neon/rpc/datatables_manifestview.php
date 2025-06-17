@@ -2,7 +2,7 @@
 include_once('../../config/symbini.php');
 
 // DB table to use
-$table = 'neonsample';
+$table = 'NeonSample';
  
 // Table's primary key
 $primaryKey = 'samplePK';
