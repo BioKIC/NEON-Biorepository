@@ -50,7 +50,6 @@ if($isEditor){
 					</form>
 				</li>
 				<li><a href="shipment/manifestloader.php">Load and Process New Manifests</a></li>
-				<li><a href="shipment/samplecheckin.php">Sample Check-in Form</a></li>
 				<li><a href="shipment/manifestsearch.php">Manifest Listing and Advanced Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
 				<?php
