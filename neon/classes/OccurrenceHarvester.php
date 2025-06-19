@@ -792,25 +792,45 @@ class OccurrenceHarvester{
 				}
 
 				//Taxonomic fields
-				$skipTaxonomy = array(5,6,10,13,16,21,23,31,41,42,58,60,61,62,67,68,69,76,92);
+				$skipTaxonomy = array(10,13,16,21,23,31,41,42,58,60,61,62,69,76,92);
 				if(!in_array($dwcArr['collid'],$skipTaxonomy)){
 					$identArr = array();
 					$taxonCode = '';
-					if(isset($sampleArr['identifications']) && !in_array($dwcArr['collid'], array(46,98))){
+					if(isset($sampleArr['identifications']) && !in_array($dwcArr['collid'], array(5,6,67,68,46,98))){
 						$identArr = $sampleArr['identifications'];
 					}
-					if(!$identArr && $sampleArr['taxonID'] && !in_array($dwcArr['collid'], array(46,98))){
+					if(!$identArr && $sampleArr['taxonID'] && !in_array($dwcArr['collid'], array(5,6,67,68,46,98))){
 						$hash = hash('md5', str_replace(' ','',$sampleArr['taxonID'].'manifests.d.'));
 						$identArr[$hash] = array('sciname' => $sampleArr['taxonID'], 'identifiedBy' => 'manifest', 'dateIdentified' => 's.d.', 'taxonRemarks' => 'Identification source: inferred from shipment manifest');
 					}
 					if(!$identArr){
-						//Identifications not supplied via API nor manifest, thus try to grab from sampleID with collection specific format
 						$taxonCode = '';
 						$taxonRemarks = '';
-						if(in_array($dwcArr['collid'], array(46,98))){
-							if (preg_match('/\.\d{8}\.([a-zA-Z]{2,15})\./', $sampleArr['sampleID'], $m)) {
-								$taxonCode = $m[1];
-								$taxonRemarks = 'Identification source: parsed from NEON sampleID';
+						if(in_array($dwcArr['collid'], array(5,6,67,68,46,98))){
+							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1']; 
+
+							$parts = explode('.', $sampleArr['sampleID']);
+							$foundDate = false;
+							foreach ($parts as $i => $part) {
+								if (!$foundDate && preg_match('/^\d{8}$/', $part)) {
+									$foundDate = true;
+									continue;
+								}
+
+								if ($foundDate) {
+									$lower = strtolower($part);
+									if (!in_array($lower, $nonTaxa)) {
+										$taxonCode = $part;
+										$taxonRemarks = 'Identification source: parsed from NEON sampleID';
+										if(!empty($sampleArr['recorded_by'])) $identifiedBy = $this->translatePersonnel($sampleArr['recorded_by']);
+										elseif(!empty($sampleArr['collected_by'])) $identifiedBy =  $this->translatePersonnel($sampleArr['collected_by']);
+										else($identifiedBy= 'NEON Technician');
+										if(!empty($sampleArr['collectDate'])) $identifiedDate = $sampleArr['collectDate'];
+										elseif(!empty($sampleArr['collect_end_date'])) $identifiedDate = $sampleArr['collect_end_date'];
+										else ($identifiedDate = 's.d.');
+										break;
+									}
+								}
 							}
 						}
 						if ($dwcArr['collid'] == 30 && !empty($dwcArr['habitat'])) {                            
@@ -838,7 +858,7 @@ class OccurrenceHarvester{
 					}
 					if($taxonCode){
 							$hash = hash('md5', str_replace(' ','',$taxonCode.'sampleIDs.d.'));
-							$identArr[$hash] = array('sciname' => $taxonCode, 'identifiedBy' => 'sampleID', 'dateIdentified' => 's.d.', 'taxonRemarks' => $taxonRemarks);
+							$identArr[$hash] = array('sciname' => $taxonCode, 'identifiedBy' => $identifiedBy, 'dateIdentified' => $identifiedDate, 'taxonRemarks' => $taxonRemarks);
 					}
 					if($identArr){
 						$isCurrentKey = null;
@@ -2290,7 +2310,7 @@ class OccurrenceHarvester{
 	}
 
 	private function getTaxonGroup($collid){
-		$taxonGroup = array( 46 => 'ALGAE', 47 => 'ALGAE', 49 => 'ALGAE', 50 => 'ALGAE',  73 => 'ALGAE',  98 => 'ALGAE', 105 => 'ALGAE',  106 => 'ALGAE', 110 => 'ALGAE',  111 => 'ALGAE',
+		$taxonGroup = array( 5 => 'ALGAE',6 => 'ALGAE',46 => 'ALGAE', 47 => 'ALGAE', 49 => 'ALGAE', 50 => 'ALGAE',  67 => 'ALGAE', 68 => 'ALGAE', 73 => 'ALGAE',  98 => 'ALGAE', 105 => 'ALGAE',  106 => 'ALGAE', 110 => 'ALGAE',  111 => 'ALGAE',
 			11 => 'BEETLE', 14 => 'BEETLE', 39 => 'BEETLE', 44 => 'BEETLE', 63 => 'BEETLE', 82 =>'BEETLE', 95 =>'BEETLE',
 			20 => 'FISH', 66 => 'FISH',
 			12 => 'HERPETOLOGY', 15 => 'HERPETOLOGY', 70 => 'HERPETOLOGY',
