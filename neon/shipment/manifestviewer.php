@@ -366,12 +366,18 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			$('[name=sampleCondition]').val( '' );
 		}
 
-		function selectAll(cbObj){
-			var boxesChecked = true;
-			if(!cbObj.checked) boxesChecked = false;
-			var f = cbObj.form;
-			for(var i=0;i<f.length;i++){
-				if(f.elements[i].name == "scbox[]") f.elements[i].checked = boxesChecked;
+		function selectAll(cbObj) {
+			const boxesChecked = cbObj.checked;
+			const form = cbObj.form;
+		
+			for (let i = 0; i < form.elements.length; i++) {
+				const el = form.elements[i];
+				if (el.name === "scbox[]") {
+					el.checked = boxesChecked;
+				}
+				if (el.name === "selectall") {
+					el.checked = boxesChecked;
+				}
 			}
 		}
 
@@ -932,7 +938,12 @@ include($SERVER_ROOT.'/includes/header.php');
 													<legend>Occurrence Harvesting</legend>
 													<button name="action" type="submit" value="batchHarvestOccid">Batch Harvest</button>
 													<div style="margin:10px" title="Upon reharvesting, replaces existing field values, but only if they haven't been explicitly edited to another value">
-														<input name="replaceFieldValues" type="checkbox" value="1" /> Replace Existing Field Values
+														<div>
+															<input name="replaceFieldValues" type="checkbox" value="1" /> Replace Existing Field Values
+														</div>
+														<div>
+															<input name="selectall" type="checkbox" onclick="selectAll(this)" /> Check All Samples
+														</div>
 													</div>
 												</fieldset>
 												<?php
