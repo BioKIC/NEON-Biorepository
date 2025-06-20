@@ -522,6 +522,7 @@ class OccurrenceHarvester{
 								strpos($tableName, 'mic_') !== false ||
 								strpos($tableName, 'sls_') !== false ||
 								strpos($tableName, 'inv_') !== false ||
+								strpos($tableName, 'zoo_') !== false ||
 								strpos($tableName, 'metabarcode') !== false
 							)
 						) {
@@ -686,8 +687,12 @@ class OccurrenceHarvester{
 				$dwcArr['identifiers']['NEON sampleUUID'] = (isset($sampleArr['sampleUuid'])?$sampleArr['sampleUuid']:'');
 				$dwcArr['identifiers']['NEON sampleID Hash'] = (isset($sampleArr['hashedSampleID'])?$sampleArr['hashedSampleID']:'');
 				if(isset($sampleArr['event_id'])) $dwcArr['eventID'] = $sampleArr['event_id'];
-				if(isset($sampleArr['specimen_count'])) $dwcArr['individualCount'] = $sampleArr['specimen_count'];
-				elseif(isset($sampleArr['individualCount'])) $dwcArr['individualCount'] = $sampleArr['individualCount'];
+				if(!in_array($dwcArr['collid'],array(45,57))){
+			echo 'HERE1';
+					if(isset($sampleArr['specimen_count'])) $dwcArr['individualCount'] = $sampleArr['specimen_count'];
+					elseif(isset($sampleArr['individualCount'])) $dwcArr['individualCount'] = $sampleArr['individualCount'];
+
+				}
 				if(isset($sampleArr['reproductive_condition'])) $dwcArr['reproductiveCondition'] = $sampleArr['reproductive_condition'];
 				if(isset($sampleArr['sampling_protocol'])) $dwcArr['samplingProtocol'] = $sampleArr['sampling_protocol'];
 				if(isset($sampleArr['sex'])) $dwcArr['sex'] = $sampleArr['sex'];
