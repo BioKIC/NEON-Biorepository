@@ -22,7 +22,7 @@ class DwcArchiverMaterialSample extends DwcArchiverBaseManager{
 	private function setFieldArr(){
 		$columnArr['coreid'] = 'm.occid';
 		$termArr['materialSampleID'] = 'http://rs.tdwg.org/dwc/terms/materialSampleID';
-		$columnArr['materialSampleID'] = 'm.guid';
+		$columnArr['materialSampleID'] = 'm.matSampleID';
 		$termArr['sampleType'] = 'http://data.ggbn.org/schemas/ggbn/terms/materialSampleType';
 		$columnArr['sampleType'] = 'm.sampleType';
 		$termArr['catalogNumber'] = 'http://rs.tdwg.org/dwc/terms/catalogNumber';
