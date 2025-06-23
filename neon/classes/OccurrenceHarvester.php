@@ -688,7 +688,6 @@ class OccurrenceHarvester{
 				$dwcArr['identifiers']['NEON sampleID Hash'] = (isset($sampleArr['hashedSampleID'])?$sampleArr['hashedSampleID']:'');
 				if(isset($sampleArr['event_id'])) $dwcArr['eventID'] = $sampleArr['event_id'];
 				if(!in_array($dwcArr['collid'],array(45,57))){
-			echo 'HERE1';
 					if(isset($sampleArr['specimen_count'])) $dwcArr['individualCount'] = $sampleArr['specimen_count'];
 					elseif(isset($sampleArr['individualCount'])) $dwcArr['individualCount'] = $sampleArr['individualCount'];
 
