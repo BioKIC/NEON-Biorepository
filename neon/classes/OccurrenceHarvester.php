@@ -498,7 +498,7 @@ class OccurrenceHarvester{
 						if($fArr['smsKey'] == 'analysis_type' && $fArr['smsValue'] == 'Positive'){
 							$readAssocTaxon = true;
 						}
-						if($fArr['smsKey'] == 'taxon' && $fArr['smsValue'] != 'HardTick DNA Quality' && $readAssocTaxon){
+						if($fArr['smsKey'] == 'taxon' && !in_array($fArr['smsValue'],array('HardTick DNA Quality','Amblyomma','Amblyomma americanum','Haemaphysalis longicornis','Ixodes scapularis','Ixodes','Ixodes pacificus','Dermacentor')) && $readAssocTaxon){
 							$assocTaxa['verbatimSciname'] = $fArr['smsValue'];
 							$assocTaxa['relationship'] = 'hostOf';
 						}
@@ -1349,7 +1349,7 @@ class OccurrenceHarvester{
 							$sharedAssocArr = $this->setSharedOriginAssoc($allSubOccids);
 							foreach ($sharedAssocArr as $occid => $assocArr) {
 								// Call the setAssociations function with the current occid and its associated array
-								$this->setAssociations($occid, $assocArr);
+								$this->setAssociations($occid, $assocArr,$sourceCollid);
 							}
 						}
 						//Delete all subsamples that are not identified as a subsample import
@@ -1678,7 +1678,7 @@ class OccurrenceHarvester{
 					if(isset($dwcArr['identifiers'])) $this->setOccurrenceIdentifiers($dwcArr['identifiers'], $occid);
 					if(isset($dwcArr['assocMedia'])) $this->setAssociatedMedia($dwcArr['assocMedia'], $occid);
 					if(isset($dwcArr['identifications'])) $this->setIdentifications($occid, $dwcArr['identifications'],$dwcArr['collid']);
-					if(isset($dwcArr['associations'])) $this->setAssociations($occid, $dwcArr['associations']);
+					if(isset($dwcArr['associations'])) $this->setAssociations($occid, $dwcArr['associations'],$dwcArr['collid']);
 					$this->setDatasetIndexing($domainID,$occid);
 					$this->setDatasetIndexing($siteID,$occid);
 				}
@@ -2087,7 +2087,7 @@ class OccurrenceHarvester{
 		}
 	}
 
-	private function setAssociations($occid, $assocArr){
+	private function setAssociations($occid, $assocArr,$collid){
 		$status = true;
 		foreach($assocArr as $assocUnit){
 			$occidAssociate = null;
@@ -2097,7 +2097,12 @@ class OccurrenceHarvester{
 			$tid = null;
 			if(!empty($assocUnit['tidInterpreted'])) $tid = $assocUnit['tidInterpreted'];
 			$relationship = $assocUnit['relationship'];
+			if($collid != 75){
 			$sql = 'INSERT IGNORE INTO omoccurassociations(occid, occidAssociate, associationType, verbatimSciname, tid, relationship, createdUid) VALUES(?, ?, "internalOccurrence", ?, ?, ?, 50)';
+			}
+			if($collid = 75){
+			$sql = 'INSERT IGNORE INTO omoccurassociations(occid, occidAssociate, associationType, verbatimSciname, tid, relationship, createdUid) VALUES(?, ?, "observational", ?, ?, ?, 50)';
+			}
 			if($stmt = $this->conn->prepare($sql)) {
 				$stmt->bind_param('iisis', $occid, $occidAssociate, $scientificName, $tid, $relationship);
 				$stmt->execute();
