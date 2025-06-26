@@ -1146,14 +1146,27 @@ class OccurrenceHarvester{
 			$dwcArr['lifeStage'] = 'Nymph';
 			$dwcArr['sex'] = '';
 		}
+		elseif($dwcArr['collid'] == 116){
+			if($dwcArr['sex'] = 'Nymph') {
+				$dwcArr['sex'] = 'Unknown';
+				$dwcArr['lifeStage'] = 'Nymph';
+			}
+			elseif($dwcArr['sex'] = 'Larva') {
+				$dwcArr['sex'] = 'Unknown';
+				$dwcArr['lifeStage'] = 'Larva';
+			}
+			elseif(in_array($dwcArr['sex'], array('Male','Female'))){
+				$dwcArr['lifeStage'] = 'Adult';
+			}
+		}
 		elseif(in_array($dwcArr['collid'], array(29,39,44,63,65,66,71,82,90,91,95))) {
 			$dwcArr['individualCount'] = 1;
 		}
-		elseif(in_array($dwcArr['collid'],array(19,28))){
+		elseif(in_array($dwcArr['collid'], array(19,28))){
 			$dwcArr['preparations'] = '-20 degrees Celsius';
 			$dwcArr['dynamicProperties'] = 'totalLength: NA, tailLength: NA, hindfootLengthSU: NA, hindfootLengthCU: NA, earLength: NA, weight: NA, embryoCount: NA, crownRumpLength: NA, placentalScars: NA, testisLength: NA, testisWidth: NA, preparedBy: NAp, preparedDate: NAp';
 		}
-		elseif($dwcArr['collid']== 56) {
+		elseif($dwcArr['collid'] == 56) {
 			// Bulk identified mosquitos
 			if (!empty($dwcArr['eventDate'])) {
 				if($dwcArr['eventDate'] >= '2025-01-01'){
