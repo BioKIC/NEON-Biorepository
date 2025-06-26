@@ -1314,7 +1314,7 @@ class OccurrenceHarvester{
 							foreach($currentSubsampleArr as $subOccid => $subUnitArr){
 								if(
 									$identArr['sciname'] == $subUnitArr['sciname'] &&
-									(!isset($identArr['subsampleIndividualCount']) || $identArr['subsampleIndividualCount'] == $subUnitArr['individualCount']) &&
+									//(!isset($identArr['subsampleIndividualCount']) || $identArr['subsampleIndividualCount'] == $subUnitArr['individualCount']) &&
 									(!isset($identArr['subsampleLifeStage']) || $identArr['subsampleLifeStage'] == $subUnitArr['lifeStage'])
 								){
 									//Subsample exists, thus set occid so that subsample is updated rather than creating a new one
