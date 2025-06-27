@@ -325,7 +325,13 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									echo '</div>';
 									echo '<div style="margin:4px">';
-									echo '<span style="width:150px;">' . $fieldArr["catnum"] . '</span>';
+									// BEGIN NEON customization
+									// check if catalogNumber is an IGSN
+									if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $fieldArr["catnum"])) {
+										echo '<span style="width:150px;">'. "IGSN:". $fieldArr["catnum"] . '</span>';
+									}
+									else echo '<span style="width:150px;">' . $fieldArr["catnum"] . '</span>';
+									// END NEON customization
 									echo '<span style="width:200px;margin-left:30px;">' . $fieldArr["collector"] . '&nbsp;&nbsp;&nbsp;' . (isset($fieldArr["collnum"]) ? $fieldArr["collnum"] : '') . '</span>';
 									if (isset($fieldArr["date"])) echo '<span style="margin-left:30px;">' . $fieldArr["date"] . '</span>';
 									echo '</div><div style="margin:4px">';
