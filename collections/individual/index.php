@@ -381,17 +381,28 @@ $traitArr = $indManager->getTraitArr();
 							</fieldset>
 							<?php
 						}
+						// Start NEON Customization
+						if($occArr['occurrenceid']){
+							// CHeck if occurrenceID is IGSN
+							if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['occurrenceid'])) {
+							?>
+							<!--<div id="occurrenceid-div">-->
+								<?php
+								echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
+								echo '<span style="margin-left: 10px"><a href="' . $occArr['occurrenceid'] . '" target="_blank">' . $occArr['occurrenceid'] . '</a></span>';
+								?>
+							<!--</div>-->
+							<?php
+							}
+						}
 						if($occArr['catalognumber']){
 							?>
 							<div id="cat-div">
-								<?php
-								// Start NEON Customization
-								// Check if occurrenceid is an IGSN
+								<?php								
+								// Check if catalogNumber is an IGSN
 								if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['catalognumber'])) {
 									echo '<label>'.(isset($LANG['ARCHIVE_GUID'])?$LANG['ARCHIVE_GUID']:'Catalog #').': </label>';
 									echo $occArr['catalognumber'];
-									echo '<span style="margin-left: 10px"><a href="https://doi.org/10.58052/' . $occArr['catalognumber'] . '" target="_blank">SESAR Record</a></span>';
-									
 									// Get GBIF recordID using GBIF API
 									if($occArr['occurrenceid']){
 										if ($collMetadata['publishtogbif'] == 1) {
