@@ -1,5 +1,6 @@
 <?php
-include_once($SERVER_ROOT.'/classes/Manager.php');
+include_once($SERVER_ROOT . '/classes/Manager.php');
+include_once($SERVER_ROOT . '/classes/UuidFactory.php');
 
 class OccurrenceEditorMaterialSample extends Manager{
 
@@ -32,6 +33,7 @@ class OccurrenceEditorMaterialSample extends Manager{
 		$status = false;
 		if($this->occid){
 			$reqArr = $this->getRequestArr($postArr);
+			if(empty($reqArr['guid'])) $reqArr['guid'] = UuidFactory::getUuidV4();
 			$sql = 'INSERT INTO ommaterialsample(occid, sampleType, catalogNumber, guid, sampleCondition, disposition, preservationType, preparationDetails, preparationDate,
 				preparedByUid, individualCount, sampleSize, storageLocation, remarks)
 				VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
