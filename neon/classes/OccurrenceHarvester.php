@@ -807,7 +807,7 @@ class OccurrenceHarvester{
 						$taxonCode = '';
 						$taxonRemarks = '';
 						if(in_array($dwcArr['collid'], array(5,6,67,68,46,98))){
-							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1','1','2','3']; 
+							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1','dna2-dna1','1','2','3']; 
 
 							$parts = explode('.', $sampleArr['sampleID']);
 							$foundDate = false;
