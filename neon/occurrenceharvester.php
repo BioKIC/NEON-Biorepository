@@ -112,43 +112,7 @@ include($SERVER_ROOT.'/includes/header.php');
 </div>
 <div id="innertext">
 	<?php
-	if($isEditor){
-		if($action == 'harvestOccurrences'){
-			?>
-			<fieldset style="padding:10px">
-				<legend><b>Action Panel</b></legend>
-				<ul>
-				<?php
-				$occurManager->batchHarvestOccid($_POST);
-				?>
-				</ul>
-			</fieldset>
-			<?php
-		}
-		?>
-		<fieldset>
-			<legend><b>Harvesting Report - <?php echo ($shipmentPK?'shipment #'.$shipmentPK:'across all shipments'); ?></b></legend>
-			<div style="margin-bottom:25px; margin-left:15px">
-				<?php
-				$reportArr = $occurManager->getHarvestReport($shipmentPK);
-				$occurCnt = (array_key_exists('null',$reportArr)?$reportArr['null']['s-cnt']-$reportArr['null']['o-cnt']:'0');
-				echo '<div><b>Occurrences not yet harvested:</b> '.number_format($occurCnt).'</div>';
-				unset($reportArr['null']);
-				echo '<hr style="margin:10px 0px"/>';
-				//foreach($reportArr as $msg => $repCntArr){
-				//	$cnt = $repCntArr['s-cnt']-$repCntArr['o-cnt'];
-				//	echo '<div><b>'.$msg.'</b>: ';
-				//	if($cnt) echo $cnt.' failed harvest';
-				//	if($cnt && $repCntArr['o-cnt']) echo '; ';
-				//	if($repCntArr['o-cnt']) echo $repCntArr['o-cnt'].' partial harvest ';
-				//	echo '</div>';
-				//}
-				?>
-			</div>
-			<div style="margin-bottom:25px; margin-left:15px">
-				<a href="shipment/harvesterreports.php?action=shipmentlist">List Errors by Category and Shipments</a>
-			</div>
-		</fieldset>
+	if($isEditor){ ?>
 		<fieldset>
 			<?php
 			$collectionArr = $occurManager->getTargetCollectionArr();
@@ -232,6 +196,43 @@ include($SERVER_ROOT.'/includes/header.php');
 				</div>
 			</form>
 		</fieldset>
+		<fieldset>
+			<legend><b>Harvesting Report - <?php echo ($shipmentPK?'shipment #'.$shipmentPK:'across all shipments'); ?></b></legend>
+			<div style="margin-bottom:25px; margin-left:15px">
+				<?php
+				$reportArr = $occurManager->getHarvestReport($shipmentPK);
+				$occurCnt = (array_key_exists('null',$reportArr)?$reportArr['null']['s-cnt']-$reportArr['null']['o-cnt']:'0');
+				echo '<div><b>Occurrences not yet harvested:</b> '.number_format($occurCnt).'</div>';
+				unset($reportArr['null']);
+				echo '<hr style="margin:10px 0px"/>';
+				//foreach($reportArr as $msg => $repCntArr){
+				//	$cnt = $repCntArr['s-cnt']-$repCntArr['o-cnt'];
+				//	echo '<div><b>'.$msg.'</b>: ';
+				//	if($cnt) echo $cnt.' failed harvest';
+				//	if($cnt && $repCntArr['o-cnt']) echo '; ';
+				//	if($repCntArr['o-cnt']) echo $repCntArr['o-cnt'].' partial harvest ';
+				//	echo '</div>';
+				//}
+				?>
+			</div>
+			<div style="margin-bottom:25px; margin-left:15px">
+				<a href="shipment/harvesterreports.php?action=shipmentlist">List Errors by Category and Shipments</a>
+			</div>
+		</fieldset>
+		<?php
+		if($action == 'harvestOccurrences'){
+			?>
+			<fieldset style="padding:10px">
+				<legend><b>Action Panel</b></legend>
+				<ul>
+				<?php
+				$occurManager->batchHarvestOccid($_POST);
+				?>
+				</ul>
+			</fieldset>
+			<?php
+		}
+		?>
 		<?php
 	}
 	else{
