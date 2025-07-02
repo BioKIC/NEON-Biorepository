@@ -116,6 +116,9 @@ include($SERVER_ROOT.'/includes/header.php');
 		<fieldset>
 			<?php
 			$collectionArr = $occurManager->getTargetCollectionArr();
+			$reportArr = $occurManager->getHarvestReport($shipmentPK);
+			$occurCnt = (array_key_exists('null',$reportArr)?$reportArr['null']['s-cnt']-$reportArr['null']['o-cnt']:'0');
+			unset($reportArr['null']);
 			?>
 			<legend><b>Action Panel</b></legend>
 			<form action="occurrenceharvester.php" method="post" onsubmit="return verifyHarvestForm(this)">
@@ -200,10 +203,8 @@ include($SERVER_ROOT.'/includes/header.php');
 			<legend><b>Harvesting Report - <?php echo ($shipmentPK?'shipment #'.$shipmentPK:'across all shipments'); ?></b></legend>
 			<div style="margin-bottom:25px; margin-left:15px">
 				<?php
-				$reportArr = $occurManager->getHarvestReport($shipmentPK);
 				$occurCnt = (array_key_exists('null',$reportArr)?$reportArr['null']['s-cnt']-$reportArr['null']['o-cnt']:'0');
 				echo '<div><b>Occurrences not yet harvested:</b> '.number_format($occurCnt).'</div>';
-				unset($reportArr['null']);
 				echo '<hr style="margin:10px 0px"/>';
 				//foreach($reportArr as $msg => $repCntArr){
 				//	$cnt = $repCntArr['s-cnt']-$repCntArr['o-cnt'];
