@@ -28,14 +28,14 @@ header("Content-Type: text/html; charset=".$CHARSET);
           <li>
             <p><a href="https://www.neonscience.org/about/contact-neon-biorepository">Contact us</a> well in advance of any grant proposal deadlines in order to optimally integrate sample uses into project narratives, data management plans, and budgets. The NEON Biorepository <span style="font-weight: bold">must be consulted during preparation of any grant proposal</span> involving existing NEON samples and specimens for several reasons:</p>
             <ul style="font-size: initial">
-              <li>We must ensure that the samples and specimens appropriate for the work are available and suitable for the proposed work;</li>
+              <li>We must ensure that the samples and specimens are available and suitable for the proposed work;</li>
               <li>We may need to consult with the external <a href="https://www.neonscience.org/about/advisory-groups/twgs/biorepository-twg" target="_blank" rel="noopener noreferrer">NEON Biorepository Technical Working Group</a> concerning approval of destructive or consumptive sample use;</li>
               <li>We will only then be able to prevent scenarios in which multiple researchers are funded to destructively use the same samples;</li>
               <li>We need to provide quotes of service fees, if applicable.</li>
             </ul>
           </li>
           <li>
-            <p>Sample uses can be non-invasive, invasive, consumptive, or destructive. Uses that reduce the future research potential of a sample will likely require stronger justification and a plan to disseminate all sample-associated data.</p>
+            <p>Sample uses can be non-invasive, invasive, consumptive, or destructive. Uses that reduce the future research potential of a sample will likely require stronger justification.</p>
           </li>
           <li>
             <p>The <a href="https://www.neonscience.org/about/advisory-groups/twgs/biorepository-twg" target="_blank" rel="noopener noreferrer">NEON Biorepository Technical Working Group</a>, may be consulted prior to approval of any sample use request. As a general rule, external input is required for requests that involve destructive or consumptive use of greater than one third of the available samples of a given taxon, site, and year combination.</p>
@@ -55,6 +55,12 @@ header("Content-Type: text/html; charset=".$CHARSET);
           </li>
           <li>
             <p>We will generally be able to fulfill requests of < 100 samples within 4 weeks of approval. Larger requests or those that require additional sample processing may take significantly longer, and we will work with you to determine a timeline.</p>
+          </li>
+          <li>
+            <p>Any resulting data and images must be openly published on the <span style="font-weight: bold">NEON Biorepository portal<span> in accordance with the Dataset Publishing page on the portal.</p>
+          </li>
+          <li> 
+            <p>Samples should be properly cited using catalogNumbers and/or IGSN IDs.</p>
           </li>
           <li>
             <p>Researchers are responsible for proper handling of all samples, adhering to all aspects of the sample use agreement, and following all NEON and U.S. National Science Foundation data reporting and citation policies. The NEON Biorepository may elect not to approve future requests from researchers who do not adhere to these guidelines.</p>

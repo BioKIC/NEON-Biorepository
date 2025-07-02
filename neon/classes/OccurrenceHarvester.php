@@ -477,7 +477,7 @@ class OccurrenceHarvester{
 				if($tableName == 'mam_barcoding_in') continue;
 				if($tableName == 'bet_barcoding_in') continue;
 				if(strpos($tableName,'dnaStandardTaxon')) continue;
-				if(strpos($tableName,'dnaExtraction')) continue;
+				//if(strpos($tableName,'dnaExtraction')) continue;
 				if(strpos($tableName,'markerGeneSequencing')) continue;
 				if(strpos($tableName,'metagenomeSequencing')) continue;
 				if(strpos($tableName,'metabarcodeTaxonomy')) continue;
@@ -498,7 +498,7 @@ class OccurrenceHarvester{
 						if($fArr['smsKey'] == 'analysis_type' && $fArr['smsValue'] == 'Positive'){
 							$readAssocTaxon = true;
 						}
-						if($fArr['smsKey'] == 'taxon' && $fArr['smsValue'] != 'HardTick DNA Quality' && $readAssocTaxon){
+						if($fArr['smsKey'] == 'taxon' && !in_array($fArr['smsValue'],array('HardTick DNA Quality','Amblyomma','Amblyomma americanum','Haemaphysalis longicornis','Ixodes scapularis','Ixodes','Ixodes pacificus','Dermacentor')) && $readAssocTaxon){
 							$assocTaxa['verbatimSciname'] = $fArr['smsValue'];
 							$assocTaxa['relationship'] = 'hostOf';
 						}
@@ -522,6 +522,7 @@ class OccurrenceHarvester{
 								strpos($tableName, 'mic_') !== false ||
 								strpos($tableName, 'sls_') !== false ||
 								strpos($tableName, 'inv_') !== false ||
+								strpos($tableName, 'zoo_') !== false ||
 								strpos($tableName, 'metabarcode') !== false
 							)
 						) {
@@ -555,7 +556,9 @@ class OccurrenceHarvester{
 							$tableArr['life_stage'] = $fArr['smsValue'];
 						}
 						elseif($fArr['smsKey'] == 'associated_taxa' && $fArr['smsValue']) $tableArr['associated_taxa'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'remarks' && $fArr['smsValue'] && !in_array($tableName,array('ptx_taxonomy_in'))) $tableArr['remarks'] = $fArr['smsValue'];
+						elseif($fArr['smsKey'] == 'remarks' && $fArr['smsValue'] && $sampleRank == 0 && !in_array($tableName,array('ptx_taxonomy_in'))) {
+							$tableArr['remarks'] = $fArr['smsValue'];
+						}
 						elseif($fArr['smsKey'] == 'preservative_concentration' && $fArr['smsValue']) $tableArr['preservative_concentration'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'preservative_volume' && $fArr['smsValue']) $tableArr['preservative_volume'] = $fArr['smsValue'];
 						elseif($fArr['smsKey'] == 'preservative_type' && $fArr['smsValue']) $tableArr['preservative_type'] = $fArr['smsValue'];
@@ -686,8 +689,11 @@ class OccurrenceHarvester{
 				$dwcArr['identifiers']['NEON sampleUUID'] = (isset($sampleArr['sampleUuid'])?$sampleArr['sampleUuid']:'');
 				$dwcArr['identifiers']['NEON sampleID Hash'] = (isset($sampleArr['hashedSampleID'])?$sampleArr['hashedSampleID']:'');
 				if(isset($sampleArr['event_id'])) $dwcArr['eventID'] = $sampleArr['event_id'];
-				if(isset($sampleArr['specimen_count'])) $dwcArr['individualCount'] = $sampleArr['specimen_count'];
-				elseif(isset($sampleArr['individualCount'])) $dwcArr['individualCount'] = $sampleArr['individualCount'];
+				if(!in_array($dwcArr['collid'],array(45,57))){
+					if(isset($sampleArr['specimen_count'])) $dwcArr['individualCount'] = $sampleArr['specimen_count'];
+					elseif(isset($sampleArr['individualCount'])) $dwcArr['individualCount'] = $sampleArr['individualCount'];
+
+				}
 				if(isset($sampleArr['reproductive_condition'])) $dwcArr['reproductiveCondition'] = $sampleArr['reproductive_condition'];
 				if(isset($sampleArr['sampling_protocol'])) $dwcArr['samplingProtocol'] = $sampleArr['sampling_protocol'];
 				if(isset($sampleArr['sex'])) $dwcArr['sex'] = $sampleArr['sex'];
@@ -807,7 +813,7 @@ class OccurrenceHarvester{
 						$taxonCode = '';
 						$taxonRemarks = '';
 						if(in_array($dwcArr['collid'], array(5,6,67,68,46,98))){
-							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1']; 
+							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1','dna2-dna1','1','2','3']; 
 
 							$parts = explode('.', $sampleArr['sampleID']);
 							$foundDate = false;
@@ -1142,14 +1148,27 @@ class OccurrenceHarvester{
 			$dwcArr['lifeStage'] = 'Nymph';
 			$dwcArr['sex'] = '';
 		}
+		elseif($dwcArr['collid'] == 116){
+			if($dwcArr['sex'] = 'Nymph') {
+				$dwcArr['sex'] = 'Unknown';
+				$dwcArr['lifeStage'] = 'Nymph';
+			}
+			elseif($dwcArr['sex'] = 'Larva') {
+				$dwcArr['sex'] = 'Unknown';
+				$dwcArr['lifeStage'] = 'Larva';
+			}
+			elseif(in_array($dwcArr['sex'], array('Male','Female'))){
+				$dwcArr['lifeStage'] = 'Adult';
+			}
+		}
 		elseif(in_array($dwcArr['collid'], array(29,39,44,63,65,66,71,82,90,91,95))) {
 			$dwcArr['individualCount'] = 1;
 		}
-		elseif(in_array($dwcArr['collid'],array(19,28))){
+		elseif(in_array($dwcArr['collid'], array(19,28))){
 			$dwcArr['preparations'] = '-20 degrees Celsius';
 			$dwcArr['dynamicProperties'] = 'totalLength: NA, tailLength: NA, hindfootLengthSU: NA, hindfootLengthCU: NA, earLength: NA, weight: NA, embryoCount: NA, crownRumpLength: NA, placentalScars: NA, testisLength: NA, testisWidth: NA, preparedBy: NAp, preparedDate: NAp';
 		}
-		elseif($dwcArr['collid']== 56) {
+		elseif($dwcArr['collid'] == 56) {
 			// Bulk identified mosquitos
 			if (!empty($dwcArr['eventDate'])) {
 				if($dwcArr['eventDate'] >= '2025-01-01'){
@@ -1349,7 +1368,7 @@ class OccurrenceHarvester{
 							$sharedAssocArr = $this->setSharedOriginAssoc($allSubOccids);
 							foreach ($sharedAssocArr as $occid => $assocArr) {
 								// Call the setAssociations function with the current occid and its associated array
-								$this->setAssociations($occid, $assocArr);
+								$this->setAssociations($occid, $assocArr,$sourceCollid);
 							}
 						}
 						//Delete all subsamples that are not identified as a subsample import
@@ -1678,9 +1697,10 @@ class OccurrenceHarvester{
 					if(isset($dwcArr['identifiers'])) $this->setOccurrenceIdentifiers($dwcArr['identifiers'], $occid);
 					if(isset($dwcArr['assocMedia'])) $this->setAssociatedMedia($dwcArr['assocMedia'], $occid);
 					if(isset($dwcArr['identifications'])) $this->setIdentifications($occid, $dwcArr['identifications'],$dwcArr['collid']);
-					if(isset($dwcArr['associations'])) $this->setAssociations($occid, $dwcArr['associations']);
+					if(isset($dwcArr['associations'])) $this->setAssociations($occid, $dwcArr['associations'],$dwcArr['collid']);
 					$this->setDatasetIndexing($domainID,$occid);
 					$this->setDatasetIndexing($siteID,$occid);
+					if(isset($dwcArr['habitat'])) $this->setDatasetIndexing(strtok((string)($dwcArr['habitat'] ?? ''), ';'), $occid);
 				}
 				else{
 					$this->errorStr = 'ERROR updating/creating new occurrence record: '.$this->conn->error;
@@ -2087,7 +2107,7 @@ class OccurrenceHarvester{
 		}
 	}
 
-	private function setAssociations($occid, $assocArr){
+	private function setAssociations($occid, $assocArr,$collid){
 		$status = true;
 		foreach($assocArr as $assocUnit){
 			$occidAssociate = null;
@@ -2097,7 +2117,12 @@ class OccurrenceHarvester{
 			$tid = null;
 			if(!empty($assocUnit['tidInterpreted'])) $tid = $assocUnit['tidInterpreted'];
 			$relationship = $assocUnit['relationship'];
+			if($collid != 75){
 			$sql = 'INSERT IGNORE INTO omoccurassociations(occid, occidAssociate, associationType, verbatimSciname, tid, relationship, createdUid) VALUES(?, ?, "internalOccurrence", ?, ?, ?, 50)';
+			}
+			if($collid = 75){
+			$sql = 'INSERT IGNORE INTO omoccurassociations(occid, occidAssociate, associationType, verbatimSciname, tid, relationship, createdUid) VALUES(?, ?, "observational", ?, ?, ?, 50)';
+			}
 			if($stmt = $this->conn->prepare($sql)) {
 				$stmt->bind_param('iisis', $occid, $occidAssociate, $scientificName, $tid, $relationship);
 				$stmt->execute();
@@ -2132,7 +2157,7 @@ class OccurrenceHarvester{
 			}
 
 			if ($datasetID <= 20){
-				// Delete existing entries for the given occid, if necesary
+				// Delete existing entries for the given occid, if necessary
 				$deleteSql = 'DELETE FROM omoccurdatasetlink
 						  WHERE occid = '.$occid.'
 						  AND datasetid != '.$datasetID.'
@@ -2145,11 +2170,24 @@ class OccurrenceHarvester{
 			}
 
 			if ($datasetID >= 33 AND $datasetID <=133){
-				// Delete existing entries for the given occid, if necesary
+				// Delete existing entries for the given occid, if necessary
 				$deleteSql = 'DELETE FROM omoccurdatasetlink
 						  WHERE occid = '.$occid.'
 						  AND datasetid != '.$datasetID.'
 						  AND datasetid >=33 AND datasetid <=133';
+
+				if (!$this->conn->query($deleteSql)) {
+					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
+					return; // Stop execution if there's an error with the DELETE
+				}
+			}
+
+			if ($datasetID >= 132 AND $datasetID <=142){
+				// Delete existing entries for the given occid, if necessary
+				$deleteSql = 'DELETE FROM omoccurdatasetlink
+						  WHERE occid = '.$occid.'
+						  AND datasetid != '.$datasetID.'
+						  AND datasetid >=132 AND datasetid <=142';
 
 				if (!$this->conn->query($deleteSql)) {
 					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
@@ -2319,14 +2357,14 @@ class OccurrenceHarvester{
 			7 => 'PLANT', 8 => 'PLANT', 9 => 'PLANT', 18 => 'PLANT', 40 => 'PLANT', 54 => 'PLANT', 107 => 'PLANT', 108 => 'PLANT', 109 => 'PLANT', 115 => 'PLANT',
 			17 => 'SMALL_MAMMAL', 19 => 'SMALL_MAMMAL', 24 => 'SMALL_MAMMAL', 25 => 'SMALL_MAMMAL', 26 => 'SMALL_MAMMAL', 27 => 'SMALL_MAMMAL', 28 => 'SMALL_MAMMAL', 64 => 'SMALL_MAMMAL', 71 => 'SMALL_MAMMAL', 74 => 'SMALL_MAMMAL', 90 => 'SMALL_MAMMAL', 91 => 'SMALL_MAMMAL',
 			30 => 'SOIL', 79 => 'SOIL', 80 =>'SOIL',
-			75 => 'TICK', 83 => 'TICK'
+			75 => 'TICK', 83 => 'TICK', 116 =>'TICK'
 		);
 		if(array_key_exists($collid, $taxonGroup)) return $taxonGroup[$collid];
 		return false;
 	}
 
 	private function getKingdomName(){
-		if(in_array($this->activeCollid, array(4,11,12,13,14,15,16,17,19,20,21,22,24,25,26,27,28,29,39,44,48,52,53,56,57,58,59,61,63,64,65,66,70,71,74,75,82,83,84,85,90,91,95,97,100,102,102,101,103 ))) return 'Animalia';
+		if(in_array($this->activeCollid, array(4,11,12,13,14,15,16,17,19,20,21,22,24,25,26,27,28,29,39,44,48,52,53,56,57,58,59,61,63,64,65,66,70,71,74,75,82,83,84,85,90,91,95,97,100,102,102,101,103,116 ))) return 'Animalia';
 		elseif(in_array($this->activeCollid, array( 7,8,9,10,18,23,40,54,76,93,98,107,108,109,115 ))) return 'Plantae';
 		//Let's use Plantae for algae group, which works for now
 		elseif(in_array($this->activeCollid, array( 46,49,50,73,105,106 ))) return 'Plantae';
