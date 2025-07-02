@@ -53,7 +53,7 @@ $taxaArr = $stats->getNeonTaxa();
 		<h1 class="centered">Discover and access sample-based data</h1>
 		<section>
 			<div style="border-bottom-width:2px;border-color:#F0AB00;border-left-width:20px;border-right-width:2px;border-style:solid;border-top-width:2px;padding:10px;">
-				<p>Attention: two NSF Dear Colleague Letters outline opportunities for innovative use of NEON resources! 1) <a href="https://www.nsf.gov/pubs/2024/nsf24081/nsf24081.jsp">Using Long-Term Research Associated Data (ULTRA-Data)</a> encourages the use of data from environmental time series. 2) <a href="https://www.nsf.gov/pubs/2024/nsf24069/nsf24069.jsp">Innovative Use of Scientific Collections (IUSC)</a> presents an opportunity to leverage the NEON Biorepository collections. Please <a href="mailto:biorepo@asu.edu">contact us</a> with any questions or for information needed for potential innovative use of NEON! We are here to support you.</p>
+				<p>Please be aware that the NEON Biorepository is experiencing technical difficulties which is impacting availability. Resolution ETA is unknown at this time.</p>
 			</div>
 		</section>
 		<section>
