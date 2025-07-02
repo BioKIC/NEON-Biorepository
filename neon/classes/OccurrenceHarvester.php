@@ -1700,6 +1700,7 @@ class OccurrenceHarvester{
 					if(isset($dwcArr['associations'])) $this->setAssociations($occid, $dwcArr['associations'],$dwcArr['collid']);
 					$this->setDatasetIndexing($domainID,$occid);
 					$this->setDatasetIndexing($siteID,$occid);
+					if(isset($dwcArr['habitat'])) $this->setDatasetIndexing(strtok((string)($dwcArr['habitat'] ?? ''), ';'), $occid);
 				}
 				else{
 					$this->errorStr = 'ERROR updating/creating new occurrence record: '.$this->conn->error;
@@ -2156,7 +2157,7 @@ class OccurrenceHarvester{
 			}
 
 			if ($datasetID <= 20){
-				// Delete existing entries for the given occid, if necesary
+				// Delete existing entries for the given occid, if necessary
 				$deleteSql = 'DELETE FROM omoccurdatasetlink
 						  WHERE occid = '.$occid.'
 						  AND datasetid != '.$datasetID.'
@@ -2169,11 +2170,24 @@ class OccurrenceHarvester{
 			}
 
 			if ($datasetID >= 33 AND $datasetID <=133){
-				// Delete existing entries for the given occid, if necesary
+				// Delete existing entries for the given occid, if necessary
 				$deleteSql = 'DELETE FROM omoccurdatasetlink
 						  WHERE occid = '.$occid.'
 						  AND datasetid != '.$datasetID.'
 						  AND datasetid >=33 AND datasetid <=133';
+
+				if (!$this->conn->query($deleteSql)) {
+					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
+					return; // Stop execution if there's an error with the DELETE
+				}
+			}
+
+			if ($datasetID >= 132 AND $datasetID <=142){
+				// Delete existing entries for the given occid, if necessary
+				$deleteSql = 'DELETE FROM omoccurdatasetlink
+						  WHERE occid = '.$occid.'
+						  AND datasetid != '.$datasetID.'
+						  AND datasetid >=132 AND datasetid <=142';
 
 				if (!$this->conn->query($deleteSql)) {
 					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
