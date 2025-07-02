@@ -203,7 +203,6 @@ include($SERVER_ROOT.'/includes/header.php');
 			<legend><b>Harvesting Report - <?php echo ($shipmentPK?'shipment #'.$shipmentPK:'across all shipments'); ?></b></legend>
 			<div style="margin-bottom:25px; margin-left:15px">
 				<?php
-				$occurCnt = (array_key_exists('null',$reportArr)?$reportArr['null']['s-cnt']-$reportArr['null']['o-cnt']:'0');
 				echo '<div><b>Occurrences not yet harvested:</b> '.number_format($occurCnt).'</div>';
 				echo '<hr style="margin:10px 0px"/>';
 				//foreach($reportArr as $msg => $repCntArr){
