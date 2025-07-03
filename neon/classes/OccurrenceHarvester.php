@@ -2151,10 +2151,10 @@ class OccurrenceHarvester{
 				$datasetID = $row['datasetid'];
 			}
 
-			if (!$datasetID) {
-				$this->errorStr = 'ERROR: Dataset "'.$datasetName.'" not found.';
-				return;
-			}
+			// if (!$datasetID) {
+			// 	$this->errorStr = 'ERROR: Dataset "'.$datasetName.'" not found.';
+			// 	return;
+			// }
 
 			if ($datasetID <= 20){
 				// Delete existing entries for the given occid, if necessary
