@@ -53,7 +53,7 @@ $taxaArr = $stats->getNeonTaxa();
 		<h1 class="centered">Discover and access sample-based data</h1>
 		<section>
 			<div style="border-bottom-width:2px;border-color:#F0AB00;border-left-width:20px;border-right-width:2px;border-style:solid;border-top-width:2px;padding:10px;">
-				<p>Please be aware that the NEON Biorepository is experiencing technical difficulties which is impacting availability. Resolution ETA is unknown at this time.</p>
+				<p>Please be aware that the NEON Biorepository is experiencing technical difficulties, which are impacting availability. Resolution ETA is unknown at this time.</p>
 			</div>
 		</section>
 		<section>
