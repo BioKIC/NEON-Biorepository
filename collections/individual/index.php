@@ -382,17 +382,18 @@ $traitArr = $indManager->getTraitArr();
 							<?php
 						}
 						// Start NEON Customization
-						if($occArr['occurrenceid']){
-							// CHeck if occurrenceID is IGSN
-							if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['occurrenceid'])) {
-							?>
-							<!--<div id="occurrenceid-div">-->
-								<?php
-								echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
-								echo '<span style="margin-left: 10px"><a href="' . $occArr['occurrenceid'] . '" target="_blank">' . $occArr['occurrenceid'] . '</a></span>';
+						if ($occArr['occurrenceid']) {
+							// Check if occurrenceID is a valid IGSN in expected format
+							if (preg_match('/^igsn:10\.58052\/NEON[a-zA-Z0-9]{5}$/', $occArr['occurrenceid'])) {
+								$igsnCode = str_replace('igsn:', '', $occArr['occurrenceid']);
+								$igsnUrl = 'https://doi.org/' . $igsnCode;
 								?>
-							<!--</div>-->
-							<?php
+								<label><?= $LANG['OCCURRENCE_ID'] ?>: </label>
+								<span style="margin-left: 10px"><?= $occArr['occurrenceid'] ?></span>
+								<span style="margin-left: 10px">
+									<a href="<?= $igsnUrl ?>" target="_blank">SESAR Record</a>
+								</span>
+								<?php
 							}
 						}
 						if($occArr['catalognumber']){
