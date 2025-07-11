@@ -726,21 +726,24 @@ class OccurrenceSesar extends Manager {
 		
 		//I'm not going to deal with updating urls since you need to specify the old url to update and we don't really have a way of (nicely) getting that information. The hope is that the occid will never change. 
 		if ($newOrUpdate === 'new') {
-			$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
-			$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
-			$externalUrlsElem = $this->igsnDom->createElement('external_urls');
-			$externalUrlElem = $this->igsnDom->createElement('external_url');
-			$urlElem = $this->igsnDom->createElement('url');
-			$urlElem->appendChild($this->igsnDom->createTextNode($url));
-			$externalUrlElem->appendChild($urlElem);
-			$descriptionElem = $this->igsnDom->createElement('description');
-			$descriptionElem->appendChild($this->igsnDom->createTextNode('Source Reference URL'));
-			$externalUrlElem->appendChild($descriptionElem);
-			$urlTypeElem = $this->igsnDom->createElement('url_type');
-			$urlTypeElem->appendChild($this->igsnDom->createTextNode('regular URL'));
-			$externalUrlElem->appendChild($urlTypeElem);
-			$externalUrlsElem->appendChild($externalUrlElem);
-			$sampleElem->appendChild($externalUrlsElem);
+			// Sesar gets mad if the url link does not resolve (i.e., localhost links throw an error so only add this if in productionMode)
+			if ($this->productionMode == 1) {
+				$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
+				$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+				$externalUrlsElem = $this->igsnDom->createElement('external_urls');
+				$externalUrlElem = $this->igsnDom->createElement('external_url');
+				$urlElem = $this->igsnDom->createElement('url');
+				$urlElem->appendChild($this->igsnDom->createTextNode($url));
+				$externalUrlElem->appendChild($urlElem);
+				$descriptionElem = $this->igsnDom->createElement('description');
+				$descriptionElem->appendChild($this->igsnDom->createTextNode('Source Reference URL'));
+				$externalUrlElem->appendChild($descriptionElem);
+				$urlTypeElem = $this->igsnDom->createElement('url_type');
+				$urlTypeElem->appendChild($this->igsnDom->createTextNode('regular URL'));
+				$externalUrlElem->appendChild($urlTypeElem);
+				$externalUrlsElem->appendChild($externalUrlElem);
+				$sampleElem->appendChild($externalUrlsElem);				
+			}
 		}
 		
 		$rootElem = $this->igsnDom->documentElement;
@@ -1223,7 +1226,7 @@ class OccurrenceSesar extends Manager {
 		//Get maximum identifier
 		if($this->collid){
 			$seed = 0;
-			$sql = 'SELECT MAX(occurrenceID) as maxid FROM omoccurrences WHERE occurrenceID LIKE "%NEO%" AND length(SUBSTRING_INDEX(o.occurrenceID, "igsn:10.58052/", -1)) = 9';
+			$sql = 'SELECT MAX(SUBSTR(occurrenceID, LENGTH("igsn:10.58052/") + 1)) AS maxid FROM omoccurrences WHERE occurrenceID LIKE "igsn:10.58052/NEO%" AND LENGTH(SUBSTR(occurrenceID, LENGTH("igsn:10.58052/") + 1)) = 9;';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
 				$seed = $r->maxid;
