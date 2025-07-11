@@ -1013,7 +1013,7 @@ class OccurrenceSesar extends Manager {
 		$sqlArr[] = 'UPDATE igsnverification v INNER JOIN omoccuridentifiers i ON v.catalogNumber = i.identifierValue
 			INNER JOIN omoccurrences o ON i.occid = o.occid
 			SET v.syncStatus = "newIGSN, new record, matching NEON ID"
-			WHERE v.occidInPortal IS NULL AND v.igsn != SUBSTRING_INDEX(o.occurrenceID AND v.syncStatus IS NULL';
+			WHERE v.occidInPortal IS NULL AND v.igsn != SUBSTRING_INDEX(o.occurrenceID, "igsn:10.58052/", -1) AND v.syncStatus IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification SET syncStatus = "Occurrence not in portal" WHERE occidInPortal IS NULL AND catalogNumber IS NOT NULL AND syncStatus IS NULL';
 		foreach($sqlArr as $sql){
 			if(!$this->conn->query($sql)){
