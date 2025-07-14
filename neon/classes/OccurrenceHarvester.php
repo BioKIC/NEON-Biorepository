@@ -739,6 +739,9 @@ class OccurrenceHarvester{
 							elseif($sampleArr['sex'] == 'F') $dwcArr['sex'] = 'Female';
 							elseif($sampleArr['sex'] == 'U') $dwcArr['sex'] = 'Unknown';
 						}
+						if($sampleArr['sampleClass'] = 'mos_subsampling_in.bloodfedArchive'){
+							$prepArr[] = 'contains only bloodfed individuals';
+						}
 					}
 				if($prepArr) $dwcArr['preparations'] = implode(', ',$prepArr);
 				$dynProp = array();
@@ -1168,23 +1171,33 @@ class OccurrenceHarvester{
 			$dwcArr['preparations'] = '-20 degrees Celsius';
 			$dwcArr['dynamicProperties'] = 'totalLength: NA, tailLength: NA, hindfootLengthSU: NA, hindfootLengthCU: NA, earLength: NA, weight: NA, embryoCount: NA, crownRumpLength: NA, placentalScars: NA, testisLength: NA, testisWidth: NA, preparedBy: NAp, preparedDate: NAp';
 		}
-		elseif($dwcArr['collid'] == 56) {
-			// Bulk identified mosquitos
-			if (!empty($dwcArr['eventDate'])) {
-				if($dwcArr['eventDate'] >= '2025-01-01'){
-					if (!empty($dwcArr['preparations'])) {
-						$dwcArr['preparations'] .= '; bloodfed individuals removed';
-					} else {
-						$dwcArr['preparations'] = 'bloodfed individuals removed';
-					}
-				}
-				elseif($dwcArr['eventDate'] < '2025-01-01'){
-					if (!empty($dwcArr['preparations'])) {
+		elseif ($dwcArr['collid'] == 56) {
+			// bulk identified mosquitos
+			if (!empty($dwcArr['preparations'])) {
+				if (strpos($dwcArr['preparations'], 'contains only bloodfed individuals') === false) {
+					if (!empty($dwcArr['eventDate'])) {
+						if ($dwcArr['eventDate'] >= '2024-01-01') {
+							$dwcArr['preparations'] .= '; bloodfed individuals removed';
+						} 
+						else {
+							$dwcArr['preparations'] .= '; may contain bloodfed individuals';
+						}
+					} 
+					else {
 						$dwcArr['preparations'] .= '; may contain bloodfed individuals';
-					} else {
-						$dwcArr['preparations'] = 'may contain bloodfed individuals';
 					}
 				}
+			} 
+			elseif (!empty($dwcArr['eventDate'])) {
+				if ($dwcArr['eventDate'] >= '2024-01-01') {
+					$dwcArr['preparations'] = 'bloodfed individuals removed';
+				} 
+				else {
+					$dwcArr['preparations'] = 'may contain bloodfed individuals';
+				}
+			} 
+			else {
+				$dwcArr['preparations'] = 'may contain bloodfed individuals';
 			}
 		}
 	}
