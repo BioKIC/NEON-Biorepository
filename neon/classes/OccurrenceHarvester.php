@@ -1077,6 +1077,7 @@ class OccurrenceHarvester{
 					$countryValue = ($propValue == 'unitedStates' || $propValue == 'USA') ? 'United States' : $propValue;
 					$dwcArr['country'] = $countryValue;
 				} elseif (!isset($dwcArr['county']) && $propName == 'Value for County') {
+					$propValue = preg_replace('/\s+(Borough|Census Area|Municipio|County)$/', '', $propValue);
 					$dwcArr['county'] = $propValue;
 				} elseif (!isset($dwcArr['geodeticDatum']) && $propName == 'Value for Geodetic datum') {
 					$dwcArr['geodeticDatum'] = $propValue;
