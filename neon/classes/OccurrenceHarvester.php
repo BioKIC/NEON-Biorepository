@@ -739,7 +739,7 @@ class OccurrenceHarvester{
 							elseif($sampleArr['sex'] == 'F') $dwcArr['sex'] = 'Female';
 							elseif($sampleArr['sex'] == 'U') $dwcArr['sex'] = 'Unknown';
 						}
-						if($sampleArr['sampleClass'] = 'mos_subsampling_in.bloodfedArchive'){
+						if($sampleArr['sampleClass'] == 'mos_subsampling_in.bloodfedArchive'){
 							$prepArr[] = 'contains only bloodfed individuals';
 						}
 					}
