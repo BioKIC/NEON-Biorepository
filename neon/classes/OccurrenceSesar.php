@@ -726,21 +726,24 @@ class OccurrenceSesar extends Manager {
 		
 		//I'm not going to deal with updating urls since you need to specify the old url to update and we don't really have a way of (nicely) getting that information. The hope is that the occid will never change. 
 		if ($newOrUpdate === 'new') {
-			$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
-			$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
-			$externalUrlsElem = $this->igsnDom->createElement('external_urls');
-			$externalUrlElem = $this->igsnDom->createElement('external_url');
-			$urlElem = $this->igsnDom->createElement('url');
-			$urlElem->appendChild($this->igsnDom->createTextNode($url));
-			$externalUrlElem->appendChild($urlElem);
-			$descriptionElem = $this->igsnDom->createElement('description');
-			$descriptionElem->appendChild($this->igsnDom->createTextNode('Source Reference URL'));
-			$externalUrlElem->appendChild($descriptionElem);
-			$urlTypeElem = $this->igsnDom->createElement('url_type');
-			$urlTypeElem->appendChild($this->igsnDom->createTextNode('regular URL'));
-			$externalUrlElem->appendChild($urlTypeElem);
-			$externalUrlsElem->appendChild($externalUrlElem);
-			$sampleElem->appendChild($externalUrlsElem);
+			// Sesar gets mad if the url link does not resolve (i.e., localhost links throw an error so only add this if in productionMode)
+			if ($this->productionMode == 1) {
+				$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
+				$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+				$externalUrlsElem = $this->igsnDom->createElement('external_urls');
+				$externalUrlElem = $this->igsnDom->createElement('external_url');
+				$urlElem = $this->igsnDom->createElement('url');
+				$urlElem->appendChild($this->igsnDom->createTextNode($url));
+				$externalUrlElem->appendChild($urlElem);
+				$descriptionElem = $this->igsnDom->createElement('description');
+				$descriptionElem->appendChild($this->igsnDom->createTextNode('Source Reference URL'));
+				$externalUrlElem->appendChild($descriptionElem);
+				$urlTypeElem = $this->igsnDom->createElement('url_type');
+				$urlTypeElem->appendChild($this->igsnDom->createTextNode('regular URL'));
+				$externalUrlElem->appendChild($urlTypeElem);
+				$externalUrlsElem->appendChild($externalUrlElem);
+				$sampleElem->appendChild($externalUrlsElem);				
+			}
 		}
 		
 		$rootElem = $this->igsnDom->documentElement;
@@ -758,7 +761,12 @@ class OccurrenceSesar extends Manager {
 	private function updateOccurrenceID($igsn, $occid){
 		$status = true;
 		if(strlen($igsn) == 9){
-			$sql = 'UPDATE omoccurrences SET occurrenceID = '.($igsn=='NULL'?'NULL':'"'.$igsn.'"').' WHERE occurrenceID IS NULL AND occid = '.$occid;
+			if ($igsn === null) {
+				$sql = 'UPDATE omoccurrences SET occurrenceID = NULL WHERE occurrenceID IS NULL AND occid = ' . intval($occid);
+			} else {
+				$fullOccurrenceID = 'igsn:10.58052/' . $igsn;
+				$sql = 'UPDATE omoccurrences SET occurrenceID = "' . $fullOccurrenceID . '" WHERE occurrenceID IS NULL AND occid = ' . intval($occid);
+			}			
 			if(!$this->conn->query($sql)){
 				$this->errorMessage = 'ERROR adding IGSN to occurrence table: '.$this->conn->error;
 				//$this->logOrEcho('ERROR adding IGSN to occurrence table: '.$this->conn->error,2);
@@ -776,7 +784,8 @@ class OccurrenceSesar extends Manager {
 	private function igsnExists($igsn){
 		$status = false;
 		if($this->namespace){
-			$sql = 'SELECT occurrenceID FROM omoccurrences WHERE (occurrenceid LIKE "'.$this->namespace.'%") AND (occurrenceID = "'.$igsn.'")';
+			$fullOccurrenceID = 'igsn:10.58052/' . $igsn;
+			$sql = 'SELECT occurrenceID FROM omoccurrences WHERE occurrenceID = "' . $this->cleanInStr($fullOccurrenceID) . '"';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
 				$status = true;
@@ -868,7 +877,7 @@ class OccurrenceSesar extends Manager {
 
 		if($sesarResultArr['totalCnt']){
 			$this->logOrEcho('Calculating stats...',1);
-			$sql = 'UPDATE igsnverification i INNER JOIN omoccurrences o ON i.igsn = o.occurrenceid SET i.occidInPortal = o.occid WHERE i.occidInPortal IS NULL';
+			$sql = 'UPDATE igsnverification i INNER JOIN omoccurrences o ON CONCAT("igsn:10.58052/", i.igsn) = o.occurrenceid SET i.occidInPortal = o.occid WHERE i.occidInPortal IS NULL';
 			if(!$this->conn->query($sql)){
 				$this->logOrEcho('ERROR updating IGSN field: '.$this->conn->error,2);
 			}
@@ -996,15 +1005,15 @@ class OccurrenceSesar extends Manager {
 		$sqlArr = array();
 		$sqlArr[] = 'UPDATE omoccurrences o LEFT JOIN igsnverification v ON o.occurrenceid = v.igsn
 			SET v.syncStatus = "IGSN in portal, not in SESAR system"
-			WHERE o.occurrenceID LIKE "NEON%" AND v.igsn IS NULL';
+			WHERE o.occurrenceID LIKE "%NEON%" AND v.igsn IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification SET syncStatus = "OK" WHERE occidInPortal IS NOT NULL AND catalogNumber IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification i INNER JOIN omoccurrences o ON i.occidInSesar = o.occid
 			SET i.syncStatus = "newIGSN re-assigned to same occurrence record"
-			WHERE i.occidInPortal IS NULL AND i.igsn != o.occurrenceID AND i.syncStatus IS NULL';
+			WHERE i.occidInPortal IS NULL AND i.igsn != SUBSTRING_INDEX(o.occurrenceID, "igsn:10.58052/", -1)  AND i.syncStatus IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification v INNER JOIN omoccuridentifiers i ON v.catalogNumber = i.identifierValue
 			INNER JOIN omoccurrences o ON i.occid = o.occid
 			SET v.syncStatus = "newIGSN, new record, matching NEON ID"
-			WHERE v.occidInPortal IS NULL AND v.igsn != o.occurrenceID AND v.syncStatus IS NULL';
+			WHERE v.occidInPortal IS NULL AND v.igsn != SUBSTRING_INDEX(o.occurrenceID, "igsn:10.58052/", -1) AND v.syncStatus IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification SET syncStatus = "Occurrence not in portal" WHERE occidInPortal IS NULL AND catalogNumber IS NOT NULL AND syncStatus IS NULL';
 		foreach($sqlArr as $sql){
 			if(!$this->conn->query($sql)){
@@ -1020,7 +1029,7 @@ class OccurrenceSesar extends Manager {
 		$retArr = array();
 		if($this->collid){
 			$sql = 'SELECT o.occid, o.occurrenceid FROM omoccurrences o LEFT JOIN igsnverification i ON o.occid = i.occidInSesar '.
-				'WHERE o.occurrenceID LIKE "'.$this->namespace.'%" AND o.collid = '.$this->collid.' AND i.occidInSesar IS NULL';
+				'WHERE o.occurrenceID LIKE "igsn:10.58052/'.$this->namespace.'%"  AND o.collid = '.$this->collid.' AND i.occidInSesar IS NULL';
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				$retArr[$r->occid] = $r->occurrenceid;
@@ -1070,7 +1079,7 @@ class OccurrenceSesar extends Manager {
 			$rs->free();
 
 			if($ok){
-				$sqlUpdate = 'UPDATE omoccurrences SET occurrenceid = "'.$this->cleanInStr($igsn).'" WHERE occid = '.$occid;
+				$sqlUpdate = 'UPDATE omoccurrences SET occurrenceid = "igsn:10.58052/'.$this->cleanInStr($igsn).'" WHERE occid = '.$occid;
 				if($this->conn->query($sqlUpdate)){
 					if($this->conn->affected_rows) $retArr['status'] = 1;
 				}
@@ -1115,7 +1124,7 @@ class OccurrenceSesar extends Manager {
 	public function getGuidCount($collid = null){
 		$cnt = 0;
 		if($this->namespace){
-			$sql = 'SELECT COUNT(*) AS cnt FROM omoccurrences WHERE (occurrenceid LIKE "'.$this->namespace.'%") ';
+			$sql = 'SELECT COUNT(*) AS cnt FROM omoccurrences WHERE (occurrenceid LIKE "igsn:10.58052/'.$this->namespace.'%") ';
 			if($collid) $sql .= 'AND (collid = '.$this->collid.')';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
@@ -1217,7 +1226,7 @@ class OccurrenceSesar extends Manager {
 		//Get maximum identifier
 		if($this->collid){
 			$seed = 0;
-			$sql = 'SELECT MAX(occurrenceID) as maxid FROM omoccurrences WHERE occurrenceID LIKE "NEO%" AND length(occurrenceID) = 9';
+			$sql = 'SELECT MAX(SUBSTR(occurrenceID, LENGTH("igsn:10.58052/") + 1)) AS maxid FROM omoccurrences WHERE occurrenceID LIKE "igsn:10.58052/NEO%" AND LENGTH(SUBSTR(occurrenceID, LENGTH("igsn:10.58052/") + 1)) = 9;';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
 				$seed = $r->maxid;
