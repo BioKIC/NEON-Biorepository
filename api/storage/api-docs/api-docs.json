@@ -40,6 +40,15 @@
                         }
                     },
                     {
+                        "name": "collectionName",
+                        "in": "query",
+                        "description": "associated NEON collection name",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "datasetID",
                         "in": "query",
                         "description": "associated NEON sampleClasses",
@@ -692,7 +701,7 @@
                     {
                         "name": "type",
                         "in": "query",
-                        "description": "Annoration type (internal, external) ",
+                        "description": "Annotation type (internal, external) ",
                         "required": true,
                         "schema": {
                             "type": "string",
@@ -706,7 +715,7 @@
                     {
                         "name": "source",
                         "in": "query",
-                        "description": "External source of Annoration (e.g. geolocate) ",
+                        "description": "External source of Annotation (e.g. geolocate) ",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -867,6 +876,15 @@
                         "name": "eventDate",
                         "in": "query",
                         "description": "Date as YYYY, YYYY-MM or YYYY-MM-DD",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "eventDate2",
+                        "in": "query",
+                        "description": "Date as YYYY, YYYY-MM or YYYY-MM-DD for end of collection interval ",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1075,7 +1093,7 @@
                     {
                         "name": "taxon",
                         "in": "query",
-                        "description": "Taxon searh term",
+                        "description": "Taxon search term",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1084,7 +1102,7 @@
                     {
                         "name": "taxon",
                         "in": "query",
-                        "description": "Taxon searh term",
+                        "description": "Taxon search term",
                         "required": true,
                         "schema": {
                             "type": "string"

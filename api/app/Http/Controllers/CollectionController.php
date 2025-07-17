@@ -42,6 +42,13 @@ class CollectionController extends Controller{
 	 *		 @OA\Schema(type="string")
 	 *	 ),
 	 *	 @OA\Parameter(
+	 *		 name="collectionName",
+	 *		 in="query",
+	 *		 description="associated NEON collection name",
+	 *		 required=false,
+	 *		 @OA\Schema(type="string")
+	 *	 ),
+	 *	 @OA\Parameter(
 	 *		 name="productID",
 	 *		 in="query",
 	 *		 description="associated NEON product IDs",
@@ -94,6 +101,9 @@ class CollectionController extends Controller{
 		}
 
 		//NEON specific code
+		if($request->has('collectionName')){
+			$conditions[] = ['collectionName', 'like', '%'.$request->collectionName.'%'];
+		}
 		if($request->has('productID')){
 			$conditions[] = ['productID', 'like', '%'.$request->productID.'%'];
 		}

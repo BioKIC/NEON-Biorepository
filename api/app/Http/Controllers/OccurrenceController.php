@@ -93,6 +93,13 @@ class OccurrenceController extends Controller{
 	 *		 @OA\Schema(type="string")
 	 *	 ),
 	 *	 @OA\Parameter(
+	 *		 name="eventDate2",
+	 *		 in="query",
+	 *		 description="Date as YYYY, YYYY-MM or YYYY-MM-DD for end of collection interval ",
+	 *		 required=false,
+	 *		 @OA\Schema(type="string")
+	 *	 ),
+	 *	 @OA\Parameter(
 	 *		 name="limit",
 	 *		 in="query",
 	 *		 description="Controls the number of results per page",

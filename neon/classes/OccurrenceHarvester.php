@@ -2392,7 +2392,7 @@ class OccurrenceHarvester{
 		elseif(substr($sciname, -4) == ' spp.') $sciname = trim(substr($sciname, 0, strlen($sciname) - 5));
 		$retArr = $this->getTaxon($sciname);
 		if(!$retArr){
-			//Parse name in case author is inbedded within taxon
+			//Parse name in case author is embedded within taxon
 			$scinameArr = TaxonomyUtilities::parseScientificName($sciname, $this->conn);
 			if(!empty($scinameArr['sciname'])){
 				$sciname = $scinameArr['sciname'];

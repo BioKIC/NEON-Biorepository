@@ -76,14 +76,14 @@ class TaxonomyController extends Controller{
 	 *	 @OA\Parameter(
 	 *		 name="taxon",
 	 *		 in="query",
-	 *		 description="Taxon searh term",
+	 *		 description="Taxon search term",
 	 *		 required=true,
 	 *		 @OA\Schema(type="string")
 	 *	 ),
 	 *	 @OA\Parameter(
 	 *		 name="taxon",
 	 *		 in="query",
-	 *		 description="Taxon searh term",
+	 *		 description="Taxon search term",
 	 *		 required=true,
 	 *		 @OA\Schema(type="string")
 	 *	 ),
