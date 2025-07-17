@@ -143,6 +143,7 @@ class OccurrenceController extends Controller{
 		if($request->has('sciname')) $conditions[] = ['sciname','LIKE',$request->sciname.'%'];
 		if($request->has('datasetID')) $conditions[] = ['datasetID',$request->datasetID];
 		if($request->has('eventDate')) $conditions[] = ['eventDate','LIKE',$request->eventDate.'%'];
+		if($request->has('eventDate2')) $conditions[] = ['eventDate2','LIKE',$request->eventDate2.'%'];
 
 
 		$fullCnt = Occurrence::where($conditions)->count();
