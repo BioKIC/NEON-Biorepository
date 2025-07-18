@@ -640,7 +640,22 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 										<input type="hidden" name="voucherimages" value="<?= $limitImagesToVouchers; ?>" >
 										<input type="hidden" name="showsubgenera" value="<?= ($showSubgenera?1:0) ?>" >
 										<?php if(!$taxonFilter) echo '<input type="hidden" name="pagenumber" value="'.$pageNumber.'" />'; ?>
-										<button name="submitaction" type="submit" value="Rebuild List" onclick="changeOptionFormAction('checklist.php?clid=<?php echo $clid; ?>','_self');"><?php echo $LANG['BUILD_LIST']; ?></button>
+									<button 
+									  name="submitaction" 
+									  type="submit" 
+									  value="Rebuild List" 
+									  onclick="
+										const form = document.forms['optionform'];
+										const url = 'checklist.php?clid=<?php echo $clid; ?>'
+										  + '&showauthors=' + (form.showauthors.checked ? '1' : '0')
+										  + '&showcommon=' + (form.showcommon && form.showcommon.checked ? '1' : '0')
+										  + '&showsynonyms=' + (form.showsynonyms.checked ? '1' : '0')
+										  + '&groupbyrank=' + encodeURIComponent(form.groupbyrank.value);
+										changeOptionFormAction(url, '_self');
+									  "
+									>
+									  <?php echo $LANG['BUILD_LIST']; ?>
+									</button>
 									</div>
 								</div>
 							</fieldset>
