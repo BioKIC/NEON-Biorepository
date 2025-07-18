@@ -638,18 +638,38 @@ class ChecklistManager extends Manager{
 		header ('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		header ('Content-Type: text/csv');
 		header ("Content-Disposition: attachment; filename=\"$fileName\"");
-		$this->showAuthors = 1;
+		//NEON edit
+		//$this->showAuthors = 1;
+		//end NEON edit
 		if($taxaArr = $this->getTaxaList(1,0)){
 			$fh = fopen('php://output', 'w');
 			$headerArr = array('Family','ScientificName','ScientificNameAuthorship');
+			//NEON edit
+			$headerArr = array(ucfirst($this->groupByRank), 'ScientificName');
+			
+			if ($this->showAuthors) {
+				$headerArr[] = 'ScientificNameAuthorship';
+			}
+			
+			if ($this->showSynonyms) {
+				$headerArr[] = 'Synonyms';
+			}
+			//end NEON edit
 			if($this->showCommon) $headerArr[] = 'CommonName';
 			$headerArr[] = 'Notes';
 			$headerArr[] = 'TaxonId';
 			fputcsv($fh,$headerArr);
 			foreach($taxaArr as $tid => $tArr){
-				$outArr = array($tArr['family']);
+				
+				//NEON edit
+				//$outArr = array($tArr['family']);
+				$outArr = array(ucfirst(strtolower(strip_tags($tArr['taxongroup']))));
 				$outArr[] = html_entity_decode($tArr['sciname'],ENT_QUOTES|ENT_XML1);
-				$outArr[] = html_entity_decode($tArr['author'],ENT_QUOTES|ENT_XML1);
+				//$outArr[] = html_entity_decode($tArr['author'],ENT_QUOTES|ENT_XML1);
+				if ($this->showAuthors) $outArr[] = (array_key_exists('author', $tArr) ? html_entity_decode($tArr['author'], ENT_QUOTES | ENT_XML1) : '');
+				if ($this->showSynonyms) $outArr[] = (array_key_exists('syn', $tArr) ? strip_tags($tArr['syn']) : '');
+				//end NEON edit
+				
 				if($this->showCommon) $outArr[] = (array_key_exists('vern',$tArr)?html_entity_decode($tArr['vern'],ENT_QUOTES|ENT_XML1):'');
 				$outArr[] = (array_key_exists('notes',$tArr)?strip_tags(html_entity_decode($tArr['notes'],ENT_QUOTES|ENT_XML1)):'');
 				$outArr[] = $tid;
