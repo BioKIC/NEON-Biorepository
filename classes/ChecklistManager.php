@@ -1127,6 +1127,18 @@ class ChecklistManager extends Manager{
 					'INNER JOIN taxa t ON e.parenttid = t.tid '.
 					'WHERE e.taxauthid = 1 AND t.sciname LIKE "'.$term.'%" AND cl.clid = '.$clid.')';
 			}
+			//NEON edit
+			$sql = '(SELECT t.sciname '.
+				'FROM taxa t INNER JOIN fmchklsttaxalink cl ON t.tid = cl.tid '.
+				'WHERE t.sciname LIKE "'.$term.'%") ';
+			if($deep){
+				$sql .= 'UNION DISTINCT '.
+					'(SELECT DISTINCT t.sciname '.
+					'FROM fmchklsttaxalink cl INNER JOIN taxaenumtree e ON cl.tid = e.tid '.
+					'INNER JOIN taxa t ON e.parenttid = t.tid '.
+					'WHERE e.taxauthid = 1 AND t.sciname LIKE "'.$term.'%")';
+			}
+			//end NEON edit
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				$retArr[] = $r->sciname;
