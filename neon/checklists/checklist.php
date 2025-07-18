@@ -74,6 +74,15 @@ if($searchCommon){
 	$showCommon = 1;
 	$clManager->setSearchCommon(true);
 }
+
+//Output variable sanitation
+$taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
+
+if (!empty($taxonFilter)) {
+    $showSynonyms = 1;
+    $showCommon = 1;
+}
+
 if($searchSynonyms) $clManager->setSearchSynonyms(true);
 if($showAuthors) $clManager->setShowAuthors(true);
 if($showSynonyms) $clManager->setShowSynonyms(true);
@@ -122,8 +131,24 @@ uasort($taxaArray, function ($a, $b) {
     return strcasecmp($a['sciname'], $b['sciname']);
 });
 
-//Output variable sanitation
-$taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
+
+$taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
+    $filter = mb_strtolower($taxonFilter);
+
+    // Normalize all fields and search
+    $sciname     = isset($item['sciname']) ? mb_strtolower($item['sciname']) : '';
+    $syn         = isset($item['syn']) ? mb_strtolower($item['syn']) : '';
+    $vern        = isset($item['vern']) ? mb_strtolower($item['vern']) : '';
+    $taxongroup  = isset($item['taxongroup']) ? mb_strtolower($item['taxongroup']) : '';
+
+    return (
+        strpos($sciname, $filter) !== false ||
+        strpos($syn, $filter) !== false ||
+        strpos($vern, $filter) !== false ||
+        strpos($taxongroup, $filter) !== false
+    );
+});
+
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -647,6 +672,7 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 									  onclick="
 										const form = document.forms['optionform'];
 										const url = 'checklist.php?clid=<?php echo $clid; ?>'
+										  + '&taxonfilter=' + encodeURIComponent(form.taxonfilter.value)
 										  + '&showauthors=' + (form.showauthors.checked ? '1' : '0')
 										  + '&showcommon=' + (form.showcommon && form.showcommon.checked ? '1' : '0')
 										  + '&showsynonyms=' + (form.showsynonyms.checked ? '1' : '0')

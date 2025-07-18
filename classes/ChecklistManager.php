@@ -61,7 +61,7 @@ class ChecklistManager extends Manager{
 	private $taxaList = array();
 	private $langId;
 	private $thesFilter = 0;
-	private $taxonFilter;
+	private $tidFilter;
 	private $showAuthors = false;
 	private $showCommon = false;
 	private $showSynonyms = false;
@@ -472,6 +472,7 @@ class ChecklistManager extends Manager{
 				'WHERE ts1.taxauthid = 1 AND ts2.taxauthid = 1 AND (ts1.tid IN('.implode(',',array_keys($this->taxaList)).')) ';
 			if($this->langId) $sql .= 'AND v.langid = '.$this->langId.' ';
 			$sql .= 'ORDER BY v.sortsequence DESC ';
+			echo $sql;
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				if($r->vernacularname) $this->taxaList[$r->tid]['vern'] = $this->cleanOutStr($r->vernacularname);
@@ -928,11 +929,11 @@ class ChecklistManager extends Manager{
 	
 			$datasetStr = implode(',', $datasetIDs);
 			$collidFilter = !empty($collids) ? 'o.collid IN (' . implode(',', $collids) . ')' : '1=0';
-			$taxonFilter = '1=0';		
+			$tidFilter = '1=0';		
 			
 			if (!empty($parentTids)) {
 				$tidStr = implode(',', $parentTids);
-				$taxonFilter = "o.tidInterpreted IN (
+				$tidFilter = "o.tidInterpreted IN (
 					SELECT tid FROM taxaenumtree
 					WHERE parenttid IN ($tidStr)
 				)";
@@ -959,10 +960,10 @@ class ChecklistManager extends Manager{
 					  WHERE (dl.datasetid IN ($datasetStr)
 					  AND $collidFilter)
 					  OR (dl.datasetid IN ($datasetStr)
-					  AND $taxonFilter)
+					  AND $tidFilter)
 				)
 			";
-			// echo $this->basicSql;
+			 echo $this->basicSql;
 			return;
 		}
 		// end NEON edit
