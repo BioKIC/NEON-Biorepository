@@ -472,7 +472,6 @@ class ChecklistManager extends Manager{
 				'WHERE ts1.taxauthid = 1 AND ts2.taxauthid = 1 AND (ts1.tid IN('.implode(',',array_keys($this->taxaList)).')) ';
 			if($this->langId) $sql .= 'AND v.langid = '.$this->langId.' ';
 			$sql .= 'ORDER BY v.sortsequence DESC ';
-			echo $sql;
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				if($r->vernacularname) $this->taxaList[$r->tid]['vern'] = $this->cleanOutStr($r->vernacularname);
@@ -963,7 +962,7 @@ class ChecklistManager extends Manager{
 					  AND $tidFilter)
 				)
 			";
-			 echo $this->basicSql;
+			 // echo $this->basicSql;
 			return;
 		}
 		// end NEON edit

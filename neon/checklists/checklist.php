@@ -60,7 +60,6 @@ if(isset($clArray['defaultSettings'])){
 		if(array_key_exists('dauthors',$defaultArr)) $showAuthors = $defaultArr['dauthors'];
 		if(array_key_exists('dsubgenera',$defaultArr)) $showSubgenera = $defaultArr['dsubgenera'];
 		if(array_key_exists('dalpha',$defaultArr)) $showAlphaTaxa = $defaultArr['dalpha'];
-		if(array_key_exists('dgroupbyrank', $defaultArr)) $groupByRank = strtolower(trim($defaultArr['dgroupbyrank']));
 
 	}
 	if(isset($defaultArr['activatekey'])) $activateKey = $defaultArr['activatekey'];
