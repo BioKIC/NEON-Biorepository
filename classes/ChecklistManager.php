@@ -80,6 +80,9 @@ class ChecklistManager extends Manager{
 	private $familyCount = 0;
 	private $genusCount = 0;
 	private $basicSql;
+	// NEON edit;
+	private $groupByRank = '';
+	// end NEON edit
 
 	function __construct() {
 		parent::__construct();
@@ -262,6 +265,14 @@ class ChecklistManager extends Manager{
 			if($row->rankid > 140 && !$family) $family = 'Incertae Sedis';
 			$this->filterArr[$family] = '';
 			$taxonGroup = $family;
+			//NEON edit
+			$groupByRank = strtoupper($row->groupbyrank ?? '');
+			if ($row->rankid == 140 && !$family) $family = strtoupper($row->sciname);
+			if ($row->rankid == 180 && !$groupByRank && $this->groupByRank == 'genus') $groupByRank = strtoupper($row->sciname);
+			if ($row->rankid == 140 && !$groupByRank && $this->groupByRank == 'family') $groupByRank = strtoupper($row->sciname);
+			if ($row->rankid == 100 && !$groupByRank && $this->groupByRank == 'order') $groupByRank = strtoupper($row->sciname);
+			$taxonGroup = $groupByRank;
+			//edit NEON edit
 			if($this->showAlphaTaxa) $taxonGroup = $row->unitname1;
 			$tid = $row->tid;
 			$sciName = $this->cleanOutStr($row->sciname);
@@ -278,6 +289,9 @@ class ChecklistManager extends Manager{
 			if(!$retLimit || ($this->taxaCount >= (($pageNumber-1)*$retLimit) && $this->taxaCount <= ($pageNumber)*$retLimit)){
 			    if(isset($row->morphospecies) && $row->morphospecies) $sciName .= ' '.$row->morphospecies;
 				elseif($row->rankid == 180) $sciName .= " sp.";
+				// NEON edit
+				elseif($row->rankid <= 180) $sciName .= " sp.";
+				//
 				if($row->rankid > 220 && $this->clMetadata['type'] != 'rarespp' && !array_key_exists($row->parenttid, $this->taxaList)){
 					$this->taxaList[$row->parenttid]['taxongroup'] = '<i>'.$taxonGroup.'</i>';
 					$this->taxaList[$row->parenttid]['family'] = $family;
@@ -749,8 +763,9 @@ class ChecklistManager extends Manager{
 			0, 'C', false, 1, '', '', true);
 
 		$pdf->AddPage();
+		$pdf->SetFont('Calibri', '', 14.5);
+		$pdf->writeHTML('<br><h2 style="text-align: center;">Checklist</h2></br>', true, false, true, false, '');
 		$pdf->SetFont('Calibri', '', 11);
-		$this->showAuthors = 1;
 		if ($taxaArr = $this->getTaxaList(1, 0)) {
 			// sort by taxon name
 			uasort($taxaArr, function ($a, $b) {
@@ -761,7 +776,9 @@ class ChecklistManager extends Manager{
 			$colWidth = ($pdf->getPageWidth() - 44) / 2; // respect left/right margins
 			$xLeft = 22;
 			$xRight = $xLeft + $colWidth + 2;
-			$topY = 32; // same as top margin
+			$topY = 32;
+			$firstPageRightStartY = $pdf->GetY();
+			
 			$bottomY = $pdf->getPageHeight() - 25;
 		
 			$currentX = $xLeft;
@@ -818,11 +835,10 @@ class ChecklistManager extends Manager{
 		
 				$entryHeight = $pdf->getStringHeight($colWidth, $entry);
 		
-				// If it doesn't fit in the current column
 				if ($currentY + $entryHeight > $bottomY) {
 					if ($inLeftColumn) {
 						$currentX = $xRight;
-						$currentY = $topY;
+						$currentY = ($pdf->getPage() === 3) ? $firstPageRightStartY : $topY;
 						$inLeftColumn = false;
 					} else {
 						$pdf->AddPage();
@@ -875,7 +891,14 @@ class ChecklistManager extends Manager{
 				SELECT DISTINCT t.tid, ".$this->clid." AS clid, t.sciname, t.author,
 					   NULL AS morphospecies, t.unitname1, t.rankid,
 					   NULL AS habitat, NULL AS abundance, NULL AS notes,
-					   NULL AS source, ts.parenttid, ts.family AS family
+					   NULL AS source, ts.parenttid, ts.family AS family,
+						( SELECT tx.sciname
+							FROM taxaenumtree te2
+							JOIN taxa tx ON te2.parenttid = tx.tid
+							JOIN taxonunits tu ON tx.rankid = tu.rankid
+							WHERE te2.tid = t.tid AND tu.rankname = '".$this->groupByRank."'
+							LIMIT 1
+						) AS groupbyrank
 				FROM taxa t
 				JOIN taxstatus ts ON t.tid = ts.tid
 				WHERE t.tid IN (
@@ -887,9 +910,8 @@ class ChecklistManager extends Manager{
 					  OR (dl.datasetid IN ($datasetStr)
 					  AND $taxonFilter)
 				)
-				ORDER BY family, t.sciname
 			";
-			//echo $this->basicSql;
+			echo $this->basicSql;
 			return;
 		}
 		// end NEON edit
@@ -1136,7 +1158,15 @@ class ChecklistManager extends Manager{
 	public function setSearchSynonyms($bool){
 		if($bool) $this->searchSynonyms = true;
 	}
-
+	
+	// NEON edit
+	public function setGroupByRank($rankName) {
+		if (!empty($rankName)) {
+			$this->groupByRank = $rankName;
+		}
+	}
+	// end NEON edit
+	
 	public function getClid(){
 		return $this->clid;
 	}

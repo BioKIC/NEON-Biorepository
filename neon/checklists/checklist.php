@@ -26,12 +26,15 @@ $searchCommon = array_key_exists('searchcommon', $_REQUEST) ? filter_var($_REQUE
 $searchSynonyms = array_key_exists('searchsynonyms', $_REQUEST) ? filter_var($_REQUEST['searchsynonyms'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $defaultOverride = array_key_exists('defaultoverride', $_REQUEST) ? filter_var($_REQUEST['defaultoverride'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $printMode = array_key_exists('printmode', $_REQUEST) ? filter_var($_REQUEST['printmode'], FILTER_SANITIZE_NUMBER_INT) : 0;
+$groupByRank = array_key_exists('groupbyrank', $_REQUEST) ? strtolower(trim($_REQUEST['groupbyrank'])) : 'family';
 
 $statusStr='';
 
 //Search Synonyms is default
 if($action != 'Rebuild List' && !array_key_exists('dllist_x',$_POST)) $searchSynonyms = 1;
-if($action == 'Rebuild List') $defaultOverride = 1;
+if ($action == 'Rebuild List' || $action == 'Download') {
+    $defaultOverride = 1;
+}
 
 $clManager = new ChecklistManager();
 if($clid) $clManager->setClid($clid);
@@ -57,6 +60,8 @@ if(isset($clArray['defaultSettings'])){
 		if(array_key_exists('dauthors',$defaultArr)) $showAuthors = $defaultArr['dauthors'];
 		if(array_key_exists('dsubgenera',$defaultArr)) $showSubgenera = $defaultArr['dsubgenera'];
 		if(array_key_exists('dalpha',$defaultArr)) $showAlphaTaxa = $defaultArr['dalpha'];
+		if(array_key_exists('dgroupbyrank', $defaultArr)) $groupByRank = strtolower(trim($defaultArr['dgroupbyrank']));
+
 	}
 	if(isset($defaultArr['activatekey'])) $activateKey = $defaultArr['activatekey'];
 }
@@ -80,6 +85,7 @@ if($showAlphaTaxa) $clManager->setShowAlphaTaxa(true);
 if($showSubgenera) $clManager->setShowSubgenera(true);
 $clid = $clManager->getClid();
 $pid = $clManager->getPid();
+if($groupByRank) $clManager->setGroupByRank($groupByRank);
 
 if (array_key_exists('dlcsv', $_POST)) {
 	$clManager->downloadChecklistCsv();
@@ -104,7 +110,17 @@ if($isEditor && array_key_exists('formsubmit',$_POST)){
 		$statusStr = $clManager->addNewSpecies($_POST);
 	}
 }
+
 $taxaArray = $clManager->getTaxaList($pageNumber,($printMode?0:500));
+
+//sort by group
+uasort($taxaArray, function ($a, $b) {
+    $nameCompare = strcasecmp($a['taxongroup'], $b['taxongroup']);
+    if ($nameCompare !== 0) {
+        return $nameCompare;
+    }
+    return strcasecmp($a['sciname'], $b['sciname']);
+});
 
 //Output variable sanitation
 $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
@@ -152,6 +168,19 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 			syncCheckbox('showcommon', ['imgform-showcommon', 'imgform2-showcommon']);
 			syncCheckbox('showauthors', ['imgform-showauthors', 'imgform2-showauthors']);
 		});
+		
+		function syncOptionValues() {
+			const downloadForm = document.forms['downloadform'];
+			const optionForm = document.forms['optionform'];
+		
+			downloadForm.dl_showsynonyms.value = optionForm.showsynonyms.checked ? "1" : "0";
+			downloadForm.dl_showauthors.value = optionForm.showauthors.checked ? "1" : "0";
+		
+			const showcommon = optionForm.showcommon;
+			if (showcommon) {
+				downloadForm.dl_showcommon.value = showcommon.checked ? "1" : "0";
+			}
+		}
 	</script>
 	<script type="text/javascript" src="../../js/symb/checklists.checklist.js"></script>
 	
@@ -554,9 +583,9 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 							<a href = "#img-container"><?php echo $LANG['SKIP_LINK']; ?></a>
 						</span>
 							<fieldset style="background-color:white;padding-bottom:10px;">
-								<legend><b><?php echo $LANG['OPTIONS'];?></b></legend>
+								<legend><b>Customize Display</b></legend>
 								<!-- Taxon Filter option -->
-								<div id="taxonfilterdiv">
+								<div id="taxonfilterdiv" style="margin-bottom:10px">
 									<div>
 										<b><?php echo $LANG['SEARCH'];?>:</b><br>
 										<input
@@ -572,21 +601,32 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 								</div>
 								<div class="top-breathing-room-rel">
 								</div>
+								<b>Display Options:</b><br>
 								<div id="showsynonymsdiv" style="display:block;">
 									<input name='showsynonyms' id='showsynonyms' type='checkbox' value='1' <?php echo ($showSynonyms ? "checked" : ""); ?> />
-									<label for="showsynonyms"><?php echo $LANG['DISPLAY_SYNONYMS'];?></label>
+									<label for="showsynonyms">Synonyms</label>
 								</div>
 								<?php
 								if($DISPLAY_COMMON_NAMES){
 									echo '<div>';
-									echo "<input id='showcommon' name='showcommon' type='checkbox' value='1' " . ($showCommon ? "checked" : "") . "/> " . "<label for='showcommon'>" . $LANG['COMMON'] . "</label>";
+									echo "<input id='showcommon' name='showcommon' type='checkbox' value='1' " . ($showCommon ? "checked" : "") . "/> " . "<label for='showcommon'>Common Names</label>";
 									echo '</div>';
 								}
 								?>
 								<div id="showauthorsdiv" style="display:block;">
 									<input id='showauthors' name='showauthors' type='checkbox' value='1' <?php echo ($showAuthors ? "checked" : ""); ?>/>
-									<label for='showauthors'> <?php echo $LANG['TAXONAUTHOR']; ?> </label>
+									<label for='showauthors'>Taxon Authorship</label>
 								</div>
+								<div id="groupbyrankdiv" style="margin:10px 0px 10px 5px;">
+									<label for="groupbyrank"><b>Group by Taxon Rank:</b></label><br>
+									<select id="groupbyrank" name="groupbyrank">
+										<option value="">-- None --</option>
+										<option value="order" <?php echo ($groupByRank === 'order' ? 'selected' : ''); ?>>Order</option>
+										<option value="family" <?php echo ($groupByRank === 'family' ? 'selected' : ''); ?>>Family</option>
+										<option value="genus" <?php echo ($groupByRank === 'genus' ? 'selected' : ''); ?>>Genus</option>
+										<option value="taxon" <?php echo ($groupByRank === 'taxon' ? 'selected' : ''); ?>>Taxon</option>
+									</select>
+								</div>								
 								<div style="margin:5px 0px 0px 5px;">
 									<div style="float:left;margin-bottom:5px">
 										<input type="hidden" name="clid" value="<?php echo $clid; ?>" />
@@ -596,7 +636,7 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 										<input type="hidden" name="voucherimages" value="<?= $limitImagesToVouchers; ?>" >
 										<input type="hidden" name="showsubgenera" value="<?= ($showSubgenera?1:0) ?>" >
 										<?php if(!$taxonFilter) echo '<input type="hidden" name="pagenumber" value="'.$pageNumber.'" />'; ?>
-										<button name="submitaction" type="submit" value="Rebuild List" onclick="changeOptionFormAction('checklist.php?clid=<?php echo $clid . '&pid=' . $pid . '&dynclid=' . $dynClid; ?>','_self');"><?php echo $LANG['BUILD_LIST']; ?></button>
+										<button name="submitaction" type="submit" value="Rebuild List" onclick="changeOptionFormAction('checklist.php?clid=<?php echo $clid; ?>','_self');"><?php echo $LANG['BUILD_LIST']; ?></button>
 									</div>
 								</div>
 							</fieldset>
@@ -607,6 +647,10 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 						</span>
 						<fieldset style="background-color:white;padding-bottom:10px;">
 							<legend><b>Download</b></legend>
+							<input type="hidden" name="showsynonyms" id="dl_showsynonyms" value="">
+							<input type="hidden" name="showauthors" id="dl_showauthors" value="">
+							<input type="hidden" name="showcommon" id="dl_showcommon" value="">
+							<input type="hidden" name="submitaction" value="Download">
 							<div style="display: flex; gap: 20px;">
 <!--								<div class="icon-button" style="text-align: center; flex: 1;" title="<?php echo $LANG['DOWNLOAD_CHECKLIST']; ?>">
 									<input type="image" name="dllist" alt="<?php echo $LANG['IMG_DWNL_LIST']; ?>" src="../../images/dl.png"
@@ -617,7 +661,7 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 								<div class="icon-button" style="text-align: center; flex: 1;">
 									<button type="submit"
 										name="dlcsv"
-										onclick="changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&format=csv'; ?>','_self');"
+										onclick="syncOptionValues(); changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&format=csv'; ?>','_self');"
 										style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
 										onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
 										onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
@@ -629,7 +673,7 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 								<div class="icon-button" style="text-align: center; flex: 1;">
 									<button type="submit"
 										name="dlpdf"
-										onclick="changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&format=pdf'; ?>','_self');"
+										onclick="syncOptionValues(); changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&format=pdf'; ?>','_self');"
 										style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
 										onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
 										onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
