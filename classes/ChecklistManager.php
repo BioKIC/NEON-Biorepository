@@ -769,6 +769,10 @@ class ChecklistManager extends Manager{
 		if ($taxaArr = $this->getTaxaList(1, 0)) {
 			// sort by taxon name
 			uasort($taxaArr, function ($a, $b) {
+				$nameCompare = strcasecmp($a['taxongroup'], $b['taxongroup']);
+				if ($nameCompare !== 0) {
+					return $nameCompare;
+				}
 				return strcasecmp($a['sciname'], $b['sciname']);
 			});
 			$entries = array_values($taxaArr);
@@ -784,8 +788,35 @@ class ChecklistManager extends Manager{
 			$currentX = $xLeft;
 			$currentY = $pdf->GetY();
 			$inLeftColumn = true;
+			$previousGroup = null;
 		
 			foreach ($entries as $tArr) {
+				$group = isset($tArr['taxongroup']) ? trim(str_replace(['<i>', '</i>'], '', $tArr['taxongroup'])) : null;
+			
+				if ($group && $group !== $previousGroup) {
+					$groupHeader = '<br><div style="text-align:center; font-weight:bold; text-transform:uppercase; margin-bottom:6pt;">' . $group . '</div></br>';
+			
+					$groupHeight = $pdf->getStringHeight($colWidth, $groupHeader);
+			
+					if ($currentY + $groupHeight > $bottomY) {
+						if ($inLeftColumn) {
+							$currentX = $xRight;
+							$currentY = ($pdf->getPage() === 2) ? $firstPageRightStartY : $topY;
+							$inLeftColumn = false;
+						} else {
+							$pdf->AddPage();
+							$currentX = $xLeft;
+							$currentY = $topY;
+							$inLeftColumn = true;
+						}
+					}
+			
+					$pdf->SetXY($currentX, $currentY);
+					$pdf->writeHTMLCell($colWidth, 0, $currentX, $currentY, $groupHeader, 0, 1, false, true, 'C', true);
+					$currentY = $pdf->GetY();
+					$previousGroup = $group;
+				}
+	
 				$nameLine = '';
 				$name = $tArr['sciname'];
 				
@@ -911,7 +942,7 @@ class ChecklistManager extends Manager{
 					  AND $taxonFilter)
 				)
 			";
-			echo $this->basicSql;
+			// echo $this->basicSql;
 			return;
 		}
 		// end NEON edit

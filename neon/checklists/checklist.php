@@ -180,6 +180,12 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 			if (showcommon) {
 				downloadForm.dl_showcommon.value = showcommon.checked ? "1" : "0";
 			}
+		
+			const groupBySelect = optionForm.groupbyrank;
+			const hiddenGroupByInput = downloadForm.dl_groupbyrank;
+			if (groupBySelect && hiddenGroupByInput) {
+				hiddenGroupByInput.value = groupBySelect.value;
+			}
 		}
 	</script>
 	<script type="text/javascript" src="../../js/symb/checklists.checklist.js"></script>
@@ -461,11 +467,9 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 								//Edit family name display style here
 								?>
 								<div class="family-div" id="<?php echo strip_tags($group);?>">
-									<i>
-										<a href="<?php echo strip_tags($famUrl); ?>" target="_blank" style="color:black;">
-											<?php echo strip_tags($group);?>
-										</a>
-									</i>
+									<a href="<?php echo strip_tags($famUrl); ?>" target="_blank" style="color:black;">
+										<?php echo strip_tags($group);?>
+									</a>
 								</div>
 								<?php
 								$prevGroup = $group;
@@ -650,6 +654,7 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 							<input type="hidden" name="showsynonyms" id="dl_showsynonyms" value="">
 							<input type="hidden" name="showauthors" id="dl_showauthors" value="">
 							<input type="hidden" name="showcommon" id="dl_showcommon" value="">
+							<input type="hidden" name="groupbyrank" id="dl_groupbyrank" value="">
 							<input type="hidden" name="submitaction" value="Download">
 							<div style="display: flex; gap: 20px;">
 <!--								<div class="icon-button" style="text-align: center; flex: 1;" title="<?php echo $LANG['DOWNLOAD_CHECKLIST']; ?>">
