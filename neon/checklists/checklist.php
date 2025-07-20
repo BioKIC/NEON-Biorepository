@@ -648,7 +648,6 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 								<div id="groupbyrankdiv" style="margin:10px 0px 10px 5px;">
 									<label for="groupbyrank"><b>Group by Taxon Rank:</b></label><br>
 									<select id="groupbyrank" name="groupbyrank">
-										<option value="">-- None --</option>
 										<option value="order" <?php echo ($groupByRank === 'order' ? 'selected' : ''); ?>>Order</option>
 										<option value="family" <?php echo ($groupByRank === 'family' ? 'selected' : ''); ?>>Family</option>
 										<option value="genus" <?php echo ($groupByRank === 'genus' ? 'selected' : ''); ?>>Genus</option>
