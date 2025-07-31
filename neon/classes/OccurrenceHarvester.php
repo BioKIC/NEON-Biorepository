@@ -473,7 +473,7 @@ class OccurrenceHarvester{
 				if(strpos($tableName,'shipment')) continue;
 				//if(strpos($tableName,'identification')) continue;
 				//if(strpos($tableName,'sorting')) continue;
-				if(strpos($tableName,'scs_archive')) continue;
+				if($tableName == 'scs_archivedata_in') continue;
 				if($tableName == 'mam_barcoding_in') continue;
 				if($tableName == 'bet_barcoding_in') continue;
 				if(strpos($tableName,'dnaStandardTaxon')) continue;
@@ -741,6 +741,9 @@ class OccurrenceHarvester{
 						}
 						if($sampleArr['sampleClass'] == 'mos_subsampling_in.bloodfedArchive'){
 							$prepArr[] = 'contains only bloodfed individuals';
+						}
+						if ($dwcArr['collid'] == 31 && !empty($sampleArr['preservative_type']) && $sampleArr['preservative_type'] !== 'other') {
+   							 $prepArr[] = 'collected onto ' . $sampleArr['preservative_type'];
 						}
 					}
 				if($prepArr) $dwcArr['preparations'] = implode(', ',$prepArr);
