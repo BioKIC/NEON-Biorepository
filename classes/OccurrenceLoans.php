@@ -987,7 +987,7 @@ public function editSpecimenDetails($loanId, $occid, $returnDate, $noteStr) {
 			}
 
 			if($rs = $this->conn->query($sql)){
-				$maxnum = 1;
+				$maxnum = 0;
 				while($r = $rs->fetch_object()){
 					$num = '';
 

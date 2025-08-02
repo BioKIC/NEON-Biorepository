@@ -1,7 +1,8 @@
 <?php
 include_once('../config/symbini.php');
-include_once($SERVER_ROOT.'/classes/ChecklistManager.php');
-require_once($SERVER_ROOT.'/vendor/phpoffice/phpword/bootstrap.php');
+include_once($SERVER_ROOT . '/classes/ChecklistManager.php');
+include_once($SERVER_ROOT . '/classes/utilities/GeneralUtil.php');
+require_once($SERVER_ROOT . '/vendor/phpoffice/phpword/bootstrap.php');
 
 header('Content-Type: text/html; charset='.$CHARSET);
 ini_set('max_execution_time', 240); //240 seconds = 4 minutes
@@ -92,7 +93,7 @@ $phpWord->addTableStyle('imageTable',$tableStyle,$colRowStyle);
 $imageCellStyle = array('valign'=>'center','width'=>2475,'borderSize'=>15,'borderColor'=>'808080');
 $blankCellStyle = array('valign'=>'center','width'=>2475,'borderSize'=>15,'borderColor'=>'000000');
 
-$domainRoot = $clManager->getDomain().$CLIENT_ROOT;
+$domainRoot = GeneralUtil::getDomain() . $CLIENT_ROOT;
 $section = $phpWord->addSection(array('pageSizeW'=>12240,'pageSizeH'=>15840,'marginLeft'=>1080,'marginRight'=>1080,'marginTop'=>1080,'marginBottom'=>1080,'headerHeight'=>0,'footerHeight'=>0));
 $title = $clManager->getClName();
 $clManager->cleanOutText($title);
@@ -117,7 +118,7 @@ if($clid){
 		$textrun->addTextBreak(1);
 	}
 }
-if(($clArray['locality'] || ($clid && ($clArray['latcentroid'] || $clArray['abstract'])) || $clArray['notes'])){
+if(isset($clArray['locality']) || ($clid && isset ($clArray['latcentroid']) || isset ($clArray['abstract']) || isset($clArray['notes']))){
 	$locStr = $clManager->cleanOutText($clArray['locality']);
 	if($clid && $clArray['latcentroid']) $locStr .= ' ('.$clArray['latcentroid'].', '.$clArray['longcentroid'].')';
 	if($locStr){
@@ -125,13 +126,13 @@ if(($clArray['locality'] || ($clid && ($clArray['latcentroid'] || $clArray['abst
 		$textrun->addText($locStr,'textFont');
 		$textrun->addTextBreak(1);
 	}
-	if($clid && $clArray['abstract']){
+	if($clid && isset ($clArray['abstract'])){
 		$abstract = $clManager->cleanOutText($clArray['abstract']);
 		$textrun->addText('Abstract: ', 'topicFont');
 		$textrun->addText($abstract, 'textFont');
 		$textrun->addTextBreak(1);
 	}
-	if($clid && $clArray['notes']){
+	if($clid && isset ($clArray['notes'])){
 		$notes = $clManager->cleanOutText($clArray['notes']);
 		$textrun->addText('Notes: ', 'topicFont');
 		$textrun->addText($notes, 'textFont');
@@ -165,7 +166,7 @@ if($showImages){
 		$imgSrc = ($tu?$tu:$u);
 		if($imageCnt%4 == 1) $table->addRow();
 		if($imgSrc){
-			$imgSrc = (array_key_exists('imageDomain',$GLOBALS)&&substr($imgSrc,0,4)!='http'?$GLOBALS['imageDomain']:'').$imgSrc;
+			$imgSrc = (array_key_exists('MEDIA_DOMAIN', $GLOBALS) && substr($imgSrc, 0, 4) != 'http' ? $GLOBALS['MEDIA_DOMAIN'] : '') . $imgSrc;
 			$cell = $table->addCell(null,$imageCellStyle);
 			$textrun = $cell->addTextRun('imagePara');
 			$textrun->addImage($imgSrc,array('width'=>160,'height'=>160));
@@ -242,12 +243,15 @@ else{
 		}
 	}
 }
-$fileName = str_replace(array(' ', '/', '.'), '_', $clManager->getClName());
+$fileName = str_replace(array(' ', '/', '.'), '_', $clManager->getClName() ?? "");
 $fileName = preg_replace('/[^0-9A-Za-z\-]/', '', $fileName);
 if(strlen($fileName) > 30) $fileName = substr($fileName, 0, 30);
 $targetFile = $SERVER_ROOT.'/temp/report/'.$fileName.'_'.date('Y-m-d').'.docx';
 $phpWord->save($targetFile, 'Word2007');
 
+ob_start();
+ob_clean();
+ob_end_flush();
 header('Content-Description: File Transfer');
 header('Content-type: application/force-download');
 header('Content-Disposition: attachment; filename='.basename($targetFile));

@@ -4,6 +4,7 @@ include_once($SERVER_ROOT . '/classes/OccurrenceDownload.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceMapManager.php');
 include_once($SERVER_ROOT . '/classes/DwcArchiverCore.php');
 
+
 $sourcePage = array_key_exists("sourcepage", $_REQUEST) ? $_REQUEST["sourcepage"] : "specimen";
 $schema = array_key_exists("schema", $_REQUEST) ? $_REQUEST["schema"] : "symbiota";
 $cSet = array_key_exists("cset", $_POST) ? $_POST["cset"] : '';
@@ -21,13 +22,16 @@ if ($schema == 'backup') {
 			$dwcaHandler->setIncludeImgs(1);
 			$dwcaHandler->setIncludeAttributes(1);
 			if ($dwcaHandler->hasMaterialSamples()) $dwcaHandler->setIncludeMaterialSample(1);
+			if ($dwcaHandler->hasIdentifiers()) $dwcaHandler->setIncludeIdentifiers(1);
 			$dwcaHandler->setRedactLocalities(0);
 			$dwcaHandler->setCollArr($collid);
 
 			$archiveFile = $dwcaHandler->createDwcArchive();
 
 			if ($archiveFile) {
-				//ob_start();
+				ob_start();
+				ob_clean();
+				ob_end_flush();
 				header('Content-Description: Symbiota Occurrence Backup File (DwC-Archive data package)');
 				header('Content-Type: application/zip');
 				header('Content-Disposition: attachment; filename=' . basename($archiveFile));
@@ -46,7 +50,9 @@ if ($schema == 'backup') {
 	}
 } else {
 	$zip = (array_key_exists('zip', $_POST) ? $_POST['zip'] : 0);
-	$format = (array_key_exists('format', $_POST) ? $_POST['format'] : 'csv');
+	$allowedFormats = ['csv', 'tab'];
+	$formatFromPost = (array_key_exists('format', $_POST) ? $_POST['format'] : 'csv');
+	$format = in_array($formatFromPost, $allowedFormats) ? $formatFromPost : 'csv';
 	$extended = (array_key_exists('extended', $_POST) ? $_POST['extended'] : 0);
 	$overrideConditionLimit = (array_key_exists('overrideconditionlimit', $_POST) ? $_POST['overrideconditionlimit'] : 0);
 
@@ -82,8 +88,8 @@ if ($schema == 'backup') {
 		$dlManager->setCharSetOut($cSet);
 		$dlManager->setDelimiter($format);
 		$dlManager->setZipFile($zip);
-		$dlManager->addCondition('decimalLatitude', 'NOTNULL', '');
-		$dlManager->addCondition('decimalLongitude', 'NOTNULL', '');
+		$dlManager->addCondition('decimalLatitude', 'NOT_NULL', '');
+		$dlManager->addCondition('decimalLongitude', 'NOT_NULL', '');
 		if (array_key_exists('targetcollid', $_POST) && $_POST['targetcollid']) {
 			$dlManager->addCondition('collid', 'EQUALS', $_POST['targetcollid']);
 		}
@@ -118,9 +124,11 @@ if ($schema == 'backup') {
 			$dwcaHandler->setIncludeDets(0);
 			$dwcaHandler->setIncludeImgs(0);
 			$dwcaHandler->setIncludeAttributes(0);
+			$dwcaHandler->setIncludeMaterialSample(0);
+			$dwcaHandler->setIncludeIdentifiers(0);
 			$dwcaHandler->setOverrideConditionLimit(true);
-			$dwcaHandler->addCondition('catalognumber', 'NOTNULL');
-			$dwcaHandler->addCondition('locality', 'NOTNULL');
+			$dwcaHandler->addCondition('catalognumber', 'NOT_NULL');
+			$dwcaHandler->addCondition('locality', 'NOT_NULL');
 			if (array_key_exists('processingstatus', $_POST) && $_POST['processingstatus']) {
 				$dwcaHandler->addCondition('processingstatus', 'EQUALS', $_POST['processingstatus']);
 			}
@@ -163,8 +171,8 @@ if ($schema == 'backup') {
 					$dwcaHandler->addCondition('traitid', 'EQUALS', $_POST['traitid']);
 				}
 				if (array_key_exists('newrecs', $_POST) && $_POST['newrecs'] == 1) {
-					$dwcaHandler->addCondition('dbpk', 'NULL');
-					$dwcaHandler->addCondition('catalognumber', 'NOTNULL');
+					$dwcaHandler->addCondition('dbpk', 'IS_NULL');
+					$dwcaHandler->addCondition('catalognumber', 'NOT_NULL');
 				}
 			}
 		}
@@ -179,6 +187,8 @@ if ($schema == 'backup') {
 			$dwcaHandler->setIncludeAttributes($includeAttributes);
 			$includeMaterialSample = (array_key_exists('materialsample', $_POST) ? 1 : 0);
 			$dwcaHandler->setIncludeMaterialSample($includeMaterialSample);
+			$includeIdentifiers = (array_key_exists('identifiers', $_POST) ? 1 : 0);
+			$dwcaHandler->setIncludeIdentifiers($includeIdentifiers);
 
 			$outputFile = $dwcaHandler->createDwcArchive();
 		} else {
@@ -198,6 +208,9 @@ if ($schema == 'backup') {
 				$contentDesc .= 'Archive ';
 			}
 			$contentDesc .= 'File';
+			ob_start();
+			ob_clean();
+			ob_end_flush();
 			header('Content-Description: ' . $contentDesc);
 
 			if ($zip) {

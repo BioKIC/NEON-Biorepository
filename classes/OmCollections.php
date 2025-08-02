@@ -1,6 +1,9 @@
 <?php
-include_once($SERVER_ROOT.'/classes/Manager.php');
-include_once($SERVER_ROOT.'/classes/UuidFactory.php');
+
+include_once($SERVER_ROOT . '/classes/Manager.php');
+include_once($SERVER_ROOT . '/classes/utilities/GeneralUtil.php');
+include_once($SERVER_ROOT . '/classes/utilities/QueryUtil.php');
+include_once($SERVER_ROOT . '/classes/utilities/UuidFactory.php');
 
 class OmCollections extends Manager{
 
@@ -14,10 +17,44 @@ class OmCollections extends Manager{
 		parent::__destruct();
 	}
 
+	// Needed to 
+	public function isCollUnique(String $collectionCode, String $institutionCode): bool {
+		global $CLIENT_ROOT;
+		try {
+			$sql = <<<'SQL'
+			SELECT collectionName, collid FROM omcollections 
+			WHERE collid != ? AND collectionCode = ? AND institutionCode = ?
+			SQL;
+			$result = QueryUtil::executeQuery($this->conn, $sql, [$this->collid, $collectionCode, $institutionCode]);
+			if($col = $result->fetch_object()) {
+				$this->errorMessage = 'Error: Duplicate collection + institution code found in ' 
+					. '<a target="_blank" href="'
+					. $CLIENT_ROOT 
+					. '/collections/misc/collprofiles.php?collid='
+					. $col->collid 
+					. '">'
+					. $col->collectionName 
+					.'</a>';
+
+				return false;
+			} else {
+				return true;
+			}
+		} catch (\Throwable $th) {
+			error_log('error: Omcollections->isCollUnique: ' . $th->getMessage());
+			$this->errorMessage = $th->getMessage();
+			return false;
+		}
+	}
+
 	public function collectionUpdate($postArr){
 		$status = false;
 		if($this->collid){
 			$reqArr = $this->getRequestArr($postArr);
+			if(!$this->isCollUnique($reqArr['collectionCode'], $reqArr['institutionCode'])) {
+				return false;
+			}
+
 			//Update core fields
 			$sql = 'UPDATE omcollections '.
 				'SET institutionCode = ?, collectionCode = ?, collectionName = ?, collectionID = ?, fullDescription = ?, latitudeDecimal = ?, longitudeDecimal = ?, publishToGbif = ?, '.
@@ -143,7 +180,7 @@ class OmCollections extends Manager{
 
 	private function addIconImageFile($postArr){
 		$targetPath = $GLOBALS['SERVER_ROOT'].'/content/collicon/';
-		$urlBase = $this->getDomain().$GLOBALS['CLIENT_ROOT'].'/content/collicon/';
+		$urlBase = GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . '/content/collicon/';
 
 		//Clean file name
 		$fileName = basename($_FILES['iconFile']['name']);

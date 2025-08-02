@@ -1,6 +1,6 @@
 <?php
-include_once($SERVER_ROOT.'/config/dbconnection.php');
-include_once($SERVER_ROOT.'/classes/UuidFactory.php');
+include_once($SERVER_ROOT . '/config/dbconnection.php');
+include_once($SERVER_ROOT . '/classes/utilities/UuidFactory.php');
 
 class OccurrenceSkeletal {
 
@@ -25,7 +25,7 @@ class OccurrenceSkeletal {
 			'SC' => 'South Carolina', 'SD' => 'South Dakota', 'TN' => 'Tennessee', 'TX' => 'Texas', 'UT' => 'Utah', 'VT' => 'Vermont',
 			'VI' => 'Virgin Islands', 'VA' => 'Virginia', 'WA' => 'Washington', 'WV' => 'West Virginia', 'WI' => 'Wisconsin', 'WY' =>  'Wyoming');
 		$this->allowedFields = array('collid'=>'n','catalognumber'=>'s','othercatalognumbers'=>'s','sciname'=>'s','tidinterpreted'=>'s','family'=>'s',
-			'scientificnameauthorship'=>'s','localitysecurity'=>'n','country'=>'s','stateprovince'=>'s','county'=>'s','processingstatus'=>'s',
+			'scientificnameauthorship'=>'s','recordsecurity'=>'n','country'=>'s','stateprovince'=>'s','county'=>'s','processingstatus'=>'s',
 			'recordedby'=>'s','recordnumber'=>'s','eventdate'=>'d','labelproject'=>'s','language'=>'s');
 	}
 
@@ -170,34 +170,17 @@ class OccurrenceSkeletal {
 				$countryStr = 'United States';
 			}
 			else{
-				$sql = 'SELECT c.countryname '.
-					'FROM lkupstateprovince s INNER JOIN lkupcountry c ON s.countryid = c.countryid '.
-					'WHERE s.statename = "'.$state.'"';
-				if(!$this->lkupTablesExist()){
-					$sql = 'SELECT c.geoTerm AS countryname
-						FROM geographicthesaurus s INNER JOIN geographicthesaurus c ON s.parentID = c.geoThesID
-						WHERE s.geoTerm = "'.$state.'"';
-				}
+				$sql = 'SELECT c.geoTerm AS countryName
+					FROM geographicthesaurus s INNER JOIN geographicthesaurus c ON s.parentID = c.geoThesID
+					WHERE s.geoTerm = "'.$state.'"';
 				$rs = $this->conn->query($sql);
 				if($r = $rs->fetch_object()) {
-					$countryStr = $r->countryname;
+					$countryStr = $r->countryName;
 				}
 				$rs->free();
 			}
 		}
 		return $countryStr;
-	}
-
-	private function lkupTablesExist(){
-		$bool = false;
-		// Check to see is old deprecated lookup tables exist
-		$sql = 'SHOW tables LIKE "lkupcountry"';
-		$rs = $this->conn->query($sql);
-		if($rs->num_rows){
-			$bool = true;
-		}
-		$rs->free();
-		return $bool;
 	}
 
 	private function translateStateAbbreviation($abbr){

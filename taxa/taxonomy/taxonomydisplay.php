@@ -48,8 +48,8 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 	include_once($SERVER_ROOT.'/includes/head.php');
 	include_once($SERVER_ROOT.'/includes/googleanalytics.php');
 	?>
-	<script src="../../js/jquery.js" type="text/javascript"></script>
-	<script src="../../js/jquery-ui.js" type="text/javascript"></script>
+	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("#taxontarget").autocomplete({
@@ -69,7 +69,7 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 	<style>
 		label{ font-weight: bold; }
 		.field-div{ margin:3px 0px }
-		.icon-image{ border: 0px; width: 14px; }
+		.icon-image{ border: 0px; width: 15px; }
 	</style>
 </head>
 <body>
@@ -80,10 +80,11 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 		<a href="../../index.php"><?= $LANG['HOME'] ?></a> &gt;&gt;
 		<a href="taxonomydisplay.php"><b><?= $LANG['TAX_TREE_VIEWER'] ?></b></a>
 	</div>
-	<div id="innertext">
+	<div role="main" id="innertext">
+		<h1 class="page-heading"><?php $LANG['CENTRAL_TAXANOMIC_THESAURUS']; ?></h1>
 		<?php
 		if($statusStr){
-			$statusStr = str_replace(';', '<br/>', htmlspecialchars($statusStr, HTML_SPECIAL_CHARS_FLAGS));
+			$statusStr = str_replace(';', '<br/>', htmlspecialchars($statusStr, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE));
 			?>
 			<hr/>
 			<div style="color:<?php echo (stripos($statusStr,'SUCCESS') !== false?'green':'red'); ?>;margin:15px;">
@@ -105,7 +106,6 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 		<div>
 			<?php
 			$taxMetaArr = $taxonDisplayObj->getTaxonomyMeta();
-			echo '<h2>'.$taxMetaArr['name'].'</h2>';
 			if(count($taxMetaArr) > 1){
 				//echo '<div id="taxDetailDiv" style="margin-top:15px;margin-left:5px;float:left;font-size:80%"><a href="#" onclick="displayTaxomonyMeta()">(more details)</a></div>';
 				echo '<div id="taxMetaDiv" style="margin:10px 15px 35px 15px;display:none;clear:both;">';
@@ -149,12 +149,12 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 						</div>
 					</div>
 					<div class="flex-form" style="margin: 10px">
+						<div>
+							<button class="inverse-color" name="tdsubmit" type="submit" value="displayTaxonTree"><?= $LANG['DISP_TAX_TREE'] ?></button>
+							<input name="taxauthid" type="hidden" value="<?= $taxAuthId; ?>" />
+						</div>
 						<div style="float: right">
 							<button name="tdsubmit" type="submit" value="exportTaxonTree"><?= $LANG['EXPORT_TREE'] ?></button>
-						</div>
-						<div>
-							<button name="tdsubmit" type="submit" value="displayTaxonTree"><?= $LANG['DISP_TAX_TREE'] ?></button>
-							<input name="taxauthid" type="hidden" value="<?= $taxAuthId; ?>" />
 						</div>
 					</div>
 				</fieldset>
@@ -162,7 +162,7 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 		</div>
 		<?php
 		if(!$taxonDisplayObj->displayTaxonomyHierarchy()){
-			echo '<div style="margin:20px;">No taxa found matching your search</div>';
+			echo '<div style="margin:20px;">' . $LANG['NO_TAXA_FOUND'] . '</div>';
 		}
 		?>
 	</div>
