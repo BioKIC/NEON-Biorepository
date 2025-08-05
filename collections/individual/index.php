@@ -1080,7 +1080,20 @@ $traitArr = $indManager->getTraitArr();
 									echo '<div id="thumbnail-div" class="thumbnail-div">';
 									echo Media::render_media_item($imgArr);
 									if($imgArr['caption']) echo '<div><i>'.$imgArr['caption'].'</i></div>';
-									if($imgArr['creator']) echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].'</div>';
+                                    // START NEON CUSTOMIZATION //
+                                    if($imgArr['photographer']) {
+                                        if($imgArr['owner']){
+                                            echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['photographer'].', '.$imgArr['owner'].'</div>';
+                                        }
+                                        else {
+                                            echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['photographer'].'</div>';
+                                        }
+                                    }
+                                    elseif($imgArr['owner']) {
+                                        echo '<div>'.$imgArr['owner'].'</div>';
+
+                                    }
+                                    // END NEON CUSTOMIZATION //
 									if($imgArr['url'] && substr($thumbUrl,0,7)!='process' && $imgArr['url'] != $imgArr['lgurl']) echo '<div><a href="' . $imgArr['url'] . '" target="_blank">' . $LANG['OPEN_MEDIUM'] . '</a></div>';
 									if($imgArr['lgurl']) echo '<div><a href="' . $imgArr['lgurl'] . '" target="_blank">' . $LANG['OPEN_LARGE'] . '</a></div>';
 									if($imgArr['sourceurl']) echo '<div><a href="' . $imgArr['sourceurl'] . '" target="_blank">' . $LANG['OPEN_SOURCE'] . '</a></div>';
