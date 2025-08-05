@@ -11,11 +11,9 @@
 $CUSTOM_CSS_PATH = '/css/symb/custom';
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="<?php echo $CLIENT_ROOT; ?>/css/v202209/jquery-ui.css" type="text/css" rel="stylesheet">
 <!-- UNIVERSAL CSS –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 <link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/normalize.css">
 <link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/skeleton.css">
-<link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/base.css?ver=1" type="text/css">
 <link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/neon.css?ver=2">
 <link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/main.css?ver=3" type="text/css">
 
