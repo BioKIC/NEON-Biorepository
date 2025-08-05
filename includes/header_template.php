@@ -2,8 +2,7 @@
 if($LANG_TAG == 'en' || !file_exists($SERVER_ROOT.'/content/lang/templates/header.' . $LANG_TAG . '.php'))
 	include_once($SERVER_ROOT . '/content/lang/templates/header.en.php');
 else include_once($SERVER_ROOT . '/content/lang/templates/header.' . $LANG_TAG . '.php');
-$SHOULD_USE_HARVESTPARAMS = $SHOULD_USE_HARVESTPARAMS ?? false;
-$collectionSearchPage = $SHOULD_USE_HARVESTPARAMS ? '/collections/index.php' : '/collections/search/index.php';
+$collectionSearchPage = !empty($SHOULD_USE_HARVESTPARAMS) ? '/collections/index.php' : '/collections/search/index.php';
 ?>
 <div class="header-wrapper">
 	<header>
@@ -92,7 +91,7 @@ $collectionSearchPage = $SHOULD_USE_HARVESTPARAMS ? '/collections/index.php' : '
 						</a>
 					</li>
 					<li>
-						<a href="https://symbiota.org/docs" target="_blank" rel="noopener noreferrer">
+						<a href="https://docs.symbiota.org/about/" target="_blank" rel="noopener noreferrer">
 							<?= $LANG['H_HELP'] ?>
 						</a>
 					</li>

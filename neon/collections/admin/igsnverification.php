@@ -25,15 +25,14 @@ $guidManager->setCollArr();
 $guidManager->setNamespace($namespace);
 
 ?>
-<!DOCTYPE html>
-<html lang="<?php echo $LANG_TAG ?>">
+<html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET; ?>">
-	<title><?php echo $LANG['IGSN_GUID_MANAGE'] ?></title>
+	<title>IGSN GUID Management</title>
 	<?php
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
-	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script type="text/javascript" src="../../js/jquery.js"></script>
 	<script type="text/javascript">
 		function syncIGSN(occid, catNum, igsn){
 			$.ajax({
@@ -44,15 +43,15 @@ $guidManager->setNamespace($namespace);
 			})
 			.done(function(jsonRes) {
 				if(jsonRes.status == 1){
-					$("#syncDiv-"+occid).text("<?php echo $LANG['IGSN_ADDED'] ?>");
+					$("#syncDiv-"+occid).text('SUCCESS: IGSN added!');
 				}
 				else{
 					$("#syncDiv-"+occid).css('color', 'red');
-					if(jsonRes.errCode == 1) $("#syncDiv-"+occid).text("<?php echo $LANG['OCCID_EXISTS'] ?>"+jsonRes.guid);
-					else if(jsonRes.errCode == 2) $("#syncDiv-"+occid).text("<?php echo $LANG['CATNUM_NOT_MATCH'] ?>"+": "+jsonRes.catNum);
-					else if(jsonRes.errCode == 3) $("#syncDiv-"+occid).text("<?php echo $LANG['OCC_NOT_FOUND'] ?>"+" (#"+occid+")");
-					else if(jsonRes.errCode == 8) $("#syncDiv-"+occid).text("<?php echo $LANG['NOT_AUTH_TO_MOD'] ?>");
-					else if(jsonRes.errCode == 9) $("#syncDiv-"+occid).text("<?php echo $LANG['MISS_VARS'] ?>");
+					if(jsonRes.errCode == 1) $("#syncDiv-"+occid).text('FAILED: occurrenceID GUID already exists: '+jsonRes.guid);
+					else if(jsonRes.errCode == 2) $("#syncDiv-"+occid).text('FAILED: catalogNumber does not match: '+jsonRes.catNum);
+					else if(jsonRes.errCode == 3) $("#syncDiv-"+occid).text('FAILED: occurrence record not found (#'+occid+')');
+					else if(jsonRes.errCode == 8) $("#syncDiv-"+occid).text('FAILED: not authorized to modify occurrence');
+					else if(jsonRes.errCode == 9) $("#syncDiv-"+occid).text('FAILED: missing variables');
 				}
 			})
 		}
@@ -65,95 +64,95 @@ $guidManager->setNamespace($namespace);
 	</style>
 </head>
 <body>
-	<?php
-$displayLeftMenu = false;
+<?php
+$displayLeftMenu = 'false';
 include($SERVER_ROOT.'/includes/header.php');
 ?>
 <div class='navpath'>
-	<a href="../../index.php"><?php echo $LANG['HOME'] ?></a> &gt;&gt;
-	<a href="../misc/collprofiles.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>&emode=1"><?php echo $LANG['COLL_MANAGE'] ?></a> &gt;&gt;
-	<a href="igsnmapper.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"><?php echo $LANG['IGSN_GUID_GEN'] ?></a> &gt;&gt;
-	<a href="igsnmanagement.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"><?php echo $LANG['IGSN_MANAGE'] ?></a> &gt;&gt;
-	<b><?php echo $LANG['IGSN_VERIFY'] ?></b>
+	<a href="../../index.php">Home</a> &gt;&gt;
+	<a href="../misc/collprofiles.php?collid=<?php echo $collid; ?>&emode=1">Collection Management</a> &gt;&gt;
+	<a href="igsnmapper.php?collid=<?php echo $collid; ?>">IGSN GUID Generator</a> &gt;&gt;
+	<a href="igsnmanagement.php?collid=<?php echo $collid; ?>">IGSN GUID Management</a> &gt;&gt;
+	<b>IGSN Verification</b>
 </div>
 <!-- This is inner text! -->
-<div role="main" id="innertext">
-	<h1 class="page-heading"><?= $LANG['IGSN_MANAGE'] . ': ' . $guidManager->getCollectionName(); ?></h1>
+<div id="innertext">
 	<?php
 	if($isEditor){
+		echo '<h3>IGSN Management: '.$guidManager->getCollectionName().'</h3>';
 		if($statusStr){
 			?>
 			<fieldset>
-				<legend><?php echo $LANG['ERROR_PANEL'] ?></legend>
+				<legend>Error Panel</legend>
 				<?php echo $statusStr; ?>
 			</fieldset>
 			<?php
 		}
 		if(!$guidManager->getProductionMode()){
-			echo '<h2 style="color:orange">-- ' . $LANG['DEV_MODE'] . ' --</h2>';
+			echo '<h2 style="color:orange">-- In Development Mode --</h2>';
 		}
 		if($action == 'verifysesar'){
-			echo '<fieldset><legend>' . $LANG['ACTION_PANEL'] . '</legend>';
+			echo '<fieldset><legend>Action Panel</legend>';
 			echo '<ul>';
 			$guidManager->setVerboseMode(2);
-			echo '<li>' . $LANG['VERIFYING'] . '</li>';
+			echo '<li>Verifying all IGSNs located within SESAR system against portal database...</li>';
 			$sesarArr = $guidManager->verifySesarGuids();
-			echo '<li style="margin-left:15px">' . $LANG['RESULTS'] . '</li>';
-			echo '<li style="margin-left:25px">' . $LANG['CHECKED'] . ' ' . $sesarArr['totalCnt'] . ' ' . $LANG['IGSNS'] . '</li>';
+			echo '<li style="margin-left:15px">Results:</li>';
+			echo '<li style="margin-left:25px">Checked '.$sesarArr['totalCnt'].' IGSNs</li>';
 			if(isset($sesarArr['collid'])){
-				echo '<li style="margin-left:25px">' . $LANG['REG_IGSN_BY_COLL'] . '</li>';
+				echo '<li style="margin-left:25px">Registered IGSNs by Collection:</li>';
 				foreach($sesarArr['collid'] as $id => $collArr){
-					echo '<li style="margin-left:40px"><a href="../misc/collprofiles.php?collid=' . htmlspecialchars($id, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank">' . htmlspecialchars($collArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a>: ' . htmlspecialchars($collArr['cnt'],) . ' ' . $LANG['IGSNS'] . '</li>';
+					echo '<li style="margin-left:40px"><a href="../misc/collprofiles.php?collid='.$id.'" target="_blank">'.$collArr['name'].'</a>: '.$collArr['cnt'].' IGSNs</li>';
 				}
 			}
 			$missingCnt = 0;
 			if(isset($sesarArr['missing'])) $missingCnt = count($sesarArr['missing']);
 			echo '<li style="margin-left:25px">';
-			echo $LANG['IGSN_NOT_IN_DB'] . ': '.$missingCnt;
+			echo '# IGSNs not in database: '.$missingCnt;
 			if($missingCnt) echo ' <a href="#" onclick="$(\'#missingGuidList\').show();return false;">(display list)</a>';
 			echo '</li>';
 			if($missingCnt){
 				echo '<div id="missingGuidList" style="margin-left:40px;display:none">';
 				foreach($sesarArr['missing'] as $igsn => $missingArr){
-					echo '<li><a href="https://app.geosamples.org/sample/igsn/' . htmlspecialchars($igsn, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank" title="' . $LANG['OPEN_IN_IGSN'] . '">' . htmlspecialchars($igsn, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a> ';
+					echo '<li><a href="https://app.geosamples.org/sample/igsn/'.$igsn.'" target="_blank" title="Open IGSN in SESAR Systems">'.$igsn.'</a> ';
 					if(isset($missingArr['occid'])){
-						echo '=> <a href="../individual/index.php?occid=' . htmlspecialchars($missingArr['occid'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank" title="' . $LANG['OPEN_OCC'] . '">' . htmlspecialchars($missingArr['catNum'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a> ';
-						echo '<a href="#" onclick="syncIGSN(' . $missingArr['occid'] . ',\'' . $missingArr['catNum'] . '\',\'' . $igsn . '\');return false" title="' . $LANG['ADD_IGSN'] . '"><img src="../../images/link.png" style="width:13px"/></a>';
+						echo '=> <a href="../individual/index.php?occid='.$missingArr['occid'].'" target="_blank" title="Open occurrence profile page">'.$missingArr['catNum'].'</a> ';
+						echo '<a href="#" onclick="syncIGSN('.$missingArr['occid'].',\''.$missingArr['catNum'].'\',\''.$igsn.'\');return false" title="Add IGSN to target occurrence"><img src="../../images/link.png" style="width:13px"/></a>';
 						echo '<span id="syncDiv-'.$missingArr['occid'].'" style="margin-left:15px;color:green;"></span>';
 					}
 					echo '</li>';
 				}
 				echo '</div>';
 			}
-			echo '<li style="margin-left:15px">' . $LANG['FINISHED_VERIFY'] . '</li>';
+			echo '<li style="margin-left:15px">Finished verifying GUIDs!</li>';
 			echo '</ul>';
 
 			if($collid){
 				echo '<ul style="margin-top:15px">';
-				echo '<li>' . $LANG['VERIFYING_COLL'] . '</li>';
+				echo '<li>Verifying collection\'s IGSNs against SESAR system...</li>';
 				ob_flush();
 				flush();
 				$localArr = $guidManager->verifyLocalGuids();
 				$missingCnt = 0;
 				if(isset($localArr)) $missingCnt = count($localArr);
 				echo '<li style="margin-left:15px">';
-				echo $LANG['IGSN_IN_PORTAL'] . ': '.$missingCnt;
-				if($missingCnt) echo ' <a href="#" onclick="$(\'#unmappedGuidList\').show();return false;">' . '(' . $LANG['DISPLAY_LIST'] . ')' . '</a>';
+				echo 'IGSNs in portal, but not SESAR: '.$missingCnt;
+				if($missingCnt) echo ' <a href="#" onclick="$(\'#unmappedGuidList\').show();return false;">(display list)</a>';
 				echo '</li>';
 				if($missingCnt){
 					echo '<div id="unmappedGuidList" style="margin-left:30px;display:none">';
 					foreach($localArr as $occid => $guid){
-						echo '<li><a href="../individual/index.php?occid=' . htmlspecialchars($occid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank">' . htmlspecialchars($guid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a></li>';
+						echo '<li><a href="../individual/index.php?occid='.$occid.'" target="_blank">'.$guid.'</a></li>';
 					}
 					echo '</div>';
 				}
-				echo '<li style="margin-left:15px">' . $LANG['FINISHED_LOCAL'] . '</li>';
+				echo '<li style="margin-left:15px">Finished verifying local IGSN GUIDs!</li>';
 				echo '</ul>';
 			}
 			echo '</fieldset>';
 		}
 	}
-	else echo '<h2>' . $LANG['NOT_AUTH'] . '</h2>';
+	else echo '<h2>You are not authorized to access this page or collection identifier has not been set</h2>';
 	?>
 </div>
 <?php

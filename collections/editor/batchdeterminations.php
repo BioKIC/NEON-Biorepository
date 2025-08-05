@@ -317,20 +317,7 @@ if($isEditor){
 					</div>
 					<div style="margin-top:15px;">
 						<form name="accqueryform" action="batchdeterminations.php" method="post" onsubmit="return submitAccForm(this);">
-							<section class="flex-form" style="align-items: center; gap:0.5rem; margin-bottom: 1rem">
-								<div style="margin: 0; display:flex; align-items: center; gap:0.25rem">
-									<label for="catalognumber"><?php echo $LANG['CATNUM']; ?>:</label>
-									<input style="margin: 0" name="catalognumber" id="catalognumber" type="text" style="border-color:green;width:200px;" />
-								</div>
-								<div style="margin: 0">
-									<input name="allcatnum" id="allcatnum" type="checkbox" checked /> <label for="allcatnum"><?php echo $LANG['TARGET_ALL']; ?></label>
-								</div>
-							</section>
-							<div style="margin-bottom: 1rem; display:flex; align-items: center; gap:0.25rem">
-								<label for="nomsciname"><?php echo $LANG['TAXON']; ?>:</label>
-								<input style="margin:0; width:260px;" type="text" id="nomsciname" name="sciname" onfocus="initScinameAutocomplete(this.form)" />
-							</div>
-							<div class="left-breathing-room-rel">
+							<div>
 								<b>Field Site/Domain:</b>
 								<select id="fieldsite" name="fieldsite" style="width:260px;">
 									<option>--------------------</option>
@@ -432,6 +419,19 @@ if($isEditor){
 									<option value="4">D19</option>
 									<option value="20">D20</option>
 								</select>
+							</div>
+							<section class="flex-form" style="align-items: center; gap:0.5rem; margin-bottom: 1rem">
+								<div style="margin: 0; display:flex; align-items: center; gap:0.25rem">
+									<label for="catalognumber"><?php echo $LANG['CATNUM']; ?>:</label>
+									<input style="margin: 0" name="catalognumber" id="catalognumber" type="text" style="border-color:green;width:200px;" />
+								</div>
+								<div style="margin: 0">
+									<input name="allcatnum" id="allcatnum" type="checkbox" checked /> <label for="allcatnum"><?php echo $LANG['TARGET_ALL']; ?></label>
+								</div>
+							</section>
+							<div style="margin-bottom: 1rem; display:flex; align-items: center; gap:0.25rem">
+								<label for="nomsciname"><?php echo $LANG['TAXON']; ?>:</label>
+								<input style="margin:0; width:260px;" type="text" id="nomsciname" name="sciname" onfocus="initScinameAutocomplete(this.form)" />
 							</div>
 							<section class="flex-form">
 								<div style="margin: 0">

@@ -2,6 +2,7 @@
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT . '/classes/DwcArchiverPublisher.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceCollectionProfile.php');
+include_once($SERVER_ROOT . '/classes/utilities/GeneralUtil.php');
 
 if ($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/datasets/datapublisher.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT . '/content/lang/collections/datasets/datapublisher.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/datasets/datapublisher.en.php');
@@ -234,8 +235,8 @@ if ($isEditor) {
 				<?php
 				echo $LANG['DWCA_EXPLAIN_1'] . ' <a href="https://en.wikipedia.org/wiki/Darwin_Core_Archive" target="_blank">' . $LANG['DWCA'] . '</a> ' . $LANG['DWCA_EXPLAIN_2'] .
 					' <a href="http://rs.tdwg.org/dwc/terms/" target="_blank">' . $LANG['DWC'] . '</a> ' . $LANG['DWCA_EXPLAIN_3'] .
-					' <a href="https://biokic.github.io/symbiota-docs/coll_manager/data_publishing/idigbio/" target="_blank"> ' . $LANG['PUBLISH_IDIGBIO'] . '</a> &amp;' .
-					' <a href="https://biokic.github.io/symbiota-docs/coll_manager/data_publishing/gbif/" target="_blank"> ' . $LANG['PUBLISH_GBIF'] . '</a>.';
+					' <a href="https://docs.symbiota.org/Collection_Manager_Guide/Data_Publishing/publishing_idigbio" target="_blank"> ' . $LANG['PUBLISH_IDIGBIO'] . '</a> &amp;' .
+					' <a href="https://docs.symbiota.org/Collection_Manager_Guide/Data_Publishing/publishing_gbif" target="_blank"> ' . $LANG['PUBLISH_GBIF'] . '</a>.';
 				?>
 			</div>
 			<?php
@@ -342,7 +343,7 @@ if ($isEditor) {
 						echo '</div>';
 					}
 					if ($collArr['dwcaurl']) {
-						$serverName = $collManager->getDomain();
+						$serverName = GeneralUtil::getDomain();
 						if(substr($serverName, 0, 4) == 'www.') $serverName = str_replace('www.', '', $serverName);
 						if(!strpos($serverName, 'localhost') && strpos($collArr['dwcaurl'], $serverName) === false) {
 							$baseUrl = substr($collArr['dwcaurl'], 0, strpos($collArr['dwcaurl'], '/content')) . '/collections/datasets/datapublisher.php';
@@ -389,7 +390,7 @@ if ($isEditor) {
 									?>
 									<div style="margin:10px 0px;clear:both;">
 										<?php
-										$collPath = $collManager->getDomain() . $CLIENT_ROOT . '/collections/misc/collprofiles.php?collid=' . $collid;
+										$collPath = GeneralUtil::getDomain() . $CLIENT_ROOT . '/collections/misc/collprofiles.php?collid=' . $collid;
 										$bodyStr = 'Please provide the following GBIF user permission to create and update datasets for the following GBIF publisher.<br/>' .
 											'Once these permissions are assigned, we will be pushing a DwC-Archive from the following Symbiota collection to GBIF.<br/><br/>' .
 											'GBIF user: ' . $GBIF_USERNAME . '<br/>' .
@@ -440,7 +441,7 @@ if ($isEditor) {
 						?>
 					</div>
 					<div style="margin-top:5px;" class="font-control top-breathing-room-rel">
-						<input type="checkbox" name="redact" value="1" <?php echo ($redactLocalities ? 'CHECKED' : ''); ?> /> <?php echo $LANG['REDACT_LOC']; ?><br />
+						<input type="checkbox" name="redact" value="1" <?php echo ($redactLocalities ? 'CHECKED' : ''); ?> /> <?php echo $LANG['REDACT_REC']; ?><br />
 					</div>
 					<div class="font-control top-breathing-room-rel">
 						<input type="hidden" name="collid" value="<?php echo $collid; ?>" />
@@ -537,7 +538,7 @@ if ($isEditor) {
 									?>
 								</div>
 								<div style="margin-top:5px;">
-									<input type="checkbox" name="redact" value="1" <?php echo ($redactLocalities ? 'CHECKED' : ''); ?> /> <?php echo $LANG['REDACT_LOC']; ?><br />
+									<input type="checkbox" name="redact" value="1" <?php echo ($redactLocalities ? 'CHECKED' : ''); ?> /> <?php echo $LANG['REDACT_REC']; ?><br />
 								</div>
 							</fieldset>
 							<div style="clear:both;">

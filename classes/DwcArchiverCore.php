@@ -9,7 +9,8 @@ include_once($SERVER_ROOT . '/classes/DwcArchiverIdentifier.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceTaxaManager.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceAccessStats.php');
 include_once($SERVER_ROOT . '/classes/PortalIndex.php');
-include_once($SERVER_ROOT . '/classes/UuidFactory.php');
+include_once($SERVER_ROOT . '/classes/utilities/UuidFactory.php');
+include_once($SERVER_ROOT . '/classes/utilities/GeneralUtil.php');
 
 class DwcArchiverCore extends Manager{
 
@@ -88,7 +89,7 @@ class DwcArchiverCore extends Manager{
 		);
 
 		//ini_set('memory_limit','512M');
-		set_time_limit(600);
+		set_time_limit(1800);
 	}
 
 	public function __destruct(){
@@ -385,12 +386,9 @@ class DwcArchiverCore extends Manager{
 			if (stripos($this->conditionSql, 'ds.datasetid')) {
 				$sql .= 'INNER JOIN omoccurdatasetlink ds ON o.occid = ds.occid ';
 			}
-			if (stripos($this->conditionSql, 'p.point')) {
+			if (stripos($this->conditionSql, 'p.lngLatPoint')) {
 				//Search criteria came from map search page
 				$sql .= 'LEFT JOIN omoccurpoints p ON o.occid = p.occid ';
-			}
-			if (strpos($this->conditionSql, 'MATCH(f.recordedby)') || strpos($this->conditionSql, 'MATCH(f.locality)')) {
-				$sql .= 'INNER JOIN omoccurrencesfulltext f ON o.occid = f.occid ';
 			}
 			if (stripos($this->conditionSql, 'a.stateid')) {
 				//Search is limited by occurrence attribute
@@ -439,7 +437,7 @@ class DwcArchiverCore extends Manager{
 			}
 			if (isset($dwcArray['occurrenceID']) || (isset($dwcArray['catalogNumber']) && isset($dwcArray['collectionCode']))) {
 				$occurrenceid = $dwcArray['occurrenceID'];
-				if (UuidFactory::is_valid($occurrenceid)) {
+				if (UuidFactory::isValid($occurrenceid)) {
 					$occurrenceid = "urn:uuid:$occurrenceid";
 				} else {
 					$catalogNumber = $dwcArray['catalogNumber'];
@@ -464,7 +462,7 @@ class DwcArchiverCore extends Manager{
 								break;
 							case "collectionID":
 								// RDF Guide Section 2.3.3 owl:sameAs for urn:lsid and resolvable IRI.
-								if (stripos("urn:uuid:", $value) === false && UuidFactory::is_valid($value)) {
+								if (stripos("urn:uuid:", $value) === false && UuidFactory::isValid($value)) {
 									$lsid = "urn:uuid:$value";
 								} elseif (stripos("urn:lsid:biocol.org", $value) === 0) {
 									$lsid = "http://biocol.org/$value";
@@ -515,7 +513,7 @@ class DwcArchiverCore extends Manager{
 								break;
 							default:
 								if (isset($occurTermArr[$key])) {
-									//$ns = RdfUtility::namespaceAbbrev($occurTermArr[$key]);
+									//$ns = RdfUtil::namespaceAbbrev($occurTermArr[$key]);
 									//$returnvalue .= $separator . "   " . $ns . " \"$value\"";
 								}
 						}
@@ -563,7 +561,7 @@ class DwcArchiverCore extends Manager{
 			}
 			if (isset($dwcArray['occurrenceID']) || (isset($dwcArray['catalogNumber']) && isset($dwcArray['collectionCode']))) {
 				$occurrenceid = $dwcArray['occurrenceID'];
-				if (UuidFactory::is_valid($occurrenceid)) {
+				if (UuidFactory::isValid($occurrenceid)) {
 					$occurrenceid = "urn:uuid:$occurrenceid";
 				} else {
 					$catalogNumber = $dwcArray['catalogNumber'];
@@ -594,7 +592,7 @@ class DwcArchiverCore extends Manager{
 								break;
 							case "collectionID":
 								// RDF Guide Section 2.3.3 owl:sameAs for urn:lsid and resolvable IRI.
-								if (stripos("urn:uuid:", $value) === false && UuidFactory::is_valid($value)) {
+								if (stripos("urn:uuid:", $value) === false && UuidFactory::isValid($value)) {
 									$lsid = "urn:uuid:$value";
 								} elseif (stripos("urn:lsid:biocol.org", $value) === 0) {
 									$lsid = "http://biocol.org/$value";
@@ -652,7 +650,7 @@ class DwcArchiverCore extends Manager{
 								break;
 							default:
 								if (isset($occurTermArr[$key])) {
-									//$ns = RdfUtility::namespaceAbbrev($occurTermArr[$key]);
+									//$ns = RdfUtil::namespaceAbbrev($occurTermArr[$key]);
 									//$elem = $newDoc->createElement($ns);
 									//$elem->appendChild($newDoc->createTextNode($value));
 								}
@@ -691,7 +689,7 @@ class DwcArchiverCore extends Manager{
 		$sql .= ' LIMIT 1000000';
 		$fieldArr = $this->occurrenceFieldArr['fields'];
 		if ($this->schemaType == 'dwc' || $this->schemaType == 'pensoft') {
-			unset($fieldArr['localitySecurity']);
+			unset($fieldArr['recordSecurity']);
 		}
 		if ($this->schemaType == 'dwc' || $this->schemaType == 'pensoft' || $this->schemaType == 'backup') {
 			unset($fieldArr['collID']);
@@ -712,7 +710,7 @@ class DwcArchiverCore extends Manager{
 			while ($r = $rs->fetch_assoc()) {
 				if(!$this->collArr) $this->setCollArr($r['collID']);
 				//Protect sensitive records
-				if ($this->redactLocalities && $r["localitySecurity"] == 1 && !in_array($r['collID'], $this->rareReaderArr)) {
+				if ($this->redactLocalities && $r["recordSecurity"] == 1 && !in_array($r['collID'], $this->rareReaderArr)) {
 					$protectedFields = array();
 					foreach ($this->securityArr as $v) {
 						if (array_key_exists($v, $r) && $r[$v]) {
@@ -745,13 +743,13 @@ class DwcArchiverCore extends Manager{
 					}
 				}
 				if ($this->schemaType == 'dwc') {
-					unset($r['localitySecurity']);
+					unset($r['recordSecurity']);
 				}
 				if ($this->schemaType == 'dwc' || $this->schemaType == 'backup') {
 					unset($r['collID']);
 				}
 				if ($this->schemaType == 'pensoft') {
-					unset($r['localitySecurity']);
+					unset($r['recordSecurity']);
 					unset($r['collID']);
 					if ($r['typeStatus']) {
 						$typeValue = strtolower($r['typeStatus']);
@@ -805,7 +803,7 @@ class DwcArchiverCore extends Manager{
 
 	private function getAssociatedMedia(){
 		$retStr = '';
-		$sql = 'SELECT originalurl FROM images ' . str_replace('o.', '', $this->conditionSql);
+		$sql = 'SELECT originalurl FROM media ' . str_replace('o.', '', $this->conditionSql);
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_object()) {
 			$retStr .= ';' . $r->originalurl;
@@ -956,7 +954,7 @@ class DwcArchiverCore extends Manager{
 		$termArr = $this->occurrenceFieldArr['terms'];
 		if ($this->schemaType == 'dwc' || $this->schemaType == 'pensoft') {
 			unset($termArr['eventDate2']);
-			unset($termArr['localitySecurity']);
+			unset($termArr['recordSecurity']);
 		}
 		if ($this->schemaType == 'dwc' || $this->schemaType == 'pensoft' || $this->schemaType == 'backup') {
 			unset($termArr['collID']);
@@ -1024,7 +1022,7 @@ class DwcArchiverCore extends Manager{
 			//List image fields
 			$imgCnt = 1;
 			$termArr = $this->imageFieldArr['terms'];
-			unset($termArr['imgID']);
+			unset($termArr['mediaID']);
 			foreach ($termArr as $v) {
 				$fieldElem = $newDoc->createElement('field');
 				$fieldElem->setAttribute('index', $imgCnt);
@@ -1654,7 +1652,7 @@ class DwcArchiverCore extends Manager{
 		//Output header
 		$fieldArr = $this->occurrenceFieldArr['fields'];
 		if ($this->schemaType == 'dwc' || $this->schemaType == 'pensoft') {
-			unset($fieldArr['localitySecurity']);
+			unset($fieldArr['recordSecurity']);
 			unset($fieldArr['collID']);
 		} elseif ($this->schemaType == 'backup') unset($fieldArr['collID']);
 		$fieldOutArr = array();
@@ -1699,6 +1697,16 @@ class DwcArchiverCore extends Manager{
 			$occurAccessID = $statsManager->insertAccessEvent('download', $sqlFrag);
 			$batchOccidArr = array();
 			while ($r = $rs->fetch_assoc()) {
+				if ($this->isPublicDownload || $this->limitToGuids) {
+					//Is a download from public interface OR DwC-A publishing event pushed to aggregators, thus skip record if Full Protections apply
+					if($r['recordSecurity'] == 5){
+						if(!strpos($sql, 'recordSecurity != 5')){
+							//But only if protection is not already applied within the SQL string
+							continue;
+						}
+					}
+				}
+
 				if(!isset($this->collArr[$r['collID']])){
 					$this->setCollArr($r['collID'], 'internalCall');
 				}
@@ -1715,7 +1723,7 @@ class DwcArchiverCore extends Manager{
 				}
 				$hasRecords = true;
 				//Protect sensitive records
-				if ($this->redactLocalities && $r['localitySecurity'] == 1 && !in_array($r['collID'], $this->rareReaderArr)) {
+				if ($this->redactLocalities && $r['recordSecurity'] == 1 && !in_array($r['collID'], $this->rareReaderArr)) {
 					$protectedFields = array();
 					foreach ($this->securityArr as $v) {
 						if (array_key_exists($v, $r) && $r[$v]) {
@@ -1737,7 +1745,7 @@ class DwcArchiverCore extends Manager{
 					}
 				}
 				if ($this->schemaType == 'dwc') {
-					unset($r['localitySecurity']);
+					unset($r['recordSecurity']);
 					unset($r['collID']);
 					//Format dates
 					if($r['eventDate']){
@@ -1755,7 +1763,7 @@ class DwcArchiverCore extends Manager{
 					unset($r['eventDate2']);
 				}
 				elseif ($this->schemaType == 'pensoft') {
-					unset($r['localitySecurity']);
+					unset($r['recordSecurity']);
 					unset($r['collID']);
 					if ($r['typeStatus']) {
 						$typeValue = strtolower($r['typeStatus']);
@@ -1789,11 +1797,19 @@ class DwcArchiverCore extends Manager{
 				if ($this->schemaType != 'coge') {
 					if ($exsArr = $dwcOccurManager->getExsiccateArr($r['occid'])) {
 						$exsStr = $exsArr['exsStr'];
-						if (isset($r['occurrenceRemarks']) && $r['occurrenceRemarks']) $exsStr = $r['occurrenceRemarks'] . '; ' . $exsStr;
+						if (isset($r['occurrenceRemarks']) && $r['occurrenceRemarks']) {
+							$exsStr = $r['occurrenceRemarks'] . '; ' . $exsStr;
+						}
 						$r['occurrenceRemarks'] = $exsStr;
-						$dynProp = 'exsiccatae: ' . $exsArr['exsJson'];
-						if (isset($r['dynamicProperties']) && $r['dynamicProperties']) $dynProp = $r['dynamicProperties'] . '; ' . $dynProp;
-						$r['dynamicProperties'] = $dynProp;
+
+						//$dynProp = 'exsiccatae: ' . $exsArr['exsJson'];
+						if (!isset($r['dynamicProperties']) || !is_array($r['dynamicProperties'])) {
+							$r['dynamicProperties'] = [];
+						}
+						$r['dynamicProperties']['exsiccatae'] = $exsArr['exsProps'];
+
+						//$dynProp = $r['dynamicProperties'] . '; ' . $dynProp;
+						//$r['dynamicProperties'] = $dynProp;
 					}
 					if ($assocOccurStr = $dwcOccurManager->getAssociationStr($r['occid'])) $r['t_associatedOccurrences'] = $assocOccurStr;
 					if ($assocSeqStr = $dwcOccurManager->getAssociatedSequencesStr($r['occid'])) $r['t_associatedSequences'] = $assocSeqStr;
@@ -1803,6 +1819,10 @@ class DwcArchiverCore extends Manager{
 				$dwcOccurManager->appendUpperTaxonomy2($r);
 				if ($rankStr = $dwcOccurManager->getTaxonRank($r['rankid'])) $r['t_taxonRank'] = $rankStr;
 				unset($r['rankid']);
+
+				if(isset($r['dynamicProperties'])) {
+					$r['dynamicProperties'] = json_encode($r['dynamicProperties']);
+				}
 				$this->encodeArr($r);
 				$this->addcslashesArr($r);
 				$this->writeOutRecord($fh, $r);
@@ -1933,17 +1953,17 @@ class DwcArchiverCore extends Manager{
 			$urlPathPrefix = $this->serverDomain . $GLOBALS['CLIENT_ROOT'] . (substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/');
 
 			$localDomain = '';
-			if (isset($GLOBALS['IMAGE_DOMAIN']) && $GLOBALS['IMAGE_DOMAIN']) {
-				$localDomain = $GLOBALS['IMAGE_DOMAIN'];
+			if (isset($GLOBALS['MEDIA_DOMAIN']) && $GLOBALS['MEDIA_DOMAIN']) {
+				$localDomain = $GLOBALS['MEDIA_DOMAIN'];
 			}
 			else {
 				$localDomain = $this->serverDomain;
 			}
-			$previousImgID = 0;
+			$previousMediaID = 0;
 			while ($r = $rs->fetch_assoc()) {
-				if ($previousImgID == $r['imgID']) continue;
-				$previousImgID = $r['imgID'];
-				unset($r['imgID']);
+				if ($previousMediaID == $r['mediaID']) continue;
+				$previousMediaID = $r['mediaID'];
+				unset($r['mediaID']);
 				if ($r['identifier'] && substr($r['identifier'], 0, 1) == '/') $r['identifier'] = $localDomain . $r['identifier'];
 				if ($r['accessURI'] && substr($r['accessURI'], 0, 1) == '/') $r['accessURI'] = $localDomain . $r['accessURI'];
 				if ($r['thumbnailAccessURI'] && substr($r['thumbnailAccessURI'], 0, 1) == '/') $r['thumbnailAccessURI'] = $localDomain . $r['thumbnailAccessURI'];
@@ -1977,8 +1997,15 @@ class DwcArchiverCore extends Manager{
 				}
 				$r['providermanagedid'] = 'urn:uuid:' . $r['providermanagedid'];
 				$r['associatedSpecimenReference'] = $urlPathPrefix . 'collections/individual/index.php?occid=' . $r['occid'];
-				$r['type'] = 'StillImage';
-				$r['subtype'] = 'Photograph';
+				/*
+				if($r['type'] '') {
+					$r['type'] = 'StillImage';
+					$r['subtype'] = 'Photograph';
+				} else {
+					$r['type'] = 'Sound';
+					$r['subtype'] = 'Recorded Organism';
+				}
+				*/
 				if($r['accessURI']){
 					$extStr = strtolower(substr($r['accessURI'], strrpos($r['accessURI'], '.') + 1));
 					if ($r['format'] == '') {
@@ -2066,7 +2093,7 @@ class DwcArchiverCore extends Manager{
 		}
 
 		$DEFAULT_TITLE = $GLOBALS['DEFAULT_TITLE'];
-		$SERVER_HOST = $this->getDomain();
+		$SERVER_HOST = GeneralUtil::getDomain();
 		$CLIENT_ROOT = $GLOBALS['CLIENT_ROOT'];
 
 		// Decides which citation format to use according to $citationVarArr
@@ -2113,7 +2140,7 @@ class DwcArchiverCore extends Manager{
 			include $GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '_template.php';
 		}
 		$output .= ob_get_clean();
-		$output .= "\n\nFor more information on citation formats, please see the following page: " . $this->getDomain() . $GLOBALS['CLIENT_ROOT'] . "/includes/usagepolicy.php";
+		$output .= "\n\nFor more information on citation formats, please see the following page: " . GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/includes/usagepolicy.php";
 
 		fwrite($fh, $output);
 
@@ -2124,7 +2151,7 @@ class DwcArchiverCore extends Manager{
 
 	private function writeOutRecord($fh, $outputArr){
 		if ($this->delimiter == ",") {
-			fputcsv($fh, $outputArr);
+			fputcsv($fh, $outputArr, $this->delimiter, "\"", "");
 		} else {
 			foreach ($outputArr as $k => $v) {
 				$outputArr[$k] = str_replace($this->delimiter, '', ($v ?? ''));
@@ -2284,11 +2311,11 @@ class DwcArchiverCore extends Manager{
 	}
 
 	public function setPublicationGuid($guid){
-		if(UuidFactory::is_valid($guid)) $this->publicationGuid = $guid;
+		if(UuidFactory::isValid($guid)) $this->publicationGuid = $guid;
 	}
 
 	public function setRequestPortalGuid($guid){
-		if(UuidFactory::is_valid($guid)) $this->requestPortalGuid = $guid;
+		if(UuidFactory::isValid($guid)) $this->requestPortalGuid = $guid;
 	}
 
 	public function setCharSetOut($cs){
@@ -2307,7 +2334,7 @@ class DwcArchiverCore extends Manager{
 		if ($domain) {
 			$this->serverDomain = $domain;
 		} elseif (!$this->serverDomain) {
-			$this->serverDomain = $this->getDomain();
+			$this->serverDomain = GeneralUtil::getDomain();
 		}
 	}
 

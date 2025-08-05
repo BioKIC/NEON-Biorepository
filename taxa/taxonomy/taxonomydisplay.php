@@ -69,7 +69,7 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 	<style>
 		label{ font-weight: bold; }
 		.field-div{ margin:3px 0px }
-		.icon-image{ border: 0px; width: 14px; }
+		.icon-image{ border: 0px; width: 15px; }
 	</style>
 </head>
 <body>
@@ -81,7 +81,7 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 		<a href="taxonomydisplay.php"><b><?= $LANG['TAX_TREE_VIEWER'] ?></b></a>
 	</div>
 	<div role="main" id="innertext">
-		<h1 class="page-heading">Central Taxonomic Thesaurus</h1>
+		<h1 class="page-heading"><?php $LANG['CENTRAL_TAXANOMIC_THESAURUS']; ?></h1>
 		<?php
 		if($statusStr){
 			$statusStr = str_replace(';', '<br/>', htmlspecialchars($statusStr, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE));
@@ -106,7 +106,6 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 		<div>
 			<?php
 			$taxMetaArr = $taxonDisplayObj->getTaxonomyMeta();
-			echo '<h2>'.$taxMetaArr['name'].'</h2>';
 			if(count($taxMetaArr) > 1){
 				//echo '<div id="taxDetailDiv" style="margin-top:15px;margin-left:5px;float:left;font-size:80%"><a href="#" onclick="displayTaxomonyMeta()">(more details)</a></div>';
 				echo '<div id="taxMetaDiv" style="margin:10px 15px 35px 15px;display:none;clear:both;">';
@@ -150,12 +149,12 @@ if($IS_ADMIN || array_key_exists('Taxonomy', $USER_RIGHTS)){
 						</div>
 					</div>
 					<div class="flex-form" style="margin: 10px">
+						<div>
+							<button class="inverse-color" name="tdsubmit" type="submit" value="displayTaxonTree"><?= $LANG['DISP_TAX_TREE'] ?></button>
+							<input name="taxauthid" type="hidden" value="<?= $taxAuthId; ?>" />
+						</div>
 						<div style="float: right">
 							<button name="tdsubmit" type="submit" value="exportTaxonTree"><?= $LANG['EXPORT_TREE'] ?></button>
-						</div>
-						<div>
-							<button name="tdsubmit" type="submit" value="displayTaxonTree"><?= $LANG['DISP_TAX_TREE'] ?></button>
-							<input name="taxauthid" type="hidden" value="<?= $taxAuthId; ?>" />
 						</div>
 					</div>
 				</fieldset>

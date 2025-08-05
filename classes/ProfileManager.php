@@ -4,7 +4,8 @@ use function PHPUnit\Framework\returnValue;
 
 include_once('Manager.php');
 include_once('Person.php');
-include_once('Encryption.php');
+include_once('utilities/Encryption.php');
+include_once('utilities/GeneralUtil.php');
 @include_once 'Mail.php';
 
 class ProfileManager extends Manager{
@@ -25,6 +26,13 @@ class ProfileManager extends Manager{
 
 	protected function resetConnection(){
 		$this->conn = MySQLiConnectionFactory::getCon('write');
+	}
+
+	public function closeConnection(){
+		if($this->conn !== null){
+			$this->conn->close();
+			$this->conn = null;
+		}
 	}
 
 	public function reset(){
@@ -75,14 +83,20 @@ class ProfileManager extends Manager{
 	private function authenticateUsingToken(){
 		$status = false;
 		if($this->token){
-			$sql = 'SELECT u.uid, u.firstname, u.username FROM users u INNER JOIN useraccesstokens t ON u.uid = t.uid WHERE (t.token = ?) AND ((u.username = ?) OR (u.email = ?)) ';
-			if($stmt = $this->conn->prepare($sql)){
-				if($stmt->bind_param('sss', $this->token, $this->userName, $this->userName)){
-					$stmt->execute();
-					$stmt->bind_result($this->uid, $this->displayName, $this->userName);
-					if($stmt->fetch()) $status = true;
-					$stmt->close();
+			try{
+				$sql = 'SELECT u.uid, u.firstname, u.username FROM users u INNER JOIN useraccesstokens t ON u.uid = t.uid WHERE (t.token = ?) AND ((u.username = ?) OR (u.email = ?)) ';
+				if($stmt = $this->conn->prepare($sql)){
+					if($stmt->bind_param('sss', $this->token, $this->userName, $this->userName)){
+						$stmt->execute();
+						$stmt->bind_result($this->uid, $this->displayName, $this->userName);
+						if($stmt->fetch()) $status = true;
+						$stmt->close();
+					}
 				}
+			}
+			catch(Exception $e){
+				//Probably a new installation and schema does not yet exists, thus just catch error and let schema manager handle the issue
+				//echo $e->getMessage();
 			}
 		}
 		return $status;
@@ -235,9 +249,33 @@ class ProfileManager extends Manager{
 					if(!$testStatus) return false;
 				}
 			}
+			if(!$this->testAgainstPrevious($newPwd)) return false;
 			if($this->updatePassword($this->uid, $newPwd)) return true;
 		}
 		return false;
+	}
+
+	private function testAgainstPrevious($newPassword){
+		$bool = true;
+		try{
+			// If passwords are believed to have been compromised, rename "password" column to "passwordOld" and then NULL "password".
+			// This force users to reset their passwords and this code ensures they don't reset to their old password
+			$sql = 'SELECT uid FROM users WHERE (uid = ?) AND (passwordOld = CONCAT(\'*\', UPPER(SHA1(UNHEX(SHA1(?))))))';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('is', $this->uid, $newPassword);
+				$stmt->execute();
+				$stmt->store_result();
+				if($stmt->num_rows){
+					$this->errorMessage = 'ERROR_PWD_SAME';
+					$bool = false;
+				}
+				$stmt->close();
+			}
+		}
+		catch(Exception $e){
+
+		}
+		return $bool;
 	}
 
 	public function resetPassword($un){
@@ -259,7 +297,7 @@ class ProfileManager extends Manager{
 
 			if($uid){
 				$subject = 'RE: Password reset';
-				$serverPath = $this->getDomain().$GLOBALS['CLIENT_ROOT'];
+				$serverPath = GeneralUtil::getDomain().$GLOBALS['CLIENT_ROOT'];
 				$from = '';
 				if (array_key_exists("SYSTEM_EMAIL", $GLOBALS) && !empty($GLOBALS["SYSTEM_EMAIL"])){
 					$from = 'Reset Request <'.$GLOBALS["SYSTEM_EMAIL"].'>';
@@ -302,7 +340,7 @@ class ProfileManager extends Manager{
 		// generate new random password
 		$newPassword = "";
 		$alphabet = str_split("0123456789abcdefghijklmnopqrstuvwxyz");
-		for($i = 0; $i<8; $i++) {
+		for($i = 0; $i<10; $i++) {
 			$newPassword .= $alphabet[rand(0,count($alphabet)-1)];
 		}
 		return $newPassword;
@@ -368,7 +406,7 @@ class ProfileManager extends Manager{
 		$rs->free();
 		if($loginStr){
 			$subject = $GLOBALS['DEFAULT_TITLE'].' Login Name';
-			$serverPath = $this->getDomain().$GLOBALS['CLIENT_ROOT'];
+			$serverPath = GeneralUtil::getDomain().$GLOBALS['CLIENT_ROOT'];
 			$bodyStr = 'Your '.$GLOBALS['DEFAULT_TITLE'].' (<a href="' . htmlspecialchars($serverPath, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . htmlspecialchars($serverPath, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a>) login name is: '.
 				$loginStr.'<br/><br/>If you continue to have login issues, contact the System Administrator: '.$GLOBALS['ADMIN_EMAIL'];
 			$status = $this->sendEmail($emailAddr, $subject, $bodyStr, $from);
@@ -423,14 +461,14 @@ class ProfileManager extends Manager{
 
 			//Test if login exists
 			if($this->loginExists($newLogin)){
-				$this->errorMessage = 'loginExists';
+				$this->errorMessage = 'LOGIN_USED';
 				return false;
 			}
 
 			$this->setUserName();
 			if($isSelf){
 				if(!$this->authenticate($pwd)){
-					$this->errorMessage = 'incorrectPassword';
+					$this->errorMessage = 'INCORRECT_PWD';
 					return false;
 				}
 			}
@@ -654,7 +692,7 @@ class ProfileManager extends Manager{
 						'INNER JOIN omcollections c ON o.collid = c.collid '.
 						'INNER JOIN taxa t ON o.tidinterpreted = t.tid '.
 						'INNER JOIN taxaenumtree e ON t.tid = e.tid ';
-					if($withImgOnly) $sql .= 'INNER JOIN images i ON o.occid = i.occid ';
+					if($withImgOnly) $sql .= 'INNER JOIN media i ON o.occid = i.occid ';
 					$sql .= 'WHERE v.category = "identification" AND v.ranking < 6 AND e.taxauthid = 1 '.
 						'AND (e.parenttid = '.$tid.' OR t.tid = '.$tid.') '.
 						'ORDER BY o.sciname,t.sciname,o.catalognumber ';
@@ -689,7 +727,7 @@ class ProfileManager extends Manager{
 			$sql = 'SELECT DISTINCT o.occid, o.catalognumber, o.stateprovince, '.
 				'CONCAT_WS("-",IFNULL(o.institutioncode,c.institutioncode),IFNULL(o.collectioncode,c.collectioncode)) AS collcode '.
 				'FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid ';
-			if($withImgOnly) $sql .= 'INNER JOIN images i ON o.occid = i.occid ';
+			if($withImgOnly) $sql .= 'INNER JOIN media i ON o.occid = i.occid ';
 			$sql .= 'WHERE (o.sciname IS NULL) '.
 				'ORDER BY c.institutioncode, o.catalognumber LIMIT 2000';
 			//echo '<div>'.$sql.'</div>';
@@ -739,7 +777,7 @@ class ProfileManager extends Manager{
 			'verbatimEventDate,habitat,substrate,occurrenceRemarks,informationWithheld,associatedOccurrences, '.
 			'dataGeneralizations,associatedTaxa,dynamicProperties,verbatimAttributes,reproductiveCondition, '.
 			'cultivationStatus,establishmentMeans,lifeStage,sex,individualCount,country,stateProvince,county,municipality, '.
-			'locality,localitySecurity,localitySecurityReason,decimalLatitude,decimalLongitude,geodeticDatum, '.
+			'locality,recordSecurity,securityReason,decimalLatitude,decimalLongitude,geodeticDatum, '.
 			'coordinateUncertaintyInMeters,verbatimCoordinates,georeferencedBy,georeferenceProtocol,georeferenceSources, '.
 			'georeferenceVerificationStatus,georeferenceRemarks,minimumElevationInMeters,maximumElevationInMeters,verbatimElevation, '.
 			'previousIdentifications,disposition,modified,language,processingstatus,recordEnteredBy,duplicateQuantity,dateLastModified ';
@@ -1074,19 +1112,26 @@ class ProfileManager extends Manager{
 
 	private function getDynamicProperties($uid){
 		$returnVal = false;
-		$sql = 'SELECT dynamicProperties FROM users WHERE uid = ?';
-		$stmt = $this->conn->prepare($sql);
-		$stmt->bind_param('i', $uid);
-		$stmt->execute();
-		$respns= $stmt->get_result();
-		if($fetchedObj = $respns->fetch_object()){
-			$dynPropStr = $fetchedObj->dynamicProperties;
-		}
-		$respns->free();
-		if(isset($dynPropStr)){
-			if($dynPropArr = json_decode($dynPropStr, true)){
-				$returnVal = $dynPropArr;
+		try{
+			$sql = 'SELECT dynamicProperties FROM users WHERE uid = ?';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('i', $uid);
+				$stmt->execute();
+				$respns= $stmt->get_result();
+				if($fetchedObj = $respns->fetch_object()){
+					if(!empty($fetchedObj->dynamicProperties)){
+						if($dynPropArr = json_decode($fetchedObj->dynamicProperties, true)){
+							$returnVal = $dynPropArr;
+						}
+					}
+				}
+				$respns->free();
+				$stmt->close();
 			}
+		}
+		catch(Exception $e){
+			//Probably a new installation and schema does not yet exists, thus just catch error and let schema manager handle the issue
+			//echo $e->getMessage();
 		}
 		return $returnVal;
 	}

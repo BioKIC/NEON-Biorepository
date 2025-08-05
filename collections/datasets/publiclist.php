@@ -21,20 +21,20 @@ $dArr = $datasetManager->getPublicDatasets();
 		include($SERVER_ROOT.'/includes/header.php');
 		?>
 		<div class="navpath">
-			<a href="<?= $CLIENT_ROOT ?>/index.php"> <?= $LANG['H_HOME'] ?> </a> &gt;&gt;
-			<b> <?= $LANG['PUB_DAT_LIST'] ?> </b>
+			<a href="<?php echo htmlspecialchars($CLIENT_ROOT, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>/index.php"> <?php echo htmlspecialchars($LANG['H_HOME'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?> </a> &gt;&gt;
+			<b> <?php echo htmlspecialchars($LANG['PUB_DAT_LIST'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?> </b>
 		</div>
 		<!-- This is inner text! -->
 		<div role="main" id="innertext">
-			<h1 class="page-heading"><?= $LANG['PUB_DAT_LIST'] ?></h1>
+			<h1 class="page-heading"><?php echo htmlspecialchars($LANG['PUB_DAT_LIST'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?></h1>
 			<ul>
-				<?php				
+				<?php
 				if ($IS_ADMIN) {
 					echo '<p><a href="index.php">Dataset Management</a></p>';
 				}
-				
+
 					echo '<p>The datasets below link to samples and specimens associated with published research and special collections. Visit the <b><a href="https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en&oi=ao">NEON Biorepository Google Scholar Profile</a></b> for an up-to-date list of publications related to NEON samples and specimens.</p>';
-				
+
 
 				if($dArr){
 					$catArr = array();

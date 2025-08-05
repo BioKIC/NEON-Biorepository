@@ -13,6 +13,9 @@ class GlossaryUpload{
 	private $errorStr = '';
 
 	function __construct() {
+		//Deactivate class file all together until it is rebuilt in a more secure format
+		exit();
+
 		$this->conn = MySQLiConnectionFactory::getCon("write");
  		$this->setUploadTargetPath();
  		set_time_limit(3000);
@@ -530,7 +533,7 @@ class GlossaryUpload{
 			);
 			$fixedwordchars=array("'", "'", '"', '"', '-', '...');
 			$retStr = str_replace($badwordchars, $fixedwordchars, $inStr);
-			$retStr = mb_convert_encoding($retStr, $GLOBALS['CHARSET'], mb_detect_encoding($retStr));
+			$retStr = mb_convert_encoding($retStr, $GLOBALS['CHARSET'], mb_detect_encoding($retStr, 'UTF-8,ISO-8859-1,ISO-8859-15'));
 		}
 		return $retStr;
 	}

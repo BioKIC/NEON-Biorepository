@@ -33,6 +33,9 @@ $LANG['H_MAMMALIA'] = 'Mamíferos';
 $LANG['H_PLANTA'] = 'Plantas';
 $LANG['H_REPTILIA'] = 'Reptiles';
 
+$LANG['H_GLOSSARY'] = 'Glosario';
+$LANG['H_GLOSSARY_SEARCH'] = 'Buscar Glosario';
+
 $LANG['H_MORE_INFO'] = 'M&aacute;s Informaci&oacute;n';
 $LANG['H_ABOUT_PROJECT'] = 'Información sobre el Proyecto';
 $LANG['H_PARTNERS'] = 'Socios';
@@ -58,6 +61,8 @@ $LANG['F_VISIT_IDIGBIO'] = 'Visita el sitio web de iDigBio';
 $LANG['F_IDIGBIO_LOGO'] = 'Logo de iDigBio, or, Integrated Digitized Biocollections';
 $LANG['F_BIOKIC'] = 'Biodiversity Knowledge Integration Center';
 $LANG['F_BIOKIC_LOGO'] = 'Logo del Biodiversity Knowledge Integration Center';
+$LANG['F_SSH'] = 'Centro de Soporte de Symbiota';
+$LANG['F_SSH_LOGO'] = 'Logotipo del Centro de Soporte de Symbiota';
 $LANG['F_NSF_AWARDS'] = 'Este proyecto fue posible gracias a los premios de la U.S. National Science Foundation';
 $LANG['F_MORE_INFO'] = 'Para más información sobre Symbiota';
 $LANG['F_READ_DOCS'] = 'lee los documentos';

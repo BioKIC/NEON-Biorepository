@@ -2,7 +2,8 @@
 include_once($SERVER_ROOT . '/classes/OmCollections.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceMaintenance.php');
 
-class OccurrenceCollectionProfile extends OmCollections{
+class OccurrenceCollectionProfile extends OmCollections
+{
 
 	private $collMeta = array();
 	private $organizationKey;
@@ -32,10 +33,10 @@ class OccurrenceCollectionProfile extends OmCollections{
 		if ($this->collid) $sql .= 'WHERE (c.collid = ' . $this->collid . ') ';
 		else $sql .= 'WHERE s.recordcnt > 0 ORDER BY c.SortSeq, c.CollectionName';
 		$rs = $this->conn->query($sql);
-		while ($r = $rs->fetch_assoc()) {
-			foreach ($r as $k => $v) {
-				// if($k != 'dynamicProperties')
-				$this->collMeta[$r['collid']][strtolower($k)] = $v;
+		while($r = $rs->fetch_assoc()){
+			foreach($r as $k => $v){
+				if($v === null) $v = '';
+				if($k != 'dynamicProperties') $this->collMeta[$r['collid']][strtolower($k)] = $v;
 			}
 			if ($r['dynamicProperties'] && strpos($r['dynamicProperties'], 'matSample":{"status":1')) {
 				$this->collMeta[$r['collid']]['matSample'] = 1;
@@ -70,115 +71,6 @@ class OccurrenceCollectionProfile extends OmCollections{
 		}
 		return $retArr;
 	}
-	
-	public function getMetadataHtml($LANG, $LANG_TAG)
-	{
-		$outStr = '<div class="coll-description">' . $this->collMeta[$this->collid]["fulldescription"] . '</div>';
-		if (isset($this->collMeta[$this->collid]['contactjson'])) {
-			if ($contactArr = json_decode($this->collMeta[$this->collid]['contactjson'], true)) {
-				foreach ($contactArr as $cArr) {
-					$title = (isset($LANG['CONTACT']) ? $LANG['CONTACT'] : 'Contact');
-					if (isset($cArr['role']) && $cArr['role']) $title = $cArr['role'];
-					$outStr .= '<div class="field-div"><span class="label">' . $title . ':</span> ';
-					$outStr .= $cArr['firstName'] . ' ' . $cArr['lastName'];
-					if (isset($cArr['email']) && $cArr['email']) $outStr .= ', ' . $cArr['email'];
-					if (isset($cArr['phone']) && $cArr['phone']) $outStr .= ', ' . $cArr['phone'];
-					if (isset($cArr['orcid']) && $cArr['orcid']) $outStr .= ' (ORCID #: <a href="https://orcid.org/' . $cArr['orcid'] . '" target="_blank">' . $cArr['orcid'] . '</a>)';
-					$outStr .= '</div>';
-				}
-			}
-		}
-		if (isset($this->collMeta[$this->collid]['resourcejson'])) {
-			if ($resourceArr = json_decode($this->collMeta[$this->collid]['resourcejson'], true)) {
-				$title = (isset($LANG['HOMEPAGE']) ? $LANG['HOMEPAGE'] : 'Homepage');
-				foreach ($resourceArr as $rArr) {
-					if (isset($rArr['title'][$LANG_TAG]) && $rArr['title'][$LANG_TAG]) $title = $rArr['title'][$LANG_TAG];
-					$outStr .= '<div class="field-div"><span class="label">' . $title . ':</span> ';
-					$outStr .= '<a href="' . $rArr['url'] . '" target="_blank">' . $rArr['url'] . '</a>';
-					$outStr .= '</div>';
-				}
-			}
-		}
-		$outStr .= '<div class="field-div">';
-		$outStr .= '<span class="label">' . $LANG['COLLECTION_TYPE'] . ':</span> ' . $this->collMeta[$this->collid]['colltype'];
-		$outStr .= '</div>';
-		$outStr .= '<div class="field-div">';
-		$outStr .= '<span class="label">' . $LANG['MANAGEMENT'] . ':</span> ';
-		if ($this->collMeta[$this->collid]['managementtype'] == 'Live Data') {
-			$outStr .= (isset($LANG['LIVE_DATA']) ? $LANG['LIVE_DATA'] : 'Live Data managed directly within data portal');
-		} else {
-			if ($this->collMeta[$this->collid]['managementtype'] == 'Aggregate') {
-				$outStr .= (isset($LANG['DATA_AGGREGATE']) ? $LANG['DATA_AGGREGATE'] : 'Data harvested from a data aggregator');
-			} else {
-				$outStr .= (isset($LANG['DATA_SNAPSHOT']) ? $LANG['DATA_SNAPSHOT'] : 'Data snapshot of local collection database ');
-			}
-		}
-		$outStr .= '</div>';
-		if ($this->collMeta[$this->collid]['managementtype'] != 'Live Data') $outStr .= '<div class="field-div"><span class="label">' . $LANG['LAST_UPDATE'] . ':</span> ' . $this->collMeta[$this->collid]['uploaddate'] . '</div>';
-		if ($this->collMeta[$this->collid]['managementtype'] == 'Live Data') {
-			$outStr .= '<div class="field-div">';
-			$outStr .= '<span class="label">' . $LANG['GLOBAL_UNIQUE_ID'] . ':</span> ' . $this->collMeta[$this->collid]['recordid'];
-			$outStr .= '</div>';
-		}
-		if ($this->collMeta[$this->collid]['dwcaurl']) {
-			$dwcaUrl = $this->collMeta[$this->collid]['dwcaurl'];
-			$outStr .= '<div class="field-div">';
-			$outStr .= '<span class="label">' . (isset($LANG['DWCA_PUB']) ? $LANG['DWCA_PUB'] : 'DwC-Archive Access Point') . ':</span> ';
-			$outStr .= '<a href="' . $dwcaUrl . '">' . $dwcaUrl . '</a>';
-			$outStr .= '</div>';
-		}
-		$outStr .= '<div class="field-div">';
-		if ($this->collMeta[$this->collid]['managementtype'] == 'Live Data') {
-			if ($GLOBALS['SYMB_UID']) {
-				$outStr .= '<span class="label">' . (isset($LANG['LIVE_DOWNLOAD']) ? $LANG['LIVE_DOWNLOAD'] : 'Live Data Download') . ':</span> ';
-				$outStr .= '<a href="../../webservices/dwc/dwcapubhandler.php?collid=' . $this->collMeta[$this->collid]['collid'] . '">' . (isset($LANG['FULL_DATA']) ? $LANG['FULL_DATA'] : 'DwC-Archive File') . '</a>';
-			}
-		} elseif ($this->collMeta[$this->collid]['managementtype'] == 'Snapshot') {
-			$pathArr = $this->getDwcaPath($this->collMeta[$this->collid]['collid']);
-			if ($pathArr) {
-				$outStr .= '<div style="float:left"><span class="label">' . (isset($LANG['IPT_SOURCE']) ? $LANG['IPT_SOURCE'] : 'IPT / DwC-A Source') . ':</span> </div>';
-				$outStr .= '<div style="float:left;margin-left:5px;">';
-				foreach ($pathArr as $titleStr => $pathStr) {
-					$outStr .= '<a href="' . $pathStr . '" target="_blank">' . $titleStr . '</a><br/>';
-				}
-				$outStr .= '</div>';
-			}
-		}
-		$outStr .= '</div>';
-		$outStr .= '<div class="field-div"><span class="label">' . (isset($LANG['DIGITAL_METADATA']) ? $LANG['DIGITAL_METADATA'] : 'Digital Metadata') . ':</span> <a href="../datasets/emlhandler.php?collid=' . $this->collMeta[$this->collid]['collid'] . '" target="_blank">EML File</a></div>';
-		$outStr .= '<div class="field-div"><span class="label">' . $LANG['USAGE_RIGHTS'] . ':</span> ';
-		if ($this->collMeta[$this->collid]['rights']) {
-			$rights = $this->collMeta[$this->collid]['rights'];
-			$rightsUrl = '';
-			if (substr($rights, 0, 4) == 'http') {
-				$rightsUrl = $rights;
-				if ($GLOBALS['RIGHTS_TERMS']) {
-					if ($rightsArr = array_keys($GLOBALS['RIGHTS_TERMS'], $rights)) {
-						$rights = current($rightsArr);
-					}
-				}
-			}
-			if ($rightsUrl) $outStr .= '<a href="' . $rightsUrl . '" target="_blank">';
-			$outStr .= $rights;
-			if ($rightsUrl) $outStr .= '</a>';
-		} elseif (file_exists('../../includes/usagepolicy.php')) {
-			$outStr .= '<a href="../../includes/usagepolicy.php" target="_blank">' . (isset($LANG['USAGE_POLICY']) ? $LANG['USAGE_POLICY'] : 'Usage policy') . '</a>';
-		}
-		$outStr .= '</div>';
-		if ($this->collMeta[$this->collid]['rightsholder']) {
-			$outStr .= '<div class="field-div">';
-			$outStr .= '<span class="label">' . $LANG['RIGHTS_HOLDER'] . ':</span> ';
-			$outStr .= $this->collMeta[$this->collid]['rightsholder'];
-			$outStr .= '</div>';
-		}
-		if ($this->collMeta[$this->collid]['accessrights']) {
-			$outStr .= '<div class="field-div">' .
-				'<span class="label">' . $LANG['ACCESS_RIGHTS'] . ':</span> ' .
-				$this->collMeta[$this->collid]['accessrights'] .
-				'</div>';
-		}
-		return $outStr;
-	}
 
 	public function getDwcaPath($collid){
 		$retArr = array();
@@ -199,12 +91,14 @@ class OccurrenceCollectionProfile extends OmCollections{
 	public function batchTriggerGBIFCrawl($collIdArr){
 		$sql = 'SELECT collid, collectionname, publishToGbif, dwcaUrl, aggKeysStr FROM omcollections WHERE CollID IN(' . implode(',', $collIdArr) . ') ';
 		$rs = $this->conn->query($sql);
-		while ($row = $rs->fetch_object()) {
-			if ($row->publishToGbif && $row->aggKeysStr) {
-				$gbifKeyArr = json_decode($row->aggKeysStr, true);
-				$this->datasetKey = $gbifKeyArr['datasetKey'];
-				$this->organizationKey = $gbifKeyArr['organizationKey'];
-				if (isset($gbifKeyArr['datasetKey']) && $row->dwcaUrl) $this->triggerGBIFCrawl($row->dwcaUrl, $row->collid, $row->collectionname);
+		while($row = $rs->fetch_object()){
+			if($row->publishToGbif && $row->aggKeysStr){
+				$gbifKeyArr = json_decode($row->aggKeysStr,true);
+				if(isset($gbifKeyArr['datasetKey']) && $row->dwcaUrl){
+					$this->datasetKey = $gbifKeyArr['datasetKey'];
+					$this->organizationKey = $gbifKeyArr['organizationKey'];
+					$this->triggerGBIFCrawl($row->dwcaUrl, $row->collid, $row->collectionname);
+				}
 			}
 		}
 		$rs->free();
@@ -617,15 +511,15 @@ class OccurrenceCollectionProfile extends OmCollections{
 				$returnArr[$r->CollectionName]['dynamicProperties'] = $r->dynamicProperties;
 			}
 			$rs->free();
-			$sql2 = 'SELECT c.CollectionName, COUNT(DISTINCT o.family) AS FamilyCount, ' .
-				'COUNT(DISTINCT CASE WHEN t.RankId >= 180 THEN t.UnitName1 ELSE NULL END) AS GeneraCount, ' .
-				'COUNT(DISTINCT CASE WHEN t.RankId = 220 THEN t.SciName ELSE NULL END) AS SpeciesCount, ' .
-				'COUNT(DISTINCT CASE WHEN t.RankId >= 220 THEN t.SciName ELSE NULL END) AS TotalTaxaCount, ' .
-				'COUNT(DISTINCT i.occid) AS OccurrenceImageCount ' .
-				'FROM omoccurrences AS o LEFT JOIN taxa AS t ON o.tidinterpreted = t.TID ' .
-				'INNER JOIN omcollections AS c ON o.collid = c.CollID ' .
-				'LEFT JOIN images AS i ON o.occid = i.occid ' .
-				'WHERE c.CollID IN(' . $collId . ') ' .
+			$sql2 = 'SELECT c.CollectionName, COUNT(DISTINCT o.family) AS FamilyCount, '.
+				'COUNT(DISTINCT CASE WHEN t.RankId >= 180 THEN t.UnitName1 ELSE NULL END) AS GeneraCount, '.
+				'COUNT(DISTINCT CASE WHEN t.RankId = 220 THEN t.SciName ELSE NULL END) AS SpeciesCount, '.
+				'COUNT(DISTINCT CASE WHEN t.RankId >= 220 THEN t.SciName ELSE NULL END) AS TotalTaxaCount, '.
+				'COUNT(DISTINCT i.occid) AS OccurrenceImageCount '.
+				'FROM omoccurrences AS o LEFT JOIN taxa AS t ON o.tidinterpreted = t.TID '.
+				'INNER JOIN omcollections AS c ON o.collid = c.CollID '.
+				'LEFT JOIN media AS i ON o.occid = i.occid '.
+				'WHERE c.CollID IN('.$collId.') '.
 				'GROUP BY c.CollectionName ';
 			//echo $sql2;
 			$rs = $this->conn->query($sql2);
@@ -637,14 +531,14 @@ class OccurrenceCollectionProfile extends OmCollections{
 				$returnArr[$r->CollectionName]['OccurrenceImageCount'] = $r->OccurrenceImageCount;
 			}
 			$rs->free();
-			$sql3 = 'SELECT COUNT(DISTINCT o.family) AS FamilyCount, ' .
-				'COUNT(DISTINCT CASE WHEN t.RankId >= 180 THEN t.UnitName1 ELSE NULL END) AS GeneraCount, ' .
-				'COUNT(DISTINCT CASE WHEN t.RankId = 220 THEN t.SciName ELSE NULL END) AS SpeciesCount, ' .
-				'COUNT(DISTINCT CASE WHEN t.RankId >= 220 THEN t.SciName ELSE NULL END) AS TotalTaxaCount, ' .
-				'COUNT(DISTINCT CASE WHEN i.occid IS NOT NULL THEN i.occid ELSE NULL END) AS TotalImageCount ' .
-				'FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.TID ' .
-				'LEFT JOIN images AS i ON o.occid = i.occid ' .
-				'WHERE o.collid IN(' . $collId . ') ';
+			$sql3 = 'SELECT COUNT(DISTINCT o.family) AS FamilyCount, '.
+				'COUNT(DISTINCT CASE WHEN t.RankId >= 180 THEN t.UnitName1 ELSE NULL END) AS GeneraCount, '.
+				'COUNT(DISTINCT CASE WHEN t.RankId = 220 THEN t.SciName ELSE NULL END) AS SpeciesCount, '.
+				'COUNT(DISTINCT CASE WHEN t.RankId >= 220 THEN t.SciName ELSE NULL END) AS TotalTaxaCount, '.
+				'COUNT(DISTINCT CASE WHEN i.occid IS NOT NULL THEN i.occid ELSE NULL END) AS TotalImageCount '.
+				'FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.TID '.
+				'LEFT JOIN media AS i ON o.occid = i.occid '.
+				'WHERE o.collid IN('.$collId.') ';
 			//echo $sql3;
 			$rs = $this->conn->query($sql3);
 			while ($r = $rs->fetch_object()) {
@@ -672,7 +566,11 @@ class OccurrenceCollectionProfile extends OmCollections{
 					$pTID = $r->TID;
 				}
 				$rs->free();
-				$sqlWhere .= 'AND ((o.sciname = "' . $this->cleanInStr($taxon) . '") OR (o.tidinterpreted IN(SELECT DISTINCT tid FROM taxaenumtree WHERE taxauthid = 1 AND parenttid IN(' . $pTID . ')))) ';
+				if (!$pTID){
+					echo "<script>alert('Error: Parent Taxon not found!');</script>";
+        			return $returnArr;
+				}
+				$sqlWhere .= 'AND ((o.sciname = "'.$this->cleanInStr($taxon).'") OR (o.tidinterpreted IN(SELECT DISTINCT tid FROM taxaenumtree WHERE taxauthid = 1 AND parenttid IN('.$pTID.')))) ';
 			}
 			if ($country) $sqlWhere .= 'AND o.country = "' . $this->cleanInStr($country) . '" ';
 			$sql2 = 'SELECT c.CollID, c.CollectionName, COUNT(DISTINCT o.occid) AS SpecimenCount, COUNT(o.decimalLatitude) AS GeorefCount, ' .
@@ -737,7 +635,7 @@ class OccurrenceCollectionProfile extends OmCollections{
 			$rs->free();
 			$sql5 = 'SELECT c.CollID, c.CollectionName, COUNT(DISTINCT CASE WHEN i.occid IS NOT NULL THEN i.occid ELSE NULL END) AS TotalImageCount ';
 			$sql5 .= $sqlFrom;
-			$sql5 .= 'LEFT JOIN images AS i ON o.occid = i.occid ';
+			$sql5 .= 'LEFT JOIN media AS i ON o.occid = i.occid ';
 			$sql5 .= $sqlWhere;
 			$sql5 .= 'GROUP BY c.CollectionName ';
 			//echo 'sql5: '.$sql5;
@@ -766,11 +664,11 @@ class OccurrenceCollectionProfile extends OmCollections{
 
 	public function getYearStatsDataArr($collId, $days){
 		$statArr = array();
-		if (preg_match('/^[0-9,]+$/', $collId) && is_numeric($days)) {
-			$sql = 'SELECT CONCAT_WS("-",c.institutioncode,c.collectioncode) as collcode, c.collectionname ' .
-				'FROM omoccurrences AS o INNER JOIN omcollections AS c ON o.collid = c.collid ' .
-				'LEFT JOIN images AS i ON o.occid = i.occid ' .
-				'WHERE o.collid IN(' . $collId . ') AND ((o.dateLastModified IS NOT NULL AND datediff(curdate(), o.dateLastModified) < ' . $days . ') OR (datediff(curdate(), i.InitialTimeStamp) < ' . $days . ')) ' .
+		if(preg_match('/^[0-9,]+$/',$collId) && is_numeric($days)){
+			$sql = 'SELECT CONCAT_WS("-",c.institutioncode,c.collectioncode) as collcode, c.collectionname '.
+				'FROM omoccurrences AS o INNER JOIN omcollections AS c ON o.collid = c.collid '.
+				'LEFT JOIN media AS i ON o.occid = i.occid '.
+				'WHERE o.collid IN('.$collId.') AND ((o.dateLastModified IS NOT NULL AND datediff(curdate(), o.dateLastModified) < '.$days.') OR (datediff(curdate(), i.InitialTimeStamp) < '.$days.')) '.
 				'ORDER BY c.collectionname ';
 			//echo $sql;
 			$rs = $this->conn->query($sql);
@@ -808,12 +706,12 @@ class OccurrenceCollectionProfile extends OmCollections{
 				$statArr[$r->collcode]['stats'][$r->dateEntered]['stage3Count'] = $r->stage3Count;
 			}
 
-			$sql2 = 'SELECT CONCAT_WS("-",c.institutioncode,c.collectioncode) as collcode, CONCAT_WS("-",year(i.InitialTimeStamp),month(i.InitialTimeStamp)) as dateEntered, ' .
-				'c.collectionname, month(i.InitialTimeStamp) as monthEntered, year(i.InitialTimeStamp) as yearEntered, ' .
-				'COUNT(i.imgid) AS imgcnt ' .
-				'FROM omoccurrences AS o INNER JOIN omcollections AS c ON o.collid = c.collid ' .
-				'LEFT JOIN images AS i ON o.occid = i.occid ' .
-				'WHERE o.collid in(' . $collId . ') AND datediff(curdate(), i.InitialTimeStamp) < ' . $days . ' ' .
+			$sql2 = 'SELECT CONCAT_WS("-",c.institutioncode,c.collectioncode) as collcode, CONCAT_WS("-",year(m.InitialTimeStamp),month(m.InitialTimeStamp)) as dateEntered, '.
+				'c.collectionname, month(m.InitialTimeStamp) as monthEntered, year(m.InitialTimeStamp) as yearEntered, '.
+				'COUNT(m.mediaID) AS imgcnt '.
+				'FROM omoccurrences AS o INNER JOIN omcollections AS c ON o.collid = c.collid '.
+				'LEFT JOIN media AS i ON o.occid = m.occid '.
+				'WHERE o.collid in('.$collId.') AND datediff(curdate(), m.InitialTimeStamp) < '.$days.' '.
 				'GROUP BY yearEntered,monthEntered,o.collid ORDER BY c.collectionname ';
 			//echo $sql2;
 			$rs = $this->conn->query($sql2);
@@ -928,4 +826,5 @@ class OccurrenceCollectionProfile extends OmCollections{
 		}
 	}
 }
+
 ?>

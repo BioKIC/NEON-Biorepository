@@ -145,7 +145,7 @@ if(!$IS_ADMIN){
 	</head>
 	<body onload="<?php echo $onLoadStr; ?>">
 		<div role="main" id="innertext">
-			<h1 class="page-heading">Duplicate Record Search</h1>
+			<h1 class="page-heading"><?php echo $LANG['DUPL_RECORD_SEARCH']; ?></h1>
 			<?php
 			if($statusStr){
 				?>
@@ -383,7 +383,7 @@ if(!$IS_ADMIN){
 										</a>
 									</div>
 									<div style="margin-left:5px;float:left;">
-										<a href="https://biokic.github.io/symbiota-docs/editor/edit/duplicates/#merge-records" id="mergeduplicateinfo" style="text-decoration:none;">
+										<a href="https://docs.symbiota.org/Editor_Guide/Editing_Searching_Records/duplicate_matching#merge-records" target="_blank" id="mergeduplicateinfo" style="text-decoration:none;">
 											<img src="../../images/info.png" style="width:1.3em;" alt="<?php echo $LANG['MORE_INFO_ALT']; ?>" title="<?php echo $LANG['MORE_INFO']; ?>" aria-label="<?php echo $LANG['MORE_INFO']; ?>"/>
 										</a>
 									</div>

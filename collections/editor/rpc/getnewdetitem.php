@@ -12,7 +12,7 @@ $retArr = array();
 if($collid){
 	$occManager = new OccurrenceEditorDeterminations();
 	$occManager->setCollId($collid);
-	$retArr = $occManager->getNewDetItem($catNum, $sciName, $allCatNum, $fieldSite);
+	$retArr = $occManager->getNewDetItem($catNum,$sciName,$allCatNum, $fieldSite);
 }
 
 echo json_encode($retArr);

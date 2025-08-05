@@ -51,10 +51,14 @@ if($isEditor){
 			$updateStatus = $pHandler->changePassword($newPwd);
 		}
 		if($updateStatus){
-			$statusStr = '<span style="color:green">'.(isset($LANG['PWORD_SUCCESS'])?$LANG['PWORD_SUCCESS']:'Password update successful').'!</span>';
+			$statusStr = '<span style="color:green">' . $LANG['PWORD_SUCCESS'] . '!</span>';
 		}
 		else{
-			$statusStr = '<span style="color:red">'.$LANG['PWD_UPDATE_FAILED'].'</span>';
+			$statusStr = '<span style="color:red">';
+			$errMsg = $pHandler->getErrorMessage();
+			if($errMsg) $statusStr .= $LANG[$errMsg];
+			else $statusStr .= $LANG['PWD_UPDATE_FAILED'];
+			$statusStr .= '</span>';
 		}
 		$person = $pHandler->getPerson();
 		$tabIndex = 2;
@@ -67,8 +71,8 @@ if($isEditor){
 		}
 		else{
 			$statusStr = '<span style="color:red">';
-			if($pHandler->getErrorMessage() == 'loginExists') $statusStr .= $LANG['LOGIN_USED'];
-			elseif($pHandler->getErrorMessage() == 'incorrectPassword') $statusStr .= $LANG['INCORRECT_PWD'];
+			$errMsg = $pHandler->getErrorMessage();
+			if($errMsg) $statusStr .= $LANG[$errMsg];
 			else $statusStr .= $LANG['ERROR_SAVING_LOGIN'];
 			$statusStr .= '</span>';
 		}
@@ -123,7 +127,7 @@ if($isEditor){
 	</script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
-	<script type="text/javascript" src="../js/symb/profile.viewprofile.js?ver=20170530"></script>
+	<script type="text/javascript" src="../js/symb/profile.viewprofile.js?ver=2"></script>
 	<script type="text/javascript" src="../js/symb/shared.js"></script>
 	<style>
 		fieldset{ padding:15px;margin:15px; }

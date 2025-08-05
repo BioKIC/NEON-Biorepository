@@ -3,7 +3,7 @@
 ## REQUIREMENTS
 
 - Apache HTTP Server (2.x or better) - other PHP enabled web servers will work, though the code has been well tested using Apache HTTP Server and Nginx
-- PHP 8.0 or higher is recommended for the best performance, security, and feature support. The minimum requirement is PHP 7.3, but using older versions may cause security and performance issues over time.
+- PHP 8.2 or higher is recommended for the best performance, security, and feature support. The minimum requirement is PHP 8.1, but using older versions may cause security and performance issues over time. When third party authentication is enabled, PHP 8.2 or above is required.
   - Required extensions: mysqli, gd, mbstring, zip, curl, exif, openssl
   - Recommended configuration adjustments: upload_max_filesize = 100M (or expected file size upload), max_input_vars = 2000, memory_limit = 256M, post_max_size = 100M
   - Optional: Pear package Image_Barcode2 (https://pear.php.net/package/Image_Barcode2) – enables barcodes on specimen labels
@@ -28,7 +28,6 @@
             - /content/dwca/
             - /content/geolocate/
             - /content/logs/
-            - /temp/
    2. Symbiota initialization configuration
       - Modify variables within config/symbini.php to match your project environment. See instructions within configuration file.
 3. Install and configure Symbiota database schema
@@ -93,7 +92,7 @@ While user interfaces have been developed for web management for most of these d
          then from the Collection Data Management menu, select Data Cleaning Tools => Analyze taxonomic names...
       3. Batch Loader - Multiple names can be loaded from a flat, tab-delimited text file. See instructions on the batch loader for loading multiple names from a flat file.
       4. Look in /config/schema/data/ folder to find taxonomic thesaurus data that may serve as a base for your taxonomic thesaurus.
-   4. See https:symbiota.org for tutorials and more information on how load and manage data 
+   4. See <https://symbiota.org> for tutorials and more information on how load and manage data 
 
 ## UPDATES
 

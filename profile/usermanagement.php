@@ -90,7 +90,7 @@ if($IS_ADMIN){
 		<h1 class="page-heading"><?= $LANG['USER_MNGMT']; ?></h1>
 		<div style="float:right;">
 			<div style="margin:10px 0px 15px 0px;">
-				<section class="fieldset-like" style="background-color:#FFFFCC;">
+				<section class="fieldset-like-box">
 					<h2> <span> <?php echo (isset($LANG['SEARCH_BOX'])?$LANG['SEARCH_BOX']:'Search'); ?> </span> </h2>
 					<form name='searchform1' action='usermanagement.php' method='post'>
 					<label for="searchterm" > <?php echo (isset($LANG['LAST_OR_LOGIN'])?$LANG['LAST_OR_LOGIN']:'Last Name or Login Name'); ?>: </label> <br>
@@ -740,7 +740,7 @@ if($IS_ADMIN){
 					}
 					?>
 					<form method="POST" action="<?php echo $CLIENT_ROOT ?>/profile/newprofile.php">
-						<button id="adminRegister" name="adminRegister" class="button button-tertiary" type="submit" value="1">
+						<button id="adminRegister" name="adminRegister" class="button button-secondary bottom-breathing-room" type="submit" value="1">
 							<?php echo isset($LANG['CREATE_NEW_USER']) ? $LANG['CREATE_NEW_USER'] : 'Create New User'; ?>
 						</button>
 					</form>

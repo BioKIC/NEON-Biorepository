@@ -1,9 +1,9 @@
 <?php
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/TaxonomyDisplayManager.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/taxa/taxonomy/taxonomydisplay.' . $LANG_TAG . '.php'))
-	include_once($SERVER_ROOT . '/content/lang/taxa/taxonomy/taxonomydisplay.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/taxa/taxonomy/taxonomydisplay.en.php');
+if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.' . $LANG_TAG . '.php'))
+	include_once($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.' . $LANG_TAG . '.php');
+else include_once($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.en.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
 
 $target = $_REQUEST['target'] ?? '';
@@ -110,14 +110,12 @@ reset($treePath);
 	include($SERVER_ROOT.'/includes/header.php');
 	?>
 	<div class="navpath">
-		<a href="../../index.php"><?php echo htmlspecialchars((isset($LANG['HOME'])?$LANG['HOME']:'Home'), HTML_SPECIAL_CHARS_FLAGS); ?></a> &gt;&gt;
-		<a href="taxonomydynamicdisplay.php"><b><?php echo htmlspecialchars((isset($LANG['TAX_EXPLORE'])?$LANG['TAX_EXPLORE']:'Taxonomy Explorer'), HTML_SPECIAL_CHARS_FLAGS); ?></b></a>
+		<a href="../../index.php"><?php echo htmlspecialchars($LANG['HOME'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></a> &gt;&gt;
+		<a href="taxonomydynamicdisplay.php"><b><?php echo htmlspecialchars($LANG['TAX_EXPLORE'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></b></a>
 	</div>
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
-		<?php
-		$taxMetaArr = $taxonDisplayObj->getTaxonomyMeta();
-		?>
+		<?php $taxMetaArr = $taxonDisplayObj->getTaxonomyMeta(); ?>
 		<h1 class="page-heading"><?php echo $LANG['TAX_EXPLORE'] . ': ' . (array_key_exists('name', $taxMetaArr) ? $taxMetaArr['name'] : $LANG['CENTRAL_THESAURUS']); ?></h1>
 		<?php
 		if($statusStr){
