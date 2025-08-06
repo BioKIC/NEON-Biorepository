@@ -408,6 +408,10 @@ $traitArr = $indManager->getTraitArr();
 							if (in_array($occArr['collid'], array(44,74,79,80,82,83,95,97,115))){
 								echo "<strong><span style='color:green;'>Contact holding institution for information about loans</span></strong>";
 							}
+							elseif (array_key_exists('loan', $occArr)) {
+								echo "<strong><span style='color:red;'>Currently on loan to </span></strong>";
+								echo "<strong><span style='color:red;'>" . $occArr['loan']['code']. "</span></strong>";
+							}
 							elseif ($occArr['availability'] == 1 ) {
 								echo "<strong><span style='color:green;'>This sample is available for loan</span></strong>";
 							}
@@ -417,14 +421,6 @@ $traitArr = $indManager->getTraitArr();
 							?>
 						</div>
 							<?php
-						if(array_key_exists('loan',$occArr)){
-							?>
-							<div id="loan-div" title="<?php echo 'Loan #'.$occArr['loan']['identifier']; ?>">
-								<?php echo "Currently on loan to"; ?>
-								<?php echo $occArr['loan']['code']; ?>
-							</div>
-							<?php
-						}
 						if(array_key_exists('relation',$occArr)){
 							?>
 								<fieldset id="association-div" class="top-light-margin">
@@ -475,7 +471,15 @@ $traitArr = $indManager->getTraitArr();
 									// Get GBIF recordID using GBIF API
 									if($occArr['occurrenceid']){
 										if ($collMetadata['publishtogbif'] == 1) {
-											$datasetKey = json_decode($collMetadata['aggkeysstr'])->datasetKey;
+											$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']); 
+											$aggkeys = json_decode($jsonRaw);
+
+											if (json_last_error() !== JSON_ERROR_NONE) {
+												echo 'JSON Error: ' . json_last_error_msg();
+												echo '<br>Cleaned string: ' . htmlspecialchars($jsonRaw);
+											} elseif (isset($aggkeys->datasetKey)) {
+												$datasetKey = $aggkeys->datasetKey;
+											}
 											$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
 											$response = file_get_contents($gbifApiUrl);
 											$data = json_decode($response, true);
@@ -514,26 +518,32 @@ $traitArr = $indManager->getTraitArr();
 							?>
 							<div id="assoccatnum-div" class="assoccatnum-div bottom-breathing-room-rel-sm">
 								<?php
-								foreach($occArr['othercatalognumbers'] as $catValueArr){
-									$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
-									if(!empty($catValueArr['name'])) $catTag = $catValueArr['name'];
-
-									//Start NEON customization
-									if ($catTag == 'NEON sampleID' && $hideSampleID) {
-										continue;
+								$hideSampleID = false;
+								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
+									if (isset($catValueArr['name']) && $catValueArr['name'] === 'NEON sampleID Hash' && !$GLOBALS['IS_ADMIN']) {
+										$hideSampleID = true;
+										break;
 									}
-									if ($catTag == 'NEON sampleID') {
-										$catTag = 'Sample Tag (SampleID)';
-									} elseif ($catTag == 'NEON sampleCode (barcode)') {
-										$catTag = 'Barcode (sampleCode)';
-									} elseif ($catTag == 'NEON sampleUUID') {
-										$catTag = 'SampleUuid';
-									} else {
-										$catTag = $catTag;
-									}
-									//End NEON customization
+								}
+								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
+								$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
+								if (!empty($catValueArr['name'])) {
+									$catTag = $catValueArr['name'];
+								}
 
-									echo '<div><label>'.$catTag.':</label> ' . $catValueArr['value'] . '</div>';
+								if ($catTag === 'NEON sampleID' && $hideSampleID) {
+									continue; 
+								}
+
+								if ($catTag === 'NEON sampleID') {
+									$catTag = 'Sample Tag (sampleID)';
+								} elseif ($catTag === 'NEON sampleCode (barcode)') {
+									$catTag = 'Barcode (sampleCode)';
+								} elseif ($catTag === 'NEON sampleUUID') {
+									$catTag = 'SampleUuid';
+								}
+
+								echo '<div><label>' . htmlspecialchars($catTag) . ':</label> ' . htmlspecialchars($catValueArr['value']) . '</div>';
 									//Start NEON customization
 									if($IS_ADMIN){
 										if($catTag == 'NEON sampleCode (barcode)' || $catTag == 'NEON sampleID'){
