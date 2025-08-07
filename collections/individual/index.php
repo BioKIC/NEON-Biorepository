@@ -1150,9 +1150,9 @@ $traitArr = $indManager->getTraitArr();
 									?>
 									<div>
 										<label><?= $LANG['SOURCE_URL'] ?>:</label>
-										<a href="<?= $occArr['source']['url'] ?>" target="_blank"><?=  $occArr['source']['url'] ?></a>
+										<a href="<?= $occArr['source']['url'] ?>" target="_blank"></label> <?= $occArr['source']['sourceName'] ?></a>
 									</div>
-									<div><label><?= $LANG['SOURCE_MANAGEMENT'] ?>:</label> <?= $sourceManagement ?></div>
+									<!--<div><label><?= $LANG['SOURCE_MANAGEMENT'] ?>:</label> <?= $sourceManagement ?></div>-->
 									<?php
 									$dateLastModified = $occArr['source']['refreshTimestamp'];
 									if(array_key_exists('fieldsModified', $_POST)){
