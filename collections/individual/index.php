@@ -526,31 +526,27 @@ $traitArr = $indManager->getTraitArr();
 									}
 								}
 								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
-								$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
-								if (!empty($catValueArr['name'])) {
-									$catTag = $catValueArr['name'];
-								}
-
-								if ($catTag === 'NEON sampleID' && $hideSampleID) {
-									continue; 
-								}
-
-								if ($catTag === 'NEON sampleID') {
-									$catTag = 'Sample Tag (sampleID)';
-								} elseif ($catTag === 'NEON sampleCode (barcode)') {
-									$catTag = 'Barcode (sampleCode)';
-								} elseif ($catTag === 'NEON sampleUUID') {
-									$catTag = 'SampleUuid';
-								}
-
-								echo '<div><label>' . htmlspecialchars($catTag) . ':</label> ' . htmlspecialchars($catValueArr['value']) . '</div>';
-									//Start NEON customization
-									if($IS_ADMIN){
-										if($catTag == 'NEON sampleCode (barcode)' || $catTag == 'NEON sampleID'){
-											echo '<span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $occid. '" target="_blank">Go to Manifest</a></span>';
-										}
+									$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
+									if (!empty($catValueArr['name'])) {
+										$catTag = $catValueArr['name'];
 									}
-									//End NEON customization
+									// Start NEON customization
+									if ($catTag === 'NEON sampleID' && $hideSampleID) {
+										continue; 
+									}
+
+									if ($catTag === 'NEON sampleID') {
+										$catTag = 'Sample Tag (sampleID)';
+									} elseif ($catTag === 'NEON sampleCode (barcode)') {
+										$catTag = 'Barcode (sampleCode)';
+									} elseif ($catTag === 'NEON sampleUUID') {
+										$catTag = 'SampleUuid';
+									}
+									echo '<div><label>' . htmlspecialchars($catTag) . ':</label> ' . htmlspecialchars($catValueArr['value']);
+									if ($IS_ADMIN && ($catTag == 'Barcode (sampleCode)' || $catTag == 'Sample Tag (sampleID)')) {
+										echo ' <span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $occid . '" target="_blank">Go to Manifest</a></span>';
+									}
+										//End NEON customization
 								}
 								?>
 							</div>
@@ -1137,11 +1133,19 @@ $traitArr = $indManager->getTraitArr();
 								<legend><?= $LANG['SOURCE_RECORD'] ?></legend>
 								<div>
 									<?php
+									// NEON customization
 									if(!empty($occArr['source']['sourceName'])){
+										if($occArr['source']['sourceName']=='NEON Sample Viewer'){
+										?>
+										<div>
+											<a href="<?= $occArr['source']['url'] ?>" target="_blank"><strong>NEON Sample Viewer</strong></a>
+										</div>
+										<?php
+										}
+										else {
 										?>
 										<div><label><?= $LANG['DATA_SOURCE'] ?>:</label> <?= $occArr['source']['sourceName'] ?></div>
 										<?php
-									}
 									if(!empty($occArr['source']['sourceID'])){
 										?>
 										<div><label><?= $LANG['SOURCE_ID'] ?>:</label> <?= $occArr['source']['sourceID'] ?></div>
@@ -1150,13 +1154,16 @@ $traitArr = $indManager->getTraitArr();
 									?>
 									<div>
 										<label><?= $LANG['SOURCE_URL'] ?>:</label>
-										<a href="<?= $occArr['source']['url'] ?>" target="_blank"></label> <?= $occArr['source']['sourceName'] ?></a>
+										<a href="<?= $occArr['source']['url'] ?>" target="_blank"></label> <?=$occArr['source']['url'] ?></a>
 									</div>
-									<!--<div><label><?= $LANG['SOURCE_MANAGEMENT'] ?>:</label> <?= $sourceManagement ?></div>-->
+									<div><label><?= $LANG['SOURCE_MANAGEMENT'] ?>:</label> <?= $sourceManagement ?></div>
 									<?php
+										}
+									}
+									// End NEON customization
 									$dateLastModified = $occArr['source']['refreshTimestamp'];
 									if(array_key_exists('fieldsModified', $_POST)){
-										//Input from refersh event
+										//Input from refresh event
 										$dataStatus = $indManager->cleanOutStr($_POST['dataStatus']);
 										$fieldsModified = $_POST['fieldsModified'];
 										$dateLastModified = $indManager->cleanOutStr($_POST['sourceDateLastModified']);
