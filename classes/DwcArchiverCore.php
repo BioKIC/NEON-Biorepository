@@ -2070,7 +2070,7 @@ class DwcArchiverCore extends Manager{
 			$this->identierHandler->initiateProcess($this->targetPath . $this->ts . '-ident' . $this->fileExt);
 			$this->fieldArrMap['identifier'] = $this->identierHandler->getFieldArrTerms();
 		}
-		if($this->identierHandler) $this->identierHandler->writeOutRecordBlock($batchOccidArr);
+		if($this->identierHandler) $this->identierHandler->writeOutRecordBlockIdentifier($batchOccidArr);
 	}
 
 	private function writeCitationFile(){
