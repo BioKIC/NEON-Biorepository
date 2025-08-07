@@ -151,7 +151,7 @@ $_SESSION['citationvar'] = $searchVar;
 			echo '<a href="index.php">' . $LANG['NAV_COLLECTIONS'] . '</a> &gt;&gt; ';
 			echo '<a href="' . $CLIENT_ROOT . '/collections/harvestparams.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
 		} else {
-			echo '<a href="' . $CLIENT_ROOT . '/collections/search/index.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
+			echo '<a href="' . $CLIENT_ROOT . '/neon/search/index.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
 		}
 		echo '<b>' . $LANG['NAV_SPECIMEN_LIST'] . '</b>';
 		echo '</div>';
