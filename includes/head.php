@@ -15,6 +15,7 @@ $CUSTOM_CSS_PATH = '/css/symb/custom';
 <link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/normalize.css">
 <link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/skeleton.css">
 <link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/neon.css?ver=2">
+<link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/symbiota/main.css?ver=1" type="text/css">
 <link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/main.css?ver=3" type="text/css">
 
 <script type="text/javascript" src="<?php echo $CLIENT_ROOT; ?>/js/symb/lang.js"></script>
