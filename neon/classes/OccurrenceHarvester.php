@@ -2396,7 +2396,7 @@ class OccurrenceHarvester{
 		$retArr = $this->getTaxon($sciname);
 		if(!$retArr){
 			//Parse name in case author is inbedded within taxon
-			$scinameArr = TaxonomyUtilities::parseScientificName($sciname, $this->conn);
+			$scinameArr = TaxonomyUtil::parseScientificName($sciname, $this->conn);
 			if(!empty($scinameArr['sciname'])){
 				$sciname = $scinameArr['sciname'];
 				if($retArr = $this->getTaxon($sciname)){
