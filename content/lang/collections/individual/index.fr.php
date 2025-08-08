@@ -23,6 +23,7 @@ $LANG['ASSOCIATIONS'] = 'Associations';
 $LANG['CATALOG_NUMBER'] = 'N° de Catalogue';
 //start NEON customization
 $LANG['ARCHIVE_GUID'] = 'N° de Catalogue (archiveGUID)';
+$LANG['ASSOCIATIONS'] = 'Associations';
 //end NEON customization
 $LANG['OCCURRENCE_ID'] = 'Identification de l\'Occurrence';
 $LANG['OTHER_CATALOG_NUMBERS'] = 'N° Catalogue Secondaire';
