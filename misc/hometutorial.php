@@ -5,17 +5,9 @@ header("Content-Type: text/html; charset=".$CHARSET);
 <html>
 	<head>
 		<title>View the Homepage</title>
-    <?php
-      $activateJQuery = false;
-      if(file_exists($SERVER_ROOT.'/includes/head.php')){
-        include_once($SERVER_ROOT.'/includes/head.php');
-      }
-      else{
-        echo '<link href="'.$CLIENT_ROOT.'/css/jquery-ui.css" type="text/css" rel="stylesheet" />';
-        echo '<link href="'.$CLIENT_ROOT.'/css/base.css?ver=1" type="text/css" rel="stylesheet" />';
-        echo '<link href="'.$CLIENT_ROOT.'/css/main.css?ver=1" type="text/css" rel="stylesheet" />';
-      }
-    ?>
+		<?php
+		include_once($SERVER_ROOT.'/includes/head.php');
+		?>
     <style>
       figcaption {
         background-color: #002d74;
@@ -37,7 +29,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
 		?>
 		<div class="navpath">
       <a href="<?php echo $CLIENT_ROOT; ?>/index.php">Home</a> &gt;&gt;
-      <a href="<?php echo $CLIENT_ROOT; ?>/misc/tutorials.php">Tutorials</a> &gt;&gt;   
+      <a href="<?php echo $CLIENT_ROOT; ?>/misc/tutorials.php">Tutorials</a> &gt;&gt;
 			<b>View the Homepage</b>
 		</div>
 		<!-- This is inner text! -->

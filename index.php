@@ -20,15 +20,13 @@ $taxaArr = $stats->getNeonTaxa();
 	<title><?php echo $DEFAULT_TITLE; ?> Home</title>
 	<meta http-equiv="Expires" content="Tue, 01 Jan 1995 12:12:12 GMT">
 	<meta http-equiv="Pragma" content="no-cache">
-	<!-- UNIVERSAL CSS –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-	<link rel="stylesheet" href="css/normalize.css">
-	<link rel="stylesheet" href="css/skeleton.css">
+	<script src="js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="js/jquery-ui.min.js" type="text/javascript"></script>
 	<?php
-	$activateJQuery = true;
 	include_once($SERVER_ROOT . '/includes/head.php');
 	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
 	?>
-	<script type="text/javascript" src="<?php echo $CLIENT_ROOT . '/neon/js/d3.min.js'; ?>"></script>
+	<script src="<?php echo $CLIENT_ROOT . '/neon/js/d3.min.js'; ?>" type="text/javascript"></script>
 </head>
 
 <body class="home-page">

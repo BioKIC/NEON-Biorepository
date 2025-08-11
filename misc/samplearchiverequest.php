@@ -6,7 +6,6 @@ header("Content-Type: text/html; charset=".$CHARSET);
 	<head>
 		<title>Sample Archival Request Form</title>
 		<?php
-		$activateJQuery = false;
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
 	</head>
