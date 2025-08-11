@@ -25,7 +25,7 @@
   public function getTotalNeonSamples(){
     $totalSamples = '';
 
-    $sql = 'SELECT ROUND(SUM(recordcnt),-3) AS totalSamples FROM omcollectionstats AS s JOIN omcollections AS c ON s.collid = c.collid WHERE c.institutioncode IN ("NEON","ASU") AND c.collid NOT IN (79,95) AND recordcnt > 1;';
+    $sql = 'SELECT ROUND(SUM(recordcnt),-3) AS totalSamples FROM omcollectionstats AS s JOIN omcollections AS c ON s.collid = c.collid WHERE c.institutioncode IN ("NEON","ASU") AND c.collid NOT IN (79,95) AND collectionName NOT LIKE "Identified%" AND recordcnt > 1;';
 
     $result = $this->conn->query($sql);
 

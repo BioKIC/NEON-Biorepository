@@ -37,7 +37,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 	include($SERVER_ROOT . '/includes/header.php');
 	?>
 	<div class="navpath">
-		<a href="<?php echo $CLIENT_ROOT; ?>/index.php">Home</a> >>;
+		<a href="<?php echo $CLIENT_ROOT; ?>/index.php">Home</a> >>
 		<b>Getting Started</b>
 	</div>
 	<!-- This is inner text! -->

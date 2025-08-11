@@ -1,8 +1,8 @@
 <?php
 include_once($SERVER_ROOT.'/classes/OccurrenceCollectionProfile.php');
-include_once($SERVER_ROOT.'/classes/TaxonomyUtilities.php');
+include_once($SERVER_ROOT.'/classes/utilities/TaxonomyUtil.php');
 include_once($SERVER_ROOT.'/classes/TaxonomyHarvester.php');
-include_once($SERVER_ROOT.'/classes/UuidFactory.php');
+include_once($SERVER_ROOT.'/classes/GuidManager.php');
 include_once($SERVER_ROOT.'/config/symbini.php');
 
 class OccurrenceHarvester{
@@ -160,7 +160,7 @@ class OccurrenceHarvester{
 				$this->adjustTaxonomy();
 				//Set recordID GUIDs
 				echo '<li>Setting recordID UUIDs for all occurrence records...</li>';
-				$uuidManager = new UuidFactory();
+				$uuidManager = new GuidManager();
 				$uuidManager->setSilent(1);
 				$uuidManager->populateGuids();
 				//Update stats for each collection affected

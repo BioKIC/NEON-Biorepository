@@ -21,6 +21,7 @@ $LANG['EDIT_HISTORY'] = 'Edit History';
 $LANG['ON_LOAN'] = 'On Loan To';
 //start NEON customization
 $LANG['ARCHIVE_GUID'] = 'Catalog Number (archiveGUID)';
+$LANG['ASSOCIATIONS'] = 'Associations';
 //end NEON customization
 $LANG['OCCURRENCE_ID'] = 'Occurrence ID';
 $LANG['OTHER_CATALOG_NUMBERS'] = 'Secondary Catalog Number';

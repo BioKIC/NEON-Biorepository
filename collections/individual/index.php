@@ -408,6 +408,10 @@ $traitArr = $indManager->getTraitArr();
 							if (in_array($occArr['collid'], array(44,74,79,80,82,83,95,97,115))){
 								echo "<strong><span style='color:green;'>Contact holding institution for information about loans</span></strong>";
 							}
+							elseif (array_key_exists('loan', $occArr)) {
+								echo "<strong><span style='color:red;'>Currently on loan to </span></strong>";
+								echo "<strong><span style='color:red;'>" . $occArr['loan']['code']. "</span></strong>";
+							}
 							elseif ($occArr['availability'] == 1 ) {
 								echo "<strong><span style='color:green;'>This sample is available for loan</span></strong>";
 							}
@@ -417,14 +421,6 @@ $traitArr = $indManager->getTraitArr();
 							?>
 						</div>
 							<?php
-						if(array_key_exists('loan',$occArr)){
-							?>
-							<div id="loan-div" title="<?php echo 'Loan #'.$occArr['loan']['identifier']; ?>">
-								<?php echo "Currently on loan to"; ?>
-								<?php echo $occArr['loan']['code']; ?>
-							</div>
-							<?php
-						}
 						if(array_key_exists('relation',$occArr)){
 							?>
 								<fieldset id="association-div" class="top-light-margin">
@@ -475,7 +471,15 @@ $traitArr = $indManager->getTraitArr();
 									// Get GBIF recordID using GBIF API
 									if($occArr['occurrenceid']){
 										if ($collMetadata['publishtogbif'] == 1) {
-											$datasetKey = json_decode($collMetadata['aggkeysstr'])->datasetKey;
+											$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']); 
+											$aggkeys = json_decode($jsonRaw);
+
+											if (json_last_error() !== JSON_ERROR_NONE) {
+												echo 'JSON Error: ' . json_last_error_msg();
+												echo '<br>Cleaned string: ' . htmlspecialchars($jsonRaw);
+											} elseif (isset($aggkeys->datasetKey)) {
+												$datasetKey = $aggkeys->datasetKey;
+											}
 											$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
 											$response = file_get_contents($gbifApiUrl);
 											$data = json_decode($response, true);
@@ -514,33 +518,36 @@ $traitArr = $indManager->getTraitArr();
 							?>
 							<div id="assoccatnum-div" class="assoccatnum-div bottom-breathing-room-rel-sm">
 								<?php
-								foreach($occArr['othercatalognumbers'] as $catValueArr){
+								$hideSampleID = false;
+								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
+									if (isset($catValueArr['name']) && $catValueArr['name'] === 'NEON sampleID Hash' && !$GLOBALS['IS_ADMIN']) {
+										$hideSampleID = true;
+										break;
+									}
+								}
+								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
 									$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
-									if(!empty($catValueArr['name'])) $catTag = $catValueArr['name'];
-
-									//Start NEON customization
-									if ($catTag == 'NEON sampleID' && $hideSampleID) {
-										continue;
+									if (!empty($catValueArr['name'])) {
+										$catTag = $catValueArr['name'];
 									}
-									if ($catTag == 'NEON sampleID') {
-										$catTag = 'Sample Tag (SampleID)';
-									} elseif ($catTag == 'NEON sampleCode (barcode)') {
+									// Start NEON customization
+									if ($catTag === 'NEON sampleID' && $hideSampleID) {
+										continue; 
+									}
+
+									if ($catTag === 'NEON sampleID') {
+										$catTag = 'Sample Tag (sampleID)';
+									} elseif ($catTag === 'NEON sampleCode (barcode)') {
 										$catTag = 'Barcode (sampleCode)';
-									} elseif ($catTag == 'NEON sampleUUID') {
+									} elseif ($catTag === 'NEON sampleUUID') {
 										$catTag = 'SampleUuid';
-									} else {
-										$catTag = $catTag;
 									}
-									//End NEON customization
-
-									echo '<div><label>'.$catTag.':</label> ' . $catValueArr['value'] . '</div>';
-									//Start NEON customization
-									if($IS_ADMIN){
-										if($catTag == 'NEON sampleCode (barcode)' || $catTag == 'NEON sampleID'){
-											echo '<span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $occid. '" target="_blank">Go to Manifest</a></span>';
-										}
+									echo '<div><label>' . htmlspecialchars($catTag) . ':</label> ' . htmlspecialchars($catValueArr['value']);
+									if ($IS_ADMIN && ($catTag == 'Barcode (sampleCode)' || $catTag == 'Sample Tag (sampleID)')) {
+										echo ' <span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $occid . '" target="_blank">Go to Manifest</a></span>';
 									}
-									//End NEON customization
+									echo '</div>';
+										//End NEON customization
 								}
 								?>
 							</div>
@@ -1140,11 +1147,19 @@ $traitArr = $indManager->getTraitArr();
 								<legend><?= $LANG['SOURCE_RECORD'] ?></legend>
 								<div>
 									<?php
+									// NEON customization
 									if(!empty($occArr['source']['sourceName'])){
+										if($occArr['source']['sourceName']=='NEON Sample Viewer'){
+										?>
+										<div>
+											<a href="<?= $occArr['source']['url'] ?>" target="_blank"><strong>NEON Sample Viewer</strong></a>
+										</div>
+										<?php
+										}
+										else {
 										?>
 										<div><label><?= $LANG['DATA_SOURCE'] ?>:</label> <?= $occArr['source']['sourceName'] ?></div>
 										<?php
-									}
 									if(!empty($occArr['source']['sourceID'])){
 										?>
 										<div><label><?= $LANG['SOURCE_ID'] ?>:</label> <?= $occArr['source']['sourceID'] ?></div>
@@ -1153,13 +1168,16 @@ $traitArr = $indManager->getTraitArr();
 									?>
 									<div>
 										<label><?= $LANG['SOURCE_URL'] ?>:</label>
-										<a href="<?= $occArr['source']['url'] ?>" target="_blank"><?=  $occArr['source']['url'] ?></a>
+										<a href="<?= $occArr['source']['url'] ?>" target="_blank"><?= $occArr['source']['url'] ?></a>
 									</div>
 									<div><label><?= $LANG['SOURCE_MANAGEMENT'] ?>:</label> <?= $sourceManagement ?></div>
 									<?php
+										}
+									}
+									// End NEON customization
 									$dateLastModified = $occArr['source']['refreshTimestamp'];
 									if(array_key_exists('fieldsModified', $_POST)){
-										//Input from refersh event
+										//Input from refresh event
 										$dataStatus = $indManager->cleanOutStr($_POST['dataStatus']);
 										$fieldsModified = $_POST['fieldsModified'];
 										$dateLastModified = $indManager->cleanOutStr($_POST['sourceDateLastModified']);
