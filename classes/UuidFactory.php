@@ -57,6 +57,9 @@ class UuidFactory {
 		if($rs->num_rows){
 			while($r = $rs->fetch_object()){
 				$guid = UuidFactory::getUuidV4();
+				// start NEON customization
+				$guid = "uuid:".$guid;
+				// end NEON customization
 				$insSql = 'UPDATE omoccurrences SET recordID = "'.$guid.'" WHERE (recordID IS NULL) AND (occid = '.$r->occid.')';
 				if(!$this->conn->query($insSql)){
 					$this->echoStr('ERROR: occur guids'.$this->conn->error);

@@ -381,17 +381,15 @@ $traitArr = $indManager->getTraitArr();
 							</fieldset>
 							<?php
 						}
+						// Start NEON Customization
 						if($occArr['catalognumber']){
 							?>
 							<div id="cat-div">
-								<?php
-								// Start NEON Customization
-								// Check if occurrenceid is an IGSN
+								<?php								
+								// Check if catalogNumber is an IGSN
 								if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['catalognumber'])) {
 									echo '<label>'.(isset($LANG['ARCHIVE_GUID'])?$LANG['ARCHIVE_GUID']:'Catalog #').': </label>';
 									echo $occArr['catalognumber'];
-									echo '<span style="margin-left: 10px"><a href="https://doi.org/10.58052/' . $occArr['catalognumber'] . '" target="_blank">SESAR Record</a></span>';
-									
 									// Get GBIF recordID using GBIF API
 									if($occArr['occurrenceid']){
 										if ($collMetadata['publishtogbif'] == 1) {
@@ -411,11 +409,26 @@ $traitArr = $indManager->getTraitArr();
 									echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
 									echo $occArr['catalognumber'];
 								}
-								// End NEON Customization
 								?>
 							</div>
 							<?php
 						}
+						if ($occArr['occurrenceid']) {
+							// Check if occurrenceID is a valid IGSN in expected format
+							if (preg_match('/^igsn:10\.58052\/NEON[a-zA-Z0-9]{5}$/', $occArr['occurrenceid'])) {
+								$igsnCode = str_replace('igsn:', '', $occArr['occurrenceid']);
+								$igsnUrl = 'https://doi.org/' . $igsnCode;
+								?>
+							<!--<div id="occurrenceid-div">-->
+								<?php
+								echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
+								echo '<span style="margin-left: 10px"><a href="' . $igsnUrl . '" target="_blank">' . $occArr['occurrenceid'] . '</a></span>';
+								?>
+							<!--</div>-->
+								<?php
+							}
+						}
+						// End NEON Customization
 						//if($occArr['occurrenceid']){
 						//	?>
 							<!--<div id="occurrenceid-div">-->

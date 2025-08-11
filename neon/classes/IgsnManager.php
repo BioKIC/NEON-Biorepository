@@ -61,8 +61,8 @@ class IgsnManager{
 	
 	public function setNullNeonIdentifiers(){
 		$sql = 'UPDATE omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid '.
-			'SET o.catalognumber = o.occurrenceID '.
-			'WHERE o.occurrenceID LIKE "NEON%" AND o.catalognumber IS NULL';
+			'SET o.catalognumber = SUBSTRING_INDEX(o.occurrenceID, "igsn:10.58052/", -1) '.
+			'WHERE o.occurrenceID LIKE "%NEON%" AND o.catalognumber IS NULL';
 		$this->conn->query($sql);
 	}
 
@@ -72,13 +72,13 @@ class IgsnManager{
 		$sql = 'UPDATE NeonSample s
 				INNER JOIN omoccurrences o ON o.occid = s.occid
 				SET s.igsnPushedToNEON = 1
-				WHERE o.occurrenceID LIKE "NEON%" 
+				WHERE o.occurrenceID LIKE "%NEON%" 
 				AND o.collid IN(44,74,78,79,80,82,83,95,97,4,85,96,81,115)';
 		$this->conn->query($sql);
 		$retArr = array();
 		$sql = 'SELECT IFNULL(s.igsnPushedToNEON,"x") as igsnPushedToNEON, COUNT(s.samplePK) as cnt
 			FROM omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid
-			WHERE o.occurrenceID LIKE "NEON%" AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) GROUP BY s.igsnPushedToNEON';
+			WHERE o.occurrenceID LIKE "%NEON%" AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) GROUP BY s.igsnPushedToNEON';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
 			$code = $r->igsnPushedToNEON;
@@ -110,7 +110,7 @@ class IgsnManager{
 		//Build SQL
 		$sql = 'SELECT o.occid, o.occurrenceID, s.sampleCode, s.sampleUuid, s.sampleID, s.sampleClass, s.igsnPushedToNEON
 			FROM omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid
-			WHERE (o.occurrenceID LIKE "NEON%") AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) ';
+			WHERE (o.occurrenceID LIKE "%NEON%") AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) ';
 		if($recTarget == 'unsynchronized'){
 			$sql .= 'AND (s.igsnPushedToNEON = 0) ';
 		}
@@ -226,7 +226,7 @@ class IgsnManager{
 		header ('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		//Build SQL
 		$fieldMap = array('sampleID' => 's.sampleID', 'sampleCode' => 's.sampleCode', 'sampleFate' => '"archived" AS sampleFate',
-			'sampleClass' => 's.sampleClass', 'archiveGuid' => 'o.occurrenceID', 'catalogueNumber' => 'o.catalogNumber',
+			'sampleClass' => 's.sampleClass', 'archiveGuid' => 'o.catalogNumber', 'catalogueNumber' => 'o.catalogNumber',
 			'externalURLs' => 'CONCAT("https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=", o.occid) AS referenceUrl',
 			'collectionCode' => 'CONCAT_WS(":", c.institutionCode, c.collectionCode) as collectionCode',
 			'archiveStartDate' => '"" AS archiveStartDate', 'archiveMedium' => 's.archiveMedium', 'storageTemperature' => '"" AS storageTemperature',
@@ -236,7 +236,7 @@ class IgsnManager{
 		);
 		$sql = 'SELECT o.occid, '.implode(', ',$fieldMap).'
 			FROM omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid INNER JOIN omcollections c ON c.collid = o.collid
-			WHERE (o.occurrenceID LIKE "NEON%") AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) ';
+			WHERE (o.occurrenceID LIKE "%NEON%") AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) ';
 		if($startIndex){
 			$sql .= 'AND (o.occurrenceID > ?) ';
 		}
