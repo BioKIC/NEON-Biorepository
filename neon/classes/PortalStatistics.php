@@ -1,14 +1,14 @@
-<?php 
+<?php
 
   include_once($SERVER_ROOT.'/classes/Manager.php');
 
  /**
  * Controler class for /neon/classes/PortalStatistics.php
- * 
+ *
  */
 
  class PortalStatistics extends Manager {
-   
+
   public function __construct() {
     parent::__construct(null,'readonly');
     $this->verboseMode = 2;
@@ -32,7 +32,7 @@
     while ($row = $result->fetch_row()){
       $totalSamples = $row;
     }
-    $result->free(); 
+    $result->free();
     return $totalSamples[0];
   }
 
@@ -47,7 +47,7 @@
     while ($row = $result->fetch_array()){
       $dataArr[] = $row;
     }
-    $result->free(); 
+    $result->free();
     return $dataArr;
   }
 
@@ -62,7 +62,7 @@
     while ($row = $result->fetch_row()){
       $totalTaxa = $row;
     }
-    $result->free(); 
+    $result->free();
     return $totalTaxa[0];
   }
 
@@ -77,10 +77,10 @@
     while ($row = $result->fetch_array()){
       $dataArr[] = $row;
     }
-    $result->free(); 
+    $result->free();
     return $dataArr;
   }
-  
+
     // Gets NEON stats for navy blue div
   public function getBlueNeonStats(){
     $dataArr = array();
@@ -98,24 +98,24 @@
     while ($row = $result->fetch_array()){
       $dataArr['noRecords'] = $row[0];
     }
-    
+
     // image count
-    $sql = 'SELECT * FROM images WHERE occid IS NOT NULL;';
+    $sql = 'SELECT * FROM media WHERE occid IS NOT NULL;';
     $result = $this->conn->query($sql);
     while ($row = $result->fetch_array()){
       $dataArr['noImages'] = $row[0];
     }
-    
+
     // years
     $dataArr['noYears'] = date("Y")-2014;
-    
+
     // sample types
     $dataArr['noSampleTypes'] = 20;
-    
+
     // sites
     $dataArr['noSites'] = 81;
-    
-    $result->free(); 
+
+    $result->free();
     return $dataArr;
   }
 
