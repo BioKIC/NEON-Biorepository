@@ -59,6 +59,11 @@ if($isEditor){
 					<?php
 				}
 				?>
+			</ul>
+		</fieldset>
+		<fieldset>
+			<legend><b>Reports</b></legend>
+			<ul>
 				<li><a href="#" onclick="$('.nps-report').show();return false">NPS Year End Reports</a></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=110&year=2020" onclick="$('#BLDE20-working').show();">BLDE - 2020</a><span id="BLDE20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=40&year=2020" onclick="$('#GRSM20-working').show();">GRSM - 2020</a><span id="GRSM20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
@@ -71,6 +76,7 @@ if($isEditor){
 				<li><a href="loans.php">Loans Reports</a></li>
 				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
 				<li><a href="shipment/prepreports.php">Preparations Reports</a></li>
+				<li><a href="requests/requestreport.php">Requests Report</a></li>
 			</ul>
 		</fieldset>
 	</div>
