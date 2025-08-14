@@ -37,11 +37,10 @@ if($isEditor){
 	<title><?php echo $DEFAULT_TITLE; ?> Manifest Viewer</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 	<?php
-	$activateJQuery = true;
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
-	<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
-	<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript">
 		function fullResetForm(f){
 			f.shipmentID.value = "";
@@ -117,7 +116,7 @@ include($SERVER_ROOT.'/includes/header.php');
 		$searchArgumentArr = $shipManager->getSearchArr();
 		?>
 		<fieldset style="position: relative">
-			<legend style="margin-bottom: -15px"><b>Manifest Search</b></legend>		
+			<legend style="margin-bottom: -15px"><b>Manifest Search</b></legend>
 			<?php
 			$searchArgument = $shipManager->getSearchArgumentStr();
 			if($searchArgument){
@@ -141,7 +140,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						  <button type="button" value="Reset" style="background-color: lightgray !important;color: black;" onclick="fullResetForm(this.form)">Clear</button>
 					  </div>
 				  </div>
-			  
+
 				  <div style="margin:10px">
 					  <div style="float:right; margin:10px">
 						  <button name="action" type="submit" value="exportManifests">Download Manifests</button>
@@ -155,7 +154,7 @@ include($SERVER_ROOT.'/includes/header.php');
 				  </div>
 				</div>
 				<fieldset style="margin-top:20px">
-					<legend style="font-size:1rem;">Identifiers</legend>				
+					<legend style="font-size:1rem;">Identifiers</legend>
 					<div class="container mt-4" style="max-width: 100%;margin-top:0 !important;">
 						<div class="row">
 							<!-- Column 1 & 2 combined -->
@@ -178,17 +177,17 @@ include($SERVER_ROOT.'/includes/header.php');
 									</div>
 								</div>
 							</div>
-						
+
 							<!-- Column 3 - Textarea -->
 							<div class="col-2">
 								<textarea name="occid" class="form-control h-100" style="min-height: 208px;resize: none;" placeholder="occid"><?php echo isset($searchArgumentArr['occid']) ? $searchArgumentArr['occid'] : ''; ?></textarea>
 							</div>
-						
+
 							<!-- Column 4 - Textarea -->
 							<div class="col-3">
 								<textarea name="sampleID" class="form-control h-100" style="min-height: 208px;resize: none;" placeholder="Sample ID"><?php echo isset($searchArgumentArr['sampleID']) ? $searchArgumentArr['sampleID'] : ''; ?></textarea>
 							</div>
-						
+
 							<!-- Column 5 - Textarea -->
 							<div class="col-3">
 								<textarea name="sampleCode" class="form-control h-100" style="min-height: 208px;resize: none;" placeholder="Sample Code"><?php echo isset($searchArgumentArr['sampleCode']) ? $searchArgumentArr['sampleCode'] : ''; ?></textarea>
@@ -203,7 +202,7 @@ include($SERVER_ROOT.'/includes/header.php');
 							<div class="col-2">
 								<p>Date Shipped:</p>
 							</div>
-						
+
 							<div class="col-10">
 							  <div class="row">
 								<div class="col-3">
@@ -238,7 +237,7 @@ include($SERVER_ROOT.'/includes/header.php');
 										 value="<?php echo (isset($searchArgumentArr['dateCheckinEnd']) ? $searchArgumentArr['dateCheckinEnd'] : ''); ?>" />
 								</div>
 							  </div>
-							</div>						
+							</div>
 						</div>
 					</div>
 				</fieldset>
@@ -249,7 +248,7 @@ include($SERVER_ROOT.'/includes/header.php');
 							<div class="col-2">
 								<p>Imported/Modified by:</p>
 							</div>
-						
+
 							<div class="col-5">
 								<select name="importedUid[]" class="form-control" multiple multiselect-search="true">
 									<?php
@@ -265,7 +264,7 @@ include($SERVER_ROOT.'/includes/header.php');
 							<div class="col-2">
 								<p>Shipment Checked In by:</p>
 							</div>
-						
+
 							<div class="col-5">
 								<select name="checkinUid[]" multiple class="form-control" multiselect-search="true">
 									<?php
@@ -281,7 +280,7 @@ include($SERVER_ROOT.'/includes/header.php');
 							<div class="col-2">
 								<p>Samples Checked In by:</p>
 							</div>
-						
+
 							<div class="col-5">
 								<select name="checkinsampleUid[]" multiple class="form-control" multiselect-search="true">
 									<?php
@@ -302,7 +301,7 @@ include($SERVER_ROOT.'/includes/header.php');
 							<div class="col-2">
 								<p>Session:</p>
 							</div>
-						
+
 							<div class="col-3">
 								<select name="sessionData" class="form-control">
 									<option value="">All Records</option>
@@ -324,7 +323,7 @@ include($SERVER_ROOT.'/includes/header.php');
 							<div class="col-2">
 								<p>Sample Condition:</p>
 							</div>
-						
+
 							<div class="col-3">
 								<select name="sampleCondition" class="form-control">
 									<option value="">All Records</option>
@@ -346,7 +345,7 @@ include($SERVER_ROOT.'/includes/header.php');
 							<div class="col-2">
 								<p>Dynamic Properties:</p>
 							</div>
-						
+
 							<div class="col-3">
 								<input name="dynamicProperties" class="form-control" type="text" value="<?php echo (isset($searchArgumentArr['dynamicProperties'])?$searchArgumentArr['dynamicProperties']:''); ?>" />
 							</div>
@@ -401,7 +400,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						  <div class="row mt-2">
 							<div class="col-md-4">
 							  <div class="form-check">
-								<input name="manifestStatus[]" class="form-check-input" type="checkbox" value="shipNotCheck" <?php echo ((strpos($manifestStatus, 'shipNotCheck') !== false) ? 'checked' : ''); ?> /> 
+								<input name="manifestStatus[]" class="form-check-input" type="checkbox" value="shipNotCheck" <?php echo ((strpos($manifestStatus, 'shipNotCheck') !== false) ? 'checked' : ''); ?> />
 								<label class="form-check-label" for="checkbox7">Shipments Not Checked In</label>
 							  </div>
 							</div>

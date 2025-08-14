@@ -31,16 +31,15 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 	<title><?php echo $DEFAULT_TITLE; ?> Manifest Viewer</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 	<?php
-	$activateJQuery = true;
 	include_once($SERVER_ROOT.'/includes/head.php');
 
 	$activeSession = false;
 	$sessionStartTime = null;
 	$sessionName = null;
-	
+
 	if (isset($_SESSION['sampleCheckinSessionData'])) {
 		$session_data = $_SESSION['sampleCheckinSessionData'];
-	
+
 		// Check if the session is active (end_time is null)
 		if ($session_data['end_time'] === null) {
 			$activeSession = true;
@@ -49,8 +48,8 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		}
 	}
 	?>
-	<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
-	<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 	<?php
 	if($sortableTable){
 		?>
@@ -87,7 +86,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				<?php
 			}
 			?>
-			
+
 			['prefix', 'identifier', 'suffix'].forEach(id => {
 			  const el = document.getElementById(id);
 			  if (el) {
@@ -314,7 +313,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		function selectAll(cbObj) {
 			const boxesChecked = cbObj.checked;
 			const form = cbObj.form;
-		
+
 			for (let i = 0; i < form.elements.length; i++) {
 				const el = form.elements[i];
 				if (el.name === "scbox[]") {
@@ -370,12 +369,12 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			if (newWindow.opener == null) newWindow.opener = self;
 			return false;
 		}
-		
+
 		let timerInterval;
 
 		let serverStartTime = "<?php echo $sessionStartTime; ?>";
 		let sessionName = "<?php echo $sessionName; ?>";
-	
+
 		// Check if a session is already active on page load
 		document.addEventListener('DOMContentLoaded', function() {
 			<?php if ($activeSession): ?>
@@ -388,13 +387,13 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			document.querySelectorAll('.start_session').forEach(button => {
 				button.addEventListener('click', startSession);
 			});
-		
+
 			// Attach event listeners to all stop session buttons
 			document.querySelectorAll('.stop_session').forEach(button => {
 				button.addEventListener('click', stopSession);
 			});
 		});
-	
+
 		function startSession() {
 			// Send AJAX request to start session
 			fetch('rpc/sessionManager.php', {
@@ -413,7 +412,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				  showSessionID(data.sessionName);
 			  });
 		}
-	
+
 		function stopSession() {
 			// Send AJAX request to stop session
 			fetch('rpc/sessionManager.php', {
@@ -429,10 +428,10 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				  toggleButtons(false);
 			  });
 		}
-				
+
 		function startTimer(startTime) {
 			let start = new Date(startTime);
-	
+
 			// Clear any existing timer before starting a new one
 			if (timerInterval) {
 				clearInterval(timerInterval);
@@ -444,18 +443,18 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				let hours = Math.floor(diff / 3600);
 				let minutes = Math.floor((diff % 3600) / 60);
 				let seconds = diff % 60;
-				
+
 				hours = String(hours).padStart(2, '0');
 				minutes = String(minutes).padStart(2, '0');
 				seconds = String(seconds).padStart(2, '0');
-				
+
 				let timers = document.querySelectorAll('.timer');
 				timers.forEach(timer => {
 					timer.textContent = hours + ":" + minutes + ":" + seconds;
 				});
 			}, 1000);
 		}
-	
+
 		function stopTimer() {
 			// Clear the timer interval and reset the timer display
 			clearInterval(timerInterval);
@@ -464,38 +463,38 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				timer.textContent = "00:00:00";
 			});
 		}
-		
+
 		function toggleButtons(isSessionActive) {
 			let startButtons = document.querySelectorAll('.start_session');
 			let stopButtons = document.querySelectorAll('.stop_session');
-		
+
 			startButtons.forEach(button => {
 				button.disabled = isSessionActive;
 			});
-		
+
 			stopButtons.forEach(button => {
 				button.disabled = !isSessionActive;
 			});
 		}
-		
+
 		function showSessionID(sessionName) {
 			let sessionNamedivs = document.querySelectorAll('.sessionName');
-			
+
 			sessionNamedivs.forEach(div => {
 				div.innerHTML  = '<strong>SessionID:</strong> ' + sessionName;
-			});	
+			});
 		}
-		
+
 		function updateFullIdentifier() {
 		  const prefix = document.getElementById('prefix').value.trim();
 		  const identifier = document.getElementById('identifier').value.trim();
 		  const suffix = document.getElementById('suffix').value.trim();
-	  
+
 		  let full = '';
 		  if (prefix) full += prefix;
 		  full += identifier;
 		  if (suffix) full += suffix;
-	  
+
 		  document.getElementById('fullIdentifier').textContent = full;
 		}
 	</script>
@@ -509,13 +508,13 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		.sorting_1 {
 		  background-color: #c0c0c0a6 !important;
 		}
-		
+
 		.input-group {
 		  display: flex;
 		  align-items: stretch;
 		  width: fit-content;
 		}
-	  
+
 		.input-addon {
 		  padding-left: 0.5em;
 		  padding-right: 0.5em;
@@ -525,20 +524,20 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		  display: flex;
 		  align-items: center;
 		}
-	  
+
 		.input-addon.suffix {
 		  border-left: none;
 		  border-right: 1px solid #ccc;
 		}
-		
+
 		#prefix {
 			width: 120px;
-		}		
-		
+		}
+
 		#suffix {
 			width: 60px;
 		}
-	  
+
 		.input-addon input {
 		  border: none !important;
 		  background: transparent;
@@ -547,14 +546,14 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		  outline: none;
 		  font-family: inherit;
 		}
-	  
+
 		.main-input {
 		  border: 1px solid #ccc;
 		  width: 350px;
 		  outline: none;
 		  margin-top: 0;
 		}
-	  
+
 		.input-group input:focus {
 		  outline: 2px solid #88f;
 		}
@@ -691,7 +690,7 @@ include($SERVER_ROOT.'/includes/header.php');
 											</span>
 										  </div>
 										</div>
-										
+
 										<div>
 										  <strong>Full Identifier:</strong> <span id="fullIdentifier"></span>
 										</div>
@@ -859,16 +858,16 @@ include($SERVER_ROOT.'/includes/header.php');
 														}
 														$str .= '<div>Symbiota targeted data ['.trim($symbStr,'; ').']</div>';
 													}
-													if(!empty($sampleArr['occurErr'])) $str .= '<div>Occurrence Harvesting Error: '.$sampleArr['occurErr'].'</div>';		
-												
+													if(!empty($sampleArr['occurErr'])) $str .= '<div>Occurrence Harvesting Error: '.$sampleArr['occurErr'].'</div>';
+
 													if($sortableTable){
 														if($str) {
 															echo '<tr class="sample-row" data-child-value="'.trim($str,'; ').'">';
 														} else {
 															echo '<tr class="sample-row">';
-														}															
+														}
 													}
-													
+
 													echo '<td>';
 													echo '<input id="scbox-'.$samplePK.'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$samplePK.'" />';
 													echo ' <a href="#" onclick="return openSampleEditor('.$samplePK.')"><img src="../../images/edit.png" style="width:12px" /></a>';
@@ -944,7 +943,7 @@ include($SERVER_ROOT.'/includes/header.php');
 														<input type="radio" class="stop_session" name="session" value="stop"> Stop Session
 														<div class="timer">00:00:00</div>
 														<div class="sessionName"></div>
-													</div>	
+													</div>
 													<div class="displayFieldDiv">
 														<b>Sample Received:</b>
 														<input name="sampleReceived" type="radio" value="1" checked /> Yes

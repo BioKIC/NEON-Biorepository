@@ -1,9 +1,9 @@
 <?php
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/TaxonomyDisplayManager.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.'.$LANG_TAG.'.php'))
-	include_once($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.'.$LANG_TAG.'.php');
-	else include_once($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.en.php');
+if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.' . $LANG_TAG . '.php'))
+	include_once($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.' . $LANG_TAG . '.php');
+else include_once($SERVER_ROOT.'/content/lang/taxa/taxonomy/taxonomydisplay.en.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
 
 $target = $_REQUEST['target'] ?? '';
@@ -42,7 +42,7 @@ reset($treePath);
 <!Doctype html>
 <html lang="<?php echo $LANG_TAG ?>">
 <head>
-	<title><?php echo $DEFAULT_TITLE.' Taxonomy Explorer: '.$taxonDisplayObj->getTargetStr(); ?></title>
+	<title><?php echo $DEFAULT_TITLE . ' ' . $LANG['TAX_EXPLORE'] . ': ' . $taxonDisplayObj->getTargetStr(); ?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET; ?>"/>
 	<link href="<?php echo htmlspecialchars($CSS_BASE_PATH, HTML_SPECIAL_CHARS_FLAGS); ?>/jquery-ui.css" type="text/css" rel="stylesheet">
 	<?php
@@ -66,9 +66,26 @@ reset($treePath);
 			max-width: 600px;
 		}
 		.icon-image{ border: 0px; width: 15px; }
+		.tax-meta-arr {
+			float: left;
+			margin: 1rem 0rem 2.5rem 0rem;
+			font-weight: bold;
+			font-size: 120%;
+		}
+		.tax-detail-div {
+			margin-top: 1.35rem;
+			margin-left: 0.7rem;
+			float: left;
+			font-size: 80%;
+		}
+		.tax-meta-div {
+			margin: 1rem 1.35rem 3rem 1.35rem;
+			display: none;
+			clear: both;
+		}
 	</style>
-	<script src="../../js/jquery.js" type="text/javascript" ></script>
-	<script src="../../js/jquery-ui.js" type="text/javascript" ></script>
+	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script src="../../js/dojo-1.17.3/dojo/dojo.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
@@ -93,11 +110,13 @@ reset($treePath);
 	include($SERVER_ROOT.'/includes/header.php');
 	?>
 	<div class="navpath">
-		<a href="../../index.php"><?php echo htmlspecialchars((isset($LANG['HOME'])?$LANG['HOME']:'Home'), HTML_SPECIAL_CHARS_FLAGS); ?></a> &gt;&gt;
-		<a href="taxonomydynamicdisplay.php"><b><?php echo htmlspecialchars((isset($LANG['TAX_EXPLORE'])?$LANG['TAX_EXPLORE']:'Taxonomy Explorer'), HTML_SPECIAL_CHARS_FLAGS); ?></b></a>
+		<a href="../../index.php"><?php echo htmlspecialchars($LANG['HOME'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></a> &gt;&gt;
+		<a href="taxonomydynamicdisplay.php"><b><?php echo htmlspecialchars($LANG['TAX_EXPLORE'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></b></a>
 	</div>
 	<!-- This is inner text! -->
-	<div id="innertext">
+	<div role="main" id="innertext">
+		<?php $taxMetaArr = $taxonDisplayObj->getTaxonomyMeta(); ?>
+		<h1 class="page-heading"><?php echo $LANG['TAX_EXPLORE'] . ': ' . (array_key_exists('name', $taxMetaArr) ? $taxMetaArr['name'] : $LANG['CENTRAL_THESAURUS']); ?></h1>
 		<?php
 		if($statusStr){
 			?>
@@ -118,17 +137,15 @@ reset($treePath);
 		?>
 		<div>
 			<?php
-			$taxMetaArr = $taxonDisplayObj->getTaxonomyMeta();
-			echo '<div class="tax-meta-arr">'.$taxMetaArr['name'].'</div>';
 			if(count($taxMetaArr) > 1){
 				//echo '<div id="taxDetailDiv" class="tax-detail-div"><a href="#" onclick="displayTaxomonyMeta()">(more details)</a></div>';
 				echo '<div id="taxMetaDiv" class="tax-meta-div">';
-				if(isset($taxMetaArr['description'])) echo '<div style="margin:3px 0px"><b>'.(isset($LANG['DESCRIPTION'])?$LANG['DESCRIPTION']:'Description').':</b> '.$taxMetaArr['description'].'</div>';
-				if(isset($taxMetaArr['editors'])) echo '<div style="margin:3px 0px"><b>'.(isset($LANG['EDITORS'])?$LANG['EDITORS']:'Editors').':</b> '.$taxMetaArr['editors'].'</div>';
-				if(isset($taxMetaArr['contact'])) echo '<div style="margin:3px 0px"><b>'.(isset($LANG['CONTACT'])?$LANG['CONTACT']:'Contact').':</b> '.$taxMetaArr['contact'].'</div>';
-				if(isset($taxMetaArr['email'])) echo '<div style="margin:3px 0px"><b>'.(isset($LANG['EMAIL'])?$LANG['EMAIL']:'Email').':</b> '.$taxMetaArr['email'].'</div>';
-				if(isset($taxMetaArr['url'])) echo '<div style="margin:3px 0px"><b>URL:</b> <a href="'.$taxMetaArr['url'].'" target="_blank">'.$taxMetaArr['url'].'</a></div>';
-				if(isset($taxMetaArr['notes'])) echo '<div style="margin:3px 0px"><b>'.(isset($LANG['NOTES'])?$LANG['NOTES']:'Notes').':</b> '.$taxMetaArr['notes'].'</div>';
+				if(isset($taxMetaArr['description'])) echo '<div style="margin:3px 0px"><b>' . $LANG['DESCRIPTION'] . ':</b> ' . $taxMetaArr['description'] . '</div>';
+				if(isset($taxMetaArr['editors'])) echo '<div style="margin:3px 0px"><b>' . $LANG['EDITORS'] . ':</b> ' . $taxMetaArr['editors'] . '</div>';
+				if(isset($taxMetaArr['contact'])) echo '<div style="margin:3px 0px"><b>' . $LANG['CONTACT'] . ':</b> ' . $taxMetaArr['contact'] . '</div>';
+				if(isset($taxMetaArr['email'])) echo '<div style="margin:3px 0px"><b>' . $LANG['EMAIL'] . ':</b> ' . $taxMetaArr['email'] . '</div>';
+				if(isset($taxMetaArr['url'])) echo '<div style="margin:3px 0px"><b>URL:</b> <a href="' . $taxMetaArr['url'] . '" target="_blank">' . $taxMetaArr['url'] . '</a></div>';
+				if(isset($taxMetaArr['notes'])) echo '<div style="margin:3px 0px"><b>' . $LANG['NOTES'] . ':</b> ' . $taxMetaArr['notes'] . '</div>';
 				echo '</div>';
 			}
 			?>
@@ -136,7 +153,7 @@ reset($treePath);
 		<div style="clear:both;">
 			<form id="tdform" name="tdform" action="taxonomydynamicdisplay.php" method='POST'>
 				<fieldset class="fieldset-size">
-					<legend><b><?php echo (isset($LANG['TAX_SEARCH'])?$LANG['TAX_SEARCH']:'Taxon Search'); ?></b></legend>
+					<legend><b><?php echo $LANG['TAX_SEARCH']; ?></b></legend>
                     <div>
 						<label for="taxontarget"> <?= $LANG['TAXON'] ?>: </label>
 						<input id="taxontarget" name="target" type="text" class="search-bar" value="<?= $taxonDisplayObj->getTargetStr() ?>" />

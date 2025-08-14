@@ -48,13 +48,14 @@ if($collMap){
 	}
 }
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="<?php echo $LANG_TAG ?>">
 <head>
 	<title><?php echo $DEFAULT_TITLE.' '.$LANG['OCC_CLEANER']; ?></title>
 	<?php
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
-	<style type="text/css">
+	<style>
 		table.styledtable td { white-space: nowrap; }
 	</style>
 	<script type="text/javascript">
@@ -105,7 +106,8 @@ if($collMap){
 		<a href="index.php?collid=<?php echo $collid; ?>"><?php echo $LANG['CLEAN_MOD_INDEX']; ?></a> &gt;&gt;
 		<b><?php echo $LANG['DUP_OCCS']; ?></b>
 	</div>
-	<div id="innertext" style="background-color:white; margin:10px; width: 100%; max-width: 100%; padding: 0px;">
+	<div role="main" id="innertext" style="background-color:white; margin:10px; width: 100%; max-width: 100%; padding: 0px;">
+		<h1 class="page-heading"><?php echo $LANG['DUPL_CATALOG']; ?></h1>
 		<?php
 		if($collMap && $isEditor){
 			if($IS_ADMIN && $limit < 900) echo '<div style="max-width: 1000px">'.$LANG['SUPERADMIN_NOTICE'].'</div>';
@@ -130,7 +132,7 @@ if($collMap){
 							?>
 						</div>
 						<div style="clear: both">
-							<table class="styledtable" style="font-family:Arial;font-size:12px;">
+							<table class="styledtable" style="font-size:12px;">
 								<tr>
 									<th style="width:40px;"><?php echo $LANG['ID']; ?></th>
 									<th style="width:20px;"><input name="selectalldupes" type="checkbox" title="<?php echo $LANG['SEL_DESEL_ALL']; ?>" onclick="selectAllDuplicates(this.form)" /></th>
@@ -215,13 +217,13 @@ if($collMap){
 					if((count($dupArr)+2)>$limit){
 						?>
 							<div>
-								<a href="index.php?collid=<?php echo $collid; ?>"><?php echo $LANG['RETURN_TO_FORM']; ?></a>
+								<a href="index.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"><?php echo htmlspecialchars($LANG['RETURN_TO_FORM'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></a>
 							</div>
 							<?php
 						}
 					?>
 					<div>
-						<a href="index.php?collid=<?php echo $collid; ?>"><?php echo $LANG['RETURN_TO_MAIN']; ?></a>
+						<a href="index.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"><?php echo htmlspecialchars($LANG['RETURN_TO_MAIN'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></a>
 					</div>
 				</div>
 				<?php

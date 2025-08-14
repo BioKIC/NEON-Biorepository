@@ -1,8 +1,8 @@
 <?php
 include_once($SERVER_ROOT.'/classes/OccurrenceCollectionProfile.php');
-include_once($SERVER_ROOT.'/classes/TaxonomyUtilities.php');
+include_once($SERVER_ROOT.'/classes/utilities/TaxonomyUtil.php');
 include_once($SERVER_ROOT.'/classes/TaxonomyHarvester.php');
-include_once($SERVER_ROOT.'/classes/UuidFactory.php');
+include_once($SERVER_ROOT.'/classes/GuidManager.php');
 include_once($SERVER_ROOT.'/config/symbini.php');
 
 class OccurrenceHarvester{
@@ -160,7 +160,7 @@ class OccurrenceHarvester{
 				$this->adjustTaxonomy();
 				//Set recordID GUIDs
 				echo '<li>Setting recordID UUIDs for all occurrence records...</li>';
-				$uuidManager = new UuidFactory();
+				$uuidManager = new GuidManager();
 				$uuidManager->setSilent(1);
 				$uuidManager->populateGuids();
 				//Update stats for each collection affected
@@ -569,7 +569,7 @@ class OccurrenceHarvester{
 						elseif($fArr['smsKey'] == 'associated_media'){
 							if(!strpos($fArr['smsValue'],'biorepo.neonscience.org/portal')) $assocMedia['url'] = $fArr['smsValue'];
 						}
-						elseif($fArr['smsKey'] == 'photographed_by') $assocMedia['photographer'] = $fArr['smsValue'];
+						elseif($fArr['smsKey'] == 'photographed_by') $assocMedia['creator'] = $fArr['smsValue'];
 						if($harvestIdentifications && $tableName!='bet_archivepooling_in' && !($tableName == 'inv_pervial_in' && in_array($sampleArr['sampleClass'],array('inv_fielddata_in.sampleID','inv_persample_in.mixedInvertVialID','inv_persample_in.chironomidVialID','inv_persample_in.oligochaeteVialID')))){
 							if($fArr['smsKey'] == 'taxon' && $fArr['smsValue']){
 								$identArr['sciname'] = $fArr['smsValue'];
@@ -819,7 +819,7 @@ class OccurrenceHarvester{
 						$taxonCode = '';
 						$taxonRemarks = '';
 						if(in_array($dwcArr['collid'], array(5,6,67,68,46,98))){
-							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1','dna2-dna1','1','2','3']; 
+							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1','dna2-dna1','1','2','3'];
 
 							$parts = explode('.', $sampleArr['sampleID']);
 							$foundDate = false;
@@ -845,16 +845,16 @@ class OccurrenceHarvester{
 								}
 							}
 						}
-						if ($dwcArr['collid'] == 30 && !empty($dwcArr['habitat'])) {                            
+						if ($dwcArr['collid'] == 30 && !empty($dwcArr['habitat'])) {
 							$pos = strpos($dwcArr['habitat'], 'soil type order: ');
-							if ($pos !== false) { 
+							if ($pos !== false) {
 								$identArr[] = array(
 									'sciname' => substr($dwcArr['habitat'], $pos + strlen('soil type order: ')),
 									'identifiedBy' => $this->translatePersonnel($sampleArr['recorded_by']),
 									'dateIdentified' => $sampleArr['collectDate']
 								);
 							}
-						}								
+						}
 						elseif($dwcArr['collid'] == 56){
 							if(preg_match('/\.\d{4}\.\d{1,2}\.([A-Z]{2,15}\d{0,2})\./', $sampleArr['sampleID'], $m)){
 								$taxonCode = $m[1];
@@ -895,7 +895,7 @@ class OccurrenceHarvester{
 							}
 							//Evaluate if any incoming determinations should be tagged as isCurrent
 							if ($isCurrentKey === null) {
-								$isCurrentKey = $idKey; 
+								$isCurrentKey = $idKey;
 							}
 							if(isset($idArr['dateIdentified']) && preg_match('/^\d{4}/', $idArr['dateIdentified']) && $idArr['dateIdentified'] > $bestDate){
 								$bestDate = $idArr['dateIdentified'];
@@ -904,7 +904,7 @@ class OccurrenceHarvester{
 						}
 						if($isCurrentKey !== null){
 							$identArr[$isCurrentKey]['isCurrent'] = 1;
-						} 
+						}
 						$appendIdentArr = array();
 						foreach($identArr as $idKey => &$idArr){
 							//Check to see if any determination needs to be protected
@@ -1009,14 +1009,14 @@ class OccurrenceHarvester{
 		if(!$resultArr) return false;
 
 		foreach ($resultArr['locationHistory'] as $index => $location) {
-    	
+
 			$startDate = $location['locationStartDate'];
 			$endDate = $location['locationEndDate'];
 
     	// Check if eventDate falls within the location history date range
     		if ($eventDate >= $startDate && (empty($endDate) || $eventDate <= $endDate)) {
         	$matchingIndex = $index;
-        	break; 
+        	break;
    	 		}
 		}
 
@@ -1054,18 +1054,18 @@ class OccurrenceHarvester{
 
 		$locPropArr_history = $resultArr_history['locationProperties'];
 		$locPropArr = $resultArr['locationProperties'];
-		
+
 		if ($locPropArr || $locPropArr_history) {
 			$habitatArr = array();
 			$elevMin = '';
 			$elevMax = '';
 			$elevUncertainty = '';
 			$fullPropArr = array_merge($locPropArr_history, $locPropArr);
-			
+
 			foreach ($fullPropArr as $propArr) {
 				$propName = $propArr['locationPropertyName'];
 				$propValue = $propArr['locationPropertyValue'];
-				
+
 				if (!isset($dwcArr['georeferenceSources']) && $propName == 'Value for Coordinate source') {
 					$dwcArr['georeferenceSources'] = $propValue;
 				} elseif (!isset($dwcArr['coordinateUncertaintyInMeters']) && $propName == 'Value for Coordinate uncertainty') {
@@ -1101,12 +1101,12 @@ class OccurrenceHarvester{
 					}
 					$this->setTimezone($stateStr);
 					$dwcArr['stateProvince'] = $stateStr;
-				}			
+				}
 			}
 			if ($habitatArr) {
 				if (isset($habitatArr['landcover'])) {
 					$landcover = $habitatArr['landcover'];
-					unset($habitatArr['landcover']); 
+					unset($habitatArr['landcover']);
 					array_unshift($habitatArr, $landcover);
 				}
 				$dwcArr['habitat'] = implode('; ', $habitatArr);
@@ -1117,17 +1117,17 @@ class OccurrenceHarvester{
 			if ($elevMin !== '' && !isset($dwcArr['minimumElevationInMeters'])) {
 				$dwcArr['minimumElevationInMeters'] = $elevMin;
 			}
-			
+
 			if ($elevMax && $elevMax != $elevMin && !isset($dwcArr['maximumElevationInMeters'])) {
 				$dwcArr['maximumElevationInMeters'] = $elevMax;
 			}
-			
+
 			// new code if we wanted to use the verbatim elevation field in the future
 			// if ($elevMin !== '' || $elevMax !== '' || $elevUncertainty !== '') {
 			// 	$verbatimParts = [];
 			// 	if ($elevMin !== '') {
 			// 		$verbatimParts[] = $elevMin;
-			// 	}			
+			// 	}
 			// 	if ($elevMax !== '' && $elevMax != $elevMin) {
 			// 		$verbatimParts[] = $elevMax;
 			// 	}
@@ -1136,8 +1136,8 @@ class OccurrenceHarvester{
 			// 	}
 			// 	$dwcArr['verbatimElevation'] = implode(' - ', $verbatimParts);
 			// }
-			
-		}		
+
+		}
 
 		if(isset($resultArr['locationParent']) && $resultArr['locationParent']){
 			if($resultArr['locationParent'] != 'REALM'){
@@ -1182,24 +1182,24 @@ class OccurrenceHarvester{
 					if (!empty($dwcArr['eventDate'])) {
 						if ($dwcArr['eventDate'] >= '2024-01-01') {
 							$dwcArr['preparations'] .= '; bloodfed individuals removed';
-						} 
+						}
 						else {
 							$dwcArr['preparations'] .= '; may contain bloodfed individuals';
 						}
-					} 
+					}
 					else {
 						$dwcArr['preparations'] .= '; may contain bloodfed individuals';
 					}
 				}
-			} 
+			}
 			elseif (!empty($dwcArr['eventDate'])) {
 				if ($dwcArr['eventDate'] >= '2024-01-01') {
 					$dwcArr['preparations'] = 'bloodfed individuals removed';
-				} 
+				}
 				else {
 					$dwcArr['preparations'] = 'may contain bloodfed individuals';
 				}
-			} 
+			}
 			else {
 				$dwcArr['preparations'] = 'may contain bloodfed individuals';
 			}
@@ -1796,7 +1796,7 @@ class OccurrenceHarvester{
 		if($assocMedia && $occid){
 			foreach($assocMedia as $mediaArr){
 				$loadMedia = true;
-				$sqlTest = 'SELECT url, originalUrl FROM images WHERE occid = '.$occid;
+				$sqlTest = 'SELECT url, originalUrl FROM media WHERE occid = '.$occid;
 				$rsTest = $this->conn->query($sqlTest);
 				while($rTest = $rsTest->fetch_object()){
 					if($rTest->originalUrl == $mediaArr['url'] || $rTest->url == $mediaArr['url']){
@@ -1806,7 +1806,7 @@ class OccurrenceHarvester{
 				}
 				$rsTest->free();
 				if($loadMedia){
-					$sql = 'INSERT INTO images(occid, originalUrl, photographer) VALUES('.$occid.',"'.$mediaArr['url'].'",'.(isset($mediaArr['photographer'])?'"'.$mediaArr['photographer'].'"':'NULL').')';
+					$sql = 'INSERT INTO media(occid, originalUrl, creator) VALUES('.$occid.',"'.$mediaArr['url'].'",'.(isset($mediaArr['creator'])?'"'.$mediaArr['creator'].'"':'NULL').')';
 					if(!$this->conn->query($sql)){
 						//$this->errorStr = 'ERROR loading associatedMedia: '.$this->conn->error;
 					}
@@ -2396,7 +2396,7 @@ class OccurrenceHarvester{
 		$retArr = $this->getTaxon($sciname);
 		if(!$retArr){
 			//Parse name in case author is inbedded within taxon
-			$scinameArr = TaxonomyUtilities::parseScientificName($sciname, $this->conn);
+			$scinameArr = TaxonomyUtil::parseScientificName($sciname, $this->conn);
 			if(!empty($scinameArr['sciname'])){
 				$sciname = $scinameArr['sciname'];
 				if($retArr = $this->getTaxon($sciname)){

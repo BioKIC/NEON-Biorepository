@@ -6,10 +6,8 @@ header("Content-Type: text/html; charset=".$CHARSET);
 	<head>
 		<title>Sample Use Request</title>
 		<?php
-		$activateJQuery = false;
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
-		
 	</head>
 	<body>
 		<?php
@@ -26,7 +24,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
 			<iframe src="https://asu.co1.qualtrics.com/jfe/form/SV_bfPgKtTfHTyzffg" width="790" height="1000px" frameborder="0" marginheight="0" marginwidth="0" style="margin-top: 2rem">Loading…</iframe></iframe>
 		</div>
 		<?php
-			include($SERVER_ROOT.'/includes/footer.php');
+		include($SERVER_ROOT.'/includes/footer.php');
 		?>
 	</body>
 </html>
