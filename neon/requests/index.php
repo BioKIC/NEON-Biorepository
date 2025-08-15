@@ -1,6 +1,7 @@
 <?php
 include_once('../../config/symbini.php');
-include_once('../../neon/requests/list/InquiriesList.php');
+include_once('../../neon/requests/list/InquiriesManager.php');
+
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/loans/loan_langs.en.php');
 header("Content-Type: text/html; charset=".$CHARSET);
@@ -12,18 +13,29 @@ $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 
-$inquiryManager = new InquiriesList();
+$inquiryManager = new InquiriesManager();
 
 $statusStr = '';
-if($isEditor){
-	if($formSubmit){
-		if($formSubmit == 'Delete Inquiry'){
-			if($inquiryManager->deleteInquiry($_POST['inquiryId'])){
-				$statusStr = 'Inquiry deleted successfully!';
-			}
-		}
-	}
+
+$statusStr = '';
+
+if($formSubmit == 'createInquiry' && $isEditor){
+    $collection_manager = $_POST['inqmanager'] ?? '';
+    $researcher_id = $_POST['inqresearcher'] ?? '';
+    $inquiry_date = $_POST['inqdate'] ?? '';
+
+    if(!$collection_manager || !$researcher_id || !$inquiry_date){
+        $statusStr = '<span style="color:red;">All fields are required.</span>';
+    } else {
+        $insertId = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date);
+        if($insertId){
+            $statusStr = '<span style="color:green;">SUCCESS: Inquiry created (ID: '.$insertId.').</span>';
+        } else {
+            $statusStr = '<span style="color:red;">Error: '.$inquiryManager->errorMessage.'</span>';
+        }
+    }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -36,6 +48,28 @@ if($isEditor){
 	?>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
+
+
+	<script>
+	function verifyInquiryAddForm(f) {
+		if (f.inqresearcher.options[f.inqresearcher.selectedIndex].value == 0) {
+			alert("<?php echo 'Select Researcher'; ?>");
+			return false;
+		}
+
+		if (f.inqmanager.options[f.inqmanager.selectedIndex].value == 0) {
+			alert("<?php echo 'Select Manager'; ?>");
+			return false;
+		}
+
+		if (f.inqdate.options[f.inqdate.selectedIndex].value == 0) {
+			alert("<?php echo 'Select Inquiry Date'; ?>");
+			return false;
+		}
+
+		return true;
+	}
+	</script>
 
 	<style>
 		fieldset{ padding:10px; }
@@ -72,15 +106,24 @@ if($isEditor){
 			?>
 			
 					<div id="newinqdiv" style="display:<?php echo ($List ); ?>;">
-						<form name="newloanoutform" action="outgoing.php" method="post" onsubmit="return verfifyLoanOutAddForm(this);">
+						<form name="newinqform" action="index.php" method="post" onsubmit="return verifyInquiryAddForm(this);">
 							<fieldset>
 								<legend><?php echo 'Create New Record' ?></legend>
 								<div style="padding-top:4px;float:left;">
 									<span>
-										<?php echo 'Managed by' ?>:
+										<?php echo 'Manager'; ?>:
 									</span><br />
 									<span>
-										<input type="text" autocomplete="off" name="createdbyown" maxlength="32" style="width:100px;" value="<?php echo $PARAMS_ARR['un']; ?>" title="<?php echo $LANG['ENTERED_BY'] ?>" aria-label="<?php echo $LANG['SUBMITTED_BY'] ?>" />
+										<select name="inqmanager" style="width:400px;" aria-label="<?php echo 'Select Inquiry Manager' ?>" >
+											<option value=""><?php echo 'Select Manager'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$managerArr = $inquiryManager->getManagers();
+											foreach($managerArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
 									</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -88,26 +131,31 @@ if($isEditor){
 										<?php echo 'Primary Contact'; ?>:
 									</span><br />
 									<span>
-										<select name="reqinstitution" style="width:400px;" aria-label="<?php echo $LANG['SEND_INSTITUTION'] ?>" >
+										<select name="inqresearcher" style="width:400px;" aria-label="<?php echo 'Researcher' ?>" >
 											<option value=""><?php echo 'Select Researcher'; ?></option>
 											<option value="">------------------------------------------</option>
 											<?php
-											$instArr = $inquiryManager->getInstitutionArr();
-											foreach($instArr as $k => $v){
+											$researcherArr = $inquiryManager->getResearchers();
+											foreach($researcherArr as $k => $v){
 												echo '<option value="' . $k . '">' . $v . '</option>';
 											}
 											?>
 										</select>
 									</span>
 									<span>
-										<a href="../misc/institutioneditor.php?emode=1" target="_blank" title="<?php echo $LANG['ADD_NEW_INST']; ?>" aria-label="<?php echo $LANG['ADD_A_NEW_INST']; ?>">
-											<img src="../../images/add.png" style="width:1.2em;" alt="<?php echo $LANG['ADD_NEW_INST']; ?>" />
-										</a>
+    										<button type="button" id="addResearcherBtn" title="Add new researcher" aria-label="Add new researcher" style="background:none;border:none;cursor:pointer;">
+											<?php echo 'Add researcher' ?>
+											</button>									
 									</span>
 								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										Initial Inquiry Date: <input name="inqdate" type="date" value="<?php echo $inquirydate; ?>" />
+									</div>
+								</div>
 								<div style="clear:both;padding-top:8px;float:right;">
-									<input name="formsubmit" type="hidden" value="createLoanOut" />
-									<button name="submitButton" type="submit"><?php echo $LANG['CREATE_LOAN']; ?></button>
+									<input name="formsubmit" type="hidden" value="createInquiry" />
+									<button name="submitButton" type="submit"><?php echo 'Create Inquiry' ?></button>
 								</div>
 							</fieldset>
 						</form>
@@ -121,8 +169,75 @@ if($isEditor){
 		}
 		?>
 	</div>
+		<div id="researcherModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+		background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+		
+		<div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
+			<h2>Add New Researcher</h2>
+			<form id="researcherForm">
+				<label>Name*:</label>
+				<input type="text" name="name" required style="width:100%;"><br><br>
+
+				<label>Institution*:</label>
+				<input type="text" name="institution" required style="width:100%;"><br><br>
+
+				<label>Email:</label>
+				<input type="text" name="contact_email"  style="width:100%;"><br><br>
+
+				<label>Address:</label>
+				<input type="text" name="address"  style="width:100%;"><br><br>
+
+				<label>Phone:</label>
+				<input type="text" name="phone"  style="width:100%;"><br><br>
+
+				<button type="submit">Save</button>
+				<button type="button" id="closeModal">Cancel</button>
+			</form>
+		</div>
+	</div>
+
 	<?php
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
+
+	<script>
+	document.getElementById('researcherForm').addEventListener('submit', function(e){
+		e.preventDefault();
+		let formData = new FormData(this);
+
+		fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
+		
+		.then(res => res.json())
+		.then(data => {
+			if(data.success){
+				let dropdown = document.querySelector('select[name="inqresearcher"]');
+				let newOption = document.createElement('option');
+				newOption.value = data.researcher_id;
+				newOption.text = data.name + ' (' + data.institution + ')';
+				dropdown.appendChild(newOption);
+
+				dropdown.value = data.researcher_id;
+
+				document.getElementById('researcherModal').style.display = 'none';
+				document.getElementById('researcherForm').reset();
+
+				alert('Researcher added successfully!');
+			} else {
+				alert('Error: ' + data.message);
+			}
+		})
+		.catch(err => alert('Request failed'));
+	});
+	</script>
+
+	<script>
+	document.getElementById('addResearcherBtn').addEventListener('click', function(){
+		document.getElementById('researcherModal').style.display = 'flex';
+	});
+
+	document.getElementById('closeModal').addEventListener('click', function(){
+		document.getElementById('researcherModal').style.display = 'none';
+	});
+	</script>
 </body>
 </html>
