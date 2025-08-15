@@ -28,7 +28,7 @@
 
     $sql = 'SELECT 
     status, COUNT(*) AS count
-    FROM requests
+    FROM NeonRequest
     GROUP BY status;';
     $result = $this->conn->query($sql);
 

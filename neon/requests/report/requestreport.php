@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
-include_once('../../config/symbini.php');
+include_once('../../../config/symbini.php');
 include_once($SERVER_ROOT.'/neon/classes/RequestReport.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 header("Content-Type: text/html; charset=".$CHARSET);
@@ -14,7 +14,7 @@ $utilities = new Utilities();
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 
-elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEditor',$USER_RIGHTS)) $isEditor = true;
+elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 ?>
 <html>
 	<head>
@@ -34,8 +34,8 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		include($SERVER_ROOT.'/includes/header.php');
 		?>
 		<div class="navpath">
-			<a href="../../index.php">Home</a> &gt;&gt;
-			<a href="../index.php">NEON Biorepository Tools</a> &gt;&gt;
+			<a href="../../../index.php">Home</a> &gt;&gt;
+			<a href="../../index.php">Management Tools</a> &gt;&gt;
 			<b>Requests Report</b>
 		</div>
 		<div id="innertext">
@@ -48,12 +48,6 @@ if ($isEditor) {
     <button type="submit">Export Report</button>
   </form>
 
-  <p class="helper">
-    <svg class="MuiSvgIcon-root jss173 MuiSvgIcon-fontSizeLarge" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path>
-    </svg>
-    Click column names to sort (click again to toggle ascending/descending)
-  </p>
 
   <?php
   if (!empty($reportsArr)) {
