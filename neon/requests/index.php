@@ -470,7 +470,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
             document.getElementById('researcherModal').style.display = 'none';
             document.getElementById('researcherForm').reset();
 
-            alert('Researcher added successfully!');
+            alert('Researcher added successfully and can be found at the bottom of the dropdown list!');
         } else {
             alert('Error: ' + data.message);
         }

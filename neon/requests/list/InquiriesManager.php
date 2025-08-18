@@ -215,7 +215,7 @@ public function getHowFoundUs(){
     $drivefolder = $this->conn->real_escape_string($drivefolder);
 
     $sql = "INSERT INTO neonrequest 
-        (collection_manager, researcher_id, inquiry_date, status_date, status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name, laste_updated) 
+        (collection_manager, researcher_id, inquiry_date, status_date, status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name, last_updated) 
         VALUES 
         ('$collection_manager', '$researcher_id', '$inquiry_date', '$inquiry_date', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder', NOW())";
 
