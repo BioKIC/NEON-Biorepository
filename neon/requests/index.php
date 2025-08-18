@@ -23,11 +23,25 @@ if($formSubmit == 'createInquiry' && $isEditor){
     $collection_manager = $_POST['inqmanager'] ?? '';
     $researcher_id = $_POST['inqresearcher'] ?? '';
     $inquiry_date = $_POST['inqdate'] ?? '';
+	$title = $_POST['inqtitle'] ?? '';
+	$collections = $_POST['inqcolls'] ?? '';
+	$field = $_POST['inqfield'] ?? '';
+	$secondaryfields = $_POST['inqsecondaryfields'] ?? '';
+	$funded = $_POST['inqfunded'] ?? '';
+	$fundingsource = $_POST['inqfundingsource'] ?? '';
+	$description = $_POST['inqdescription'] ?? '';
+	$howfound = $_POST['inqhowfound'] ?? '';
+	$dataproduced = $_POST['inqdata'] ?? '';
+	$existing = $_POST['inqexist'] ?? '';
+	$future = $_POST['inqfuture'] ?? '';
+	$new = $_POST['inqnew'] ?? '';
+	$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
+	$drivefolder = $_POST['inqdrive'] ?? '';
 
-    if(!$collection_manager || !$researcher_id || !$inquiry_date){
-        $statusStr = '<span style="color:red;">All fields are required.</span>';
+    if(!$collection_manager || !$researcher_id || !$inquiry_date || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder){
+        $statusStr = '<span style="color:red;">Missing required fields.</span>';
     } else {
-        $insertId = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date);
+        $insertId = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder);
         if($insertId){
             $statusStr = '<span style="color:green;">SUCCESS: Inquiry created (ID: '.$insertId.').</span>';
         } else {
@@ -67,6 +81,59 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			return false;
 		}
 
+		if (f.inqtitle.options[f.inqtitle.selectedIndex].value == 0) {
+			alert("<?php echo 'Insert title'; ?>");
+			return false;
+		}
+
+		if (f.inqcolls.options[f.inqcolls.selectedIndex].value == 0) {
+			alert("<?php echo 'Select collections'; ?>");
+			return false;
+		}
+		if (f.inqfield.options[f.inqfield.selectedIndex].value == 0) {
+			alert("<?php echo 'Select research field'; ?>");
+			return false;
+		}
+		if (f.inqfunded.options[f.inqfunded.selectedIndex].value == 0) {
+			alert("<?php echo 'Indicate funding status'; ?>");
+			return false;
+		}
+		if (f.inqfundingsource.options[f.inqfundingsource.selectedIndex].value == 0) {
+			alert("<?php echo 'Insert funding source'; ?>");
+			return false;
+		}
+		if (f.inqdescription.options[f.inqdescription.selectedIndex].value == 0) {
+			alert("<?php echo 'Insert description'; ?>");
+			return false;
+		}
+		if (f.inqhowfound.options[f.inqhowfound.selectedIndex].value == 0) {
+			alert("<?php echo 'Select "How Found Us" option'; ?>");
+			return false;
+		}
+		if (f.inqdata.options[f.inqdata.selectedIndex].value == 0) {
+			alert("<?php echo 'Insert data produced'; ?>");
+			return false;
+		}
+		if (f.inqexist.options[f.inqexist.selectedIndex].value == 0) {
+			alert("<?php echo 'Select whether the request would use existing samples'; ?>");
+			return false;
+		}
+		if (f.inqfuture.options[f.inqfuture.selectedIndex].value == 0) {
+			alert("<?php echo 'Select whether the request would use future samples'; ?>");
+			return false;
+		}
+		if (f.inqnew.options[f.inqnew.selectedIndex].value == 0) {
+			alert("<?php echo 'Select whether new samples will be generated'; ?>");
+			return false;
+		}
+		if (f.inqadditionalresearcher.options[f.inqadditionalresearcher.selectedIndex].value == 0) {
+			alert("<?php echo 'Select additional researchers'; ?>");
+			return false;
+		}
+		if (f.inqdrive.options[f.inqdrive.selectedIndex].value == 0) {
+			alert("<?php echo 'Select Google Drive Folder'; ?>");
+			return false;
+		}
 		return true;
 	}
 	</script>
@@ -143,17 +210,166 @@ if($formSubmit == 'createInquiry' && $isEditor){
 										</select>
 									</span>
 									<span>
-    										<button type="button" id="addResearcherBtn" title="Add new researcher" aria-label="Add new researcher" style="background:none;border:none;cursor:pointer;">
-											<?php echo 'Add researcher' ?>
+											<button type="button" class="addResearcherBtn" data-target="primary">Add researcher</button>
 											</button>									
 									</span>
+								</div>
+									<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'Additional Researchers (select all)'; ?>:
+									</span><br />
+									<span>
+										<select name="inqadditionalresearcher[]" style="width:400px;" multiple aria-label="<?php echo 'Researchers' ?>" >
+											<option value=""><?php echo 'Select Researchers'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$researcherArr = $inquiryManager->getResearchers();
+											foreach($researcherArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+									<span>
+											<button type="button" class="addResearcherBtn" data-target="additional">Add researcher</button>
+											</button>									
+									</span>
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqtitle"><?php echo 'Inquiry Title'; ?>:</label><br>
+        									<input name="inqtitle" id="inqtitle" type="text" style="width:400px;" value="<?php echo htmlspecialchars($title ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										Initial Inquiry Date: <input name="inqdate" type="date" value="<?php echo $inquirydate; ?>" />
 									</div>
 								</div>
-								<div style="clear:both;padding-top:8px;float:right;">
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'Collections of Interest (select all)'; ?>:
+									</span><br />
+									<span>
+										<select name="inqcolls[]" style="width:400px; height:120px;" multiple aria-label="<?php echo 'Collections' ?>">
+											<option value=""><?php echo 'Select all Collections of Interest'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$collectionArr = $inquiryManager->getCollections();
+											foreach($collectionArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'Primary Research Field'; ?>:
+									</span><br />
+									<span>
+										<select name="inqfield" style="width:400px;" aria-label="<?php echo 'Select Primary Research Field' ?>" >
+											<option value=""><?php echo 'Select research field'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$fieldArr = $inquiryManager->getFields();
+											foreach($fieldArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqsecondaryfields"><?php echo 'Secondary Research Fields (separate multiple with semicolons)'; ?>:</label><br>
+        									<input name="inqsecondaryfields" id="inqsecondaryfields" type="text" style="width:400px;" value="<?php echo htmlspecialchars($secondaryfields ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqdata"><?php echo 'Types of Data Produced (separate multiple with semicolons)'; ?>:</label><br>
+        									<input name="inqdata" id="inqdata" type="text" style="width:400px;" value="<?php echo htmlspecialchars($dataproduced ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'Funding status'; ?>:
+									</span><br />
+									<span>
+										<select name="inqfunded" style="width:400px;" aria-label="<?php echo 'Select Funding Status' ?>" >
+											<option value=""><?php echo 'Select funding status'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$fundingArr = array(
+												'yes' => 'Already Funded / Internal or insitutional support',
+												'pending' => 'Pending funding or proposal in development'
+											);
+
+											foreach($fundingArr as $funded => $text){
+												echo '<option value="' . htmlspecialchars($funded) . '">' . htmlspecialchars($text) . '</option>';
+											}
+											?>
+										</select>
+									</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqfundingsource"><?php echo 'Funding Source'; ?>:</label><br>
+        									<input name="inqfundingsource" id="inqfundingsource" type="text" style="width:400px;" value="<?php echo htmlspecialchars($fundingsource ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+										<div class="fieldDiv">
+											<label for="inqdescription"><?php echo 'Project Description'; ?>:</label><br>
+											<textarea name="inqdescription" id="inqdescription" style="width:400px; height:150px;"><?php echo htmlspecialchars($description ?? '', ENT_QUOTES); ?></textarea>
+										</div>
+									</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'How did the researchers find us?'; ?>:
+									</span><br />
+									<span>
+										<select name="inqhowfound" style="width:400px;" aria-label="<?php echo 'How did the researchers find us' ?>" >
+											<option value=""><?php echo 'Select Option'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$howfoundArr = $inquiryManager->getHowFoundUs();
+											foreach($howfoundArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<label for="inqexist"><?php echo 'May use existing samples?' ?></label>
+									<input type="hidden" name="inqexist" value="no" />
+									<input type="checkbox" id="inqexist" name="inqexist" value="yes" <?php echo (!empty($exist) && $exist === 'yes') ? 'checked' : ''; ?> />
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<label for="inqfuture"><?php echo 'May use future samples not yet at the Biorepository?' ?></label>
+									<input type="hidden" name="inqfuture" value="no" />
+									<input type="checkbox" id="inqfuture" name="inqfuture" value="yes" <?php echo (!empty($future) && $future === 'yes') ? 'checked' : ''; ?> />
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<label for="inqnew"><?php echo 'May generate new samples?' ?></label>
+									<input type="hidden" name="inqnew" value="no" />
+									<input type="checkbox" id="inqnew" name="inqnew" value="yes" <?php echo (!empty($new) && $new === 'yes') ? 'checked' : ''; ?> />
+								</div>
+									<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqdrive"><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</label><br>
+        									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo htmlspecialchars($drivefolder ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
+								</div>
+								<div style="clear:both;padding-top:8px;float:left;">
 									<input name="formsubmit" type="hidden" value="createInquiry" />
 									<button name="submitButton" type="submit"><?php echo 'Create Inquiry' ?></button>
 								</div>
@@ -201,43 +417,67 @@ if($formSubmit == 'createInquiry' && $isEditor){
 	?>
 
 	<script>
-	document.getElementById('researcherForm').addEventListener('submit', function(e){
-		e.preventDefault();
-		let formData = new FormData(this);
+// Open modal when either "Add researcher" button is clicked
+document.querySelectorAll('.addResearcherBtn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Save which button opened the modal
+        document.getElementById('researcherModal').dataset.source = btn.dataset.target;
+        document.getElementById('researcherModal').style.display = 'block';
+    });
+});
 
-		fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
-		
-		.then(res => res.json())
-		.then(data => {
-			if(data.success){
-				let dropdown = document.querySelector('select[name="inqresearcher"]');
-				let newOption = document.createElement('option');
-				newOption.value = data.researcher_id;
-				newOption.text = data.name + ' (' + data.institution + ')';
-				dropdown.appendChild(newOption);
+// Close modal
+document.getElementById('closeModal').addEventListener('click', function(){
+    document.getElementById('researcherModal').style.display = 'none';
+});
 
-				dropdown.value = data.researcher_id;
+document.getElementById('researcherForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    let formData = new FormData(this);
 
-				document.getElementById('researcherModal').style.display = 'none';
-				document.getElementById('researcherForm').reset();
+    fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            let primaryDropdown = document.querySelector('select[name="inqresearcher"]');
+            let additionalDropdown = document.querySelector('select[name="inqadditionalresearcher[]"]');
 
-				alert('Researcher added successfully!');
-			} else {
-				alert('Error: ' + data.message);
-			}
-		})
-		.catch(err => alert('Request failed'));
-	});
-	</script>
+            // Save currently selected values in multi-select
+            let selectedAdditional = Array.from(additionalDropdown.selectedOptions).map(opt => opt.value);
 
-	<script>
-	document.getElementById('addResearcherBtn').addEventListener('click', function(){
-		document.getElementById('researcherModal').style.display = 'flex';
-	});
+            // Create new option
+            let optionPrimary = document.createElement('option');
+            optionPrimary.value = data.researcher_id;
+            optionPrimary.text = data.name + ' (' + data.institution + ')';
 
-	document.getElementById('closeModal').addEventListener('click', function(){
-		document.getElementById('researcherModal').style.display = 'none';
-	});
+            let optionAdditional = optionPrimary.cloneNode(true);
+
+            // Add to both dropdowns
+            primaryDropdown.appendChild(optionPrimary);
+            additionalDropdown.appendChild(optionAdditional);
+
+            // Restore previous selections in additional dropdown
+            selectedAdditional.forEach(val => {
+                let option = additionalDropdown.querySelector(`option[value="${val}"]`);
+                if(option) option.selected = true;
+            });
+
+            // Only auto-select in primary if added via primary button
+            if(document.getElementById('researcherModal').dataset.source === 'primary') {
+                primaryDropdown.value = data.researcher_id;
+            }
+
+            document.getElementById('researcherModal').style.display = 'none';
+            document.getElementById('researcherForm').reset();
+
+            alert('Researcher added successfully!');
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(err => alert('Request failed'));
+});
+
 	</script>
 </body>
 </html>

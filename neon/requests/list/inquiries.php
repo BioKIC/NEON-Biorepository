@@ -2,11 +2,11 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once('../../../config/symbini.php');
-include_once($SERVER_ROOT.'/neon/requests/list/InquiriesList.php');
+include_once($SERVER_ROOT.'/neon/requests/list/InquiriesManager.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 
-$reports = new InquiriesList();
+$reports = new InquiriesManager();
 $utilities = new Utilities();
 $inquiriesArr = $reports->getInquiriesOut();
 $headerArr = ['id','researcher','date','title','status','samples'];

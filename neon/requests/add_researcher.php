@@ -28,7 +28,7 @@ try {
     }
 
     if (!method_exists($inquiryManager, 'addResearcher')) {
-        throw new Exception('addResearcher method not defined in InquiriesList.');
+        throw new Exception('addResearcher method not defined in inquiries manager.');
     }
 
     $researcher_id = $inquiryManager->addResearcher($name, $institution, $contact_email, $address, $phone);
