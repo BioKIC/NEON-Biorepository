@@ -17,7 +17,6 @@ $inquiryManager = new InquiriesManager();
 
 $statusStr = '';
 
-$statusStr = '';
 
 if($formSubmit == 'createInquiry' && $isEditor){
     $collection_manager = $_POST['inqmanager'] ?? '';
@@ -42,11 +41,12 @@ if($formSubmit == 'createInquiry' && $isEditor){
         $statusStr = '<span style="color:red;">Missing required fields.</span>';
     } else {
         $insertId = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder);
-        if($insertId){
-            $statusStr = '<span style="color:green;">SUCCESS: Inquiry created (ID: '.$insertId.').</span>';
-        } else {
-            $statusStr = '<span style="color:red;">Error: '.$inquiryManager->errorMessage.'</span>';
-        }
+	 if ($insertId) {
+        header("Location: inquiryform.php?id=" . $insertId);
+        exit();
+    } else {
+        echo "Error saving inquiry: " . $inquiryManager->getError();
+    }
     }
 }
 
@@ -131,7 +131,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			return false;
 		}
 		if (f.inqdrive.options[f.inqdrive.selectedIndex].value == 0) {
-			alert("<?php echo 'Select Google Drive Folder'; ?>");
+			alert("<?php echo 'Input Google Drive Folder'; ?>");
 			return false;
 		}
 		return true;
@@ -178,7 +178,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<legend><?php echo 'Create New Record' ?></legend>
 								<div style="padding-top:4px;float:left;">
 									<span>
-										<?php echo 'Manager'; ?>:
+       								<strong><?php echo 'Manager'; ?>:</strong>
 									</span><br />
 									<span>
 										<select name="inqmanager" style="width:400px;" aria-label="<?php echo 'Select Inquiry Manager' ?>" >
@@ -195,7 +195,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<?php echo 'Primary Contact'; ?>:
+       								<strong><?php echo 'Primary Contact'; ?>:</strong>
 									</span><br />
 									<span>
 										<select name="inqresearcher" style="width:400px;" aria-label="<?php echo 'Researcher' ?>" >
@@ -216,7 +216,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 									<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<?php echo 'Additional Researchers (select all)'; ?>:
+       								<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong>
 									</span><br />
 									<span>
 										<select name="inqadditionalresearcher[]" style="width:400px;" multiple aria-label="<?php echo 'Researchers' ?>" >
@@ -236,23 +236,24 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									</span>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
-   						 			<div class="fieldDiv">
-       										<label for="inqtitle"><?php echo 'Inquiry Title'; ?>:</label><br>
-        									<input name="inqtitle" id="inqtitle" type="text" style="width:400px;" value="<?php echo htmlspecialchars($title ?? '', ENT_QUOTES); ?>" />
-   								 	</div>
+								<div class="fieldDiv">
+									<label for="inqtitle"><strong><?php echo 'Title'; ?>:</strong></label><br>
+									<input name="inqtitle" id="inqtitle" type="text" style="width:400px;" 
+										value="<?php echo htmlspecialchars($title ?? '', ENT_QUOTES); ?>" />
+								</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
-									<div class="fieldDiv">
-										Initial Inquiry Date: <input name="inqdate" type="date" value="<?php echo $inquirydate; ?>" />
+									<div class="fieldDiv"> <strong>
+										Initial Inquiry Date:</strong> <input name="inqdate" type="date" value="<?php echo $inquirydate; ?>" />
 									</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<?php echo 'Collections of Interest (select all)'; ?>:
+       								<strong><?php echo 'Collections of Interest (select all)'; ?>:</strong>
 									</span><br />
 									<span>
 										<select name="inqcolls[]" style="width:400px; height:120px;" multiple aria-label="<?php echo 'Collections' ?>">
-											<option value=""><?php echo 'Select all Collections of Interest'; ?></option>
+											<option value=""><strong><?php echo 'Select all Collections of Interest'; ?><strong></option>
 											<option value="">------------------------------------------</option>
 											<?php
 											$collectionArr = $inquiryManager->getCollections();
@@ -265,7 +266,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<?php echo 'Primary Research Field'; ?>:
+       								<strong><?php echo 'Primary Research Field'; ?>:</strong>
 									</span><br />
 									<span>
 										<select name="inqfield" style="width:400px;" aria-label="<?php echo 'Select Primary Research Field' ?>" >
@@ -283,24 +284,24 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqsecondaryfields"><?php echo 'Secondary Research Fields (separate multiple with semicolons)'; ?>:</label><br>
+       										<label for="inqsecondaryfields"><strong><?php echo 'Secondary Research Fields (separate multiple with semicolons)'; ?></strong>:</label><br>
         									<input name="inqsecondaryfields" id="inqsecondaryfields" type="text" style="width:400px;" value="<?php echo htmlspecialchars($secondaryfields ?? '', ENT_QUOTES); ?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqdata"><?php echo 'Types of Data Produced (separate multiple with semicolons)'; ?>:</label><br>
+       										<label for="inqdata"><strong><?php echo 'Types of Data Produced (separate multiple with semicolons)'; ?>:</strong></label><br>
         									<input name="inqdata" id="inqdata" type="text" style="width:400px;" value="<?php echo htmlspecialchars($dataproduced ?? '', ENT_QUOTES); ?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<?php echo 'Funding status'; ?>:
+       								<strong><?php echo 'Funding Status'; ?>:</strong>
 									</span><br />
 									<span>
 										<select name="inqfunded" style="width:400px;" aria-label="<?php echo 'Select Funding Status' ?>" >
-											<option value=""><?php echo 'Select funding status'; ?></option>
+											<option value=""><strong><?php echo 'Select funding status'; ?></strong></option>
 											<option value="">------------------------------------------</option>
 											<?php
 											$fundingArr = array(
@@ -318,21 +319,21 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqfundingsource"><?php echo 'Funding Source'; ?>:</label><br>
+       										<label for="inqfundingsource"><strong><?php echo 'Funding Source'; ?>:</strong></label><br>
         									<input name="inqfundingsource" id="inqfundingsource" type="text" style="width:400px;" value="<?php echo htmlspecialchars($fundingsource ?? '', ENT_QUOTES); ?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 										<div class="fieldDiv">
-											<label for="inqdescription"><?php echo 'Project Description'; ?>:</label><br>
+											<label for="inqdescription"><strong><?php echo 'Project Description'; ?>:</strong></label><br>
 											<textarea name="inqdescription" id="inqdescription" style="width:400px; height:150px;"><?php echo htmlspecialchars($description ?? '', ENT_QUOTES); ?></textarea>
 										</div>
 									</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<?php echo 'How did the researchers find us?'; ?>:
+       								<strong><?php echo 'How did the researchers find us?'; ?>:</strong>
 									</span><br />
 									<span>
 										<select name="inqhowfound" style="width:400px;" aria-label="<?php echo 'How did the researchers find us' ?>" >
@@ -348,24 +349,24 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
-									<label for="inqexist"><?php echo 'May use existing samples?' ?></label>
+									<label for="inqexist"><strong><?php echo 'May use existing samples?' ?></strong></label>
 									<input type="hidden" name="inqexist" value="no" />
 									<input type="checkbox" id="inqexist" name="inqexist" value="yes" <?php echo (!empty($exist) && $exist === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
-									<label for="inqfuture"><?php echo 'May use future samples not yet at the Biorepository?' ?></label>
+									<label for="inqfuture"><strong><?php echo 'May use future samples not yet at the Biorepository?' ?></strong></label>
 									<input type="hidden" name="inqfuture" value="no" />
 									<input type="checkbox" id="inqfuture" name="inqfuture" value="yes" <?php echo (!empty($future) && $future === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
-									<label for="inqnew"><?php echo 'May generate new samples?' ?></label>
+									<label for="inqnew"><strong><?php echo 'May generate new samples?' ?></strong></label>
 									<input type="hidden" name="inqnew" value="no" />
 									<input type="checkbox" id="inqnew" name="inqnew" value="yes" <?php echo (!empty($new) && $new === 'yes') ? 'checked' : ''; ?> />
 								</div>
 									<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqdrive"><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</label><br>
+       										<label for="inqdrive"><strong><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
         									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo htmlspecialchars($drivefolder ?? '', ENT_QUOTES); ?>" />
    								 	</div>
 								</div>

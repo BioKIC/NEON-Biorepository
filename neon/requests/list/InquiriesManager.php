@@ -284,6 +284,20 @@ public function addCollectionInquiryLink($request_id, $collections) {
     return true;
 }
 
+// get data for a given request
+public function getInquiryDataByID($request_id) {
+    $request_id = $this->conn->real_escape_string($request_id);
+
+    $sql = "SELECT * FROM neonrequest WHERE id=$request_id";
+
+    if (!$this->conn->query($sql)) {
+      $this->errorMessage = "Database Error: " . $this->conn->error;
+      return false;
+    }
+    
+    return true;
+}
+
 
 }
 

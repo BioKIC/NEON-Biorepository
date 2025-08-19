@@ -1,154 +1,88 @@
 <?php
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT . '/classes/OccurrenceLoans.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT . '/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php');
+include_once('../../neon/requests/list/InquiriesManager.php');
+
+if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/loans/loan_langs.en.php');
 header("Content-Type: text/html; charset=".$CHARSET);
-if(!$SYMB_UID) header('Location: ' . $CLIENT_ROOT . '/profile/index.php?refurl=../collections/loans/outgoing.php?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
-$collid = $_REQUEST['collid'];
-$loanId = array_key_exists('loanid', $_REQUEST) ? $_REQUEST['loanid'] : 0;
-$loanIdOwn = array_key_exists('loanidentifierown', $_REQUEST) ? $_REQUEST['loanidentifierown'] : 0;
-$tabIndex = array_key_exists('tabindex', $_REQUEST) ? $_REQUEST['tabindex'] : 0;
-$sortTag = (isset($_REQUEST['sortTag']) ? $_REQUEST['sortTag'] : '');
-$formSubmit = array_key_exists('formsubmit', $_REQUEST) ? $_REQUEST['formsubmit'] : '';
+$formSubmit = array_key_exists('formsubmit',$_POST)?$_POST['formsubmit']:'';
 
-$loanManager = new OccurrenceLoans();
-
-//Sanitation
-$collid = $loanManager->sanitizeInt($collid);
-$loanId = $loanManager->sanitizeInt($loanId);
-$tabIndex = $loanManager->sanitizeInt($tabIndex);
-
-$isEditor = 0;
-if($SYMB_UID && $collid){
-	if($IS_ADMIN || (array_key_exists('CollAdmin',$USER_RIGHTS) && in_array($collid,$USER_RIGHTS['CollAdmin']))
-		|| (array_key_exists('CollEditor',$USER_RIGHTS) && in_array($collid,$USER_RIGHTS['CollEditor']))){
-		$isEditor = 1;
-	}
+if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $request_id = (int) $_GET['id'];
+} else {
+    die("Invalid or missing request ID.");
 }
 
-if($collid) $loanManager->setCollId($collid);
+
+$isEditor = false;
+if($IS_ADMIN) $isEditor = true;
+elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
+
+$inquiryManager = new InquiriesManager();
 
 $statusStr = '';
-if($isEditor){
-	if($formSubmit){
-		if($formSubmit == 'createLoanOut'){
-			$loanId = $loanManager->createNewLoanOut($_POST);
-			if(!$loanId) $statusStr = $loanManager->getErrorMessage();
-		}
-		elseif($formSubmit == 'Save Outgoing'){
-			$statusStr = $loanManager->editLoanOut($_POST);
-		}
-		elseif($formSubmit == 'deleteSpecimens'){
-			if(!$loanManager->deleteSpecimens($_POST['occid'], $_POST['loanid'])) $statusStr = $loanManager->getErrorMessage();
-		}
-		elseif($formSubmit == 'checkinSpecimens'){
-			if(!$loanManager->batchCheckinSpecimens($_POST['occid'], $_POST['loanid'])) $statusStr = $loanManager->getErrorMessage();
-		}
-		elseif($formSubmit == 'addDeterminations'){
-			include_once($SERVER_ROOT . '/classes/OccurrenceEditorDeterminations.php');
-			$occManager = new OccurrenceEditorDeterminations();
-			$occidArr = $_REQUEST['occid'];
-			foreach($occidArr as $k){
-				$occManager->setOccId($k);
-				$occManager->addDetermination($_REQUEST,$isEditor);
-			}
-		}
-		elseif($formSubmit == 'batchProcessSpecimens'){
-			$cnt = $loanManager->batchProcessSpecimens($_POST);
-			$statusStr = '<ul>';
-			$statusStr .= '<li><b>' . $cnt . '</b> ' . $LANG['PROC_SUCCESS'] . '</li>';
-			if($warnArr = $loanManager->getWarningArr()){
-				if(isset($warnArr['missing'])){
-					$statusStr .= '<li style="color:red;"><b>' . $LANG['CATNUMS_NOT_LOCATED'] . '</b></li>';
-					foreach($warnArr['missing'] as $catNum){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $catNum . '</li>';
-					}
-				}
-				if(isset($warnArr['multiple'])){
-					$statusStr .= '<li style="color:orange;"><b>' . $LANG['CATNUM_MULTIPLE_MATCHES'] . '</b></li>';
-					foreach($warnArr['multiple'] as $catNum){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $catNum . '</li>';
-					}
-				}
-				if(isset($warnArr['dupe'])){
-					$statusStr .= '<li style="color:orange"><b>' . $LANG['SPECS_ALREADY_LINKED'] . '</b></li>';
-					foreach($warnArr['dupe'] as $catNum){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $catNum . '</li>';
-					}
-				}
-				if(isset($warnArr['zeroMatch'])){
-					$statusStr .= '<li style="color:orange;"><b>' . $LANG['ALREADY_CHECKED_IN'] . '</b></li>';
-					foreach($warnArr['zeroMatch'] as $catNum){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $catNum . '</li>';
-					}
-				}
-				if(isset($warnArr['error'])){
-					$statusStr .= '<li style="color:red;"><b>' . $LANG['MISC_ERROR'] . '</b></li>';
-					foreach($warnArr['error'] as $errStr){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $errStr . '</li>';
-					}
-				}
-			}
-			$statusStr .= '</ul>';
-			$tabIndex = 1;
-		}
-		elseif($formSubmit == 'saveSpecimenDetails'){
-			if($loanManager->editSpecimenDetails($loanId,$_POST['occid'],$_POST['returndate'],$_POST['notes'])) $statusStr = true;
-			echo $statusStr = $loanManager->getErrorMessage();
-		}
-		elseif($formSubmit == 'exportSpecimenList'){
-			$loanManager->exportSpecimenList($loanId);
-			exit;
-		}
-		elseif ($formSubmit == "delAttachment") {
-			// Delete correspondence attachment
-			if (array_key_exists('attachid',$_REQUEST) && is_numeric($_REQUEST['attachid'])) $loanManager->deleteAttachment($_REQUEST['attachid']);
-			$statusStr = $loanManager->getErrorMessage();
-		}
-		elseif ($formSubmit == "saveAttachment") {
-			// Save correspondence attachment
-			if (array_key_exists('uploadfile',$_FILES)) $loanManager->uploadAttachment($collid, 'loan', $loanId, $loanIdOwn, $_POST['uploadtitle'], $_FILES['uploadfile']);
-			$statusStr = $loanManager->getErrorMessage();
-		}
-	}
+
+if($formSubmit == 'editInquiry' && $isEditor){
+    // $collection_manager = $_POST['inqmanager'] ?? '';
+    // $researcher_id = $_POST['inqresearcher'] ?? '';
+    // $inquiry_date = $_POST['inqdate'] ?? '';
+	// $title = $_POST['inqtitle'] ?? '';
+	// $collections = $_POST['inqcolls'] ?? '';
+	// $field = $_POST['inqfield'] ?? '';
+	// $secondaryfields = $_POST['inqsecondaryfields'] ?? '';
+	// $funded = $_POST['inqfunded'] ?? '';
+	// $fundingsource = $_POST['inqfundingsource'] ?? '';
+	// $description = $_POST['inqdescription'] ?? '';
+	// $howfound = $_POST['inqhowfound'] ?? '';
+	// $dataproduced = $_POST['inqdata'] ?? '';
+	// $existing = $_POST['inqexist'] ?? '';
+	// $future = $_POST['inqfuture'] ?? '';
+	// $new = $_POST['inqnew'] ?? '';
+	// $additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
+	// $drivefolder = $_POST['inqdrive'] ?? '';
+
+    if(!$collection_manager || !$researcher_id || !$inquiry_date || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder){
+        $statusStr = '<span style="color:red;">Missing required fields.</span>';
+    } else {
+        //$insertId = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder);
+	 if ($insertId) {
+        header("Location: inquiryform.php?id=" . $insertId);
+        exit();
+    } else {
+        echo "Error saving inquiry: " . $inquiryManager->getError();
+    }
+    }
 }
-$specimenTotal = $loanManager->getSpecimenTotal($loanId);
+
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>">
-	<title><?php echo $DEFAULT_TITLE . ': ' . $LANG['OUTGOING_LOAN_MANAGE']; ?></title>
+	<title><?php echo 'View and Edit Existing Inquiry Record' ?></title>
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
-	<script type="text/javascript">
-		var tabIndex = <?php echo $tabIndex; ?>;
 
-		function verifyLoanOutEditForm(){
-			var submitStatus = true;
-			$("#editLoanOutForm input[type=date]").each(function() {
-				//Need for Safari browser which doesn't support date input types
-				if(this.value != ""){
-					var validFormat = /^\s*\d{4}-\d{2}-\d{2}\s*$/ //Format: yyyy-mm-dd
-					if(!validFormat.test(this.value)){
-						alert("<?php echo $LANG['DATE_EXAMPLE']; ?>"+this.name+"<?php echo $LANG['VALUES_FORMAT']; ?>");
-						submitStatus = false;
-					}
-				}
-			});
-			return submitStatus;
+
+	<script>
+	function verifyInquiryUpdateForm(f) {
+		if (f.inqresearcher.options[f.inqresearcher.selectedIndex].value == 0) {
+			alert("<?php echo 'Select Researcher'; ?>");
+			return false;
 		}
+		return true;
+	}
 	</script>
-	<script type="text/javascript" src="../../js/symb/collections.loans.js?ver=2"></script>
+
 	<style>
-		fieldset{ padding:15px; margin:15px }
+		fieldset{ padding:10px; }
 		fieldset legend{ font-weight:bold }
+		.important{ color: red; }
 	</style>
 </head>
 <body>
@@ -156,18 +90,16 @@ $specimenTotal = $loanManager->getSpecimenTotal($loanId);
 	$displayLeftMenu = false;
 	include($SERVER_ROOT . '/includes/header.php');
 	?>
-	<div class='navpath'>
-		<a href='../../index.php'>Home</a> &gt;&gt;
-		<a href="../misc/collprofiles.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>&emode=1"><?php echo $LANG['COL_MNG_MENU']; ?></a> &gt;&gt;
-		<a href="index.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"><?php echo $LANG['LOAN_INDEX']; ?></a> &gt;&gt;
-		<a href="outgoing.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&loanid=' . htmlspecialchars($loanId, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"><b><?php echo $LANG['OUTGOING_LOAN_MANAGE']; ?></b></a>
-	</div>
+		<div class="navpath">
+			<a href="../../index.php">Home</a> &gt;&gt;
+			<a href="../../neon/index.php">Management Tools</a> &gt;&gt;
+			<b>Inquiry Record</b>
+		</div>
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
-		<h1 class="page-heading"><?= $LANG['OUTGOING_LOAN_MANAGE']; ?></h1>
+		<h1 class="page-heading"><?= 'View and Edit Inquiry Record' ?></h1>
 		<?php
-		if($isEditor && $collid){
-			//Collection is defined and User is logged-in and have permissions
+		if($isEditor){
 			if($statusStr){
 				$colorStr = 'red';
 				if(stripos($statusStr,'SUCCESS') !== false) $colorStr = 'green';
@@ -180,251 +112,313 @@ $specimenTotal = $loanManager->getSpecimenTotal($loanId);
 				<?php
 			}
 			?>
-			<div id="tabs" style="margin:0px;">
-			  <ul>
-					<li><a href="#outloandetaildiv"><span><?= $LANG['LOAN_DETAILS'] ?></span></a></li>
-					<li><a href="specimentab.php?collid=<?= $collid . '&loanid=' . $loanId . '&sortTag=' . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>"><span><?= $LANG['CAP_SPECIMENS'] ?></span></a></li>
-					<li><a href="#outloandeldiv"><span><?= $LANG['ADMIN'] ?></span></a></li>
-				</ul>
-				<div id="outloandetaildiv">
-					<?php
-					$loanArr = $loanManager->getLoanOutDetails($loanId);
-					?>
-					<form id="editLoanOutForm" name="editLoanOutForm" action="outgoing.php" method="post" onsubmit="return verifyLoanOutEditForm(this)">
-						<fieldset>
-							<legend><?php echo $LANG['LOAN_OUT_DETAILS']; ?></legend>
-							<div style="padding-top:18px;float:left;">
-								<span>
-									<b><?php echo $LANG['LOAN_NUMBER']; ?>:</b> <input type="text" autocomplete="off" name="loanidentifierown" maxlength="255" style="width:120px;border:2px solid black;text-align:center;font-weight:bold;color:black;" value="<?php echo $loanArr['loanidentifierown']; ?>" />
-								</span>
-							</div>
-							<div style="margin-left:20px;padding-top:4px;float:left;">
-								<span>
-									<?php echo $LANG['ENTERED_BY']; ?>:
-								</span><br />
-								<span>
-									<input type="text" autocomplete="off" name="createdbyown" maxlength="32" style="width:100px;" value="<?php echo $loanArr['createdbyown']; ?>" disabled />
-								</span>
-							</div>
-							<div style="margin-left:20px;padding-top:4px;float:left;">
-								<span>
-									<?php echo $LANG['PROCESSED_BY']; ?>:
-								</span><br />
-								<span>
-									<input type="text" autocomplete="off" name="processedbyown" maxlength="32" style="width:100px;" value="<?php echo $loanArr['processedbyown']; ?>" />
-								</span>
-							</div>
-							<div style="margin-left:20px;padding-top:4px;float:left;">
-								<span>
-									<?php echo $LANG['DATE_SENT']; ?>:
-								</span><br />
-								<span>
-									<input type="date" name="datesent" value="<?php echo $loanArr['datesent']; ?>" />
-								</span>
-							</div>
-							<div style="margin-left:20px;padding-top:4px;float:left;">
-								<span>
-									<?php echo $LANG['DATE_DUE']; ?>:
-								</span><br />
-								<span>
-									<input type="date" name="datedue" value="<?php echo $loanArr['datedue']; ?>" />
-								</span>
-							</div>
-							<div style="padding-top:8px;float:left;">
-								<span>
-									<?php echo $LANG['SENT_TO']; ?>:
-								</span><br />
-								<span>
-									<select name="iidborrower">
-										<?php
-										$instArr = $loanManager->getInstitutionArr();
-										foreach($instArr as $k => $v){
-											echo '<option value="' . $k . '" ' . ($loanArr['iidborrower']==$k?'SELECTED':'') . '>' . $v . '</option>';
-										}
-										?>
-									</select>
-								</span>
-								<?php
-								if($IS_ADMIN){
-									?>
+			
+					<div id="newinqdiv" style="display:<?php echo ($List ); ?>;">
+						<form name="newinqform" action="index.php" method="post" onsubmit="return verifyInquiryAddForm(this);">
+							<fieldset>
+								<legend><?php echo 'Sample use inquiry record' ?></legend>
+								<div style="padding-top:4px;float:left;">
 									<span>
-										<a href="../misc/institutioneditor.php?iid=<?php echo htmlspecialchars($loanArr['iidborrower'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" target="_blank" title="<?php echo $LANG['EDIT_INST_DETAILS']; ?>">
-											<img src="../../images/edit.png" style="width:1.3em;" />
-										</a>
-									</span>
-									<?php
-								}
-								?>
-							</div>
-							<div style="padding-top:8px;float:left;">
-								<div style="float:left;">
-									<span>
-										<?php echo $LANG['REQUESTED_FOR']; ?>:
+										<?php echo 'Manager'; ?>:
 									</span><br />
 									<span>
-										<input type="text" autocomplete="off" name="forwhom" maxlength="32" style="width:180px;" value="<?php echo $loanArr['forwhom']; ?>" onchange=" " />
+										<select name="inqmanager" style="width:400px;" aria-label="<?php echo 'Select Inquiry Manager' ?>" >
+											<option value=""><?php echo 'Select Manager'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$managerArr = $inquiryManager->getManagers();
+											foreach($managerArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
 									</span>
 								</div>
-								<div style="margin-left:20px;float:left;">
+								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<b><?php echo $LANG['TOTAL_SPECIMENS']; ?>:</b><br />
-										<input type="text" name="totalspecimens" maxlength="32" style="width:150px;border:2px solid black;text-align:center;font-weight:bold;color:black;" value="<?php echo $specimenTotal; ?>" onchange=" " disabled />
-									</span>
-								</div>
-								<div style="margin-left:20px;float:left;">
-									<span>
-										<?php echo $LANG['NO_BOXES']; ?>:
+										<?php echo 'Primary Contact'; ?>:
 									</span><br />
 									<span>
-										<input type="text" autocomplete="off" name="totalboxes" maxlength="32" style="width:50px;" value="<?php echo $loanArr['totalboxes']; ?>" onchange=" " />
+										<select name="inqresearcher" style="width:400px;" aria-label="<?php echo 'Researcher' ?>" >
+											<option value=""><?php echo 'Select Researcher'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$researcherArr = $inquiryManager->getResearchers();
+											foreach($researcherArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+									<span>
+											<button type="button" class="addResearcherBtn" data-target="primary">Add researcher</button>
+											</button>									
 									</span>
 								</div>
-								<div style="margin-left:20px;float:left;">
+									<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<?php echo $LANG['SHIPPING_SERVICE']; ?>:
+										<?php echo 'Additional Researchers (select all)'; ?>:
 									</span><br />
 									<span>
-										<input type="text" autocomplete="off" name="shippingmethod" maxlength="32" style="width:180px;" value="<?php echo $loanArr['shippingmethod']; ?>" onchange=" " />
+										<select name="inqadditionalresearcher[]" style="width:400px;" multiple aria-label="<?php echo 'Researchers' ?>" >
+											<option value=""><?php echo 'Select Researchers'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$researcherArr = $inquiryManager->getResearchers();
+											foreach($researcherArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+									<span>
+											<button type="button" class="addResearcherBtn" data-target="additional">Add researcher</button>
+											</button>									
 									</span>
 								</div>
-							</div>
-							<div style="padding-top:8px;float:left;">
-								<div style="float:left;">
-									<span>
-										<?php echo $LANG['LOAN_DESCRIPTION']; ?>:
-									</span><br />
-									<span>
-										<textarea name="description" rows="10" style="width:320px;resize:vertical;" onchange=" "><?php echo $loanArr['description']; ?></textarea>
-									</span>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqtitle"><?php echo 'Inquiry Title'; ?>:</label><br>
+        									<input name="inqtitle" id="inqtitle" type="text" style="width:400px;" value="<?php echo htmlspecialchars($title ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
 								</div>
-								<div style="margin-left:20px;float:left;">
-									<span>
-										<?php echo $LANG['NOTES']; ?>:
-									</span><br />
-									<span>
-										<textarea name="notes" rows="10" style="width:320px;resize:vertical;" onchange=" "><?php echo $loanArr['notes']; ?></textarea>
-									</span>
-								</div>
-							</div>
-							<div style="width:100%;padding-top:8px;float:left;">
-								<hr />
-							</div>
-							<div style="padding-top:8px;float:left;">
-								<div style="float:left;">
-									<span>
-										<?php echo $LANG['DATE_RECEIVED']; ?>:
-									</span><br />
-									<span>
-										<input type="date" name="datereceivedown" value="<?php echo $loanArr['datereceivedown']; ?>" />
-									</span>
-								</div>
-								<div style="margin-left:40px;float:left;">
-									<span>
-										<?php echo $LANG['RET_PROCESSED_BY']; ?>:
-									</span><br />
-									<span>
-										<input type="text" autocomplete="off" name="processedbyreturnown" maxlength="32" style="width:100px;" value="<?php echo $loanArr['processedbyreturnown']; ?>" onchange=" " />
-									</span>
-								</div>
-								<div style="margin-left:40px;float:left;">
-									<span>
-										<?php echo $LANG['DATE_CLOSED']; ?>:
-									</span><br />
-									<span>
-										<input type="date" name="dateclosed" value="<?php echo $loanArr['dateclosed']; ?>" />
-									</span>
-								</div>
-							</div>
-							<div style="clear:left;padding-top:8px;float:left;">
-								<span>
-									<?php echo $LANG['ADD_INV_MESSAGE']; ?>:
-								</span><br />
-								<span>
-									<textarea name="invoicemessageown" rows="5" style="width:700px;resize:vertical;"><?php echo $loanArr['invoicemessageown']; ?></textarea>
-								</span>
-							</div>
-							<div style="clear:both;padding:10px;">
-								<input name="collid" type="hidden" value="<?php echo $collid; ?>" />
-								<input name="loanid" type="hidden" value="<?php echo $loanId; ?>" />
-								<button name="formsubmit" type="submit" value="Save Outgoing"><?php echo $LANG['SAVE']; ?></button>
-							</div>
-						</fieldset>
-					</form>
-					<?php
-					//Following variables are used within reportsinclude.php, with different values when used on different pages
-					$loanType = 'out';
-					$identifier = $loanId;
-					include('reportsinclude.php');
-					$attachments = $loanManager->getAttachments('loan', $loanId);
-					if($attachments !== false){
-						?>
-						<div>
-							<form id="attachmentform" name="attachmentform" action="outgoing.php" method="post" enctype="multipart/form-data" onsubmit="return verifyFileUploadForm(this)">
-								<fieldset>
-									<legend><?php echo $LANG['CORRESPONDENCE_ATTACH']; ?></legend>
-									<?php
-									// Add any correspondence attachments
-									if ($attachments) {
-										echo '<ul>';
-										foreach($attachments as $attachId => $attachArr){
-											echo '<li><div style="float: left;">' . $attachArr['timestamp'] . ' -</div>';
-											echo '<div style="float: left; margin-left: 5px;"><a href="../../' .
-												$attachArr['path'] . $attachArr['filename']  . '" target="_blank">' .
-												($attachArr['title'] != "" ? $attachArr['title'] : $attachArr['filename']) . '</a></div>';
-											echo '<a href="outgoing.php?collid=' . htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&loanid=' . htmlspecialchars($loanId, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&attachid=' . htmlspecialchars($attachId, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&formsubmit=delAttachment"><img src="../../images/del.png" style="width: 1.2em; margin-left: 5px;"></a></li>';
-										}
-										echo '</ul>';
-									}
-									?>
-									<input name="collid" type="hidden" value="<?php echo $collid; ?>" />
-									<input name="loanid" type="hidden" value="<?php echo $loanId; ?>" />
-									<input name="loanidentifierown" type="hidden" value="<?php echo $loanArr['loanidentifierown']; ?>" />
-									<label style="font-weight: bold;"><?php echo $LANG['ADD_CORRESPONDENCE_ATTACH']; ?>:<sup>*</sup> </label><br/>
-									<label><?php echo $LANG['ATTACH_TITLE']; ?>: </label>
-									<input name="uploadtitle" type="text" placeholder=" optional, replaces filename" maxlength="80" size="30" />
-									<input id="uploadfile" name="uploadfile" type="file" size="30" onchange="verifyFileSize(this)">
-									<button class="top-breathing-room-rel-sm" name="formsubmit" type="submit" value="saveAttachment"><?php echo $LANG['SAVE_ATTACH']; ?></button>
-									<div style="margin-left: 10px"><br/>
-									<sup>*</sup><?php echo $LANG['ATTACH_DESCRIPTION']; ?>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										Initial Inquiry Date: <input name="inqdate" type="date" value="<?php echo $inquirydate; ?>" />
 									</div>
-								</fieldset>
-							</form>
-						</div>
-						<?php
-					}
-					?>
-					<div style="margin:20px"><b>&lt;&lt; <a href="index.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>">Return to Loan Index Page</a></b></div>
-				</div>
-				<div id="outloandeldiv">
-					<form name="deloutloanform" action="index.php" method="post" onsubmit="return confirm('Are you sure you want to permanently delete this loan?')">
-						<fieldset>
-							<legend><?php echo $LANG['DEL_OUTGOING_LOAN']; ?></legend>
-							<?php
-							if($specimenTotal){
-								?>
-								<div style=";margin-bottom:15px;">
-									<?php echo $LANG['CANNOT_DEL_LOAN']; ?>
 								</div>
-								<?php
-							}
-							?>
-							<button class="button-danger" name="formsubmit" type="submit" value="Delete Loan" <?php if($specimenTotal) echo 'DISABLED'; ?>><?php echo $LANG['DELETE_LOAN']; ?></button>
-							<input name="collid" type="hidden" value="<?php echo $collid; ?>" />
-							<input name="loanid" type="hidden" value="<?php echo $loanId; ?>" />
-						</fieldset>
-					</form>
-				</div>
-			</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'Collections of Interest (select all)'; ?>:
+									</span><br />
+									<span>
+										<select name="inqcolls[]" style="width:400px; height:120px;" multiple aria-label="<?php echo 'Collections' ?>">
+											<option value=""><?php echo 'Select all Collections of Interest'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$collectionArr = $inquiryManager->getCollections();
+											foreach($collectionArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'Primary Research Field'; ?>:
+									</span><br />
+									<span>
+										<select name="inqfield" style="width:400px;" aria-label="<?php echo 'Select Primary Research Field' ?>" >
+											<option value=""><?php echo 'Select research field'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$fieldArr = $inquiryManager->getFields();
+											foreach($fieldArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqsecondaryfields"><?php echo 'Secondary Research Fields (separate multiple with semicolons)'; ?>:</label><br>
+        									<input name="inqsecondaryfields" id="inqsecondaryfields" type="text" style="width:400px;" value="<?php echo htmlspecialchars($secondaryfields ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqdata"><?php echo 'Types of Data Produced (separate multiple with semicolons)'; ?>:</label><br>
+        									<input name="inqdata" id="inqdata" type="text" style="width:400px;" value="<?php echo htmlspecialchars($dataproduced ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'Funding status'; ?>:
+									</span><br />
+									<span>
+										<select name="inqfunded" style="width:400px;" aria-label="<?php echo 'Select Funding Status' ?>" >
+											<option value=""><?php echo 'Select funding status'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$fundingArr = array(
+												'yes' => 'Already Funded / Internal or insitutional support',
+												'pending' => 'Pending funding or proposal in development'
+											);
+
+											foreach($fundingArr as $funded => $text){
+												echo '<option value="' . htmlspecialchars($funded) . '">' . htmlspecialchars($text) . '</option>';
+											}
+											?>
+										</select>
+									</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqfundingsource"><?php echo 'Funding Source'; ?>:</label><br>
+        									<input name="inqfundingsource" id="inqfundingsource" type="text" style="width:400px;" value="<?php echo htmlspecialchars($fundingsource ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+										<div class="fieldDiv">
+											<label for="inqdescription"><?php echo 'Project Description'; ?>:</label><br>
+											<textarea name="inqdescription" id="inqdescription" style="width:400px; height:150px;"><?php echo htmlspecialchars($description ?? '', ENT_QUOTES); ?></textarea>
+										</div>
+									</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+										<?php echo 'How did the researchers find us?'; ?>:
+									</span><br />
+									<span>
+										<select name="inqhowfound" style="width:400px;" aria-label="<?php echo 'How did the researchers find us' ?>" >
+											<option value=""><?php echo 'Select Option'; ?></option>
+											<option value="">------------------------------------------</option>
+											<?php
+											$howfoundArr = $inquiryManager->getHowFoundUs();
+											foreach($howfoundArr as $k => $v){
+												echo '<option value="' . $k . '">' . $v . '</option>';
+											}
+											?>
+										</select>
+									</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<label for="inqexist"><?php echo 'May use existing samples?' ?></label>
+									<input type="hidden" name="inqexist" value="no" />
+									<input type="checkbox" id="inqexist" name="inqexist" value="yes" <?php echo (!empty($exist) && $exist === 'yes') ? 'checked' : ''; ?> />
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<label for="inqfuture"><?php echo 'May use future samples not yet at the Biorepository?' ?></label>
+									<input type="hidden" name="inqfuture" value="no" />
+									<input type="checkbox" id="inqfuture" name="inqfuture" value="yes" <?php echo (!empty($future) && $future === 'yes') ? 'checked' : ''; ?> />
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<label for="inqnew"><?php echo 'May generate new samples?' ?></label>
+									<input type="hidden" name="inqnew" value="no" />
+									<input type="checkbox" id="inqnew" name="inqnew" value="yes" <?php echo (!empty($new) && $new === 'yes') ? 'checked' : ''; ?> />
+								</div>
+									<div style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+   						 			<div class="fieldDiv">
+       										<label for="inqdrive"><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</label><br>
+        									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo htmlspecialchars($drivefolder ?? '', ENT_QUOTES); ?>" />
+   								 	</div>
+								</div>
+								<div style="clear:both;padding-top:8px;float:left;">
+									<input name="formsubmit" type="hidden" value="createInquiry" />
+									<button name="submitButton" type="submit"><?php echo 'Update Inquiry' ?></button>
+								</div>
+							</fieldset>
+						</form>
+					</div>
+					<div style="clear:both;">&nbsp;</div>
 			<?php
 		}
 		else{
-			if(!$isEditor) echo '<h2>' . $LANG['NOT_AUTHORIZED'] . '</h2>';
+			if(!$isEditor) echo '<h2>' . $LANG['NOT_AUTH_LOANS'] . '</h2>';
 			else echo '<h2>' . $LANG['UNKNOWN_ERROR'] . '</h2>';
 		}
 		?>
 	</div>
+		<div id="researcherModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+		background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+		
+		<div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
+			<h2>Add New Researcher</h2>
+			<form id="researcherForm">
+				<label>Name*:</label>
+				<input type="text" name="name" required style="width:100%;"><br><br>
+
+				<label>Institution*:</label>
+				<input type="text" name="institution" required style="width:100%;"><br><br>
+
+				<label>Email:</label>
+				<input type="text" name="contact_email"  style="width:100%;"><br><br>
+
+				<label>Address:</label>
+				<input type="text" name="address"  style="width:100%;"><br><br>
+
+				<label>Phone:</label>
+				<input type="text" name="phone"  style="width:100%;"><br><br>
+
+				<button type="submit">Save</button>
+				<button type="button" id="closeModal">Cancel</button>
+			</form>
+		</div>
+	</div>
+
 	<?php
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
+
+	<script>
+// Open modal when either "Add researcher" button is clicked
+document.querySelectorAll('.addResearcherBtn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Save which button opened the modal
+        document.getElementById('researcherModal').dataset.source = btn.dataset.target;
+        document.getElementById('researcherModal').style.display = 'block';
+    });
+});
+
+// Close modal
+document.getElementById('closeModal').addEventListener('click', function(){
+    document.getElementById('researcherModal').style.display = 'none';
+});
+
+document.getElementById('researcherForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    let formData = new FormData(this);
+
+    fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            let primaryDropdown = document.querySelector('select[name="inqresearcher"]');
+            let additionalDropdown = document.querySelector('select[name="inqadditionalresearcher[]"]');
+
+            // Save currently selected values in multi-select
+            let selectedAdditional = Array.from(additionalDropdown.selectedOptions).map(opt => opt.value);
+
+            // Create new option
+            let optionPrimary = document.createElement('option');
+            optionPrimary.value = data.researcher_id;
+            optionPrimary.text = data.name + ' (' + data.institution + ')';
+
+            let optionAdditional = optionPrimary.cloneNode(true);
+
+            // Add to both dropdowns
+            primaryDropdown.appendChild(optionPrimary);
+            additionalDropdown.appendChild(optionAdditional);
+
+            // Restore previous selections in additional dropdown
+            selectedAdditional.forEach(val => {
+                let option = additionalDropdown.querySelector(`option[value="${val}"]`);
+                if(option) option.selected = true;
+            });
+
+            // Only auto-select in primary if added via primary button
+            if(document.getElementById('researcherModal').dataset.source === 'primary') {
+                primaryDropdown.value = data.researcher_id;
+            }
+
+            document.getElementById('researcherModal').style.display = 'none';
+            document.getElementById('researcherForm').reset();
+
+            alert('Researcher added successfully and can be found at the bottom of the dropdown list!');
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(err => alert('Request failed'));
+});
+
+	</script>
 </body>
 </html>
