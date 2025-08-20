@@ -16,11 +16,11 @@ labels.forEach((label) => {
   
   let other = label.querySelector(".othercatalognumbers");
   if (other) {
-    let match = other.innerText.match(/NEON sampleID:[^;]*/);
+    let match = other.innerText.match(/NEON sampleID:\s*([^;]+)/);
     if (match) {
-      other.innerText = match[0].trim();
+      other.innerText = match[1].trim();
     } else {
-      other.innerText = "";
+      other.remove();
     }
   }
 });
