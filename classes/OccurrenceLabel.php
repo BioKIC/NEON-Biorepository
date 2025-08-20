@@ -307,6 +307,9 @@ class OccurrenceLabel {
 				'collectornumber'=>'o.recordnumber as collectornumber',
 				'associatedCollectors' => 'o.associatedcollectors',
 				'eventDate' => 'DATE_FORMAT(o.eventdate,"%e %M %Y") AS eventdate',
+				//NEON edit
+				'eventDate2' => 'DATE_FORMAT(o.eventdate2,"%e %M %Y") AS eventdate2',
+				//end NEON edit
 				'year' => 'o.year',
 				'month' => 'o.month',
 				'day' => 'o.day',
