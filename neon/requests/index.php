@@ -66,77 +66,73 @@ if($formSubmit == 'createInquiry' && $isEditor){
 
 
 	<script>
-	function verifyInquiryAddForm(f) {
-		if (f.inqresearcher.options[f.inqresearcher.selectedIndex].value == 0) {
-			alert("<?php echo 'Select Researcher'; ?>");
+		function verifyInquiryAddForm(f) {
+		if (f.inqresearcher.value === "") {
+			alert("Select Researcher");
 			return false;
 		}
-
-		if (f.inqmanager.options[f.inqmanager.selectedIndex].value == 0) {
-			alert("<?php echo 'Select Manager'; ?>");
+		if (f.inqmanager.value === "") {
+			alert("Select Manager");
 			return false;
 		}
-
-		if (f.inqdate.options[f.inqdate.selectedIndex].value == 0) {
-			alert("<?php echo 'Select Inquiry Date'; ?>");
+		if (f.inqdate.value.trim() === "") {
+			alert("Select Inquiry Date");
 			return false;
 		}
-
-		if (f.inqtitle.options[f.inqtitle.selectedIndex].value == 0) {
-			alert("<?php echo 'Insert title'; ?>");
+		if (f.inqtitle.value.trim() === "") {
+			alert("Insert title");
 			return false;
 		}
-
-		if (f.inqcolls.options[f.inqcolls.selectedIndex].value == 0) {
-			alert("<?php echo 'Select collections'; ?>");
+		if (!f.inqcolls.value || f.inqcolls.value.length === 0) {
+			alert("Select collections");
 			return false;
 		}
-		if (f.inqfield.options[f.inqfield.selectedIndex].value == 0) {
-			alert("<?php echo 'Select research field'; ?>");
+		if (f.inqfield.value === "") {
+			alert("Select research field");
 			return false;
 		}
-		if (f.inqfunded.options[f.inqfunded.selectedIndex].value == 0) {
-			alert("<?php echo 'Indicate funding status'; ?>");
+		if (f.inqfunded.value === "") {
+			alert("Indicate funding status");
 			return false;
 		}
-		if (f.inqfundingsource.options[f.inqfundingsource.selectedIndex].value == 0) {
-			alert("<?php echo 'Insert funding source'; ?>");
+		if (f.inqfundingsource.value.trim() === "") {
+			alert("Insert funding source");
 			return false;
 		}
-		if (f.inqdescription.options[f.inqdescription.selectedIndex].value == 0) {
-			alert("<?php echo 'Insert description'; ?>");
+		if (f.inqdescription.value.trim() === "") {
+			alert("Insert description");
 			return false;
 		}
-		if (f.inqhowfound.options[f.inqhowfound.selectedIndex].value == 0) {
-			alert("<?php echo 'Select "How Found Us" option'; ?>");
+		if (f.inqhowfound.value === "") {
+			alert('Select "How Found Us" option');
 			return false;
 		}
-		if (f.inqdata.options[f.inqdata.selectedIndex].value == 0) {
-			alert("<?php echo 'Insert data produced'; ?>");
+		if (f.inqdata.value.trim() === "") {
+			alert("Insert data produced");
 			return false;
 		}
-		if (f.inqexist.options[f.inqexist.selectedIndex].value == 0) {
-			alert("<?php echo 'Select whether the request would use existing samples'; ?>");
+		if (f.inqexist.value === "") {
+			alert("Select whether the request would use existing samples");
 			return false;
 		}
-		if (f.inqfuture.options[f.inqfuture.selectedIndex].value == 0) {
-			alert("<?php echo 'Select whether the request would use future samples'; ?>");
+		if (f.inqfuture.value === "") {
+			alert("Select whether the request would use future samples");
 			return false;
 		}
-		if (f.inqnew.options[f.inqnew.selectedIndex].value == 0) {
-			alert("<?php echo 'Select whether new samples will be generated'; ?>");
+		if (f.inqnew.value === "") {
+			alert("Select whether new samples will be generated");
 			return false;
 		}
-		if (f.inqadditionalresearcher.options[f.inqadditionalresearcher.selectedIndex].value == 0) {
-			alert("<?php echo 'Select additional researchers'; ?>");
+		if (!f.inqadditionalresearcher.value || f.inqadditionalresearcher.value.length === 0) {
+			alert("Select additional researchers");
 			return false;
 		}
-		if (f.inqdrive.options[f.inqdrive.selectedIndex].value == 0) {
-			alert("<?php echo 'Input Google Drive Folder'; ?>");
+		if (f.inqdrive.value.trim() === "") {
+			alert("Input Google Drive Folder");
 			return false;
 		}
-				if (f.inqaiml.options[f.inqaiml.selectedIndex].value == 0) {
-			alert("<?php echo 'Select whether the request involves AI/ML methods?'; ?>");
+		if (f.inqaiml.value === "") {
+			alert("Select whether the request involves AI/ML methods");
 			return false;
 		}
 		return true;
@@ -215,7 +211,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 										</select>
 									</span>
 									<span>
-											<button type="button" class="addResearcherBtn" data-target="primary">Add researcher</button>
+											<button type="button" class="addResearcherBtn" data-target="primary">Create new researcher</button>
 											</button>									
 									</span>
 								</div>
@@ -223,20 +219,24 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									<span>
        								<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong>
 									</span><br />
+									<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong><br />
 									<span>
-										<select name="inqadditionalresearcher[]" style="width:400px;" multiple aria-label="<?php echo 'Researchers' ?>" >
+										<select name="inqadditionalresearcher[]" style="width:800px;" multiple aria-label="<?php echo 'Researchers' ?>">
 											<option value=""><?php echo 'Select Researchers'; ?></option>
 											<option value="">------------------------------------------</option>
 											<?php
+											$selectedResearchers = $inquiryManager->getAdditionalResearchersByID($request_id);
 											$researcherArr = $inquiryManager->getResearchers();
-											foreach($researcherArr as $k => $v){
-												echo '<option value="' . $k . '">' . $v . '</option>';
+											foreach ($researcherArr as $k => $v) {
+												$selected = (in_array($k, $selectedResearchers)) ? 'selected' : '';
+												echo '<option value="' . htmlspecialchars($k) . '" ' . $selected . '>' . htmlspecialchars($v) . '</option>';
 											}
 											?>
 										</select>
 									</span>
+
 									<span>
-											<button type="button" class="addResearcherBtn" data-target="additional">Add researcher</button>
+											<button type="button" class="addResearcherBtn" data-target="additional">Create new researcher</button>
 											</button>									
 									</span>
 								</div>
@@ -306,7 +306,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqsecondaryfields"><strong><?php echo 'Secondary Research Fields (separate multiple with semicolons)'; ?></strong>:</label><br>
+       										<label for="inqsecondaryfields"><strong><?php echo 'Secondary Research Fields or Keywords (separate multiple with semicolons):'; ?></strong>:</label><br>
         									<input name="inqsecondaryfields" id="inqsecondaryfields" type="text" style="width:400px;" value="<?php echo htmlspecialchars($secondaryfields ?? '', ENT_QUOTES); ?>" />
    								 	</div>
 								</div>
