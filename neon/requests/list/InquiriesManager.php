@@ -284,20 +284,131 @@ public function addCollectionInquiryLink($request_id, $collections) {
     return true;
 }
 
-// get data for a given request
+// get basic record data for a given request
 public function getInquiryDataByID($request_id) {
-    $request_id = $this->conn->real_escape_string($request_id);
+    $request_id = (int)$request_id;
 
-    $sql = "SELECT * FROM neonrequest WHERE id=$request_id";
+    $sql = "SELECT * FROM neonrequest WHERE id = $request_id";
+    $rs = $this->conn->query($sql);
 
-    if (!$this->conn->query($sql)) {
-      $this->errorMessage = "Database Error: " . $this->conn->error;
-      return false;
+    if (!$rs) {
+        $this->errorMessage = "Database Error: " . $this->conn->error;
+        return false;
     }
-    
-    return true;
+
+    if ($rs->num_rows === 0) {
+        $this->errorMessage = "No inquiry found with ID $request_id";
+        return false;
+    }
+
+    $row = $rs->fetch_assoc();
+    $rs->free();
+
+    return $row; 
 }
 
+// get researchers for a given request
+public function getAdditionalResearchersByID($request_id) {
+    $request_id = (int)$request_id;
+
+    $sql = "SELECT CONCAT(r.name,' (',r.institution,')') as researcher FROM neonresearcherrequestlink l
+            LEFT JOIN neonresearcher r
+            ON l.researcher_id = r.researcher_id
+            LEFT JOIN neonrequest s
+            ON l.request_id = s.id
+            WHERE l.request_id = $request_id
+            AND l.researcher_id != s.researcher_id";
+    $rs = $this->conn->query($sql);
+
+    if (!$rs) {
+        $this->errorMessage = "Database Error: " . $this->conn->error;
+        return false;
+    }
+    $researchers = [];
+    while ($row = $rs->fetch_assoc()) {
+        $researchers[] = $row['researcher'];
+    }
+    $rs->free();
+
+    return $researchers;
+}
+
+// get collections for a given request
+public function getCollectionsByID($request_id) {
+    $request_id = (int)$request_id;
+
+    $sql = "SELECT c.collectionName FROM neoncollectionrequestlink l
+            LEFT JOIN omcollections c
+            ON l.coll_id = c.collID
+            WHERE l.request_id = $request_id";
+
+    $rs = $this->conn->query($sql);
+
+    if (!$rs) {
+        $this->errorMessage = "Database Error: " . $this->conn->error;
+        return [];
+    }
+
+    $collections = [];
+    while ($row = $rs->fetch_assoc()) {
+        $collections[] = $row['collectionName'];
+    }
+    $rs->free();
+
+    return $collections; 
+}
+
+// get cm for a given request
+public function getCMByID($request_id) {
+    $request_id = (int)$request_id;
+
+    $sql = "SELECT r.collection_manager,concat(u.firstName, ' ',u.lastName) as name FROM neonrequest r
+            LEFT JOIN  users u
+            ON r.collection_manager = u.uid
+            WHERE r.id = $request_id";
+    $rs = $this->conn->query($sql);
+
+    if (!$rs) {
+        $this->errorMessage = "Database Error: " . $this->conn->error;
+        return false;
+    }
+
+    if ($rs->num_rows === 0) {
+        $this->errorMessage = "No inquiry found with ID $request_id";
+        return false;
+    }
+
+    $row = $rs->fetch_assoc();
+    $rs->free();
+
+    return $row; 
+}
+
+// get cm for a given request
+public function getPrimaryContactByID($request_id) {
+    $request_id = (int)$request_id;
+
+    $sql = "SELECT p.name,p.institution FROM neonrequest r
+            LEFT JOIN  neonresearcher p
+            ON r.researcher_id = p.researcher_id
+            WHERE r.id = $request_id";
+    $rs = $this->conn->query($sql);
+
+    if (!$rs) {
+        $this->errorMessage = "Database Error: " . $this->conn->error;
+        return false;
+    }
+
+    if ($rs->num_rows === 0) {
+        $this->errorMessage = "No inquiry found with ID $request_id";
+        return false;
+    }
+
+    $row = $rs->fetch_assoc();
+    $rs->free();
+
+    return $row; 
+}
 
 }
 
