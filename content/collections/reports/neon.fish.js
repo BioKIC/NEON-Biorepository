@@ -12,7 +12,7 @@
  ***/
 let labels = document.querySelectorAll('.label');
 labels.forEach((label) => {
-  let recordedBy = label.querySelector('.recordedby');
+  let recordedBy = label.querySelector('.collector');
   if (recordedBy) {
     let hasOrcid = recordedBy.innerText.toLowerCase().includes('orcid');
     if (hasOrcid) {
