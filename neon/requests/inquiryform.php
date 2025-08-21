@@ -7,11 +7,18 @@ else include_once($SERVER_ROOT . '/content/lang/collections/loans/loan_langs.en.
 header("Content-Type: text/html; charset=".$CHARSET);
 
 $formSubmit = array_key_exists('formsubmit',$_POST)?$_POST['formsubmit']:'';
+$tabIndex = array_key_exists('tabindex',$_REQUEST)?$_REQUEST['tabindex']:0;
+
+if(!is_numeric($tabIndex)) $tabIndex = 0;
 
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $request_id = (int) $_GET['id'];
 } else {
     die("Invalid or missing request ID.");
+}
+
+if (isset($_GET['status']) && $_GET['status'] == 'success') {
+    echo "<div style='color:green; margin:10px 0;'>Successfully updated inquiry record.</div>";
 }
 
 
@@ -59,7 +66,6 @@ $additionalresearchers = isset($_POST['additionalresearchers']) && is_array($_PO
 // Check required fields
 if (empty($collection_manager)) $missing[] = 'Collection Manager';
 if (empty($researcher_id)) $missing[] = 'Researcher';
-if (empty($inquiry_date)) $missing[] = 'Inquiry Date';
 if (empty($title)) $missing[] = 'Title';
 if (empty($collections)) $missing[] = 'Collections of Interest';
 if (empty($field)) $missing[] = 'Primary Research Field';
@@ -84,7 +90,6 @@ if (!empty($missing)) {
         $request_id,
         $collection_manager,
         $researcher_id,
-        $inquiry_date,
         $title,
         $collections,
         $field,
@@ -99,13 +104,14 @@ if (!empty($missing)) {
         $new,
         $additionalresearchers,
         $drivefolder,
-        $aiml
+        $aiml,
+		$SYMB_UID
     );
 
-    if ($updatedrequestid) {
-        header("Location: inquiryform.php?id=" . $updatedrequestid);
-        exit();
-    } else {
+	if ($updatedrequestid) {
+		header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success");
+		exit();
+	} else {
         $statusStr = '<span style="color:red;">Error saving inquiry edits: ' . $inquiryManager->getError() . '</span>';
     }
 	}
@@ -128,17 +134,22 @@ if (!empty($missing)) {
 
 
 	<script>
-	function verifyInquiryAddForm(f) {
+
+	var tabIndex = <?php echo $tabIndex; ?>;
+	$(function() {
+    $("#tabs").tabs({
+        active: tabIndex
+    });
+	});
+
+
+	function verifyInquiryEditForm(f) {
 		if (f.inqresearcher.value === "") {
 			alert("Select Researcher");
 			return false;
 		}
 		if (f.inqmanager.value === "") {
 			alert("Select Manager");
-			return false;
-		}
-		if (f.inqdate.value.trim() === "") {
-			alert("Select Inquiry Date");
 			return false;
 		}
 		if (f.inqtitle.value.trim() === "") {
@@ -236,7 +247,14 @@ if (!empty($missing)) {
 				<?php
 			}
 			?>
-			
+			<div id="tabs" style="margin:0px;">
+			    <ul>
+					<li><a href="#editinqdiv"><span><?php echo 'Record Info'; ?></span></a></li>
+					<li><a href="#editstatus"><span><?php echo 'Status'; ?></span></a></li>
+					<li><a href="#samples"><span><?php echo 'Samples'; ?></span></a></li>
+					<li><a href="#materialsamples"><span><?php echo 'Material Samples'; ?></span></a></li>
+					<li><a href="#shipments"><span><?php echo 'Shipments'; ?></span></a></li>
+				</ul>
 					<div id="editinqdiv" style="display:<?php echo ($List ); ?>;">
 						<form name="editinqform" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryAddForm(this);">
 							<fieldset>
@@ -317,28 +335,26 @@ if (!empty($missing)) {
    								 	</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
-									<div class="fieldDiv">
-										<strong><?php echo 'Initial Inquiry Date: '?></strong>
-										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
-									</div>
-								</div>
-								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<span>
        								<strong><?php echo 'Collections of Interest (select all)'; ?>:</strong>
 									</span><br />
 									<span>
-									<select name="inqcolls[]" style="width:800px; height:120px;" multiple aria-label="Collections">
-										<option disabled>Select all Collections of Interest</option>
-										<option disabled>------------------------------------------</option>
-										<?php
-											$selectedCollections = $inquiryManager->getCollectionsByID($request_id);
-											$allCollections = $inquiryManager->getCollections(); 
-											foreach ($allCollections as $id => $name) {
-												$selected = isset($selectedCollections[$id]) ? 'selected' : '';
-												echo '<option value="' . htmlspecialchars($id) . '" ' . $selected . '>' . htmlspecialchars($name) . '</option>';
-											}
-										?>
-									</select>
+										<select name="inqcolls[]" style="width:800px; height:120px;" multiple aria-label="Collections">
+											<option disabled>Select all Collections of Interest</option>
+											<option disabled>------------------------------------------</option>
+											<?php
+												// Get existing collections for this request
+												$selectedCollections = array_keys($inquiryManager->getCollectionsByID($request_id));
+												// Get all possible collections
+												$allCollections = $inquiryManager->getCollections();
+
+												foreach ($allCollections as $id => $name) {
+													// Mark as selected if this collection is part of the existing ones
+													$selected = in_array($id, $selectedCollections) ? 'selected' : '';
+													echo '<option value="' . htmlspecialchars($id) . '" ' . $selected . '>' . htmlspecialchars($name) . '</option>';
+												}
+											?>
+										</select>
 									</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -476,11 +492,125 @@ if (!empty($missing)) {
 								<div style="clear:both;padding-top:8px;float:left;">
 									<input name="formsubmit" type="hidden" value="editInquiry" />
 									<button name="submitButton" type="submit"><?php echo 'Update Inquiry' ?></button>
+									<input type="hidden" name="tabindex" value="1" />
+								</div>
+							</fieldset>
+						</form>
+					</div>
+					<div id="editstatus" style="">
+						<form name="editingstatus" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryStatusForm(this);">
+							<fieldset>
+								<legend><?php echo 'Current status' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<span>
+										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
+									</span><br />
+								</div>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<span>
+										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
+									</span><br />
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Initial Inquiry Date: '?></strong>
+										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
+									</div>
+								</div>
+								<div style="clear:both;padding-top:8px;float:left;">
+									<input name="formsubmit" type="hidden" value="update status" />
+									<button name="submitButton" type="submit"><?php echo 'Update Status' ?></button>
+									<input type="hidden" name="tabindex" value="1" />
+								</div>
+							</fieldset>
+						</form>
+					</div>
+					<div id="samples" style="">
+						<form name="linksamples" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquirySamplesForm(this);">
+							<fieldset>
+								<legend><?php echo 'Samples' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<span>
+										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
+									</span><br />
+								</div>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<span>
+										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
+									</span><br />
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Initial Inquiry Date: '?></strong>
+										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
+									</div>
+								</div>
+								<div style="clear:both;padding-top:8px;float:left;">
+									<input name="formsubmit" type="hidden" value="update samples" />
+									<button name="submitButton" type="submit"><?php echo 'Link/Unlink Samples' ?></button>
+									<input type="hidden" name="tabindex" value="1" />
+								</div>
+							</fieldset>
+						</form>
+					</div>
+					<div id="materialsamples" style="">
+						<form name="linksamples" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryMaterialSamplesForm(this);">
+							<fieldset>
+								<legend><?php echo 'Material Samples' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<span>
+										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
+									</span><br />
+								</div>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<span>
+										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
+									</span><br />
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Initial Inquiry Date: '?></strong>
+										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
+									</div>
+								</div>
+								<div style="clear:both;padding-top:8px;float:left;">
+									<input name="formsubmit" type="hidden" value="update material samples" />
+									<button name="submitButton" type="submit"><?php echo 'Link/Unlink Material Samples' ?></button>
+									<input type="hidden" name="tabindex" value="1" />
+								</div>
+							</fieldset>
+						</form>
+					</div>
+					<div id="shipments" style="">
+						<form name="updateshipments" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryMaterialShipmentsForm(this);">
+							<fieldset>
+								<legend><?php echo 'Shipments' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<span>
+										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
+									</span><br />
+								</div>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<span>
+										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
+									</span><br />
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Initial Inquiry Date: '?></strong>
+										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
+									</div>
+								</div>
+								<div style="clear:both;padding-top:8px;float:left;">
+									<input name="formsubmit" type="hidden" value="update shipments" />
+									<button name="submitButton" type="submit"><?php echo 'Update Shipments' ?></button>
+									<input type="hidden" name="tabindex" value="1" />
 								</div>
 							</fieldset>
 						</form>
 					</div>
 					<div style="clear:both;">&nbsp;</div>
+			</div>
 			<?php
 		}
 		else{

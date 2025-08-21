@@ -217,9 +217,9 @@ public function getHowFoundUs(){
 
 
     $sql = "INSERT INTO neonrequest 
-        (collection_manager, researcher_id, inquiry_date, status_date, status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name,uses_aiml, last_updated) 
+        (collection_manager, researcher_id,status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name,uses_aiml, last_updated) 
         VALUES 
-        ('$collection_manager', '$researcher_id', '$inquiry_date', '$inquiry_date', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder','$aiml', NOW())";
+        ('$collection_manager', '$researcher_id', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder','$aiml', NOW())";
 
     if ($this->conn->query($sql)) {
         $request_id = $this->conn->insert_id;
@@ -309,213 +309,323 @@ public function getInquiryDataByID($request_id) {
     return $row; 
 }
 
-// get researchers for a given request
-public function getAdditionalResearchersByID($request_id) {
-    $request_id = (int)$request_id;
+      // get researchers for a given request
+      public function getAdditionalResearchersByID($request_id) {
+          $request_id = (int)$request_id;
 
-    $sql = "SELECT r.researcher_id, CONCAT(r.name,' (',r.institution,')') as researcher
-            FROM neonresearcherrequestlink l
-            LEFT JOIN neonresearcher r
-                ON l.researcher_id = r.researcher_id
-            LEFT JOIN neonrequest s
-                ON l.request_id = s.id
-            WHERE l.request_id = $request_id
-            AND l.researcher_id != s.researcher_id";
-    $rs = $this->conn->query($sql);
+          $sql = "SELECT r.researcher_id, CONCAT(r.name,' (',r.institution,')') as researcher
+                  FROM neonresearcherrequestlink l
+                  LEFT JOIN neonresearcher r
+                      ON l.researcher_id = r.researcher_id
+                  LEFT JOIN neonrequest s
+                      ON l.request_id = s.id
+                  WHERE l.request_id = $request_id
+                  AND l.researcher_id != s.researcher_id";
+          $rs = $this->conn->query($sql);
 
-    if (!$rs) {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
-    }
+          if (!$rs) {
+              $this->errorMessage = "Database Error: " . $this->conn->error;
+              return false;
+          }
 
-    $researchers = [];
-    while ($row = $rs->fetch_assoc()) {
-        $researchers[$row['researcher_id']] = $row['researcher'];
-    }
-    $rs->free();
+          $researchers = [];
+          while ($row = $rs->fetch_assoc()) {
+              $researchers[$row['researcher_id']] = $row['researcher'];
+          }
+          $rs->free();
 
-    return $researchers;
-}
-
-
-// get collections for a given request
-public function getCollectionsByID($request_id) {
-    $request_id = (int)$request_id;
-
-    $sql = "SELECT c.collID, c.collectionName
-            FROM neoncollectionrequestlink l
-            LEFT JOIN omcollections c
-            ON l.coll_id = c.collID
-            WHERE l.request_id = $request_id";
-
-    $rs = $this->conn->query($sql);
-
-        if (!$rs) {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
-    }
-
-    $collections = [];
-    while ($row = $rs->fetch_assoc()) {
-        $collections[$row['collID']] = $row['collectionName'];
-    }
-
-    $rs->free();
-
-    return $collections;
-}
-
-// get cm for a given request
-public function getCMByID($request_id) {
-    $request_id = (int)$request_id;
-
-    $sql = "SELECT u.uid,r.collection_manager,concat(u.firstName, ' ',u.lastName) as name FROM neonrequest r
-            LEFT JOIN  users u
-            ON r.collection_manager = u.uid
-            WHERE r.id = $request_id";
-    $rs = $this->conn->query($sql);
-
-    if (!$rs) {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
-    }
-
-    if ($rs->num_rows === 0) {
-        $this->errorMessage = "No inquiry found with ID $request_id";
-        return false;
-    }
-
-    $row = $rs->fetch_assoc();
-    $rs->free();
-
-    return $row; 
-}
-
-// get cm for a given request
-public function getPrimaryContactByID($request_id) {
-    $request_id = (int)$request_id;
-
-    $sql = "SELECT p.researcher_id,p.name,p.institution FROM neonrequest r
-            LEFT JOIN  neonresearcher p
-            ON r.researcher_id = p.researcher_id
-            WHERE r.id = $request_id";
-    $rs = $this->conn->query($sql);
-
-    if (!$rs) {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
-    }
-
-    if ($rs->num_rows === 0) {
-        $this->errorMessage = "No inquiry found with ID $request_id";
-        return false;
-    }
-
-    $row = $rs->fetch_assoc();
-    $rs->free();
-
-    return $row; 
-}
-
-public function clearResearcherInquiryLink($request_id) {
-    $request_id = (int)$request_id; 
-
-    $sql = "DELETE FROM neonresearcherrequestlink WHERE request_id = $request_id";
-    
-    if (!$this->conn->query($sql)) {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
-    }
-
-    return true; 
-}
-
-public function clearCollectionInquiryLink($request_id) {
-    $request_id = (int)$request_id; 
-
-    $sql = "DELETE FROM neoncollectionrequestlink WHERE request_id = $request_id";
-    
-    if (!$this->conn->query($sql)) {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
-    }
-
-    return true; 
-}
+          return $researchers;
+      }
 
 
+  // get collections for a given request
+  public function getCollectionsByID($request_id) {
+      $request_id = (int)$request_id;
 
-public function editInquiry($request_id,$collection_manager, $researcher_id, $inquiry_date,$title,$collections,$field,$secondaryfields,$funded,$fundingsource,$description,$howfound,$dataproduced,$existing,$future,$new,$additionalresearchers,$drivefolder,$aiml) {
+      $sql = "SELECT l.coll_id AS collID, c.collectionName
+              FROM neoncollectionrequestlink l
+              LEFT JOIN omcollections c
+              ON l.coll_id = c.collID
+              WHERE l.request_id = $request_id";
 
-    $request_id = (int)$request_id;   
+      $rs = $this->conn->query($sql);
+      if (!$rs) {
+          $this->errorMessage = "Database Error: " . $this->conn->error;
+          return false;
+      }
 
-    $sql = "UPDATE neonrequest 
-            SET collection_manager = ?, 
-                researcher_id = ?, 
-                inquiry_date = ?, 
-                title = ?, 
-                primary_research_field = ?, 
-                secondary_research_field = ?, 
-                funded = ?, 
-                funding_source = ?, 
-                description = ?, 
-                how_found_us = ?, 
-                data_produced = ?, 
-                existing_samples = ?, 
-                future_samples = ?, 
-                generating_samples = ?, 
-                folder_name = ?, 
-                uses_aiml = ?, 
-                last_updated = NOW() 
-            WHERE id = ?";
+      $collections = [];
+      while ($row = $rs->fetch_assoc()) {
+          $collections[$row['collID']] = $row['collectionName'];
+      }
 
-    $stmt = $this->conn->prepare($sql);
-    if (!$stmt) {
-        $this->errorMessage = "Prepare failed: " . $this->conn->error;
-        return false;
-    }
+      $rs->free();
+      return $collections;
+  }
 
-    $stmt->bind_param(
-        "iissssssssssssssi",
-        $collection_manager,
-        $researcher_id,
-        $inquiry_date,
-        $title,
-        $field,
-        $secondaryfields,
-        $funded,
-        $fundingsource,
-        $description,
-        $howfound,
-        $dataproduced,
-        $existing,
-        $future,
-        $new,
-        $drivefolder,
-        $aiml,
-        $request_id
-    );
 
-    if (!$stmt->execute()) {
-        $this->errorMessage = "Execute failed: " . $stmt->error;
-        return false;
-    }
+  // get cm for a given request
+  public function getCMByID($request_id) {
+      $request_id = (int)$request_id;
 
-    $stmt->close();
+      $sql = "SELECT u.uid,r.collection_manager,concat(u.firstName, ' ',u.lastName) as name FROM neonrequest r
+              LEFT JOIN  users u
+              ON r.collection_manager = u.uid
+              WHERE r.id = $request_id";
+      $rs = $this->conn->query($sql);
 
-    if (!is_array($additionalresearchers)) {
-        $additionalresearchers = [$additionalresearchers];
-    }
-    $allResearchers = array_merge([$researcher_id], $additionalresearchers);
+      if (!$rs) {
+          $this->errorMessage = "Database Error: " . $this->conn->error;
+          return false;
+      }
 
-    $this->clearResearcherInquiryLink($request_id);
-    $this->addResearcherInquiryLink($request_id, $allResearchers);
+      if ($rs->num_rows === 0) {
+          $this->errorMessage = "No inquiry found with ID $request_id";
+          return false;
+      }
 
-    $this->clearCollectionInquiryLink($request_id);
-    $this->addCollectionInquiryLink($request_id, $collections);
+      $row = $rs->fetch_assoc();
+      $rs->free();
 
-    return $request_id;
-}
+      return $row; 
+  }
+
+  // get cm for a given request
+  public function getPrimaryContactByID($request_id) {
+      $request_id = (int)$request_id;
+
+      $sql = "SELECT p.researcher_id,p.name,p.institution FROM neonrequest r
+              LEFT JOIN  neonresearcher p
+              ON r.researcher_id = p.researcher_id
+              WHERE r.id = $request_id";
+      $rs = $this->conn->query($sql);
+
+      if (!$rs) {
+          $this->errorMessage = "Database Error: " . $this->conn->error;
+          return false;
+      }
+
+      if ($rs->num_rows === 0) {
+          $this->errorMessage = "No inquiry found with ID $request_id";
+          return false;
+      }
+
+      $row = $rs->fetch_assoc();
+      $rs->free();
+
+      return $row; 
+  }
+
+  public function clearResearcherInquiryLink($request_id) {
+      $request_id = (int)$request_id; 
+
+      $sql = "DELETE FROM neonresearcherrequestlink WHERE request_id = $request_id";
+      
+      if (!$this->conn->query($sql)) {
+          $this->errorMessage = "Database Error: " . $this->conn->error;
+          return false;
+      }
+
+      return true; 
+  }
+
+  public function clearCollectionInquiryLink($request_id) {
+      $request_id = (int)$request_id; 
+
+      $sql = "DELETE FROM neoncollectionrequestlink WHERE request_id = $request_id";
+      
+      if (!$this->conn->query($sql)) {
+          $this->errorMessage = "Database Error: " . $this->conn->error;
+          return false;
+      }
+
+      return true; 
+  }
+
+
+
+  public function editInquiry(
+      $request_id,
+      $collection_manager,
+      $researcher_id,
+      $title,
+      $collections,
+      $field,
+      $secondaryfields,
+      $funded,
+      $fundingsource,
+      $description,
+      $howfound,
+      $dataproduced,
+      $existing,
+      $future,
+      $new,
+      $additionalresearchers,
+      $drivefolder,
+      $aiml,
+      $uid 
+  ) {
+      $request_id = (int)$request_id;
+
+      $oldSql = "SELECT * FROM neonrequest WHERE id = ?";
+      $oldStmt = $this->conn->prepare($oldSql);
+      $oldStmt->bind_param("i", $request_id);
+      $oldStmt->execute();
+      $oldResult = $oldStmt->get_result();
+      $oldData = $oldResult->fetch_assoc();
+      $oldStmt->close();
+
+      if (!$oldData) {
+          $this->errorMessage = "Inquiry not found.";
+          return false;
+      }
+
+      $sql = "UPDATE neonrequest 
+              SET collection_manager = ?, 
+                  researcher_id = ?, 
+                  title = ?, 
+                  primary_research_field = ?, 
+                  secondary_research_field = ?, 
+                  funded = ?, 
+                  funding_source = ?, 
+                  description = ?, 
+                  how_found_us = ?, 
+                  data_produced = ?, 
+                  existing_samples = ?, 
+                  future_samples = ?, 
+                  generating_samples = ?, 
+                  folder_name = ?, 
+                  uses_aiml = ?, 
+                  last_updated = NOW() 
+              WHERE id = ?";
+
+      $stmt = $this->conn->prepare($sql);
+      if (!$stmt) {
+          $this->errorMessage = "Prepare failed: " . $this->conn->error;
+          return false;
+      }
+
+      $stmt->bind_param(
+          "iisssssssssssssi",
+          $collection_manager,
+          $researcher_id,
+          $title,
+          $field,
+          $secondaryfields,
+          $funded,
+          $fundingsource,
+          $description,
+          $howfound,
+          $dataproduced,
+          $existing,
+          $future,
+          $new,
+          $drivefolder,
+          $aiml,
+          $request_id
+      );
+
+      if (!$stmt->execute()) {
+          $this->errorMessage = "Execute failed: " . $stmt->error;
+          return false;
+      }
+      $stmt->close();
+
+      $newData = [
+          "collection_manager" => $collection_manager,
+          "researcher_id" => $researcher_id,
+          "title" => $title,
+          "primary_research_field" => $field,
+          "secondary_research_field" => $secondaryfields,
+          "funded" => $funded,
+          "funding_source" => $fundingsource,
+          "description" => $description,
+          "how_found_us" => $howfound,
+          "data_produced" => $dataproduced,
+          "existing_samples" => $existing,
+          "future_samples" => $future,
+          "generating_samples" => $new,
+          "folder_name" => $drivefolder,
+          "uses_aiml" => $aiml
+      ];
+
+      foreach ($newData as $field => $newValue) {
+          $oldValue = $oldData[$field] ?? null;
+          if ($oldValue != $newValue) {
+              $this->logEdit($request_id,"neonrequest", $field, $oldValue, $newValue, $uid);
+          }
+      }
+
+
+      if (!is_array($additionalresearchers)) {
+          $additionalresearchers = [$additionalresearchers];
+      }
+      $allResearchers = array_merge([$researcher_id], $additionalresearchers);
+      $newResearcherIDs = array_map('intval', $allResearchers);
+
+      $oldAdditional = $this->getAdditionalResearchersByID($request_id); 
+      $oldAdditionalIDs = array_map('intval', array_keys($oldAdditional));
+      $oldMainID = (int)$oldData['researcher_id'];
+
+        if ($oldMainID !== (int)$researcher_id) {
+      $this->logEdit($request_id, "neonresearcherrequestlink", "researcher_id", $oldMainID, null, $uid);
+      $this->logEdit($request_id, "neonresearcherrequestlink", "researcher_id", null, $researcher_id, $uid);
+      }
+
+      $added   = array_diff($newResearcherIDs, array_merge([$researcher_id], $oldAdditionalIDs));
+      $removed = array_diff($oldAdditionalIDs, $additionalresearchers);
+
+      foreach ($added as $rid) {
+          $this->logEdit($request_id, "neonresearcherrequestlink", "researcher_id", null, $rid, $uid);
+      }
+      foreach ($removed as $rid) {
+          $this->logEdit($request_id, "neonresearcherrequestlink", "researcher_id", $rid, null, $uid);
+      }
+
+      $this->clearResearcherInquiryLink($request_id);
+      $this->addResearcherInquiryLink($request_id, $allResearchers);
+
+      $oldCollections = $this->getCollectionsByID($request_id);
+      $oldCollectionIds = array_map('intval', array_keys($oldCollections));
+      $newCollectionIds = array_map('intval', $collections);
+
+      $added = array_diff($newCollectionIds, $oldCollectionIds);
+      $removed = array_diff($oldCollectionIds, $newCollectionIds);
+
+      if (!empty($added) || !empty($removed)) {
+          $this->clearCollectionInquiryLink($request_id);
+          $this->addCollectionInquiryLink($request_id, $newCollectionIds);
+
+          foreach ($added as $cid) {
+              $this->logEdit($request_id, "neoncollectionrequestlink", "coll_id", null, $cid, $uid);
+          }
+          foreach ($removed as $cid) {
+              $this->logEdit($request_id, "neoncollectionrequestlink", "coll_id", $cid, null, $uid);
+          }
+      }
+
+
+      return $request_id;
+
+  }
+
+  // log request table edits
+  private function logEdit($request_id, $table, $field, $oldValue, $newValue, $uid) {
+
+      if (is_string($oldValue)) $oldValue = trim($oldValue);
+      if (is_string($newValue)) $newValue = trim($newValue);
+
+      if ($oldValue === $newValue) {
+          return;
+      }
+
+      $sql = "INSERT INTO neonrequestedit (request_id,tableName, fieldName, oldValue, newValue, uid, editTimestamp) 
+              VALUES (?, ?, ?, ?, ?, ?, NOW())";
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bind_param("issssi", $request_id,$table, $field, $oldValue, $newValue, $uid);
+      $stmt->execute();
+      $stmt->close();
+  }
 
 }
 
