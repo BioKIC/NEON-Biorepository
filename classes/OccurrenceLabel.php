@@ -188,7 +188,7 @@ class OccurrenceLabel {
 			}
 			//Get occurrence records
 			$this->setLabelFieldArr();
-			$sql2 = 'SELECT '.implode(',',$this->labelFieldArr).' FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.tid LEFT JOIN taxstatus ts ON ts.tid = o.tidinterpreted LEFT JOIN taxstatus pts ON ts.parenttid = pts.tid LEFT JOIN taxa pt ON pts.tid = pt.tid '.$sqlWhere;
+			$sql2 = 'SELECT DISTINCT '.implode(',',$this->labelFieldArr).' FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.tid LEFT JOIN taxstatus ts ON ts.tid = o.tidinterpreted LEFT JOIN taxstatus pts ON ts.parenttid = pts.tid LEFT JOIN taxa pt ON pts.tid = pt.tid '.$sqlWhere;
 			if ($rs2 = $this->conn->query($sql2)) {
 				while ($row2 = $rs2->fetch_assoc()) {
 					$occid = $row2['occid'];
@@ -227,6 +227,37 @@ class OccurrenceLabel {
 						$retArr[$occid]['othercatalognumbers'] = $ocnStr;
 					}
 				}
+				// NEON edit
+				// get identifiers of associate occurrence records
+				$sql = 'SELECT oa.occid, oa.occidAssociate, oi.identifiername, oi.identifiervalue
+						FROM omoccurassociations oa
+						LEFT JOIN omoccuridentifiers oi ON oa.occidAssociate = oi.occid
+						WHERE oa.occid IN(' . implode(',', array_keys($retArr)) . ')
+						ORDER BY oi.sortBy';
+			
+				if ($rs = $this->conn->query($sql)) {
+					$assocArr = array();
+					while ($r = $rs->fetch_object()) {
+						$assocArr[$r->occid][] = array(
+							'n' => $r->identifiername ?? '',
+							'v' => $r->identifiervalue,
+							'associd' => $r->occidAssociate
+						);
+					}
+					$rs->free();
+			
+					foreach ($assocArr as $occid => $idArrs) {
+						$assocStr = '';
+						foreach ($idArrs as $idArr) {
+							$assocStr .= '; ' . ($idArr['n'] ? $idArr['n'] . ': ' : '') . $idArr['v'];
+						}
+						$assocStr = trim($assocStr, ';,: ');
+			
+						// store in retArr under a new key
+						$retArr[$occid]['associateidentifiers'] = $assocStr;
+					}
+				}
+				//end NEON edit
 			}
 		}
 		return $retArr;
