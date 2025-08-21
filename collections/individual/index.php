@@ -667,11 +667,11 @@ $traitArr = $indManager->getTraitArr();
 													?>
 												</div>
 												<?php
-												if($detArr['ref']){ ?>
+												if($detArr['identificationReferences']){ ?>
 													<div id="identref-div" class="identref-div">
 														<?php
 														echo '<label>'.$LANG['ID_REFERENCES'].': </label>';
-														echo $detArr['ref'];
+														echo $detArr['identificationReferences'];
 														?>
 													</div>
 													<?php

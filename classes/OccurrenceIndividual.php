@@ -174,6 +174,7 @@ class OccurrenceIndividual extends Manager{
 						}
 					}
 					$this->setAdditionalIdentifiers();
+					$this->setDeterminations();
 					$this->setPaleo();
 					$this->setLoan();
 					$this->setOccurrenceRelationships();
@@ -244,14 +245,14 @@ class OccurrenceIndividual extends Manager{
 			if($rs = $stmt->get_result()){
 				while($row = $rs->fetch_object()){
 					$detId = $row->detid;
-					$this->occArr['dets'][$detId]['date'] = $row->dateidentified;
-					$this->occArr['dets'][$detId]['identifiedby'] = $row->identifiedby;
+					$this->occArr['dets'][$detId]['dateIdentified'] = $row->dateidentified;
+					$this->occArr['dets'][$detId]['identifiedBy'] = $row->identifiedby;
 					$this->occArr['dets'][$detId]['sciname'] = $row->sciname;
-					$this->occArr['dets'][$detId]['author'] = $row->scientificnameauthorship;
-					$this->occArr['dets'][$detId]['qualifier'] = $row->identificationqualifier;
-					$this->occArr['dets'][$detId]['ref'] = $row->identificationreferences;
-					$this->occArr['dets'][$detId]['notes'] = $row->identificationremarks;
-					$this->occArr['dets'][$detId]['iscurrent'] = $row->iscurrent;
+					$this->occArr['dets'][$detId]['scientificNameAuthorship'] = $row->scientificnameauthorship;
+					$this->occArr['dets'][$detId]['identificationQualifier'] = $row->identificationqualifier;
+					$this->occArr['dets'][$detId]['identificationReferences'] = $row->identificationreferences;
+					$this->occArr['dets'][$detId]['identificationRemarks'] = $row->identificationremarks;
+					$this->occArr['dets'][$detId]['isCurrent'] = $row->iscurrent;
 				}
 				$rs->free();
 			}
