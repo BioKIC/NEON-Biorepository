@@ -174,6 +174,7 @@ class OccurrenceIndividual extends Manager{
 						}
 					}
 					$this->setAdditionalIdentifiers();
+					$this->setDeterminations();
 					$this->setPaleo();
 					$this->setLoan();
 					$this->setOccurrenceRelationships();
