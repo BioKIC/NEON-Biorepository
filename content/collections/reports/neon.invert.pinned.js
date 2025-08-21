@@ -45,5 +45,17 @@ labels.forEach((label) => {
   
   label.querySelectorAll(".field-block span").forEach((span) => {
     span.innerText = span.innerText.replace(/\s*-\s*/g, "-");
-  });  
+  });
+  
+  // assumes only one associate sampleID
+  let assoc = label.querySelector(".associateidentifiers");
+  if (assoc) {
+    let match = assoc.innerText.match(/NEON sampleID:\s*([^;]+)/);
+    if (match) {
+      assoc.innerText = "Parent SampleID: " + match[1].trim();
+    } else {
+      assoc.remove();
+    }
+  }
+  
 });
