@@ -196,10 +196,10 @@ public function getHowFoundUs(){
       }
   }
 
-   public function addInquiry($collection_manager, $researcher_id, $inquiry_date,$title,$collections,$field,$secondaryfields,$funded,$fundingsource,$description,$howfound,$dataproduced,$existing,$future,$new,$additionalresearchers,$drivefolder,$aiml) {
+   public function addInquiry($collection_manager, $researcher_id, $inquiry_date,$title,$collections,$field,$secondaryfields,$funded,$fundingsource,$description,$howfound,$dataproduced,$existing,$future,$new,$additionalresearchers,$drivefolder,$aiml,$internal) {
 
-    $collection_manager = int($collection_manager);
-    $researcher_id = int($researcher_id);
+    $collection_manager = (int) $collection_manager;
+    $researcher_id = (int) $researcher_id;
     $title = $this->conn->real_escape_string($title);
     $inquiry_date = $this->conn->real_escape_string($inquiry_date);
     $field = $this->conn->real_escape_string($field);
@@ -214,12 +214,14 @@ public function getHowFoundUs(){
     $new = $this->conn->real_escape_string($new);
     $drivefolder = $this->conn->real_escape_string($drivefolder);
     $aiml = $this->conn->real_escape_string($aiml);
+    $internal = $this->conn->real_escape_string($internal);
+
 
 
     $sql = "INSERT INTO neonrequest 
-        (collection_manager, researcher_id,status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name,uses_aiml, last_updated) 
+        (collection_manager, inquiry_date,researcher_id,status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name,uses_aiml, internal,last_updated) 
         VALUES 
-        ('$collection_manager', '$researcher_id', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder','$aiml', NOW())";
+        ('$collection_manager', '$inquiry_date','$researcher_id', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder','$aiml','$internal', NOW())";
 
     if ($this->conn->query($sql)) {
         $request_id = $this->conn->insert_id;
@@ -463,6 +465,7 @@ public function getInquiryDataByID($request_id) {
       $additionalresearchers,
       $drivefolder,
       $aiml,
+      $internal,
       $uid 
   ) {
       $request_id = (int)$request_id;
@@ -496,6 +499,7 @@ public function getInquiryDataByID($request_id) {
                   generating_samples = ?, 
                   folder_name = ?, 
                   uses_aiml = ?, 
+                  internal = ?,
                   last_updated = NOW() 
               WHERE id = ?";
 
@@ -506,7 +510,7 @@ public function getInquiryDataByID($request_id) {
       }
 
       $stmt->bind_param(
-          "iisssssssssssssi",
+          "iissssssssssssssi",
           $collection_manager,
           $researcher_id,
           $title,
@@ -522,6 +526,7 @@ public function getInquiryDataByID($request_id) {
           $new,
           $drivefolder,
           $aiml,
+          $internal,
           $request_id
       );
 
@@ -546,7 +551,8 @@ public function getInquiryDataByID($request_id) {
           "future_samples" => $future,
           "generating_samples" => $new,
           "folder_name" => $drivefolder,
-          "uses_aiml" => $aiml
+          "uses_aiml" => $aiml,
+          "internal" => $internal
       ];
 
       foreach ($newData as $field => $newValue) {

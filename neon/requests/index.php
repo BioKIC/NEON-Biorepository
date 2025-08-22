@@ -37,11 +37,13 @@ if($formSubmit == 'createInquiry' && $isEditor){
 	$new = $_POST['inqnew'] ?? '';
 	$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
 	$drivefolder = $_POST['inqdrive'] ?? '';
+	$internal = $_POST['inqinternal'] ?? '';
 
-    if(!$collection_manager || !$researcher_id || !$inquiry_date || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder || !$aiml){
+
+    if(!$collection_manager || !$researcher_id || !$inquiry_date || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder || !$aiml || !$internal){
         $statusStr = '<span style="color:red;">Missing required fields.</span>';
     } else {
-        $insertId = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder, $aiml);
+        $insertId = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder, $aiml, $internal);
 	 if ($insertId) {
         header("Location: inquiryform.php?id=" . $insertId);
         exit();
@@ -133,6 +135,10 @@ if($formSubmit == 'createInquiry' && $isEditor){
 		}
 		if (f.inqaiml.value === "") {
 			alert("Select whether the request involves AI/ML methods");
+			return false;
+		}
+		if (f.inqinternal.value === "") {
+			alert("Select whether the request is for Battelle/Contractor");
 			return false;
 		}
 		return true;
@@ -288,7 +294,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'Uses AI / ML methods?'; ?>:</strong>
+       								<strong><?php echo 'Uses AI / ML methods?'; ?></strong>
 									</span><br />
 								<span>
 									<select name="inqaiml" style="width:400px;" aria-label="Select AI/ML">
@@ -297,6 +303,23 @@ if($formSubmit == 'createInquiry' && $isEditor){
 										<?php
 										$aimlArr = array('yes','no');
 										foreach($aimlArr as $text){
+											echo '<option value="' . htmlspecialchars($text) . '">' . htmlspecialchars($text) . '</option>';
+										}
+										?>
+									</select>
+								</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+       								<strong><?php echo 'For Battelle (except IRAD) or Contractor?'; ?></strong>
+									</span><br />
+								<span>
+									<select name="inqinternal" style="width:400px;" aria-label="Select Battelle/Contractor">
+										<option value="">Select Battelle/Contractor</option>
+										<option value="">------------------------------------------</option>
+										<?php
+										$intArr = array('yes','no');
+										foreach($intArr as $text){
 											echo '<option value="' . htmlspecialchars($text) . '">' . htmlspecialchars($text) . '</option>';
 										}
 										?>

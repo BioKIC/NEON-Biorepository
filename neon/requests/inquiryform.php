@@ -62,6 +62,14 @@ $additionalresearchers = isset($_POST['additionalresearchers']) && is_array($_PO
 	$new = $_POST['inqnew'] ?? '';
 	$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
 	$drivefolder = $_POST['inqdrive'] ?? '';
+	$internal = $_POST['inqinternal'] ?? '';
+	$pendingfunding = $_POST['inqpendfunddate'] ?? '';
+	$notfunded = $_POST['inqnotfunddate'] ?? '';
+	$pendinglist = $_POST['inqpendlistdate'] ?? '';
+	$fulfillment = $_POST['inqpendffdate'] ?? '';
+	$active = $_POST['inqshipdate'] ?? '';
+	$complete = $_POST['inqcompletedate'] ?? '';
+
 
 // Check required fields
 if (empty($collection_manager)) $missing[] = 'Collection Manager';
@@ -81,6 +89,7 @@ if (empty($new)) $missing[] = 'Generating Samples';
 if (empty($additionalresearchers)) $missing[] = 'Additional Researchers';
 if (empty($drivefolder)) $missing[] = 'Drive Folder';
 if (empty($aiml)) $missing[] = 'AI/ML Usage';
+if (empty($internal)) $missing[] = 'Battelle/Contractor Request';
 
 // Display missing fields or save the inquiry
 if (!empty($missing)) {
@@ -105,6 +114,7 @@ if (!empty($missing)) {
         $additionalresearchers,
         $drivefolder,
         $aiml,
+		$internal,
 		$SYMB_UID
     );
 
@@ -206,6 +216,10 @@ if (!empty($missing)) {
 		}
 		if (f.inqaiml.value === "") {
 			alert("Select whether the request involves AI/ML methods");
+			return false;
+		}
+		if (f.inqinternal.value === "") {
+			alert("Select whether the request is for Battelle/Contractor");
 			return false;
 		}
 		return true;
@@ -375,9 +389,9 @@ if (!empty($missing)) {
 									</select>
 									</span>
 								</div>
-																<div style="clear:both;padding-top:6px;float:left;">
+								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'Uses AI / ML methods?'; ?>:</strong>
+       								<strong><?php echo 'Uses AI / ML methods?'; ?></strong>
 									</span><br />
 								<span>
 									<select name="inqaiml" style="width:400px;" aria-label="Select AI/ML">
@@ -387,6 +401,24 @@ if (!empty($missing)) {
 										$aimlArr = array('yes','no');
 										foreach($aimlArr as $text){
 											$selected = ($inquirydata['uses_aiml'] === $text) ? 'selected' : '';
+											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
+										}
+										?>
+									</select>
+								</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+       								<strong><?php echo 'For Battelle (except IRAD) or Contractor?'; ?></strong>
+									</span><br />
+								<span>
+									<select name="inqinternal" style="width:400px;" aria-label="Select Battelle/Contractor">
+										<option value="">Select Battelle/Contractor</option>
+										<option value="">------------------------------------------</option>
+										<?php
+										$intArr = array('yes','no');
+										foreach($intArr as $text){
+											$selected = ($inquirydata['internal'] === $text) ? 'selected' : '';
 											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
 										}
 										?>
@@ -511,18 +543,65 @@ if (!empty($missing)) {
 										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
 									</span><br />
 								</div>
+							</fieldset>
+							<fieldset>
+								<legend><?php echo 'Inquiry' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Initial Inquiry Date: '?></strong>
 										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
 									</div>
 								</div>
+							</fieldset>
+							<fieldset>
+								<legend><?php echo 'Funding' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Pending Funding Date: '?></strong>
+										<input name="inqpendfunddate" type="date" value="<?php echo $inquirydata['pending_funding_date']; ?>" />
+									</div>
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Not Funded (or funded but cut) Date: '?></strong>
+										<input name="inqnotfunddate" type="date" value="<?php echo $inquirydata['not_funded_date']; ?>" />
+									</div>
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Funded/Pending Sample List Date: '?></strong>
+										<input name="inqpendlistdate" type="date" value="<?php echo $inquirydata['pending_sample_list_date']; ?>" />
+									</div>
+								</div>
+							</fieldset>
+							<fieldset>
+								<legend><?php echo 'Fulfillment' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Pending Fulfillment Date: '?></strong>
+										<input name="inqpendffdate" type="date" value="<?php echo $inquirydata['pending_fulfillment_date']; ?>" />
+									</div>
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Active/Shipment Date: '?></strong>
+										<input name="inqshipdate" type="date" value="<?php echo $inquirydata['active_date']; ?>" />
+									</div>
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Completed Date: '?></strong>
+										<input name="inqcompletedate" type="date" value="<?php echo $inquirydata['complete_date']; ?>" />
+									</div>
+								</div>
+							</fieldset>
 								<div style="clear:both;padding-top:8px;float:left;">
 									<input name="formsubmit" type="hidden" value="update status" />
 									<button name="submitButton" type="submit"><?php echo 'Update Status' ?></button>
 									<input type="hidden" name="tabindex" value="1" />
 								</div>
-							</fieldset>
 						</form>
 					</div>
 					<div id="samples" style="">
@@ -601,6 +680,7 @@ if (!empty($missing)) {
 										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
 									</div>
 								</div>
+								<legend><?php echo 'Shipments' ?></legend>
 								<div style="clear:both;padding-top:8px;float:left;">
 									<input name="formsubmit" type="hidden" value="update shipments" />
 									<button name="submitButton" type="submit"><?php echo 'Update Shipments' ?></button>
