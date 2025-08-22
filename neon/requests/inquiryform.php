@@ -21,7 +21,6 @@ if (isset($_GET['status']) && $_GET['status'] == 'success') {
     echo "<div style='color:green; margin:10px 0;'>Successfully updated inquiry record.</div>";
 }
 
-
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
@@ -36,95 +35,181 @@ $pc = $inquiryManager->getPrimaryContactByID($request_id);
 
 if($formSubmit == 'editInquiry' && $isEditor){
 
-// Initialize missing fields array
-$missing = [];
+	// Initialize missing fields array
+	$missing = [];
 
-// Normalize arrays from form
-$collections = isset($_POST['inqcolls']) && is_array($_POST['inqcolls']) ? $_POST['inqcolls'] : [];
-$additionalresearchers = isset($_POST['additionalresearchers']) && is_array($_POST['additionalresearchers']) ? $_POST['additionalresearchers'] : [];
+	// Normalize arrays from form
+	$collections = isset($_POST['inqcolls']) && is_array($_POST['inqcolls']) ? $_POST['inqcolls'] : [];
+	$additionalresearchers = isset($_POST['additionalresearchers']) && is_array($_POST['additionalresearchers']) ? $_POST['additionalresearchers'] : [];
 
-// Trim all input values to catch empty strings
-    $collection_manager = $_POST['inqmanager'] ?? '';
-    $researcher_id = $_POST['inqresearcher'] ?? '';
-    $inquiry_date = $_POST['inqdate'] ?? '';
-	$title = $_POST['inqtitle'] ?? '';
-	$collections = $_POST['inqcolls'] ?? '';
-	$field = $_POST['inqfield'] ?? '';
-	$aiml = $_POST['inqaiml'] ?? '';
-	$secondaryfields = $_POST['inqsecondaryfields'] ?? '';
-	$funded = $_POST['inqfunded'] ?? '';
-	$fundingsource = $_POST['inqfundingsource'] ?? '';
-	$description = $_POST['inqdescription'] ?? '';
-	$howfound = $_POST['inqhowfound'] ?? '';
-	$dataproduced = $_POST['inqdata'] ?? '';
-	$existing = $_POST['inqexist'] ?? '';
-	$future = $_POST['inqfuture'] ?? '';
-	$new = $_POST['inqnew'] ?? '';
-	$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
-	$drivefolder = $_POST['inqdrive'] ?? '';
-	$internal = $_POST['inqinternal'] ?? '';
-	$pendingfunding = $_POST['inqpendfunddate'] ?? '';
-	$notfunded = $_POST['inqnotfunddate'] ?? '';
-	$pendinglist = $_POST['inqpendlistdate'] ?? '';
-	$fulfillment = $_POST['inqpendffdate'] ?? '';
-	$active = $_POST['inqshipdate'] ?? '';
-	$complete = $_POST['inqcompletedate'] ?? '';
+	// Trim all input values to catch empty strings
+		$collection_manager = $_POST['inqmanager'] ?? '';
+		$researcher_id = $_POST['inqresearcher'] ?? '';
+		$title = $_POST['inqtitle'] ?? '';
+		$collections = $_POST['inqcolls'] ?? '';
+		$field = $_POST['inqfield'] ?? '';
+		$aiml = $_POST['inqaiml'] ?? '';
+		$secondaryfields = $_POST['inqsecondaryfields'] ?? '';
+		$funded = $_POST['inqfunded'] ?? '';
+		$fundingsource = $_POST['inqfundingsource'] ?? '';
+		$description = $_POST['inqdescription'] ?? '';
+		$howfound = $_POST['inqhowfound'] ?? '';
+		$dataproduced = $_POST['inqdata'] ?? '';
+		$existing = $_POST['inqexist'] ?? '';
+		$future = $_POST['inqfuture'] ?? '';
+		$new = $_POST['inqnew'] ?? '';
+		$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
+		$drivefolder = $_POST['inqdrive'] ?? '';
+		$internal = $_POST['inqinternal'] ?? '';
 
 
-// Check required fields
-if (empty($collection_manager)) $missing[] = 'Collection Manager';
-if (empty($researcher_id)) $missing[] = 'Researcher';
-if (empty($title)) $missing[] = 'Title';
-if (empty($collections)) $missing[] = 'Collections of Interest';
-if (empty($field)) $missing[] = 'Primary Research Field';
-if (empty($secondaryfields)) $missing[] = 'Secondary Research Fields or Keywords';
-if (empty($funded)) $missing[] = 'Funding Status';
-if (empty($fundingsource)) $missing[] = 'Funding Source';
-if (empty($description)) $missing[] = 'Description';
-if (empty($howfound)) $missing[] = 'How Found Us';
-if (empty($dataproduced)) $missing[] = 'Data Produced';
-if (empty($existing)) $missing[] = 'Existing Samples';
-if (empty($future)) $missing[] = 'Future Samples';
-if (empty($new)) $missing[] = 'Generating Samples';
-if (empty($additionalresearchers)) $missing[] = 'Additional Researchers';
-if (empty($drivefolder)) $missing[] = 'Drive Folder';
-if (empty($aiml)) $missing[] = 'AI/ML Usage';
-if (empty($internal)) $missing[] = 'Battelle/Contractor Request';
+	// Check required fields
+	if (empty($collection_manager)) $missing[] = 'Collection Manager';
+	if (empty($researcher_id)) $missing[] = 'Researcher';
+	if (empty($title)) $missing[] = 'Title';
+	if (empty($collections)) $missing[] = 'Collections of Interest';
+	if (empty($field)) $missing[] = 'Primary Research Field';
+	if (empty($secondaryfields)) $missing[] = 'Secondary Research Fields or Keywords';
+	if (empty($funded)) $missing[] = 'Funding Status';
+	if (empty($fundingsource)) $missing[] = 'Funding Source';
+	if (empty($description)) $missing[] = 'Description';
+	if (empty($howfound)) $missing[] = 'How Found Us';
+	if (empty($dataproduced)) $missing[] = 'Data Produced';
+	if (empty($existing)) $missing[] = 'Existing Samples';
+	if (empty($future)) $missing[] = 'Future Samples';
+	if (empty($new)) $missing[] = 'Generating Samples';
+	if (empty($additionalresearchers)) $missing[] = 'Additional Researchers';
+	if (empty($drivefolder)) $missing[] = 'Drive Folder';
+	if (empty($aiml)) $missing[] = 'AI/ML Usage';
+	if (empty($internal)) $missing[] = 'Battelle/Contractor Request';
 
-// Display missing fields or save the inquiry
-if (!empty($missing)) {
-    $statusStr = '<span style="color:red;">Missing required fields: ' . implode(', ', $missing) . '</span>';
-} else {
-    $updatedrequestid = $inquiryManager->editInquiry(
-        $request_id,
-        $collection_manager,
-        $researcher_id,
-        $title,
-        $collections,
-        $field,
-        $secondaryfields,
-        $funded,
-        $fundingsource,
-        $description,
-        $howfound,
-        $dataproduced,
-        $existing,
-        $future,
-        $new,
-        $additionalresearchers,
-        $drivefolder,
-        $aiml,
-		$internal,
-		$SYMB_UID
-    );
-
-	if ($updatedrequestid) {
-		header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success");
-		exit();
+	// Display missing fields or save the inquiry
+	if (!empty($missing)) {
+		$statusStr = '<span style="color:red;">Missing required fields: ' . implode(', ', $missing) . '</span>';
 	} else {
-        $statusStr = '<span style="color:red;">Error saving inquiry edits: ' . $inquiryManager->getError() . '</span>';
-    }
+		$updatedrequestid = $inquiryManager->editInquiry(
+			$request_id,
+			$collection_manager,
+			$researcher_id,
+			$title,
+			$collections,
+			$field,
+			$secondaryfields,
+			$funded,
+			$fundingsource,
+			$description,
+			$howfound,
+			$dataproduced,
+			$existing,
+			$future,
+			$new,
+			$additionalresearchers,
+			$drivefolder,
+			$aiml,
+			$internal,
+			$SYMB_UID
+		);
+
+		if ($updatedrequestid) {
+			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success");
+			exit();
+		} else {
+			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . $inquiryManager->getError() . '</span>';
+		}
+		}
+}
+
+if($formSubmit == 'editStatus' && $isEditor){
+
+	// Initialize missing fields array
+	$missing = [];
+
+	// Normalize arrays from form
+
+	// Trim all input values to catch empty strings
+		$inquiry_date = $_POST['inqdate'] ?? '';
+		$pendingfunding = $_POST['inqpendfunddate'] ?? '';
+		$notfunded = $_POST['inqnotfunddate'] ?? '';
+		$cut = $_POST['inqcut'] ?? '';
+		$pendinglist = $_POST['inqpendlistdate'] ?? '';
+		$fulfillment = $_POST['inqpendffdate'] ?? '';
+		$active = $_POST['inqshipdate'] ?? '';
+		$complete = $_POST['inqcompletedate'] ?? '';
+
+
+	// Check required fields
+	if (
+		!(
+			empty($pendingfunding) &&
+			empty($notfunded) &&
+			empty($cut) &&
+			empty($pendinglist) &&
+			empty($fulfillment) &&
+			empty($active) &&
+			empty($complete)
+		)
+		&& empty($inquiry_date)
+	) {
+		$errorMessage[] = 'Initial Inquiry Date required.';
 	}
+	if (!empty($cut) && empty($notfunded)) $errorMessage[] = 'Must indicate that proposal was not funded to select "cut"';
+	if (!empty($complete) && empty($active)) $errorMessage[] = 'Active Date required when complete date present.';
+	if (!empty($active) && empty($fulfillment)) $errorMessage[] = 'Pending Fulfillment Date required when active date present.';
+	if (!(empty($notfunded) && empty($pendinglist)) && empty($pendingfunding)) $errorMessage[] = 'Pending Funding Date required when funded/not funded date present.';
+	if (!empty($fulfillment) && empty($pendinglist) && !empty($pendingfunding)) $errorMessage[] = 'Must have a funding date prior to a fulfillment date.';
+	if (!empty($fullfillment) && !empty($notfunded)) $errorMessage[] = 'Unfunded proposal cannot be fulfilled (Create new Inquiry Record).';
+	if (!empty($notfunded) && !empty($pendinglist)) $errorMessage[] = 'Cannot have both funded and not funded date.';
+	if (!empty($complete) && !empty($active)) {
+		if (strtotime($complete) <= strtotime($active)) {
+			$errorMessage[] = 'Completed Date cannot be before or equal to Active Date';
+		}
+	}
+	if (!empty($fulfillment) && !empty($active)) {
+		if (strtotime($active) <= strtotime($fulfillment)) {
+			$errorMessage[] = 'Active Date cannot be before or equal to Pending Fulfillment Date';
+		}
+	}
+	if (!empty($fulfillment) && !empty($pendinglist)) {
+		if (strtotime($fulfillment) <= strtotime($pendinglist)) {
+			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Funding Date';
+		}
+	}
+	if (!empty($inquiry_date) && !empty($pendingfunding)) {
+		if (strtotime($pendingfunding) <= strtotime($inquiry_date)) {
+			$errorMessage[] = 'Pending Funding Date cannot be before or equal to Inquiry Date';
+		}
+	}
+	if (!empty($inquiry_date) && !empty($fulfillment)) {
+		if (strtotime($fulfillment) <= strtotime($inquiry_date)) {
+			$errorMessage[] = 'Pending Funlfillment Date cannot be before or equal to Inquiry Date';
+		}
+	}
+
+
+	// Display missing fields or save the inquiry
+	if (!empty($errorMessage)) {
+		$statusStr = '<span style="color:red;">' . implode(', ', $errorMessage) . '</span>';
+	} else {
+		$updatedrequestid = $inquiryManager->editStatus(
+			$request_id,
+			$inquiry_date,
+			$pendingfunding,
+			$notfunded,
+			$cut,
+			$pendinglist,
+			$fulfillment,
+			$active,
+			$complete,
+			$SYMB_UID
+		);
+
+		if ($updatedrequestid) {
+			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success");
+			exit();
+		} else {
+			$statusStr = '<span style="color:red;">Error saving inquiry status edits: ' . $inquiryManager->getError() . '</span>';
+		}
+		}
 }
 
 
@@ -225,6 +310,14 @@ if (!empty($missing)) {
 		return true;
 	}
 
+	function verifyStatusEditForm(f) {
+		if (f.inqdate.value.trim() === "") {
+			alert("Insert inquiry date");
+			return false;
+		}
+		return true;
+	}
+
 	</script>
 
 	<style>
@@ -267,7 +360,6 @@ if (!empty($missing)) {
 					<li><a href="#editstatus"><span><?php echo 'Status'; ?></span></a></li>
 					<li><a href="#samples"><span><?php echo 'Samples'; ?></span></a></li>
 					<li><a href="#materialsamples"><span><?php echo 'Material Samples'; ?></span></a></li>
-					<li><a href="#shipments"><span><?php echo 'Shipments'; ?></span></a></li>
 				</ul>
 					<div id="editinqdiv" style="display:<?php echo ($List ); ?>;">
 						<form name="editinqform" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryAddForm(this);">
@@ -568,6 +660,12 @@ if (!empty($missing)) {
 										<input name="inqnotfunddate" type="date" value="<?php echo $inquirydata['not_funded_date']; ?>" />
 									</div>
 								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<label for="inqcut"><strong><?php echo 'Proposal funded but cut from project?'; ?></strong></label>
+									<input type="hidden" name="incut" value="no" />
+									<input type="checkbox" id="inqcut" name="inqnew" value="yes"
+										<?php echo (!empty($inquirydata['cut']) && $inquirydata['cut'] === 'yes') ? 'checked' : ''; ?> />
+								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Funded/Pending Sample List Date: '?></strong>
@@ -590,6 +688,10 @@ if (!empty($missing)) {
 										<input name="inqshipdate" type="date" value="<?php echo $inquirydata['active_date']; ?>" />
 									</div>
 								</div>
+							</fieldset>
+							<fieldset>
+								<legend><?php echo 'Completion' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Completed Date: '?></strong>
@@ -598,7 +700,7 @@ if (!empty($missing)) {
 								</div>
 							</fieldset>
 								<div style="clear:both;padding-top:8px;float:left;">
-									<input name="formsubmit" type="hidden" value="update status" />
+									<input name="formsubmit" type="hidden" value="editStatus" />
 									<button name="submitButton" type="submit"><?php echo 'Update Status' ?></button>
 									<input type="hidden" name="tabindex" value="1" />
 								</div>
@@ -655,35 +757,6 @@ if (!empty($missing)) {
 								<div style="clear:both;padding-top:8px;float:left;">
 									<input name="formsubmit" type="hidden" value="update material samples" />
 									<button name="submitButton" type="submit"><?php echo 'Link/Unlink Material Samples' ?></button>
-									<input type="hidden" name="tabindex" value="1" />
-								</div>
-							</fieldset>
-						</form>
-					</div>
-					<div id="shipments" style="">
-						<form name="updateshipments" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryMaterialShipmentsForm(this);">
-							<fieldset>
-								<legend><?php echo 'Shipments' ?></legend>
-								<div style="clear:both;padding-top:4px;float:left;">
-									<span>
-										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
-									</span><br />
-								</div>
-								<div style="clear:both;padding-top:4px;float:left;">
-									<span>
-										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
-									</span><br />
-								</div>
-								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
-									<div class="fieldDiv">
-										<strong><?php echo 'Initial Inquiry Date: '?></strong>
-										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
-									</div>
-								</div>
-								<legend><?php echo 'Shipments' ?></legend>
-								<div style="clear:both;padding-top:8px;float:left;">
-									<input name="formsubmit" type="hidden" value="update shipments" />
-									<button name="submitButton" type="submit"><?php echo 'Update Shipments' ?></button>
 									<input type="hidden" name="tabindex" value="1" />
 								</div>
 							</fieldset>

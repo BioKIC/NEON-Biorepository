@@ -219,9 +219,9 @@ public function getHowFoundUs(){
 
 
     $sql = "INSERT INTO neonrequest 
-        (collection_manager, inquiry_date,researcher_id,status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name,uses_aiml, internal,last_updated) 
+        (collection_manager, inquiry_date,researcher_id,status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name,uses_aiml, internal,cut,last_updated) 
         VALUES 
-        ('$collection_manager', '$inquiry_date','$researcher_id', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder','$aiml','$internal', NOW())";
+        ('$collection_manager', '$inquiry_date','$researcher_id', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder','$aiml','$internal','no', NOW())";
 
     if ($this->conn->query($sql)) {
         $request_id = $this->conn->insert_id;
@@ -632,6 +632,136 @@ public function getInquiryDataByID($request_id) {
       $stmt->execute();
       $stmt->close();
   }
+
+      // edit status
+    public function editStatus(
+      $request_id,
+      $inquiry_date,
+      $pendingfunding,
+      $notfunded,
+      $cut,
+      $pendinglist,
+      $fulfillment,
+      $active,
+      $complete,
+      $uid
+  ) {
+      $request_id = (int)$request_id;
+
+      $inquiry_date   = !empty($inquiry_date)   ? $inquiry_date   : null;
+      $pendingfunding = !empty($pendingfunding) ? $pendingfunding : null;
+      $notfunded      = !empty($notfunded)      ? $notfunded      : null;
+      $cut            = !empty($cut)            ? $cut            : null;
+      $pendinglist    = !empty($pendinglist)    ? $pendinglist    : null;
+      $fulfillment    = !empty($fulfillment)    ? $fulfillment    : null;
+      $active         = !empty($active)         ? $active         : null;
+      $complete       = !empty($complete)       ? $complete       : null;
+
+      $dates = [
+          'sample use inquiry'           => $inquiry_date,
+          'pending funding'   => $pendingfunding,
+          'not funded'        => $notfunded,
+          'pending sample list'      => $pendinglist,
+          'pending fulfillment'       => $fulfillment,
+          'active use'            => $active,
+          'completed'         => $complete
+      ];
+
+      $timestamps = [];
+      foreach ($dates as $label => $date) {
+          if (!empty($date) && strtotime($date) !== false) {
+              $timestamps[$label] = strtotime($date);
+          }
+      }
+
+      if (!empty($timestamps)) {
+          $latestLabel = array_search(max($timestamps), $timestamps);
+          $latestDate  = $dates[$latestLabel];
+          $status      = $latestLabel;
+          $status_date = $latestDate;
+      } else {
+          $status = null;
+          $status_date = null;
+      }
+
+      $oldSql = "SELECT * FROM neonrequest WHERE id = ?";
+      $oldStmt = $this->conn->prepare($oldSql);
+      $oldStmt->bind_param("i", $request_id);
+      $oldStmt->execute();
+      $oldResult = $oldStmt->get_result();
+      $oldData = $oldResult->fetch_assoc();
+      $oldStmt->close();
+
+      if (!$oldData) {
+          $this->errorMessage = "Inquiry not found.";
+          return false;
+      }
+
+      $sql = "UPDATE neonrequest 
+              SET 
+                  status = ?,
+                  status_date = ?,
+                  inquiry_date = ?, 
+                  pending_funding_date = ?, 
+                  not_funded_date = ?, 
+                  cut = ?,
+                  pending_sample_list_date = ?, 
+                  pending_fulfillment_date = ?,
+                  active_date = ?, 
+                  complete_date = ?, 
+                  last_updated = NOW() 
+              WHERE id = ?";
+
+      $stmt = $this->conn->prepare($sql);
+      if (!$stmt) {
+          $this->errorMessage = "Prepare failed: " . $this->conn->error;
+          return false;
+      }
+
+      $stmt->bind_param(
+          "ssssssssssi",
+          $status,
+          $status_date,
+          $inquiry_date,
+          $pendingfunding,
+          $notfunded,
+          $cut,
+          $pendinglist,
+          $fulfillment,
+          $active,
+          $complete,
+          $request_id
+      );
+
+      if (!$stmt->execute()) {
+          $this->errorMessage = "Execute failed: " . $stmt->error;
+          return false;
+      }
+      $stmt->close();
+
+      $newData = [
+          "status" => $status,
+          "status_date" => $status_date,
+          "inquiry_date" => $inquiry_date,
+          "pending_funding_date" => $pendingfunding,
+          "not_funded_date" => $notfunded,
+          "cut" => $cut,
+          "pending_sample_list_date" => $pendinglist,
+          "pending_fulfillment_date" => $fulfillment,
+          "active_date" => $active,
+          "complete_date" => $complete
+      ];
+
+      foreach ($newData as $field => $newValue) {
+          $oldValue = $oldData[$field] ?? null;
+          if ($oldValue != $newValue) {
+              $this->logEdit($request_id, "neonrequest", $field, $oldValue, $newValue, $uid);
+          }
+      }
+
+      return $request_id;
+  }
+
 
 }
 
