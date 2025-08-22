@@ -32,17 +32,17 @@ $statusStr = '';
 $inquirydata = $inquiryManager->getInquiryDataByID($request_id);
 $cm = $inquiryManager->getCMByID($request_id);
 $pc = $inquiryManager->getPrimaryContactByID($request_id);
+$sampledata = $inquiryManager->getSamplesByID($request_id);
+//$materialsampledata = $inquiryManager->getMaterialSamplesByID($request_id);
+
 
 if($formSubmit == 'editInquiry' && $isEditor){
 
-	// Initialize missing fields array
 	$missing = [];
 
-	// Normalize arrays from form
 	$collections = isset($_POST['inqcolls']) && is_array($_POST['inqcolls']) ? $_POST['inqcolls'] : [];
 	$additionalresearchers = isset($_POST['additionalresearchers']) && is_array($_POST['additionalresearchers']) ? $_POST['additionalresearchers'] : [];
 
-	// Trim all input values to catch empty strings
 		$collection_manager = $_POST['inqmanager'] ?? '';
 		$researcher_id = $_POST['inqresearcher'] ?? '';
 		$title = $_POST['inqtitle'] ?? '';
@@ -62,8 +62,6 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		$drivefolder = $_POST['inqdrive'] ?? '';
 		$internal = $_POST['inqinternal'] ?? '';
 
-
-	// Check required fields
 	if (empty($collection_manager)) $missing[] = 'Collection Manager';
 	if (empty($researcher_id)) $missing[] = 'Researcher';
 	if (empty($title)) $missing[] = 'Title';
@@ -83,7 +81,6 @@ if($formSubmit == 'editInquiry' && $isEditor){
 	if (empty($aiml)) $missing[] = 'AI/ML Usage';
 	if (empty($internal)) $missing[] = 'Battelle/Contractor Request';
 
-	// Display missing fields or save the inquiry
 	if (!empty($missing)) {
 		$statusStr = '<span style="color:red;">Missing required fields: ' . implode(', ', $missing) . '</span>';
 	} else {
@@ -121,12 +118,8 @@ if($formSubmit == 'editInquiry' && $isEditor){
 
 if($formSubmit == 'editStatus' && $isEditor){
 
-	// Initialize missing fields array
-	$missing = [];
+	$errorMessage = [];
 
-	// Normalize arrays from form
-
-	// Trim all input values to catch empty strings
 		$inquiry_date = $_POST['inqdate'] ?? '';
 		$pendingfunding = $_POST['inqpendfunddate'] ?? '';
 		$notfunded = $_POST['inqnotfunddate'] ?? '';
@@ -136,8 +129,6 @@ if($formSubmit == 'editStatus' && $isEditor){
 		$active = $_POST['inqshipdate'] ?? '';
 		$complete = $_POST['inqcompletedate'] ?? '';
 
-
-	// Check required fields
 	if (
 		!(
 			empty($pendingfunding) &&
@@ -184,9 +175,9 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$errorMessage[] = 'Pending Funlfillment Date cannot be before or equal to Inquiry Date';
 		}
 	}
+	
+	if(!empty($fulfillment) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Fulfillment Date.';
 
-
-	// Display missing fields or save the inquiry
 	if (!empty($errorMessage)) {
 		$statusStr = '<span style="color:red;">' . implode(', ', $errorMessage) . '</span>';
 	} else {
@@ -225,8 +216,6 @@ if($formSubmit == 'editStatus' && $isEditor){
 	?>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
-
-
 
 	<script>
 
@@ -712,17 +701,12 @@ if($formSubmit == 'editStatus' && $isEditor){
 								<legend><?php echo 'Samples' ?></legend>
 								<div style="clear:both;padding-top:4px;float:left;">
 									<span>
-										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
-									</span><br />
-								</div>
-								<div style="clear:both;padding-top:4px;float:left;">
-									<span>
 										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
 									</span><br />
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
-										<strong><?php echo 'Initial Inquiry Date: '?></strong>
+										<strong><?php !empty($sampledata)?></strong>
 										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
 									</div>
 								</div>
@@ -804,16 +788,13 @@ if($formSubmit == 'editStatus' && $isEditor){
 	?>
 
 	<script>
-// Open modal when either "Add researcher" button is clicked
 document.querySelectorAll('.addResearcherBtn').forEach(btn => {
     btn.addEventListener('click', function() {
-        // Save which button opened the modal
         document.getElementById('researcherModal').dataset.source = btn.dataset.target;
         document.getElementById('researcherModal').style.display = 'block';
     });
 });
 
-// Close modal
 document.getElementById('closeModal').addEventListener('click', function(){
     document.getElementById('researcherModal').style.display = 'none';
 });
@@ -829,27 +810,22 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
             let primaryDropdown = document.querySelector('select[name="inqresearcher"]');
             let additionalDropdown = document.querySelector('select[name="inqadditionalresearcher[]"]');
 
-            // Save currently selected values in multi-select
             let selectedAdditional = Array.from(additionalDropdown.selectedOptions).map(opt => opt.value);
 
-            // Create new option
             let optionPrimary = document.createElement('option');
             optionPrimary.value = data.researcher_id;
             optionPrimary.text = data.name + ' (' + data.institution + ')';
 
             let optionAdditional = optionPrimary.cloneNode(true);
 
-            // Add to both dropdowns
             primaryDropdown.appendChild(optionPrimary);
             additionalDropdown.appendChild(optionAdditional);
 
-            // Restore previous selections in additional dropdown
             selectedAdditional.forEach(val => {
                 let option = additionalDropdown.querySelector(`option[value="${val}"]`);
                 if(option) option.selected = true;
             });
 
-            // Only auto-select in primary if added via primary button
             if(document.getElementById('researcherModal').dataset.source === 'primary') {
                 primaryDropdown.value = data.researcher_id;
             }

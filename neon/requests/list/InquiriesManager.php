@@ -763,6 +763,34 @@ public function getInquiryDataByID($request_id) {
   }
 
 
+    // Get samples associated with a request
+  public function getSamplesByID($request_id){
+      $retArr = [];
+
+      $request_id = (int)$request_id;
+
+      $sql = "SELECT * FROM neonsamplerequestlink WHERE request_id = ?";
+      $stmt = $this->conn->prepare($sql);
+      if (!$stmt) {
+          $this->errorMessage = "Dababase error: " . $this->conn->error;
+          return $retArr;
+      }
+
+      $stmt->bind_param("i", $request_id);
+      $stmt->execute();
+      $result = $stmt->get_result();
+
+      while ($row = $result->fetch_assoc()) {
+          $retArr[] = $row;
+      }
+
+      $stmt->close();
+
+      return $retArr;
+  }
+
+
+
 }
 
 ?>
