@@ -415,13 +415,15 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 </script>
 <!--end-->
 
-
+<?php
+$CSS_VERSION = '1a';
+?>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- UNIVERSAL CSS –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-<link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/normalize.css">
-<!--<link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/skeleton.css">-->
-<link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/css/neon.css?ver=20250609">
+<link href="<?= $CSS_BASE_PATH ?>/normalize.css?ver=<?= $CSS_VERSION ?>" type="text/css" rel="stylesheet">
+<link href="<?= $CSS_BASE_PATH ?>/skeleton.css?ver=<?= $CSS_VERSION ?>" type="text/css" rel="stylesheet">
+<link href="<?= $CSS_BASE_PATH ?>/neon.css?ver=<?= $CSS_VERSION ?>" type="text/css" rel="stylesheet">
 <link href="<?= $CSS_BASE_PATH ?>/main-neon.css?ver=<?= $CSS_VERSION ?>" type="text/css" rel="stylesheet">
-<link href="<?= $CSS_BASE_PATH ?>/symbiota/customizations.css?ver=<?= $CSS_VERSION ?>" type="text/css" rel="stylesheet">
 
 <script src="<?= $CLIENT_ROOT ?>/js/symb/lang.js" type="text/javascript"></script>
 <script type="text/javascript">
