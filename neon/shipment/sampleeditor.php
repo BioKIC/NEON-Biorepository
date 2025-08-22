@@ -37,7 +37,6 @@ if($isEditor){
 	<title><?php echo $DEFAULT_TITLE; ?> Sample Editor</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 	<?php
-	$activateJQuery = true;
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
 	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>

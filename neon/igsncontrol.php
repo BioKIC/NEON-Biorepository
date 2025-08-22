@@ -50,7 +50,6 @@ if($isEditor){
 	<title><?php echo $DEFAULT_TITLE; ?> IGSN Manager</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 	<?php
-	$activateJQuery = true;
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
 	<script src="../js/jquery-3.7.1.min.js" type="text/javascript"></script>
@@ -73,7 +72,7 @@ if($isEditor){
 		function saveTokens(form) {
 			const accessToken = $(form.accessToken).val().trim();
 			const refreshToken = $(form.refreshToken).val().trim();
-		
+
 			$.post('collections/admin/rpc/savetokens.php', {
 				accessToken: accessToken,
 				refreshToken: refreshToken
@@ -94,7 +93,7 @@ if($isEditor){
 	function validateTokens(form) {
 		const accessToken = $(form.accessToken).val().trim();
 		const refreshToken = $(form.refreshToken).val().trim();
-	
+
 		$.post('collections/admin/rpc/validatetokens.php', {
 			accessToken: accessToken,
 			refreshToken: refreshToken
@@ -110,12 +109,12 @@ if($isEditor){
 
 	function refreshTokens(form) {
 		const refreshToken = $(form.refreshToken).val().trim();
-	
+
 		if (!refreshToken) {
 			alert('Refresh token is missing.');
 			return;
 		}
-	
+
 		$.post('collections/admin/rpc/refreshtokens.php', {
 			refreshToken: refreshToken
 		})
@@ -124,7 +123,7 @@ if($isEditor){
 				$(form.accessToken).val(response.newAccessToken);
 				$(form.refreshToken).val(response.newRefreshToken);
 				alert('Tokens refreshed successfully.');
-	
+
 				saveTokens(form);
 			} else {
 				alert('Failed to refresh tokens: ' + response.message);
@@ -135,7 +134,7 @@ if($isEditor){
 			alert('An error occurred while refreshing the token.');
 		});
 	}
-	
+
 	function toggleTokenInfo(toggleElem) {
 		const content = toggleElem.nextElementSibling;
 		const arrow = toggleElem.querySelector('.arrow');
@@ -225,9 +224,9 @@ include($SERVER_ROOT.'/includes/header.php');
 								<ul>
 									<li>
 										If your refresh token has expired (after one year), visit the MySESAR
-										<a href="https://app.geosamples.org/" target="_blank"><strong>Production server</strong></a> 
-										or the 
-										<a href="https://app-sandbox.geosamples.org/" target="_blank"><strong>Development server</strong></a> 
+										<a href="https://app.geosamples.org/" target="_blank"><strong>Production server</strong></a>
+										or the
+										<a href="https://app-sandbox.geosamples.org/" target="_blank"><strong>Development server</strong></a>
 										to log in and generate a new token pair.
 									</li>
 								</ul>
@@ -238,18 +237,18 @@ include($SERVER_ROOT.'/includes/header.php');
 						</ol>
 						<h4>Development vs. Production Mode</h4>
 						<p>
-							The SESAR system operates with two separate environments: a <strong>production server</strong> and a <strong>sandbox (development) server</strong>. 
-							When using development mode, all token operations are directed to the sandbox server (<a href="https://app-sandbox.geosamples.org/" target="_blank">https://app-sandbox.geosamples.org/</a>), and a separate set of development tokens is used. 
+							The SESAR system operates with two separate environments: a <strong>production server</strong> and a <strong>sandbox (development) server</strong>.
+							When using development mode, all token operations are directed to the sandbox server (<a href="https://app-sandbox.geosamples.org/" target="_blank">https://app-sandbox.geosamples.org/</a>), and a separate set of development tokens is used.
 							In production mode, operations connect to the main SESAR server (<a href="https://app.geosamples.org/" target="_blank">https://app.geosamples.org/</a>).
 						</p>
 						<p>
 							The interface will automatically detect whether you are in development or production mode and display the appropriate access and refresh tokens accordingly. These are stored separately in the MySQL database.
 						</p>
 					</div>
-				</div>				
-				
-				
-				
+				</div>
+
+
+
 				<form name="tokenManagement">
 					<legend>Current User Token Pair:</legend>
 					<div style="margin-left: 1em">
@@ -290,7 +289,7 @@ include($SERVER_ROOT.'/includes/header.php');
 		<fieldset>
 			<legend>IGSN Management</legend>
             <div style="margin-bottom:10px;">
-                To register or update samples via the SESAR system, you must have a valid <strong>access token</strong>. 
+                To register or update samples via the SESAR system, you must have a valid <strong>access token</strong>.
                 Ensure your token is up to date using the tools above before proceeding with sample registration or updates.
             </div>
             <div>

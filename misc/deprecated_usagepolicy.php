@@ -9,7 +9,6 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 <head>
 	<title><?php echo $DEFAULT_TITLE; ?> Data Usage Guidelines</title>
 	<?php
-	$activateJQuery = false;
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
 </head>

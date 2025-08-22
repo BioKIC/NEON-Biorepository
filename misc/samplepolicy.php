@@ -6,7 +6,6 @@ header("Content-Type: text/html; charset=".$CHARSET);
 	<head>
 		<title>Sample Use Policy</title>
 		<?php
-		$activateJQuery = false;
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
 	</head>
@@ -59,7 +58,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
           <li>
             <p>Any resulting data and images must be openly published on the <span style="font-weight: bold">NEON Biorepository portal<span> in accordance with the Dataset Publishing page on the portal.</p>
           </li>
-          <li> 
+          <li>
             <p>Samples should be properly cited using catalogNumbers and/or IGSN IDs.</p>
           </li>
           <li>

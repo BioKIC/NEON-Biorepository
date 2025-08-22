@@ -16,7 +16,6 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 	<title><?php echo $DEFAULT_TITLE; ?> NEON Management Tools</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 	<?php
-	$activateJQuery = false;
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
 	<script src="../js/jquery-3.7.1.min.js" type="text/javascript"></script>

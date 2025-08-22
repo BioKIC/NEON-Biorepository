@@ -188,7 +188,7 @@ class OccurrenceLabel {
 			}
 			//Get occurrence records
 			$this->setLabelFieldArr();
-			$sql2 = 'SELECT '.implode(',',$this->labelFieldArr).' FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.tid LEFT JOIN taxstatus ts ON ts.tid = o.tidinterpreted LEFT JOIN taxstatus pts ON ts.parenttid = pts.tid LEFT JOIN taxa pt ON pts.tid = pt.tid '.$sqlWhere;
+			$sql2 = 'SELECT DISTINCT '.implode(',',$this->labelFieldArr).' FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.tid LEFT JOIN taxstatus ts ON ts.tid = o.tidinterpreted LEFT JOIN taxstatus pts ON ts.parenttid = pts.tid LEFT JOIN taxa pt ON pts.tid = pt.tid '.$sqlWhere;
 			if ($rs2 = $this->conn->query($sql2)) {
 				while ($row2 = $rs2->fetch_assoc()) {
 					$occid = $row2['occid'];
@@ -227,6 +227,37 @@ class OccurrenceLabel {
 						$retArr[$occid]['othercatalognumbers'] = $ocnStr;
 					}
 				}
+				// NEON edit
+				// get identifiers of associate occurrence records
+				$sql = 'SELECT oa.occid, oa.occidAssociate, oi.identifiername, oi.identifiervalue
+						FROM omoccurassociations oa
+						LEFT JOIN omoccuridentifiers oi ON oa.occidAssociate = oi.occid
+						WHERE oa.occid IN(' . implode(',', array_keys($retArr)) . ')
+						ORDER BY oi.sortBy';
+			
+				if ($rs = $this->conn->query($sql)) {
+					$assocArr = array();
+					while ($r = $rs->fetch_object()) {
+						$assocArr[$r->occid][] = array(
+							'n' => $r->identifiername ?? '',
+							'v' => $r->identifiervalue,
+							'associd' => $r->occidAssociate
+						);
+					}
+					$rs->free();
+			
+					foreach ($assocArr as $occid => $idArrs) {
+						$assocStr = '';
+						foreach ($idArrs as $idArr) {
+							$assocStr .= '; ' . ($idArr['n'] ? $idArr['n'] . ': ' : '') . $idArr['v'];
+						}
+						$assocStr = trim($assocStr, ';,: ');
+			
+						// store in retArr under a new key
+						$retArr[$occid]['associateidentifiers'] = $assocStr;
+					}
+				}
+				//end NEON edit
 			}
 		}
 		return $retArr;
@@ -293,8 +324,8 @@ class OccurrenceLabel {
 				'taxonRank' => 't.unitind3 AS taxonrank',
 				'specificepithet'=>'t.unitname2 AS specificepithet',
 				'fieldnumber'=>'o.fieldnumber',
-				'infraSpecificEpithet'=>'t.unitname3 AS infraspecificepithet', 
-				'scientificNameAuthorship'=>'o.scientificnameauthorship', 
+				'infraSpecificEpithet'=>'t.unitname3 AS infraspecificepithet',
+				'scientificNameAuthorship'=>'o.scientificnameauthorship',
 				'parentAuthor'=>'pt.author AS parentauthor',
 				'identifiedBy'=>'o.identifiedby',
 				'dateIdentified' => 'o.dateidentified',
@@ -307,6 +338,9 @@ class OccurrenceLabel {
 				'collectornumber'=>'o.recordnumber as collectornumber',
 				'associatedCollectors' => 'o.associatedcollectors',
 				'eventDate' => 'DATE_FORMAT(o.eventdate,"%e %M %Y") AS eventdate',
+				//NEON edit
+				'eventDate2' => 'DATE_FORMAT(o.eventdate2,"%e %M %Y") AS eventdate2',
+				//end NEON edit
 				'year' => 'o.year',
 				'month' => 'o.month',
 				'day' => 'o.day',
@@ -397,19 +431,6 @@ class OccurrenceLabel {
 		return '';
 	}
 
-	private function transferFromPhpToDynamicProperties() {
-		$status = false;
-		$targetFile = $GLOBALS['SERVER_ROOT'] . '/content/collections/reports/label.json';
-		if (file_exists($targetFile)) {
-			$jsonFileContents = file_get_contents($targetFile);
-			if (!empty($jsonFileContents)) {
-				$this->saveGlobalJson($jsonFileContents, true);
-				return $this->fetchGlobalLabelJson();
-			}
-		}
-		return $status;
-	}
-
 	private function fetchGlobalLabelJson() {
 		$status = false;
 		$sql = 'SELECT dynamicProperties FROM adminconfig WHERE attributeName = ?';
@@ -420,7 +441,7 @@ class OccurrenceLabel {
 			$stmt->bind_result($jsonResult);
 			$stmt->fetch();
 			$stmt->close();
-			if (empty($jsonResult)) $jsonResult = $this->transferFromPhpToDynamicProperties();
+			if (empty($jsonResult)) $jsonResult = $this->setDefaultLabelFormat();
 			return $jsonResult;
 		}
 		return $status;
@@ -469,7 +490,7 @@ class OccurrenceLabel {
 		$retArr = array();
 		if ($GLOBALS['SYMB_UID']) {
 			if (!$jsonData = $this->fetchGlobalLabelJson()) {
-				$jsonData = $this->transferFromPhpToDynamicProperties();
+				$jsonData = $this->setDefaultLabelFormat();
 			}
 			if (!empty($jsonData)) {
 				if ($globalFormatArr = json_decode($jsonData, true)) {
@@ -518,6 +539,31 @@ class OccurrenceLabel {
 			}
 		}
 		return $retArr;
+	}
+
+	private function setDefaultLabelFormat() {
+		$status = false;
+		$jsonFileContents = '';
+		$oldFile = $GLOBALS['SERVER_ROOT'] . '/content/collections/reports/label.json';
+		$defaultFile = $GLOBALS['SERVER_ROOT'] . '/content/collections/reports/labeldefault.json';
+		if (file_exists($oldFile)) {
+			//Sets default label format (global) to what was defined prior to v3.3.6 (e.g. portal manager coverted labeljson.php to label.json)
+			$jsonFileContents = file_get_contents($oldFile);
+		}
+		elseif(file_exists($defaultFile)){
+			$oldNotConvertedFile = $GLOBALS['SERVER_ROOT'] . '/content/collections/reports/labeljson.php';
+			if(!file_exists($oldNotConvertedFile)){
+				//Set default using labeldefault.json (portal is a new install or a v3.3.6 pre-defined format does not exist)
+				//A default format will not be defined if labeljson.php exists. In this case, portal managers needs to convert labeljson.php to label.json, or remove file.
+				$jsonFileContents = file_get_contents($defaultFile);
+			}
+		}
+		if($jsonFileContents){
+			$jsonFileContents = preg_replace('/\s\s+/', ' ',$jsonFileContents);
+			$this->saveGlobalJson($jsonFileContents, true);
+			return $this->fetchGlobalLabelJson();
+		}
+		return $status;
 	}
 
 	public function saveLabelJson($postArr) {
@@ -684,7 +730,7 @@ class OccurrenceLabel {
 	private function saveGlobalJson($dataObj, $isAlreadyDecoded = false) {
 		$status = false;
 
-		$jsonDynProps = $isAlreadyDecoded ? $dataObj : json_encode($dataObj, JSON_PRETTY_PRINT | JSON_HEX_APOS);
+		$jsonDynProps = $isAlreadyDecoded ? $dataObj : json_encode($dataObj, JSON_HEX_APOS);
 		$attributeName = 'LabelFormatJson';
 		$checkSql = "SELECT COUNT(*) FROM adminconfig WHERE attributeName = ?";
 		if ($checkStmt = $this->conn->prepare($checkSql)) {

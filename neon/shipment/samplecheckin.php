@@ -17,13 +17,12 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		<title><?php echo $DEFAULT_TITLE; ?> Sample Check-in</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 		<?php
-		$activateJQuery = true;
 		include_once($SERVER_ROOT.'/includes/head.php');
-		
+
 		$activeSession = false;
 		$sessionStartTime = null;
 		$sessionName = null;
-		
+
 		if (isset($_SESSION['sampleCheckinSessionData'])) {
 			$session_data = $_SESSION['sampleCheckinSessionData'];
 			// Check if the session is active (end_time is null)
@@ -134,12 +133,12 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				var listElem = document.getElementById("samplelistdiv");
 				listElem.insertBefore(newDiv,listElem.childNodes[0]);
 			}
-			
+
 			let timerInterval;
-		
+
 			let serverStartTime = "<?php echo $sessionStartTime; ?>";
 			let sessionName = "<?php echo $sessionName; ?>";
-		
+
 			// Check if a session is already active on page load
 			document.addEventListener('DOMContentLoaded', function() {
 				<?php if ($activeSession): ?>
@@ -152,13 +151,13 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				document.querySelectorAll('.start_session').forEach(button => {
 					button.addEventListener('click', startSession);
 				});
-			
+
 				// Attach event listeners to all stop session buttons
 				document.querySelectorAll('.stop_session').forEach(button => {
 					button.addEventListener('click', stopSession);
 				});
 			});
-		
+
 			function startSession() {
 				// Send AJAX request to start session
 				fetch('rpc/sessionManager.php', {
@@ -177,7 +176,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					  showSessionID(data.sessionName);
 				  });
 			}
-		
+
 			function stopSession() {
 				// Send AJAX request to stop session
 				fetch('rpc/sessionManager.php', {
@@ -193,10 +192,10 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					  toggleButtons(false);
 				  });
 			}
-					
+
 			function startTimer(startTime) {
 				let start = new Date(startTime);
-		
+
 				// Clear any existing timer before starting a new one
 				if (timerInterval) {
 					clearInterval(timerInterval);
@@ -208,18 +207,18 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					let hours = Math.floor(diff / 3600);
 					let minutes = Math.floor((diff % 3600) / 60);
 					let seconds = diff % 60;
-					
+
 					hours = String(hours).padStart(2, '0');
 					minutes = String(minutes).padStart(2, '0');
 					seconds = String(seconds).padStart(2, '0');
-					
+
 					let timers = document.querySelectorAll('.timer');
 					timers.forEach(timer => {
 						timer.textContent = hours + ":" + minutes + ":" + seconds;
 					});
 				}, 1000);
 			}
-		
+
 			function stopTimer() {
 				// Clear the timer interval and reset the timer display
 				clearInterval(timerInterval);
@@ -228,26 +227,26 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					timer.textContent = "00:00:00";
 				});
 			}
-			
+
 			function toggleButtons(isSessionActive) {
 				let startButtons = document.querySelectorAll('.start_session');
 				let stopButtons = document.querySelectorAll('.stop_session');
-			
+
 				startButtons.forEach(button => {
 					button.disabled = isSessionActive;
 				});
-			
+
 				stopButtons.forEach(button => {
 					button.disabled = !isSessionActive;
 				});
 			}
-			
+
 			function showSessionID(sessionName) {
 				let sessionNamedivs = document.querySelectorAll('.sessionName');
-				
+
 				sessionNamedivs.forEach(div => {
 					div.innerHTML  = '<strong>SessionName:</strong> ' + sessionName;
-				});	
+				});
 			}
 		</script>
 		<style type="text/css">
