@@ -30,24 +30,40 @@
     $sql = 'SELECT 
     prepBy AS preparator,
     SUM(skinPrepCnt) AS skinPrepCnt,
+    SUM(flatskinPrepCnt) AS flatskinPrepCnt,
     SUM(fluidPrepCnt) AS fluidPrepCnt,
-    SUM(skinPrepCnt) + SUM(fluidPrepCnt) AS total
+    SUM(skinPrepCnt) +  SUM(flatskinPrepCnt) +SUM(fluidPrepCnt) AS total
 FROM (
     SELECT 
         TRIM(REGEXP_SUBSTR(dynamicProperties, "(?<=preparedBy:)(.*?)(?=,)")) AS prepBy, 
         COUNT(occid) AS skinPrepCnt,
+        0 AS flatskinPrepCnt,
         0 AS fluidPrepCnt
     FROM omoccurrences
     WHERE dynamicProperties LIKE "%preparedBy%" 
-    AND preparations LIKE "%skin%" 
+    AND preparations LIKE "%skin%" AND preparations NOT LIKE "%flat%"
     AND collid IN (17, 19, 28)
     GROUP BY prepBy
     
+    UNION ALL
+
+        SELECT 
+        TRIM(REGEXP_SUBSTR(dynamicProperties, "(?<=preparedBy:)(.*?)(?=,)")) AS prepBy, 
+        0 AS skinPrepCnt,
+        COUNT(occid) AS flatskinPrepCnt,
+        0 AS fluidPrepCnt
+    FROM omoccurrences
+    WHERE dynamicProperties LIKE "%preparedBy%" 
+    AND preparations LIKE "%flat%"
+    AND collid IN (17, 19, 28)
+    GROUP BY prepBy
+
     UNION ALL
     
     SELECT 
         TRIM(REGEXP_SUBSTR(dynamicProperties, "(?<=preparedBy:)(.*?)(?=,)")) AS prepBy, 
         0 AS skinPrepCnt,
+        0 AS flatskinPrepCnt,
         COUNT(occid) AS fluidPrepCnt
     FROM omoccurrences
     WHERE dynamicProperties LIKE "%preparedBy%" 
@@ -67,11 +83,12 @@ ORDER BY preparator;';
         $dataArr[] = array(
           $row['preparator'],
           $row['skinPrepCnt'],
+          $row['flatskinPrepCnt'],
           $row['fluidPrepCnt'],
           $row['total'],
         );
       }
-      $totalsRow = array("prepBy" => "Total", "skinPrepCnt" => array_sum(array_column($dataArr, 1)), "fluidPrepCnt" => array_sum(array_column($dataArr, 2)), "total" => array_sum(array_column($dataArr, 3)));
+      $totalsRow = array("prepBy" => "Total", "skinPrepCnt" => array_sum(array_column($dataArr, 1)), "flatskinPrepCnt" => array_sum(array_column($dataArr, 2)), "fluidPrepCnt" => array_sum(array_column($dataArr, 3)), "total" => array_sum(array_column($dataArr, 4)));
       $dataArr[] = $totalsRow; 
       $result->free();
     }
