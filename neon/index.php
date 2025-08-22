@@ -66,7 +66,6 @@ if($isEditor){
 				<li><a href="requests/list/inquiries.php">Inquiry list</a></li>
 				<li><a href="requests/report/requestreport.php">Requests Report</a></li>
 				<li><a href="requests/index.php">Create New Inquiry Record</a></li>
-
 			</ul>
 		</fieldset>
 		<fieldset>
@@ -83,6 +82,7 @@ if($isEditor){
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=131&year=2019" onclick="$('#YELL19-working').show();">YELL - 2019</a><span id="YELL19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li><a href="loans.php">Loans Reports</a></li>
 				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
+				<li><a href="shipment/prepreports.php">Preparations Report</a></li>
 			</ul>
 		</fieldset>
 	</div>
