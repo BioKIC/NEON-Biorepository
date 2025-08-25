@@ -27,7 +27,11 @@ if (isset($SHOULD_UPGRADE_INSECURE_REQUESTS)) {
 if (isset($SHOULD_VERIFY_PEERS)) {
   $oidc->setVerifyPeer($SHOULD_VERIFY_PEERS);
 }
-
+//NEON edit
+if (empty($_SESSION['refurl']) && !empty($_SERVER['HTTP_REFERER'])) {
+    $_SESSION['refurl'] = $_SERVER['HTTP_REFERER'];
+}
+//end NEON edit
 // $_SESSION['oidIssuer'] = $oidc->getIssuer(); // moot for microsoft where it's the same as the providerUrl, but potentially useful for other auth providers?
 $oidc->addAuthParam(['prompt' => 'login']);
 $oidc->authenticate();
