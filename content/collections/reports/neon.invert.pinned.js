@@ -28,8 +28,11 @@ labels.forEach((label) => {
     let text = locality.innerText;
     let match = text.match(/([^,]+?\([A-Z]{4}\))(?=,\s*Plot)?/);
     if (match) {
-      let cleaned = match[1].replace(/\s*NEON\s*/i, " ").trim();
-      locality.innerText = cleaned + ", ";
+      let cleaned = match[1]
+        .replace(/\s*NEON\s*/i, " ")
+        .replace(/\s*\([A-Z]{4}\)/, "")
+        .trim();
+      locality.innerText = cleaned;
     }
   }
 
