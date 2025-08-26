@@ -230,6 +230,10 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 		.normal-font-weight {
 			font-weight: normal;
 		}
+        hr {
+           margin-top: 1em;
+           margin-bottom: 1em;
+        }
 	</style>
 </head>
 <body>
