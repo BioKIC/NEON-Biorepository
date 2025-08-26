@@ -20,6 +20,11 @@
  * - Preserves text prefixes before dates (e.g., "Pitfall Trap.") while shortening the date range
  */
 
+function monthToRoman(monthIndex) {
+  const romans = ["i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii"];
+  return romans[monthIndex];
+}
+
 let labels = document.querySelectorAll(".label");
 labels.forEach((label) => {
 
@@ -32,7 +37,7 @@ labels.forEach((label) => {
         .replace(/\s*NEON\s*/i, " ")
         .replace(/\s*\([A-Z]{4}\)/, "")
         .trim();
-      locality.innerText = cleaned;
+      locality.innerText = cleaned + ".";
     }
   }
 
@@ -85,8 +90,8 @@ labels.forEach((label) => {
     if (!isNaN(start) && !isNaN(end)) {
       let startDay = start.getDate();
       let endDay = end.getDate();
-      let startMonth = start.toLocaleString("en-US", { month: "short" });
-      let endMonth = end.toLocaleString("en-US", { month: "short" });
+      let startMonth = monthToRoman(start.getMonth());
+      let endMonth = monthToRoman(end.getMonth());
       let startYear = start.getFullYear();
       let endYear = end.getFullYear();
   
@@ -95,14 +100,14 @@ labels.forEach((label) => {
       if (startYear === endYear) {
         if (start.getMonth() === end.getMonth()) {
           // Same month & year
-          dateText = `${startDay}-${endDay} ${startMonth}. ${startYear}`;
+          dateText = `${startDay}-${endDay}.${startMonth}.${startYear}`;
         } else {
           // Different month, same year
-          dateText = `${startDay} ${startMonth}.-${endDay} ${endMonth}. ${startYear}`;
+          dateText = `${startDay}.${startMonth}-${endDay}.${endMonth}.${startYear}`;
         }
       } else {
         // Different years
-        dateText = `${startDay} ${startMonth}. ${startYear}-${endDay} ${endMonth}. ${endYear}`;
+        dateText = `${startDay}.${startMonth}.${startYear}-${endDay}.${endMonth}.${endYear}`;
       }
   
       eventdate.innerText = prefix + dateText;
