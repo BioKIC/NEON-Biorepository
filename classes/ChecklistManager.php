@@ -320,7 +320,7 @@ class ChecklistManager extends Manager{
 				$familyCntArr[] = $family;
 			}
 			//neon edit
-			if ($row->rankid > 220 && !in_array($taxonTokens[0], $genusCntArr)) {
+			if ($row->rankid >= 220 && !in_array($taxonTokens[0], $genusCntArr)) {
 			//end neon edit
 				$genusCntArr[] = $taxonTokens[0];
 			}
@@ -960,7 +960,7 @@ class ChecklistManager extends Manager{
 					  AND $tidFilter)
 				) ORDER BY sciname
 			";
-			 echo $this->basicSql;
+			 // echo $this->basicSql;
 			return;
 		}
 		// end NEON edit
