@@ -319,18 +319,42 @@ class ChecklistManager extends Manager{
 			if(!in_array($family,$familyCntArr)){
 				$familyCntArr[] = $family;
 			}
-			if(!in_array($taxonTokens[0],$genusCntArr)){
+			//neon edit
+			if ($row->rankid > 220 && !in_array($taxonTokens[0], $genusCntArr)) {
+			//end neon edit
 				$genusCntArr[] = $taxonTokens[0];
 			}
-			$this->filterArr[$taxonTokens[0]] = "";
-			if(count($taxonTokens) > 1 && $taxonTokens[0]." ".$taxonTokens[1] != $speciesPrev){
-				$this->speciesCount++;
-				$speciesPrev = $taxonTokens[0]." ".$taxonTokens[1];
+			// neon edit
+			if ($row->rankid >= 220) {
+				if ($row->rankid >= 230) {
+					if (!$taxonPrev || strpos($sciName, $taxonPrev) === false) {
+						$this->speciesCount += 1;
+					}
+				} else {
+					$this->speciesCount += 1;
+				}
 			}
-			if(!$taxonPrev || strpos($sciName,$taxonPrev) === false){
-				$this->taxaCount++;
+			//$this->filterArr[$taxonTokens[0]] = "";
+			//if(count($taxonTokens) > 1 && $taxonTokens[0]." ".$taxonTokens[1] != $speciesPrev){
+			//	$this->speciesCount++;
+			//	$speciesPrev = $taxonTokens[0]." ".$taxonTokens[1];
+			//}
+			if ($row->rankid >= 230 && $taxonPrev && strpos($sciName, $taxonPrev) !== false) {
+				$this->taxaCount += 1;
+			} else {
+				if ($row->rankid >= 230) {
+					$this->taxaCount += 2;
+				} else {
+					$this->taxaCount += 1;
+				}
 			}
-			$taxonPrev = implode(" ",$taxonTokens);
+			
+			$taxonPrev = implode(" ", $taxonTokens);
+			//if(!$taxonPrev || strpos($sciName,$taxonPrev) === false){
+			//	$this->taxaCount++;
+			//}
+			//$taxonPrev = implode(" ",$taxonTokens);
+			// end neon edit
 		}
 		$this->familyCount = count($familyCntArr);
 		$this->genusCount = count($genusCntArr);
@@ -934,9 +958,9 @@ class ChecklistManager extends Manager{
 					  AND $collidFilter)
 					  OR (dl.datasetid IN ($datasetStr)
 					  AND $tidFilter)
-				)
+				) ORDER BY sciname
 			";
-			 // echo $this->basicSql;
+			 echo $this->basicSql;
 			return;
 		}
 		// end NEON edit
