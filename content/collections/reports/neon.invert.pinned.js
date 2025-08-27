@@ -25,6 +25,61 @@ function monthToRoman(monthIndex) {
   return romans[monthIndex];
 }
 
+const stateAbbrev = {
+  "Alabama": "ALA.",
+  "Alaska": "ALASKA",
+  "Arizona": "ARIZ.",
+  "Arkansas": "ARK.",
+  "California": "CALIF.",
+  "Colorado": "COLO.",
+  "Connecticut": "CONN.",
+  "Delaware": "DEL.",
+  "District of Columbia": "D.C.",
+  "Florida": "FLA.",
+  "Georgia": "GA.",
+  "Hawaii": "HAWAII",
+  "Idaho": "IDAHO",
+  "Illinois": "ILL.",
+  "Indiana": "IND.",
+  "Iowa": "IOWA",
+  "Kansas": "KANS.",
+  "Kentucky": "KY.",
+  "Louisiana": "LA.",
+  "Maine": "MAINE",
+  "Maryland": "MD.",
+  "Massachusetts": "MASS.",
+  "Michigan": "MICH.",
+  "Minnesota": "MINN.",
+  "Mississippi": "MISS.",
+  "Missouri": "MO.",
+  "Montana": "MONT.",
+  "Nebraska": "NEBR.",
+  "Nevada": "NEV.",
+  "New Hampshire": "N.H.",
+  "New Jersey": "N.J.",
+  "New Mexico": "N. MEX.",
+  "New York": "N.Y.",
+  "North Carolina": "N.CAR.",
+  "North Dakota": "N. DAK.",
+  "Ohio": "OHIO",
+  "Oklahoma": "OKLA.",
+  "Oregon": "ORE.",
+  "Pennsylvania": "PA.",
+  "Rhode Island": "R.I.",
+  "South Carolina": "S.CAR.",
+  "South Dakota": "S. DAK.",
+  "Tennessee": "TENN.",
+  "Texas": "TEXAS",
+  "Utah": "UTAH",
+  "Vermont": "VT.",
+  "Virginia": "VA.",
+  "Washington": "WASH.",
+  "West Virginia": "W. VA.",
+  "Wisconsin": "WISC.",
+  "Wyoming": "WYO.",
+  "Puerto Rico": "P.R."
+};
+
 let labels = document.querySelectorAll(".label");
 labels.forEach((label) => {
 
@@ -52,6 +107,21 @@ labels.forEach((label) => {
   if (state && county) {
     if (state.innerText.toLowerCase().includes("puerto rico")) {
       county.innerText = county.innerText.replace(/\s*Co\.\s*$/, "");
+    }
+  }
+  
+  if (state) {
+    let stateName = state.innerText
+      .replace(/^USA:\s*/i, "")
+      .replace(/:$/, "")
+      .trim();
+    
+    let properCase = stateName
+      .toLowerCase()
+      .replace(/\b\w/g, c => c.toUpperCase());
+    
+    if (stateAbbrev[properCase]) {
+      state.innerText = `USA: ${stateAbbrev[properCase]}:`;
     }
   }
   
