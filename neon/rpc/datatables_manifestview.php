@@ -32,14 +32,14 @@ $columns = array(
         'db' => 'sampleReceived',
         'dt' => 8,
         'formatter' => function( $d, $row ) {
-            return $d == 1 ? 'Y' : ($d == 0 ? 'N' : '');
+            return $d == 1 ? 'Y' : ($d === 0 ? 'N' : '');
         }
     ),
     array(
         'db' => 'acceptedForAnalysis',
         'dt' => 9,
         'formatter' => function( $d, $row ) {
-            return $d == 1 ? 'Y' : ($d == 0 ? 'N' : '');
+            return $d == 1 ? 'Y' : ($d === 0 ? 'N' : '');
         }
     ),
     array( 'db' => 'sampleCondition',     'dt' => 10 ),
