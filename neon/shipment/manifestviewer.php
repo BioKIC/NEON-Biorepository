@@ -326,7 +326,28 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					else if(retJson.status == 1){
 						$("#checkinText").css('color', 'green');
 						$("#checkinText").text('success!!!');
-						$("#scSpan-"+retJson.samplePK).html("checked in");
+						
+						// Update table in real time
+						var table = $('#manifestTable').DataTable();
+						var row = $('#scbox-' + retJson.samplePK).closest('tr');
+				
+						if (row.length !== 0) {
+							var receivedVal = (f.sampleReceived.value === "1") ? "Y" :
+											  (f.sampleReceived.value === "0") ? "N" : "";
+							table.cell(row, 8).data(receivedVal);
+						
+							var acceptedVal = (f.acceptedForAnalysis.value === "1") ? "Y" :
+											  (f.acceptedForAnalysis.value === "0") ? "N" : "";
+							table.cell(row, 9).data(acceptedVal);
+						
+							table.cell(row, 10).data(f.sampleCondition.value);
+						
+							table.cell(row, 11).data('checked in');
+						
+							table.draw(false);
+						}
+						
+						
 						f.identifier.value = "";
 						updateFullIdentifier();
 						f.alternativeSampleID.value = "";
