@@ -97,6 +97,9 @@ if($isEditor){
 			text-transform: uppercase;
 			font-size: 0.7rem;
 		}
+		body.page-unique #hor_dropdown li:hover ul {
+		  top: 37px;
+		}
 	</style>
 </head>
 <body>
