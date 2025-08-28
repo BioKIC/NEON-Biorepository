@@ -658,7 +658,7 @@ public function getInquiryDataByID($request_id) {
       $complete       = !empty($complete)       ? $complete       : null;
 
       $dates = [
-          'sample use inquiry'           => $inquiry_date,
+          'sample use inquiry'    => $inquiry_date,
           'pending funding'   => $pendingfunding,
           'not funded'        => $notfunded,
           'pending sample list'      => $pendinglist,
@@ -684,6 +684,10 @@ public function getInquiryDataByID($request_id) {
           $status_date = null;
       }
 
+    if ($status == 'pending funding') $funded = 'Proposal pending funding';
+    elseif($status == 'not funded') $funded = 'Proposal not funded';
+    elseif(in_array($status, array('pending sample list','pending fulfillment','active use','completed'))) $funded = 'Already externally funded OR Internal/institutional support'; 
+
       $oldSql = "SELECT * FROM neonrequest WHERE id = ?";
       $oldStmt = $this->conn->prepare($oldSql);
       $oldStmt->bind_param("i", $request_id);
@@ -701,6 +705,7 @@ public function getInquiryDataByID($request_id) {
               SET 
                   status = ?,
                   status_date = ?,
+                  funded = ?,
                   inquiry_date = ?, 
                   pending_funding_date = ?, 
                   not_funded_date = ?, 
@@ -719,9 +724,10 @@ public function getInquiryDataByID($request_id) {
       }
 
       $stmt->bind_param(
-          "ssssssssssi",
+          "sssssssssssi",
           $status,
           $status_date,
+          $funded,
           $inquiry_date,
           $pendingfunding,
           $notfunded,
@@ -742,6 +748,7 @@ public function getInquiryDataByID($request_id) {
       $newData = [
           "status" => $status,
           "status_date" => $status_date,
+          "funded" => $funded,
           "inquiry_date" => $inquiry_date,
           "pending_funding_date" => $pendingfunding,
           "not_funded_date" => $notfunded,

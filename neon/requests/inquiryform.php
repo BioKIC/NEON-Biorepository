@@ -143,7 +143,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 	) {
 		$errorMessage[] = 'Initial Inquiry Date required.';
 	}
-	if (!empty($cut) && empty($notfunded)) $errorMessage[] = 'Must indicate that proposal was not funded to select "cut"';
+	if ($cut =="yes" && empty($notfunded)) $errorMessage[] = 'Must indicate that proposal was not funded to select "cut"';
 	if (!empty($complete) && empty($active)) $errorMessage[] = 'Active Date required when complete date present.';
 	if (!empty($active) && empty($fulfillment)) $errorMessage[] = 'Pending Fulfillment Date required when active date present.';
 	if (!(empty($notfunded) && empty($pendinglist)) && empty($pendingfunding)) $errorMessage[] = 'Pending Funding Date required when funded/not funded date present.';
@@ -172,7 +172,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 	}
 	if (!empty($inquiry_date) && !empty($fulfillment)) {
 		if (strtotime($fulfillment) <= strtotime($inquiry_date)) {
-			$errorMessage[] = 'Pending Funlfillment Date cannot be before or equal to Inquiry Date';
+			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Inquiry Date';
 		}
 	}
 	
@@ -533,7 +533,6 @@ if($formSubmit == 'editStatus' && $isEditor){
 											'Already externally funded OR Internal/institutional support',
 											'Proposal pending funding',
 											'Proposal in development',
-											'Proposal in preparation',
 											'Proposal not funded'
 										);
 										foreach ($fundingArr as $text) {
@@ -651,8 +650,8 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<label for="inqcut"><strong><?php echo 'Proposal funded but cut from project?'; ?></strong></label>
-									<input type="hidden" name="incut" value="no" />
-									<input type="checkbox" id="inqcut" name="inqnew" value="yes"
+									<input type="hidden" name="inqcut" value="no" />
+									<input type="checkbox" id="inqcut" name="inqcut" value="yes"
 										<?php echo (!empty($inquirydata['cut']) && $inquirydata['cut'] === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
