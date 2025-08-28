@@ -34,7 +34,7 @@ elseif($collid && $pk){
 }
 
 $indManager->setDisplayFormat($format);
-$observerUid = $indManager->getOccData('observeruid');
+$indManager->setOccurData();
 if(!$occid) $occid = $indManager->getOccid();
 if(!$collid) $collid = $indManager->getCollid();
 
@@ -403,6 +403,7 @@ $traitArr = $indManager->getTraitArr();
 						<?php echo $collMetadata['collectionname'].' ('.$instCode.')'; ?>
 					</div>
 					<div  id="occur-div">
+						<!-- NEON customization -->
 						<div id="availability-div">
 							<?php
 							if (in_array($occArr['collid'], array(44,74,79,80,82,83,95,97,115))){
@@ -420,7 +421,8 @@ $traitArr = $indManager->getTraitArr();
 							}
 							?>
 						</div>
-							<?php
+						<!-- End of NEON customization -->
+						<?php
 						if(array_key_exists('relation',$occArr)){
 							?>
 								<fieldset id="association-div" class="top-light-margin">
@@ -451,7 +453,6 @@ $traitArr = $indManager->getTraitArr();
 										echo '</div>';
 										$cnt++;
 									}
-
 									if(count($occArr['relation']) > $displayLimit) echo '</div>';
 									?>
 								</fieldset>
@@ -471,7 +472,7 @@ $traitArr = $indManager->getTraitArr();
 									// Get GBIF recordID using GBIF API
 									if($occArr['occurrenceid']){
 										if ($collMetadata['publishtogbif'] == 1) {
-											$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']); 
+											$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']);
 											$aggkeys = json_decode($jsonRaw);
 
 											if (json_last_error() !== JSON_ERROR_NONE) {
@@ -518,6 +519,7 @@ $traitArr = $indManager->getTraitArr();
 							?>
 							<div id="assoccatnum-div" class="assoccatnum-div bottom-breathing-room-rel-sm">
 								<?php
+								// Start NEON customization
 								$hideSampleID = false;
 								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
 									if (isset($catValueArr['name']) && $catValueArr['name'] === 'NEON sampleID Hash' && !$GLOBALS['IS_ADMIN']) {
@@ -530,9 +532,8 @@ $traitArr = $indManager->getTraitArr();
 									if (!empty($catValueArr['name'])) {
 										$catTag = $catValueArr['name'];
 									}
-									// Start NEON customization
 									if ($catTag === 'NEON sampleID' && $hideSampleID) {
-										continue; 
+										continue;
 									}
 
 									if ($catTag === 'NEON sampleID') {
@@ -547,8 +548,8 @@ $traitArr = $indManager->getTraitArr();
 										echo ' <span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $occid . '" target="_blank">Go to Manifest</a></span>';
 									}
 									echo '</div>';
-										//End NEON customization
 								}
+								//End NEON customization
 								?>
 							</div>
 							<?php
@@ -629,7 +630,7 @@ $traitArr = $indManager->getTraitArr();
 							</div>
 							<?php
 						}
-						if(!empty($occArr['dets'])){
+						if(array_key_exists('dets',$occArr) && (count($occArr['dets']) > 1 || $occArr['dets'][key($occArr['dets'])]['iscurrent'] == 0)){
 							?>
 							<div id="determination-div" class="bottom-breathing-room-rel-sm">
 								<div id="det-toggle-div" class="det-toggle-div">
@@ -645,25 +646,26 @@ $traitArr = $indManager->getTraitArr();
 										<legend><?php echo $LANG['DET_HISTORY']; ?></legend>
 										<?php
 										$firstIsOut = false;
-										foreach($occArr['dets'] as $detArr){
+										$dArr = $occArr['dets'];
+										foreach($dArr as $detArr){
 											if($firstIsOut) echo '<hr />';
 												$firstIsOut = true;
 											?>
 											<div style="margin:10px;">
 												<?php
-												if($detArr['identificationQualifier']) echo $detArr['identificationQualifier'];
-												echo ' <label><i>'.$detArr['sciname'].'</i></label> '.$detArr['scientificNameAuthorship'];
+												if($detArr['qualifier']) echo $detArr['qualifier'];
+												echo ' <label><i>'.$detArr['sciname'].'</i></label> '.$detArr['author'];
 												?>
 												<div id="identby-div" class="identby-div">
 													<?php
-													echo '<label>'.$LANG['DETERMINER'].': </label>';
-													echo $detArr['identifiedBy'];
+													echo '<label>'.(isset($LANG['DETERMINER'])?$LANG['DETERMINER']:'Determiner').': </label>';
+													echo $detArr['identifiedby'];
 													?>
 												</div>
 												<div id="identdate-div" class="identdate-div">
 													<?php
 													echo '<label>'.$LANG['DATE'].': </label>';
-													echo $detArr['dateIdentified'];
+													echo $detArr['date'];
 													?>
 												</div>
 												<?php
@@ -676,12 +678,12 @@ $traitArr = $indManager->getTraitArr();
 													</div>
 													<?php
 												}
-												if($detArr['identificationRemarks']){
+												if($detArr['notes']){
 													?>
 													<div id="identremarks-div" class="identremarks-div">
 														<?php
 														echo '<label>'.$LANG['ID_REMARKS'].': </label>';
-														echo $detArr['identificationRemarks'];
+														echo $detArr['notes'];
 														?>
 													</div>
 													<?php
@@ -691,8 +693,8 @@ $traitArr = $indManager->getTraitArr();
 											<?php
 										}
 										?>
-									</div>
-								</fieldset>
+									</fieldset>
+								</div>
 							</div>
 							<?php
 						}
@@ -1164,7 +1166,7 @@ $traitArr = $indManager->getTraitArr();
 									// End NEON customization
 									$dateLastModified = $occArr['source']['refreshTimestamp'];
 									if(array_key_exists('fieldsModified', $_POST)){
-										//Input from refresh event
+										//Input from refersh event
 										$dataStatus = $indManager->cleanOutStr($_POST['dataStatus']);
 										$fieldsModified = $_POST['fieldsModified'];
 										$dateLastModified = $indManager->cleanOutStr($_POST['sourceDateLastModified']);
@@ -1313,7 +1315,7 @@ $traitArr = $indManager->getTraitArr();
 						if($occArr['catalognumber']) echo '<div><label>'.$LANG['CATALOG_NUMBER'].':</label> '.$occArr['catalognumber'].'</div>';
 						if($occArr['occurrenceid']) echo '<div><label>'.$LANG['GUID'].':</label> '.$occArr['occurrenceid'].'</div>';
 						echo '<div><label>'.$LANG['LATEST_ID'].':</label> ';
-						if(!isset($occArr['protectedTaxon'])) echo '<i>'.$occArr['sciname'].'</i> '.$occArr['scientificnameauthorship'];
+						if(!isset($occArr['taxonsecure'])) echo '<i>'.$occArr['sciname'].'</i> '.$occArr['scientificnameauthorship'];
 						else echo $LANG['SPECIES_PROTECTED'];
 						echo '</div>';
 						if($occArr['identifiedby']) echo '<div><label>'.$LANG['IDENTIFIED_BY'].':</label> '.$occArr['identifiedby'].'<span stlye="margin-left:30px;">'.$occArr['dateidentified'].'</span></div>';
@@ -1331,13 +1333,13 @@ $traitArr = $indManager->getTraitArr();
 									if($dupArr['catalognumber']) echo '<div><label>'.$LANG['CATALOG_NUMBER'].':</label> '.$dupArr['catalognumber'].'</div>';
 									if($dupArr['occurrenceid']) echo '<div><label>'.$LANG['GUID'].':</label> '.$dupArr['occurrenceid'].'</div>';
 									echo '<div><label>'.$LANG['LATEST_ID'].':</label> ';
-									if(!isset($occArr['protectedTaxon'])) echo '<i>'.$dupArr['sciname'].'</i> '.$dupArr['author'];
+									if(!isset($occArr['taxonsecure'])) echo '<i>'.$dupArr['sciname'].'</i> '.$dupArr['author'];
 									else echo $LANG['SPECIES_PROTECTED'];
 									echo '</div>';
 									if($dupArr['identifiedby']) echo '<div><label>'.$LANG['IDENTIFIED_BY'].':</label> '.$dupArr['identifiedby'].'<span stlye="margin-left:30px;">'.$dupArr['dateidentified'].'</span></div>';
 									echo '<div><a href="#" onclick="openIndividual('.$dupOccid.');return false;">'.$LANG['SHOW_FULL_DETAILS'].'</a></div>';
 									echo '</div>';
-									if(!isset($occArr['protectedTaxon']) && !isset($occArr['localsecure'])){
+									if(!isset($occArr['taxonsecure']) && !isset($occArr['localsecure'])){
 										if($dupArr['url']){
 											$url = $dupArr['url'];
 											if($MEDIA_DOMAIN) if(substr($url,0,1) == '/') $url = $MEDIA_DOMAIN.$url;
