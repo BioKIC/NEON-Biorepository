@@ -776,7 +776,10 @@ public function getInquiryDataByID($request_id) {
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT * FROM neonsamplerequestlink WHERE request_id = ?";
+      $sql = "SELECT * FROM neonsamplerequestlink s
+            LEFT JOIN omoccurrences o
+            ON s.occid = o.occid
+            WHERE request_id = ?";
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
           $this->errorMessage = "Dababase error: " . $this->conn->error;

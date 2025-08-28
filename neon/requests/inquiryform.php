@@ -347,7 +347,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			    <ul>
 					<li><a href="#editinqdiv"><span><?php echo 'Record Info'; ?></span></a></li>
 					<li><a href="#editstatus"><span><?php echo 'Status'; ?></span></a></li>
-					<li><a href="#samples"><span><?php echo 'Samples'; ?></span></a></li>
+					<li><a href="sampletab.php?id=<?= $request_id . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>"><span><?= 'Samples' ?></span></a></li>
 					<li><a href="#materialsamples"><span><?php echo 'Material Samples'; ?></span></a></li>
 				</ul>
 					<div id="editinqdiv" style="display:<?php echo ($List ); ?>;">
@@ -694,7 +694,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 						</form>
 					</div>
-					<div id="samples" style="">
+					<!-- <div id="samples" style="">
 						<form name="linksamples" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquirySamplesForm(this);">
 							<fieldset>
 								<legend><?php echo 'Samples' ?></legend>
@@ -716,7 +716,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 							</fieldset>
 						</form>
-					</div>
+					</div> -->
 					<div id="materialsamples" style="">
 						<form name="linksamples" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryMaterialSamplesForm(this);">
 							<fieldset>
