@@ -102,6 +102,9 @@ if($isEditor){
 		form button {
 		  margin: 5px !important;
 		}
+		#hor_dropdown li:hover ul {
+		  top: 37px;
+		}
 	</style>
 </head>
 <body>

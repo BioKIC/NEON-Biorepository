@@ -1,6 +1,5 @@
 <?php
 include_once('Manager.php');
-include_once('OmDeterminations.php');
 include_once('OccurrenceAccessStats.php');
 include_once('ChecklistVoucherAdmin.php');
 include_once('utilities/GeneralUtil.php');
@@ -229,6 +228,9 @@ class OccurrenceIndividual extends Manager{
 				if($this->occArr['informationwithheld']) $infoWithheld = $this->occArr['informationwithheld'] . '; ' . $infoWithheld;
 				$this->occArr['informationwithheld'] = trim($infoWithheld, ', ');
 			}
+			if(!$protectTaxon) $this->setDeterminations();
+			if(!$protectLocality && !$protectTaxon) $this->setImages();
+			if(!$protectLocality) $this->setExsiccati();
 		}
 		return $retBool;
 	}
@@ -564,56 +566,68 @@ class OccurrenceIndividual extends Manager{
 				$indUrl = str_replace('--CATALOGNUMBER--',$this->occArr['catalognumber'],$iUrl);
 				$sourceID = $this->occArr['catalognumber'];
 			}
-elseif (strpos($iUrl, '--OTHERCATALOGNUMBERS--') !== false && $this->occArr['othercatalognumbers']) {
-	$preferredKeys = [
-		'NEON sampleCode (barcode)',
-		'NEON sampleID',
-		'Originating NEON barcode',
-		'Originating NEON sampleID'
-	];
-
-	$sampleClass = '';
-	$found = false;
-
-	foreach ($preferredKeys as $key) {
-		foreach ($this->occArr['othercatalognumbers'] as $idArr) {
-			$tagName = $idArr['name'] ?? '';
-			$idValue = $idArr['value'] ?? '';
-
-			if ($tagName === $key && !empty($idValue)) {
-				$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $idValue, $iUrl);
-				// NEON customization
-				if ($key === 'NEON sampleCode (barcode)' || $key === 'Originating NEON barcode') {
-					$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
-				}
-
-				if ($key === 'NEON sampleID') {
-					$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ' . intval($this->occArr['occid']);
-				} elseif ($key === 'Originating NEON sampleID') {
-					$sql = "SELECT s.sampleClass FROM NeonSample s
-							LEFT JOIN omoccurassociations a
-							ON s.occid = a.occid
-							WHERE a.relationship LIKE '%originatingSampleOf%'
-							AND a.occidAssociate = " . intval($this->occArr['occid']);
-				}
-
-				if (!empty($sql)) {
-					if ($rs = $this->conn->query($sql)) {
-						if ($r = $rs->fetch_assoc()) {
-							$sampleClass = $r['sampleClass'];
-							$indUrl .= '&sampleClass=' . urlencode($sampleClass);
-						}
-						$rs->free();
+			elseif (strpos($iUrl, '--OTHERCATALOGNUMBERS--') !== false && $this->occArr['othercatalognumbers']) {
+				/* Commented out in preference for NEON customization below
+				foreach($this->occArr['othercatalognumbers'] as $idArr){
+					$tagName = $idArr['name'];
+					$idValue = $idArr['value'];
+					if(!$sourceID || $tagName == 'NEON sampleID' || $tagName == 'NEON sampleCode (barcode)'){
+						$sourceID = $idValue;
+						if($tagName == 'NEON sampleCode (barcode)') $iUrl = str_replace('sampleTag','barcode',$iUrl);
+						$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $idValue, $iUrl);
+						if($tagName == 'NEON sampleCode (barcode)') break;
 					}
 				}
+				*/
+				//Beginning NEON Customization
 
-				$found = true;
-				break 2; 
+				$preferredKeys = [
+					'NEON sampleCode (barcode)',
+					'NEON sampleID',
+					'Originating NEON barcode',
+					'Originating NEON sampleID'
+				];
+
+				$sampleClass = '';
+
+				foreach ($preferredKeys as $key) {
+					foreach ($this->occArr['othercatalognumbers'] as $idArr) {
+						$tagName = $idArr['name'] ?? '';
+						$idValue = $idArr['value'] ?? '';
+
+						if ($tagName === $key && !empty($idValue)) {
+							$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $idValue, $iUrl);
+							// NEON customization
+							if ($key === 'NEON sampleCode (barcode)' || $key === 'Originating NEON barcode') {
+								$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
+							}
+
+							if ($key === 'NEON sampleID') {
+								$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ' . intval($this->occArr['occid']);
+							} elseif ($key === 'Originating NEON sampleID') {
+								$sql = "SELECT s.sampleClass FROM NeonSample s
+										LEFT JOIN omoccurassociations a
+										ON s.occid = a.occid
+										WHERE a.relationship LIKE '%originatingSampleOf%'
+										AND a.occidAssociate = " . intval($this->occArr['occid']);
+							}
+
+							if (!empty($sql)) {
+								if ($rs = $this->conn->query($sql)) {
+									if ($r = $rs->fetch_assoc()) {
+										$sampleClass = $r['sampleClass'];
+										$indUrl .= '&sampleClass=' . urlencode($sampleClass);
+									}
+									$rs->free();
+								}
+							}
+
+							break 2;
+						}
+					}
+				}
 				// End NEON customization
 			}
-		}
-	}
-}
 			elseif(strpos($iUrl,'--OCCURRENCEID--') !== false && $this->occArr['occurrenceid']){
 				$indUrl = str_replace('--OCCURRENCEID--',$this->occArr['occurrenceid'],$iUrl);
 				$sourceID = $this->occArr['occurrenceid'];
@@ -775,7 +789,7 @@ elseif (strpos($iUrl, '--OTHERCATALOGNUMBERS--') !== false && $this->occArr['oth
 	public function addComment($commentStr){
 		$status = false;
 		if(is_numeric($GLOBALS['SYMB_UID'])){
-	 		$commentStr = strip_tags($commentStr);
+			$commentStr = strip_tags($commentStr);
 			$sql = 'INSERT INTO omoccurcomments(occid, comment, uid, reviewstatus) VALUES(?, ?, ?, 1)';
 			if($stmt = $this->conn->prepare($sql)){
 				$stmt->bind_param('isi', $this->occid, $commentStr, $GLOBALS['SYMB_UID']);
@@ -1098,9 +1112,9 @@ elseif (strpos($iUrl, '--OTHERCATALOGNUMBERS--') !== false && $this->occArr['oth
 		else {
 			$this->errorMessage = 'ERROR: Unable to set datasets for user: '.$this->conn->error;
 		}
-		$sql3 = 'SELECT l.datasetid, l.notes, d.name, d.ispublic 
-			FROM omoccurdatasetlink l 
-			INNER JOIN omoccurdatasets d ON l.datasetid = d.datasetid 
+		$sql3 = 'SELECT l.datasetid, l.notes, d.name, d.ispublic
+			FROM omoccurdatasetlink l
+			INNER JOIN omoccurdatasets d ON l.datasetid = d.datasetid
 			WHERE l.occid = ?';
 		if($stmt = $this->conn->prepare($sql3)){
 			$stmt->bind_param('i', $this->occid);
@@ -1295,7 +1309,7 @@ elseif (strpos($iUrl, '--OTHERCATALOGNUMBERS--') !== false && $this->occArr['oth
 			//Restore exsiccati
 			if(isset($recArr['exsiccati']) && $recArr['exsiccati']){
 				$sql = 'INSERT INTO omexsiccatiocclink(omenid, occid, ranking, notes) VALUES(' . $recArr['exsiccati']['ometid'] . ',' . $recArr['exsiccati']['occid'] . ','.
-					(isset($recArr['exsiccati']['ranking']) ? $recArr['exsiccati']['ranking'] : 'NULL') . ','
+					(isset($recArr['exsiccati']['ranking']) ? $recArr['exsiccati']['ranking'] : 'NULL') . ',' .
 					(isset($recArr['exsiccati']['notes']) ? '"' . $this->cleanInStr($recArr['exsiccati']['notes']) . '"' : 'NULL') . ')';
 				if(!$this->conn->query($sql)){
 					$this->errorMessage = $this->conn->error;
