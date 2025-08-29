@@ -468,80 +468,9 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv"><b>Status:</b> <?php echo $reqArr['status']; ?></div>
 					<div class="displayFieldDiv"><b>Number of Samples Linked:</b> <?php echo $sampleCnt; ?></div>
 				</div>
-				<div style="float:left;">
-					<div style="margin-top:10px;">
-						<?php
-						if(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding')) && $sampleCnt){
-							?>
-							<div id="sampleCheckinDiv" style="margin-top:15px;background-color:white;top:50px;right:200px">
-								<fieldset style="padding:10px;width:500px">
-									<legend>Sample Check-in</legend>
-									<form name="submitform" method="post" onsubmit="checkinSample(this); return false;">
-										<div id="popoutDiv" style="float:right"><a href="#" onclick="popoutCheckinBox();return false" title="Popout Sample Check-in Box">&gt;&gt;</a></div>
-										<div id="bindDiv" style="float:right;display:none"><a href="#" onclick="bindCheckinBox();return false" title="Bind Sample Check-in Box to top of form">&lt;&lt;</a></div>
-										<div>
-										  <label for="identifier"><strong>Identifier:</strong></label>
-										  <div id="checkinText" style="display:inline"></div>
-										  <div class="input-group">
-											<span class="input-addon prefix">
-											  <input type="text" id="prefix" placeholder="Prefix" />
-											</span>
-											<input type="text" id="identifier" class="main-input" required />
-											<span class="input-addon suffix">
-											  <input type="text" id="suffix" placeholder="Suffix" />
-											</span>
-										  </div>
-										</div>
-
-										<div>
-										  <strong>Full Identifier:</strong> <span id="fullIdentifier"></span>
-										</div>
-										<div class="displayFieldDiv">
-											<b>Sample Received:</b>
-											<input name="sampleReceived" type="radio" value="1" checked /> Yes
-											<input name="sampleReceived" type="radio" value="0" onchange="sampleReceivedChanged(this.form)" /> No
-										</div>
-										<div class="displayFieldDiv">
-											<b>Accepted for Analysis:</b>
-											<input name="acceptedForAnalysis" type="radio" value="1" checked /> Yes
-											<input name="acceptedForAnalysis" type="radio" value="0" onchange="this.form.sampleCondition.value = ''" /> No
-										</div>
-										<div class="displayFieldDiv">
-											<b>Sample Condition:</b>
-											<select name="sampleCondition">
-												<option value="">Not Set</option>
-												<option value="">--------------------------------</option>
-												<?php
-												$condArr = $inquiryManager->getConditionArr();
-												foreach($condArr as $condKey => $condValue){
-													echo '<option value="'.$condKey.'" '.($condKey=='ok'?'SELECTED':'').'>'.$condValue.'</option>';
-												}
-												?>
-											</select>
-										</div>
-										<div class="displayFieldDiv">
-											<b>Alternative ID:</b> <input name="alternativeSampleID" type="text" style="width:225px" />
-										</div>
-										<div class="displayFieldDiv">
-											<b>Remarks:</b> <input name="checkinRemarks" type="text" style="width:300px" />
-										</div>
-										<div class="displayFieldDiv">
-											<input name="formReset" type="checkbox" checked /> reset form after each submission
-										</div>
-										<div class="displayFieldDiv">
-											<button type="submit">Submit</button>
-										</div>
-									</form>
-								</fieldset>
-							</div>
-							<?php
-						}
-						?>
-					</div>
-				</div>
 				<?php
-				if($reqArr['checkinTimestamp'] || $sampleFilter == 'displaySamples'){
-					$sampleList = $inquiryManager->getSampleArr(null, $sampleFilter);
+				if(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding')) && $sampleCnt){
+					$sampleList = $inquiryManager->getSamplesByID($request_id);
 					?>
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
@@ -550,15 +479,14 @@ include($SERVER_ROOT.'/includes/header.php');
 								<div style="float:left">Records displayed: <?php echo count($sampleList); ?></div>
 								<div style="float:left; margin-left: 50px;"><input name="sorthandler" type="checkbox" onchange="tableSortHandlerChanged(this)" <?= ($sortableTable ? 'checked' : '') ?> > Make table sortable</div>
 								<div style="float:right;">
-									<form name="filterSampleForm" action="manifestviewer.php#samplePanel" method="post" style="">
+									<form name="filterSampleForm" action="samplelist.php#samplePanel" method="post" style="">
 										Filter by:
 										<select name="sampleFilter" onchange="this.form.submit()">
 											<option value="">All Records</option>
-											<option value="notCheckedIn" <?php echo ($sampleFilter=='notCheckedIn'?'SELECTED':''); ?>>Not Checked In</option>
-											<option value="missingOccid" <?php echo ($sampleFilter=='missingOccid'?'SELECTED':''); ?>>Missing Occurrences</option>
-											<option value="notAccepted" <?php echo ($sampleFilter=='notAccepted'?'SELECTED':''); ?>>Not Accepted for Analysis</option>
-											<option value="altIds" <?php echo ($sampleFilter=='altIds'?'SELECTED':''); ?>>Has Alternative IDs</option>
-											<option value="harvestingError" <?php echo ($sampleFilter=='harvestingError'?'SELECTED':''); ?>>Harvesting Errors</option>
+											<option value="available" <?php echo ($sampleFilter=='available'?'SELECTED':''); ?>>Available</option>
+											<option value="notAvailable" <?php echo ($sampleFilter=='notAvailable'?'SELECTED':''); ?>>Not Available</option>
+											<option value="current" <?php echo ($sampleFilter=='current'?'SELECTED':''); ?>>Current</option>
+											<option value="completed" <?php echo ($sampleFilter=='completed'?'SELECTED':''); ?>>Completed</option>
 										</select>
 										<input name="request_id" type="hidden" value="<?php echo $request_id; ?>" />
 									</form>
@@ -758,7 +686,7 @@ include($SERVER_ROOT.'/includes/header.php');
 											</fieldset>
 										</div>
 										<?php
-										if($reqArr['checkinTimestamp']){
+										if($sampleCnt){
 											?>
 											<div style="margin:15px;float:left">
 												<div style="margin:5px;width:200px">
@@ -776,73 +704,6 @@ include($SERVER_ROOT.'/includes/header.php');
 														</div>
 													</div>
 												</fieldset>
-												<?php
-												if($tagArr){
-													?>
-													<fieldset style="margin:5px;float:left">
-														<legend>Batch select based on plate or container IDs</legend>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('containerid',$tagArr)){
-																?>
-																<select name="batchContainerID" onchange="batchSelectSamples(this);">
-																	<option value="">Select Container ID</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$containerArr = $tagArr['containerid'];
-																	ksort($containerArr);
-																	foreach($containerArr as $containerTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$containerTag).'">'.$containerTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('plateid',$tagArr)){
-																?>
-																<select name="batchPlateID" onchange="batchSelectSamples(this);">
-																	<option value="">Select Plate ID</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$plateArr = $tagArr['plateid'];
-																	ksort($plateArr);
-																	foreach($plateArr as $plateTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$plateTag).'">'.$plateTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('platebarcode',$tagArr)){
-																?>
-																<select name="batchPlateBarcode" onchange="batchSelectSamples(this);">
-																	<option value="">Select Plate Barcode</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$plateBarcodeArr = $tagArr['platebarcode'];
-																	ksort($plateBarcodeArr);
-																	foreach($plateBarcodeArr as $barcodeTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$barcodeTag).'">'.$barcodeTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div id="selectedMsgDiv" style="margin:10px;color:orange"></div>
-													</fieldset>
-													<?php
-												}
-												?>
 											</div>
 											<?php
 										}
@@ -854,25 +715,7 @@ include($SERVER_ROOT.'/includes/header.php');
 												<input name="exportTask" type="hidden" value="sampleList" />
 												<div style="margin:10px 0px"><button name="action" type="submit" value="exportSampleListing">Export Sample Listing</button></div>
 											</form>
-											<div ><a href="manifestloader.php"><button name="loadManifestButton" type="button">Load Another Manifest</button></a></div>
 										</div>
-										<?php
-										$collectionArr = $inquiryManager->getCollectionArr();
-										if($collectionArr){
-											?>
-											<div style="float:left;margin:0px 30px;">
-												<fieldset style="width:400px;padding:15px;">
-													<legend>Append Data to Occurrence Records via File Upload</legend>
-													<?php
-													foreach($collectionArr as $collid => $collName){
-														echo '<div><a href="../../collections/admin/specupload.php?uploadtype=7&matchothercatnum=1&collid='.$collid.'" target="_blank">'.$collName.'</a></div>';
-													}
-													?>
-												</fieldset>
-											</div>
-											<?php
-										}
-										?>
 									</div>
 									<?php
 								}
@@ -885,6 +728,13 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 					<?php
 				}
+				else{
+					?>
+					<div style='font-weight:bold;margin:30px;color:red;'>
+						Update status to link samples
+					</div>
+					<?php
+				}
 				?>
 			</fieldset>
 			<?php
@@ -894,7 +744,7 @@ include($SERVER_ROOT.'/includes/header.php');
 	else{
 		?>
 		<div style='font-weight:bold;margin:30px;'>
-			You do not have permissions to view manifests
+			You do not have permissions to view requests
 		</div>
 		<?php
 	}
