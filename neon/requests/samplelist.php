@@ -382,7 +382,7 @@ include($SERVER_ROOT.'/includes/header.php');
 				</div>
 				<?php
 				if(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding')) && $sampleCnt){
-					$sampleList = $inquiryManager->getSamplesByID($request_id);
+					$sampleList = $inquiryManager->getSamplesByID($request_id, $sampleFilter);
 					?>
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
@@ -396,11 +396,12 @@ include($SERVER_ROOT.'/includes/header.php');
 										<select name="sampleFilter" onchange="this.form.submit()">
 											<option value="">All Records</option>
 											<option value="available" <?php echo ($sampleFilter=='available'?'SELECTED':''); ?>>Available</option>
-											<option value="notAvailable" <?php echo ($sampleFilter=='notAvailable'?'SELECTED':''); ?>>Not Available</option>
+											<option value="notavailable" <?php echo ($sampleFilter=='notavailable'?'SELECTED':''); ?>>Not Available</option>
+											<option value="pending" <?php echo ($sampleFilter=='pending'?'SELECTED':''); ?>>Pending Fulflillment</option>
 											<option value="current" <?php echo ($sampleFilter=='current'?'SELECTED':''); ?>>Current</option>
 											<option value="completed" <?php echo ($sampleFilter=='completed'?'SELECTED':''); ?>>Completed</option>
 										</select>
-										<input name="request_id" type="hidden" value="<?php echo $request_id; ?>" />
+											<input name="id" type="hidden" value="<?php echo $request_id; ?>" />
 									</form>
 								</div>
 							</div>
@@ -416,7 +417,10 @@ include($SERVER_ROOT.'/includes/header.php');
 													<?php
 													$headerOutArr = current($sampleList);
 													echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
-													$headerArr = array('status'=>'Status', 'use_type'=>'Use Type', 'substance_provided'=>'Substance Provided', 'available'=>'Available','shipmentid' => 'Shipment ID');
+													$headerArr = array('sampleID' => 'sampleID','sampleClass' => 'sampleClass',
+																'sampleCode' =>'sampleCode','status'=>'Status', 'use_type'=>'Use Type', 
+																'substance_provided'=>'Substance Provided', 'available'=>'Available',
+																'notes'=> 'Notes','shipment_id' => 'Shipment ID','occid'=> 'occid');
 													$rowCnt = 1;
 													foreach($headerArr as $fieldName => $headerTitle){
 														if(array_key_exists($fieldName, $headerOutArr) || $fieldName == 'occid'){
@@ -444,55 +448,30 @@ include($SERVER_ROOT.'/includes/header.php');
 														}
 													}
 													echo '<td>';
-													echo '<input id="scbox-'.$occid.'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$occid.'" />';
-													echo ' <a href="#" onclick="return openSampleEditor('.$id.')"><img src="../../images/edit.png" style="width:12px" /></a>';
+													echo '<input id="scbox-'.$sampleArr['id'].'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$sampleArr['id'].'" />';
+													echo '<a href="#" onclick="return openSampleEditor('.$sampleArr['id'].')"><img src="../../images/edit.png" style="width:12px" /></a>';
 													echo '</td>';
-													$sampleID = (array_key_exists('sampleID',$sampleArr)?$sampleArr['sampleID']:'');
-													if(array_key_exists('sampleID', $headerOutArr)){
-														if($quickSearchTerm == $sampleID) $sampleID = '<b>'.$sampleID.'</b>';
-														echo '<td>'.$sampleID.'</td>';
-													}
-													$sampleCode = (array_key_exists('sampleCode',$sampleArr)?$sampleArr['sampleCode']:'');
-													if(array_key_exists('sampleCode', $headerOutArr)){
-														if($quickSearchTerm == $sampleCode) $sampleCode = '<b>'.$sampleCode.'</b>';
-														echo '<td>'.$sampleCode.'</td>';
-													}
+
+													echo '<td>'.$sampleArr['sampleID'].'</td>';
 													echo '<td>'.$sampleArr['sampleClass'].'</td>';
-													if(array_key_exists('taxonID',$sampleArr)) echo '<td>'.$sampleArr['taxonID'].'</td>';
-													if(array_key_exists('namedLocation', $sampleArr)){
-														$namedLocation = $sampleArr['namedLocation'];
-														if(isset($sampleArr['siteTitle']) && $sampleArr['siteTitle']) $namedLocation = '<span title="'.$sampleArr['siteTitle'].'">'.$namedLocation.'</span>';
-														echo '<td>'.$namedLocation.'</td>';
-													}
-													if(array_key_exists('collectDate', $sampleArr)) echo '<td>'.$sampleArr['collectDate'].'</td>';
-													echo '<td>'.$sampleArr['quarantineStatus'].'</td>';
-													if(array_key_exists('sampleReceived', $sampleArr)){
-														$sampleReceived = $sampleArr['sampleReceived'];
-														if($sampleArr['sampleReceived']==1) $sampleReceived = 'Y';
-														if($sampleArr['sampleReceived']==='0') $sampleReceived = 'N';
-														echo '<td>'.$sampleReceived.'</td>';
-													}
-													if(array_key_exists('available', $sampleArr)){
-														$available = $sampleArr['available'];
-														if($sampleArr['available']==1) $available = 'Yes';
-														if($sampleArr['available']==='0') $available = 'No';
-														echo '<td>'.$available.'</td>';
-													}
+													echo '<td>'.$sampleArr['sampleCode'].'</td>';
+													echo '<td>'.$sampleArr['status'].'</td>';
+													echo '<td>'.$sampleArr['use_type'].'</td>';
+													echo '<td>'.$sampleArr['substance_provided'].'</td>';
+													echo '<td>'.$sampleArr['available'].'</td>';
+													echo '<td>'.$sampleArr['notes'].'</td>';
+													echo '<td>'.$sampleArr['shipment_id'].'</td>';
+													
 													echo '</td>';
 													echo '<td style="text-align:center">';
-													if(array_key_exists('occid',$sampleArr) && $sampleArr['occid']){
-														if ($quickSearchTerm === $sampleArr['occid']) {
-															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank"><strong>' . $sampleArr['occid'] . '</strong></a>';
-														} else {
-															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank">' . $sampleArr['occid'] . '</a>';
-														}
-														echo '</br>';
-														echo '</br>';
-														echo '<a href="../../collections/editor/occurrenceeditor.php?occid='.$sampleArr['occid'].'" target="_blank"><img src="../../images/edit.png" style="width:13px" /></a>';
-														echo '</span>';
-													}
+													echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank">' . $sampleArr['occid'] . '</a>';
+													echo '</br>';
+													echo '</br>';
+													echo '<a href="../../collections/editor/occurrenceeditor.php?occid='.$sampleArr['occid'].'" target="_blank"><img src="../../images/edit.png" style="width:13px" /></a>';
+													echo '</span>';
 													echo '</td>';
 													echo '</tr>';
+
 													if(!$sortableTable){
 														if($str) echo '<tr><td colspan="'.$rowCnt.'"><div style="margin-left:30px;">'.trim($str,'; ').'</div></td></tr>';
 													}

@@ -852,15 +852,36 @@ public function getInquiryDataByID($request_id) {
     }
 
         // Get detailed samples associated with a request 
-  public function getSamplesByID($request_id){
+  public function getSamplesByID($request_id,$filter = ''){
       $retArr = [];
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT id,s.occid,status,use_type,substance_provided,available,s.notes,shipment_id FROM neonsamplerequestlink s
+      $sql = "SELECT id,n.sampleID,n.sampleClass,n.sampleCode,status,use_type,substance_provided,available,s.notes,shipment_id,s.occid FROM neonsamplerequestlink s
             LEFT JOIN NeonSample n
             ON s.occid=n.occid
             WHERE request_id = ?";
+
+        if($filter){
+                    if($filter == 'available'){
+                        $sql .= ' AND (available = "yes") ';
+                    }
+                    elseif($filter == 'notavailable'){
+                        $sql .= ' AND (available = "no") ';
+                    }
+                    elseif($filter == 'pending'){
+                        $sql .= ' AND (status = "pending fulfillment") ';
+                    }
+                    elseif($filter == 'current'){
+                        $sql .= ' AND (status = "current") ';
+                    }
+                    elseif($filter == 'completed'){
+                        $sql .= ' AND (status = "completed") ';
+                    }
+        }
+            
+        $sql .= ' ORDER BY n.sampleID,n.sampleCode ';
+
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
           $this->errorMessage = "Dababase error: " . $this->conn->error;
