@@ -15,7 +15,7 @@ $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 $inquiryManager = new inquiriesManager();
 $sampleCnt = $inquiryManager->getSampleCountByID($request_id);
 if($sortableTable === false){
-	//Variable has not been explicitly set by user, thus only turn on if manifest contains < 3000 samples
+	//Variable has not been explicitly set by user, thus only turn on if list contains < 3000 samples
 	if($sampleCnt < 3000) $sortableTable = 1;
 	else $sortableTable = 0;
 }
@@ -86,7 +86,7 @@ if($IS_ADMIN) $isEditor = true;
 				}
 			}
 			if(!formVerified){
-				alert("Select samples to check-in");
+				alert("Select samples");
 				return false;
 			}
 			if(f.sampleReceived.value == "0"){
@@ -115,11 +115,6 @@ if($IS_ADMIN) $isEditor = true;
 		}
 
 		function checkinCommentChanged(textObj){
-			//USPS: WEDNESDAY 15  MAY 2019	 by 8:00pm
-			//USPS ver2: May 15, 2019 at 2:43 pm
-			//FedEx: 7/13/23 at 9:39 AM
-			//UPS: Monday, July 17 at 7:24 A.M. at Receiver
-
 			var f = textObj.form;
 			var testStr = textObj.value.trim();
 			if(testStr){
@@ -182,89 +177,6 @@ if($IS_ADMIN) $isEditor = true;
 			}
 		}
 
-		function getMonthFromString(mon){
-			var d = Date.parse(mon + "1, 2012");
-			if(!isNaN(d)){
-				var month = new Date(d).getMonth() + 1;
-				return month.toString();
-			}
-			return "";
-		}
-
-		function checkinSample(f){
-			if(f.sampleReceived.value == "0"){
-				if(f.acceptedForAnalysis.value != "" || f.sampleCondition.value != ""){
-					alert("If sample is not received, Accepted for Analysis and Sample Condition must be NULL");
-					return false;
-				}
-			}
-			else if(f.sampleReceived.value == "1"){
-				if(f.acceptedForAnalysis.value == ""){
-					alert("Please select if accepted for analysis");
-					return false;
-				}
-			}
-			if(f.acceptedForAnalysis.value === 0){
-				if(f.sampleCondition.value == "ok"){
-					alert("Sample Condition cannot be OK when sample is tagged as Not Accepted for Analysis");
-					return false;
-				}
-				else if(f.sampleCondition.value == ""){
-					alert("Sample Condition required when sample is tagged as Not Accepted for Analysis");
-					return false;
-				}
-			}
-			var sampleIdentifier = document.getElementById('fullIdentifier').textContent.trim();
-			if(sampleIdentifier != ""){
-				//alert("rpc/checkinsample.php?request_id=<?php echo $request_id; ?>&identifier="+sampleIdentifier+"&received="+f.sampleReceived.value+"&accepted="+f.acceptedForAnalysis.value+"&condition="+f.sampleCondition.value+"&altSampleID="+f.alternativeSampleID.value+"&notes="+f.checkinRemarks.value);
-				$.ajax({
-					type: "POST",
-					url: "rpc/checkinsample.php",
-					dataType: 'json',
-					data: { request_id: "<?php echo $request_id; ?>", identifier: sampleIdentifier, received: f.sampleReceived.value, accepted: f.acceptedForAnalysis.value, condition: f.sampleCondition.value, altSampleID: f.alternativeSampleID.value, notes: f.checkinRemarks.value }
-				}).done(function( retJson ) {
-					$("#checkinText").show();
-					if(retJson.status == 0){
-						$("#checkinText").css('color', 'red');
-						$("#checkinText").text('check-in failed!');
-					}
-					else if(retJson.status == 1){
-						$("#checkinText").css('color', 'green');
-						$("#checkinText").text('success!!!');
-						$("#scSpan-"+retJson.samplePK).html("checked in");
-						f.identifier.value = "";
-						updateFullIdentifier();
-						f.alternativeSampleID.value = "";
-						if(f.formReset.checked == true){
-							f.prefix.value = "";
-							f.suffix.value = "";
-							updateFullIdentifier();
-							f.sampleReceived.value = 1;
-							f.acceptedForAnalysis.value = 1;
-							f.sampleCondition.value = "ok";
-							f.checkinRemarks.value = "";
-						}
-					}
-					else if(retJson.status == 2){
-						$("#checkinText").css('color', 'orange');
-						$("#checkinText").text('already checked!');
-					}
-					else if(retJson.status == 3){
-						$("#checkinText").css('color', 'red');
-						$("#checkinText").text('not found!');
-					}
-					else{
-						$("#checkinText").css('color', 'red');
-						$("#checkinText").text('Failed: unknown error!');
-					}
-					$("#checkinText").animate({fontSize: "125%"}, "slow");
-					$("#checkinText").animate({fontSize: "100%"}, "slow");
-					$("#checkinText").animate({fontSize: "125%"}, "slow");
-					$("#checkinText").animate({fontSize: "100%"}, "slow").delay(5000).fadeOut();
-					f.identifier.focus();
-				});
-			}
-		}
 
 		function sampleReceivedChanged(f){
 			$(f.acceptedForAnalysis).prop("checked", false );
@@ -307,8 +219,8 @@ if($IS_ADMIN) $isEditor = true;
 			}
 		}
 
-		function openSampleEditor(samplePK){
-			var url = "sampleeditor.php?samplePK="+samplePK;
+		function openSampleEditor(id){
+			var url = "sampleeditor.php?id="+id;
 			openPopup(url,"sample1window");
 			return false;
 		}
@@ -319,8 +231,8 @@ if($IS_ADMIN) $isEditor = true;
 			return false;
 		}
 
-		function openSampleCheckinEditor(samplePK){
-			var url = "samplecheckineditor.php?samplePK="+samplePK;
+		function openSampleCheckinEditor(id){
+			var url = "samplecheckineditor.php?id="+id;
 			openPopup(url,"sample2window");
 			return false;
 		}
@@ -504,13 +416,10 @@ include($SERVER_ROOT.'/includes/header.php');
 													<?php
 													$headerOutArr = current($sampleList);
 													echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
-													$headerArr = array('sampleID'=>'Sample ID', 'sampleCode'=>'Sample<br/>Code', 'sampleClass'=>'Sample<br/>Class', 'taxonID'=>'Taxon ID',
-														'namedLocation'=>'Named<br/>Location', 'collectDate'=>'Collection<br/>Date', 'quarantineStatus'=>'Quarantine<br/>Status','sampleReceived'=>'Sample<br/>Received',
-														'acceptedForAnalysis'=>'Accepted<br/>for<br/>Analysis','sampleCondition'=>'Sample<br/>Condition','checkinUser'=>'Check-in','occid'=>'occid');
-														//'individualCount'=>'Individual Count', 'filterVolume'=>'Filter Volume', 'domainRemarks'=>'Domain Remarks', 'sampleNotes'=>'Sample Notes',
+													$headerArr = array('status'=>'Status', 'use_type'=>'Use Type', 'substance_provided'=>'Substance Provided', 'available'=>'Available','shipmentid' => 'Shipment ID');
 													$rowCnt = 1;
 													foreach($headerArr as $fieldName => $headerTitle){
-														if(array_key_exists($fieldName, $headerOutArr) || $fieldName == 'checkinUser' || $fieldName == 'occid'){
+														if(array_key_exists($fieldName, $headerOutArr) || $fieldName == 'occid'){
 															echo '<th>'.$headerTitle.'</th>';
 															$rowCnt++;
 														}
@@ -521,47 +430,10 @@ include($SERVER_ROOT.'/includes/header.php');
 											<tbody>
 												<?php
 												$tagArr = array();
-												foreach($sampleList as $samplePK => $sampleArr){
+												foreach($sampleList as $id => $sampleArr){
 													$classStr = '';
 													$propStr = '';
-													if(isset($sampleArr['dynamicProperties'])){
-														$dynPropArr = json_decode($sampleArr['dynamicProperties'],true);
-														foreach($dynPropArr as $category => $propValue){
-															if(strtolower($category) == 'containerid'){
-																$tagArr['containerid'][$propValue] = (isset($tagArr['containerid'][$propValue])?++$tagArr['containerid'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															elseif(strtolower($category) == 'plateid'){
-																$tagArr['plateid'][$propValue] = (isset($tagArr['plateid'][$propValue])?++$tagArr['plateid'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															elseif(strtolower($category) == 'platebarcode'){
-																$tagArr['platebarcode'][$propValue] = (isset($tagArr['platebarcode'][$propValue])?++$tagArr['platebarcode'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															$propStr .= $category.': '.$propValue.'; ';
-														}
-													}
-
 													$str = '';
-													if(!empty($sampleArr['alternativeSampleID'])) $str .= '<div>Alternative Sample ID: '.$sampleArr['alternativeSampleID'].'</div>';
-													if(!empty($sampleArr['hashedSampleID'])) $str .= '<div>Hashed Sample ID: '.$sampleArr['hashedSampleID'].'</div>';
-													if(!empty($sampleArr['individualCount'])) $str .= '<div>Individual Count: '.$sampleArr['individualCount'].'</div>';
-													if(!empty($sampleArr['filterVolume'])) $str .= '<div>Filter Volume: '.$sampleArr['filterVolume'].'</div>';
-													if(!empty($sampleArr['domainRemarks'])) $str .= '<div>Domain Remarks: '.$sampleArr['domainRemarks'].'</div>';
-													if(!empty($sampleArr['sampleNotes'])) $str .= '<div>Sample Notes: '.$sampleArr['sampleNotes'].'</div>';
-													if(!empty($sampleArr['checkinRemarks'])) $str .= '<div>Check-in Remarks: '.$sampleArr['checkinRemarks'].'</div>';
-													if(isset($sampleArr['dynamicProperties']) && $sampleArr['dynamicProperties']){
-														$str .= '<div>'.trim($propStr,'; ').'</div>';
-													}
-													if(isset($sampleArr['symbiotaTarget']) && $sampleArr['symbiotaTarget']){
-														$symbTargetArr = json_decode($sampleArr['symbiotaTarget'],true);
-														$symbStr = '';
-														foreach($symbTargetArr as $symbLabel => $symbValue){
-															$symbStr .= $symbLabel.': '.$symbValue.'; ';
-														}
-														$str .= '<div>Symbiota targeted data ['.trim($symbStr,'; ').']</div>';
-													}
 													if(!empty($sampleArr['occurErr'])) $str .= '<div>Occurrence Harvesting Error: '.$sampleArr['occurErr'].'</div>';
 
 													if($sortableTable){
@@ -571,10 +443,9 @@ include($SERVER_ROOT.'/includes/header.php');
 															echo '<tr class="sample-row">';
 														}
 													}
-
 													echo '<td>';
-													echo '<input id="scbox-'.$samplePK.'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$samplePK.'" />';
-													echo ' <a href="#" onclick="return openSampleEditor('.$samplePK.')"><img src="../../images/edit.png" style="width:12px" /></a>';
+													echo '<input id="scbox-'.$occid.'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$occid.'" />';
+													echo ' <a href="#" onclick="return openSampleEditor('.$id.')"><img src="../../images/edit.png" style="width:12px" /></a>';
 													echo '</td>';
 													$sampleID = (array_key_exists('sampleID',$sampleArr)?$sampleArr['sampleID']:'');
 													if(array_key_exists('sampleID', $headerOutArr)){
@@ -601,20 +472,15 @@ include($SERVER_ROOT.'/includes/header.php');
 														if($sampleArr['sampleReceived']==='0') $sampleReceived = 'N';
 														echo '<td>'.$sampleReceived.'</td>';
 													}
-													if(array_key_exists('acceptedForAnalysis', $sampleArr)){
-														$acceptedForAnalysis = $sampleArr['acceptedForAnalysis'];
-														if($sampleArr['acceptedForAnalysis']==1) $acceptedForAnalysis = 'Y';
-														if($sampleArr['acceptedForAnalysis']==='0') $acceptedForAnalysis = 'N';
-														echo '<td>'.$acceptedForAnalysis.'</td>';
+													if(array_key_exists('available', $sampleArr)){
+														$available = $sampleArr['available'];
+														if($sampleArr['available']==1) $available = 'Yes';
+														if($sampleArr['available']==='0') $available = 'No';
+														echo '<td>'.$available.'</td>';
 													}
-													if(array_key_exists('sampleCondition', $sampleArr)) echo '<td>'.$sampleArr['sampleCondition'].'</td>';
-													echo '<td title="'.$sampleArr['checkinUser'].'">';
-													echo '<span id="scSpan-'.$samplePK.'">'.$sampleArr['checkinTimestamp'].'</span> ';
-													if($sampleArr['checkinTimestamp']) echo '<a href="#" onclick="return openSampleCheckinEditor('.$samplePK.')"><img src="../../images/edit.png" style="width:13px" /></a>';
 													echo '</td>';
 													echo '<td style="text-align:center">';
 													if(array_key_exists('occid',$sampleArr) && $sampleArr['occid']){
-														echo '<span title="harvested '.(isset($sampleArr['harvestTimestamp'])?$sampleArr['harvestTimestamp']:'').'">';
 														if ($quickSearchTerm === $sampleArr['occid']) {
 															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank"><strong>' . $sampleArr['occid'] . '</strong></a>';
 														} else {
@@ -638,16 +504,7 @@ include($SERVER_ROOT.'/includes/header.php');
 										<div style="margin:15px;float:left">
 											<input name="request_id" type="hidden" value="<?php echo $request_id; ?>" />
 											<fieldset style="width:450px;">
-												<legend>Batch Check-in Selected Samples</legend>
-												<?php
-												if($reqArr['checkinTimestamp']){
-													?>
-													<div class="displayFieldDiv">
-														<input type="radio" class="start_session" name="session" value="start"> Start Session
-														<input type="radio" class="stop_session" name="session" value="stop"> Stop Session
-														<div class="timer">00:00:00</div>
-														<div class="sessionName"></div>
-													</div>
+												<legend>Add Selected Samples to Shipment</legend>
 													<div class="displayFieldDiv">
 														<b>Sample Received:</b>
 														<input name="sampleReceived" type="radio" value="1" checked /> Yes
@@ -677,43 +534,28 @@ include($SERVER_ROOT.'/includes/header.php');
 													<div style="margin:5px 10px">
 														<button name="action" type="submit" value="batchCheckin" >Check-in Selected Samples</button>
 													</div>
-													<?php
-												}
-												else{
-													echo '<div style="color:orange;margin-bottom:140px">Shipment needs to be checked in before you can check-in samples</div>';
-												}
-												?>
 											</fieldset>
 										</div>
 										<?php
 										if($sampleCnt){
-											?>
+										?>
 											<div style="margin:15px;float:left">
 												<div style="margin:5px;width:200px">
 													<a href="#" onclick="addSample(<?php echo $request_id; ?>);return false;"><button name="addSampleButton" type="button">Add New Sample</button></a>
 												</div>
-												<fieldset style="margin:5px;float:left">
-													<legend>Occurrence Harvesting</legend>
-													<button name="action" type="submit" value="batchHarvestOccid">Batch Harvest</button>
-													<div style="margin:10px" title="Upon reharvesting, replaces existing field values, but only if they haven't been explicitly edited to another value">
-														<div>
-															<input name="replaceFieldValues" type="checkbox" value="1" /> Replace Existing Field Values
-														</div>
-														<div>
-															<input name="selectall" type="checkbox" onclick="selectAll(this)" /> Check All Samples
-														</div>
-													</div>
-												</fieldset>
 											</div>
-											<?php
+										<?php
 										}
 										?>
 									</form>
+									<div>
 										<div style="float:left;margin-left:30px;margin-top:10px;">
-											<form name="exportSampleListForm" action="exporthandler.php" method="post" style="">
-												<input name="request_id" type="hidden" value="<?php echo $request_id; ?>" />
-												<input name="exportTask" type="hidden" value="sampleList" />
-												<div style="margin:10px 0px"><button name="action" type="submit" value="exportSampleListing">Export Sample Listing</button></div>
+											<form name="exportSampleListForm" action="exporthandler.php" method="post">
+												<input type="hidden" name="request_id" value="<?php echo $request_id; ?>" />
+												<input type="hidden" name="exportTask" value="sampleList" />
+												<button type="submit" name="action" value="exportSampleListing">
+													Export Sample Listing
+												</button>
 											</form>
 										</div>
 									</div>
@@ -731,7 +573,7 @@ include($SERVER_ROOT.'/includes/header.php');
 				else{
 					?>
 					<div style='font-weight:bold;margin:30px;color:red;'>
-						Update status to link samples
+						Update status by editing request before adding samples
 					</div>
 					<?php
 				}

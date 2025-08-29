@@ -770,8 +770,8 @@ public function getInquiryDataByID($request_id) {
   }
 
 
-    // Get samples associated with a request
-  public function getSamplesByID($request_id){
+    // Get samples associated with a request for inquiry form table
+  public function getSampleTableByID($request_id){
       $retArr = [];
 
       $request_id = (int)$request_id;
@@ -851,6 +851,34 @@ public function getInquiryDataByID($request_id) {
         return $row ?: []; 
     }
 
+        // Get detailed samples associated with a request 
+  public function getSamplesByID($request_id){
+      $retArr = [];
+
+      $request_id = (int)$request_id;
+
+      $sql = "SELECT id,s.occid,status,use_type,substance_provided,available,s.notes,shipment_id FROM neonsamplerequestlink s
+            LEFT JOIN NeonSample n
+            ON s.occid=n.occid
+            WHERE request_id = ?";
+      $stmt = $this->conn->prepare($sql);
+      if (!$stmt) {
+          $this->errorMessage = "Dababase error: " . $this->conn->error;
+          return $retArr;
+      }
+
+      $stmt->bind_param("i", $request_id);
+      $stmt->execute();
+      $result = $stmt->get_result();
+
+      while ($row = $result->fetch_assoc()) {
+          $retArr[] = $row;
+      }
+
+      $stmt->close();
+
+      return $retArr;
+  }
 
 }
 

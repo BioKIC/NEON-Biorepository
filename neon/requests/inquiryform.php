@@ -35,7 +35,7 @@ $statusStr = '';
 $inquirydata = $inquiryManager->getInquiryDataByID($request_id);
 $cm = $inquiryManager->getCMByID($request_id);
 $pc = $inquiryManager->getPrimaryContactByID($request_id);
-$sampledata = $inquiryManager->getSamplesByID($request_id);
+$sampledata = $inquiryManager->getSampleTableByID($request_id);
 //$materialsampledata = $inquiryManager->getMaterialSamplesByID($request_id);
 
 
@@ -706,7 +706,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 							<legend><?php echo 'Samples'; ?></legend>									
 							<div style="clear:both;padding-top:8px;float:left;">
 								<input name="formsubmit" type="hidden" value="update samples" />
-								<button name="submitButton" type="submit">Link/Unlink Samples</button>
+								<button name="submitButton" type="submit">Update Sample List</button>
 								<input type="hidden" name="tabindex" value="1" />
 							</div>
 							<div style="clear:both;padding-top:8px;float:left;">
