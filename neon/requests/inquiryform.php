@@ -1,6 +1,8 @@
 <?php
 include_once('../../config/symbini.php');
 include_once('../../neon/requests/list/InquiriesManager.php');
+include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
+
 
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/loans/loan_langs.en.php');
@@ -26,6 +28,7 @@ if($IS_ADMIN) $isEditor = true;
 elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 
 $inquiryManager = new InquiriesManager();
+$utilities = new Utilities();
 
 $statusStr = '';
 
@@ -347,7 +350,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			    <ul>
 					<li><a href="#editinqdiv"><span><?php echo 'Record Info'; ?></span></a></li>
 					<li><a href="#editstatus"><span><?php echo 'Status'; ?></span></a></li>
-					<li><a href="sampletab.php?id=<?= $request_id . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>"><span><?= 'Samples' ?></span></a></li>
+					<li><a href="#samples"><span><?php echo 'Samples'; ?></span></a></li>
 					<li><a href="#materialsamples"><span><?php echo 'Material Samples'; ?></span></a></li>
 				</ul>
 					<div id="editinqdiv" style="display:<?php echo ($List ); ?>;">
@@ -694,29 +697,34 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 						</form>
 					</div>
-					<!-- <div id="samples" style="">
-						<form name="linksamples" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquirySamplesForm(this);">
-							<fieldset>
-								<legend><?php echo 'Samples' ?></legend>
-								<div style="clear:both;padding-top:4px;float:left;">
-									<span>
-										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
-									</span><br />
-								</div>
-								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
-									<div class="fieldDiv">
-										<strong><?php !empty($sampledata)?></strong>
-										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
-									</div>
-								</div>
-								<div style="clear:both;padding-top:8px;float:left;">
-									<input name="formsubmit" type="hidden" value="update samples" />
-									<button name="submitButton" type="submit"><?php echo 'Link/Unlink Samples' ?></button>
-									<input type="hidden" name="tabindex" value="1" />
-								</div>
-							</fieldset>
-						</form>
-					</div> -->
+					<div id="samples" style="">
+					<form name="linksamples" 
+						action="samplelist.php?id=<?php echo $request_id; ?>" 
+						method="post" 
+						onsubmit="return verifyInquirySamplesForm(this);">
+						<fieldset>
+							<legend><?php echo 'Samples'; ?></legend>									
+							<div style="clear:both;padding-top:8px;float:left;">
+								<input name="formsubmit" type="hidden" value="update samples" />
+								<button name="submitButton" type="submit">Link/Unlink Samples</button>
+								<input type="hidden" name="tabindex" value="1" />
+							</div>
+							<div style="clear:both;padding-top:8px;float:left;">
+								<?php
+								if (!empty($sampledata)) {
+									echo '<div class="table-container">';
+									$samplesTable = $utilities->htmlTable(
+										$sampledata, 
+										['occid','status','use type','substance','available','notes','shipment']
+									);
+									echo $samplesTable;
+									echo '</div>';
+								}
+								?>
+							</div>
+						</fieldset>
+					</form>
+					</div>
 					<div id="materialsamples" style="">
 						<form name="linksamples" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryMaterialSamplesForm(this);">
 							<fieldset>
@@ -843,3 +851,46 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 	</script>
 </body>
 </html>
+
+<style>
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 1em;
+        font-size: 0.95em;
+        background-color: #fff;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        cursor: pointer;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    #filterInput {
+        padding: 8px;
+        margin-top: 10px;
+        width: 100%;
+        max-width: 300px;
+        font-size: 1em;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+</style>

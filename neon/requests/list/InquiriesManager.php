@@ -776,9 +776,7 @@ public function getInquiryDataByID($request_id) {
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT * FROM neonsamplerequestlink s
-            LEFT JOIN omoccurrences o
-            ON s.occid = o.occid
+      $sql = "SELECT occid,status,use_type,substance_provided,available,notes,shipment_id FROM neonsamplerequestlink
             WHERE request_id = ?";
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
@@ -799,6 +797,59 @@ public function getInquiryDataByID($request_id) {
       return $retArr;
   }
 
+    // Get samples count of samples associated with a request
+    public function getSampleCountByID($request_id){
+        $request_id = (int)$request_id;
+
+        $sql = "SELECT COUNT(*) AS sample_count
+                FROM neonsamplerequestlink
+                WHERE request_id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return 0;
+        }
+
+        $stmt->bind_param("i", $request_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $count = 0;
+        if ($row = $result->fetch_assoc()) {
+            $count = (int)$row['sample_count'];
+        }
+
+        $stmt->close();
+
+        return $count;
+    }
+
+      // Get request data
+    public function getRequestData($request_id){
+        $request_id = (int)$request_id;
+        $sql = "SELECT r.title, p.name, r.status
+                FROM neonrequest r
+                LEFT JOIN neonresearcher p
+                ON r.researcher_id = p.researcher_id
+                WHERE r.id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return [];
+        }
+
+        $stmt->bind_param("i", $request_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $row = $result->fetch_assoc();  
+
+        $stmt->close();
+
+        return $row ?: []; 
+    }
 
 
 }
