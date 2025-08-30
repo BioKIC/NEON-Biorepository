@@ -901,6 +901,155 @@ public function getInquiryDataByID($request_id) {
       return $retArr;
   }
 
+      // Sample for sampleeditor
+  public function getSampleForEditor($id){
+      $retArr = [];
+
+      $sql = "SELECT id,n.sampleID,n.sampleClass,n.sampleCode,status,
+            use_type,substance_provided,available,s.notes,shipment_id,s.occid 
+            FROM neonsamplerequestlink s
+            LEFT JOIN NeonSample n
+            ON s.occid=n.occid
+            WHERE id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return [];
+        }
+
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $row = $result->fetch_assoc();  
+
+        $stmt->close();
+
+        return $row ?: []; 
+  }
+
+    // Get shipments list
+  public function getShipments(){
+      $retArr = array();
+
+      $sql = 'SELECT id, name, ship_date
+              FROM neonrequestshipment s
+              LEFT JOIN neonresearcher r
+              ON s.researcher_id=r.researcher_id';
+
+      $rs = $this->conn->query($sql);
+
+      while($r = $rs->fetch_object()){
+        $id = $this->cleanOutStr($r->id);
+        $name = $this->cleanOutStr($r->name);
+        $date = $this->cleanOutStr($r->ship_date);
+
+        $display = $id ? "$id - $name ($date)" : $name;
+
+        $retArr[$r->id] = $display;
+      }
+
+      $rs->free();
+      return $retArr;
+  }
+
+  // delete sample from request
+	public function deleteSample($id){
+		$status = false;
+		if(is_numeric($id)){
+			$sql = 'DELETE FROM neonsamplerequestlink WHERE id = '.$id;
+			if($this->conn->query($sql)){
+				$status = true;
+			}
+			else{
+				$this->errorStr = 'ERROR deleting sample: '.$this->conn->error;
+				return false;
+			}
+		}
+		return $status;
+	}
+
+    //edit sample record associated with request
+    public function editSample($postArr){
+		$status = false;
+		$postArr = array_change_key_case($postArr);
+		if(is_numeric($postArr['id'])){
+
+			$sql = 'UPDATE neonsamplerequestlink
+				SET status = ?, use_type = ?,
+				available = ?, substance_provided = ?, notes = ?, shipment_id = ? WHERE (id = ?)';
+			$stmt = $this->conn->stmt_init();
+			$stmt->prepare($sql);
+			if($stmt->error==null) {
+				$stat = isset($postArr['status'])&&$postArr['status']?$postArr['status']:NULL;
+				$use_type = $postArr['use_type']?$postArr['use_type']:NULL;
+				$available = isset($postArr['available'])&&$postArr['available']?$postArr['available']:NULL;
+				$substance_provided = isset($postArr['substance_provided'])&&$postArr['substance_provided']?$postArr['substance_provided']:NULL;
+				$notes = isset($postArr['notes'])&&$postArr['notes']?$postArr['notes']:NULL;
+                $shipmentId = (isset($_POST['shipment_id']) && $_POST['shipment_id'] !== '') ? (int)$_POST['shipment_id'] : NULL;
+				$stmt->bind_param('ssssssi', $stat, $use_type, $available, $substance_provided, $notes, $shipment_id, $postArr['id']);
+				$stmt->execute();
+				if($stmt->error==null) $status = true;
+				else{
+					$this->errormessage = $stmt->error;
+					echo $this->errorStr;
+				}
+			}
+			else{
+				$this->errorStr = $stmt->error;
+				echo $this->errorStr;
+			}
+			$stmt->close();
+
+		}
+		return $status;
+	}
+
+    // export request sample list
+    public function exportSampleList($request_id){
+        $request_id = (int)$request_id;
+
+        $fileName = 'sampleRequestExport_' . $request_id . '_' . date('Y-m-d') . '.csv';
+
+        $sql = 'SELECT * FROM neonsamplerequestlink WHERE request_id = ?';
+        $stmt = $this->conn->prepare($sql);
+        if(!$stmt){
+            die('SQL prepare failed: ' . $this->conn->error);
+        }
+
+        $stmt->bind_param('i', $request_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if(!$result){
+            die('Query failed: ' . $stmt->error);
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        if($row = $result->fetch_assoc()){
+            fputcsv($output, array_keys($row)); 
+            fputcsv($output, $row);            
+        }
+
+        while($row = $result->fetch_assoc()){
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+        $stmt->close();
+        exit; 
+    }
+
+
+
+
 }
 
 ?>

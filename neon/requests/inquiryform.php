@@ -706,7 +706,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 							<legend><?php echo 'Samples'; ?></legend>									
 							<div style="clear:both;padding-top:8px;float:left;">
 								<input name="formsubmit" type="hidden" value="update samples" />
-								<button name="submitButton" type="submit">Update Sample List</button>
+								<button name="submitButton" type="submit">Update/Export Sample List</button>
 								<input type="hidden" name="tabindex" value="1" />
 							</div>
 							<div style="clear:both;padding-top:8px;float:left;">

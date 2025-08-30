@@ -225,11 +225,6 @@ if($IS_ADMIN) $isEditor = true;
 			return false;
 		}
 
-		function addSample(request_id){
-			var url = "sampleeditor.php?request_id="+request_id;
-			openPopup(url,"sample1window");
-			return false;
-		}
 
 		function openSampleCheckinEditor(id){
 			var url = "samplecheckineditor.php?id="+id;
@@ -384,6 +379,22 @@ include($SERVER_ROOT.'/includes/header.php');
 				if(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding')) && $sampleCnt){
 					$sampleList = $inquiryManager->getSamplesByID($request_id, $sampleFilter);
 					?>
+					<div style="clear:both;padding:10px 0;">
+						<!-- <div style="float:left;margin-right:10px;">
+							<a href="#" onclick="return addSample(<?php echo $request_id; ?>);">
+								<button type="button">Add New Sample</button>
+							</a>
+						</div> -->
+						<div style="float:left;">
+							<form name="exportSampleListForm" action="exporthandler.php" method="post">
+								<input type="hidden" name="request_id" value="<?php echo $request_id; ?>" />
+								<input type="hidden" name="exportTask" value="sampleList" />
+								<button type="submit" name="action" value="exportSampleListing">
+									Export Request Samples
+								</button>
+							</form>
+						</div>
+					</div>
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
 							<legend>Sample Listing</legend>
@@ -409,7 +420,7 @@ include($SERVER_ROOT.'/includes/header.php');
 								<?php
 								if($sampleList){
 									?>
-									<form name="sampleListingForm" action="manifestviewer.php" method="post" onsubmit="return batchCheckinFormVerify(this)">
+									<form name="sampleListingForm" action="samplelist.php" method="post" onsubmit="return batchCheckinFormVerify(this)">
 										<input name="sortabletable" type="hidden" value="<?= $sortableTable ?>">
 										<table id="manifestTable" class="styledtable">
 											<thead>
@@ -516,28 +527,8 @@ include($SERVER_ROOT.'/includes/header.php');
 											</fieldset>
 										</div>
 										<?php
-										if($sampleCnt){
-										?>
-											<div style="margin:15px;float:left">
-												<div style="margin:5px;width:200px">
-													<a href="#" onclick="addSample(<?php echo $request_id; ?>);return false;"><button name="addSampleButton" type="button">Add New Sample</button></a>
-												</div>
-											</div>
-										<?php
-										}
 										?>
 									</form>
-									<div>
-										<div style="float:left;margin-left:30px;margin-top:10px;">
-											<form name="exportSampleListForm" action="exporthandler.php" method="post">
-												<input type="hidden" name="request_id" value="<?php echo $request_id; ?>" />
-												<input type="hidden" name="exportTask" value="sampleList" />
-												<button type="submit" name="action" value="exportSampleListing">
-													Export Sample Listing
-												</button>
-											</form>
-										</div>
-									</div>
 									<?php
 								}
 								else{
