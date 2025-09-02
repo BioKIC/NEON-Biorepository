@@ -1048,7 +1048,55 @@ public function getInquiryDataByID($request_id) {
     }
 
 
+    // export request occurrence list
+    public function exportOccurList($request_id){
+        $request_id = (int)$request_id;
 
+        $fileName = 'requestOccurrenceExport_' . $request_id . '_' . date('Y-m-d') . '.csv';
+
+        $sql = 'SELECT  o.occid,c.collectionName, o.catalogNumber,o.occurrenceID,m.sampleID, m.alternativeSampleID, m.sampleCode, m.sampleClass, '.
+			'o.catalogNumber, o.sciname, o.scientificNameAuthorship, o.identifiedBy, o.dateIdentified, o.recordedBy, o.eventDate, '.
+			'o.country, o.stateProvince, o.county, o.locality, o.decimalLatitude, o.decimalLongitude, o.coordinateUncertaintyInMeters, o.minimumElevationInMeters, '.
+			'o.habitat, o.dateEntered, o.dateLastModified '.
+			'FROM  neonsamplerequestlink s '.
+            'LEFT JOIN NeonSample m ON s.occid=m.occid '.
+			'INNER JOIN omoccurrences o ON m.occid = o.occid '.
+            'LEFT JOIN omcollections c ON o.collid=c.collid '.
+            'WHERE s.request_id = ?';
+
+        $stmt = $this->conn->prepare($sql);
+        if(!$stmt){
+            die('SQL prepare failed: ' . $this->conn->error);
+        }
+
+        $stmt->bind_param('i', $request_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if(!$result){
+            die('Query failed: ' . $stmt->error);
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        if($row = $result->fetch_assoc()){
+            fputcsv($output, array_keys($row)); 
+            fputcsv($output, $row);            
+        }
+
+        while($row = $result->fetch_assoc()){
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+        $stmt->close();
+        exit; 
+    }
 
 }
 

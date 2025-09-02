@@ -388,9 +388,20 @@ include($SERVER_ROOT.'/includes/header.php');
 						<div style="float:left;">
 							<form name="exportSampleListForm" action="exporthandler.php" method="post">
 								<input type="hidden" name="request_id" value="<?php echo $request_id; ?>" />
-								<input type="hidden" name="exportTask" value="sampleList" />
+								<input type="hidden" name="exportTask" value="samplesrequest" />
 								<button type="submit" name="action" value="exportSampleListing">
 									Export Request Samples
+								</button>
+							</form>
+						</div>
+					</div>
+					<div style="clear:both;padding:10px 0;">
+						<div style="float:left;">
+							<form name="exportOccurForm" action="exporthandler.php" method="post">
+								<input type="hidden" name="request_id" value="<?php echo $request_id; ?>" />
+								<input type="hidden" name="exportTask" value="occurrences" />
+								<button type="submit" name="action" value="exportOccurListing">
+									Export Occurrences
 								</button>
 							</form>
 						</div>

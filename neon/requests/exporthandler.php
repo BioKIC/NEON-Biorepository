@@ -12,6 +12,11 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
 $status = '';
 if($isEditor){
 	$inquiryManager = new InquiriesManager();
-	$inquiryManager->exportSampleList($request_id);
+    if ($exportTask == "samplesrequest"){
+	    $inquiryManager->exportSampleList($request_id);
+    }
+    elseif($exportTask == "occurrences"){
+        $inquiryManager->exportOccurList($request_id);
+    }
 }
 ?>
