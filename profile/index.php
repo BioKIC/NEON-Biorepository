@@ -8,6 +8,25 @@ if(!empty($THIRD_PARTY_OID_AUTH_ENABLED)){
 }
 use Jumbojett\OpenIDConnectClient;
 
+//neon edit
+if (empty($SYMB_UID)) {
+    if (isset($_REQUEST['refurl']) && is_string($_REQUEST['refurl'])) {
+        $_SESSION['refurl'] = $_REQUEST['refurl'];
+    }
+
+    $target = $CLIENT_ROOT . '/profile/openIdAuth.php';
+
+    if (!empty($_SESSION['refurl'])) {
+        $glue = (strpos($target, '?') === false) ? '?' : '&';
+        $target .= $glue . 'refurl=' . rawurlencode($_SESSION['refurl']);
+    }
+
+    header('Location: ' . $target);
+    exit;
+}
+
+//end neon edit
+
 if($SYMB_UID){
 	if($_SESSION['refurl'] ?? false){
 		header("Location:" . $_SESSION['refurl']);
