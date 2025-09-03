@@ -987,7 +987,7 @@ public function getInquiryDataByID($request_id) {
 				$available = isset($postArr['available'])&&$postArr['available']?$postArr['available']:NULL;
 				$substance_provided = isset($postArr['substance_provided'])&&$postArr['substance_provided']?$postArr['substance_provided']:NULL;
 				$notes = isset($postArr['notes'])&&$postArr['notes']?$postArr['notes']:NULL;
-                $shipmentId = (isset($_POST['shipment_id']) && $_POST['shipment_id'] !== '') ? (int)$_POST['shipment_id'] : NULL;
+                $shipment_id = (isset($_POST['shipment_id']) && $_POST['shipment_id'] !== '') ? (int)$_POST['shipment_id'] : NULL;
 				$stmt->bind_param('ssssssi', $stat, $use_type, $available, $substance_provided, $notes, $shipment_id, $postArr['id']);
 				$stmt->execute();
 				if($stmt->error==null) $status = true;

@@ -390,7 +390,7 @@ include($SERVER_ROOT.'/includes/header.php');
 								<input type="hidden" name="request_id" value="<?php echo $request_id; ?>" />
 								<input type="hidden" name="exportTask" value="samplesrequest" />
 								<button type="submit" name="action" value="exportSampleListing">
-									Export Request Samples
+									Export Samples
 								</button>
 							</form>
 						</div>

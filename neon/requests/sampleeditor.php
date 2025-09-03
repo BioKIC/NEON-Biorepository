@@ -99,12 +99,14 @@ if ($isEditor && isset($_POST['action'])) {
 				alert("Missing required value");
 				return false;
 			}
-			if(f.shipment_id.value.trim() != "" && f.status.value.trim() != "current")){
-				alert("Must assign a shipment before updating status");
+			if (f.shipment_id.value.trim() !== "" &&
+				!["current", "completed", "loaned, not used"].includes(f.status.value.trim())) {
+					alert("Status and shipment assignment match is not logical");
 				return false;
 			}
-            if(f.shipment_id.value.trim() != "" && f.status.value.trim() != "completed")){
-				alert("Must assign a shipment before updating status");
+						if (f.shipment_id.value.trim() !== "" &&
+				!["requested, not found","not funded", "pending fulfillment"].includes(f.status.value.trim())) {
+					alert("Status and shipment assignment match is not logical");
 				return false;
 			}
 			$("#editForm").data("changed",false);
@@ -262,7 +264,7 @@ if ($isEditor && isset($_POST['action'])) {
 					if($id){
 						?>
 						<input name="id" type="hidden" value="<?php echo $id; ?>" />
-						<div><button id="submitButton" type="submit" name="action" value="save" style="opacity: 50%">Save Changes</button></div>
+						<div><button id="submitButton" type="submit" name="action" value="save">Save Changes</button></div>
 						<?php
 					}
 					?>
