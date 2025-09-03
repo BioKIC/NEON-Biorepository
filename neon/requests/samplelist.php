@@ -77,124 +77,6 @@ if($IS_ADMIN) $isEditor = true;
 			});
 		});
 
-		function batchCheckinFormVerify(f){
-			var formVerified = false;
-			for(var h=0;h<f.length;h++){
-				if(f.elements[h].name == "scbox[]" && f.elements[h].checked){
-					formVerified = true;
-					break;
-				}
-			}
-			if(!formVerified){
-				alert("Select samples");
-				return false;
-			}
-			if(f.sampleReceived.value == "0"){
-				if(f.acceptedForAnalysis.value != "" || f.sampleCondition.value != ""){
-					alert("If sample is not received, Accepted for Analysis and Sample Condition must be NULL");
-					return false;
-				}
-			}
-			else if(f.sampleReceived.value == "1"){
-				if(f.acceptedForAnalysis.value == ""){
-					alert("Please select if accepted for analysis");
-					return false;
-				}
-			}
-			if(f.acceptedForAnalysis.value === 0){
-				if(f.sampleCondition.value == "ok"){
-					alert("Sample Condition cannot be OK if sample is Not Accepted for Analysis");
-					return false;
-				}
-				else if(f.sampleCondition.value == ""){
-					alert("Enter a Sample Condition");
-					return false;
-				}
-			}
-			return true;
-		}
-
-		function checkinCommentChanged(textObj){
-			var f = textObj.form;
-			var testStr = textObj.value.trim();
-			if(testStr){
-				if(!f.receivedDate.value){
-					var yearStr = "";
-					var monthStr = "";
-					var dayStr = "";
-					var dateEx1 = /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/;
-					var dateEx2 = /(\d{1,2})\s{1,3}([A-Z]+)\s{1,3}(\d{2,4})/;
-					var dateEx3 = /([A-Za-z]+)\s{1,3}(\d{1,2})[,\s,]{1,3}(\d{2,4})/;
-					var dateEx4 = /([A-Z]{1}[a-z]+)\s{1}(\d{1,2})/;
-					if(extractArr = dateEx1.exec(testStr)){
-						yearStr = extractArr[3];
-						monthStr = extractArr[1];
-						dayStr = extractArr[2];
-					}
-					else if(extractArr = dateEx2.exec(testStr)){
-						yearStr = extractArr[3];
-						monthStr = getMonthFromString(extractArr[2]);
-						dayStr = extractArr[1];
-					}
-					else if(extractArr = dateEx3.exec(testStr)){
-						yearStr = extractArr[3];
-						monthStr = getMonthFromString(extractArr[1]);
-						dayStr = extractArr[2];
-					}
-					else if(extractArr = dateEx4.exec(testStr)){
-						yearStr = "2023";
-						monthStr = getMonthFromString(extractArr[1]);
-						dayStr = extractArr[2];
-					}
-					if(yearStr){
-						if(yearStr.length == 2) yearStr = '20'+yearStr;
-						if(monthStr.length == 1) monthStr = '0'+monthStr;
-						if(dayStr.length == 1) dayStr = '0'+dayStr;
-						if(!f.receivedDate.value){
-							f.receivedDate.value = yearStr+"-"+monthStr+"-"+dayStr;
-							textObj.value = "";
-						}
-					}
-				}
-				if(!f.receivedTime.value){
-					var timeEx1 = /(\d{1,2}):(\d{1,2})\s{0,1}([apm.]+)/i;
-					if(extractArr = timeEx1.exec(testStr)){
-						var hourStr = extractArr[1];
-						var minStr = extractArr[2];
-						var dayPeriod = extractArr[3].toLowerCase();
-						if(dayPeriod.indexOf('p') > -1){
-							if(parseInt(hourStr) < 12) hourStr = String(parseInt(hourStr)+12);
-						}
-						else if(dayPeriod.indexOf('a') > -1){
-							if(parseInt(hourStr) == 12) hourStr = "00";
-						}
-						if(hourStr.length == 1 ) hourStr = "0"+hourStr;
-						if(minStr.length == 1 ) minStr = "0"+minStr;
-						f.receivedTime.value = hourStr+":"+minStr;
-						textObj.value = "";
-					}
-				}
-			}
-		}
-
-
-		function sampleReceivedChanged(f){
-			$(f.acceptedForAnalysis).prop("checked", false );
-			$('[name=sampleCondition]').val( '' );
-		}
-
-		function popoutCheckinBox(){
-			$("#sampleCheckinDiv").css('position', 'fixed');
-			$("#popoutDiv").hide();
-			$("#bindDiv").show();
-		}
-
-		function bindCheckinBox(){
-			$("#sampleCheckinDiv").css('position', 'static');
-			$("#popoutDiv").show();
-			$("#bindDiv").hide();
-		}
-
 		function tableSortHandlerChanged(cbElem){
 			let sortValue = 0;
 			if(cbElem.checked){
@@ -226,12 +108,6 @@ if($IS_ADMIN) $isEditor = true;
 		}
 
 
-		function openSampleCheckinEditor(id){
-			var url = "samplecheckineditor.php?id="+id;
-			openPopup(url,"sample2window");
-			return false;
-		}
-
 		function openPopup(url,windowName){
 			newWindow = window.open(url,windowName,'scrollbars=1,toolbar=0,resizable=1,width=1000,height=500,left=20,top=100');
 			if (newWindow.opener == null) newWindow.opener = self;
@@ -239,18 +115,6 @@ if($IS_ADMIN) $isEditor = true;
 		}
 
 
-		function updateFullIdentifier() {
-		  const prefix = document.getElementById('prefix').value.trim();
-		  const identifier = document.getElementById('identifier').value.trim();
-		  const suffix = document.getElementById('suffix').value.trim();
-
-		  let full = '';
-		  if (prefix) full += prefix;
-		  full += identifier;
-		  if (suffix) full += suffix;
-
-		  document.getElementById('fullIdentifier').textContent = full;
-		}
 	</script>
 	<style type="text/css">
 		#innertext{ max-width: 1400px; }
@@ -502,43 +366,7 @@ include($SERVER_ROOT.'/includes/header.php');
 												?>
 											</tbody>
 										</table>
-										<div style="margin:15px;float:left">
-											<input name="request_id" type="hidden" value="<?php echo $request_id; ?>" />
-											<fieldset style="width:450px;">
-												<legend>Add Selected Samples to Shipment</legend>
-													<div class="displayFieldDiv">
-														<b>Sample Received:</b>
-														<input name="sampleReceived" type="radio" value="1" checked /> Yes
-														<input name="sampleReceived" type="radio" value="0" onchange="sampleReceivedChanged(this.form)" /> No
-													</div>
-													<div class="displayFieldDiv">
-														<b>Accepted for Analysis:</b>
-														<input name="acceptedForAnalysis" type="radio" value="1" checked /> Yes
-														<input name="acceptedForAnalysis" type="radio" value="0" onchange="this.form.sampleCondition.value = ''" /> No
-													</div>
-													<div class="displayFieldDiv">
-														<b>Sample Condition:</b>
-														<select name="sampleCondition">
-															<option value="">Not Set</option>
-															<option value="">--------------------------------</option>
-															<?php
-															$condArr = $inquiryManager->getConditionArr();
-															foreach($condArr as $condKey => $condValue){
-																echo '<option value="'.$condKey.'" '.($condKey=='ok'?'SELECTED':'').'>'.$condValue.'</option>';
-															}
-															?>
-														</select>
-													</div>
-													<div class="displayFieldDiv">
-														<b>Check-in Remarks:</b> <input name="checkinRemarks" type="text" style="width:300px" />
-													</div>
-													<div style="margin:5px 10px">
-														<button name="action" type="submit" value="batchCheckin" >Check-in Selected Samples</button>
-													</div>
-											</fieldset>
-										</div>
-										<?php
-										?>
+
 									</form>
 									<?php
 								}
