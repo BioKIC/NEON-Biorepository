@@ -106,12 +106,22 @@ if($IS_ADMIN) $isEditor = true;
 
 		function openBatchEditor() {
 			const form = document.forms['sampleListingForm'];
-			const batchForm = document.getElementById('batchEditForm');
 			const checked = [...form.querySelectorAll('input[name="scbox[]"]:checked')];
 			if(checked.length === 0){
 				alert("Please select at least one sample");
 				return false;
 			}
+
+			const batchForm = document.createElement("form");
+			batchForm.method = "post";
+			batchForm.action = "batchsampleeditor.php";
+			batchForm.target = "batchEditorWindow";
+			const req = document.createElement("input");
+			req.type = "hidden";
+			req.name = "request_id";
+			req.value = "<?= $request_id ?>";
+			batchForm.appendChild(req);
+
 			checked.forEach(cb => {
 				let hidden = document.createElement("input");
 				hidden.type = "hidden";
@@ -119,9 +129,19 @@ if($IS_ADMIN) $isEditor = true;
 				hidden.value = cb.value;
 				batchForm.appendChild(hidden);
 			});
-			batchForm.submit();
-		}
 
+			document.body.appendChild(batchForm);
+
+			const popup = window.open(
+				"",
+				"batchEditorWindow",
+				"scrollbars=1,toolbar=0,resizable=1,width=1000,height=700,left=50,top=100"
+			);
+
+			batchForm.submit();
+
+			document.body.removeChild(batchForm);
+		}
 
 		function openPopup(url,windowName){
 			newWindow = window.open(url,windowName,'scrollbars=1,toolbar=0,resizable=1,width=1000,height=500,left=20,top=100');
@@ -257,10 +277,9 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
-						<form id="batchEditForm" method="post" action="batchsampleeditor.php" target="_blank">
-							<input type="hidden" name="request_id" value="<?= $request_id ?>" />
-							<button type="submit">Batch Edit Selected Samples</button>
-						</form>
+							<div style="float:left;">
+								<button type="button" onclick="openBatchEditor()">Batch Edit Selected Samples</button>
+							</div>
 					</div>
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">

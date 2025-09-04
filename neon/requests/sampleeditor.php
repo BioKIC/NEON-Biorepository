@@ -92,24 +92,27 @@ if ($isEditor && isset($_POST['action'])) {
 		});
 
 		function validateSampleForm(f){
-			if(f.available.value.trim() == "" 
-                && f.use_type.value.trim() == ""
-                && f.status.value.trim() == ""
-                && f.substance_provided.value.trim() == ""){
-				alert("Missing required value");
+			// Required fields
+			if(!f.available.value.trim() || !f.use_type.value.trim() || !f.status.value.trim() || !f.substance_provided.value.trim()){
+				alert("All required fields must be filled.");
 				return false;
 			}
-			if (f.shipment_id.value.trim() !== "" &&
-				!["current", "completed", "loaned, not used"].includes(f.status.value.trim())) {
-					alert("Status and shipment assignment match is not logical");
+
+			const status = f.status.value.trim();
+			const shipmentAssigned = f.shipment_id.value.trim() !== "";
+			const validShipmentStatuses = ["current", "completed", "loaned, not used"];
+
+			if(!shipmentAssigned && validShipmentStatuses.includes(status)){
+				alert("A sample with this status cannot have a shipment assigned.");
 				return false;
 			}
-						if (f.shipment_id.value.trim() !== "" &&
-				!["requested, not found","not funded", "pending fulfillment"].includes(f.status.value.trim())) {
-					alert("Status and shipment assignment match is not logical");
+
+			if(shipmentAssigned && !validShipmentStatuses.includes(status)){
+				alert("If a shipment is assigned, status must be 'current', 'completed', or 'loaned, not used'.");
 				return false;
 			}
-			$("#editForm").data("changed",false);
+
+			$("#editForm").data("changed", false);
 			return true;
 		}
 

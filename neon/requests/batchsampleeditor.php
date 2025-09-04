@@ -14,15 +14,12 @@ $isEditor = $IS_ADMIN || isset($USER_RIGHTS['SuperAdmin']);
 $errStr = '';
 $status = '';
 
-if($isEditor && isset($_POST['action']) && $_POST['action'] == 'batchSave'){
-    foreach($ids as $id){
-        $data = $_POST;
-        $data['id'] = $id;
-        if(!$inquiryManager->editSample($data)){
-            $errStr .= "Failed to update sample $id: ".$inquiryManager->getErrorStr()."<br/>";
-        }
+if($isEditor && isset($_POST['action']) && $_POST['action'] === 'batchSave'){
+    if($inquiryManager->batchEditSamples($_POST)){
+        $status = 'close';
+    } else {
+        $errStr = $inquiryManager->getErrorStr();
     }
-    if(!$errStr) $status = 'close';
 }
 
 function getCommonValue($samples, $field){
@@ -30,7 +27,6 @@ function getCommonValue($samples, $field){
     return (count($values) === 1) ? $values[0] : '';
 }
 
-// preload sample values
 $samples = [];
 if($ids){
     foreach($ids as $id){
@@ -69,14 +65,14 @@ fieldset { padding:15px; }
 <body>
 <?php if($status === 'close'): ?>
 <script>
-    alert("Batch update complete");
+    alert("Batch edit completed successfully.");
     if(window.opener && !window.opener.closed){
         window.opener.location.reload();
     }
     window.close();
 </script>
 <?php else: ?>
-<form method="post" action="batchsampleeditor.php" onsubmit="return validateBulkForm(this)">
+<form method="post" action="batchsampleeditor.php" onsubmit="return validateBatchForm(this)">
     <?php foreach($ids as $id): ?>
         <input type="hidden" name="ids[]" value="<?= htmlspecialchars($id) ?>">
     <?php endforeach; ?>
@@ -160,6 +156,7 @@ fieldset { padding:15px; }
         </div>
     </fieldset>
 </form>
+
 <?php if($errStr): ?>
 <div style="color:red;font-weight:bold;margin:10px;">
     <?= $errStr ?>

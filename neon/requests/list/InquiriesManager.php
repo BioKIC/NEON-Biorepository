@@ -1098,6 +1098,42 @@ public function getInquiryDataByID($request_id) {
         exit; 
     }
 
+    // batch edit samples in request
+    public function batchEditSamples($postData){
+        $errMessages = [];
+
+        if(empty($postData['ids']) || !is_array($postData['ids'])){
+            $this->errStr = "No sample IDs provided for batch edit.";
+            return false;
+        }
+
+        $batchFields = ['status','use_type','available','substance_provided','shipment_id','notes'];
+
+        foreach($postData['ids'] as $id){
+            $id = intval($id);
+            $data = ['id' => $id];
+
+            foreach($batchFields as $field){
+                if(isset($postData[$field]) && $postData[$field] !== ''){
+                    $data[$field] = $postData[$field];
+                }
+            }
+
+            if(!$this->editSample($data)){
+                $errMessages[] = "Failed to update sample $id: ".$this->getErrorStr();
+            }
+        }
+
+        if(!empty($errMessages)){
+            $this->errStr = implode("<br/>", $errMessages);
+            return false;
+        }
+
+        return true;
+    }
+
+
+
 }
 
 ?>
