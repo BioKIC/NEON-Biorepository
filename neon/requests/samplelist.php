@@ -43,20 +43,17 @@ if($IS_ADMIN) $isEditor = true;
 	?>
 	<script type="text/javascript">
 		$(document).ready(function() {
-			$("#shipCheckinComment").keydown(function(evt){
-				var evt  = (evt) ? evt : ((event) ? event : null);
-				if ((evt.keyCode == 13)) { return false; }
-			});
+			
 			<?php
 			if($sortableTable){
 				?>
-				$('#manifestTable').DataTable({
+				$('#sampletable').DataTable({
 					paging: false,
 					scrollCollapse: true,
 					fixedHeader: true,
 					columnDefs: [{ orderable: false, targets: [0, -1]}],
 					});
-				$("#manifestTable").DataTable().rows().every( function () {
+				$("#sampletable").DataTable().rows().every( function () {
 					var tr = $(this.node());
 					var childValue = tr.data('child-value');
 
@@ -105,6 +102,24 @@ if($IS_ADMIN) $isEditor = true;
 			var url = "sampleeditor.php?id="+id;
 			openPopup(url,"sample1window");
 			return false;
+		}
+
+		function openBatchEditor() {
+			const form = document.forms['sampleListingForm'];
+			const batchForm = document.getElementById('batchEditForm');
+			const checked = [...form.querySelectorAll('input[name="scbox[]"]:checked')];
+			if(checked.length === 0){
+				alert("Please select at least one sample");
+				return false;
+			}
+			checked.forEach(cb => {
+				let hidden = document.createElement("input");
+				hidden.type = "hidden";
+				hidden.name = "ids[]";
+				hidden.value = cb.value;
+				batchForm.appendChild(hidden);
+			});
+			batchForm.submit();
 		}
 
 
@@ -192,36 +207,6 @@ include($SERVER_ROOT.'/includes/header.php');
 <div id="innertext">
 	<?php
 	if($isEditor){
-		if($action){
-			$errStr = '';
-			if($action == 'checkinShipment'){
-				if(!$inquiryManager->checkinShipment($_POST)) $errStr = $inquiryManager->getErrorStr();
-			}
-			elseif($action == 'batchCheckin'){
-				if(!$inquiryManager->batchCheckinSamples($_POST)) $errStr = $inquiryManager->getErrorStr();
-			}
-			elseif($action == 'receiptsubmitted'){
-				if(!$inquiryManager->setReceiptStatus($_POST['submitted'])) $errStr = $inquiryManager->getErrorStr();
-			}
-			elseif($action == 'batchHarvestOccid'){
-				echo '<fieldset style="padding:15px"><legend>Action Panel</legend><ul>';
-				$occurManager = new OccurrenceHarvester();
-				$occurManager->batchHarvestOccid($_POST);
-				echo '</ul></fieldset>';
-			}
-			if($errStr){
-				?>
-				<fieldset style="padding:15px">
-					<legend>Action Panel</legend>
-					<ul>
-					<?php
-					echo $errStr;
-					?>
-					</ul>
-				</fieldset>
-				<?php
-			}
-		}
 		$reqArr = $inquiryManager->getRequestData($request_id);
 		if($reqArr){
 			?>
@@ -270,6 +255,13 @@ include($SERVER_ROOT.'/includes/header.php');
 							</form>
 						</div>
 					</div>
+					<div style="clear:both;padding:10px 0;">
+						<div style="float:left;">
+						<form id="batchEditForm" method="post" action="batchsampleeditor.php" target="_blank">
+							<input type="hidden" name="request_id" value="<?= $request_id ?>" />
+							<button type="submit">Batch Edit Selected Samples</button>
+						</form>
+					</div>
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
 							<legend>Sample Listing</legend>
@@ -295,9 +287,9 @@ include($SERVER_ROOT.'/includes/header.php');
 								<?php
 								if($sampleList){
 									?>
-									<form name="sampleListingForm" action="samplelist.php" method="post" onsubmit="return batchCheckinFormVerify(this)">
+									<form name="sampleListingForm" action="samplelist.php" method="post" onsubmit="return sampleFormVerify(this)">
 										<input name="sortabletable" type="hidden" value="<?= $sortableTable ?>">
-										<table id="manifestTable" class="styledtable">
+										<table id="sampletable" class="styledtable">
 											<thead>
 												<tr>
 													<?php
@@ -324,8 +316,6 @@ include($SERVER_ROOT.'/includes/header.php');
 													$classStr = '';
 													$propStr = '';
 													$str = '';
-													if(!empty($sampleArr['occurErr'])) $str .= '<div>Occurrence Harvesting Error: '.$sampleArr['occurErr'].'</div>';
-
 													if($sortableTable){
 														if($str) {
 															echo '<tr class="sample-row" data-child-value="'.trim($str,'; ').'">';
