@@ -756,7 +756,10 @@ class OccurrenceLoans extends Manager{
 				try{
 					if($stmt->execute()){
 						$status = true;
-						if($returnDate) $this->updateAvailability(1, $occid);		//This line is a NEON customization
+						//Start of NEON customization
+						if($returnDate) $this->updateAvailability(1, $occid);
+						else $this->updateAvailability(0, $occid);
+						//End of NEON customization
 					}
 				} catch (mysqli_sql_exception $e){
 					$this->errorMessage = $stmt->error;
