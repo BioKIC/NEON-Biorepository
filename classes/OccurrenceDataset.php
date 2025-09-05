@@ -3,7 +3,7 @@ include_once($SERVER_ROOT . '/config/dbconnection.php');
 include_once($SERVER_ROOT . '/classes/DwcArchiverCore.php');
 include_once($SERVER_ROOT . '/classes/utilities/OccurrenceUtil.php');
 
-class OccurrenceDataset {
+class OccurrenceDataset{
 
 	private $conn;
 	private $collArr = array();
@@ -44,13 +44,14 @@ class OccurrenceDataset {
 		$retArr = array();
 		if ($dsid) {
 			//Get and return individual dataset
-			$sql = 'SELECT datasetid, name, notes, description, uid, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') AND ispublic=1';
+			$sql = 'SELECT datasetid, name, notes, description, uid, dynamicProperties, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') AND ispublic=1';
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
 				$retArr['name'] = $r->name;
 				$retArr['notes'] = $r->notes;
 				$retArr['description'] = $r->description;
 				$retArr['uid'] = $r->uid;
+				$retArr['dynamicproperties'] = $r->dynamicProperties;
 				$retArr['sort'] = $r->sortsequence;
 				$retArr['ts'] = $r->initialtimestamp;
 			}
@@ -271,6 +272,7 @@ class OccurrenceDataset {
 		return $status;
 	}
 
+
 	public function setOccurrenceCount($datasetId) {
 		$returnVal = 0;
 		if ($datasetId) {
@@ -351,6 +353,7 @@ class OccurrenceDataset {
 		}
 		return $status;
 	}
+
 
 	public function addSelectedOccurrences($datasetId, $occArr) {
 		$status = false;

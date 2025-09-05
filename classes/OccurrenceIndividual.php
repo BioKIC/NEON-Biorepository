@@ -566,7 +566,8 @@ class OccurrenceIndividual extends Manager{
 				$indUrl = str_replace('--CATALOGNUMBER--',$this->occArr['catalognumber'],$iUrl);
 				$sourceID = $this->occArr['catalognumber'];
 			}
-			elseif(strpos($iUrl,'--OTHERCATALOGNUMBERS--') !== false && $this->occArr['othercatalognumbers']){
+			elseif (strpos($iUrl, '--OTHERCATALOGNUMBERS--') !== false && $this->occArr['othercatalognumbers']) {
+				/* Commented out in preference for NEON customization below
 				foreach($this->occArr['othercatalognumbers'] as $idArr){
 					$tagName = $idArr['name'];
 					$idValue = $idArr['value'];
@@ -577,6 +578,55 @@ class OccurrenceIndividual extends Manager{
 						if($tagName == 'NEON sampleCode (barcode)') break;
 					}
 				}
+				*/
+				//Beginning NEON Customization
+
+				$preferredKeys = [
+					'NEON sampleCode (barcode)',
+					'NEON sampleID',
+					'Originating NEON barcode',
+					'Originating NEON sampleID'
+				];
+
+				$sampleClass = '';
+
+				foreach ($preferredKeys as $key) {
+					foreach ($this->occArr['othercatalognumbers'] as $idArr) {
+						$tagName = $idArr['name'] ?? '';
+						$idValue = $idArr['value'] ?? '';
+
+						if ($tagName === $key && !empty($idValue)) {
+							$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $idValue, $iUrl);
+							// NEON customization
+							if ($key === 'NEON sampleCode (barcode)' || $key === 'Originating NEON barcode') {
+								$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
+							}
+
+							if ($key === 'NEON sampleID') {
+								$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ' . intval($this->occArr['occid']);
+							} elseif ($key === 'Originating NEON sampleID') {
+								$sql = "SELECT s.sampleClass FROM NeonSample s
+										LEFT JOIN omoccurassociations a
+										ON s.occid = a.occid
+										WHERE a.relationship LIKE '%originatingSampleOf%'
+										AND a.occidAssociate = " . intval($this->occArr['occid']);
+							}
+
+							if (!empty($sql)) {
+								if ($rs = $this->conn->query($sql)) {
+									if ($r = $rs->fetch_assoc()) {
+										$sampleClass = $r['sampleClass'];
+										$indUrl .= '&sampleClass=' . urlencode($sampleClass);
+									}
+									$rs->free();
+								}
+							}
+
+							break 2;
+						}
+					}
+				}
+				// End NEON customization
 			}
 			elseif(strpos($iUrl,'--OCCURRENCEID--') !== false && $this->occArr['occurrenceid']){
 				$indUrl = str_replace('--OCCURRENCEID--',$this->occArr['occurrenceid'],$iUrl);
@@ -1041,10 +1091,8 @@ class OccurrenceIndividual extends Manager{
 				$stmt->close();
 			}
 		}
-
-		$sql2 = 'SELECT datasetid, name, uid FROM omoccurdatasets ';
+		$sql2 = 'SELECT datasetid, name, uid, ispublic FROM omoccurdatasets ';
 		if(!$GLOBALS['IS_ADMIN'] && is_numeric($GLOBALS['SYMB_UID'])){
-			//Only get datasets for current user. Once we have appied isPublic tag, we can extend display to all public datasets
 			$sql2 .= 'WHERE (uid = '.$GLOBALS['SYMB_UID'].') ';
 			if($roleArr) $sql2 .= 'OR (datasetid IN('.implode(',',array_keys($roleArr)).')) ';
 		}
@@ -1053,6 +1101,7 @@ class OccurrenceIndividual extends Manager{
 		if($rs2){
 			while($r2 = $rs2->fetch_object()){
 				$retArr[$r2->datasetid]['name'] = $r2->name;
+				$retArr[$r2->datasetid]['ispublic'] = $r2->ispublic;
 				$roleStr = '';
 				if(isset($GLOBALS['SYMB_UID']) && $GLOBALS['SYMB_UID'] == $r2->uid) $roleStr = 'owner';
 				elseif(isset($roleArr[$r2->datasetid]) && $roleArr[$r2->datasetid])  $roleStr = $roleArr[$r2->datasetid];
@@ -1060,16 +1109,23 @@ class OccurrenceIndividual extends Manager{
 			}
 			$rs2->free();
 		}
-		else $this->errorMessage = 'ERROR: Unable to set datasets for user: '.$this->conn->error;
-
-		$sql3 = 'SELECT datasetid, notes FROM omoccurdatasetlink WHERE occid = ?';
+		else {
+			$this->errorMessage = 'ERROR: Unable to set datasets for user: '.$this->conn->error;
+		}
+		$sql3 = 'SELECT l.datasetid, l.notes, d.name, d.ispublic
+			FROM omoccurdatasetlink l
+			INNER JOIN omoccurdatasets d ON l.datasetid = d.datasetid
+			WHERE l.occid = ?';
 		if($stmt = $this->conn->prepare($sql3)){
 			$stmt->bind_param('i', $this->occid);
 			$stmt->execute();
 			if($rs3 = $stmt->get_result()){
 				while($r3 = $rs3->fetch_object()){
+					if(!isset($retArr[$r3->datasetid]) && $r3->ispublic){
+						$retArr[$r3->datasetid]['name'] = $r3->name;
+						$retArr[$r3->datasetid]['ispublic'] = 1;
+					}
 					if(isset($retArr[$r3->datasetid])){
-						//Only display datasets linked to current user, at least for now. Once isPublic option is activated, we'll open this up further.
 						$retArr[$r3->datasetid]['linked'] = 1;
 						if($r3->notes) $retArr[$r3->datasetid]['notes'] = $r3->notes;
 					}

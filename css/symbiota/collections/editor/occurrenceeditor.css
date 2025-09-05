@@ -756,6 +756,11 @@ fieldset{
 	width:200px;
 }
 
+#availabilityDiv{
+	float:left;
+	margin:15px 3px 3px 3px;
+}
+
 #occurrenceIdDiv{
 	float:left;
 }

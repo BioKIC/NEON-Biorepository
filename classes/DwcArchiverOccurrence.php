@@ -383,10 +383,23 @@ class DwcArchiverOccurrence extends Manager{
 	public function getAdditionalCatalogNumberStr($occid){
 		$retStr = '';
 		if(is_numeric($occid)){
+			$hideSampleID = false;
 			$sql = 'SELECT identifierName, identifierValue FROM omoccuridentifiers WHERE occid = '.$occid.' ORDER BY sortBy';
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
-				if($r->identifierName) $retStr .= $r->identifierName.': ';
+				if ($r->identifierName == 'NEON sampleID Hash' && !$GLOBALS['IS_ADMIN']) {
+					$hideSampleID = true;
+					break;
+				}
+			}
+			$rs->free();
+			$rs = $this->conn->query($sql);
+			while($r = $rs->fetch_object()){
+				if ($r->identifierName == 'NEON sampleID' && $hideSampleID) {
+					continue;
+				}
+			
+				if ($r->identifierName) $retStr .= $r->identifierName.': ';
 				$retStr .= $r->identifierValue.'; ';
 			}
 			$rs->free();

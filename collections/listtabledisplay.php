@@ -172,7 +172,7 @@ $searchVar .= '&comingFrom=' . $comingFrom;
 						<?php
 					}else{
 						?>
-						<a href="<?= $CLIENT_ROOT . '/collections/search/index.php' ?>"><?= $LANG['NAV_SEARCH'] ?></a> &gt;&gt;
+						<a href="<?= $CLIENT_ROOT . '/neon/search/index.php' ?>"><?= $LANG['NAV_SEARCH'] ?></a> &gt;&gt;
 						<?php
 					}
 					?>

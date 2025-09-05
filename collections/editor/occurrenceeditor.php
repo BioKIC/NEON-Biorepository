@@ -817,6 +817,21 @@ else{
 												<a href="#" onclick="return dwcDoc('catalog-number')" tabindex="-1"><img class="docimg" src="../../images/qmark.png" /></a>
 												<br/>
 												<input type="text" id="catalognumber" name="catalognumber" value="<?php echo array_key_exists('catalognumber',$occArr)?$occArr['catalognumber']:''; ?>" onchange="fieldChanged('catalognumber');" <?php if($isEditor > 2) echo 'disabled'; ?> autocomplete="off" />
+												<?php
+												if(isset($occArr['identifiers'])){
+													$manifestID = '';
+													foreach($occArr['identifiers'] as $idKey => $idArr){
+														if($idArr['name'] == 'NEON sampleCode (barcode)'){
+															$manifestID = $idArr['value'];
+															break;
+														}
+														elseif($idArr['name'] == 'NEON sampleID'){
+															$manifestID = $idArr['value'];
+														}
+													}
+													if($manifestID) echo '<div><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $manifestID . '" target="_blank">Go to Manifest</a></div>';
+												}
+												?>
 											</div>
 											<div id="otherCatalogNumbersDiv" class="field-div">
 												<div id="identifierDiv" class="divTable">

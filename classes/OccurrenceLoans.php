@@ -20,7 +20,6 @@ class OccurrenceLoans extends Manager{
 		$retArr = array();
 		$extLoanArr = array();
 		//Get loans that are assigned to other collections but have linked occurrences from this collection (NEON Biorepo portal issue)
-		/*
 		$sql = 'SELECT DISTINCT l.loanid, o.collid '.
 			'FROM omoccurloans l INNER JOIN omoccurloanslink ll ON l.loanid = ll.loanid '.
 			'INNER JOIN omoccurrences o ON ll.occid = o.occid '.
@@ -31,7 +30,6 @@ class OccurrenceLoans extends Manager{
 			}
 			$rs->free();
 		}
-		*/
 
 		//Get loan details
 		$sql = 'SELECT l.loanid, l.datesent, l.loanidentifierown, l.loanidentifierborr, i.institutioncode AS instcode1, c.institutioncode AS instcode2, i.institutionname, l.forwhom, l.dateclosed, l.datedue '.
@@ -698,7 +696,7 @@ class OccurrenceLoans extends Manager{
 		if($method == 'allid' || $method == 'catnum') $sqlWhere .= 'OR (o.catalognumber = "'.$this->cleanInStr($catNum).'") ';
 		if($sqlWhere){
 			$sql .= 'WHERE ('.substr($sqlWhere,2).') ';
-			if($this->collid) $sql .= 'AND (o.collid = '.$this->collid.')';
+			//if($this->collid) $sql .= 'AND (o.collid = '.$this->collid.')';
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()) {
 				$occArr[] = $r->occid;
@@ -716,6 +714,7 @@ class OccurrenceLoans extends Manager{
 			try{
 				if($stmt->execute()){
 					$status = true;
+					$this->updateAvailability(0, $occid);		//This line is a NEON customization
 				}
 			} catch (mysqli_sql_exception $e){
 				$this->errorMessage = $stmt->error;
@@ -733,14 +732,14 @@ class OccurrenceLoans extends Manager{
 			$sql = 'SELECT returndate, notes FROM omoccurloanslink WHERE loanid = ? AND occid = ?';
 			if($stmt = $this->conn->prepare($sql)){
 				$stmt->bind_param('ii', $loanId, $occid);
-					$stmt->execute();
-					if($rs = $stmt->get_result()){
-						While($r = $rs->fetch_object()){
-							$retArr['returnDate'] = $r->returndate;
-							$retArr['notes'] = $r->notes;
-						}
-						$rs->free();
+        $stmt->execute();
+				if($rs = $stmt->get_result()){
+					While($r = $rs->fetch_object()){
+						$retArr['returnDate'] = $r->returndate;
+						$retArr['notes'] = $r->notes;
 					}
+					$rs->free();
+				}
 				$stmt->close();
 			}
 		}
@@ -757,6 +756,10 @@ class OccurrenceLoans extends Manager{
 				try{
 					if($stmt->execute()){
 						$status = true;
+						//Start of NEON customization
+						if($returnDate) $this->updateAvailability(1, $occid);
+						else $this->updateAvailability(0, $occid);
+						//End of NEON customization
 					}
 				} catch (mysqli_sql_exception $e){
 					$this->errorMessage = $stmt->error;
@@ -781,6 +784,7 @@ class OccurrenceLoans extends Manager{
 				try{
 					if($stmt->execute()){
 						$status = $this->conn->affected_rows;
+						$this->updateAvailability(1, $occidStr);		//This line is a NEON customization
 					}
 				} catch (mysqli_sql_exception $e){
 					$this->errorMessage = $stmt->error;
@@ -792,6 +796,28 @@ class OccurrenceLoans extends Manager{
 		}
 		return $status;
 	}
+
+	//Start of NEON customization
+	private function updateAvailability($value, $occidInput){
+		$status = false;
+		//$occidInput might be an int (single occurrence) or a string of multiple occurrences
+		if(preg_match('/^[\d,]+$/', $occidInput)){
+			$sql = 'UPDATE omoccurrences SET availability = ? WHERE occid IN(' . $occidInput . ')';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('i', $value);
+				try{
+					if($stmt->execute()) $status = true;
+				} catch (mysqli_sql_exception $e){
+					$this->errorMessage = $stmt->error;
+				} catch (Exception $e){
+					$this->errorMessage = 'unknown error';
+				}
+				$stmt->close();
+			}
+		}
+		return $status;
+	}
+	//End of NEON customization
 
 	public function deleteSpecimens($occidArr, $loanID){
 		$status = false;

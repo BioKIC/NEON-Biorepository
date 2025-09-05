@@ -10,7 +10,7 @@ $dArr = $datasetManager->getPublicDatasets();
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
 	<head>
-		<title>Public Datasets List</title>
+		<title>Published Sample Research Datasets</title>
 		<?php
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
@@ -29,6 +29,13 @@ $dArr = $datasetManager->getPublicDatasets();
 			<h1 class="page-heading"><?php echo htmlspecialchars($LANG['PUB_DAT_LIST'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?></h1>
 			<ul>
 				<?php
+				if ($IS_ADMIN) {
+					echo '<p><a href="index.php">Dataset Management</a></p>';
+				}
+
+					echo '<p>The datasets below link to samples and specimens associated with published research and special collections. Visit the <b><a href="https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en&oi=ao">NEON Biorepository Google Scholar Profile</a></b> for an up-to-date list of publications related to NEON samples and specimens.</p>';
+
+
 				if($dArr){
 					$catArr = array();
 					// Creates categories array
@@ -62,4 +69,9 @@ $dArr = $datasetManager->getPublicDatasets();
 		include($SERVER_ROOT.'/includes/footer.php');
 		?>
 	</body>
+<script>
+	let pubTools = document.getElementById('pubtools');
+	// toggle visibility of save button
+	pubTools.addEventListener('click', function() {});
+</script>
 </html>

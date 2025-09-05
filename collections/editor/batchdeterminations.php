@@ -93,7 +93,8 @@ if($isEditor){
 						catalognumber: f.catalognumber.value,
 						allcatnum: allCatNum,
 						sciname: f.sciname.value,
-						collid: f.collid.value
+						collid: f.collid.value,
+						fieldsite: f.fieldsite.value
 					}
 				}).done(function( retStr ) {
 					if(retStr != ""){
@@ -168,6 +169,7 @@ if($isEditor){
 					document.getElementById("catrecordstbody").innerHTML = '';
 					f.catalognumber.value = '';
 					f.sciname.value = '';
+					f.fieldsite.selectedIndex = -1;
 				}
 			}
 
@@ -315,6 +317,109 @@ if($isEditor){
 					</div>
 					<div style="margin-top:15px;">
 						<form name="accqueryform" action="batchdeterminations.php" method="post" onsubmit="return submitAccForm(this);">
+							<div>
+								<b>Field Site/Domain:</b>
+								<select id="fieldsite" name="fieldsite" style="width:260px;">
+									<option>--------------------</option>
+									<option value="34">ABBY</option>
+									<option value="96">ARIK</option>
+									<option value="97">BARC</option>
+									<option value="64">BARR</option>
+									<option value="33">BART</option>
+									<option value="98">BIGC</option>
+									<option value="65">BLAN</option>
+									<option value="99">BLDE</option>
+									<option value="100">BLUE</option>
+									<option value="101">BLWA</option>
+									<option value="35">BONA</option>
+									<option value="102">CARI</option>
+									<option value="36">CLBJ</option>
+									<option value="103">COMO</option>
+									<option value="67">CPER</option>
+									<option value="104">CRAM</option>
+									<option value="105">CUPE</option>
+									<option value="67">DCFS</option>
+									<option value="37">DEJU</option>
+									<option value="38">DELA</option>
+									<option value="39">DSNY</option>
+									<option value="106">FLNT</option>
+									<option value="40">GRSM</option>
+									<option value="41">GUAN</option>
+									<option value="42">HARV</option>
+									<option value="43">HEAL</option>
+									<option value="108">HOPB</option>
+									<option value="44">JERC</option>
+									<option value="45">JORN</option>
+									<option value="77">KONA</option>
+									<option value="68">KONZ</option>
+									<option value="109">KING</option>
+									<option value="110">LECO</option>
+									<option value="46">LENO</option>
+									<option value="111">LEWI</option>
+									<option value="112">LIRO</option>
+									<option value="113">MART</option>
+									<option value="114">MAYF</option>
+									<option value="115">MCDI</option>
+									<option value="116">MCRA</option>
+									<option value="47">MLBS</option>
+									<option value="48">MOAB</option>
+									<option value="49">NIWO</option>
+									<option value="70">NOGP</option>
+									<option value="71">OAES</option>
+									<option value="50">ONAQ</option>
+									<option value="51">ORNL</option>
+									<option value="52">OSBS</option>
+									<option value="118">POSE</option>
+									<option value="119">PRIN</option>
+									<option value="120">PRLA</option>
+									<option value="121">PRPO</option>
+									<option value="122">REDB</option>
+									<option value="75">RMNP</option>
+									<option value="53">SCBI</option>
+									<option value="54">SERC</option>
+									<option value="72">SJER</option>
+									<option value="55">SOAP</option>
+									<option value="56">SRER</option>
+									<option value="57">STEI</option>
+									<option value="73">STER</option>
+									<option value="124">SUGG</option>
+									<option value="125">SYCA</option>
+									<option value="58">TALL</option>
+									<option value="59">TEAK</option>
+									<option value="126">TECR</option>
+									<option value="127">TOMB</option>
+									<option value="128">TOOK</option>
+									<option value="60">TOOL</option>
+									<option value="61">TREE</option>
+									<option value="62">UKFS</option>
+									<option value="63">UNDE</option>
+									<option value="74">WOOD</option>
+									<option value="78">WREF</option>
+									<option value="129">WALK</option>
+									<option value="130">WLOU</option>
+									<option value="131">YELL</option>
+									<option value="2">D01</option>
+									<option value="13">D02</option>
+									<option value="7">D03</option>
+									<option value="9">D04</option>
+									<option value="15">D05</option>
+									<option value="17">D06</option>
+									<option value="8">D07</option>
+									<option value="6">D08</option>
+									<option value="19">D09</option>
+									<option value="18">D10</option>
+									<option value="5">D11</option>
+									<option value="1">D12</option>
+									<option value="11">D13</option>
+									<option value="10">D14</option>
+									<option value="12">D15</option>
+									<option value="3">D16</option>
+									<option value="14">D17</option>
+									<option value="16">D18</option>
+									<option value="4">D19</option>
+									<option value="20">D20</option>
+								</select>
+							</div>
 							<section class="flex-form" style="align-items: center; gap:0.5rem; margin-bottom: 1rem">
 								<div style="margin: 0; display:flex; align-items: center; gap:0.25rem">
 									<label for="catalognumber"><?php echo $LANG['CATNUM']; ?>:</label>
@@ -382,15 +487,18 @@ if($isEditor){
 									</div>
 								</div>
 								<div style="clear:both;margin:15px 0px"><hr /></div>
+								<div style='margin:3px;'>
+									<b><?php echo $LANG['SCINAME']; ?>:</b>
+									<input type="text" id="dafsciname" name="sciname" style="background-color:lightyellow;width:350px;" onfocus="initDetAutocomplete(this.form)" />
+									<input type="hidden" id="daftidtoadd" name="tidtoadd" value="" />
+								</div>
 								<div id="idQualifierDiv" style='margin:3px;clear:both'>
 									<b><?php echo $LANG['ID_QUALIFIER']; ?>:</b>
 									<input type="text" name="identificationqualifier" title="e.g. cf, aff, etc" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['SCINAME']; ?>:</b>
-									<input type="text" id="dafsciname" name="sciname" style="background-color:lightyellow;width:350px;" onfocus="initDetAutocomplete(this.form)" />
-									<input type="hidden" id="daftidtoadd" name="tidtoadd" value="" />
-									<input type="hidden" name="family" value="" />
+									<b><?php echo $LANG['FAMILY']; ?>:</b>
+									<input type="text" name="family" style="width:200px;" />
 								</div>
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['AUTHOR']; ?>:</b>
@@ -405,20 +513,24 @@ if($isEditor){
 									</select>
 								</div>
 								<div id="identifiedByDiv" style='margin:3px;'>
-									<b><?php echo $LANG['DETERMINER']; ?>:</b>
+									<b><?php echo $LANG['IDENTIFIED_BY']; ?>:</b>
 									<input type="text" name="identifiedby" id="identifiedby" style="background-color:lightyellow;width:200px;" />
 								</div>
 								<div id="dateIdentifiedDiv" style='margin:3px;'>
-									<b><?php echo $LANG['DATE']; ?>:</b>
+									<b><?php echo $LANG['DATE_IDENTIFIED']; ?>:</b>
 									<input type="text" name="dateidentified" id="dateidentified" style="background-color:lightyellow;" onchange="detDateChanged(this.form);" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['REFERENCE']; ?>:</b>
+									<b><?php echo $LANG['ID_REFERENCE']; ?>:</b>
 									<input type="text" name="identificationreferences" style="width:350px;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['NOTES']; ?>:</b>
+									<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
 									<input type="text" name="identificationremarks" style="width:350px;" />
+								</div>
+								<div style='margin:3px;'>
+									<b><?php echo $LANG['TAXON_REMARKS']; ?>:</b>
+									<input type="text" name="taxonremarks" style="width:350px;" />
 								</div>
 								<div id="makeCurrentDiv" style='margin:3px;'>
 									<input type="checkbox" name="makecurrent" value="1" checked /> <?php echo $LANG['MAKE_CURRENT']; ?>

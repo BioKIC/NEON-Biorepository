@@ -17,6 +17,10 @@ $LANG['GENETIC'] = 'Genética';
 $LANG['DUPLICATES'] = 'Duplicados';
 $LANG['COMMENTS'] = 'Comentarios';
 $LANG['LINKED_RESOURCES'] = 'Recursos Enlazados';
+//start NEON customization
+$LANG['ARCHIVE_GUID'] = '# de Cat&aacute;logo (archiveGUID)';
+$LANG['ASSOCIATIONS'] = 'Asociaciones';
+//end NEON customization
 $LANG['TRAITS'] = 'Características';
 $LANG['EDIT_HISTORY'] = 'Historia de Edición';
 $LANG['ON_LOAN'] = 'En Préstamo A';

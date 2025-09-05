@@ -13,6 +13,7 @@ class TaxonomyController extends Controller {
 	 *
 	 * @return void
 	 */
+
 	public function __construct() {
 		parent::__construct();
 	}
@@ -56,7 +57,7 @@ class TaxonomyController extends Controller {
 		$offset = $request->input('offset', 0);
 
 		$fullCnt = Taxonomy::count();
-		$result = Taxonomy::skip($offset)->take($limit)->get();
+		$result = Taxonomy::with('taxonCodes')->skip($offset)->take($limit)->get();
 
 		$eor = false;
 		$retObj = [
@@ -117,6 +118,7 @@ class TaxonomyController extends Controller {
 	 *	 ),
 	 * )
 	 */
+
 	public function showAllTaxaSearch(Request $request) {
 		$this->validate($request, [
 			'taxon' => 'required',
@@ -128,16 +130,19 @@ class TaxonomyController extends Controller {
 
 		$type = $request->input('type', 'EXACT');
 
-		$taxaModel = Taxonomy::query();
-		if ($type == 'START') {
+		$taxaModel = Taxonomy::with('taxonCodes');
+		if($type == 'START'){
 			$taxaModel->where('sciname', 'LIKE', $request->taxon . '%');
-		} elseif ($type == 'WILD') {
+		}
+		elseif($type == 'WILD'){
 			$taxaModel->where('sciname', 'LIKE', '%' . $request->taxon . '%');
-		} elseif ($type == 'WHOLEWORD') {
+		}
+		elseif($type == 'WHOLEWORD'){
 			$taxaModel->where('unitname1', $request->taxon)
 				->orWhere('unitname2', $request->taxon)
 				->orWhere('unitname3', $request->taxon);
-		} else {
+		}
+		else{
 			//Exact match
 			$taxaModel->where('sciname', $request->taxon);
 		}
@@ -207,13 +212,15 @@ class TaxonomyController extends Controller {
 
 		//Set parent
 		$parStatus = DB::table('taxaenumtree as e')
-			->select('p.tid', 'p.sciname as scientificName', 'p.author', 'p.rankid')
-			->join('taxa as p', 'e.parentTid', '=', 'p.tid')
-			->where('e.tid', $id)->where('e.taxauthid', 1);
+		->select('p.tid', 'p.sciname as scientificName', 'p.author', 'p.rankid')
+		->join('taxa as p', 'e.parentTid', '=', 'p.tid')
+		->where('e.tid', $id)->where('e.taxauthid', 1);
 		$parStatusResult = $parStatus->get();
 		$taxonObj->classification = $parStatusResult;
 
-		if (!$taxonObj->count()) $taxonObj = ['status' => false, 'error' => 'Unable to locate inventory based on identifier'];
+		$taxonObj->taxonCodes;
+
+		if(!$taxonObj->count()) $taxonObj = ['status' =>false, 'error' => 'Unable to locate inventory based on identifier'];
 		return response()->json($taxonObj);
 	}
 

@@ -7,15 +7,15 @@ else include_once($SERVER_ROOT . '/content/lang/collections/datasets/public.en.p
 header("Content-Type: text/html; charset=".$CHARSET);
 
 // Datasets
-$datasetid = array_key_exists('datasetid',$_REQUEST)?$_REQUEST['datasetid']:0;
+$datasetid = array_key_exists('datasetid', $_REQUEST) ? $_REQUEST['datasetid'] : 0;
 
-if(!is_numeric($datasetid)) $datasetid = 0;
+if (!is_numeric($datasetid)) $datasetid = 0;
 
 $datasetManager = new OccurrenceDataset();
 $dArr = $datasetManager->getPublicDatasetMetadata($datasetid);
-$searchUrl = '../../collections/list.php?datasetid='.$datasetid;
-$tableUrl = '../../collections/listtabledisplay.php?datasetid='.$datasetid;
-$taxaUrl = '../../collections/list.php?datasetid='.$datasetid.'&tabindex=0';
+$searchUrl = '../../collections/list.php?datasetid=' . $datasetid;
+$tableUrl = '../../collections/listtabledisplay.php?datasetid=' . $datasetid;
+$taxaUrl = '../../collections/list.php?datasetid=' . $datasetid . '&tabindex=0';
 // $downloadUrl = '../../collections/download/index.php?datasetid='.$datasetid;
 $ocArr = $datasetManager->getOccurrences($datasetid);
 ?>
