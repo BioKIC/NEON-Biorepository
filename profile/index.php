@@ -36,7 +36,7 @@ if($SYMB_UID){
 		header("Location:" . $_REQUEST['refurl']);
 	}
 	else{
-		header("Location:" . GeneralUtil::getDomain() . $CLIENT_ROOT . '/profile/viewprofile.php');
+		header("Location:" . GeneralUtil::getDomain() . $CLIENT_ROOT . '/index.php');
 	}
 }
 
@@ -106,6 +106,7 @@ if($action == 'logout'){
 	if(array_key_exists('AUTH_PROVIDER', $_SESSION)){
 		$oidc = new OpenIDConnectClient($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], $CLIENT_IDS[$_SESSION['AUTH_PROVIDER']], $CLIENT_SECRETS[$_SESSION['AUTH_PROVIDER']], $PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']]);
 		$pHandler->reset();
+		$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
 		$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
 
 	}
