@@ -187,7 +187,7 @@ class TaxonProfile extends Manager {
 			echo '<div class="creator">';
 			// START NEON CUSTOMIZATION //
 			if($imgObj['creator']) {
-				if ($imgObj['owner']){
+				if (!empty($imgObj['owner'])){
 					echo $imgObj['creator'], ', ', $imgObj['owner'];
 				}
 				else {
@@ -247,7 +247,7 @@ class TaxonProfile extends Manager {
 				$this->imageArr[$row->mediaID]['url'] = $imgUrl;
 				$this->imageArr[$row->mediaID]['thumbnailurl'] = $row->thumbnailurl;
 				// START NEON CUSTOMIZATION //
-				$this->imageArr[$row->imgid]['owner'] =$row->owner;
+				$this->imageArr[$row->mediaID]['owner'] = $row->owner;
 				// END NEON CUSTOMIZATION //
 				if($row->creatorLinked) $this->imageArr[$row->mediaID]['creator'] = $row->creatorLinked;
 				else $this->imageArr[$row->mediaID]['creator'] = $row->creator;
