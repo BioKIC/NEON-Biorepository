@@ -1,1336 +1,315 @@
 [
   {
-    "id": 7,
+    "name": "Aquatic Macroinvertebrates",
+    "children": [
+      { "name": "Arikaree River (ARIK)", "collid": 8230 },
+      { "name": "Lake Barco (BARC)", "collid": 8231 },
+      { "name": "Blacktail Deer Creek (BLDE)", "collid": 8232 },
+      { "name": "Caribou Creek (CARI)", "collid": 8233 },
+      { "name": "Como Creek (COMO)", "collid": 8234 },
+      { "name": "Crampton Lake (CRAM)", "collid": 8235 },
+      { "name": "Río Cupeyes (CUPE)", "collid": 8236 },
+      { "name": "Lower Hop Brook (HOPB)", "collid": 8237 },
+      { "name": "Kings Creek (KING)", "collid": 8238 },
+      { "name": "Martha Creek (MART)", "collid": 8239 },
+      { "name": "Mayfield Creek (MAYF)", "collid": 8240 },
+      { "name": "Oksrukuyik Creek (OKSR)", "collid": 8241 },
+      { "name": "Posey Creek (POSE)", "collid": 8242 },
+      { "name": "Pringle Creek (PRIN)", "collid": 8243 },
+      { "name": "Prairie Pothole (PRPO)", "collid": 8244 },
+      { "name": "Red Butte Creek (REDB)", "collid": 8245 },
+      { "name": "Lake Suggs (SUGG)", "collid": 8246 },
+      { "name": "Sycamore Creek (SYCA)", "collid": 8247 },
+      { "name": "Teakettle Creek - Watershed 2 (TECR)", "collid": 8248 },
+      { "name": "Walker Branch (WALK)", "collid": 8249 },
+      { "name": "Upper Big Creek (BIGC)", "collid": 8250 },
+      { "name": "Blue River (BLUE)", "collid": 8251 },
+      { "name": "Black Warrior River (BLWA)", "collid": 8252 },
+      { "name": "Flint River (FLNT)", "collid": 8253 },
+      { "name": "Río Yahuecas (GUIL)", "collid": 8254 },
+      { "name": "LeConte Creek (LECO)", "collid": 8255 },
+      { "name": "Lewis Run (LEWI)", "collid": 8256 },
+      { "name": "Little Rock Lake (LIRO)", "collid": 8257 },
+      { "name": "McDiffett Creek (MCDI)", "collid": 8258 },
+      { "name": "McRae Creek (MCRA)", "collid": 8259 },
+      { "name": "Prairie Lake (PRLA)", "collid": 8260 },
+      { "name": "Lower Tombigbee River (TOMB)", "collid": 8261 },
+      { "name": "Toolik Lake (TOOK)", "collid": 8262 },
+      { "name": "West St Louis Creek (WLOU)", "collid": 8263 },
+  
+      { "name": "Domain 01 (Northeast)", "collid": 8264 },
+      { "name": "Domain 02 (Mid-Atlantic)", "collid": 8265 },
+      { "name": "Domain 03 (Southeast)", "collid": 8266 },
+      { "name": "Domain 04 (Atlantic Neotropical)", "collid": 8267 },
+      { "name": "Domain 05 (Great Lakes)", "collid": 8268 },
+      { "name": "Domain 06 (Prairie Peninsula)", "collid": 8269 },
+      { "name": "Domain 07 (Appalachians & Cumberland Plateau)", "collid": 8270 },
+      { "name": "Domain 08 (Ozarks Complex)", "collid": 8271 },
+      { "name": "Domain 09 (Northern Plains)", "collid": 8272 },
+      { "name": "Domain 10 (Central Plains)", "collid": 8273 },
+      { "name": "Domain 11 (Southern Plains)", "collid": 8274 },
+      { "name": "Domain 12 (Northern Rockies)", "collid": 8275 },
+      { "name": "Domain 13 (Southern Rockies & Colorado Plateau)", "collid": 8276 },
+      { "name": "Domain 14 (Desert Southwest)", "collid": 8277 },
+      { "name": "Domain 15 (Great Basin)", "collid": 8278 },
+      { "name": "Domain 16 (Pacific Northwest)", "collid": 8279 },
+      { "name": "Domain 17 (Pacific Southwest)", "collid": 8280 },
+      { "name": "Domain 18 (Tundra)", "collid": 8281 },
+      { "name": "Domain 19 (Taiga)", "collid": 8282 },
+      { "name": "Domain 20 (Pacific Tropical)", "collid": 8283 }
+    ]
+  },
+  {
     "name": "Beetles",
     "children": [
-      {
-        "id": 2,
-        "name": "Abby Road (ABBY)",
-        "collid": 0
-      },
-      {
-        "id": 3,
-        "name": "Arikaree River (ARIK)",
-        "collid": 0
-      },
-      {
-        "id": 4,
-        "name": "Bartlett Experimental Forest (BART)",
-        "collid": 0
-      },
-      {
-        "id": 5,
-        "name": "Black Warrior River (BLWA)",
-        "collid": 0
-      },
-      {
-        "id": 6,
-        "name": "Blacktail Deer Creek (BLDE)",
-        "collid": 0
-      },
-      {
-        "id": 7,
-        "name": "Blandy Experimental Farm (BLAN)",
-        "collid": 0
-      },
-      {
-        "id": 8,
-        "name": "Blue River (BLUE)",
-        "collid": 0
-      },
-      {
-        "id": 9,
-        "name": "Caribou Creek (CARI)",
-        "collid": 0
-      },
-      {
-        "id": 10,
-        "name": "Caribou-Poker Creeks Research Watershed (BONA)",
-        "collid": 0
-      },
-      {
-        "id": 11,
-        "name": "Central Plains Experimental Range (CPER)",
-        "collid": 0
-      },
-      {
-        "id": 12,
-        "name": "Chase Lake National Wildlife Refuge (WOOD)",
-        "collid": 0
-      },
-      {
-        "id": 13,
-        "name": "Como Creek (COMO)",
-        "collid": 0
-      },
-      {
-        "id": 14,
-        "name": "Crampton Lake (CRAM)",
-        "collid": 0
-      },
-      {
-        "id": 15,
-        "name": "Dakota Coteau Field Site (DCFS)",
-        "collid": 0
-      },
-      {
-        "id": 16,
-        "name": "Dead Lake (DELA)",
-        "collid": 0
-      },
-      {
-        "id": 17,
-        "name": "Delta Junction (DEJU)",
-        "collid": 0
-      },
-      {
-        "id": 18,
-        "name": "Disney Wilderness Preserve (DSNY)",
-        "collid": 0
-      },
-      {
-        "id": 19,
-        "name": "Flint River (FLNT)",
-        "collid": 0
-      },
-      {
-        "id": 20,
-        "name": "Great Smoky Mountains National Park (GRSM)",
-        "collid": 0
-      },
-      {
-        "id": 21,
-        "name": "Guanica Forest (GUAN)",
-        "collid": 0
-      },
-      {
-        "id": 22,
-        "name": "Harvard Forest & Quabbin Watershed (HARV)",
-        "collid": 0
-      },
-      {
-        "id": 23,
-        "name": "Healy (HEAL)",
-        "collid": 0
-      },
-      {
-        "id": 24,
-        "name": "Jornada Experimental Range (JORN)",
-        "collid": 0
-      },
-      {
-        "id": 25,
-        "name": "Kings Creek (KING)",
-        "collid": 0
-      },
-      {
-        "id": 26,
-        "name": "Konza Prairie Agroecosystem (KONA)",
-        "collid": 0
-      },
-      {
-        "id": 26,
-        "name": "Konza Prairie Biological Station (KONZ)",
-        "collid": 0
-      },
-      {
-        "id": 27,
-        "name": "Lajas Experimental Station (LAJA)",
-        "collid": 0
-      },
-      {
-        "id": 28,
-        "name": "Lake Barco (BARC)",
-        "collid": 0
-      },
-      {
-        "id": 29,
-        "name": "Lake Suggs (SUGG)",
-        "collid": 0
-      },
-      {
-        "id": 30,
-        "name": "LeConte Creek (LECO)",
-        "collid": 0
-      },
-      {
-        "id": 31,
-        "name": "Lenoir Landing (LENO)",
-        "collid": 0
-      },
-      {
-        "id": 32,
-        "name": "Lewis Run (LEWI)",
-        "collid": 0
-      },
-      {
-        "id": 33,
-        "name": "Little Rock Lake (LIRO)",
-        "collid": 0
-      },
-      {
-        "id": 34,
-        "name": "Lower Hop Brook (HOPB)",
-        "collid": 0
-      },
-      {
-        "id": 35,
-        "name": "Lower Teakettle (TEAK)",
-        "collid": 0
-      },
-      {
-        "id": 36,
-        "name": "Lower Tombigbee River (TOMB)",
-        "collid": 0
-      },
-      {
-        "id": 37,
-        "name": "Lyndon B. Johnson National Grassland (CLBJ)",
-        "collid": 0
-      },
-      {
-        "id": 38,
-        "name": "Martha Creek (MART)",
-        "collid": 0
-      },
-      {
-        "id": 39,
-        "name": "Marvin Klemme Range Research Station (OAES)",
-        "collid": 0
-      },
-      {
-        "id": 40,
-        "name": "Mayfield Creek (MAYF)",
-        "collid": 0
-      },
-      {
-        "id": 41,
-        "name": "McDiffett Creek (MCDI)",
-        "collid": 0
-      },
-      {
-        "id": 42,
-        "name": "McRae Creek (MCRA)",
-        "collid": 0
-      },
-      {
-        "id": 43,
-        "name": "Moab (MOAB)",
-        "collid": 0
-      },
-      {
-        "id": 44,
-        "name": "Mountain Lake Biological Station (MLBS)",
-        "collid": 0
-      },
-      {
-        "id": 45,
-        "name": "Niwot Ridge (NIWO)",
-        "collid": 0
-      },
-      {
-        "id": 46,
-        "name": "North Sterling (STER)",
-        "collid": 0
-      },
-      {
-        "id": 47,
-        "name": "Northern Great Plains Research Laboratory (NOGP)",
-        "collid": 0
-      },
-      {
-        "id": 48,
-        "name": "Oak Ridge (ORNL)",
-        "collid": 0
-      },
-      {
-        "id": 49,
-        "name": "Oksrukuyik Creek (OKSR)",
-        "collid": 0
-      },
-      {
-        "id": 50,
-        "name": "Onaqui (ONAQ)",
-        "collid": 0
-      },
-      {
-        "id": 51,
-        "name": "Ordway-Swisher Biological Station (OSBS)",
-        "collid": 0
-      },
-      {
-        "id": 52,
-        "name": "Posey Creek (POSE)",
-        "collid": 0
-      },
-      {
-        "id": 53,
-        "name": "Prairie Lake (PRLA)",
-        "collid": 0
-      },
-      {
-        "id": 54,
-        "name": "Prairie Pothole (PRPO)",
-        "collid": 0
-      },
-      {
-        "id": 55,
-        "name": "Pringle Creek (PRIN)",
-        "collid": 0
-      },
-      {
-        "id": 56,
-        "name": "Pu'u Maka'ala Natural Area Reserve (PUUM)",
-        "collid": 0
-      },
-      {
-        "id": 57,
-        "name": "Red Butte Creek (REDB)",
-        "collid": 0
-      },
-      {
-        "id": 58,
-        "name": "Rio Cupeyes (CUPE)",
-        "collid": 0
-      },
-      {
-        "id": 59,
-        "name": "Rio Guilarte (GUIL)",
-        "collid": 0
-      },
-      {
-        "id": 60,
-        "name": "Rocky Mountains (RMNP)",
-        "collid": 0
-      },
-      {
-        "id": 61,
-        "name": "San Joaquin Experimental Range (SJER)",
-        "collid": 0
-      },
-      {
-        "id": 62,
-        "name": "Santa Rita Experimental Range (SRER)",
-        "collid": 0
-      },
-      {
-        "id": 63,
-        "name": "Smithsonian Conservation Biology Institute (SCBI)",
-        "collid": 0
-      },
-      {
-        "id": 64,
-        "name": "Smithsonian Environmental Research Center (SERC)",
-        "collid": 0
-      },
-      {
-        "id": 65,
-        "name": "Soaproot Saddle (SOAP)",
-        "collid": 0
-      },
-      {
-        "id": 66,
-        "name": "Steigerwaldt-Chequamegon (STEI)",
-        "collid": 0
-      },
-      {
-        "id": 67,
-        "name": "Sycamore Creek (SYCA)",
-        "collid": 0
-      },
-      {
-        "id": 68,
-        "name": "Talladega National Forest (TALL)",
-        "collid": 0
-      },
-      {
-        "id": 69,
-        "name": "Teakettle Creek - Watershed 2 (TECR)",
-        "collid": 0
-      },
-      {
-        "id": 70,
-        "name": "The Jones Center At Ichauway (JERC)",
-        "collid": 0
-      },
-      {
-        "id": 71,
-        "name": "Toolik Field Station (TOOL)",
-        "collid": 0
-      },
-      {
-        "id": 72,
-        "name": "Toolik Lake (TOOK)",
-        "collid": 0
-      },
-      {
-        "id": 73,
-        "name": "Treehaven (TREE)",
-        "collid": 0
-      },
-      {
-        "id": 74,
-        "name": "University of Kansas Field Station (UKFS)",
-        "collid": 0
-      },
-      {
-        "id": 75,
-        "name": "University of Notre Dame Environmental Research Center (UNDE)",
-        "collid": 0
-      },
-      {
-        "id": 76,
-        "name": "Upper Big Creek (BIGC)",
-        "collid": 0
-      },
-      {
-        "id": 77,
-        "name": "Utqiaġvik (BARR)",
-        "collid": 0
-      },
-      {
-        "id": 78,
-        "name": "Walker Branch (WALK)",
-        "collid": 0
-      },
-      {
-        "id": 79,
-        "name": "West St Louis Creek (WLOU)",
-        "collid": 0
-      },
-      {
-        "id": 80,
-        "name": "Wind River Experimental Forest (WREF)",
-        "collid": 0
-      },
-      {
-        "id": 81,
-        "name": "Yellowstone National Park (YELL)",
-        "collid": 0
-      }
+      { "name": "Abby Road (ABBY)", "collid": 8075 },
+      { "name": "Arikaree River (ARIK)", "collid": 8076 },
+      { "name": "Lake Barco (BARC)", "collid": 8077 },
+      { "name": "Utqiaġvik (BARR)", "collid": 8078 },
+      { "name": "Bartlett Experimental Forest (BART)", "collid": 8079 },
+      { "name": "Upper Big Creek (BIGC)", "collid": 8080 },
+      { "name": "Blandy Experimental Farm (BLAN)", "collid": 8081 },
+      { "name": "Blacktail Deer Creek (BLDE)", "collid": 8082 },
+      { "name": "Blue River (BLUE)", "collid": 8083 },
+      { "name": "Black Warrior River (BLWA)", "collid": 8084 },
+      { "name": "Caribou-Poker Creeks Research Watershed (BONA)", "collid": 8085 },
+      { "name": "Caribou Creek (CARI)", "collid": 8086 },
+      { "name": "Lyndon B. Johnson National Grassland (CLBJ)", "collid": 8087 },
+      { "name": "Como Creek (COMO)", "collid": 8088 },
+      { "name": "Central Plains Experimental Range (CPER)", "collid": 8089 },
+      { "name": "Crampton Lake (CRAM)", "collid": 8090 },
+      { "name": "Río Cupeyes (CUPE)", "collid": 8091 },
+      { "name": "Dakota Coteau Field Site (DCFS)", "collid": 8092 },
+      { "name": "Delta Junction (DEJU)", "collid": 8093 },
+      { "name": "Dead Lake (DELA)", "collid": 8094 },
+      { "name": "Disney Wilderness Preserve (DSNY)", "collid": 8095 },
+      { "name": "Flint River (FLNT)", "collid": 8096 },
+      { "name": "Great Smoky Mountains National Park (GRSM)", "collid": 8097 },
+      { "name": "Guanica Forest (GUAN)", "collid": 8098 },
+      { "name": "Río Yahuecas (GUIL)", "collid": 8099 },
+      { "name": "Harvard Forest & Quabbin Watershed (HARV)", "collid": 8100 },
+      { "name": "Healy (HEAL)", "collid": 8101 },
+      { "name": "Lower Hop Brook (HOPB)", "collid": 8102 },
+      { "name": "The Jones Center At Ichauway (JERC)", "collid": 8103 },
+      { "name": "Jornada Experimental Range (JORN)", "collid": 8104 },
+      { "name": "Kings Creek (KING)", "collid": 8105 },
+      { "name": "Konza Prairie Agroecosystem (KONA)", "collid": 8106 },
+      { "name": "Konza Prairie Biological Station (KONZ)", "collid": 8107 },
+      { "name": "Lajas Experimental Station (LAJA)", "collid": 8108 },
+      { "name": "LeConte Creek (LECO)", "collid": 8109 },
+      { "name": "Lenoir Landing (LENO)", "collid": 8110 },
+      { "name": "Lewis Run (LEWI)", "collid": 8111 },
+      { "name": "Little Rock Lake (LIRO)", "collid": 8112 },
+      { "name": "Martha Creek (MART)", "collid": 8113 },
+      { "name": "Mayfield Creek (MAYF)", "collid": 8114 },
+      { "name": "McDiffett Creek (MCDI)", "collid": 8115 },
+      { "name": "McRae Creek (MCRA)", "collid": 8116 },
+      { "name": "Mountain Lake Biological Station (MLBS)", "collid": 8117 },
+      { "name": "Moab (MOAB)", "collid": 8118 },
+      { "name": "Niwot Ridge (NIWO)", "collid": 8119 },
+      { "name": "Northern Great Plains Research Laboratory (NOGP)", "collid": 8120 },
+      { "name": "Marvin Klemme Range Research Station (OAES)", "collid": 8121 },
+      { "name": "Oksrukuyik Creek (OKSR)", "collid": 8122 },
+      { "name": "Onaqui (ONAQ)", "collid": 8123 },
+      { "name": "Oak Ridge (ORNL)", "collid": 8124 },
+      { "name": "Ordway-Swisher Biological Station (OSBS)", "collid": 8125 },
+      { "name": "Posey Creek (POSE)", "collid": 8126 },
+      { "name": "Pringle Creek (PRIN)", "collid": 8127 },
+      { "name": "Prairie Lake (PRLA)", "collid": 8128 },
+      { "name": "Prairie Pothole (PRPO)", "collid": 8129 },
+      { "name": "Pu'u Maka'ala Natural Area Reserve (PUUM)", "collid": 8130 },
+      { "name": "Red Butte Creek (REDB)", "collid": 8131 },
+      { "name": "Rocky Mountains (RMNP)", "collid": 8132 },
+      { "name": "Smithsonian Conservation Biology Institute (SCBI)", "collid": 8133 },
+      { "name": "Smithsonian Environmental Research Center (SERC)", "collid": 8134 },
+      { "name": "San Joaquin Experimental Range (SJER)", "collid": 8135 },
+      { "name": "Soaproot Saddle (SOAP)", "collid": 8136 },
+      { "name": "Santa Rita Experimental Range (SRER)", "collid": 8137 },
+      { "name": "Steigerwaldt-Chequamegon (STEI)", "collid": 8138 },
+      { "name": "North Sterling (STER)", "collid": 8139 },
+      { "name": "Lake Suggs (SUGG)", "collid": 8140 },
+      { "name": "Sycamore Creek (SYCA)", "collid": 8141 },
+      { "name": "Talladega National Forest (TALL)", "collid": 8142 },
+      { "name": "Lower Teakettle (TEAK)", "collid": 8143 },
+      { "name": "Teakettle Creek - Watershed 2 (TECR)", "collid": 8144 },
+      { "name": "Lower Tombigbee River (TOMB)", "collid": 8145 },
+      { "name": "Toolik Lake (TOOK)", "collid": 8146 },
+      { "name": "Toolik Field Station (TOOL)", "collid": 8147 },
+      { "name": "Treehaven (TREE)", "collid": 8148 },
+      { "name": "University of Kansas Field Station (UKFS)", "collid": 8149 },
+      { "name": "University of Notre Dame Environmental Research Center (UNDE)", "collid": 8150 },
+      { "name": "Walker Branch (WALK)", "collid": 8151 },
+      { "name": "West St Louis Creek (WLOU)", "collid": 8152 },
+      { "name": "Chase Lake National Wildlife Refuge (WOOD)", "collid": 8153 },
+      { "name": "Wind River Experimental Forest (WREF)", "collid": 8154 },
+      { "name": "Yellowstone National Park (YELL)", "collid": 8155 },
+  
+      { "name": "Domain 01 (Northeast)", "collid": 8156 },
+      { "name": "Domain 02 (Mid-Atlantic)", "collid": 8157 },
+      { "name": "Domain 03 (Southeast)", "collid": 8158 },
+      { "name": "Domain 04 (Atlantic Neotropical)", "collid": 8159 },
+      { "name": "Domain 05 (Great Lakes)", "collid": 8160 },
+      { "name": "Domain 06 (Prairie Peninsula)", "collid": 8161 },
+      { "name": "Domain 07 (Appalachians & Cumberland Plateau)", "collid": 8162 },
+      { "name": "Domain 08 (Ozarks Complex)", "collid": 8163 },
+      { "name": "Domain 09 (Northern Plains)", "collid": 8164 },
+      { "name": "Domain 10 (Central Plains)", "collid": 8165 },
+      { "name": "Domain 11 (Southern Plains)", "collid": 8166 },
+      { "name": "Domain 12 (Northern Rockies)", "collid": 8167 },
+      { "name": "Domain 13 (Southern Rockies & Colorado Plateau)", "collid": 8168 },
+      { "name": "Domain 14 (Desert Southwest)", "collid": 8169 },
+      { "name": "Domain 15 (Great Basin)", "collid": 8170 },
+      { "name": "Domain 16 (Pacific Northwest)", "collid": 8171 },
+      { "name": "Domain 17 (Pacific Southwest)", "collid": 8172 },
+      { "name": "Domain 18 (Tundra)", "collid": 8173 },
+      { "name": "Domain 19 (Taiga)", "collid": 8174 },
+      { "name": "Domain 20 (Pacific Tropical)", "collid": 8175 }
     ]
   },
   {
-    "id": 103,
-    "name": "Mosquitoes (with ID Key)",
+    "name": "Mosquitoes",
     "children": [
-      {
-        "id": 104,
-        "name": "D01 - Northeast",
-        "collid": 7991
-      },
-      {
-        "id": 105,
-        "name": "D02 - Mid-Atlantic",
-        "collid": 7992
-      },
-      {
-        "id": 106,
-        "name": "D03 - Southeast",
-        "collid": 7993
-      },
-      {
-        "id": 107,
-        "name": "D04 - Atlantic Neotropical",
-        "collid": 7994
-      },
-      {
-        "id": 108,
-        "name": "D05 - Great Lakes",
-        "collid": 7995
-      },
-      {
-        "id": 109,
-        "name": "D06 - Prairie Peninsula",
-        "collid": 7996
-      },
-      {
-        "id": 110,
-        "name": "D07 - Appalachians & Cumberland Plateau",
-        "collid": 7997
-      },
-      {
-        "id": 111,
-        "name": "D08 - Ozarks Complex",
-        "collid": 7998
-      },
-      {
-        "id": 112,
-        "name": "D09 - Northern Plains",
-        "collid": 7999
-      },
-      {
-        "id": 113,
-        "name": "D10 - Central Plains",
-        "collid": 8000
-      },
-      {
-        "id": 114,
-        "name": "D11 - Southern Plains",
-        "collid": 8003
-      },
-      {
-        "id": 115,
-        "name": "D12 - Northern Rockies",
-        "collid": 8004
-      },
-      {
-        "id": 116,
-        "name": "D13 - Southern Rockies & Colorado Plateau",
-        "collid": 8005
-      },
-      {
-        "id": 117,
-        "name": "D14 - Desert Southwest",
-        "collid": 8006
-      },
-      {
-        "id": 118,
-        "name": "D15 - Great Basin",
-        "collid": 8007
-      },
-      {
-        "id": 119,
-        "name": "D16 - Pacific Northwest",
-        "collid": 8008
-      },
-      {
-        "id": 120,
-        "name": "D17 - Pacific Southwest",
-        "collid": 8010
-      },
-      {
-        "id": 121,
-        "name": "D18 - Tundra",
-        "collid": 8011
-      },
-      {
-        "id": 122,
-        "name": "D19 - Taiga",
-        "collid": 8012
-      }
+      { "name": "Caribou-Poker Creeks Research Watershed (BONA)", "collid": 8351 },
+      { "name": "Lyndon B. Johnson National Grassland (CLBJ)", "collid": 8352 },
+      { "name": "Central Plains Experimental Range (CPER)", "collid": 8353 },
+      { "name": "Guanica Forest (GUAN)", "collid": 8354 },
+      { "name": "Harvard Forest & Quabbin Watershed (HARV)", "collid": 8355 },
+      { "name": "Konza Prairie Biological Station (KONZ)", "collid": 8356 },
+      { "name": "Niwot Ridge (NIWO)", "collid": 8357 },
+      { "name": "Onaqui (ONAQ)", "collid": 8358 },
+      { "name": "Oak Ridge (ORNL)", "collid": 8359 },
+      { "name": "Ordway-Swisher Biological Station (OSBS)", "collid": 8360 },
+      { "name": "Pu'u Maka'ala Natural Area Reserve (PUUM)", "collid": 8361 },
+      { "name": "Smithsonian Conservation Biology Institute (SCBI)", "collid": 8362 },
+      { "name": "San Joaquin Experimental Range (SJER)", "collid": 8363 },
+      { "name": "Santa Rita Experimental Range (SRER)", "collid": 8364 },
+      { "name": "Talladega National Forest (TALL)", "collid": 8365 },
+      { "name": "Toolik Field Station (TOOL)", "collid": 8366 },
+      { "name": "University of Notre Dame Environmental Research Center (UNDE)", "collid": 8367 },
+      { "name": "Chase Lake National Wildlife Refuge (WOOD)", "collid": 8368 },
+      { "name": "Wind River Experimental Forest (WREF)", "collid": 8369 },
+      { "name": "Yellowstone National Park (YELL)", "collid": 8370 },
+      { "name": "Abby Road (ABBY)", "collid": 8371 },
+      { "name": "Utqiaġvik (BARR)", "collid": 8372 },
+      { "name": "Bartlett Experimental Forest (BART)", "collid": 8373 },
+      { "name": "Blandy Experimental Farm (BLAN)", "collid": 8374 },
+      { "name": "Dakota Coteau Field Site (DCFS)", "collid": 8375 },
+      { "name": "Delta Junction (DEJU)", "collid": 8376 },
+      { "name": "Dead Lake (DELA)", "collid": 8377 },
+      { "name": "Disney Wilderness Preserve (DSNY)", "collid": 8378 },
+      { "name": "Great Smoky Mountains National Park (GRSM)", "collid": 8379 },
+      { "name": "Healy (HEAL)", "collid": 8380 },
+      { "name": "The Jones Center At Ichauway (JERC)", "collid": 8381 },
+      { "name": "Jornada Experimental Range (JORN)", "collid": 8382 },
+      { "name": "Konza Prairie Agroecosystem (KONA)", "collid": 8383 },
+      { "name": "Lajas Experimental Station (LAJA)", "collid": 8384 },
+      { "name": "Lenoir Landing (LENO)", "collid": 8385 },
+      { "name": "Mountain Lake Biological Station (MLBS)", "collid": 8386 },
+      { "name": "Moab (MOAB)", "collid": 8387 },
+      { "name": "Northern Great Plains Research Laboratory (NOGP)", "collid": 8388 },
+      { "name": "Marvin Klemme Range Research Station (OAES)", "collid": 8389 },
+      { "name": "Rocky Mountains (RMNP)", "collid": 8390 },
+      { "name": "Smithsonian Environmental Research Center (SERC)", "collid": 8391 },
+      { "name": "Soaproot Saddle (SOAP)", "collid": 8392 },
+      { "name": "Steigerwaldt-Chequamegon (STEI)", "collid": 8393 },
+      { "name": "North Sterling (STER)", "collid": 8394 },
+      { "name": "Lower Teakettle (TEAK)", "collid": 8395 },
+      { "name": "Treehaven (TREE)", "collid": 8396 },
+      { "name": "University of Kansas Field Station (UKFS)", "collid": 8397 },
+  
+      { "name": "Domain 01 (Northeast)", "collid": 8398 },
+      { "name": "Domain 02 (Mid-Atlantic)", "collid": 8399 },
+      { "name": "Domain 03 (Southeast)", "collid": 8400 },
+      { "name": "Domain 04 (Atlantic Neotropical)", "collid": 8401 },
+      { "name": "Domain 05 (Great Lakes)", "collid": 8402 },
+      { "name": "Domain 06 (Prairie Peninsula)", "collid": 8403 },
+      { "name": "Domain 07 (Appalachians & Cumberland Plateau)", "collid": 8404 },
+      { "name": "Domain 08 (Ozarks Complex)", "collid": 8405 },
+      { "name": "Domain 09 (Northern Plains)", "collid": 8406 },
+      { "name": "Domain 10 (Central Plains)", "collid": 8407 },
+      { "name": "Domain 11 (Southern Plains)", "collid": 8408 },
+      { "name": "Domain 12 (Northern Rockies)", "collid": 8409 },
+      { "name": "Domain 13 (Southern Rockies & Colorado Plateau)", "collid": 8410 },
+      { "name": "Domain 14 (Desert Southwest)", "collid": 8411 },
+      { "name": "Domain 15 (Great Basin)", "collid": 8412 },
+      { "name": "Domain 16 (Pacific Northwest)", "collid": 8413 },
+      { "name": "Domain 17 (Pacific Southwest)", "collid": 8414 },
+      { "name": "Domain 18 (Tundra)", "collid": 8415 },
+      { "name": "Domain 19 (Taiga)", "collid": 8416 },
+      { "name": "Domain 20 (Pacific Tropical)", "collid": 8417 }
     ]
   },
   {
-    "id": 7,
-    "name": "Macroinvertebrates",
-    "children": [
-      {
-        "id": 2,
-        "name": "Abby Road (ABBY)",
-        "collid": 0
-      },
-      {
-        "id": 3,
-        "name": "Arikaree River (ARIK)",
-        "collid": 0
-      },
-      {
-        "id": 4,
-        "name": "Bartlett Experimental Forest (BART)",
-        "collid": 0
-      },
-      {
-        "id": 5,
-        "name": "Black Warrior River (BLWA)",
-        "collid": 0
-      },
-      {
-        "id": 6,
-        "name": "Blacktail Deer Creek (BLDE)",
-        "collid": 0
-      },
-      {
-        "id": 7,
-        "name": "Blandy Experimental Farm (BLAN)",
-        "collid": 0
-      },
-      {
-        "id": 8,
-        "name": "Blue River (BLUE)",
-        "collid": 0
-      },
-      {
-        "id": 9,
-        "name": "Caribou Creek (CARI)",
-        "collid": 0
-      },
-      {
-        "id": 10,
-        "name": "Caribou-Poker Creeks Research Watershed (BONA)",
-        "collid": 0
-      },
-      {
-        "id": 11,
-        "name": "Central Plains Experimental Range (CPER)",
-        "collid": 0
-      },
-      {
-        "id": 12,
-        "name": "Chase Lake National Wildlife Refuge (WOOD)",
-        "collid": 0
-      },
-      {
-        "id": 13,
-        "name": "Como Creek (COMO)",
-        "collid": 0
-      },
-      {
-        "id": 14,
-        "name": "Crampton Lake (CRAM)",
-        "collid": 0
-      },
-      {
-        "id": 15,
-        "name": "Dakota Coteau Field Site (DCFS)",
-        "collid": 0
-      },
-      {
-        "id": 16,
-        "name": "Dead Lake (DELA)",
-        "collid": 0
-      },
-      {
-        "id": 17,
-        "name": "Delta Junction (DEJU)",
-        "collid": 0
-      },
-      {
-        "id": 18,
-        "name": "Disney Wilderness Preserve (DSNY)",
-        "collid": 0
-      },
-      {
-        "id": 19,
-        "name": "Flint River (FLNT)",
-        "collid": 0
-      },
-      {
-        "id": 20,
-        "name": "Great Smoky Mountains National Park (GRSM)",
-        "collid": 0
-      },
-      {
-        "id": 21,
-        "name": "Guanica Forest (GUAN)",
-        "collid": 0
-      },
-      {
-        "id": 22,
-        "name": "Harvard Forest & Quabbin Watershed (HARV)",
-        "collid": 0
-      },
-      {
-        "id": 23,
-        "name": "Healy (HEAL)",
-        "collid": 0
-      },
-      {
-        "id": 24,
-        "name": "Jornada Experimental Range (JORN)",
-        "collid": 0
-      },
-      {
-        "id": 25,
-        "name": "Kings Creek (KING)",
-        "collid": 0
-      },
-      {
-        "id": 26,
-        "name": "Konza Prairie Agroecosystem (KONA)",
-        "collid": 0
-      },
-      {
-        "id": 26,
-        "name": "Konza Prairie Biological Station (KONZ)",
-        "collid": 0
-      },
-      {
-        "id": 27,
-        "name": "Lajas Experimental Station (LAJA)",
-        "collid": 0
-      },
-      {
-        "id": 28,
-        "name": "Lake Barco (BARC)",
-        "collid": 0
-      },
-      {
-        "id": 29,
-        "name": "Lake Suggs (SUGG)",
-        "collid": 0
-      },
-      {
-        "id": 30,
-        "name": "LeConte Creek (LECO)",
-        "collid": 0
-      },
-      {
-        "id": 31,
-        "name": "Lenoir Landing (LENO)",
-        "collid": 0
-      },
-      {
-        "id": 32,
-        "name": "Lewis Run (LEWI)",
-        "collid": 0
-      },
-      {
-        "id": 33,
-        "name": "Little Rock Lake (LIRO)",
-        "collid": 0
-      },
-      {
-        "id": 34,
-        "name": "Lower Hop Brook (HOPB)",
-        "collid": 0
-      },
-      {
-        "id": 35,
-        "name": "Lower Teakettle (TEAK)",
-        "collid": 0
-      },
-      {
-        "id": 36,
-        "name": "Lower Tombigbee River (TOMB)",
-        "collid": 0
-      },
-      {
-        "id": 37,
-        "name": "Lyndon B. Johnson National Grassland (CLBJ)",
-        "collid": 0
-      },
-      {
-        "id": 38,
-        "name": "Martha Creek (MART)",
-        "collid": 0
-      },
-      {
-        "id": 39,
-        "name": "Marvin Klemme Range Research Station (OAES)",
-        "collid": 0
-      },
-      {
-        "id": 40,
-        "name": "Mayfield Creek (MAYF)",
-        "collid": 0
-      },
-      {
-        "id": 41,
-        "name": "McDiffett Creek (MCDI)",
-        "collid": 0
-      },
-      {
-        "id": 42,
-        "name": "McRae Creek (MCRA)",
-        "collid": 0
-      },
-      {
-        "id": 43,
-        "name": "Moab (MOAB)",
-        "collid": 0
-      },
-      {
-        "id": 44,
-        "name": "Mountain Lake Biological Station (MLBS)",
-        "collid": 0
-      },
-      {
-        "id": 45,
-        "name": "Niwot Ridge (NIWO)",
-        "collid": 0
-      },
-      {
-        "id": 46,
-        "name": "North Sterling (STER)",
-        "collid": 0
-      },
-      {
-        "id": 47,
-        "name": "Northern Great Plains Research Laboratory (NOGP)",
-        "collid": 0
-      },
-      {
-        "id": 48,
-        "name": "Oak Ridge (ORNL)",
-        "collid": 0
-      },
-      {
-        "id": 49,
-        "name": "Oksrukuyik Creek (OKSR)",
-        "collid": 0
-      },
-      {
-        "id": 50,
-        "name": "Onaqui (ONAQ)",
-        "collid": 0
-      },
-      {
-        "id": 51,
-        "name": "Ordway-Swisher Biological Station (OSBS)",
-        "collid": 0
-      },
-      {
-        "id": 52,
-        "name": "Posey Creek (POSE)",
-        "collid": 0
-      },
-      {
-        "id": 53,
-        "name": "Prairie Lake (PRLA)",
-        "collid": 0
-      },
-      {
-        "id": 54,
-        "name": "Prairie Pothole (PRPO)",
-        "collid": 0
-      },
-      {
-        "id": 55,
-        "name": "Pringle Creek (PRIN)",
-        "collid": 0
-      },
-      {
-        "id": 56,
-        "name": "Pu'u Maka'ala Natural Area Reserve (PUUM)",
-        "collid": 0
-      },
-      {
-        "id": 57,
-        "name": "Red Butte Creek (REDB)",
-        "collid": 0
-      },
-      {
-        "id": 58,
-        "name": "Rio Cupeyes (CUPE)",
-        "collid": 0
-      },
-      {
-        "id": 59,
-        "name": "Rio Guilarte (GUIL)",
-        "collid": 0
-      },
-      {
-        "id": 60,
-        "name": "Rocky Mountains (RMNP)",
-        "collid": 0
-      },
-      {
-        "id": 61,
-        "name": "San Joaquin Experimental Range (SJER)",
-        "collid": 0
-      },
-      {
-        "id": 62,
-        "name": "Santa Rita Experimental Range (SRER)",
-        "collid": 0
-      },
-      {
-        "id": 63,
-        "name": "Smithsonian Conservation Biology Institute (SCBI)",
-        "collid": 0
-      },
-      {
-        "id": 64,
-        "name": "Smithsonian Environmental Research Center (SERC)",
-        "collid": 0
-      },
-      {
-        "id": 65,
-        "name": "Soaproot Saddle (SOAP)",
-        "collid": 0
-      },
-      {
-        "id": 66,
-        "name": "Steigerwaldt-Chequamegon (STEI)",
-        "collid": 0
-      },
-      {
-        "id": 67,
-        "name": "Sycamore Creek (SYCA)",
-        "collid": 0
-      },
-      {
-        "id": 68,
-        "name": "Talladega National Forest (TALL)",
-        "collid": 0
-      },
-      {
-        "id": 69,
-        "name": "Teakettle Creek - Watershed 2 (TECR)",
-        "collid": 0
-      },
-      {
-        "id": 70,
-        "name": "The Jones Center At Ichauway (JERC)",
-        "collid": 0
-      },
-      {
-        "id": 71,
-        "name": "Toolik Field Station (TOOL)",
-        "collid": 0
-      },
-      {
-        "id": 72,
-        "name": "Toolik Lake (TOOK)",
-        "collid": 0
-      },
-      {
-        "id": 73,
-        "name": "Treehaven (TREE)",
-        "collid": 0
-      },
-      {
-        "id": 74,
-        "name": "University of Kansas Field Station (UKFS)",
-        "collid": 0
-      },
-      {
-        "id": 75,
-        "name": "University of Notre Dame Environmental Research Center (UNDE)",
-        "collid": 0
-      },
-      {
-        "id": 76,
-        "name": "Upper Big Creek (BIGC)",
-        "collid": 0
-      },
-      {
-        "id": 77,
-        "name": "Utqiaġvik (BARR)",
-        "collid": 0
-      },
-      {
-        "id": 78,
-        "name": "Walker Branch (WALK)",
-        "collid": 0
-      },
-      {
-        "id": 79,
-        "name": "West St Louis Creek (WLOU)",
-        "collid": 0
-      },
-      {
-        "id": 80,
-        "name": "Wind River Experimental Forest (WREF)",
-        "collid": 0
-      },
-      {
-        "id": 81,
-        "name": "Yellowstone National Park (YELL)",
-        "collid": 0
-      }
-    ]
-  },
-  {
-    "id": 7,
     "name": "Ticks",
     "children": [
-      {
-        "id": 2,
-        "name": "Abby Road (ABBY)",
-        "collid": 0
-      },
-      {
-        "id": 3,
-        "name": "Arikaree River (ARIK)",
-        "collid": 0
-      },
-      {
-        "id": 4,
-        "name": "Bartlett Experimental Forest (BART)",
-        "collid": 0
-      },
-      {
-        "id": 5,
-        "name": "Black Warrior River (BLWA)",
-        "collid": 0
-      },
-      {
-        "id": 6,
-        "name": "Blacktail Deer Creek (BLDE)",
-        "collid": 0
-      },
-      {
-        "id": 7,
-        "name": "Blandy Experimental Farm (BLAN)",
-        "collid": 0
-      },
-      {
-        "id": 8,
-        "name": "Blue River (BLUE)",
-        "collid": 0
-      },
-      {
-        "id": 9,
-        "name": "Caribou Creek (CARI)",
-        "collid": 0
-      },
-      {
-        "id": 10,
-        "name": "Caribou-Poker Creeks Research Watershed (BONA)",
-        "collid": 0
-      },
-      {
-        "id": 11,
-        "name": "Central Plains Experimental Range (CPER)",
-        "collid": 0
-      },
-      {
-        "id": 12,
-        "name": "Chase Lake National Wildlife Refuge (WOOD)",
-        "collid": 0
-      },
-      {
-        "id": 13,
-        "name": "Como Creek (COMO)",
-        "collid": 0
-      },
-      {
-        "id": 14,
-        "name": "Crampton Lake (CRAM)",
-        "collid": 0
-      },
-      {
-        "id": 15,
-        "name": "Dakota Coteau Field Site (DCFS)",
-        "collid": 0
-      },
-      {
-        "id": 16,
-        "name": "Dead Lake (DELA)",
-        "collid": 0
-      },
-      {
-        "id": 17,
-        "name": "Delta Junction (DEJU)",
-        "collid": 0
-      },
-      {
-        "id": 18,
-        "name": "Disney Wilderness Preserve (DSNY)",
-        "collid": 0
-      },
-      {
-        "id": 19,
-        "name": "Flint River (FLNT)",
-        "collid": 0
-      },
-      {
-        "id": 20,
-        "name": "Great Smoky Mountains National Park (GRSM)",
-        "collid": 0
-      },
-      {
-        "id": 21,
-        "name": "Guanica Forest (GUAN)",
-        "collid": 0
-      },
-      {
-        "id": 22,
-        "name": "Harvard Forest & Quabbin Watershed (HARV)",
-        "collid": 0
-      },
-      {
-        "id": 23,
-        "name": "Healy (HEAL)",
-        "collid": 0
-      },
-      {
-        "id": 24,
-        "name": "Jornada Experimental Range (JORN)",
-        "collid": 0
-      },
-      {
-        "id": 25,
-        "name": "Kings Creek (KING)",
-        "collid": 0
-      },
-      {
-        "id": 26,
-        "name": "Konza Prairie Agroecosystem (KONA)",
-        "collid": 0
-      },
-      {
-        "id": 26,
-        "name": "Konza Prairie Biological Station (KONZ)",
-        "collid": 0
-      },
-      {
-        "id": 27,
-        "name": "Lajas Experimental Station (LAJA)",
-        "collid": 0
-      },
-      {
-        "id": 28,
-        "name": "Lake Barco (BARC)",
-        "collid": 0
-      },
-      {
-        "id": 29,
-        "name": "Lake Suggs (SUGG)",
-        "collid": 0
-      },
-      {
-        "id": 30,
-        "name": "LeConte Creek (LECO)",
-        "collid": 0
-      },
-      {
-        "id": 31,
-        "name": "Lenoir Landing (LENO)",
-        "collid": 0
-      },
-      {
-        "id": 32,
-        "name": "Lewis Run (LEWI)",
-        "collid": 0
-      },
-      {
-        "id": 33,
-        "name": "Little Rock Lake (LIRO)",
-        "collid": 0
-      },
-      {
-        "id": 34,
-        "name": "Lower Hop Brook (HOPB)",
-        "collid": 0
-      },
-      {
-        "id": 35,
-        "name": "Lower Teakettle (TEAK)",
-        "collid": 0
-      },
-      {
-        "id": 36,
-        "name": "Lower Tombigbee River (TOMB)",
-        "collid": 0
-      },
-      {
-        "id": 37,
-        "name": "Lyndon B. Johnson National Grassland (CLBJ)",
-        "collid": 0
-      },
-      {
-        "id": 38,
-        "name": "Martha Creek (MART)",
-        "collid": 0
-      },
-      {
-        "id": 39,
-        "name": "Marvin Klemme Range Research Station (OAES)",
-        "collid": 0
-      },
-      {
-        "id": 40,
-        "name": "Mayfield Creek (MAYF)",
-        "collid": 0
-      },
-      {
-        "id": 41,
-        "name": "McDiffett Creek (MCDI)",
-        "collid": 0
-      },
-      {
-        "id": 42,
-        "name": "McRae Creek (MCRA)",
-        "collid": 0
-      },
-      {
-        "id": 43,
-        "name": "Moab (MOAB)",
-        "collid": 0
-      },
-      {
-        "id": 44,
-        "name": "Mountain Lake Biological Station (MLBS)",
-        "collid": 0
-      },
-      {
-        "id": 45,
-        "name": "Niwot Ridge (NIWO)",
-        "collid": 0
-      },
-      {
-        "id": 46,
-        "name": "North Sterling (STER)",
-        "collid": 0
-      },
-      {
-        "id": 47,
-        "name": "Northern Great Plains Research Laboratory (NOGP)",
-        "collid": 0
-      },
-      {
-        "id": 48,
-        "name": "Oak Ridge (ORNL)",
-        "collid": 0
-      },
-      {
-        "id": 49,
-        "name": "Oksrukuyik Creek (OKSR)",
-        "collid": 0
-      },
-      {
-        "id": 50,
-        "name": "Onaqui (ONAQ)",
-        "collid": 0
-      },
-      {
-        "id": 51,
-        "name": "Ordway-Swisher Biological Station (OSBS)",
-        "collid": 0
-      },
-      {
-        "id": 52,
-        "name": "Posey Creek (POSE)",
-        "collid": 0
-      },
-      {
-        "id": 53,
-        "name": "Prairie Lake (PRLA)",
-        "collid": 0
-      },
-      {
-        "id": 54,
-        "name": "Prairie Pothole (PRPO)",
-        "collid": 0
-      },
-      {
-        "id": 55,
-        "name": "Pringle Creek (PRIN)",
-        "collid": 0
-      },
-      {
-        "id": 56,
-        "name": "Pu'u Maka'ala Natural Area Reserve (PUUM)",
-        "collid": 0
-      },
-      {
-        "id": 57,
-        "name": "Red Butte Creek (REDB)",
-        "collid": 0
-      },
-      {
-        "id": 58,
-        "name": "Rio Cupeyes (CUPE)",
-        "collid": 0
-      },
-      {
-        "id": 59,
-        "name": "Rio Guilarte (GUIL)",
-        "collid": 0
-      },
-      {
-        "id": 60,
-        "name": "Rocky Mountains (RMNP)",
-        "collid": 0
-      },
-      {
-        "id": 61,
-        "name": "San Joaquin Experimental Range (SJER)",
-        "collid": 0
-      },
-      {
-        "id": 62,
-        "name": "Santa Rita Experimental Range (SRER)",
-        "collid": 0
-      },
-      {
-        "id": 63,
-        "name": "Smithsonian Conservation Biology Institute (SCBI)",
-        "collid": 0
-      },
-      {
-        "id": 64,
-        "name": "Smithsonian Environmental Research Center (SERC)",
-        "collid": 0
-      },
-      {
-        "id": 65,
-        "name": "Soaproot Saddle (SOAP)",
-        "collid": 0
-      },
-      {
-        "id": 66,
-        "name": "Steigerwaldt-Chequamegon (STEI)",
-        "collid": 0
-      },
-      {
-        "id": 67,
-        "name": "Sycamore Creek (SYCA)",
-        "collid": 0
-      },
-      {
-        "id": 68,
-        "name": "Talladega National Forest (TALL)",
-        "collid": 0
-      },
-      {
-        "id": 69,
-        "name": "Teakettle Creek - Watershed 2 (TECR)",
-        "collid": 0
-      },
-      {
-        "id": 70,
-        "name": "The Jones Center At Ichauway (JERC)",
-        "collid": 0
-      },
-      {
-        "id": 71,
-        "name": "Toolik Field Station (TOOL)",
-        "collid": 0
-      },
-      {
-        "id": 72,
-        "name": "Toolik Lake (TOOK)",
-        "collid": 0
-      },
-      {
-        "id": 73,
-        "name": "Treehaven (TREE)",
-        "collid": 0
-      },
-      {
-        "id": 74,
-        "name": "University of Kansas Field Station (UKFS)",
-        "collid": 0
-      },
-      {
-        "id": 75,
-        "name": "University of Notre Dame Environmental Research Center (UNDE)",
-        "collid": 0
-      },
-      {
-        "id": 76,
-        "name": "Upper Big Creek (BIGC)",
-        "collid": 0
-      },
-      {
-        "id": 77,
-        "name": "Utqiaġvik (BARR)",
-        "collid": 0
-      },
-      {
-        "id": 78,
-        "name": "Walker Branch (WALK)",
-        "collid": 0
-      },
-      {
-        "id": 79,
-        "name": "West St Louis Creek (WLOU)",
-        "collid": 0
-      },
-      {
-        "id": 80,
-        "name": "Wind River Experimental Forest (WREF)",
-        "collid": 0
-      },
-      {
-        "id": 81,
-        "name": "Yellowstone National Park (YELL)",
-        "collid": 0
-      }
+      { "name": "Caribou-Poker Creeks Research Watershed (BONA)", "collid": 8485 },
+      { "name": "Lyndon B. Johnson National Grassland (CLBJ)", "collid": 8486 },
+      { "name": "Central Plains Experimental Range (CPER)", "collid": 8487 },
+      { "name": "Guanica Forest (GUAN)", "collid": 8488 },
+      { "name": "Harvard Forest & Quabbin Watershed (HARV)", "collid": 8489 },
+      { "name": "Konza Prairie Biological Station (KONZ)", "collid": 8490 },
+      { "name": "Niwot Ridge (NIWO)", "collid": 8491 },
+      { "name": "Onaqui (ONAQ)", "collid": 8492 },
+      { "name": "Oak Ridge (ORNL)", "collid": 8493 },
+      { "name": "Ordway-Swisher Biological Station (OSBS)", "collid": 8494 },
+      { "name": "Pu'u Maka'ala Natural Area Reserve (PUUM)", "collid": 8495 },
+      { "name": "Smithsonian Conservation Biology Institute (SCBI)", "collid": 8496 },
+      { "name": "San Joaquin Experimental Range (SJER)", "collid": 8497 },
+      { "name": "Santa Rita Experimental Range (SRER)", "collid": 8498 },
+      { "name": "Talladega National Forest (TALL)", "collid": 8499 },
+      { "name": "Toolik Field Station (TOOL)", "collid": 8500 },
+      { "name": "University of Notre Dame Environmental Research Center (UNDE)", "collid": 8501 },
+      { "name": "Chase Lake National Wildlife Refuge (WOOD)", "collid": 8502 },
+      { "name": "Wind River Experimental Forest (WREF)", "collid": 8503 },
+      { "name": "Yellowstone National Park (YELL)", "collid": 8504 },
+      { "name": "Abby Road (ABBY)", "collid": 8505 },
+      { "name": "Utqiaġvik (BARR)", "collid": 8506 },
+      { "name": "Bartlett Experimental Forest (BART)", "collid": 8507 },
+      { "name": "Blandy Experimental Farm (BLAN)", "collid": 8508 },
+      { "name": "Dakota Coteau Field Site (DCFS)", "collid": 8509 },
+      { "name": "Delta Junction (DEJU)", "collid": 8510 },
+      { "name": "Dead Lake (DELA)", "collid": 8511 },
+      { "name": "Disney Wilderness Preserve (DSNY)", "collid": 8512 },
+      { "name": "Great Smoky Mountains National Park (GRSM)", "collid": 8513 },
+      { "name": "Healy (HEAL)", "collid": 8514 },
+      { "name": "The Jones Center At Ichauway (JERC)", "collid": 8515 },
+      { "name": "Jornada Experimental Range (JORN)", "collid": 8516 },
+      { "name": "Konza Prairie Agroecosystem (KONA)", "collid": 8517 },
+      { "name": "Lajas Experimental Station (LAJA)", "collid": 8518 },
+      { "name": "Lenoir Landing (LENO)", "collid": 8519 },
+      { "name": "Mountain Lake Biological Station (MLBS)", "collid": 8520 },
+      { "name": "Moab (MOAB)", "collid": 8521 },
+      { "name": "Northern Great Plains Research Laboratory (NOGP)", "collid": 8522 },
+      { "name": "Marvin Klemme Range Research Station (OAES)", "collid": 8523 },
+      { "name": "Rocky Mountains (RMNP)", "collid": 8524 },
+      { "name": "Smithsonian Environmental Research Center (SERC)", "collid": 8525 },
+      { "name": "Soaproot Saddle (SOAP)", "collid": 8526 },
+      { "name": "Steigerwaldt-Chequamegon (STEI)", "collid": 8527 },
+      { "name": "North Sterling (STER)", "collid": 8528 },
+      { "name": "Lower Teakettle (TEAK)", "collid": 8529 },
+      { "name": "Treehaven (TREE)", "collid": 8530 },
+      { "name": "University of Kansas Field Station (UKFS)", "collid": 8531 },
+  
+      { "name": "Domain 01 (Northeast)", "collid": 8532 },
+      { "name": "Domain 02 (Mid-Atlantic)", "collid": 8533 },
+      { "name": "Domain 03 (Southeast)", "collid": 8534 },
+      { "name": "Domain 04 (Atlantic Neotropical)", "collid": 8535 },
+      { "name": "Domain 05 (Great Lakes)", "collid": 8536 },
+      { "name": "Domain 06 (Prairie Peninsula)", "collid": 8537 },
+      { "name": "Domain 07 (Appalachians & Cumberland Plateau)", "collid": 8538 },
+      { "name": "Domain 08 (Ozarks Complex)", "collid": 8539 },
+      { "name": "Domain 09 (Northern Plains)", "collid": 8540 },
+      { "name": "Domain 10 (Central Plains)", "collid": 8541 },
+      { "name": "Domain 11 (Southern Plains)", "collid": 8542 },
+      { "name": "Domain 12 (Northern Rockies)", "collid": 8543 },
+      { "name": "Domain 13 (Southern Rockies & Colorado Plateau)", "collid": 8544 },
+      { "name": "Domain 14 (Desert Southwest)", "collid": 8545 },
+      { "name": "Domain 15 (Great Basin)", "collid": 8546 },
+      { "name": "Domain 16 (Pacific Northwest)", "collid": 8547 },
+      { "name": "Domain 17 (Pacific Southwest)", "collid": 8548 },
+      { "name": "Domain 18 (Tundra)", "collid": 8549 },
+      { "name": "Domain 19 (Taiga)", "collid": 8550 },
+      { "name": "Domain 20 (Pacific Tropical)", "collid": 8551 }
     ]
   }
 ]
