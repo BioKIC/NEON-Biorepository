@@ -732,7 +732,7 @@ class OccurrenceLoans extends Manager{
 			$sql = 'SELECT returndate, notes FROM omoccurloanslink WHERE loanid = ? AND occid = ?';
 			if($stmt = $this->conn->prepare($sql)){
 				$stmt->bind_param('ii', $loanId, $occid);
-				$stmt->execute();
+        $stmt->execute();
 				if($rs = $stmt->get_result()){
 					While($r = $rs->fetch_object()){
 						$retArr['returnDate'] = $r->returndate;
