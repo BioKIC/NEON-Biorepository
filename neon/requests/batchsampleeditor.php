@@ -67,11 +67,10 @@ foreach(['status','use_type','available','substance_provided','shipment_id','not
 <script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 <script>
 function validateBatchForm(f){
-    if(!f.status.value || !f.use_type.value || !f.available.value || !f.substance_provided.value){
-        alert("All fields are required for batch update");
+        if(!f.shipment_id.value && ["current","completed","loaned, not used"].includes(f.status.value)){
+        alert("A shipment must be assigned if the status is current, completed, or loaned, not used");
         return false;
     }
-
     if(f.shipment_id.value && !["current","completed","loaned, not used"].includes(f.status.value)){
         alert("If a shipment is assigned, status must be current, completed, or loaned, not used");
         return false;
@@ -107,7 +106,7 @@ button { cursor:pointer; }
 
         <div class="fieldDiv">
             <label><b>Status:</b></label>
-            <select name="status" required>
+            <select name="status">
                 <option value="">-- choose --</option>
                 <?php
                 $options = ["pending fulfillment","current","completed","loaned, not used","requested, not found","not funded"];
@@ -121,7 +120,7 @@ button { cursor:pointer; }
 
         <div class="fieldDiv">
             <label><b>Type of Use:</b></label>
-            <select name="use_type" required>
+            <select name="use_type">
                 <option value="">-- choose --</option>
                 <?php
                 $options = ["non-destructive","invasive","consumptive","destructive"];
@@ -134,7 +133,7 @@ button { cursor:pointer; }
         </div>
         <div class="fieldDiv">
             <label><b>Available:</b></label>
-            <select name="available" required>
+            <select name="available">
                 <option value="">-- choose --</option>
                 <option value="yes" <?= ($common['available']=='yes'?'selected':'') ?>>yes</option>
                 <option value="no" <?= ($common['available']=='no'?'selected':'') ?>>no</option>

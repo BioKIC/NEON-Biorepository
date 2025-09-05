@@ -115,21 +115,6 @@ if ($isEditor && isset($_POST['action'])) {
 			return true;
 		}
 
-		function isNumeric(inStr){
-		   	var validChars = "0123456789-.";
-		   	var isNumber = true;
-		   	var charVar;
-
-		   	for(var i = 0; i < inStr.length && isNumber == true; i++){
-		   		charVar = inStr.charAt(i);
-				if(validChars.indexOf(charVar) == -1){
-					isNumber = false;
-					break;
-		      	}
-		   	}
-			return isNumber;
-		}
-
 		function closeWindow(){
 			window.opener.refreshForm.submit();
 			window.close();
@@ -151,6 +136,9 @@ if ($isEditor && isset($_POST['action'])) {
 		if($id) $sampleArr = $inquiryManager->getSampleForEditor($id);
 		if($id) $reqArr = $inquiryManager->getRequestData($request_id);
 		?>
+		<script>
+    		const reqArr = <?php echo json_encode($reqArr); ?>;
+		</script>
 		<fieldset style="width:800px; margin-left:auto;margin-right:auto;">
 			<legend><b><?php echo ($id?'Requested Sample Record (#'.$id.')':'New Record'); ?></b></legend>
 			<form id="editForm" method="post" action="sampleeditor.php" onsubmit="return validateSampleForm(this)">

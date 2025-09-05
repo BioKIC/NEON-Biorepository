@@ -1099,34 +1099,30 @@ public function getInquiryDataByID($request_id) {
     }
 
     // batch edit samples in request
-    public function batchEditSamples($postData){
-        $errMessages = [];
+    public function batchEditSamples($postArr){
+        $ids = isset($postArr['ids']) ? $postArr['ids'] : [];
+        if(!$ids) return false;
 
-        if(empty($postData['ids']) || !is_array($postData['ids'])){
-            $this->errStr = "No sample IDs provided for batch edit.";
-            return false;
+        $updatedFields = [];
+        foreach(['status','use_type','available','substance_provided','notes','shipment_id'] as $field){
+            if(array_key_exists($field, $postArr) && $postArr[$field] !== ''){
+                $updatedFields[$field] = $postArr[$field];
+            }
         }
 
-        $batchFields = ['status','use_type','available','substance_provided','shipment_id','notes'];
+        foreach($ids as $id){
+            if(!$this->updateSample($id, $updatedFields)){
+                $this->setErrorStr("Failed to update sample #$id");
+                return false;
+            }
 
-        foreach($postData['ids'] as $id){
-            $id = intval($id);
-            $data = ['id' => $id];
-
-            foreach($batchFields as $field){
-                if(isset($postData[$field]) && $postData[$field] !== ''){
-                    $data[$field] = $postData[$field];
+            $sample = $this->getSampleForEditor($id);
+            foreach(['status','use_type','available','substance_provided'] as $field){
+                if(empty($sample[$field])){
+                    $this->setErrorStr("Sample #$id is missing a required field: $field");
+                    return false;
                 }
             }
-
-            if(!$this->editSample($data)){
-                $errMessages[] = "Failed to update sample $id: ".$this->getErrorStr();
-            }
-        }
-
-        if(!empty($errMessages)){
-            $this->errStr = implode("<br/>", $errMessages);
-            return false;
         }
 
         return true;
