@@ -1471,7 +1471,7 @@
                 "tags": [
                     ""
                 ],
-                "description": "If an existing record can be located within target collection based on matching the input identifier, empty (null) target fields will be updated with Skeletal Data.\n\t\t\tIf the target field contains data, it will remain unaltered.\n\t\t\tIf multiple records are returned matching the input identifier, data will be added only to the first record.\n\t\t\tIf an identifier is not provided or a matching record can not be found, a new Skeletal record will be created and primed with input data.\n\t\t\tNote that catalogNumber or otherCatalogNumber must be provided to create a new skeletal record. If processingStatus is not defined, new skeletal records will be set as 'unprocessed'",
+                "description": "If an existing record can be located within target collection based on matching the input identifier, empty (null) target fields will be updated with Skeletal Data.\r\n\t\t\tIf the target field contains data, it will remain unaltered.\r\n\t\t\tIf multiple records are returned matching the input identifier, data will be added only to the first record.\r\n\t\t\tIf an identifier is not provided or a matching record can not be found, a new Skeletal record will be created and primed with input data.\r\n\t\t\tNote that catalogNumber or otherCatalogNumber must be provided to create a new skeletal record. If processingStatus is not defined, new skeletal records will be set as 'unprocessed'",
                 "operationId": "skeletalImport",
                 "parameters": [
                     {
@@ -1697,83 +1697,6 @@
                         "name": "offset",
                         "in": "query",
                         "description": "Determines the starting point for the search results. A limit of 100 and offset of 200, will display 100 records starting the 200th record.",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 0
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Returns list of inventories registered within system",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error: Bad request. "
-                    }
-                }
-            }
-        },
-        "/api/v2/taxonomy/search": {
-            "get": {
-                "tags": [
-                    ""
-                ],
-                "operationId": "/api/v2/taxonomy/search",
-                "parameters": [
-                    {
-                        "name": "taxon",
-                        "in": "query",
-                        "description": "Taxon searh term",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "taxon",
-                        "in": "query",
-                        "description": "Taxon searh term",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "type",
-                        "in": "query",
-                        "description": "Type of search",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "default": "EXACT",
-                            "enum": [
-                                "EXACT",
-                                "START",
-                                "WHOLEWORD",
-                                "WILD"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Controls the number of results in the page.",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 100
-                        }
-                    },
-                    {
-                        "name": "offset",
-                        "in": "query",
-                        "description": "Determines the offset for the search results. A limit of 200 and offset of 100, will get the third page of 100 results.",
                         "required": false,
                         "schema": {
                             "type": "integer",
