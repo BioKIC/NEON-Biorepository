@@ -10,7 +10,9 @@ $siteData = new DatasetsMetadata();
 <html>
 
 <head>
-	<title><?php echo $DEFAULT_TITLE; ?> Sample Search</title>
+	<!-- neon edit -->
+	<title><?php echo $DEFAULT_TITLE; ?></title>
+	<!-- end neon edit -->
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
@@ -33,7 +35,9 @@ $siteData = new DatasetsMetadata();
 	?>
 	<!-- This is inner text! -->
 	<div id="innertext">
-		<h1>Sample Search</h1>
+		<!-- neon edit -->
+		<h1>Biorepository Sample Portal</h1>
+		<!-- end neon edit -->
 		<div id="error-msgs" class="errors"></div>
 		<form id="params-form">
 			<!-- Criteria forms -->
