@@ -92,7 +92,6 @@ if ($isEditor && isset($_POST['action'])) {
 		});
 
 		function validateSampleForm(f){
-			// Required fields
 			if(!f.available.value.trim() || !f.use_type.value.trim() || !f.status.value.trim() || !f.substance_provided.value.trim()){
 				alert("All required fields must be filled.");
 				return false;
@@ -150,6 +149,7 @@ if ($isEditor && isset($_POST['action'])) {
 		if($errStr) echo '<div style="color:red;margin:15px;">'.$errStr.'</div>';
 		$sampleArr = array();
 		if($id) $sampleArr = $inquiryManager->getSampleForEditor($id);
+		if($id) $reqArr = $inquiryManager->getRequestData($request_id);
 		?>
 		<fieldset style="width:800px; margin-left:auto;margin-right:auto;">
 			<legend><b><?php echo ($id?'Requested Sample Record (#'.$id.')':'New Record'); ?></b></legend>
@@ -247,7 +247,6 @@ if ($isEditor && isset($_POST['action'])) {
                 <span>
                     <?php $currentShipmentId = isset($sampleArr['shipment_id']) ? (string)$sampleArr['shipment_id'] : ''; ?>
                     <select name="shipment_id" style="width:400px;" aria-label="shipment">
-                    <!-- Placeholder shown when no shipment is assigned -->
                     <option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?>>
                         -- No Shipment Assigned --
                     </option>
