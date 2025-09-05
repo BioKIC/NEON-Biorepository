@@ -137,7 +137,7 @@
     { "name": "Management Tools", "href": "../../neon/index.php" },
     { "name": "Loan Management" }
     ],
-  "/collections/reports/labelmanager.php": 
+  "/collections/reports/labelmanager.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "Management Tools", "href": "../../neon/index.php" },
     { "name": "Label Printing" }
