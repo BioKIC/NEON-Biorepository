@@ -76,6 +76,7 @@ class OmMaterialSample{
 	public function updateMaterialSample($inputArr){
 		$status = false;
 		if($this->matSampleID && $this->conn){
+			$this->matSampleID = $inputArr['matSampleID']; 
 			$this->setParameterArr($inputArr);
 			$paramArr = array();
 			$sqlFrag = '';
@@ -83,7 +84,7 @@ class OmMaterialSample{
 				$sqlFrag .= $fieldName . ' = ?, ';
 				$paramArr[] = $value;
 			}
-			$paramArr[] = $this->assocID;
+			$paramArr[] = $this->matSampleID;
 			$this->typeStr .= 'i';
 			$sql = 'UPDATE ommaterialsample SET '.trim($sqlFrag, ', ').' WHERE (matSampleID = ?)';
 			if($stmt = $this->conn->prepare($sql)) {
