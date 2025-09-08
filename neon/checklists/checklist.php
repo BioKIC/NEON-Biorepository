@@ -744,7 +744,23 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 							</div>
 						</fieldset>
 					</form>
-
+                    <fieldset style="background-color:white;padding-bottom:10px;">
+                        <legend><b>View</b></legend>
+                        <div style="display: flex; gap: 20px;">
+                            <!-- Occurrence Records -->
+                            <div class="icon-button" style="text-align: center; flex: 1;">
+                                <button type="button`"
+                                    name="vwocc"
+                                    onclick="window.location.href='../../collections/list.php?clid=<?php echo $clid; ?>';"
+                                    style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
+                                    onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
+                                    onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
+                                    <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="Occurrence Records" width="24" height="24" />
+                                    <div style="font-size: 0.9em; text-decoration: none;">View Specimens</div>
+                                </button>
+                            </div>
+                        </div>
+                    </fieldset>
 					</div>
 					<?php
 					if($clid && $isEditor){
