@@ -76,7 +76,6 @@ class OmMaterialSample{
 	public function updateMaterialSample($inputArr){
 		$status = false;
 		if($this->matSampleID && $this->conn){
-			$this->matSampleID = $inputArr['matSampleID']; 
 			$this->setParameterArr($inputArr);
 			$paramArr = array();
 			$sqlFrag = '';
