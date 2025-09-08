@@ -310,5 +310,22 @@
       { "name": "Domain 19 (Taiga)", "collid": 8550 },
       { "name": "Domain 20 (Pacific Tropical)", "collid": 8551 }
     ]
-  }
+  },
+  {
+    "name": "Zooplankton",
+    "children": [
+      { "name": "Lake Barco (BARC)", "collid": 8726 },
+      { "name": "Crampton Lake (CRAM)", "collid": 8730 },
+      { "name": "Prairie Pothole (PRPO)", "collid": 8739 },
+      { "name": "Lake Suggs (SUGG)", "collid": 8741 },
+      { "name": "Little Rock Lake (LIRO)", "collid": 8752 },
+      { "name": "Prairie Lake (PRLA)", "collid": 8755 },
+      { "name": "Toolik Lake (TOOK)", "collid": 8757 },
+  
+      { "name": "Domain 03 (Southeast)", "collid": 8761 },
+      { "name": "Domain 05 (Great Lakes)", "collid": 8763 },
+      { "name": "Domain 09 (Northern Plains)", "collid": 8767 },
+      { "name": "Domain 18 (Tundra)", "collid": 8776 }
+    ]
+  }  
 ]
