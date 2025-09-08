@@ -55,8 +55,7 @@
       { "name": "Domain 16 (Pacific Northwest)", "collid": 8225 },
       { "name": "Domain 17 (Pacific Southwest)", "collid": 8226 },
       { "name": "Domain 18 (Tundra)", "collid": 8227 },
-      { "name": "Domain 19 (Taiga)", "collid": 8228 },
-      { "name": "Domain 20 (Pacific Tropical)", "collid": 8229 }
+      { "name": "Domain 19 (Taiga)", "collid": 8228 }
     ]
   },
   {
@@ -145,7 +144,6 @@
       { "name": "Onaqui (ONAQ)", "collid": 8291 },
       { "name": "Oak Ridge (ORNL)", "collid": 8292 },
       { "name": "Ordway-Swisher Biological Station (OSBS)", "collid": 8293 },
-      { "name": "Pu'u Maka'ala Natural Area Reserve (PUUM)", "collid": 8294 },
       { "name": "Smithsonian Conservation Biology Institute (SCBI)", "collid": 8295 },
       { "name": "San Joaquin Experimental Range (SJER)", "collid": 8296 },
       { "name": "Santa Rita Experimental Range (SRER)", "collid": 8297 },
@@ -201,8 +199,7 @@
       { "name": "Domain 16 (Pacific Northwest)", "collid": 8346 },
       { "name": "Domain 17 (Pacific Southwest)", "collid": 8347 },
       { "name": "Domain 18 (Tundra)", "collid": 8348 },
-      { "name": "Domain 19 (Taiga)", "collid": 8349 },
-      { "name": "Domain 20 (Pacific Tropical)", "collid": 8350 }
+      { "name": "Domain 19 (Taiga)", "collid": 8349 }
     ]
   }
 ]
