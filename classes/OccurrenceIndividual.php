@@ -567,18 +567,6 @@ class OccurrenceIndividual extends Manager{
 				$sourceID = $this->occArr['catalognumber'];
 			}
 			elseif (strpos($iUrl, '--OTHERCATALOGNUMBERS--') !== false && $this->occArr['othercatalognumbers']) {
-				/* Commented out in preference for NEON customization below
-				foreach($this->occArr['othercatalognumbers'] as $idArr){
-					$tagName = $idArr['name'];
-					$idValue = $idArr['value'];
-					if(!$sourceID || $tagName == 'NEON sampleID' || $tagName == 'NEON sampleCode (barcode)'){
-						$sourceID = $idValue;
-						if($tagName == 'NEON sampleCode (barcode)') $iUrl = str_replace('sampleTag','barcode',$iUrl);
-						$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $idValue, $iUrl);
-						if($tagName == 'NEON sampleCode (barcode)') break;
-					}
-				}
-				*/
 				//Beginning NEON Customization
 
 				$preferredKeys = [
@@ -594,34 +582,49 @@ class OccurrenceIndividual extends Manager{
 					foreach ($this->occArr['othercatalognumbers'] as $idArr) {
 						$tagName = $idArr['name'] ?? '';
 						$idValue = $idArr['value'] ?? '';
-
+				
 						if ($tagName === $key && !empty($idValue)) {
 							$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $idValue, $iUrl);
-							// NEON customization
 							if ($key === 'NEON sampleCode (barcode)' || $key === 'Originating NEON barcode') {
 								$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
 							}
-
+				
 							if ($key === 'NEON sampleID') {
-								$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ' . intval($this->occArr['occid']);
+								$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ?';
+								if ($stmt = $this->conn->prepare($sql)) {
+									$stmt->bind_param('i', $this->occArr['occid']);
+									$stmt->execute();
+									if ($rs = $stmt->get_result()) {
+										if ($r = $rs->fetch_assoc()) {
+											$sampleClass = $r['sampleClass'];
+											$indUrl .= '&sampleClass=' . urlencode($sampleClass);
+										}
+										$rs->free();
+									}
+									$stmt->close();
+								}
 							} elseif ($key === 'Originating NEON sampleID') {
-								$sql = "SELECT s.sampleClass FROM NeonSample s
+								$sql = 'SELECT s.sampleClass 
+										FROM NeonSample s
 										LEFT JOIN omoccurassociations a
 										ON s.occid = a.occid
-										WHERE a.relationship LIKE '%originatingSampleOf%'
-										AND a.occidAssociate = " . intval($this->occArr['occid']);
-							}
-
-							if (!empty($sql)) {
-								if ($rs = $this->conn->query($sql)) {
-									if ($r = $rs->fetch_assoc()) {
-										$sampleClass = $r['sampleClass'];
-										$indUrl .= '&sampleClass=' . urlencode($sampleClass);
+										WHERE a.relationship LIKE ?
+										AND a.occidAssociate = ?';
+								if ($stmt = $this->conn->prepare($sql)) {
+									$rel = '%originatingSampleOf%';
+									$stmt->bind_param('si', $rel, $this->occArr['occid']);
+									$stmt->execute();
+									if ($rs = $stmt->get_result()) {
+										if ($r = $rs->fetch_assoc()) {
+											$sampleClass = $r['sampleClass'];
+											$indUrl .= '&sampleClass=' . urlencode($sampleClass);
+										}
+										$rs->free();
 									}
-									$rs->free();
+									$stmt->close();
 								}
 							}
-
+				
 							break 2;
 						}
 					}
