@@ -60,7 +60,7 @@ class OmMaterialSample{
 				$stmt->bind_param($this->typeStr, ...$paramArr);
 				if($stmt->execute()){
 					if($stmt->affected_rows || !$stmt->error){
-						$this->assocID = $stmt->insert_id;
+						$this->matSampleID = $stmt->insert_id;
 						$status = true;
 					}
 					else $this->errorMessage = 'ERROR inserting material sample record (2): '.$stmt->error;
