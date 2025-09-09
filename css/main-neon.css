@@ -795,7 +795,7 @@ table.styledtable tr.alt td {
 }
 
 #tabs {
-  font-family: var(--body-font-family);
+  /*font-family: var(--body-font-family);*/
   font-size: var(--body-font-size);
 }
 
