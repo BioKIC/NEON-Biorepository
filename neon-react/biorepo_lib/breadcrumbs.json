@@ -20,6 +20,11 @@
     { "name": "Browse Species Checklists", "href": "../projects/browsechecklists.php" },
     { "name": "Checklist" }
     ],
+  "/neon/checklists/checklist.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Browse Species Checklists", "href": "../../projects/browsechecklists.php" },
+    { "name": "Checklist" }
+    ],
   "/ident/key.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Species Checklists", "href": "../projects/index.php" },
