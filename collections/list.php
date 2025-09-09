@@ -591,10 +591,10 @@ $_SESSION['citationvar'] = $searchVar;
 									//		$photoAuthor = array_shift($nameArr);
 									//	}
 									//}
-									if($fieldArr['catnum']){
-										echo $fieldArr['catnum'].'<br />';
-									}
 									if($imgArr['occid']){
+										if($occurArr[$imgArr['occid']]['catnum']){
+											echo $occurArr[$imgArr['occid']]['catnum'].'<br />';
+										}
 										echo '<a href="'.$CLIENT_ROOT.'/collections/individual/index.php?occid='.$imgArr['occid'].'"><b>Full Record Details</b></a>';
 									}
 									?>
