@@ -1213,23 +1213,29 @@ $traitArr = $indManager->getTraitArr();
 						?>
 						<div id="contact-div">
 							<?php
+							//neon edit
+							//if($collMetadata['contact']){
+							//	echo $LANG['ADDITIONAL_INFO'].': '.$collMetadata['contact'];
+							//	if($collMetadata['email']){
+							//		$otherCatNum = '';
+							//		if($occArr['othercatalognumbers']){
+							//			foreach($occArr['othercatalognumbers'] as $identArr){
+							//				$otherCatNum .= urlencode($identArr['value']) . ', ';
+							//			}
+							//			$otherCatNum = ' (' . trim($otherCatNum, ', ') . ')';
+							//		}
+							//		$emailSubject = $DEFAULT_TITLE . ' occurrence: ' . urlencode($occArr['catalognumber']) . $otherCatNum;
+							//		$refPath = GeneralUtil::getDomain().$CLIENT_ROOT.'/collections/individual/index.php?occid='.$occArr['occid'];
+							//		$emailBody = $LANG['SPECIMEN_REFERENCED'].': '.$refPath;
+							//		$emailRef = 'subject=' . rawurlencode($emailSubject) . '&cc=' . $ADMIN_EMAIL . '&body=' . rawurlencode($emailBody);
+							//		echo ' (<a href="mailto:' . $collMetadata['email'] . '?' . $emailRef . '">' . $collMetadata['email'] . '</a>)';
+							//	}
+							//}
 							if($collMetadata['contact']){
-								echo $LANG['ADDITIONAL_INFO'].': '.$collMetadata['contact'];
-								if($collMetadata['email']){
-									$otherCatNum = '';
-									if($occArr['othercatalognumbers']){
-										foreach($occArr['othercatalognumbers'] as $identArr){
-											$otherCatNum .= urlencode($identArr['value']) . ', ';
-										}
-										$otherCatNum = ' (' . trim($otherCatNum, ', ') . ')';
-									}
-									$emailSubject = $DEFAULT_TITLE . ' occurrence: ' . urlencode($occArr['catalognumber']) . $otherCatNum;
-									$refPath = GeneralUtil::getDomain().$CLIENT_ROOT.'/collections/individual/index.php?occid='.$occArr['occid'];
-									$emailBody = $LANG['SPECIMEN_REFERENCED'].': '.$refPath;
-									$emailRef = 'subject=' . rawurlencode($emailSubject) . '&cc=' . $ADMIN_EMAIL . '&body=' . rawurlencode($emailBody);
-									echo ' (<a href="mailto:' . $collMetadata['email'] . '?' . $emailRef . '">' . $collMetadata['email'] . '</a>)';
-								}
+								echo "For additional information about this specimen, please contact the ";
+								echo '<a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">NEON Biorepository</a>';
 							}
+							//end edit
 							?>
 						</div>
 						<?php
