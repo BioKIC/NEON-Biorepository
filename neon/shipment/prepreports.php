@@ -8,7 +8,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
 
 $reports = new PrepReports();
 $reportsArr = $reports->getMamPrepsCntByPreparator();
-$headerArr = ['Prepared By', 'Mammal study skin preparations', 'Mammal fluid preparations', 'Total prepared'];
+$headerArr = ['Prepared By', 'Mammal study skins', 'Flat mammal skins', 'Mammal fluid preparations', 'Total prepared'];
 $utilities = new Utilities();
 
 $isEditor = false;

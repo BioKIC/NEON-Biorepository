@@ -35,6 +35,7 @@ $LANG['ID_REMARKS'] = 'ID Remarks';
 $LANG['ID_REFERENCES'] = 'ID References';
 $LANG['SHOW_DET_HISTORY'] = 'Show Full History';
 $LANG['DET_HISTORY'] = 'Determination History';
+$LANG['HIDE_DET_HISTORY'] = 'Hide Full History';
 $LANG['SPECIES_PROTECTED'] = 'Species identification protected';
 $LANG['DATE'] = 'Date';
 $LANG['DATE_DET'] = 'Date Determined';
