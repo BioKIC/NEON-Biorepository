@@ -266,10 +266,21 @@ class OccurrenceIndividual extends Manager{
 
 	private function setImages(){
 		global $MEDIA_DOMAIN;
+		
+		/* Commented out in favor of NEON customization
 		$sql = 'SELECT m.mediaID, m.url, m.thumbnailurl, m.originalurl, m.sourceurl, m.notes, m.caption, m.mediaType, m.format,
 			CONCAT_WS(" ",u.firstname,u.lastname) as innerCreator, m.creator, m.rights, m.accessRights, m.copyright
 			FROM media m LEFT JOIN users u ON m.creatorUid = u.uid
 			WHERE (m.occid = ?) ORDER BY m.sortOccurrence,m.sortsequence';
+		*/
+
+		// START NEON CUSTOMIZATION
+		$sql = 'SELECT m.mediaID, m.url, m.thumbnailurl, m.originalurl, m.sourceurl, m.notes, m.caption, m.mediaType, m.format,
+			CONCAT_WS(" ",u.firstname,u.lastname) as innerCreator, m.creator, m.rights, m.accessRights, m.copyright, m.owner
+			FROM media m LEFT JOIN users u ON m.creatorUid = u.uid
+			WHERE (m.occid = ?) ORDER BY m.sortOccurrence,m.sortsequence';
+		// END NEON CUSTOMIZATION
+
 		if($stmt = $this->conn->prepare($sql)){
 			$stmt->bind_param('i', $this->occid);
 			$stmt->execute();
@@ -297,6 +308,9 @@ class OccurrenceIndividual extends Manager{
 					$this->occArr['imgs'][$mediaID]['copyright'] = $row->copyright;
 					$this->occArr['imgs'][$mediaID]['mediaType'] = $row->mediaType;
 					$this->occArr['imgs'][$mediaID]['format'] = $row->format;
+					// START NEON CUSTOMIZATION
+					$this->occArr['imgs'][$mediaID]['owner'] = $row->owner;
+					// END NEON CUSTOMIZATION
 					if($row->innerCreator) $this->occArr['imgs'][$mediaID]['creator'] = $row->innerCreator;
 				}
 				$rs->free();
