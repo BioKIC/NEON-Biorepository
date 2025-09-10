@@ -67,6 +67,11 @@ foreach(['status','use_type','available','substance_provided','shipment_id','not
 <script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 <script>
 function validateBatchForm(f){
+
+    if(!f.status.value || !f.use_type.value || !f.available.value || !f.substance_provided.value){
+        alert("All fields must be assigned during batch update");
+        return false;
+    }
         if(!f.shipment_id.value && ["current","completed","loaned, not used"].includes(f.status.value)){
         alert("A shipment must be assigned if the status is current, completed, or loaned, not used");
         return false;
@@ -106,7 +111,7 @@ button { cursor:pointer; }
 
         <div class="fieldDiv">
             <label><b>Status:</b></label>
-            <select name="status">
+            <select name="status" required>
                 <option value="">-- choose --</option>
                 <?php
                 $options = ["pending fulfillment","current","completed","loaned, not used","requested, not found","not funded"];
@@ -120,7 +125,7 @@ button { cursor:pointer; }
 
         <div class="fieldDiv">
             <label><b>Type of Use:</b></label>
-            <select name="use_type">
+            <select name="use_type" required>
                 <option value="">-- choose --</option>
                 <?php
                 $options = ["non-destructive","invasive","consumptive","destructive"];
@@ -133,7 +138,7 @@ button { cursor:pointer; }
         </div>
         <div class="fieldDiv">
             <label><b>Available:</b></label>
-            <select name="available">
+            <select name="available" required>
                 <option value="">-- choose --</option>
                 <option value="yes" <?= ($common['available']=='yes'?'selected':'') ?>>yes</option>
                 <option value="no" <?= ($common['available']=='no'?'selected':'') ?>>no</option>
@@ -143,7 +148,7 @@ button { cursor:pointer; }
         </div>
         <div class="fieldDiv">
             <b>Substance Provided:</b>
-            <select name="substance_provided">
+            <select name="substance_provided" required>
                 <?php $commonSubValue = $common['substance_provided']?>
                 <option value="">-----</option>
                 <option value="whole sample" <?php if($commonSubValue=='whole sample') echo 'SELECTED'; ?>>whole sample</option>
@@ -168,7 +173,7 @@ button { cursor:pointer; }
 
         <div class="fieldDiv">
             <label><b>Shipment:</b> (exit editor to add new shipment)</label>
-            <select name="shipment_id">
+            <select name="shipment_id" required>
                 <option value="">-- none --</option>
                 <?php
                 $shipArr = $inquiryManager->getShipments();

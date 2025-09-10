@@ -1125,60 +1125,82 @@ public function getInquiryDataByID($request_id) {
 
     // batch edit samples in request
     public function batchEditSamples($postArr){
-        $ids = isset($postArr['ids']) ? $postArr['ids'] : [];
-        if(!$ids) return false;
 
+        $ids = isset($postArr['ids']) ? $postArr['ids'] : [];
+        if(!$ids) {
+            $this->setErrorStr("No sample IDs provided for batch edit.");
+            return false;
+        }
         $updatedFields = [];
         foreach(['status','use_type','available','substance_provided','notes','shipment_id'] as $field){
             if(array_key_exists($field, $postArr) && $postArr[$field] !== ''){
                 $updatedFields[$field] = $postArr[$field];
             }
         }
+        // Start transaction
+        $this->conn->begin_transaction();
+        try {
+            foreach($ids as $id){
+                $id = intval($id);
+                $sample = $this->getSampleForEditor($id);
+                if(!$sample){
+                    throw new Exception("Sample #$id not found.");
+                }
+                $newData = array_merge($sample, $updatedFields, ['id' => $id]);
+                $needsShipment = in_array($newData['status'], ["current","completed","loaned, not used"]);
+                $hasShipment   = !empty($newData['shipment_id']);
 
-        foreach($ids as $id){
-            if(!$this->updateSample($id, $updatedFields)){
-                $this->setErrorStr("Failed to update sample #$id");
-                return false;
-            }
-
-            $sample = $this->getSampleForEditor($id);
-            foreach(['status','use_type','available','substance_provided'] as $field){
-                if(empty($sample[$field])){
-                    $this->setErrorStr("Sample #$id is missing a required field: $field");
-                    return false;
+                if($needsShipment && !$hasShipment){
+                    throw new Exception("Sample #$id: A shipment must be assigned if status is {$newData['status']}.");
+                }
+                if($hasShipment && !$needsShipment){
+                    throw new Exception("Sample #$id: If a shipment is assigned, status must be current, completed, or loaned, not used.");
+                }
+                foreach(['status','use_type','available','substance_provided'] as $field){
+                    if(empty($newData[$field])){
+                        throw new Exception("Sample #$id is missing a required field: $field");
+                    }
+                }
+                if(!$this->editSample($newData)){
+                    throw new Exception("Failed to update sample #$id: ".$this->getErrorStr());
                 }
             }
-        }
+            $this->conn->commit();
+            return true;
 
-        return true;
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            $this->setErrorStr($e->getMessage());
+            return false;
+        }
     }
 
   // add shipment to neonrequestshipment table
-public function addShipment($researcher_id, $ship_date, $address, $shipped_by) {
-    if (empty($researcher_id) || empty($ship_date) || empty($address) || empty($shipped_by)) {
-        $this->errorMessage = "All fields are required.";
-        return false;
-    }
-
-    $sql = "INSERT INTO neonrequestshipment (researcher_id, ship_date, address, shipped_by) 
-            VALUES (?, ?, ?, ?)";
-
-    if ($stmt = $this->conn->prepare($sql)) {
-        $stmt->bind_param("issi", $researcher_id, $ship_date, $address, $shipped_by);
-        if ($stmt->execute()) {
-            $newId = $stmt->insert_id;
-            $stmt->close();
-            return $newId;
-        } else {
-            $this->errorMessage = "Database Error: " . $stmt->error;
-            $stmt->close();
+    public function addShipment($researcher_id, $ship_date, $address, $shipped_by) {
+        if (empty($researcher_id) || empty($ship_date) || empty($address) || empty($shipped_by)) {
+            $this->errorMessage = "All fields are required.";
             return false;
         }
-    } else {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
+
+        $sql = "INSERT INTO neonrequestshipment (researcher_id, ship_date, address, shipped_by) 
+                VALUES (?, ?, ?, ?)";
+
+        if ($stmt = $this->conn->prepare($sql)) {
+            $stmt->bind_param("issi", $researcher_id, $ship_date, $address, $shipped_by);
+            if ($stmt->execute()) {
+                $newId = $stmt->insert_id;
+                $stmt->close();
+                return $newId;
+            } else {
+                $this->errorMessage = "Database Error: " . $stmt->error;
+                $stmt->close();
+                return false;
+            }
+        } else {
+            $this->errorMessage = "Database Error: " . $this->conn->error;
+            return false;
+        }
     }
-}
 
 
 }

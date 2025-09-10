@@ -438,7 +438,7 @@ include($SERVER_ROOT.'/includes/header.php');
     <div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
         <h2>Add New Shipment</h2>
         <form id="shipmentform">
-            <label><b>Researcher:</b> (if researcher is not present, go back to request editor to link researcher to the request)</label>
+            <label><b>Shipped to:</b> (if researcher is not present, go back to request editor to link researcher to the request)</label>
 			<select name="researcher_id" required style="width:100%; margin-bottom:15px;">
 				<option value="">-- Select Researcher --</option>
 				<?php foreach($researchers as $id => $name): ?>
