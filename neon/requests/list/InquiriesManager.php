@@ -312,6 +312,31 @@ public function getInquiryDataByID($request_id) {
 }
 
       // get researchers for a given request
+      public function getResearchersByID($request_id) {
+          $request_id = (int)$request_id;
+
+          $sql = "SELECT r.researcher_id, CONCAT(r.name,' (',r.institution,')') as researcher
+                  FROM neonresearcherrequestlink l
+                  LEFT JOIN neonresearcher r
+                      ON l.researcher_id = r.researcher_id
+                  WHERE l.request_id = $request_id";
+          $rs = $this->conn->query($sql);
+
+          if (!$rs) {
+              $this->errorMessage = "Database Error: " . $this->conn->error;
+              return false;
+          }
+
+          $researchers = [];
+            while ($row = $rs->fetch_assoc()) {
+                $researchers[$row['researcher_id']] = $row['researcher'];
+            }
+            $rs->free();
+         return $researchers;
+
+      }
+
+      // get *additional* researchers for a given request
       public function getAdditionalResearchersByID($request_id) {
           $request_id = (int)$request_id;
 
@@ -1128,6 +1153,32 @@ public function getInquiryDataByID($request_id) {
         return true;
     }
 
+  // add shipment to neonrequestshipment table
+public function addShipment($researcher_id, $ship_date, $address, $shipped_by) {
+    if (empty($researcher_id) || empty($ship_date) || empty($address) || empty($shipped_by)) {
+        $this->errorMessage = "All fields are required.";
+        return false;
+    }
+
+    $sql = "INSERT INTO neonrequestshipment (researcher_id, ship_date, address, shipped_by) 
+            VALUES (?, ?, ?, ?)";
+
+    if ($stmt = $this->conn->prepare($sql)) {
+        $stmt->bind_param("issi", $researcher_id, $ship_date, $address, $shipped_by);
+        if ($stmt->execute()) {
+            $newId = $stmt->insert_id;
+            $stmt->close();
+            return $newId;
+        } else {
+            $this->errorMessage = "Database Error: " . $stmt->error;
+            $stmt->close();
+            return false;
+        }
+    } else {
+        $this->errorMessage = "Database Error: " . $this->conn->error;
+        return false;
+    }
+}
 
 
 }

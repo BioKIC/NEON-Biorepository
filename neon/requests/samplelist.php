@@ -14,6 +14,9 @@ $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 
 $inquiryManager = new inquiriesManager();
 $sampleCnt = $inquiryManager->getSampleCountByID($request_id);
+$researchers = $inquiryManager->getResearchersByID($request_id);
+$managers = $inquiryManager->getManagers();
+
 if($sortableTable === false){
 	//Variable has not been explicitly set by user, thus only turn on if list contains < 3000 samples
 	if($sampleCnt < 3000) $sortableTable = 1;
@@ -210,6 +213,20 @@ if($IS_ADMIN) $isEditor = true;
 		.input-group input:focus {
 		  outline: 2px solid #88f;
 		}
+
+		#shipmentModal {
+			display: flex;
+			position: fixed;
+			top: 0; left: 0; width: 100%; height: 100%;
+			background: rgba(0,0,0,0.6);
+			z-index: 9999;
+			justify-content: center;
+			align-items: center;
+		}
+		#shipmentModal.show {
+			display: flex;
+		}
+
 	</style>
 </head>
 <body>
@@ -273,6 +290,11 @@ include($SERVER_ROOT.'/includes/header.php');
 									Export Occurrences
 								</button>
 							</form>
+						</div>
+					</div>
+					<div style="clear:both;padding:10px 0;">
+						<div style="float:left;">
+							<button type="button" class="addShipmentButton" data-target="primary">Create New Shipment</button>
 						</div>
 					</div>
 					<div style="clear:both;padding:10px 0;">
@@ -410,8 +432,107 @@ include($SERVER_ROOT.'/includes/header.php');
 	}
 	?>
 </div>
+
+<div id="shipmentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+    background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
+        <h2>Add New Shipment</h2>
+        <form id="shipmentform">
+            <label><b>Researcher:</b> (if researcher is not present, go back to request editor to link researcher to the request)</label>
+			<select name="researcher_id" required style="width:100%; margin-bottom:15px;">
+				<option value="">-- Select Researcher --</option>
+				<?php foreach($researchers as $id => $name): ?>
+					<option value="<?= htmlspecialchars($id) ?>">
+						<?= htmlspecialchars($name) ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			
+            <label><b>Shipment Date:</b></label>
+            <input type="date" name="ship_date" required style="width:100%;"><br><br>
+
+            <label><b>Address:</b></label>
+            <input type="text" name="address" required style="width:100%;"><br><br>
+
+            <label><b>Shipped By:</b></label>
+			<select name="shipped_by" required style="width:100%; margin-bottom:15px;">
+				<option value="">-- Select Manager --</option>
+				<?php foreach($managers as $id => $name): ?>
+					<option value="<?= htmlspecialchars($id) ?>">
+						<?= htmlspecialchars($name) ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+            <button type="submit">Save</button>
+            <button type="button" id="closeModal">Cancel</button>
+        </form>
+    </div>
+</div>
+
+
 <?php
 include($SERVER_ROOT.'/includes/footer.php');
 ?>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('shipmentModal');
+    const shipmentForm = document.getElementById('shipmentform');
+
+    if (!shipmentForm) {
+        console.error('shipmentForm not found in DOM!');
+        return;
+    }
+
+    document.querySelectorAll('.addShipmentButton').forEach(btn => {
+        btn.addEventListener('click', function() {
+            modal.dataset.source = btn.dataset.target || '';
+            modal.style.display = 'flex';
+        });
+    });
+
+    document.getElementById('closeModal').addEventListener('click', function() {
+        modal.style.display = 'none';
+        shipmentForm.reset(); 
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            shipmentForm.reset();
+        }
+    });
+
+    shipmentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(shipmentForm);
+
+        console.log("Posting shipment form:", ...formData.entries()); // Debug
+
+        fetch('../../neon/requests/add_shipment.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                modal.style.display = 'none';
+                shipmentForm.reset();
+                alert('Shipment added successfully');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Request failed: ' + err);
+        });
+    });
+});
+
+
+</script>
 </body>
 </html>
