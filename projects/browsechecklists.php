@@ -86,7 +86,7 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 			<div id = "heroimage-div">
 				<img src="<?php echo $CLIENT_ROOT . '/images/card-images/Beetles_pinned.jpg'; ?>" style="max-width:100%" alt="Pinned Beetles" loading="lazy">
 			</div>
-			<p>Species checklists are intended to help users identify taxa at and around NEON field sites. Each checklist provides a comprehensive species list, visual resources, and direct links to voucher specimens collected as a part of the NEON project. Some checklists contain identification keys, which can be used to help a user identify a taxon within the checklist that possesses specific traits.</p>
+			<p>Species checklists are intended to help users identify taxa at and around NEON field sites. Each checklist provides a <b>comprehensive species list, visual resources, and specimens</b> collected at a site or domain.</p>
 			<div id="biorepo-checklists-content"></div>
 		</div>
 	</body>
