@@ -525,8 +525,28 @@ class ShipmentManager{
 					$sql .= ', sessionID = ' . $_SESSION['sampleCheckinSessionData']['sessionID'] . ' ';
 				}
 				$sql .= 'WHERE (shipmentpk = '.$this->shipmentPK.') AND (samplePK IN('.implode(',', $pkArr).'))';
-				if(!$this->conn->query($sql)){
-					$this->errorStr = 'ERROR batch checking-in samples: '.$this->conn->error;
+				try {
+					$this->conn->query($sql);
+					return true;
+				} catch (mysqli_sql_exception $e) {
+					$errno  = $e->getCode();
+					$errmsg = $e->getMessage();
+
+					if ($errno == 1062) {
+						$duplicateValue = '';
+						if (preg_match("/Duplicate entry '([^']+)' for key/", $errmsg, $matches)) {
+							$duplicateValue = $matches[1];
+							$duplicateValue = preg_replace('/-\d+$/', '', $duplicateValue);
+						}
+						if ($duplicateValue) {
+							$this->errorStr = "Sample check-in failed: $duplicateValue is already checked in under another shipment.";
+						} else {
+							$this->errorStr = "Sample check-in failed: a sample is already checked in under another shipment.";
+						}
+					} else {
+						$this->errorStr = "ERROR batch checking-in samples: [{$errno}] {$errmsg}";
+					}
+
 					return false;
 				}
 				return true;
