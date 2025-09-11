@@ -264,7 +264,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 				?>
 				<div class="printoff" style="float:right;width:auto;">
 					<span style="">
-						<a href="checklistadmin.php?clid=<?php echo $clid . '&pid=' . $pid; ?>" style="margin-right:10px;" aria-label="<?php echo $LANG['CHECKLIST_ADMIN']; ?>" title="<?php echo $LANG['CHECKLIST_ADMIN']; ?>">
+						<a href="../../checklists/checklistadmin.php?clid=<?php echo $clid; ?>" style="margin-right:10px;" aria-label="<?php echo $LANG['CHECKLIST_ADMIN']; ?>" title="<?php echo $LANG['CHECKLIST_ADMIN']; ?>">
 						<img src="../../images/editadmin.png" style="height:1.3em" alt="<?php echo $LANG['IMG_CHECKLIST_ADMIN']; ?>" /></a>
 					</span>
 				</div>
@@ -507,7 +507,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 							echo '<div id="tid-'.$tid.'" class="taxon-container">';
 							//Edit species name display style here
 							echo '<div class="taxon-div">';
-							if(!preg_match('/\ssp\d/',$sppArr["sciname"])) echo '<a href="../../taxa/index.php?taxauthid=1&taxon=' . $tid . '&clid=' . $clid . '" target="_blank">';
+							if(!preg_match('/\ssp\d/',$sppArr["sciname"])) echo '<a href="../../taxa/index.php?taxauthid=1&taxon=' . $tid . '&clid=' . $clid . '" title="Click to view Taxon Page">';
 							echo '<span class="taxon-span">' . $sppArr['sciname'] . '</span> ';
 							if(array_key_exists("author",$sppArr)) echo $sppArr["author"];
 							if(!preg_match('/\ssp\d/',$sppArr["sciname"])) echo "</a>";
@@ -680,7 +680,8 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 										  + '&showauthors=' + (form.showauthors.checked ? '1' : '0')
 										  + '&showcommon=' + (form.showcommon && form.showcommon.checked ? '1' : '0')
 										  + '&showsynonyms=' + (form.showsynonyms.checked ? '1' : '0')
-										  + '&groupbyrank=' + encodeURIComponent(form.groupbyrank.value);
+										  + '&groupbyrank=' + encodeURIComponent(form.groupbyrank.value)
+                                          + '&defaultoverride=1';
 										changeOptionFormAction(url, '_self');
 									  "
 									>
