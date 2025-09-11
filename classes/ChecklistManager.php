@@ -14,30 +14,44 @@ class NEONChecklistPDF extends TCPDF {
 		$this->Image(__DIR__ . '/../neon/images/NEON-NSF-2023.jpg', 15, 10, 40);
 
 		// Box positions and sizes
-		$startX = 60;
-		$startY = 13.5;
+		$startX     = 60;
+		$startY     = 13.5;
 		$titleWidth = 100;
-		$dateWidth = 27;
-		$height = 8;
+		$dateWidth  = 27;
+		$baseHeight = 8;
 		
-		// Draw boxes
+		$titleText = 'Title: ' . $this->checklistTitle . ' Dynamic Taxonomic Checklist';
+		
+		// Measure wrapped text height
+		$this->SetFont('Calibri', '', 8);
+		$textHeight = $this->getStringHeight($titleWidth - 4, $titleText);
+		
+		$height = max($baseHeight, $textHeight + 3); // +3 for padding
+		
 		$this->Rect($startX, $startY, $titleWidth, $height);
 		$this->Rect($startX + $titleWidth, $startY, $dateWidth, $height);
-	
-		// Title text
-		$this->SetXY($startX + 2, $startY + 2.2);
-		$this->SetFont('calibrii', '', 8);
-		$this->Write(0, 'Title: ');
-		$this->SetFont('Calibri', '', 8);
-		$this->Write(0, $this->checklistTitle);
-		$this->Write(0, ' Dynamic Taxonomic Checklist');
-	
-		// Date text
-		$this->SetXY($startX + $titleWidth + 2, $startY + 2.2);
+		
+		$this->SetXY($startX + 2, $startY + 1.5);
+		$this->MultiCell(
+			$titleWidth - 4,  // available width
+			4,                // line height
+			$titleText,       // text
+			0,                // border
+			'L',              // align left
+			false             // no fill
+		);
+
+		$dateText = 'Date: ' . date('m/d/Y');
+		$dateTextHeight = $this->getStringHeight($dateWidth - 4, $dateText);
+		$dateY = $startY + ($height / 2) - ($dateTextHeight / 2);
+		
+		// Place date text
+		$this->SetXY($startX + $titleWidth + 2, $dateY);
 		$this->SetFont('calibrii', '', 8);
 		$this->Write(0, 'Date: ');
 		$this->SetFont('Calibri', '', 8);
 		$this->Write(0, date('m/d/Y'));
+
 	
 		$this->Ln(18); // space after header
 	}
