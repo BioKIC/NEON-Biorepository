@@ -25,6 +25,12 @@
     { "name": "Browse Species Checklists", "href": "../../projects/browsechecklists.php" },
     { "name": "Checklist" }
     ],
+  "/checklists/checklistadmin.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Browse Species Checklists", "href": "../projects/browsechecklists.php" },
+    { "name": "Checklist", "href": "../neon/checklists/checklist.php?clid=#"  },
+    { "name": "Checklist Admin" }
+    ],
   "/ident/key.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Species Checklists", "href": "../projects/index.php" },
