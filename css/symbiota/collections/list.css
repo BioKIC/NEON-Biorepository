@@ -5,11 +5,16 @@
 }
 
 .ui-tabs .ui-tabs-nav li {
-	width: 32%;
+	/*width: 32%;*/
+	/*NEON edits*/
+	width: 24%;
+	/*end NEON edits*/
 }
 
 .ui-tabs .ui-tabs-nav li a {
-	margin-left: 10px;
+	/*NEON edits*/
+	/*margin-left: 10px;*/
+	/*end NEON edits*/
 }
 
 #tabs {
@@ -23,7 +28,9 @@
 }
 
 .icon-button{
-	display: inline;
+	/*NEON edits*/
+	display: inline !important;
+	/*end NEON edits*/
 	margin: 5px;
     padding: 5px;
 }
