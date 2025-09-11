@@ -536,9 +536,10 @@ class ShipmentManager{
 						$duplicateValue = '';
 						if (preg_match("/Duplicate entry '([^']+)' for key/", $errmsg, $matches)) {
 							$duplicateValue = $matches[1];
+							$duplicateValue = preg_replace('/-\d+$/', '', $duplicateValue);
 						}
 						if ($duplicateValue) {
-							$this->errorStr = "Sample check-in failed: {$duplicateValue} is already checked in under another shipment.";
+							$this->errorStr = "Sample check-in failed: $duplicateValue is already checked in under another shipment.";
 						} else {
 							$this->errorStr = "Sample check-in failed: a sample is already checked in under another shipment.";
 						}
