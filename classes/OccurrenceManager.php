@@ -116,6 +116,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			//else{
 			//	$sqlWhere .= 'AND (ctl.clid IN(' . $clidStr . ')) ';
 			//}
+			if(!$this->voucherManager){
+				$this->setChecklistVariables($this->searchTermArr['clid']);
+			}
 			$meta = $this->voucherManager->getClMetadata();
 			$props = json_decode($meta['dynamicProperties'], true);
 			$datasetIDs = array_map('intval', $props['datasetIDs'] ?? []);
