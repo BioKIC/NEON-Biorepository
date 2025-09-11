@@ -864,7 +864,7 @@ include($SERVER_ROOT.'/includes/header.php');
 								if($headerList){
 									?>
 									<form name="sampleListingForm" action="manifestviewer.php" method="post" onsubmit="return batchCheckinFormVerify(this)">
-										<table id="manifestTable" class="stripe hover compact" style="width:100 !important;">
+										<table id="manifestTable" class="cell-border stripe hover compact" style="width:100 !important;">
 											<thead>
 												<tr>
 												<?php
