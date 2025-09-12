@@ -814,11 +814,22 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                     <button type="button`"
                                         name="vwocc"
                                         onclick="window.location.href='../../collections/list.php?clid=<?php echo $clid; ?>';"
-                                        style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
+                                        style="all: unset; cursor: pointer; text-align: center; background: none !important; background-color: transparent !important;"
                                         onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
                                         onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
                                         <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="Occurrence Records" width="24" height="24" />
                                         <div style="font-size: 0.9em; text-decoration: none;">View All Specimens</div>
+                                    </button>
+                                </div>
+                                <div class="icon-button" style="text-align: center; flex: 1;">
+                                    <button type="button`"
+                                        name="vwimg"
+                                        onclick="window.location.href='../../collections/list.php?clid=<?php echo $clid; ?>&tabindex=3';"
+                                        style="all: unset; cursor: pointer; text-align: center; background: none !important; background-color: transparent !important;"
+                                        onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
+                                        onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
+                                        <img src="../../images/image-icon.svg" alt="Occurrence Records" width="24" height="24" />
+                                        <div style="font-size: 0.9em; text-decoration: none;">View All Images</div>
                                     </button>
                                 </div>
                             </div>
