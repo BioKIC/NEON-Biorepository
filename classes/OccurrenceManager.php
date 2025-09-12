@@ -141,7 +141,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 					WHERE parenttid IN ($tidStr)
 				)";
 			}
-			$sqlWhere .= ' AND (dl.datasetid IN (' . $datasetStr . ') AND ' . $collidFilter . ') OR (dl.datasetid IN (' . $datasetStr . ') AND ' . $tidFilter . ') ';
+			$sqlWhere .= ' AND ((dl.datasetid IN (' . $datasetStr . ') AND ' . $collidFilter . ') OR (dl.datasetid IN (' . $datasetStr . ') AND ' . $tidFilter . ')) ';
 			$this->displaySearchArr[] = 'Checklist: ' . $this->voucherManager->getClName();
 			//end neon edit
 		}
