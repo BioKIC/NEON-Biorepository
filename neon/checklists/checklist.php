@@ -655,7 +655,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 				<!-- Option box -->
 				<div class="printoff" id="cloptiondiv">
 					<div style="">
-						<form id="optionform" name="optionform" action="checklist.php" method="post">
+						<form id="optionform" name="optionform" action="checklist.php" method="get">
                             <span class="screen-reader-only">
                                 <a href = "#img-container"><?php echo $LANG['SKIP_LINK']; ?></a>
                             </span>
@@ -752,7 +752,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 								</div>
 							</fieldset>
 						</form>
-                        <form id="downloadform" name="downloadform" action="checklist.php" method="post">
+                        <form id="downloadform" name="downloadform" action="checklist.php" method="get">
                             <span class="screen-reader-only">
                                 <a href="#img-container"><?php echo $LANG['SKIP_LINK']; ?></a>
                             </span>
