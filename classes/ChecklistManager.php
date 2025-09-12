@@ -457,16 +457,16 @@ class ChecklistManager extends Manager{
 				$datasetIDs = !empty($dp['datasetIDs']) ? $dp['datasetIDs'] : [];
 				$datasetIdStr = $datasetIDs ? implode(',', array_map('intval', $datasetIDs)) : '0';
 				$sql = 'SELECT 
-							m.tid,
+							o.tidInterpreted as tid,
 							MIN(m.url) AS url,
 							MIN(m.thumbnailurl) AS thumbnailurl,
 							MIN(m.originalurl) AS originalurl
 						FROM media m
 						INNER JOIN omoccurrences o ON m.occid = o.occid
 						INNER JOIN omoccurdatasetlink dl ON o.occid = dl.occid
-						WHERE m.tid IN('.implode(',', array_keys($this->taxaList)).')
+						WHERE o.tidInterpreted IN('.implode(',', array_keys($this->taxaList)).')
 						  AND dl.datasetid IN ('.$datasetIdStr.')
-						GROUP BY m.tid';
+						GROUP BY o.tidInterpreted';
 				$matchedArr = $this->setImageSubset($sql);
 				return;
 			}
