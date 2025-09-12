@@ -453,23 +453,23 @@ class ChecklistManager extends Manager{
 			$matchedArr = array();
 			//neon edit
 			if ($this->limitImagesToSite) {
-			$dp = json_decode($this->clMetadata['dynamicProperties'] ?? '{}', true);
-			$datasetIDs = !empty($dp['datasetIDs']) ? $dp['datasetIDs'] : [];
-			$datasetIdStr = $datasetIDs ? implode(',', array_map('intval', $datasetIDs)) : '0';
-			$sql = 'SELECT 
-						m.tid,
-						MIN(m.url) AS url,
-						MIN(m.thumbnailurl) AS thumbnailurl,
-						MIN(m.originalurl) AS originalurl
-					FROM media m
-					INNER JOIN omoccurrences o ON m.occid = o.occid
-					INNER JOIN omoccurdatasetlink dl ON o.occid = dl.occid
-					WHERE m.tid IN('.implode(',', array_keys($this->taxaList)).')
-					  AND dl.datasetid IN ('.$datasetIdStr.')
-					GROUP BY m.tid';
+				$dp = json_decode($this->clMetadata['dynamicProperties'] ?? '{}', true);
+				$datasetIDs = !empty($dp['datasetIDs']) ? $dp['datasetIDs'] : [];
+				$datasetIdStr = $datasetIDs ? implode(',', array_map('intval', $datasetIDs)) : '0';
+				$sql = 'SELECT 
+							m.tid,
+							MIN(m.url) AS url,
+							MIN(m.thumbnailurl) AS thumbnailurl,
+							MIN(m.originalurl) AS originalurl
+						FROM media m
+						INNER JOIN omoccurrences o ON m.occid = o.occid
+						INNER JOIN omoccurdatasetlink dl ON o.occid = dl.occid
+						WHERE m.tid IN('.implode(',', array_keys($this->taxaList)).')
+						  AND dl.datasetid IN ('.$datasetIdStr.')
+						GROUP BY m.tid';
 				$matchedArr = $this->setImageSubset($sql);
+				return;
 			}
-			return;
 			//end neon edit
 			if($this->limitImagesToVouchers){
 				$clidStr = $this->clid;

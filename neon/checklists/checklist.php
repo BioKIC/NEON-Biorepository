@@ -27,7 +27,7 @@ $searchSynonyms = array_key_exists('searchsynonyms', $_REQUEST) ? filter_var($_R
 $defaultOverride = array_key_exists('defaultoverride', $_REQUEST) ? filter_var($_REQUEST['defaultoverride'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $printMode = array_key_exists('printmode', $_REQUEST) ? filter_var($_REQUEST['printmode'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $groupByRank = array_key_exists('groupbyrank', $_REQUEST) ? strtolower(trim($_REQUEST['groupbyrank'])) : 'family';
-$imageScope = array_key_exists('imagescope', $_REQUEST) ? filter_var($_REQUEST['imagescope'], FILTER_SANITIZE_FULL_SPECIAL_CHARS) : 'all';
+$imageScope = array_key_exists('imageScope', $_REQUEST) ? filter_var($_REQUEST['imageScope'], FILTER_SANITIZE_FULL_SPECIAL_CHARS) : 'all';
 
 
 $statusStr='';
@@ -745,6 +745,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 										<input type="hidden" name="defaultoverride" value="1" />
 										<input type="hidden" name="voucherimages" value="<?= $limitImagesToVouchers; ?>" >
 										<input type="hidden" name="showsubgenera" value="<?= ($showSubgenera?1:0) ?>" >
+                                        <input type="hidden" name="showimages" value="<?= ($showImages?1:0) ?>" >
 										<?php if(!$taxonFilter) echo '<input type="hidden" name="pagenumber" value="'.$pageNumber.'" />'; ?>
 									<button 
 									  name="submitaction" 
