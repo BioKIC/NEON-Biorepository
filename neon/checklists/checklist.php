@@ -471,10 +471,18 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                             <div class="tndiv">
                                 <div class="tnimg" style="<?php echo ($imgSrc ? '' : 'border:1px solid black;'); ?>">
                                     <?php
-                                    $spUrl = "../../taxa/index.php?taxauthid=1&taxon=$tid&clid=".$clid;
-                                    if($imgSrc){
-                                        $imgSrc = (array_key_exists('IMAGE_DOMAIN', $GLOBALS) && substr($imgSrc, 0, 4) != 'http' ? $GLOBALS['IMAGE_DOMAIN'] : "") . $imgSrc;
-                                        echo "<a href='$spUrl' target='_blank'><img src='$imgSrc' /></a>";
+                                    if ($imgSrc) {
+                                        $imgSrcFull = (array_key_exists('IMAGE_DOMAIN', $GLOBALS) && substr($imgSrc, 0, 4) != 'http'
+                                            ? $GLOBALS['IMAGE_DOMAIN']
+                                            : "") . $imgSrc;
+                            
+                                        $spUrl = $u
+                                            ? ((array_key_exists('IMAGE_DOMAIN', $GLOBALS) && substr($u, 0, 4) != 'http'
+                                                ? $GLOBALS['IMAGE_DOMAIN']
+                                                : "") . $u)
+                                            : $imgSrcFull;
+                            
+                                        echo "<a href='$spUrl' title='View Larger Image'><img src='$imgSrcFull' /></a>";
                                     } else {
                                         echo '<div style="margin-top:50px;"><b>'.$LANG['IMAGE'].'<br/>'.$LANG['NOTY'].'<br/>'.$LANG['AVAIL'].'</b></div>';
                                     }

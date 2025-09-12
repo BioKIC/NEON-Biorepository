@@ -453,7 +453,7 @@ class ChecklistManager extends Manager{
 			$matchedArr = array();
 			//neon edit
 			if ($this->limitImagesToSite) {
-			$dp = json_decode($this->clMetadata->dynamicProperties, true);
+			$dp = json_decode($this->clMetadata['dynamicProperties'] ?? '{}', true);
 			$datasetIDs = !empty($dp['datasetIDs']) ? $dp['datasetIDs'] : [];
 			$datasetIdStr = $datasetIDs ? implode(',', array_map('intval', $datasetIDs)) : '0';
 			$sql = 'SELECT 
