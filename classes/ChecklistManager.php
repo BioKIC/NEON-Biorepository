@@ -469,6 +469,7 @@ class ChecklistManager extends Manager{
 					GROUP BY m.tid';
 				$matchedArr = $this->setImageSubset($sql);
 			}
+			return;
 			//end neon edit
 			if($this->limitImagesToVouchers){
 				$clidStr = $this->clid;
