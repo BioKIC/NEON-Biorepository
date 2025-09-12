@@ -235,7 +235,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
            margin-bottom: 1em;
         }
         .family-block {
-          margin-bottom: 2em; /* space between families */
+          margin-bottom: 2em;
         }
         
         .family-div {
@@ -246,12 +246,13 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
         .tndiv-container {
           display: flex;
           flex-wrap: wrap;
-          gap: 10px; /* space between species tiles */
+          gap: 10px;
         }
         
         .tndiv {
           flex: 0 0 auto;
-          width: 180px; /* adjust tile width */
+          width: 180px;
+          height: auto;
         }
          
 	</style>
@@ -446,12 +447,14 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                 // Start new family block
                                 $famUrl = '../../taxa/index.php?taxauthid=1&taxon=' . strip_tags($group) . '&clid='.$clid;
                                 echo '<div class="family-block">'."\n";
-                                echo '  <div class="family-div" id="'.strip_tags($group).'">'."\n";
-                                echo '    <a href="'.$famUrl.'" title="View Taxon Page" style="color:black;">'.strip_tags($group).'</a>'."\n";
-                                echo '    <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'" title="View Specimens">'."\n";
-                                echo '      <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="View Specimens" width="16" height="16" style="vertical-align:middle; cursor:pointer;" />'."\n";
-                                echo '    </a>'."\n";
-                                echo '  </div>'."\n";
+                                if (!empty(strip_tags($group))) {
+                                    echo '  <div class="family-div" id="'.strip_tags($group).'">'."\n";
+                                    echo '    <a href="'.$famUrl.'" title="View Taxon Page" style="color:black;">'.strip_tags($group).'</a>'."\n";
+                                    echo '    <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'" title="View Specimens">'."\n";
+                                    echo '      <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="View Specimens" width="16" height="16" style="vertical-align:middle; cursor:pointer;" />'."\n";
+                                    echo '    </a>'."\n";
+                                    echo '  </div>'."\n";
+                                }
                                 echo '  <div class="tndiv-container">'."\n"; // flex wrapper for species
                     
                                 $prevGroup = $group;
@@ -525,23 +528,25 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 						foreach($taxaArray as $tid => $sppArr){
 							$group = $sppArr['taxongroup'];
 							if($group != $prevGroup){
-								$famUrl = '../../taxa/index.php?taxauthid=1&taxon=' . strip_tags($group) . '&clid='.$clid;
-								//Edit family name display style here
-								?>
-								<div class="family-div" id="<?php echo strip_tags($group);?>">
-									<a href="<?php echo strip_tags($famUrl); ?>" title="View Taxon Page" style="color:black;">
-										<?php echo strip_tags($group);?>
-									</a>
-                                <?php
-                                echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'" 
-                                          title="View Specimens">
-                                          <img src="../../images/magnifying-glass-chart-solid-full.svg" 
-                                               alt="View Specimens" width="16" height="16" 
-                                               style="vertical-align:middle; cursor:pointer;" />
-                                      </a>'
-                                ?>
-                                </div>
-                                <?php
+                                if (!empty(strip_tags($group))) {
+                                    $famUrl = '../../taxa/index.php?taxauthid=1&taxon=' . strip_tags($group) . '&clid=' . $clid;
+                                    // Edit family name display style here
+                                    ?>
+                                    <div class="family-div" id="<?php echo strip_tags($group); ?>">
+                                        <a href="<?php echo strip_tags($famUrl); ?>" title="View Taxon Page" style="color:black;">
+                                            <?php echo strip_tags($group); ?>
+                                        </a>
+                                        <?php
+                                        echo ' <a href="../../collections/list.php?clid=' . $clid . '&taxa=' . strip_tags($group) . '" 
+                                                  title="View Specimens">
+                                                  <img src="../../images/magnifying-glass-chart-solid-full.svg" 
+                                                       alt="View Specimens" width="16" height="16" 
+                                                       style="vertical-align:middle; cursor:pointer;" />
+                                              </a>';
+                                        ?>
+                                    </div>
+                                    <?php
+                                }
 								$prevGroup = $group;
 							}
 							echo '<div id="tid-'.$tid.'" class="taxon-container">';
