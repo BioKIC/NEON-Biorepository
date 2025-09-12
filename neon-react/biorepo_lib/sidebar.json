@@ -25,35 +25,43 @@
     ]
   },
   "default": {
-    "sidebarTitle": "Data & Samples",
+    "sidebarTitle": "Samples & Specimens",
     "links": [
         {
-          "name": "Data Portal",
-          "hash": "https://www.neonscience.org/data"
-        },
-        {
-          "name": "Sample Portal",
+          "name": "Biorepository Sample Portal",
           "hash": "index.php"
         },
         {
-          "name": "Themes",
-          "hash": "https://www.neonscience.org/data-samples/data-themes"
+          "name": "About Samples",
+          "hash": "https://www.neonscience.org/samples/about-samples"
         },
         {
-          "name": "Collection Methods",
-          "hash": "https://www.neonscience.org/data-collection"
+          "name": "Sample Services",
+          "hash": "https://www.neonscience.org/samples/sample-services"
         },
         {
-          "name": "Notifications",
-          "hash": "https://www.neonscience.org/data-samples/data-notifications"
+          "name": "Sample Types",
+          "hash": "collections/misc/browsecollprofiles.php"
         },
         {
-          "name": "Spatial Data & Maps",
-          "hash": "https://www.neonscience.org/data-samples/data/spatial-data-maps"
+          "name": "Species Checklists",
+          "hash": "projects/browsechecklists.php"
         },
         {
-          "name": "Document Library",
-          "hash": "https://data.neonscience.org/documents"
+          "name": "Guidelines & Policies",
+          "hash": "https://www.neonscience.org/data-samples/guidelines-policies/usage-policies"
+        },
+        {
+          "name": "Sample Explorer",
+          "hash": "https://data.neonscience.org/sample-explorer"
+        },
+        {
+          "name": "Biorepository Sample API",
+          "hash": "https://biorepo.neonscience.org/portal/api/v2/documentation"
+        },
+        {
+          "name": "ASU NEON Biorepository Staff",
+          "hash": "https://www.neonscience.org/samples/asu-neon-biorepository-staff"
         }
     ]
   }
