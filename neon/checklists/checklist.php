@@ -90,6 +90,7 @@ if($showSynonyms) $clManager->setShowSynonyms(true);
 if($showCommon) $clManager->setShowCommon(true);
 if($showImages) $clManager->setShowImages(true);
 if($limitImagesToVouchers) $clManager->setLimitImagesToVouchers(true);
+if($imageScope === 'site') $clManager->setLimitImagesToSite(true);
 if($showVouchers) $clManager->setShowVouchers(true);
 if($showAlphaTaxa) $clManager->setShowAlphaTaxa(true);
 if($showSubgenera) $clManager->setShowSubgenera(true);
