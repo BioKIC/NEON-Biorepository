@@ -234,6 +234,26 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
            margin-top: 1em;
            margin-bottom: 1em;
         }
+        .family-block {
+          margin-bottom: 2em; /* space between families */
+        }
+        
+        .family-div {
+          font-weight: bold;
+          margin-bottom: 0.5em;
+        }
+        
+        .tndiv-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px; /* space between species tiles */
+        }
+        
+        .tndiv {
+          flex: 0 0 auto;
+          width: 180px; /* adjust tile width */
+        }
+         
 	</style>
 </head>
 <body>
@@ -408,74 +428,86 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 						?>
 					</div>
 					<hr />
-					<?php
-					if($showImages){
-						$prevfam = '';
-						foreach($taxaArray as $tid => $sppArr){
-							$tu = (array_key_exists('tnurl',$sppArr) ? $sppArr['tnurl'] : '');
-							$u = (array_key_exists('url',$sppArr) ? $sppArr['url'] : '');
-							$imgSrc = ($tu?$tu:$u);
-							?>
-							<div class="tndiv">
-								<div class="tnimg" style="<?php echo ($imgSrc?'' : 'border:1px solid black;'); ?>">
-									<?php
-									$spUrl = "../../taxa/index.php?taxauthid=1&taxon=$tid&clid=".$clid;
-									if($imgSrc){
-										$imgSrc = (array_key_exists('IMAGE_DOMAIN', $GLOBALS) && substr($imgSrc, 0, 4) != 'http' ? $GLOBALS['IMAGE_DOMAIN'] : "") . $imgSrc;
-										echo "<a href='" . $spUrl . "' target='_blank'>";
-										echo "<img src='" . $imgSrc . "' />";
-										echo "</a>";
-									}
-									else{
-										?>
-										<div style="margin-top:50px;">
-											<b><?php echo $LANG['IMAGE'] . '<br/>' . $LANG['NOTY'] . '<br/>' . $LANG['AVAIL']; ?></b>
-										</div>
-										<?php
-									}
-									?>
-								</div>
-								<div style="clear:both">
-									<?php
-									echo '<a href="' . $spUrl . '" target="_blank">';
-									echo '<b>' . $sppArr['sciname'] . '</b>';
-									echo '</a>';
-									?>
-									<div class="editspp printoff" style="float:left;display:none;">
-										<?php
-										if(isset($sppArr['clid'])){
-											$clidArr = explode(',',$sppArr['clid']);
-											foreach($clidArr as $id){
-												?>
-												<a href="#" onclick="return openPopup('clsppeditor.php?tid=<?php echo $tid . '&clid=' . $id; ?>','editorwindow');">
-													<img src='../../images/edit.png' style='width:1.3em;' alt="<?php echo $LANG['EDIT_DETAILS']; ?>" title='<?php echo $LANG['EDIT_DETAILS']; ?>' />
-												</a>
-												<?php
-											}
-										}
-										?>
-									</div>
-									<?php
-									if(array_key_exists('vern',$sppArr)){
-										echo "<div style='font-weight:bold;'>" . $sppArr["vern"] . "</div>";
-									}
-									if(!$showAlphaTaxa){
-										$family = $sppArr['family'];
-										if($family != $prevfam){
-											?>
-											<div class="familydiv" id="<?php echo $family; ?>">
-												[<?php echo $family; ?>]
-											</div>
-											<?php
-											$prevfam = $family;
-										}
-									}
-									?>
-								</div>
-							</div>
-							<?php
-						}
-					}
+                    <?php
+                    if($showImages){
+                        $prevGroup = '';
+                        foreach($taxaArray as $tid => $sppArr){
+                            $group = $sppArr['taxongroup'];
+                    
+                            // If we've hit a new family group
+                            if($group != $prevGroup){
+                    
+                                // Close previous group container if it was open
+                                if($prevGroup != ''){
+                                    echo "    </div>\n"; // close .tndiv-container
+                                    echo "</div>\n";     // close .family-block
+                                }
+                    
+                                // Start new family block
+                                $famUrl = '../../taxa/index.php?taxauthid=1&taxon=' . strip_tags($group) . '&clid='.$clid;
+                                echo '<div class="family-block">'."\n";
+                                echo '  <div class="family-div" id="'.strip_tags($group).'">'."\n";
+                                echo '    <a href="'.$famUrl.'" title="View Taxon Page" style="color:black;">'.strip_tags($group).'</a>'."\n";
+                                echo '    <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'" title="View Specimens">'."\n";
+                                echo '      <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="View Specimens" width="16" height="16" style="vertical-align:middle; cursor:pointer;" />'."\n";
+                                echo '    </a>'."\n";
+                                echo '  </div>'."\n";
+                                echo '  <div class="tndiv-container">'."\n"; // flex wrapper for species
+                    
+                                $prevGroup = $group;
+                            }
+                    
+                            // Thumbnail image source
+                            $tu = (array_key_exists('tnurl',$sppArr) ? $sppArr['tnurl'] : '');
+                            $u  = (array_key_exists('url',$sppArr)   ? $sppArr['url']   : '');
+                            $imgSrc = ($tu ? $tu : $u);
+                            ?>
+                            <div class="tndiv">
+                                <div class="tnimg" style="<?php echo ($imgSrc ? '' : 'border:1px solid black;'); ?>">
+                                    <?php
+                                    $spUrl = "../../taxa/index.php?taxauthid=1&taxon=$tid&clid=".$clid;
+                                    if($imgSrc){
+                                        $imgSrc = (array_key_exists('IMAGE_DOMAIN', $GLOBALS) && substr($imgSrc, 0, 4) != 'http' ? $GLOBALS['IMAGE_DOMAIN'] : "") . $imgSrc;
+                                        echo "<a href='$spUrl' target='_blank'><img src='$imgSrc' /></a>";
+                                    } else {
+                                        echo '<div style="margin-top:50px;"><b>'.$LANG['IMAGE'].'<br/>'.$LANG['NOTY'].'<br/>'.$LANG['AVAIL'].'</b></div>';
+                                    }
+                                    ?>
+                                </div>
+                    
+                                <?php
+                                echo '<div id="tid-'.$tid.'">';
+                                echo '<div class="taxon-div">';
+                                if(!preg_match('/\ssp\d/',$sppArr["sciname"])) {
+                                    echo '<a href="../../taxa/index.php?taxauthid=1&taxon='.$tid.'&clid='.$clid.'" title="View Taxon Page">';
+                                }
+                                echo '<span class="taxon-span">'.$sppArr['sciname'].'</span> ';
+                                if(array_key_exists("author",$sppArr)) echo $sppArr["author"];
+                                if(!preg_match('/\ssp\d/',$sppArr["sciname"])) echo "</a>";
+                                if(array_key_exists('vern',$sppArr)){
+                                    echo ' - <span class="vern-span">'.$sppArr['vern'].'</span>';
+                                }
+                                echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'" title="View Specimens">';
+                                echo '   <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="View Specimens" width="16" height="16" style="vertical-align:middle; cursor:pointer;" />';
+                                echo ' </a>';
+                                echo "</div>\n"; // close .taxon-div
+                    
+                                if($showSynonyms && isset($sppArr['syn'])){
+                                    echo '<div class="syn-div" style="margin-left:0px">['.$sppArr['syn'].']</div>';
+                                }
+                                echo "</div>\n"; // close #tid-xxx
+                                ?>
+                            </div>
+                            <?php
+                        }
+                    
+                        // Close last family block
+                        if($prevGroup != ''){
+                            echo "    </div>\n"; // close .tndiv-container
+                            echo "</div>\n";     // close .family-block
+                        }
+                    }
+
 					else{
 						//Display taxa
 						echo '<div id="taxalist-div">';
@@ -497,42 +529,37 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 								//Edit family name display style here
 								?>
 								<div class="family-div" id="<?php echo strip_tags($group);?>">
-									<a href="<?php echo strip_tags($famUrl); ?>" target="_blank" style="color:black;">
+									<a href="<?php echo strip_tags($famUrl); ?>" title="View Taxon Page" style="color:black;">
 										<?php echo strip_tags($group);?>
 									</a>
-								</div>
-								<?php
+                                <?php
+                                echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'" 
+                                          title="View Specimens">
+                                          <img src="../../images/magnifying-glass-chart-solid-full.svg" 
+                                               alt="View Specimens" width="16" height="16" 
+                                               style="vertical-align:middle; cursor:pointer;" />
+                                      </a>'
+                                ?>
+                                </div>
+                                <?php
 								$prevGroup = $group;
 							}
 							echo '<div id="tid-'.$tid.'" class="taxon-container">';
 							//Edit species name display style here
 							echo '<div class="taxon-div">';
-							if(!preg_match('/\ssp\d/',$sppArr["sciname"])) echo '<a href="../../taxa/index.php?taxauthid=1&taxon=' . $tid . '&clid=' . $clid . '" title="Click to view Taxon Page">';
+							if(!preg_match('/\ssp\d/',$sppArr["sciname"])) echo '<a href="../../taxa/index.php?taxauthid=1&taxon=' . $tid . '&clid=' . $clid . '" title="View Taxon Page">';
 							echo '<span class="taxon-span">' . $sppArr['sciname'] . '</span> ';
 							if(array_key_exists("author",$sppArr)) echo $sppArr["author"];
 							if(!preg_match('/\ssp\d/',$sppArr["sciname"])) echo "</a>";
 							if(array_key_exists('vern',$sppArr)){
 								echo ' - <span class="vern-span">'.$sppArr['vern'] . '</span>';
 							}
-							if($clid && $clArray['dynamicsql']){
-								?>
-								<span class="view-specimen-span printoff">
-									<a href="../../collections/list.php?usethes=1&taxontype=2&taxa=<?php echo $tid . "&targetclid=" . $clid . "&targettid=" . $tid;?>" target="_blank" style="text-decoration:none;">
-										<img src="../../images/list.png" style="width:1.2em;" title="<?php echo $LANG['VIEW_RELATED']; ?>" />
-									</a>
-									<?php
-									if(isset($dynamPropsArr)){
-										$scinameasid = str_replace(" ", "-", $sppArr['sciname']);
-										$arrForExternalServiceApi .= ($arrForExternalServiceApi?',' : '') . "'" . $scinameasid . "'";
-										echo '<a href="#" target="_blank" id="a-'.$scinameasid.'">';
-										echo '<img src="../../images/icons/inaturalist.png" style="width:1.2em;display:none;" title="'. $LANG['LINKTOINAT'] . '" id="i-' . $scinameasid . '" />';
-										echo '</a>';
-									}
-									?>
-								</span>
-								<?php
-							}
-
+                            echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'" 
+                                      title="View Specimens">
+                                      <img src="../../images/magnifying-glass-chart-solid-full.svg" 
+                                           alt="View Specimens" width="16" height="16" 
+                                           style="vertical-align:middle; cursor:pointer;" />
+                                  </a>';
 							if($isEditor){
 								if(isset($sppArr['clid'])){
 									$clidArr = explode(',',$sppArr['clid']);
@@ -681,6 +708,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 										  + '&showcommon=' + (form.showcommon && form.showcommon.checked ? '1' : '0')
 										  + '&showsynonyms=' + (form.showsynonyms.checked ? '1' : '0')
 										  + '&groupbyrank=' + encodeURIComponent(form.groupbyrank.value)
+                                          + '&showimages=' + encodeURIComponent('<?php echo $showImages; ?>')
                                           + '&defaultoverride=1';
 										changeOptionFormAction(url, '_self');
 									  "
@@ -757,7 +785,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                     onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
                                     onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
                                     <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="Occurrence Records" width="24" height="24" />
-                                    <div style="font-size: 0.9em; text-decoration: none;">View Specimens</div>
+                                    <div style="font-size: 0.9em; text-decoration: none;">View All Specimens</div>
                                 </button>
                             </div>
                         </div>
