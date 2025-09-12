@@ -27,6 +27,8 @@ $searchSynonyms = array_key_exists('searchsynonyms', $_REQUEST) ? filter_var($_R
 $defaultOverride = array_key_exists('defaultoverride', $_REQUEST) ? filter_var($_REQUEST['defaultoverride'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $printMode = array_key_exists('printmode', $_REQUEST) ? filter_var($_REQUEST['printmode'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $groupByRank = array_key_exists('groupbyrank', $_REQUEST) ? strtolower(trim($_REQUEST['groupbyrank'])) : 'family';
+$imageScope = array_key_exists('imagescope', $_REQUEST) ? filter_var($_REQUEST['imagescope'], FILTER_SANITIZE_FULL_SPECIAL_CHARS) : 'all';
+
 
 $statusStr='';
 
@@ -645,9 +647,9 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 				<div class="printoff" id="cloptiondiv">
 					<div style="">
 						<form id="optionform" name="optionform" action="checklist.php" method="post">
-						<span class="screen-reader-only">
-							<a href = "#img-container"><?php echo $LANG['SKIP_LINK']; ?></a>
-						</span>
+                            <span class="screen-reader-only">
+                                <a href = "#img-container"><?php echo $LANG['SKIP_LINK']; ?></a>
+                            </span>
 							<fieldset style="background-color:white;padding-bottom:10px;">
 								<legend><b>Customize Display</b></legend>
 								<!-- Taxon Filter option -->
@@ -683,15 +685,31 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 									<input id='showauthors' name='showauthors' type='checkbox' value='1' <?php echo ($showAuthors ? "checked" : ""); ?>/>
 									<label for='showauthors'>Taxon Authorship</label>
 								</div>
-								<div id="groupbyrankdiv" style="margin:10px 0px 10px 5px;">
-									<label for="groupbyrank"><b>Group by Taxon Rank:</b></label><br>
+								<div id="groupbyrankdiv" style="margin:10px 0px 10px 0px;">
+									<b>Group by Taxon Rank:</b><br>
 									<select id="groupbyrank" name="groupbyrank">
 										<option value="order" <?php echo ($groupByRank === 'order' ? 'selected' : ''); ?>>Order</option>
 										<option value="family" <?php echo ($groupByRank === 'family' ? 'selected' : ''); ?>>Family</option>
 										<option value="genus" <?php echo ($groupByRank === 'genus' ? 'selected' : ''); ?>>Genus</option>
 										<option value="taxon" <?php echo ($groupByRank === 'taxon' ? 'selected' : ''); ?>>Taxon</option>
 									</select>
-								</div>								
+								</div>
+                                <?php if ($showImages): ?>
+                                <div id="imageoptionsdiv" style="margin:10px 0;">
+                                    <b><?php echo $LANG['IMAGE_OPTIONS'] ?? 'Image Source'; ?>:</b><br>
+                                    <label>
+                                        <input type="radio" name="imageScope" value="all" 
+                                               <?php echo ($imageScope === 'all' ? 'checked' : ''); ?>>
+                                        Best Available (Any)
+                                    </label><br>
+                                    <label>
+                                        <input type="radio" name="imageScope" value="site" 
+                                               <?php echo ($imageScope === 'site' ? 'checked' : ''); ?>>
+                                        From This Site/Domain Only
+                                    </label>
+                                </div>
+                                <?php endif; ?>
+
 								<div style="margin:5px 0px 0px 5px;">
 									<div style="float:left;margin-bottom:5px">
 										<input type="hidden" name="clid" value="<?php echo $clid; ?>" />
@@ -714,6 +732,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 										  + '&showsynonyms=' + (form.showsynonyms.checked ? '1' : '0')
 										  + '&groupbyrank=' + encodeURIComponent(form.groupbyrank.value)
                                           + '&showimages=' + encodeURIComponent('<?php echo $showImages; ?>')
+                                          + '&imagescope=' + (form.imageScope ? form.imageScope.value : 'all')
                                           + '&defaultoverride=1';
 										changeOptionFormAction(url, '_self');
 									  "
@@ -724,77 +743,77 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 								</div>
 							</fieldset>
 						</form>
-					<form id="downloadform" name="downloadform" action="checklist.php" method="post">
-						<span class="screen-reader-only">
-							<a href="#img-container"><?php echo $LANG['SKIP_LINK']; ?></a>
-						</span>
-						<fieldset style="background-color:white;padding-bottom:10px;">
-							<legend><b>Download</b></legend>
-							<input type="hidden" name="showsynonyms" id="dl_showsynonyms" value="">
-							<input type="hidden" name="showauthors" id="dl_showauthors" value="">
-							<input type="hidden" name="showcommon" id="dl_showcommon" value="">
-							<input type="hidden" name="groupbyrank" id="dl_groupbyrank" value="">
-							<input type="hidden" name="submitaction" value="Download">
-							<div style="display: flex; gap: 20px;">
-<!--								<div class="icon-button" style="text-align: center; flex: 1;" title="<?php echo $LANG['DOWNLOAD_CHECKLIST']; ?>">
-									<input type="image" name="dllist" alt="<?php echo $LANG['IMG_DWNL_LIST']; ?>" src="../../images/dl.png"
-										onclick="changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&pid=' . $pid . '&dynclid=' . $dynClid; ?>','_self');" />
-									<div style="font-size: 0.9em;"><?php echo $LANG['DOWNLOAD_CHECKLIST']; ?></div>
-								</div>-->
-								<!-- Download as CSV -->
-								<div class="icon-button" style="text-align: center; flex: 1;">
-									<button type="submit"
-										name="dlcsv"
-										onclick="syncOptionValues(); changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&format=csv'; ?>','_self');"
-										style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
-										onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
-										onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
-										<img src="../../images/file-csv-solid.svg" alt="Download CSV" width="24" height="24" />
-										<div style="font-size: 0.9em; text-decoration: none;">Download CSV</div>
-									</button>
-								</div>
-								<!-- Download as PDF -->
-								<div class="icon-button" style="text-align: center; flex: 1;">
-									<button type="submit"
-										name="dlpdf"
-										onclick="syncOptionValues(); changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&format=pdf'; ?>','_self');"
-										style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
-										onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
-										onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
-										<img src="../../images/file-pdf-solid.svg" alt="Download PDF" width="24" height="24" />
-										<div style="font-size: 0.9em; text-decoration: none;">Download PDF</div>
-									</button>
-								</div>					
-<!--								<div class="icon-button" style="text-align: center; flex: 1;" title="<?php echo $LANG['PRINT_BROWSER']; ?>">
-									<input type="image" name="printlist" alt="<?php echo $LANG['IMG_PRINT_LIST']; ?>" src="../../images/print.png"
-										onclick="changeDownloadFormAction('checklist.php?clid=<?php echo $clid; ?>','_blank');" />
-									<div style="font-size: 0.9em;"><?php echo $LANG['PRINT_BROWSER']; ?></div>
-								</div>
-								<div class="icon-button" id="wordicondiv" style="text-align: center; flex: 1;<?php echo ($showImages ? 'display:none;' : ''); ?>" title="<?php echo $LANG['EXPORT_DOCX']; ?>">
-									<input type="image" name="exportdoc" alt="<?php echo $LANG['IMG_DOCX_EXPORT']; ?>" src="../../images/wordicon.png"
-										onclick="changeDownloadFormAction('../../checklists/mswordexport.php?clid=<?php echo $clid; ?>','_self');" />
-									<div style="font-size: 0.9em;"><?php echo $LANG['EXPORT_DOCX']; ?></div>
-								</div>-->
-							</div>
-						</fieldset>
-					</form>
-                    <fieldset style="background-color:white;padding-bottom:10px;">
-                        <legend><b>View</b></legend>
-                        <div style="display: flex; gap: 20px;">
-                            <!-- Occurrence Records -->
-                            <div class="icon-button" style="text-align: center; flex: 1;">
-                                <button type="button`"
-                                    name="vwocc"
-                                    onclick="window.location.href='../../collections/list.php?clid=<?php echo $clid; ?>';"
-                                    style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
-                                    onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
-                                    onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
-                                    <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="Occurrence Records" width="24" height="24" />
-                                    <div style="font-size: 0.9em; text-decoration: none;">View All Specimens</div>
-                                </button>
+                        <form id="downloadform" name="downloadform" action="checklist.php" method="post">
+                            <span class="screen-reader-only">
+                                <a href="#img-container"><?php echo $LANG['SKIP_LINK']; ?></a>
+                            </span>
+                            <fieldset style="background-color:white;padding-bottom:10px;">
+                                <legend><b>Download</b></legend>
+                                <input type="hidden" name="showsynonyms" id="dl_showsynonyms" value="">
+                                <input type="hidden" name="showauthors" id="dl_showauthors" value="">
+                                <input type="hidden" name="showcommon" id="dl_showcommon" value="">
+                                <input type="hidden" name="groupbyrank" id="dl_groupbyrank" value="">
+                                <input type="hidden" name="submitaction" value="Download">
+                                <div style="display: flex; gap: 20px;">
+    <!--								<div class="icon-button" style="text-align: center; flex: 1;" title="<?php echo $LANG['DOWNLOAD_CHECKLIST']; ?>">
+                                        <input type="image" name="dllist" alt="<?php echo $LANG['IMG_DWNL_LIST']; ?>" src="../../images/dl.png"
+                                            onclick="changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&pid=' . $pid . '&dynclid=' . $dynClid; ?>','_self');" />
+                                        <div style="font-size: 0.9em;"><?php echo $LANG['DOWNLOAD_CHECKLIST']; ?></div>
+                                    </div>-->
+                                    <!-- Download as CSV -->
+                                    <div class="icon-button" style="text-align: center; flex: 1;">
+                                        <button type="submit"
+                                            name="dlcsv"
+                                            onclick="syncOptionValues(); changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&format=csv'; ?>','_self');"
+                                            style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
+                                            onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
+                                            onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
+                                            <img src="../../images/file-csv-solid.svg" alt="Download CSV" width="24" height="24" />
+                                            <div style="font-size: 0.9em; text-decoration: none;">Download CSV</div>
+                                        </button>
+                                    </div>
+                                    <!-- Download as PDF -->
+                                    <div class="icon-button" style="text-align: center; flex: 1;">
+                                        <button type="submit"
+                                            name="dlpdf"
+                                            onclick="syncOptionValues(); changeDownloadFormAction('checklist.php?clid=<?php echo $clid . '&format=pdf'; ?>','_self');"
+                                            style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
+                                            onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
+                                            onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
+                                            <img src="../../images/file-pdf-solid.svg" alt="Download PDF" width="24" height="24" />
+                                            <div style="font-size: 0.9em; text-decoration: none;">Download PDF</div>
+                                        </button>
+                                    </div>					
+    <!--								<div class="icon-button" style="text-align: center; flex: 1;" title="<?php echo $LANG['PRINT_BROWSER']; ?>">
+                                        <input type="image" name="printlist" alt="<?php echo $LANG['IMG_PRINT_LIST']; ?>" src="../../images/print.png"
+                                            onclick="changeDownloadFormAction('checklist.php?clid=<?php echo $clid; ?>','_blank');" />
+                                        <div style="font-size: 0.9em;"><?php echo $LANG['PRINT_BROWSER']; ?></div>
+                                    </div>
+                                    <div class="icon-button" id="wordicondiv" style="text-align: center; flex: 1;<?php echo ($showImages ? 'display:none;' : ''); ?>" title="<?php echo $LANG['EXPORT_DOCX']; ?>">
+                                        <input type="image" name="exportdoc" alt="<?php echo $LANG['IMG_DOCX_EXPORT']; ?>" src="../../images/wordicon.png"
+                                            onclick="changeDownloadFormAction('../../checklists/mswordexport.php?clid=<?php echo $clid; ?>','_self');" />
+                                        <div style="font-size: 0.9em;"><?php echo $LANG['EXPORT_DOCX']; ?></div>
+                                    </div>-->
+                                </div>
+                            </fieldset>
+                        </form>
+                        <fieldset style="background-color:white;padding-bottom:10px;">
+                            <legend><b>View</b></legend>
+                            <div style="display: flex; gap: 20px;">
+                                <!-- Occurrence Records -->
+                                <div class="icon-button" style="text-align: center; flex: 1;">
+                                    <button type="button`"
+                                        name="vwocc"
+                                        onclick="window.location.href='../../collections/list.php?clid=<?php echo $clid; ?>';"
+                                        style="all: unset; cursor: pointer; display: inline-block; text-align: center; background: none !important; background-color: transparent !important;"
+                                        onmouseover="this.querySelector('div').style.textDecoration='underline'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');"
+                                        onmouseout="this.querySelector('div').style.textDecoration='none'; this.style.setProperty('background', 'none', 'important'); this.style.setProperty('background-color', 'transparent', 'important');">
+                                        <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="Occurrence Records" width="24" height="24" />
+                                        <div style="font-size: 0.9em; text-decoration: none;">View All Specimens</div>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </fieldset>
+                        </fieldset>
 					</div>
 					<?php
 					if(!$showImages){
