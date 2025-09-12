@@ -501,8 +501,11 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                 if(array_key_exists('vern',$sppArr)){
                                     echo ' - <span class="vern-span">'.$sppArr['vern'].'</span>';
                                 }
-                                echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'" title="View Specimens">';
+                                echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'&tabindex=3" title="View Specimens">';
                                 echo '   <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="View Specimens" width="16" height="16" style="vertical-align:middle; cursor:pointer;" />';
+                                echo ' </a>';
+                                echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'" title="View Specimen Images">';
+                                echo '   <img src="../../images/image-icon.svg" alt="View Specimen Images" width="16" height="16" style="vertical-align:middle; cursor:pointer;" />';
                                 echo ' </a>';
                                 echo "</div>\n"; // close .taxon-div
                     
