@@ -438,9 +438,10 @@ $traitArr = $indManager->getTraitArr();
 										echo '<div>';
 										echo $assocArr['relationship'];
 										if($assocArr['subtype']) echo ' ('.$assocArr['subtype'].')';
-										echo ': ';
+										// Start NEON customization
+										$coll = $assocArr['collectionCode'];
+										echo ' (' . $coll . '): ';
 										$relID = $assocArr['objectID'];
-										// Start NEON custom addition
 										if (strpos($relID, ':') !== false && substr($relID, strpos($relID, ':') + 1) === '') {
 											$relID .= $assocArr['occidassoc'];
 										}
