@@ -524,10 +524,12 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM omoccurgenetic)) ';
 			$this->displaySearchArr[] = $this->LANG['HAS_GENETIC_DATA'];
 		}
-		if(array_key_exists("availableforloan",$this->searchTermArr)){
-			$sqlWhere .= "AND (o.availability = 1) ";
-			$this->displaySearchArr[] = 'available for loan';
+		// START NEON customization
+		if(array_key_exists('availableforloan', $this->searchTermArr)){
+			$sqlWhere .= 'AND (o.availability = 1) ';
+			$this->displaySearchArr[] = $this->LANG['AVAILABLE'];
 		}
+		// END NEON customization
 		if(array_key_exists('hascoords', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.decimalLatitude IS NOT NULL) ';
 			$this->displaySearchArr[] = $this->LANG['HAS_COORDINATES'];

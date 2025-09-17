@@ -49,11 +49,12 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 		//$this->setSqlWhere();
 		//end neon
 		$this->setRecordCnt();
-		$sql = 'SELECT m.mediaID, m.tid, IFNULL(t.sciname,o.sciname) as sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType ';
-		//neon
+		// Begin NEON customization 
+		//$sql = 'SELECT m.mediaID, m.tid, IFNULL(t.sciname,o.sciname) as sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType ';
+		$sql = 'SELECT m.mediaID, m.tid, IFNULL(t.sciname,o.sciname) as sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType, m.owner ';
 		//$sqlWhere = $this->sqlWhere;
 		$sqlWhere = $this->occurrenceManager->getSqlWhere();
-		//end neon
+		// End NEON customization
 		if($this->imageCount == 1) $sqlWhere .= 'GROUP BY sciname ';
 		elseif($this->imageCount == 2) $sqlWhere .= 'GROUP BY m.occid ';
 		$sql .= $this->getSqlBase() . $sqlWhere;
@@ -78,6 +79,9 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 			$retArr[$imgId]['caption'] = $r->caption;
 			$retArr[$imgId]['occid'] = $r->occid;
 			$retArr[$imgId]['mediaType'] = $r->mediaType;
+			// Begin NEON customization 
+			$retArr[$imgId]['owner'] = $r->owner;
+			// End NEON customization
 			//$retArr[$imgId]['stateprovince'] = $r->stateprovince;
 			//$retArr[$imgId]['catalognumber'] = $r->catalognumber;
 			//$retArr[$imgId]['instcode'] = $r->instcode;
