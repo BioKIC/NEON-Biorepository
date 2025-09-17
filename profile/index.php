@@ -323,7 +323,7 @@ include($SERVER_ROOT.'/includes/header.php');
 				</div>
 				<?php
 	 		}
-			if($SYMBIOTA_LOGIN_ENABLED){ ?>
+			if(!empty($SYMBIOTA_LOGIN_ENABLED)){ ?>
 				<div style="font-weight:bold;margin-top:5px">
 					<?php echo (isset($LANG['REMEMBER_PWD'])?$LANG['REMEMBER_PWD']:"Can't Remember your password?"); ?>
 				</div>
