@@ -111,8 +111,11 @@ if($action == 'logout'){
 
 		//neon edit
 		$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
+		$baseUrl = rtrim($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], '/');
+		
 		$logoutUrl = sprintf(
-			'https://int-data-neonscience.auth0.com/v2/logout?returnTo=%s&client_id=%s',
+			'%s/v2/logout?returnTo=%s&client_id=%s',
+			$baseUrl,
 			urlencode($redirect),
 			$CLIENT_IDS[$_SESSION['AUTH_PROVIDER']]
 		);
