@@ -822,12 +822,67 @@ public function getInquiryDataByID($request_id) {
       return $retArr;
   }
 
+      // Get material samples associated with a request for inquiry form table
+  public function getMaterialSampleTableByID($request_id){
+      $retArr = [];
+
+      $request_id = (int)$request_id;
+
+      $sql = "SELECT matSampleID,occid,status,use_type,sampleType,shipment_id FROM neonmaterialsamplerequestlink
+            WHERE request_id = ?";
+      $stmt = $this->conn->prepare($sql);
+      if (!$stmt) {
+          $this->errorMessage = "Dababase error: " . $this->conn->error;
+          return $retArr;
+      }
+
+      $stmt->bind_param("i", $request_id);
+      $stmt->execute();
+      $result = $stmt->get_result();
+
+      while ($row = $result->fetch_assoc()) {
+          $retArr[] = $row;
+      }
+
+      $stmt->close();
+
+      return $retArr;
+  }
+
     // Get samples count of samples associated with a request
     public function getSampleCountByID($request_id){
         $request_id = (int)$request_id;
 
         $sql = "SELECT COUNT(*) AS sample_count
                 FROM neonsamplerequestlink
+                WHERE request_id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return 0;
+        }
+
+        $stmt->bind_param("i", $request_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $count = 0;
+        if ($row = $result->fetch_assoc()) {
+            $count = (int)$row['sample_count'];
+        }
+
+        $stmt->close();
+
+        return $count;
+    }
+
+        // Get samples count of samples associated with a request
+    public function getMaterialSampleCountByID($request_id){
+        $request_id = (int)$request_id;
+
+        $sql = "SELECT COUNT(*) AS sample_count
+                FROM neonmaterialsamplerequestlink
                 WHERE request_id = ?";
 
         $stmt = $this->conn->prepare($sql);
@@ -906,6 +961,55 @@ public function getInquiryDataByID($request_id) {
         }
             
         $sql .= ' ORDER BY n.sampleID,n.sampleCode ';
+
+      $stmt = $this->conn->prepare($sql);
+      if (!$stmt) {
+          $this->errorMessage = "Dababase error: " . $this->conn->error;
+          return $retArr;
+      }
+
+      $stmt->bind_param("i", $request_id);
+      $stmt->execute();
+      $result = $stmt->get_result();
+
+      while ($row = $result->fetch_assoc()) {
+          $retArr[] = $row;
+      }
+
+      $stmt->close();
+
+      return $retArr;
+  }
+
+          // Get detailed material samples associated with a request 
+  public function getMaterialSamplesByID($request_id,$filter = ''){
+      $retArr = [];
+
+      $request_id = (int)$request_id;
+
+      $sql = "SELECT s.id,s.matSampleID,t.catalogNumber,n.sampleID,n.sampleClass,n.sampleCode,s.status,s.use_type,s.sampleType,shipment_id,s.occid FROM neonmaterialsamplerequestlink s
+            LEFT JOIN NeonSample n
+            ON s.occid=n.occid
+            LEFT JOIN ommaterialsample t
+            ON s.matSampleID = t.matSampleID
+            WHERE request_id = ?";
+
+        if($filter){
+                    if($filter == 'pendingfunding'){
+                        $sql .= ' AND (status = "pending funding") ';
+                    }
+                    elseif($filter == 'pendingfulfillment'){
+                        $sql .= ' AND (status = "pending fulfillment") ';
+                    }
+                    elseif($filter == 'current'){
+                        $sql .= ' AND (status = "current") ';
+                    }
+                    elseif($filter == 'complete'){
+                        $sql .= ' AND (status = "complete") ';
+                    }
+        }
+            
+        $sql .= ' ORDER BY t.catalogNumber,n.sampleID ';
 
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
@@ -1072,6 +1176,47 @@ public function getInquiryDataByID($request_id) {
         exit; 
     }
 
+    // export material sample list
+    public function exportMaterialSampleList($request_id){
+        $request_id = (int)$request_id;
+
+        $fileName = 'materialSampleRequestExport_' . $request_id . '_' . date('Y-m-d') . '.csv';
+
+        $sql = 'SELECT * FROM neonmaterialsamplerequestlink WHERE request_id = ?';
+        $stmt = $this->conn->prepare($sql);
+        if(!$stmt){
+            die('SQL prepare failed: ' . $this->conn->error);
+        }
+
+        $stmt->bind_param('i', $request_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if(!$result){
+            die('Query failed: ' . $stmt->error);
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        if($row = $result->fetch_assoc()){
+            fputcsv($output, array_keys($row)); 
+            fputcsv($output, $row);            
+        }
+
+        while($row = $result->fetch_assoc()){
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+        $stmt->close();
+        exit; 
+    }
+
 
     // export request occurrence list
     public function exportOccurList($request_id){
@@ -1086,6 +1231,56 @@ public function getInquiryDataByID($request_id) {
 			'FROM  neonsamplerequestlink s '.
             'LEFT JOIN NeonSample m ON s.occid=m.occid '.
 			'INNER JOIN omoccurrences o ON m.occid = o.occid '.
+            'LEFT JOIN omcollections c ON o.collid=c.collid '.
+            'WHERE s.request_id = ?';
+
+        $stmt = $this->conn->prepare($sql);
+        if(!$stmt){
+            die('SQL prepare failed: ' . $this->conn->error);
+        }
+
+        $stmt->bind_param('i', $request_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if(!$result){
+            die('Query failed: ' . $stmt->error);
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        if($row = $result->fetch_assoc()){
+            fputcsv($output, array_keys($row)); 
+            fputcsv($output, $row);            
+        }
+
+        while($row = $result->fetch_assoc()){
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+        $stmt->close();
+        exit; 
+    }
+
+       // export request material sample table
+    public function exportMaterialSampleTable($request_id){
+        $request_id = (int)$request_id;
+
+        $fileName = 'materialSampleRequestTableExport_' . $request_id . '_' . date('Y-m-d') . '.csv';
+
+        $sql = 'SELECT  t.*,c.collectionName, o.catalogNumber,o.occurrenceID,m.sampleID, m.alternativeSampleID, m.sampleCode, m.sampleClass, '.
+			'o.catalogNumber as primaryCatalogNumber, o.sciname, o.scientificNameAuthorship, o.identifiedBy, o.dateIdentified, o.recordedBy, o.eventDate, '.
+			'o.country, o.stateProvince, o.county, o.locality '.
+			'FROM  neonmaterialsamplerequestlink s '.
+            'LEFT JOIN ommaterialsample t ON s.matSampleID = t.matSampleID '.
+            'LEFT JOIN NeonSample m ON s.occid=m.occid '.
+			'INNER JOIN omoccurrences o ON t.occid = o.occid '.
             'LEFT JOIN omcollections c ON o.collid=c.collid '.
             'WHERE s.request_id = ?';
 

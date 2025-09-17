@@ -18,5 +18,11 @@ if($isEditor){
     elseif($exportTask == "occurrences"){
         $inquiryManager->exportOccurList($request_id);
     }
+    if ($exportTask == "materialsamplesrequest"){
+	    $inquiryManager->exportMaterialSampleList($request_id);
+    }
+    elseif($exportTask == "materialsamplestable"){
+        $inquiryManager->exportMaterialSampleTable($request_id);
+    }
 }
 ?>

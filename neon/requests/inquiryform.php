@@ -36,7 +36,7 @@ $inquirydata = $inquiryManager->getInquiryDataByID($request_id);
 $cm = $inquiryManager->getCMByID($request_id);
 $pc = $inquiryManager->getPrimaryContactByID($request_id);
 $sampledata = $inquiryManager->getSampleTableByID($request_id);
-//$materialsampledata = $inquiryManager->getMaterialSamplesByID($request_id);
+$materialsampledata = $inquiryManager->getMaterialSampleTableByID($request_id);
 
 
 if($formSubmit == 'editInquiry' && $isEditor){
@@ -302,7 +302,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		return true;
 	}
 
-	function verifyStatusEditForm(f) {
+	function verifyInquiryStatusForm(f) {
 		if (f.inqdate.value.trim() === "") {
 			alert("Insert inquiry date");
 			return false;
@@ -348,7 +348,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			?>
 			<div id="tabs" style="margin:0px;">
 			    <ul>
-					<li><a href="#editinqdiv"><span><?php echo 'Record Info'; ?></span></a></li>
+					<li><a href="#editinqdiv"><span><?php echo 'Inquiry Info'; ?></span></a></li>
 					<li><a href="#editstatus"><span><?php echo 'Status'; ?></span></a></li>
 					<li><a href="#samples"><span><?php echo 'Samples'; ?></span></a></li>
 					<li><a href="#materialsamples"><span><?php echo 'Material Samples'; ?></span></a></li>
@@ -652,7 +652,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 									</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
-									<label for="inqcut"><strong><?php echo 'Proposal funded but cut from project?'; ?></strong></label>
+									<label for="inqcut"><strong><?php echo 'Proposal funded but sample use cut from project?'; ?></strong></label>
 									<input type="hidden" name="inqcut" value="no" />
 									<input type="checkbox" id="inqcut" name="inqcut" value="yes"
 										<?php echo (!empty($inquirydata['cut']) && $inquirydata['cut'] === 'yes') ? 'checked' : ''; ?> />
@@ -698,16 +698,12 @@ if($formSubmit == 'editStatus' && $isEditor){
 						</form>
 					</div>
 					<div id="samples" style="">
-					<form name="linksamples" 
-						action="samplelist.php?id=<?php echo $request_id; ?>" 
-						method="post" 
-						onsubmit="return verifyInquirySamplesForm(this);">
 						<fieldset>
 							<legend><?php echo 'Samples'; ?></legend>									
 							<div style="clear:both;padding-top:8px;float:left;">
-								<input name="formsubmit" type="hidden" value="update samples" />
-								<button name="submitButton" type="submit">Update/Export Sample List</button>
-								<input type="hidden" name="tabindex" value="1" />
+								<button type="button" onclick="window.location.href='samplelist.php?id=<?php echo $request_id; ?>'">
+								Update/Export Sample List
+								</button>
 							</div>
 							<div style="clear:both;padding-top:8px;float:left;">
 								<?php
@@ -723,35 +719,29 @@ if($formSubmit == 'editStatus' && $isEditor){
 								?>
 							</div>
 						</fieldset>
-					</form>
 					</div>
 					<div id="materialsamples" style="">
-						<form name="linksamples" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryMaterialSamplesForm(this);">
 							<fieldset>
-								<legend><?php echo 'Material Samples' ?></legend>
-								<div style="clear:both;padding-top:4px;float:left;">
-									<span>
-										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
-									</span><br />
-								</div>
-								<div style="clear:both;padding-top:4px;float:left;">
-									<span>
-										<strong><?php echo 'Current: '; ?></strong> <?php echo $inquirydata['status']; ?>
-									</span><br />
-								</div>
-								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
-									<div class="fieldDiv">
-										<strong><?php echo 'Initial Inquiry Date: '?></strong>
-										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
-									</div>
+								<legend><?php echo 'Material Samples'; ?></legend>									
+								<div style="clear:both;padding-top:8px;float:left;">
+									<button type="button" onclick="window.location.href='materialsamplelist.php?id=<?php echo $request_id; ?>'">
+									Update/Export Material Sample List
+									</button>
 								</div>
 								<div style="clear:both;padding-top:8px;float:left;">
-									<input name="formsubmit" type="hidden" value="update material samples" />
-									<button name="submitButton" type="submit"><?php echo 'Link/Unlink Material Samples' ?></button>
-									<input type="hidden" name="tabindex" value="1" />
+									<?php
+									if (!empty($materialsampledata)) {
+										echo '<div class="table-container">';
+										$materialSamplesTable = $utilities->htmlTable(
+											$materialsampledata, 
+											['material sample PK','occid','status','use type','sample type','shipment']
+										);
+										echo $materialSamplesTable;
+										echo '</div>';
+									}
+									?>
 								</div>
 							</fieldset>
-						</form>
 					</div>
 					<div style="clear:both;">&nbsp;</div>
 			</div>
