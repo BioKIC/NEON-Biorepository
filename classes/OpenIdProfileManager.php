@@ -141,20 +141,30 @@ class OpenIdProfileManager extends ProfileManager
 		return $localSessionID;
 	}
 
-	public function removeThirdPartySid($thirdparty_sid, $local_sid)
+	public function removeThirdPartySid($local_sid, $thirdparty_sid)
 	{
-		$sql = 'DELETE FROM usersthirdpartysessions WHERE thirdparty_id = ? AND localsession_id = ? LIMIT 1';
+		//$sql = 'DELETE FROM usersthirdpartysessions WHERE thirdparty_id = ? AND localsession_id = ? LIMIT 1';
+		//if ($stmt = $this->conn->prepare($sql)) {
+		//	if ($stmt->bind_param('ss', $thirdparty_sid, $local_sid)) {
+		//		$stmt->execute();
+		//		$stmt->close();
+		//	}
+		//}
+		//neon edit
+		$sql = 'DELETE FROM usersthirdpartysessions WHERE localsession_id = ? LIMIT 1';
+		$this->resetConnection();
 		if ($stmt = $this->conn->prepare($sql)) {
-			if ($stmt->bind_param('ss', $thirdparty_sid, $local_sid)) {
+			if ($stmt->bind_param('s', $local_sid)) {
 				$stmt->execute();
 				$stmt->close();
 			}
 		}
+		//end edit
 	}
 
 	public function forceLogout($targetSessionId, $thirdparty_sid)
 	{
-		if(!empty($thirdparty_sid)){
+		if(!empty($targetSessionId)){
 			$this->removeThirdPartySid($targetSessionId, $thirdparty_sid);
 		}		
 		session_write_close();

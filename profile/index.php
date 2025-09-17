@@ -104,11 +104,22 @@ if($remMe) $pHandler->setRememberMe(true);
 if($action == 'logout'){
 	//check if using third party auth
 	if(array_key_exists('AUTH_PROVIDER', $_SESSION)){
-		$oidc = new OpenIDConnectClient($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], $CLIENT_IDS[$_SESSION['AUTH_PROVIDER']], $CLIENT_SECRETS[$_SESSION['AUTH_PROVIDER']], $PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']]);
-		$pHandler->reset();
-		$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
-		$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
+		//$oidc = new OpenIDConnectClient($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], $CLIENT_IDS[$_SESSION['AUTH_PROVIDER']], $CLIENT_SECRETS[$_SESSION['AUTH_PROVIDER']], $PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']]);
+		//$pHandler->reset();
+		//$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
+		//$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
 
+		//neon edit
+		$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
+		$logoutUrl = sprintf(
+			'https://int-data-neonscience.auth0.com/v2/logout?returnTo=%s&client_id=%s',
+			urlencode($redirect),
+			$CLIENT_IDS[$_SESSION['AUTH_PROVIDER']]
+		);
+		
+		header("Location: $logoutUrl");
+		exit;
+		//end neon edit
 	}
 	else{
 		$pHandler->reset();
