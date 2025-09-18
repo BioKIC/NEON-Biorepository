@@ -22,6 +22,20 @@ if(isset($SHOULD_VERIFY_PEERS)){
   $oidc->setVerifyPeer($SHOULD_VERIFY_PEERS);
 }
 
+//neon edit
+if (isset($_REQUEST['error']) && $_REQUEST['error'] === 'login_required') {
+    // Silent auth failed: no active Auth0 session
+    // Just go back to refurl
+    if (!empty($_SESSION['refurl'])) {
+        $ref = $_SESSION['refurl'];
+        unset($_SESSION['refurl']);
+        header("Location: $ref");
+    } else {
+        header("Location: " . $CLIENT_ROOT . "/index.php");
+    }
+    exit();
+}
+//end edit
 
 if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
   

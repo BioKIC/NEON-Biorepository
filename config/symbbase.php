@@ -10,7 +10,7 @@ $CODE_VERSION = '3.3.7';
 set_include_path(get_include_path() . PATH_SEPARATOR . $SERVER_ROOT . PATH_SEPARATOR . $SERVER_ROOT.'/config/' . PATH_SEPARATOR . $SERVER_ROOT.'/classes/');
 
 session_start(array('gc_maxlifetime'=>3600,'cookie_path'=>$CLIENT_ROOT,'cookie_secure'=>true,'cookie_httponly'=>true, 'use_only_cookies' => true));
-
+//
 //$_SESSION = [];            // empty the session array
 //
 //// remove the session cookie from the browser
@@ -45,8 +45,10 @@ $pHandler = null;
 //neon edit
 $PARAMS_ARR = Array();				//params => 'un=egbot&dn=Edward&uid=301'
 $USER_RIGHTS = Array();
-//don't run user profile code if symbbase is being called by authCallback.php
-if (!defined('IN_AUTH_CALLBACK')) {
+if(isset($_SESSION['userparams'])) $PARAMS_ARR = $_SESSION['userparams'];
+if(isset($_SESSION['userrights'])) $USER_RIGHTS = $_SESSION['userrights'];
+//don't run user profile code if symbbase is being called by authCallback.php or logout.php
+if (!defined('IN_AUTH_CALLBACK') && !isset($_SESSION['force_logout']) && !isset($_SESSION['silent_attempted'])) {
 	// Try silent login with Auth0
 	if (!isset($_SESSION['userparams'])) {
 		include_once($SERVER_ROOT . '/config/auth_config.php');
@@ -64,6 +66,7 @@ if (!defined('IN_AUTH_CALLBACK')) {
 	
 		try {
 			//silent login
+			$_SESSION['silent_attempted'] = true;
 			$oidc->authenticate();
 		} catch (Exception $e) {
 			if (strpos($e->getMessage(), 'login_required') !== false) {
@@ -74,9 +77,6 @@ if (!defined('IN_AUTH_CALLBACK')) {
 		}
 	}
 
-	
-	if(isset($_SESSION['userparams'])) $PARAMS_ARR = $_SESSION['userparams'];
-	if(isset($_SESSION['userrights'])) $USER_RIGHTS = $_SESSION['userrights'];
 	if(isset($_COOKIE['SymbiotaCrumb']) && !$PARAMS_ARR){
 		$tokenArr = json_decode(Encryption::decrypt($_COOKIE['SymbiotaCrumb']), true);
 		if($tokenArr){
