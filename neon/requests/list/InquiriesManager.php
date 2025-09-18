@@ -11,6 +11,14 @@ class InquiriesManager extends Manager{
 		parent::__destruct();
 	}
 
+
+    private $errorStr = '';
+
+    public function getErrorStr() {
+        return $this->errorStr;
+    }
+
+
   // Gets all inquiries
   public function getInquiriesOut(){
   	$dataArr = array();
@@ -146,6 +154,28 @@ public function getFields(){
     $rs->free();
     return $retArr;
 }
+
+  // Get material sample types
+  public function getMaterialSampleTypes(){
+      $retArr = array();
+
+      $sql = 'SELECT term
+              FROM ctcontrolvocabterm
+              WHERE cvID = 3
+              ORDER BY term';
+
+      $rs = $this->conn->query($sql);
+
+      while($r = $rs->fetch_object()){
+        $term = $this->cleanOutStr($r->term);
+        $display = trim($term);
+
+        $retArr[$term] = $display;
+      }
+
+      $rs->free();
+      return $retArr;
+  }
 
 // Get options for how researcher found us 
 public function getHowFoundUs(){
@@ -1058,6 +1088,38 @@ public function getInquiryDataByID($request_id) {
         return $row ?: []; 
   }
 
+        // Material sample for materialsampleeditor
+  public function getMaterialSampleForEditor($id){
+      $retArr = [];
+
+      $sql = "SELECT s.id,o.catalogNumber,n.sampleID,n.sampleClass,n.sampleCode,s.status,
+            s.use_type,s.sampleType,s.shipment_id,n.occid,s.matSampleID 
+            FROM neonmaterialsamplerequestlink s
+            LEFT JOIN NeonSample n
+            ON s.occid=n.occid
+            LEFT JOIN ommaterialsample o
+            ON s.matSampleID=o.matSampleID
+            WHERE id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return [];
+        }
+
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $row = $result->fetch_assoc();  
+
+        $stmt->close();
+
+        return $row ?: []; 
+  }
+
+
+
     // Get shipments list
   public function getShipments(){
       $retArr = array();
@@ -1099,6 +1161,22 @@ public function getInquiryDataByID($request_id) {
 		return $status;
 	}
 
+      // delete material sample from request
+	public function deleteMaterialSample($id){
+		$status = false;
+		if(is_numeric($id)){
+			$sql = 'DELETE FROM neonmaterialsamplerequestlink WHERE id = '.$id;
+			if($this->conn->query($sql)){
+				$status = true;
+			}
+			else{
+				$this->errorStr = 'ERROR deleting material sample: '.$this->conn->error;
+				return false;
+			}
+		}
+		return $status;
+	}
+
     //edit sample record associated with request
     public function editSample($postArr){
 		$status = false;
@@ -1134,6 +1212,41 @@ public function getInquiryDataByID($request_id) {
 		}
 		return $status;
 	}
+
+        //edit material sample record associated with request
+    public function editMaterialSample($postArr){
+		$status = false;
+		$postArr = array_change_key_case($postArr);
+		if(is_numeric($postArr['id'])){
+
+			$sql = 'UPDATE neonmaterialsamplerequestlink
+				SET status = ?, use_type = ?,
+				sampleType = ?,  shipment_id = ? WHERE (id = ?)';
+			$stmt = $this->conn->stmt_init();
+			$stmt->prepare($sql);
+			if($stmt->error==null) {
+				$stat = isset($postArr['status'])&&$postArr['status']?$postArr['status']:NULL;
+				$use_type = $postArr['use_type']?$postArr['use_type']:NULL;
+				$sampleType = isset($postArr['sampleType'])&&$postArr['sampleType']?$postArr['sampleType']:NULL;
+                $shipment_id = (isset($_POST['shipment_id']) && $_POST['shipment_id'] !== '') ? (int)$_POST['shipment_id'] : NULL;
+				$stmt->bind_param('ssssi', $stat, $use_type, $sampleType, $shipment_id, $postArr['id']);
+				$stmt->execute();
+				if($stmt->error==null) $status = true;
+				else{
+					$this->errormessage = $stmt->error;
+					echo $this->errorStr;
+				}
+			}
+			else{
+				$this->errorStr = $stmt->error;
+				echo $this->errorStr;
+			}
+			$stmt->close();
+
+		}
+		return $status;
+	}
+
 
     // export request sample list
     public function exportSampleList($request_id){

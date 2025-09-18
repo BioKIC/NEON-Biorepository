@@ -107,7 +107,7 @@ if($IS_ADMIN) $isEditor = true;
 			return false;
 		}
 
-		function openMaterialBatchEditor() {
+		function openMaterialSampleBatchEditor() {
 			const form = document.forms['materialSampleListingForm'];
 			const checked = [...form.querySelectorAll('input[name="scbox[]"]:checked')];
 			if(checked.length === 0){
@@ -300,7 +300,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
 							<div style="float:left;">
-								<button type="button" onclick="openBatchEditor()">Batch Edit Selected Samples</button>
+								<button type="button" onclick="openMaterialSampleBatchEditor()">Batch Edit Selected Material Samples</button>
 							</div>
 					</div>
 					<div style="clear:both;padding-top:30px;">
@@ -314,11 +314,10 @@ include($SERVER_ROOT.'/includes/header.php');
 										Filter by:
 										<select name="sampleFilter" onchange="this.form.submit()">
 											<option value="">All Records</option>
-											<option value="available" <?php echo ($sampleFilter=='available'?'SELECTED':''); ?>>Available</option>
-											<option value="pending" <?php echo ($sampleFilter=='pendingfulfillment'?'SELECTED':''); ?>>Pending Fulflillment</option>
+											<option value="pendingfulfillment" <?php echo ($sampleFilter=='pendingfulfillment'?'SELECTED':''); ?>>Pending Fulflillment</option>
 											<option value="current" <?php echo ($sampleFilter=='current'?'SELECTED':''); ?>>Current</option>
-											<option value="completed" <?php echo ($sampleFilter=='complete'?'SELECTED':''); ?>>Complete</option>
-                                            <option value="notavailable" <?php echo ($sampleFilter=='pendingfunding'?'SELECTED':''); ?>>Pending Funding</option>
+											<option value="complete" <?php echo ($sampleFilter=='complete'?'SELECTED':''); ?>>Complete</option>
+                                            <option value="pendingfunding" <?php echo ($sampleFilter=='pendingfunding'?'SELECTED':''); ?>>Pending Funding</option>
 										</select>
 											<input name="id" type="hidden" value="<?php echo $request_id; ?>" />
 									</form>
