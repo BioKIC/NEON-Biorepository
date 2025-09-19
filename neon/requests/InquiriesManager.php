@@ -1224,9 +1224,11 @@ public function addCollectionInquiryLink($request_id, $collections) {
 	}
 
     //edit material sample record associated with request
-        public function editMaterialSample($postArr){
+    public function editMaterialSample($postArr){
         $status = false;
-        $postArr = array_change_key_case($postArr);
+
+        // Keep keys consistent (lowercase)
+        $postArr = array_change_key_case($postArr, CASE_LOWER);
 
         if(is_numeric($postArr['id'])){
             $sql = 'UPDATE neonmaterialsamplerequestlink
@@ -1236,13 +1238,16 @@ public function addCollectionInquiryLink($request_id, $collections) {
             $stmt->prepare($sql);
 
             if($stmt->error == null) {
+
+                // Pull values from lowercase keys
                 $stat        = !empty($postArr['status']) ? $postArr['status'] : NULL;
                 $use_type    = !empty($postArr['use_type']) ? $postArr['use_type'] : NULL;
-                $sampleType  = !empty($postArr['sampleType']) ? $postArr['sampleType'] : NULL;
-                $notes  = !empty($postArr['notes']) ? $postArr['notes'] : NULL;
-                $shipment_id = (isset($_POST['shipment_id']) && $_POST['shipment_id'] !== '') ? (int)$_POST['shipment_id'] : NULL;
+                $sampleType  = !empty($postArr['sampletype']) ? $postArr['sampletype'] : NULL; // lowercase key!
+                $notes       = !empty($postArr['notes']) ? $postArr['notes'] : NULL;
+                $shipment_id = isset($postArr['shipment_id']) && $postArr['shipment_id'] !== '' ? (int)$postArr['shipment_id'] : NULL;
+                $id          = (int)$postArr['id'];
 
-                $stmt->bind_param('sssssi', $stat, $use_type, $sampleType, $notes, $shipment_id, $postArr['id']);
+                $stmt->bind_param('ssssii', $stat, $use_type, $sampleType, $notes, $shipment_id, $id);
                 $stmt->execute();
 
                 if($stmt->error == null) {
@@ -1259,6 +1264,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         return $status;
     }
+
 
     // export request sample list
     public function exportSampleList($request_id){
@@ -1457,7 +1463,6 @@ public function addCollectionInquiryLink($request_id, $collections) {
                 $updatedFields[$field] = $postArr[$field];
             }
         }
-        // Start transaction
         $this->conn->begin_transaction();
         try {
             foreach($ids as $id){
@@ -1483,6 +1488,58 @@ public function addCollectionInquiryLink($request_id, $collections) {
                 }
                 if(!$this->editSample($newData)){
                     throw new Exception("Failed to update sample #$id: ".$this->getErrorStr());
+                }
+            }
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            $this->setErrorStr($e->getMessage());
+            return false;
+        }
+    }
+
+
+        // batch edit material samples in request
+    public function batchEditMaterialSamples($postArr){
+
+        $ids = isset($postArr['ids']) ? $postArr['ids'] : [];
+        if(!$ids) {
+            $this->setErrorStr("No material sample IDs provided for batch edit.");
+            return false;
+        }
+        $updatedFields = [];
+        foreach(['status','use_type','sampleType','notes','shipment_id'] as $field){
+            if(array_key_exists($field, $postArr)){
+                $updatedFields[$field] = $postArr[$field]; 
+            }
+        }
+        $this->conn->begin_transaction();
+        try {
+            foreach($ids as $id){
+                $id = intval($id);
+                $sample = $this->getMaterialSampleForEditor($id);
+                if(!$sample){
+                    throw new Exception("Material sample #$id not found.");
+                }
+                $newData = array_merge($sample, $updatedFields, ['id' => $id]);
+                $needsShipment = in_array($newData['status'], ["current","complete"]);
+                $hasShipment   = !empty($newData['shipment_id']);
+
+                if($needsShipment && !$hasShipment){
+                    throw new Exception("Material sample #$id: A shipment must be assigned if status is {$newData['status']}.");
+                }
+                if($hasShipment && !$needsShipment){
+                    throw new Exception("Material sample #$id: If a shipment is assigned, status must be current or complete.");
+                }
+                foreach(['status','use_type','sampleType'] as $field){
+                    if(empty($newData[$field])){
+                        throw new Exception("Material sample #$id is missing a required field: $field");
+                    }
+                }
+                if(!$this->editMaterialSample($newData)){
+                    throw new Exception("Failed to update material sample #$id: ".$this->getErrorStr());
                 }
             }
             $this->conn->commit();
