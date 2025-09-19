@@ -98,15 +98,15 @@ $clid = $clManager->getClid();
 $pid = $clManager->getPid();
 if($groupByRank) $clManager->setGroupByRank($groupByRank);
 
-if (array_key_exists('dlcsv', $_POST)) {
+if (array_key_exists('dlcsv', $_GET)) {
 	$clManager->downloadChecklistCsv();
 	exit();
 }
-if (array_key_exists('dlpdf', $_POST)) {
+if (array_key_exists('dlpdf', $_GET)) {
 	$clManager->downloadChecklistPdf();
 	exit();
 }
-elseif(array_key_exists('printlist_x',$_POST)){
+elseif(array_key_exists('printlist_x',$_GET)){
 	$printMode = 1;
 }
 $isEditor = 0;
@@ -777,6 +777,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                             </span>
                             <fieldset style="background-color:white;padding-bottom:10px;">
                                 <legend><b>Download</b></legend>
+                                <input type="hidden" name="clid" value="<?php echo $clid; ?>" />
                                 <input type="hidden" name="showsynonyms" id="dl_showsynonyms" value="">
                                 <input type="hidden" name="showauthors" id="dl_showauthors" value="">
                                 <input type="hidden" name="showcommon" id="dl_showcommon" value="">
