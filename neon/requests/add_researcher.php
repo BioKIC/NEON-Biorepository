@@ -8,7 +8,7 @@ error_reporting(E_ALL);
 header('Content-Type: application/json');
 
 include_once('../../config/symbini.php');
-include_once('../../neon/requests/list/InquiriesManager.php');
+include_once('../../neon/requests/InquiriesManager.php');
 
 try {
     if (!class_exists('InquiriesManager')) {

@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/neon/requests/list/InquiriesManager.php');
+include_once($SERVER_ROOT.'/neon/requests/InquiriesManager.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT . '/neon/requests/inquiryform.php?' . $_SERVER['QUERY_STRING']);
 
@@ -69,12 +69,6 @@ if($IS_ADMIN) $isEditor = true;
 			}
 			?>
 
-			['prefix', 'identifier', 'suffix'].forEach(id => {
-			  const el = document.getElementById(id);
-			  if (el) {
-				el.addEventListener('input', updateFullIdentifier);
-			  }
-			});
 		});
 
 		function tableSortHandlerChanged(cbElem){
@@ -237,7 +231,7 @@ include($SERVER_ROOT.'/includes/header.php');
 <div class="navpath">
 	<a href="../../index.php">Home</a> &gt;&gt;
 	<a href="../../neon/index.php">Management Tools</a> &gt;&gt;
-	<a href="../../neon/requests/list/inquiries.php">Inquiry List</a> &gt;&gt;
+	<a href="../../neon/requests/inquiries.php">Inquiry List</a> &gt;&gt;
 	<a href="inquiryform.php?id=<?php echo $request_id; ?>">Inquiry Record</a> &gt;&gt;
 	<b>Sample List</b>
 </div>

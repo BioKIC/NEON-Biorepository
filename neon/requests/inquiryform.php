@@ -1,6 +1,6 @@
 <?php
 include_once('../../config/symbini.php');
-include_once('../../neon/requests/list/InquiriesManager.php');
+include_once('../../neon/requests/InquiriesManager.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 
 
@@ -326,7 +326,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		<div class="navpath">
 			<a href="../../index.php">Home</a> &gt;&gt;
 			<a href="../../neon/index.php">Management Tools</a> &gt;&gt;
-			<a href="../../neon/requests/list/inquiries.php">Inquiry List</a> &gt;&gt;
+			<a href="../../neon/requests/inquiries.php">Inquiry List</a> &gt;&gt;
 			<b>Inquiry Record</b>
 		</div>
 	<!-- This is inner text! -->

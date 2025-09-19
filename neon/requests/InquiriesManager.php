@@ -18,7 +18,6 @@ class InquiriesManager extends Manager{
         return $this->errorStr;
     }
 
-
   // Gets all inquiries
   public function getInquiriesOut(){
   	$dataArr = array();
@@ -318,28 +317,28 @@ public function addCollectionInquiryLink($request_id, $collections) {
     return true;
 }
 
-// get basic record data for a given request
-public function getInquiryDataByID($request_id) {
-    $request_id = (int)$request_id;
+    // get basic record data for a given request
+    public function getInquiryDataByID($request_id) {
+        $request_id = (int)$request_id;
 
-    $sql = "SELECT * FROM neonrequest WHERE id = $request_id";
-    $rs = $this->conn->query($sql);
+        $sql = "SELECT * FROM neonrequest WHERE id = $request_id";
+        $rs = $this->conn->query($sql);
 
-    if (!$rs) {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
+        if (!$rs) {
+            $this->errorMessage = "Database Error: " . $this->conn->error;
+            return false;
+        }
+
+        if ($rs->num_rows === 0) {
+            $this->errorMessage = "No inquiry found with ID $request_id";
+            return false;
+        }
+
+        $row = $rs->fetch_assoc();
+        $rs->free();
+
+        return $row; 
     }
-
-    if ($rs->num_rows === 0) {
-        $this->errorMessage = "No inquiry found with ID $request_id";
-        return false;
-    }
-
-    $row = $rs->fetch_assoc();
-    $rs->free();
-
-    return $row; 
-}
 
       // get researchers for a given request
       public function getResearchersByID($request_id) {
@@ -858,7 +857,7 @@ public function getInquiryDataByID($request_id) {
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT matSampleID,occid,status,use_type,sampleType,shipment_id FROM neonmaterialsamplerequestlink
+      $sql = "SELECT matSampleID,occid,status,use_type,sampleType,notes,shipment_id FROM neonmaterialsamplerequestlink
             WHERE request_id = ?";
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
@@ -962,12 +961,13 @@ public function getInquiryDataByID($request_id) {
     }
 
         // Get detailed samples associated with a request 
-  public function getSamplesByID($request_id,$filter = ''){
+    public function getSamplesByID($request_id,$filter = ''){
       $retArr = [];
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT id,n.sampleID,n.sampleClass,n.sampleCode,status,use_type,substance_provided,available,s.notes,shipment_id,s.occid FROM neonsamplerequestlink s
+      $sql = "SELECT id,n.sampleID,n.sampleClass,n.sampleCode,status,use_type,substance_provided,available,s.notes,shipment_id,s.occid 
+            FROM neonsamplerequestlink s
             LEFT JOIN NeonSample n
             ON s.occid=n.occid
             WHERE request_id = ?";
@@ -1009,15 +1009,16 @@ public function getInquiryDataByID($request_id) {
       $stmt->close();
 
       return $retArr;
-  }
+    }
 
           // Get detailed material samples associated with a request 
-  public function getMaterialSamplesByID($request_id,$filter = ''){
+  public function getMaterialSamplesByID($request_id, $filter = ''){
       $retArr = [];
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT s.id,s.matSampleID,t.catalogNumber,n.sampleID,n.sampleClass,n.sampleCode,s.status,s.use_type,s.sampleType,shipment_id,s.occid FROM neonmaterialsamplerequestlink s
+      $sql = "SELECT s.id,s.matSampleID,t.catalogNumber,n.sampleID,n.sampleClass,n.sampleCode,s.status,s.use_type,s.sampleType,s.notes,s.shipment_id,s.occid 
+            FROM neonmaterialsamplerequestlink s
             LEFT JOIN NeonSample n
             ON s.occid=n.occid
             LEFT JOIN ommaterialsample t
@@ -1092,14 +1093,23 @@ public function getInquiryDataByID($request_id) {
   public function getMaterialSampleForEditor($id){
       $retArr = [];
 
-      $sql = "SELECT s.id,o.catalogNumber,n.sampleID,n.sampleClass,n.sampleCode,s.status,
-            s.use_type,s.sampleType,s.shipment_id,n.occid,s.matSampleID 
-            FROM neonmaterialsamplerequestlink s
-            LEFT JOIN NeonSample n
-            ON s.occid=n.occid
-            LEFT JOIN ommaterialsample o
-            ON s.matSampleID=o.matSampleID
-            WHERE id = ?";
+      $sql = "SELECT 
+            s.id             AS id,
+            s.matSampleID    AS matSampleID,
+            o.catalogNumber  AS catalogNumber,
+            n.sampleID       AS sampleID,
+            n.sampleClass    AS sampleClass,
+            n.sampleCode     AS sampleCode,
+            n.occid          AS occid,
+            s.status         AS status,
+            s.use_type       AS use_type,
+            s.sampleType     AS sampleType,
+            s.notes          AS notes,
+            s.shipment_id    AS shipment_id
+        FROM neonmaterialsamplerequestlink s
+        LEFT JOIN NeonSample n ON s.occid = n.occid
+        LEFT JOIN ommaterialsample o ON s.matSampleID = o.matSampleID
+        WHERE id = ?";
 
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -1213,40 +1223,42 @@ public function getInquiryDataByID($request_id) {
 		return $status;
 	}
 
-        //edit material sample record associated with request
-    public function editMaterialSample($postArr){
-		$status = false;
-		$postArr = array_change_key_case($postArr);
-		if(is_numeric($postArr['id'])){
+    //edit material sample record associated with request
+        public function editMaterialSample($postArr){
+        $status = false;
+        $postArr = array_change_key_case($postArr);
 
-			$sql = 'UPDATE neonmaterialsamplerequestlink
-				SET status = ?, use_type = ?,
-				sampleType = ?,  shipment_id = ? WHERE (id = ?)';
-			$stmt = $this->conn->stmt_init();
-			$stmt->prepare($sql);
-			if($stmt->error==null) {
-				$stat = isset($postArr['status'])&&$postArr['status']?$postArr['status']:NULL;
-				$use_type = $postArr['use_type']?$postArr['use_type']:NULL;
-				$sampleType = isset($postArr['sampleType'])&&$postArr['sampleType']?$postArr['sampleType']:NULL;
+        if(is_numeric($postArr['id'])){
+            $sql = 'UPDATE neonmaterialsamplerequestlink
+                    SET status = ?, use_type = ?, sampleType = ?, notes = ?, shipment_id = ?
+                    WHERE id = ?';
+            $stmt = $this->conn->stmt_init();
+            $stmt->prepare($sql);
+
+            if($stmt->error == null) {
+                $stat        = !empty($postArr['status']) ? $postArr['status'] : NULL;
+                $use_type    = !empty($postArr['use_type']) ? $postArr['use_type'] : NULL;
+                $sampleType  = !empty($postArr['sampleType']) ? $postArr['sampleType'] : NULL;
+                $notes  = !empty($postArr['notes']) ? $postArr['notes'] : NULL;
                 $shipment_id = (isset($_POST['shipment_id']) && $_POST['shipment_id'] !== '') ? (int)$_POST['shipment_id'] : NULL;
-				$stmt->bind_param('ssssi', $stat, $use_type, $sampleType, $shipment_id, $postArr['id']);
-				$stmt->execute();
-				if($stmt->error==null) $status = true;
-				else{
-					$this->errormessage = $stmt->error;
-					echo $this->errorStr;
-				}
-			}
-			else{
-				$this->errorStr = $stmt->error;
-				echo $this->errorStr;
-			}
-			$stmt->close();
 
-		}
-		return $status;
-	}
+                $stmt->bind_param('sssssi', $stat, $use_type, $sampleType, $notes, $shipment_id, $postArr['id']);
+                $stmt->execute();
 
+                if($stmt->error == null) {
+                    $status = true;
+                } else {
+                    $this->errorStr = $stmt->error;
+                }
+            } else {
+                $this->errorStr = $stmt->error;
+            }
+
+            $stmt->close();
+        }
+
+        return $status;
+    }
 
     // export request sample list
     public function exportSampleList($request_id){

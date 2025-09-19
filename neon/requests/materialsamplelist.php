@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/neon/requests/list/InquiriesManager.php');
+include_once($SERVER_ROOT.'/neon/requests/InquiriesManager.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT . '/neon/requests/inquiryform.php?' . $_SERVER['QUERY_STRING']);
 
@@ -27,7 +27,7 @@ if($IS_ADMIN) $isEditor = true;
 ?>
 <html>
 <head>
-	<title><?php echo $DEFAULT_TITLE; ?> Sample Request List Viewer</title>
+	<title><?php echo $DEFAULT_TITLE; ?> Material Sample Request List Viewer</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 	<?php
 	include_once($SERVER_ROOT.'/includes/head.php');
@@ -50,13 +50,13 @@ if($IS_ADMIN) $isEditor = true;
 			<?php
 			if($sortableTable){
 				?>
-				$('#sampletable').DataTable({
+				$('#materialsampletable').DataTable({
 					paging: false,
 					scrollCollapse: true,
 					fixedHeader: true,
 					columnDefs: [{ orderable: false, targets: [0, -1]}],
 					});
-				$("#sampletable").DataTable().rows().every( function () {
+				$("#materialsampletable").DataTable().rows().every( function () {
 					var tr = $(this.node());
 					var childValue = tr.data('child-value');
 
@@ -68,13 +68,6 @@ if($IS_ADMIN) $isEditor = true;
 				<?php
 			}
 			?>
-
-			['prefix', 'identifier', 'suffix'].forEach(id => {
-			  const el = document.getElementById(id);
-			  if (el) {
-				el.addEventListener('input', updateFullIdentifier);
-			  }
-			});
 		});
 
 		function tableSortHandlerChanged(cbElem){
@@ -237,7 +230,7 @@ include($SERVER_ROOT.'/includes/header.php');
 <div class="navpath">
 	<a href="../../index.php">Home</a> &gt;&gt;
 	<a href="../../neon/index.php">Management Tools</a> &gt;&gt;
-	<a href="../../neon/requests/list/inquiries.php">Inquiry List</a> &gt;&gt;
+	<a href="../../neon/requests/inquiries.php">Inquiry List</a> &gt;&gt;
 	<a href="inquiryform.php?id=<?php echo $request_id; ?>">Inquiry Record</a> &gt;&gt;
 	<b>Sample List</b>
 </div>
@@ -337,7 +330,7 @@ include($SERVER_ROOT.'/includes/header.php');
 													echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
 													$headerArr = array('matSampleID' => 'matSampPK','catalogNumber' => 'Material Sample catalogNumber','sampleID' => 'sampleID','sampleClass' => 'sampleClass',
 																'sampleCode' =>'sampleCode','status'=>'Status', 'use_type'=>'Use Type', 
-																'sampleType'=>'Sample Type', 'shipment_id' => 'Shipment ID','occid'=> 'occid'
+																'sampleType'=>'Sample Type', 'notes' => 'Notes', 'shipment_id' => 'Shipment ID','occid'=> 'occid'
                                                                 );
 													$rowCnt = 1;
 													foreach($headerArr as $fieldName => $headerTitle){
@@ -376,6 +369,7 @@ include($SERVER_ROOT.'/includes/header.php');
 													echo '<td>'.$materialsampleArr['status'].'</td>';
 													echo '<td>'.$materialsampleArr['use_type'].'</td>';
 													echo '<td>'.$materialsampleArr['sampleType'].'</td>';
+													echo '<td>'.$materialsampleArr['notes'].'</td>';
 													echo '<td>'.$materialsampleArr['shipment_id'].'</td>';
                                                     													
 													echo '</td>';

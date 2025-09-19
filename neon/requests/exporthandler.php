@@ -1,6 +1,6 @@
 <?php
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/neon/requests/list/InquiriesManager.php');
+include_once($SERVER_ROOT.'/neon/requests/InquiriesManager.php');
 
 $request_id = (isset($_POST['request_id'])?$_POST['request_id']:'');
 $exportTask = $_POST['exportTask'];

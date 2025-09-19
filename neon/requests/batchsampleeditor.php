@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/neon/requests/list/InquiriesManager.php');
+include_once($SERVER_ROOT.'/neon/requests/InquiriesManager.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl='.$CLIENT_ROOT.'/neon/requests/sampleeditor.php');
 
