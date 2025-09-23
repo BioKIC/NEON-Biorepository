@@ -210,7 +210,7 @@ if ($isEditor && isset($_POST['action'])) {
 				</div>
                 <div style="clear:both;padding-top:6px;float:left;">
                 <span>
-                    <strong><?php echo 'Shipment'; ?>:</strong> <?php echo '(exit material sample editor to add new shipment)';?>
+                    <strong><?php echo 'Shipment'; ?>:</strong> <?php echo '(edit inquiry to add new shipment to request)';?>
                 </span><br />
                 <span>
                     <?php $currentShipmentId = isset($materialsampleArr['shipment_id']) ? (string)$materialsampleArr['shipment_id'] : ''; ?>
@@ -220,7 +220,7 @@ if ($isEditor && isset($_POST['action'])) {
                     </option>
                     <option disabled>----------------------------</option>
                     <?php
-                        $shipArr = $inquiryManager->getShipments();
+                        $shipArr = $inquiryManager->getShipmentByID($request_id);
                         foreach ($shipArr as $shipid => $name) {
                             $selected = ($currentShipmentId !== '' && (string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
                             echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.htmlspecialchars($name).'</option>';

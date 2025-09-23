@@ -206,6 +206,24 @@ if($formSubmit == 'editStatus' && $isEditor){
 		}
 }
 
+	if($formSubmit == 'editShipment' && $isEditor){
+
+		$shipment_ids = isset($_POST['inqshipmentids']) && is_array($_POST['inqshipmentids']) ? $_POST['inqshipmentids'] : [];
+
+		$updatedRequestID = $inquiryManager->editShipment(
+			$shipment_ids,
+			$SYMB_UID,
+			$request_id  
+		);
+
+		if ($updatedRequestID) {
+			header("Location: inquiryform.php?id=" . $updatedRequestID . "&status=success");
+			exit();
+		} else {
+			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . $inquiryManager->getError() . '</span>';
+		}
+	}
+
 
 ?>
 <!DOCTYPE html>
@@ -352,6 +370,8 @@ if($formSubmit == 'editStatus' && $isEditor){
 					<li><a href="#editstatus"><span><?php echo 'Status'; ?></span></a></li>
 					<li><a href="#samples"><span><?php echo 'Samples'; ?></span></a></li>
 					<li><a href="#materialsamples"><span><?php echo 'Material Samples'; ?></span></a></li>
+					<li><a href="#shipments"><span><?php echo 'Shipments'; ?></span></a></li>
+
 				</ul>
 					<div id="editinqdiv" style="display:<?php echo ($List ); ?>;">
 						<form name="editinqform" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryAddForm(this);">
@@ -743,6 +763,43 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 							</fieldset>
 					</div>
+			
+			<div id="shipments" style="">
+			<fieldset>
+				<legend><?php echo 'Shipments'; ?></legend>                                    
+				<div style="clear:both;padding:10px 0;">
+					<div style="float:left;">
+						<button type="button" class="addShipmentButton" data-target="primary">Create New Shipment</button>
+					</div>
+				</div>
+				<div style="clear:both;padding-top:6px;float:left;">
+					<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
+					<span>
+						<form method="post" action="inquiryform.php?id=<?php echo $request_id; ?>">
+						<select name="inqshipmentids[]" style="width:800px;" multiple aria-label="<?php echo 'Shipments' ?>">
+							<option disabled><?php echo 'Select Shipments'; ?></option>
+							<option disabled>------------------------------------------</option>
+							<?php
+								$selectedShipments = $inquiryManager->getShipmentByID($request_id); // array [id => display]
+								$allShipments = $inquiryManager->getShipments(); // array [id => display]
+
+								foreach ($allShipments as $id => $name) {
+									$selected = array_key_exists($id, $selectedShipments) ? 'selected' : '';
+									echo '<option value="' . $id . '" ' . $selected . '>' . $name . '</option>';
+								}
+							?>
+						</select>
+					</span>
+					<div style="clear:both;padding-top:8px;float:left;">
+						<input name="formsubmit" type="hidden" value="editShipment" />
+						<button name="submitButton" type="submit"><?php echo 'Update Shipments' ?></button>
+					</form>
+					</div>
+				</div>
+			</fieldset>
+			</div>
+			</div>
+
 					<div style="clear:both;">&nbsp;</div>
 			</div>
 			<?php
@@ -775,7 +832,45 @@ if($formSubmit == 'editStatus' && $isEditor){
 				<input type="text" name="phone"  style="width:100%;"><br><br>
 
 				<button type="submit">Save</button>
-				<button type="button" id="closeModal">Cancel</button>
+				<button type="button" id="closeResearcherModal">Cancel</button>
+			</form>
+		</div>
+	</div>
+
+	<div id="shipmentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+		background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+		<div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
+			<h2>Add New Shipment</h2>
+			<form id="shipmentform">
+				<label><b>Shipped to:</b> (if researcher is not present, go back to request editor to link shipment to the request)</label>
+				<select name="researcher_id" required style="width:100%; margin-bottom:15px;">
+					<option value="">-- Select Researcher --</option>
+					<?php 
+					$researchers = $inquiryManager->getResearchersByID($request_id); 
+					foreach($researchers as $id => $name): ?>
+						<option value="<?= htmlspecialchars($id) ?>">
+							<?= htmlspecialchars($name) ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				
+				<label><b>Shipment Date:</b></label>
+				<input type="date" name="ship_date" required style="width:100%;"><br><br>
+
+				<label><b>Address:</b></label>
+				<input type="text" name="address" required style="width:100%;"><br><br>
+
+				<label><b>Shipped By:</b></label>
+				<select name="shipped_by" required style="width:100%; margin-bottom:15px;">
+					<option value="">-- Select Manager --</option>
+					<?php foreach($managerArr as $id => $name): ?>
+						<option value="<?= htmlspecialchars($id) ?>">
+							<?= htmlspecialchars($name) ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				<button type="submit">Save</button>
+				<button type="button" id="closeShipmentModal">Cancel</button>
 			</form>
 		</div>
 	</div>
@@ -792,8 +887,12 @@ document.querySelectorAll('.addResearcherBtn').forEach(btn => {
     });
 });
 
-document.getElementById('closeModal').addEventListener('click', function(){
+document.getElementById('closeResearcherModal').addEventListener('click', function(){
     document.getElementById('researcherModal').style.display = 'none';
+});
+
+document.getElementById('closeShipmentModal').addEventListener('click', function(){
+    document.getElementById('shipmentModal').style.display = 'none';
 });
 
 document.getElementById('researcherForm').addEventListener('submit', function(e){
@@ -837,6 +936,67 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
     })
     .catch(err => alert('Request failed'));
 });
+
+	document.addEventListener('DOMContentLoaded', function() {
+		const modal = document.getElementById('shipmentModal');
+		const shipmentForm = document.getElementById('shipmentform');
+
+		if (!shipmentForm) {
+			console.error('shipmentForm not found in DOM!');
+			return;
+		}
+
+		document.querySelectorAll('.addShipmentButton').forEach(btn => {
+			btn.addEventListener('click', function() {
+				modal.dataset.source = btn.dataset.target || '';
+				modal.style.display = 'flex';
+			});
+		});
+
+		document.getElementById('closeShipmentModal').addEventListener('click', function() {
+			modal.style.display = 'none';
+			shipmentForm.reset(); 
+		});
+		
+		document.getElementById('closeResearcherModal').addEventListener('click', function() {
+			modal.style.display = 'none';
+			shipmentForm.reset(); 
+		});
+
+
+		modal.addEventListener('click', function(e) {
+			if (e.target === modal) {
+				modal.style.display = 'none';
+				shipmentForm.reset();
+			}
+		});
+
+		shipmentForm.addEventListener('submit', function(e) {
+			e.preventDefault();
+			const formData = new FormData(shipmentForm);
+
+			console.log("Posting shipment form:", ...formData.entries());
+
+			fetch('../../neon/requests/add_shipment.php', {
+				method: 'POST',
+				body: formData
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (data.success) {
+					modal.style.display = 'none';
+					shipmentForm.reset();
+					alert('Shipment added successfully. Refresh page to find new shipment at the bottom of the list');
+				} else {
+					alert('Error: ' + data.message);
+				}
+			})
+			.catch(err => {
+				console.error(err);
+				alert('Request failed: ' + err);
+			});
+		});
+	});
 
 	</script>
 </body>
@@ -883,4 +1043,19 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
         border: 1px solid #ccc;
         border-radius: 4px;
     }
+	
+	#shipmentModal {
+			display: flex;
+			position: fixed;
+			top: 0; left: 0; width: 100%; height: 100%;
+			background: rgba(0,0,0,0.6);
+			z-index: 9999;
+			justify-content: center;
+			align-items: center;
+		}
+	
+	#shipmentModal.show {
+			display: flex;
+		}
+
 </style>

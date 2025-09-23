@@ -172,11 +172,11 @@ button { cursor:pointer; }
         </div>
 
         <div class="fieldDiv">
-            <label><b>Shipment:</b> (exit editor to add new shipment)</label>
+            <label><b>Shipment:</b> (edit request to add new shipment)</label>
             <select name="shipment_id" required>
                 <option value="">-- none --</option>
                 <?php
-                $shipArr = $inquiryManager->getShipments();
+                $shipArr = $inquiryManager->getShipmentByID($request_id);
                 foreach($shipArr as $shipid => $name){
                     $sel = ($common['shipment_id']==$shipid?'selected':'');
                     echo '<option value="'.htmlspecialchars($shipid).'" '.$sel.'>'.htmlspecialchars($name).'</option>';

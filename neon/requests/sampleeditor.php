@@ -228,27 +228,27 @@ if ($isEditor && isset($_POST['action'])) {
 						<b>Notes:</b> <input name="notes" type="text" value="<?php echo isset($sampleArr['notes'])?$sampleArr['notes']:''; ?>" style="width:500px" />
 					</div>
 				</div>
-                <div style="clear:both;padding-top:6px;float:left;">
-                <span>
-                    <strong><?php echo 'Shipment'; ?>:</strong> <?php echo '(return to inquiry form to add shipment)';?>
-                </span><br />
-                <span>
-                    <?php $currentShipmentId = isset($sampleArr['shipment_id']) ? (string)$sampleArr['shipment_id'] : ''; ?>
-                    <select name="shipment_id" style="width:400px;" aria-label="shipment">
-                    <option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?>>
-                        -- No Shipment Assigned --
-                    </option>
-                    <option disabled>----------------------------</option>
-                    <?php
-                        $shipArr = $inquiryManager->getShipmentByID();
-                        foreach ($shipArr as $shipid => $name) {
-                            $selected = ($currentShipmentId !== '' && (string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
-                            echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.htmlspecialchars($name).'</option>';
-                        }
-                    ?>
-                    </select>
-                </span>
-                </div>
+				<div style="clear:both;padding-top:6px;float:left;">
+					<span>
+						<strong>Shipment:</strong> (return to inquiry form to add shipment to request)
+					</span><br />
+					<span>
+						<?php $currentShipmentId = isset($sampleArr['shipment_id']) ? (string)$sampleArr['shipment_id'] : ''; ?>
+						<select name="shipment_id" style="width:400px;" aria-label="shipment">
+							<option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?> <?php echo ($currentShipmentId !== '' ? 'disabled' : ''); ?>>
+								-- No Shipment Assigned --
+							</option>
+							<option disabled>----------------------------</option>
+							<?php
+								$shipArr = $inquiryManager->getShipmentByID($request_id);
+								foreach ($shipArr as $shipid => $displayName) {
+									$selected = ($currentShipmentId !== '' && (string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
+									echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.htmlspecialchars($displayName).'</option>';
+								}
+							?>
+						</select>
+					</span>
+				</div>
                 <div style="clear:both;padding-top:6px;float:left;">
 					<?php
 					if($id){

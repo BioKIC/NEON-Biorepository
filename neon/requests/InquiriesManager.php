@@ -1163,7 +1163,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
                 FROM neonrequestshipment s
                 LEFT JOIN neonresearcher r
                     ON s.researcher_id = r.researcher_id
-                LEFT JOIN neonrequestshipmentlink l
+                LEFT JOIN neonrequestshipmentrequestlink l
                     ON s.id = l.shipment_id
                 WHERE l.request_id = ?';
 
@@ -1613,7 +1613,54 @@ public function addCollectionInquiryLink($request_id, $collections) {
             return false;
         }
     }
+    
+    
+    ### edit shipment
+    public function editShipment($shipment_ids, $uid, $request_id) {
+        if (!is_array($shipment_ids)) {
+            $shipment_ids = [$shipment_ids];
+        }
+        $newShipmentIDs = array_map('intval', $shipment_ids);
 
+        $request_id = (int)$request_id;
+
+        $oldShipments = $this->getShipmentByID($request_id); 
+        $oldShipmentIDs = array_map('intval', array_keys($oldShipments));
+
+        $removed = array_diff($oldShipmentIDs, $newShipmentIDs);
+        foreach ($removed as $ship_id) {
+            $this->logEdit($request_id, "neonrequestshipmentrequestlink", "shipment_id", $ship_id, null, $uid);
+        }
+
+        $added = array_diff($newShipmentIDs, $oldShipmentIDs);
+        foreach ($added as $ship_id) {
+            $this->logEdit($request_id, "neonrequestshipmentrequestlink", "shipment_id", null, $ship_id, $uid);
+        }
+
+        $deleteSQL = "DELETE FROM neonrequestshipmentrequestlink WHERE request_id = ?";
+        $stmt = $this->conn->prepare($deleteSQL);
+        $stmt->bind_param("i", $request_id);
+        if (!$stmt->execute()) {
+            $this->errorMessage = "Failed to clear existing shipments: " . $stmt->error;
+            return false;
+        }
+        $stmt->close();
+
+        $insertSQL = "INSERT INTO neonrequestshipmentrequestlink (request_id, shipment_id) VALUES (?, ?)";
+        $stmt = $this->conn->prepare($insertSQL);
+
+        foreach ($newShipmentIDs as $ship_id) {
+            $stmt->bind_param("ii", $request_id, $ship_id);
+            if (!$stmt->execute()) {
+                $this->errorMessage = "Failed to add shipment $ship_id: " . $stmt->error;
+                return false;
+            }
+        }
+
+        $stmt->close();
+
+        return $request_id;
+    }
 
 }
 
