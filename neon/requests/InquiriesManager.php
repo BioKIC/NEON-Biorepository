@@ -25,7 +25,7 @@ class InquiriesManager extends Manager{
     if($result = $this->conn->query($sql)){
       while($row = $result->fetch_assoc()){
         $dataArr[] = array(
-          'id' => '<a href="../inquiryform.php?id='.$row['id'].'">'.$row['id'].'</a>',
+          'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'">'.$row['id'].'</a>',
           'researcher' => is_null($row['researcher'])?'<span style="color:lightgray;">NULL</span>':$row['researcher'],
           'date' => is_null($row['date'])?'<span style="color:lightgray;">NULL</span>':$row['date'],
           'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
@@ -1154,6 +1154,41 @@ public function addCollectionInquiryLink($request_id, $collections) {
       $rs->free();
       return $retArr;
   }
+
+    // Get shipments list by request_id
+    public function getShipmentByID($request_id){
+        $retArr = array();
+
+        $sql = 'SELECT s.id, r.name, s.ship_date
+                FROM neonrequestshipment s
+                LEFT JOIN neonresearcher r
+                    ON s.researcher_id = r.researcher_id
+                LEFT JOIN neonrequestshipmentlink l
+                    ON s.id = l.shipment_id
+                WHERE l.request_id = ?';
+
+        $stmt = $this->conn->prepare($sql);
+
+        if($stmt){
+            $stmt->bind_param('i', $request_id); 
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while($r = $result->fetch_object()){
+                $id   = $this->cleanOutStr($r->id);
+                $name = $this->cleanOutStr($r->name);
+                $date = $this->cleanOutStr($r->ship_date);
+
+                $display = $id ? "$id - $name ($date)" : $name;
+                $retArr[$id] = $display;
+            }
+
+            $stmt->close();
+        }
+
+        return $retArr;
+    }
+
 
   // delete sample from request
 	public function deleteSample($id){

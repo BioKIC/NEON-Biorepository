@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
-include_once('../../../config/symbini.php');
+include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/neon/requests/InquiriesManager.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 header("Content-Type: text/html; charset=".$CHARSET);
@@ -80,7 +80,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
 		?>
 		<div class="navpath">
 			<a href="../../../index.php">Home</a> &gt;&gt;
-			<a href="../../index.php">Management Tools</a> &gt;&gt;
+			<a href="../index.php">Management Tools</a> &gt;&gt;
 			<b>Sample Use Inquiries</b>
 		</div>
 		<div id="innertext">
