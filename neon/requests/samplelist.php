@@ -278,6 +278,13 @@ include($SERVER_ROOT.'/includes/header.php');
 								<button type="button" onclick="openBatchEditor()">Batch Edit Selected Samples</button>
 							</div>
 					</div>
+					<div style="clear:both;padding:10px 0;">
+						<div style="float:left;">
+							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/sampleloader.php?id=' . $request_id; ?>">
+								<button type="button">Load Samples</button>
+							</a>
+					</div>
+					
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
 							<legend>Sample Listing</legend>
