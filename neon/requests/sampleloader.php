@@ -107,7 +107,7 @@ if($isEditor){
 		<div style="margin:30px;">
 			<?php
 			if($action == 'Map Input File'){
-				if(!$ulFileName) $inquiryLoadManager->uploadManifestFile();
+				if(!$ulFileName) $inquiryLoadManager->uploadSampleFile();
 				$analyzeStatus = $inquiryLoadManager->analyzeUpload();
 				$errCode = 1;
 				if(!$analyzeStatus){
