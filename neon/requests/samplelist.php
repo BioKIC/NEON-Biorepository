@@ -280,7 +280,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
-							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/sampleloader.php?id=' . $request_id; ?>">
+							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $request_id; ?>">
 								<button type="button">Load Samples</button>
 							</a>
 					</div>

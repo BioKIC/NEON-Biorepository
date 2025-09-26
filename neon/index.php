@@ -63,8 +63,8 @@ if($isEditor){
 		<fieldset>
 			<legend><b>Request Tools</b></legend>
 			<ul>
-				<li><a href="requests/list/inquiries.php">Inquiry list</a></li>
-				<li><a href="requests/report/requestreport.php">Requests Report</a></li>
+				<li><a href="requests/inquiries.php">Inquiry list</a></li>
+				<li><a href="requests/requestreport.php">Requests Report</a></li>
 				<li><a href="requests/index.php">Create New Inquiry Record</a></li>
 			</ul>
 		</fieldset>
