@@ -98,33 +98,6 @@ if ($IS_ADMIN || (array_key_exists('SuperAdmin', $USER_RIGHTS) && in_array($coll
 						targetArr[targetArr.length] = value;
 					}
 				}
-				if (key.substring(0, 3) == "tf[") {
-					if (value == "catalognumber") {
-						subjectIdentifierIsMapped = true;
-					} else if (value == "othercatalognumbers") {
-						subjectIdentifierIsMapped = true;
-					} else if (value == "occurrenceid") {
-						subjectIdentifierIsMapped = true;
-					} else if (value == "occid") {
-						subjectIdentifierIsMapped = true;
-					}
-					if (value == "identifiername") {
-						identifierNameIsMapped = true;
-					}
-					if (value == 'identifiervalue') {
-						identifierValueIsMapped = true;
-					}
-					for (const fieldName2 in requiredFieldArr) {
-						if (value == fieldName2.toLowerCase()) requiredFieldArr[fieldName2] = 1;
-					}
-				}
-			}
-			for (const fieldName in requiredFieldArr) {
-				if (requiredFieldArr[fieldName] == 0) {
-					alert(fieldName + " is a required import field");
-					return false;
-				}
-			}
 			return true;
 		}
 
@@ -186,9 +159,14 @@ if ($IS_ADMIN || (array_key_exists('SuperAdmin', $USER_RIGHTS) && in_array($coll
 					<?php
 					echo '<ul>';
 					echo '<li> Start Processing' . $fileName . ' (' . date('Y-m-d H:i:s') . ')</li>';
-					if ($importManager->loadData($_POST)) {
-						echo '<li> Done Processing'. ' (' . date('Y-m-d H:i:s') . ')</li>';
-					}
+
+                    $success = $importManager->loadData($_POST);
+                    echo '<li> Done Processing: ' . ($success ? 'Success' : 'No records inserted') . ' (' . date('Y-m-d H:i:s') . ')</li>';
+                        if ($importType == 1){
+                            echo '<li><a href="samplelist.php?id=' . $request_id . '">Return to Sample List</a></li>';
+                        } elseif($importType == 2){
+                            echo '<li><a href="materialsamplelist.php?id=' . $request_id . '">Return to Material Sample List</a></li>';
+                        }
 					echo '</ul>';
 					?>
 				</fieldset>

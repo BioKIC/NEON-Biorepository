@@ -32,9 +32,10 @@ class SampleRequestImport extends UtilitiesFileImport {
 		if ($this->fileName && isset($postArr['tf'])) {
 			$this->fieldMap = array_flip($postArr['tf']);
 			if ($this->setTargetPath()) {
-				if ($this->getHeaderArr()) {		// Advance past header row, set file handler, and define delimiter
+				if ($this->getHeaderArr()) {
 					$cnt = 1;
 					while ($recordArr = $this->getRecordArr()) {
+
 						$identifierArr = array();
 
                         if ($this->importType == self::IMPORT_SAMPLE) {
@@ -53,22 +54,22 @@ class SampleRequestImport extends UtilitiesFileImport {
                             }
                             $this->logOrEcho('#' . $cnt . ': Processing Sample: ' . implode(', ', $identifierArr));
                             if ($sampArr = $this->getSampPK($identifierArr)) {
-                                $status = $this->insertRecord($recordArr, $sampArr, $postArr);
+                                $inserted = $this->insertRecord($recordArr, $sampArr, $postArr);
+                                if ($inserted) $status = true; 
                             }
                             $cnt++;
                         }
                         if ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
-
-                            if (isset($this->fieldMap['matSampleID'])) {
-                                if ($recordArr[$this->fieldMap['matSampleID']]) $identifierArr['matSampleID'] = $recordArr[$this->fieldMap['matSampleID']];
+                            if (isset($this->fieldMap['matsampleid'])) {
+                                if ($recordArr[$this->fieldMap['matsampleid']]) $identifierArr['matsampleid'] = $recordArr[$this->fieldMap['matsampleid']];
                             }
                             if (isset($this->fieldMap['catalognumber'])) {
                                 if ($recordArr[$this->fieldMap['catalognumber']]) $identifierArr['catalogNumber'] = $recordArr[$this->fieldMap['catalognumber']];
                             }
                             $this->logOrEcho('#' . $cnt . ': Processing Material Sample: ' . implode(', ', $identifierArr));
                             if ($sampArr = $this->getSampPK($identifierArr)) {
-                                $status = $this->insertRecord($recordArr, $sampArr, $postArr);
-                            }
+                                $inserted = $this->insertRecord($recordArr, $sampArr, $postArr);
+                                if ($inserted) $status = true;                             }
                             $cnt++;
                         }
 					}
@@ -81,6 +82,7 @@ class SampleRequestImport extends UtilitiesFileImport {
 
     # insert samples/material sample request links
     private function insertRecord($recordArr, $sampArr, $postArr) {
+
         $status = false;
         $allowedUseTypes = ['destructive', 'consumptive', 'invasive', 'non-destructive'];
 
@@ -100,7 +102,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                 foreach ($sampArr as $occid) {
                     $use_type = $recordArr[$this->fieldMap['use_type']] ?? null;
                     $substance_provided = $recordArr[$this->fieldMap['substance_provided']] ?? null;
-                    $notes = $recordArr[$this->fieldMap['notes']] ?? null;
+                    $notes = isset($this->fieldMap['notes']) ? $recordArr[$this->fieldMap['notes']] ?? null : null;
 
                     // required fields
                     if (!$use_type || !$substance_provided) {
@@ -168,30 +170,35 @@ class SampleRequestImport extends UtilitiesFileImport {
             }
 
             foreach ($sampArr as $matSampleID) {
-                // find occid for this matSampleID within the request
-                $res = $this->conn->query(
+                $matSampleID = trim($matSampleID); 
+
+                $occidStmt = $this->conn->prepare(
                     "SELECT s.occid
                     FROM ommaterialsample s
                     INNER JOIN neonsamplerequestlink r ON s.occid = r.occid
-                    WHERE r.request_id = '" . $this->conn->real_escape_string($this->request_id) . "'
-                    AND s.matSampleID = '" . $this->conn->real_escape_string($matSampleID) . "'"
+                    WHERE r.request_id = ? AND s.matSampleID = ?"
                 );
+                $occidStmt->bind_param('ii', $this->request_id, $matSampleID);
+                $occidStmt->execute();
+                $occidRes = $occidStmt->get_result();
 
-                if ($res && $row = $res->fetch_object()) {
-                    $occid = $row->occid;
-                    $res->free();
+                if ($occidRes && $occidRes->num_rows > 0) {
+                    $row = $occidRes->fetch_assoc();
+                    $occid = $row['occid'];
+                    $this->logOrEcho("Found occid '$occid' for matSampleID '$matSampleID'", 1);
                 } else {
-                    // Informative error
                     $this->logOrEcho(
-                        "ERROR: matSampleID '$matSampleID' cannot be imported because its originating sample is not linked to request ID " 
-                        . $this->request_id, 1
+                        "ERROR: matSampleID '$matSampleID' cannot be imported — no linked occid found for request_id {$this->request_id}",
+                        1
                     );
-                    continue;  // Skip this matSampleID
+                    $occidStmt->close();
+                    continue;  
                 }
+                $occidStmt->close();
 
                 $use_type   = $recordArr[$this->fieldMap['use_type']] ?? null;
-                $sampleType = $recordArr[$this->fieldMap['sampleType']] ?? null;
-                $notes      = $recordArr[$this->fieldMap['notes']] ?? null;
+                $sampleType = $recordArr[$this->fieldMap['sampletype']] ?? null;
+                $notes      = isset($this->fieldMap['notes']) ? $recordArr[$this->fieldMap['notes']] ?? null : null;
 
                 if (!$use_type || !$sampleType) {
                     $this->logOrEcho("ERROR: Missing required fields for matSampleID $matSampleID", 1);
@@ -229,7 +236,6 @@ class SampleRequestImport extends UtilitiesFileImport {
             $insertStmt->close();
             $checkStmt->close();
         }
-
         return $status;
     }
 
@@ -275,8 +281,8 @@ class SampleRequestImport extends UtilitiesFileImport {
                     ON m.occid = s.occid';
             $sqlConditionArr = array();
 
-            if (isset($identifierArr['matSampleID'])) {
-                $matSampleID = $this->cleanInStr($identifierArr['matSampleID']);
+            if (isset($identifierArr['matsampleid'])) {
+                $matSampleID = $this->cleanInStr($identifierArr['matsampleid']);
                 $sqlConditionArr[] = '(m.matSampleID = "' . $matSampleID . '")';
             }
             if (isset($identifierArr['catalogNumber'])) {

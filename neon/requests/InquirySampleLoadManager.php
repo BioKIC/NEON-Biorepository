@@ -4,14 +4,11 @@ include_once($SERVER_ROOT.'/config/dbconnection.php');
 class InquirySampleLoadManager{
 
 	private $conn;
-	private $shipmentPK;
-	private $shipmentArr = array();
-	private $uploadFileName;
+	private $requestID = null;
 	private $reloadSampleRecs = false;
-	private $fieldMap = array();
-	private $sourceArr = array();
-	private $searchArr = array();
-	private $errorStr;
+	private $fieldMap = array();       
+	private $sourceArr = array();      
+	private $errorStr = '';
 
  	public function __construct(){
  		$this->conn = MySQLiConnectionFactory::getCon("write");
@@ -21,182 +18,208 @@ class InquirySampleLoadManager{
 		if($this->conn) $this->conn->close();
 	}
 
+	private $savedFile = null;
 
-### Import functions
+	public function setSavedFile($path){
+		if(file_exists($path)){
+			$this->savedFile = $path;
+		}
+	}
+	
+	
+	public function analyzeUpload(){
+		if(!isset($_FILES['uploadfile']) || !is_uploaded_file($_FILES['uploadfile']['tmp_name'])){
+			$this->errorStr = 'No upload file found';
+			return false;
+		}
+
+		$fh = fopen($_FILES['uploadfile']['tmp_name'], 'r');
+		if(!$fh){
+			$this->errorStr = 'Unable to open uploaded file';
+			return false;
+		}
+
+		$this->sourceArr = array();
+		$headerRow = fgetcsv($fh);
+		if($headerRow === false){
+			fclose($fh);
+			$this->errorStr = 'Unable to read header row from CSV';
+			return false;
+		}
+
+		foreach($headerRow as $col){
+			$col = trim($col);
+			if($col !== '') $this->sourceArr[] = $col;
+		}
+		fclose($fh);
+
+		if(empty($this->sourceArr)){
+			$this->errorStr = 'No header columns found in CSV';
+			return false;
+		}
+
+		return true;
+	}
+
+
 	public function uploadData(){
-		$status = true;
 		set_time_limit(1800);
-		$shipmentArr = array();
 
+		$filepath = null;
+		if($this->savedFile){
+			$filepath = $this->savedFile;
+		} elseif(isset($_FILES['uploadfile']) && is_uploaded_file($_FILES['uploadfile']['tmp_name'])){
+			$filepath = $_FILES['uploadfile']['tmp_name'];
+		}
 
+		if(!$filepath || !file_exists($filepath)){
+			$this->outputMsg('<li>File Upload FAILED: unable to access uploaded file</li>');
+			return array();
+		}
 
-		if($this->uploadFileName){
-			echo '<li>Initiating import</li>';
+		$fh = fopen($filepath,'r');
+		if(!$fh){
+			$this->outputMsg('<li>File Upload FAILED: unable to open uploaded file</li>');
+			return array();
+		}
 
-			
+		$this->outputMsg('<li>Initiating import</li>');
 
+		$headerArr = $this->getHeaderArr($fh); 
+		$recCnt = 0;
+		$errCnt = 0;
 
-			$headerArr = $this->getHeaderArr($fh);
-			$recCnt = 0;
-			//Setup record index array
-			$indexMap = array();
-			foreach($this->fieldMap as $sourceField => $targetField){
-				$indexArr = array_keys($headerArr,$sourceField);
+		$indexMap = array();
+		foreach($this->fieldMap as $sourceField => $targetField){
+			$indexArr = array_keys($headerArr, $sourceField);
+			if(!empty($indexArr)){
 				$index = array_shift($indexArr);
 				$indexMap[$targetField][$sourceField] = $index;
 			}
-			echo '<li>Beginning to load samples...</li>';
-			ob_flush();
-			flush();
-			$errCnt = 0;
-			while($recordArr = fgetcsv($fh)){
-				$recMap = Array();
-				foreach($indexMap as $targetField => $indexValueArr){
-					foreach($indexValueArr as $sField => $indexValue){
-							$recMap[$targetField] = $recordArr[$indexValue];
-					}
-				}
-				$recMap = array_change_key_case($recMap);
-				$this->shipmentPK = $shipmentArr[$recMap['shipmentid']];
-				if($this->shipmentPK){
-					if($this->addSample($recMap,true)){
-						$recCnt++;
-						if($recCnt%1000 == 0){
-							echo '<li>'.$recCnt.' samples loaded</li>';
-							ob_flush();
-							flush();
-						}
-					}
-					else $errCnt++;
-				}
-				unset($recMap);
-			}
-			fclose($fh);
-			echo '<li>Complete: '.$recCnt.' records loaded '.($errCnt?'('.$errCnt.' errors)':'').'</li>';
 		}
-		else{
-			$this->outputMsg('<li>File Upload FAILED: unable to locate file</li>');
-		}
-		return $shipmentArr;
-	}
 
+		$this->outputMsg('<li>Beginning to load samples...</li>');
+		ob_flush(); flush();
+
+		while(($recordArr = fgetcsv($fh)) !== false){
+			$recMap = array();
+			foreach($indexMap as $targetField => $indexValueArr){
+				foreach($indexValueArr as $sField => $indexValue){
+					if(isset($recordArr[$indexValue])){
+						$recMap[$targetField] = $recordArr[$indexValue];
+					}
+				}
+			}
+
+			$recMap = array_change_key_case($recMap, CASE_LOWER);
+
+			if($this->addSample($recMap, true)){
+				$recCnt++;
+				if($recCnt % 1000 == 0){
+					$this->outputMsg('<li>'.$recCnt.' samples loaded</li>');
+					ob_flush(); flush();
+				}
+			} else {
+				$errCnt++;
+			}
+		}
+
+		fclose($fh);
+		$this->outputMsg('<li>Complete: '.$recCnt.' records loaded '.($errCnt?('('.$errCnt.' errors)'):'').'</li>');
+
+		return array();
+	}
 
 
 	private function getHeaderArr($fHandler){
 		$retArr = array();
 		$headerArr = fgetcsv($fHandler);
+		if($headerArr === false) return $retArr;
 		foreach($headerArr as $field){
 			$fieldStr = trim($field);
 			$retArr[] = $fieldStr;
 		}
+		$this->sourceArr = $retArr;
 		return $retArr;
 	}
 
 
 	public function addSample($recArr, $verbose = false){
 		$status = false;
-		$recArr = array_change_key_case($recArr);
-		if($this->shipmentPK){
-			$sampleID = '';
-			if(isset($recArr['sampleid']) && $recArr['sampleid']) $sampleID = $recArr['sampleid'];
-			$sampleCode = '';
-			if(isset($recArr['samplecode']) && $recArr['samplecode']) $sampleCode = $recArr['samplecode'];
-			if($sampleID || $sampleCode){
-				$insertRecord = true;
-				if($this->reloadSampleRecs){
-					if($sampleCode || ($sampleID && $recArr['sampleclass'])){
-						$sql = 'SELECT samplepk FROM NeonSample WHERE shipmentpk = '.$this->shipmentPK.' AND (';
-						if($sampleID) $sql .= '(sampleid = "'.$sampleID.'" AND sampleclass = "'.$recArr['sampleclass'].'")';
-						if($sampleID && $sampleCode) $sql .= ' OR ';
-						if($sampleCode) $sql .= 'samplecode = "'.$sampleCode.'"';
-						$sql .= ')';
-						$rs = $this->conn->query($sql);
-						if($r = $rs->fetch_object()){
-							$recArr['samplepk'] = $r->samplepk;
-							$status = $this->editSample($recArr);
-							$insertRecord = false;
-							if($verbose){
-								if(!$status) echo '<li style="margin-left:15px"><span style="color:orange">NOTICE:</span> '.$this->errorStr.'</li>';
-							}
-						}
-						$rs->free();
-					}
-				}
-				if($insertRecord){
-					$duplicateArr = $this->duplicateSampleExists($request_id, $recArr['occid']);
-					if(!$duplicateArr){
-						$sql = 'INSERT INTO NeonSample(request_id, occid, status, use_type, substance_provided, available, notes, shipment_id '.
-							'VALUES('.$this->requestID.','.
-							($sampleID?'"'.$this->cleanInStr($sampleID).'"':'NULL').','.
-							($sampleCode?'"'.$this->cleanInStr($sampleCode).'"':'NULL').','.
-							(isset($recArr['alternativesampleid']) && $recArr['alternativesampleid']?'"'.$this->cleanInStr($recArr['alternativesampleid']).'"':'NULL').','.
-							(isset($recArr['sampleclass']) && $recArr['sampleclass']?'"'.$this->cleanInStr($recArr['sampleclass']).'"':'NULL').','.
-							(isset($recArr['status']) && $recArr['status']?'"'.$this->cleanInStr($recArr['status']).'"':'NULL').','.
-							(isset($recArr['use_type']) && $recArr['use_type']?'"'.$this->cleanInStr($recArr['use_type']).'"':'NULL').','.
-							(isset($recArr['substance_provided']) && $recArr['substance_provided']?'"'.$this->cleanInStr($recArr['substance_provided']).'"':'NULL').','.
-							(isset($recArr['available']) && $recArr['available']?'"'.$this->cleanInStr($recArr['available']).'"':'NULL').','.
-							(isset($recArr['notes']) && $recArr['notes']?'"'.$this->cleanInStr($recArr['notes']).'"':'NULL').')';
-							(isset($recArr['shipment_id']) && $recArr['shipment_id']?'"'.$this->cleanInStr($recArr['shipment_id']).'"':'NULL').','.
-						if($this->conn->query($sql)){
-							$status = true;
-						}
-						else{
-							if($this->conn->errno == 1062){
-								$id = $sampleCode;
-								if(!$id) $id = $sampleID;
-								$this->errorStr = '<span style="color:red">FAILURE:</span> record already in system with duplicate: <a href="manifestviewer.php?quicksearch='.$id.'" target="_blank">'.$id.'</a>';
-								if($verbose) echo '<li>'.$this->errorStr.'</li>';
-							}
-							else{
-								$this->errorStr = '<span style="color:red">ERROR</span> adding sample: '.$this->conn->error;
-								if($verbose){
-									echo '<li style="margin-left:15px">'.$this->errorStr.'</li>';
-								}
-							}
-							$status = false;
-						}
-					}
-					else{
-						$errStr = '';
-						foreach($duplicateArr as $dupSamplePK => $idArr){
-							$link = 'manifestviewer.php?sid='.$dup.'&sampleFilter=displaySamples&quicksearch=';
-							if(isset($idArr['sampleID'])) $errStr .= '<a href="'.$link.$idArr['sampleID'].'#samplePanel" target="_blank">'.$idArr['sampleID'].'</a>, ';
-							if(isset($idArr['sampleCode'])) $errStr .= '<a href="'.$link.$idArr['sampleCode'].'#samplePanel" target="_blank">'.$idArr['sampleCode'].'</a>, ';
-						}
-						$this->errorStr = trim($errStr,', ');
-						if($verbose) echo '<li><span style="color:red">ERROR,</span> sample record already in system for this inquiry: '.$this->errorStr.'</li>';
-					}
-				}
-			}
-			else{
-				$this->errorStr = '<span style="color:red">ERROR:</span> record skipped due to required field being NULL';
-				if($verbose) echo '<li>'.$this->errorStr.'</li>';
-			}
+		$recArr = array_change_key_case($recArr, CASE_LOWER);
+
+		if(!$this->requestID){
+			$this->errorStr = '<span style="color:red">ERROR:</span> request ID not set for load';
+			if($verbose) $this->outputMsg('<li>'.$this->errorStr.'</li>');
+			return false;
 		}
+
+		if(!isset($recArr['occid']) || trim($recArr['occid']) === ''){
+			$this->errorStr = '<span style="color:red">ERROR:</span> record skipped due to missing occid';
+			if($verbose) $this->outputMsg('<li>'.$this->errorStr.'</li>');
+			return false;
+		}
+
+		$duplicate = $this->duplicateSampleExists($this->requestID, $recArr['occid']);
+		if($duplicate){
+			$this->errorStr = '<span style="color:red">ERROR:</span> sample with occid "'.$this->cleanOutStr($recArr['occid']).'" already exists for request '.$this->requestID;
+			if($verbose) $this->outputMsg('<li>'.$this->errorStr.'</li>');
+			return false;
+		}
+
+		$sql = 'INSERT INTO neonsamplerequestlink (
+			request_id, occid, status, use_type, substance_provided, available, notes, shipment_id
+		) VALUES (
+			'.(int)$this->requestID.',
+			'.(isset($recArr['occid']) && $recArr['occid'] !== '' ? '"'.$this->cleanInStr($recArr['occid']).'"' : 'NULL').',
+			'.(isset($recArr['status']) ? '"'.$this->cleanInStr($recArr['status']).'"' : 'NULL').',
+			'.(isset($recArr['use_type']) ? '"'.$this->cleanInStr($recArr['use_type']).'"' : 'NULL').',
+			'.(isset($recArr['substance_provided']) ? '"'.$this->cleanInStr($recArr['substance_provided']).'"' : 'NULL').',
+			'.(isset($recArr['available']) ? '"'.$this->cleanInStr($recArr['available']).'"' : 'NULL').',
+			'.(isset($recArr['notes']) ? '"'.$this->cleanInStr($recArr['notes']).'"' : 'NULL').',
+			'.(isset($recArr['shipment_id']) ? '"'.$this->cleanInStr($recArr['shipment_id']).'"' : 'NULL').'
+		)';
+
+		if($this->conn->query($sql)){
+			$status = true;
+		} else {
+			if($this->conn->errno == 1062){
+				$this->errorStr = '<span style="color:red">FAILURE:</span> duplicate record for occid '.$this->cleanOutStr($recArr['occid']);
+				if($verbose) $this->outputMsg('<li>'.$this->errorStr.'</li>');
+			} else {
+				$this->errorStr = '<span style="color:red">ERROR</span> adding sample: '.$this->cleanOutStr($this->conn->error);
+				if($verbose) $this->outputMsg('<li style="margin-left:15px">'.$this->errorStr.'</li>');
+			}
+			$status = false;
+		}
+
 		return $status;
 	}
 
 
-	//Setters and getters
-	public function setShipmentPK($id){
-		if(is_numeric($id)) $this->shipmentPK = $id;
+	private function duplicateSampleExists($requestID, $occid){
+		$requestID = (int)$requestID;
+		$occEsc = $this->conn->real_escape_string(trim($occid));
+		$sql = 'SELECT 1 FROM neonsamplerequestlink WHERE request_id = '.$requestID.' AND occid = "'.$occEsc.'" LIMIT 1';
+		$rs = $this->conn->query($sql);
+		if(!$rs) return false;
+		$exists = ($rs->fetch_row() ? true : false);
+		$rs->free();
+		return $exists;
 	}
 
-	public function setUploadFileName($name){
-		$this->uploadFileName = $name;
-	}
+	/* --- Setters / getters --- */
 
-	public function getUploadFileName(){
-		return $this->uploadFileName;
+	public function setRequestID($id){
+		if(is_numeric($id)) $this->requestID = (int)$id;
 	}
 
 	public function setReloadSampleRecs($cond){
-		if($cond) $this->reloadSampleRecs = true;
-		else $this->reloadSampleRecs = false;
+		$this->reloadSampleRecs = (bool)$cond;
 	}
 
 	public function setFieldMap($fieldMap){
-		$this->fieldMap = $fieldMap;
+		$this->fieldMap = is_array($fieldMap) ? $fieldMap : array();
 	}
 
 	public function getSourceArr(){
@@ -204,7 +227,7 @@ class InquirySampleLoadManager{
 	}
 
 	public function getTargetArr(){
-		$retArr = array('request_id','occid','status','use_type','substance_provided','available','notes','shipment_id',);
+		$retArr = array('request_id','occid','status','use_type','substance_provided','available','notes','shipment_id');
 		sort($retArr);
 		return $retArr;
 	}
@@ -213,26 +236,27 @@ class InquirySampleLoadManager{
 		return $this->errorStr;
 	}
 
-	//Misc functions
 	public function in_iarray($needle, $haystack) {
 		return in_array(strtolower($needle), array_map('strtolower', $haystack));
 	}
 
 	public function array_key_iexists($key, $array) {
-		return array_key_exists(strtolower($key), array_map('strtolower', $array));
+		return array_key_exists(strtolower($key), array_change_key_case($array, CASE_LOWER));
 	}
 
 	private function cleanOutStr($str){
-		if($str) $str = htmlspecialchars($str);
-		elseif($str === null) $str = '';
-		return $str;
+		if($str === null) return '';
+		return htmlspecialchars((string)$str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 	}
 
 	private function cleanInStr($str){
-		$newStr = trim($str);
+		$newStr = trim((string)$str);
 		$newStr = preg_replace('/\s\s+/', ' ',$newStr);
-		$newStr = $this->conn->real_escape_string($newStr);
-		return $newStr;
+		return $this->conn->real_escape_string($newStr);
+	}
+
+	private function outputMsg($msg){
+		echo $msg;
 	}
 }
 ?>
