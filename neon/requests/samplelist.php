@@ -139,6 +139,45 @@ if($IS_ADMIN) $isEditor = true;
 			document.body.removeChild(batchForm);
 		}
 
+		function openAvailabilityForm() {
+			const form = document.forms['sampleListingForm'];
+			const checked = [...form.querySelectorAll('input[name="scbox[]"]:checked')];
+			if(checked.length === 0){
+				alert("Please select at least one sample");
+				return false;
+			}
+
+			const availabilityForm = document.createElement("form");
+			availabilityForm.method = "post";
+			availabilityForm.action = "availabilitysync.php";
+			availabilityForm.target = "AvailabilitySyncWindow";
+			const req = document.createElement("input");
+			req.type = "hidden";
+			req.name = "request_id";
+			req.value = "<?= $request_id ?>";
+			availabilityForm.appendChild(req);
+
+			checked.forEach(cb => {
+				let hidden = document.createElement("input");
+				hidden.type = "hidden";
+				hidden.name = "ids[]";
+				hidden.value = cb.value;
+				availabilityForm.appendChild(hidden);
+			});
+
+			document.body.appendChild(availabilityForm);
+
+			const popup = window.open(
+				"",
+				"AvailabilitySyncWindow",
+				"scrollbars=1,toolbar=0,resizable=1,width=1000,height=700,left=50,top=100"
+			);
+
+			availabilityForm.submit();
+
+			document.body.removeChild(availabilityForm);
+		}
+
 		function openPopup(url,windowName){
 			newWindow = window.open(url,windowName,'scrollbars=1,toolbar=0,resizable=1,width=1000,height=500,left=20,top=100');
 			if (newWindow.opener == null) newWindow.opener = self;
@@ -280,11 +319,16 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
+							<div style="float:left;">
+								<button type="button" onclick="openAvailabilityForm()">Sync Avaialability/Disposition Values</button>
+							</div>
+					</div>
+					<div style="clear:both;padding:10px 0;">
+						<div style="float:left;">
 							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $request_id; ?>">
 								<button type="button">Load Samples</button>
 							</a>
 					</div>
-					
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
 							<legend>Sample Listing</legend>

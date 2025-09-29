@@ -1662,6 +1662,220 @@ public function addCollectionInquiryLink($request_id, $collections) {
         return $request_id;
     }
 
+          // Sample data for availability/disposition editor
+  public function getSampleAvailabilityForEditor($id){
+      $retArr = [];
+
+      $sql = "SELECT id,s.occid,n.sampleID,n.sampleCode,s.available,o.availability,o.disposition
+            FROM neonsamplerequestlink s
+            INNER JOIN omoccurrences o
+            ON s.occid=o.occid
+            INNER JOIN NeonSample n
+            ON s.occid=n.occid
+            WHERE id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return [];
+        }
+
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $row = $result->fetch_assoc();  
+
+        $stmt->close();
+
+        return $row ?: []; 
+  }
+
+            // Sample data for availability table
+    public function getSampleAvailabilityTable(array $ids) {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        $sql = "SELECT n.sampleID, 
+                    n.sampleCode, 
+                    s.available AS `available: request`, 
+                    CASE 
+                        WHEN o.availability = 1 THEN 'yes' 
+                        ELSE 'no' 
+                    END AS `available: occurrence`
+                FROM neonsamplerequestlink s
+                INNER JOIN omoccurrences o ON s.occid = o.occid
+                INNER JOIN NeonSample n     ON s.occid = n.occid
+                WHERE s.id IN ($placeholders)";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return [];
+        }
+
+        $types = str_repeat('i', count($ids));
+
+        $stmt->bind_param($types, ...$ids);
+
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $rows = $res->fetch_all(MYSQLI_ASSOC);
+
+        $stmt->close();
+        return $rows;
+    }
+
+        // Sample data for disposition table
+    public function getSampleDispositionTable(array $ids) {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        $sql = "SELECT n.sampleID, 
+                    n.sampleCode, 
+                    o.disposition
+                FROM neonsamplerequestlink s
+                INNER JOIN omoccurrences o ON s.occid = o.occid
+                INNER JOIN NeonSample n     ON s.occid = n.occid
+                WHERE s.id IN ($placeholders)";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return [];
+        }
+
+        $types = str_repeat('i', count($ids));
+
+        $stmt->bind_param($types, ...$ids);
+
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $rows = $res->fetch_all(MYSQLI_ASSOC);
+
+        $stmt->close();
+        return $rows;
+    }
+
+    // update sample availability
+    public function updateAvailability(array $ids, int $userId = 0): bool {
+        if (empty($ids)) return false;
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        $this->conn->begin_transaction();
+
+        try {
+            $sql1 = "UPDATE omoccurrences o
+                    INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
+                    SET o.availability = CASE
+                        WHEN s.available = 'yes' THEN 1
+                        WHEN s.available = 'no' THEN 0
+                        ELSE o.availability
+                    END
+                    WHERE s.id IN ($placeholders)";
+
+            $stmt1 = $this->conn->prepare($sql1);
+            if (!$stmt1) throw new Exception("DB error (update availability): " . $this->conn->error);
+
+            $types = str_repeat('i', count($ids));
+            $stmt1->bind_param($types, ...$ids);
+            $stmt1->execute();
+            $stmt1->close();
+
+            $sql2 = "INSERT INTO omoccuredits 
+                        (occid,fieldName, fieldValueNew, fieldValueOld, reviewStatus, appliedStatus, editType, isActive, uid, initialTimestamp)
+                    SELECT
+                        o.occid,
+                        'availability',
+                        CASE WHEN s.available='yes' THEN 1 WHEN s.available='no' THEN 0 ELSE o.availability END,
+                        o.availability,
+                        1, 
+                        1, 
+                        1, 
+                        1, 
+                        ?,
+                        NOW()
+                    FROM omoccurrences o
+                    INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
+                    WHERE s.id IN ($placeholders)";
+
+            $stmt2 = $this->conn->prepare($sql2);
+            if (!$stmt2) throw new Exception("DB error (insert edits): " . $this->conn->error);
+
+            $bindTypes = 'i' . str_repeat('i', count($ids));
+            $stmt2->bind_param($bindTypes, $userId, ...$ids);
+            $stmt2->execute();
+            $stmt2->close();
+
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            $this->errorMessage = $e->getMessage();
+            return false;
+        }
+    }
+
+
+        // write sample disposition
+    public function writeDisposition(array $ids, int $userId = 0,$value) {
+        if (empty($ids)) return false;
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+        $this->conn->begin_transaction();
+
+        try {
+            $sql1 = "UPDATE omoccurrences o
+                    INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
+                    SET o.disposition = $value
+                    END
+                    WHERE s.id IN ($placeholders)";
+
+            $stmt1 = $this->conn->prepare($sql1);
+            if (!$stmt1) throw new Exception("DB error (update availability): " . $this->conn->error);
+
+            $types = str_repeat('i', count($ids));
+            $stmt1->bind_param($types, ...$ids);
+            $stmt1->execute();
+            $stmt1->close();
+
+            $sql2 = "INSERT INTO omoccuredits 
+                        (occid,fieldName, fieldValueNew, fieldValueOld, reviewStatus, appliedStatus, editType, isActive, uid, initialTimestamp)
+                    SELECT
+                        o.occid,
+                        'disposition',
+                        $value,
+                        o.availability,
+                        1, 
+                        1, 
+                        1, 
+                        1, 
+                        ?,
+                        NOW()
+                    FROM omoccurrences o
+                    INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
+                    WHERE s.id IN ($placeholders)";
+
+            $stmt2 = $this->conn->prepare($sql2);
+            if (!$stmt2) throw new Exception("DB error (insert edits): " . $this->conn->error);
+
+            $bindTypes = 'i' . str_repeat('i', count($ids));
+            $stmt2->bind_param($bindTypes, $userId, ...$ids);
+            $stmt2->execute();
+            $stmt2->close();
+
+            $this->conn->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->conn->rollback();
+            $this->errorMessage = $e->getMessage();
+            return false;
+        }
+    }
+
+
 }
 
 ?>
