@@ -320,7 +320,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
 							<div style="float:left;">
-								<button type="button" onclick="openAvailabilityForm()">Sync Avaialability/Disposition Values</button>
+								<button type="button" onclick="openAvailabilityForm()">Sync Availability/Disposition Values</button>
 							</div>
 					</div>
 					<div style="clear:both;padding:10px 0;">

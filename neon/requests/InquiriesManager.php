@@ -1764,24 +1764,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
         $this->conn->begin_transaction();
 
         try {
-            $sql1 = "UPDATE omoccurrences o
-                    INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
-                    SET o.availability = CASE
-                        WHEN s.available = 'yes' THEN 1
-                        WHEN s.available = 'no' THEN 0
-                        ELSE o.availability
-                    END
-                    WHERE s.id IN ($placeholders)";
-
-            $stmt1 = $this->conn->prepare($sql1);
-            if (!$stmt1) throw new Exception("DB error (update availability): " . $this->conn->error);
-
-            $types = str_repeat('i', count($ids));
-            $stmt1->bind_param($types, ...$ids);
-            $stmt1->execute();
-            $stmt1->close();
-
-            $sql2 = "INSERT INTO omoccuredits 
+            $sql1 = "INSERT INTO omoccuredits 
                         (occid,fieldName, fieldValueNew, fieldValueOld, reviewStatus, appliedStatus, editType, isActive, uid, initialTimestamp)
                     SELECT
                         o.occid,
@@ -1798,11 +1781,29 @@ public function addCollectionInquiryLink($request_id, $collections) {
                     INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
                     WHERE s.id IN ($placeholders)";
 
+            $stmt1 = $this->conn->prepare($sql1);
+            if (!$stmt1) throw new Exception("DB error (update availability): " . $this->conn->error);
+
+            $bindTypes = 'i' . str_repeat('i', count($ids));
+            $stmt1->bind_param($bindTypes, $userId, ...$ids);
+            $stmt1->execute();
+            $stmt1->close();
+
+
+            $sql2 = "UPDATE omoccurrences o
+                    INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
+                    SET o.availability = CASE
+                        WHEN s.available = 'yes' THEN 1
+                        WHEN s.available = 'no' THEN 0
+                        ELSE o.availability
+                    END
+                    WHERE s.id IN ($placeholders)";
+
             $stmt2 = $this->conn->prepare($sql2);
             if (!$stmt2) throw new Exception("DB error (insert edits): " . $this->conn->error);
 
-            $bindTypes = 'i' . str_repeat('i', count($ids));
-            $stmt2->bind_param($bindTypes, $userId, ...$ids);
+            $types = str_repeat('i', count($ids));
+            $stmt2->bind_param($types, ...$ids);
             $stmt2->execute();
             $stmt2->close();
 
@@ -1818,7 +1819,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
 
         // write sample disposition
-    public function writeDisposition(array $ids, int $userId = 0,$value) {
+    public function writeDisposition(array $ids, $newDisposition, int $userId = 0) {
         if (empty($ids)) return false;
 
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
@@ -1826,27 +1827,13 @@ public function addCollectionInquiryLink($request_id, $collections) {
         $this->conn->begin_transaction();
 
         try {
-            $sql1 = "UPDATE omoccurrences o
-                    INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
-                    SET o.disposition = $value
-                    END
-                    WHERE s.id IN ($placeholders)";
-
-            $stmt1 = $this->conn->prepare($sql1);
-            if (!$stmt1) throw new Exception("DB error (update availability): " . $this->conn->error);
-
-            $types = str_repeat('i', count($ids));
-            $stmt1->bind_param($types, ...$ids);
-            $stmt1->execute();
-            $stmt1->close();
-
-            $sql2 = "INSERT INTO omoccuredits 
-                        (occid,fieldName, fieldValueNew, fieldValueOld, reviewStatus, appliedStatus, editType, isActive, uid, initialTimestamp)
+            $sql1 = "INSERT INTO omoccuredits 
+                        (occid, fieldName, fieldValueNew, fieldValueOld, reviewStatus, appliedStatus, editType, isActive, uid, initialTimestamp)
                     SELECT
                         o.occid,
                         'disposition',
-                        $value,
-                        o.availability,
+                        ?,
+                        o.disposition,
                         1, 
                         1, 
                         1, 
@@ -1857,12 +1844,47 @@ public function addCollectionInquiryLink($request_id, $collections) {
                     INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
                     WHERE s.id IN ($placeholders)";
 
-            $stmt2 = $this->conn->prepare($sql2);
-            if (!$stmt2) throw new Exception("DB error (insert edits): " . $this->conn->error);
+            $stmt1 = $this->conn->prepare($sql1);
+            if (!$stmt1) throw new Exception("DB error (writeDisposition - stmt1): " . $this->conn->error);
 
-            $bindTypes = 'i' . str_repeat('i', count($ids));
-            $stmt2->bind_param($bindTypes, $userId, ...$ids);
+            $bindTypes = 'si' . str_repeat('i', count($ids));
+            $params = array_merge([$newDisposition, $userId], $ids);
+
+            $refs = [];
+            foreach ($params as $key => $value) {
+                $refs[$key] = &$params[$key];
+            }
+
+            call_user_func_array([$stmt1, 'bind_param'], array_merge([$bindTypes], $refs));
+
+            $stmt1->execute();
+            if ($stmt1->errno) {
+                throw new Exception("Execute failed (stmt1): " . $stmt1->error);
+            }
+            $stmt1->close();
+
+            $sql2 = "UPDATE omoccurrences o
+                    INNER JOIN neonsamplerequestlink s ON o.occid = s.occid
+                    SET o.disposition = ?
+                    WHERE s.id IN ($placeholders)";
+
+            $stmt2 = $this->conn->prepare($sql2);
+            if (!$stmt2) throw new Exception("DB error (writeDisposition - stmt2): " . $this->conn->error);
+
+            $bindTypes2 = 's' . str_repeat('i', count($ids));
+            $params2 = array_merge([$newDisposition], $ids);
+
+            $refs2 = [];
+            foreach ($params2 as $key => $value) {
+                $refs2[$key] = &$params2[$key];
+            }
+
+            call_user_func_array([$stmt2, 'bind_param'], array_merge([$bindTypes2], $refs2));
+
             $stmt2->execute();
+            if ($stmt2->errno) {
+                throw new Exception("Execute failed (stmt2): " . $stmt2->error);
+            }
             $stmt2->close();
 
             $this->conn->commit();
