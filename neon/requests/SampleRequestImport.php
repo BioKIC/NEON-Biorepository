@@ -27,7 +27,20 @@ class SampleRequestImport extends UtilitiesFileImport {
 		parent::__destruct();
 	}
 
-	public function loadData($postArr) {
+    // get request status
+    private function getRequestStatus() {
+        $sql = "SELECT status FROM neonrequest WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $this->request_id);
+        $stmt->execute();
+        $stmt->bind_result($status);
+        $stmt->fetch();
+        $stmt->close();
+        return $status;
+    }
+
+    // load sample data
+	public function loadData($postArr,$uid) {
 		$status = false;
 		if ($this->fileName && isset($postArr['tf'])) {
 			$this->fieldMap = array_flip($postArr['tf']);
@@ -54,7 +67,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                             }
                             $this->logOrEcho('#' . $cnt . ': Processing Sample: ' . implode(', ', $identifierArr));
                             if ($sampArr = $this->getSampPK($identifierArr)) {
-                                $inserted = $this->insertRecord($recordArr, $sampArr, $postArr);
+                                $inserted = $this->insertRecord($recordArr, $sampArr, $postArr, $uid);
                                 if ($inserted) $status = true; 
                             }
                             $cnt++;
@@ -68,7 +81,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                             }
                             $this->logOrEcho('#' . $cnt . ': Processing Material Sample: ' . implode(', ', $identifierArr));
                             if ($sampArr = $this->getSampPK($identifierArr)) {
-                                $inserted = $this->insertRecord($recordArr, $sampArr, $postArr);
+                                $inserted = $this->insertRecord($recordArr, $sampArr, $postArr, $uid);
                                 if ($inserted) $status = true;                             }
                             $cnt++;
                         }
@@ -81,17 +94,19 @@ class SampleRequestImport extends UtilitiesFileImport {
 	}
 
     # insert samples/material sample request links
-    private function insertRecord($recordArr, $sampArr, $postArr) {
+    private function insertRecord($recordArr, $sampArr, $postArr, $uid) {
 
         $status = false;
         $allowedUseTypes = ['destructive', 'consumptive', 'invasive', 'non-destructive'];
+        $requestStatus = $this->getRequestStatus();
+        $defaultStatus = ($requestStatus === 'pending funding') ? 'pending funding' : 'pending fulfillment';
+
 
         if ($this->importType == self::IMPORT_SAMPLE) {
             $allowedSubstances = ['whole sample', 'subsample/aliquot', 'tissue/material sample', 'individual(s)', 'image', 'data'];
-
             $insertSql = "INSERT INTO neonsamplerequestlink 
-                        (request_id, occid, status, available, use_type, substance_provided, notes)
-                        VALUES (?, ?, 'pending fulfillment', 'yes', ?, ?, ?)";
+                        (request_id, occid, status, available, use_type, substance_provided, notes, initialTimestamp,editedTimestamp)
+                        VALUES (?, ?, ?, 'yes', ?, ?, ?, NOW(),NOW())";
             $checkSql = "SELECT COUNT(*) as cnt FROM neonsamplerequestlink 
                         WHERE request_id = ? AND occid = ?";
 
@@ -138,7 +153,6 @@ class SampleRequestImport extends UtilitiesFileImport {
                         continue;
                     }
 
-                    // insert
                     $insertStmt->bind_param('iisss', $this->request_id, $occid, $use_type, $substance_provided, $notes);
                     if ($insertStmt->execute()) {
                         $status = true;
@@ -148,8 +162,12 @@ class SampleRequestImport extends UtilitiesFileImport {
                     }
                 }
 
+                $this->syncCollidsForRequest($uid);
+
                 $insertStmt->close();
                 $checkStmt->close();
+
+
             } else {
                 $this->logOrEcho("ERROR preparing statement: " . $this->conn->error, 1);
             }
@@ -157,8 +175,9 @@ class SampleRequestImport extends UtilitiesFileImport {
 
         elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
             $insertSql = "INSERT INTO neonmaterialsamplerequestlink 
-                        (request_id, matSampleID, occid, status, use_type, sampleType, notes)
-                        VALUES (?, ?, ?, 'pending fulfillment', ?, ?, ?)";
+                        (request_id, matSampleID, occid, status, use_type, sampleType, notes, initialTimestamp,editedTimestamp)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+
             $checkSql = "SELECT COUNT(*) as cnt FROM neonmaterialsamplerequestlink 
                         WHERE request_id = ? AND matSampleID = ?";
 
@@ -225,7 +244,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                 }
 
                 // insert
-                $insertStmt->bind_param('iiisss', $this->request_id, $matSampleID, $occid, $use_type, $sampleType, $notes);
+                $insertStmt->bind_param('iiissss', $this->request_id, $matSampleID, $occid, $defaultStatus, $use_type, $sampleType, $notes);
                 if ($insertStmt->execute()) {
                     $status = true;
                     $this->logOrEcho("Material Sample Added: matSampleID $matSampleID", 1);
@@ -240,6 +259,103 @@ class SampleRequestImport extends UtilitiesFileImport {
         return $status;
     }
 
+        // link collids to request
+    private function syncCollidsForRequest($uid) {
+
+        $sql = "SELECT DISTINCT o.collid
+            FROM neonsamplerequestlink r
+            JOIN omoccurrences o ON r.occid = o.occid
+            WHERE r.request_id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $this->request_id);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        $expectedCollids = [];
+        while ($row = $res->fetch_assoc()) {
+            $expectedCollids[] = (int)$row['collid'];
+        }
+        $stmt->close();
+
+        $sql = "SELECT coll_id FROM neoncollectionrequestlink WHERE request_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('i', $this->request_id);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        $currentCollids = [];
+        while ($row = $res->fetch_assoc()) {
+            $currentCollids[] = (int)$row['coll_id'];
+        }
+        $stmt->close();
+
+        $expectedSet = array_unique($expectedCollids);
+        $currentSet  = array_unique($currentCollids);
+
+        $toAdd    = array_diff($expectedSet, $currentSet);
+        $toDelete = array_diff($currentSet, $expectedSet);
+
+        if (!empty($toAdd)) {
+            $insertSql = "INSERT INTO neoncollectionrequestlink (request_id, coll_id) VALUES ";
+            $insertSql .= implode(',', array_fill(0, count($toAdd), '(?, ?)'));
+
+            $stmt = $this->conn->prepare($insertSql);
+            $types = str_repeat('i', count($toAdd) * 2);
+            $values = [];
+            foreach ($toAdd as $c) {
+                $values[] = $this->request_id;
+                $values[] = $c;
+            }
+
+            $stmt->bind_param($types, ...$values);
+            if (!$stmt->execute()) {
+                $this->logOrEcho("ERROR adding collids: " . $stmt->error, 1);
+            }
+            $stmt->close();
+
+            $editSql = "INSERT INTO neonrequestedit
+                (request_id, tableName, fieldName, oldValue, newValue, uid, editTimeStamp)
+                VALUES (?, 'neoncollectionrequestlink', 'coll_id', ?, ?, ?, NOW())";
+            $stmt = $this->conn->prepare($editSql);
+            foreach ($toAdd as $c) {
+                $oldVal = '';
+                $newVal = $c;
+                $stmt->bind_param('issi', $this->request_id, $oldVal, $newVal, $uid);
+                $stmt->execute();
+            }
+            $stmt->close();
+        }
+
+        if (!empty($toDelete)) {
+            $placeholders = implode(',', array_fill(0, count($toDelete), '?'));
+            $sql = "DELETE FROM neoncollectionrequestlink 
+                    WHERE request_id = ? AND coll_id IN ($placeholders)";
+            $stmt = $this->conn->prepare($sql);
+            $types = 'i' . str_repeat('i', count($toDelete));
+            $params = [$this->request_id, ...$toDelete];
+            $stmt->bind_param($types, ...$params);
+
+            if (!$stmt->execute()) {
+                $this->logOrEcho("ERROR deleting collids: " . $stmt->error, 1);
+            }
+            $stmt->close();
+
+            $editSql = "INSERT INTO neonrequestedit
+                (request_id, tableName, fieldName, oldValue, newValue, uid, editTimeStamp)
+                VALUES (?, 'neoncollectionrequestlink', 'coll_id', ?, ?, ?, NOW())";
+            $stmt = $this->conn->prepare($editSql);
+            foreach ($toDelete as $c) {
+                $oldVal = $c;
+                $newVal = '';
+                $stmt->bind_param('issi', $this->request_id, $oldVal, $newVal, $uid);
+                $stmt->execute();
+            }
+            $stmt->close();
+        }
+
+        return true;
+    }
 
 
 	//Identifier and occid functions

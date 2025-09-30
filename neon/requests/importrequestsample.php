@@ -160,7 +160,7 @@ if ($IS_ADMIN || (array_key_exists('SuperAdmin', $USER_RIGHTS) && in_array($coll
 					echo '<ul>';
 					echo '<li> Start Processing' . $fileName . ' (' . date('Y-m-d H:i:s') . ')</li>';
 
-                    $success = $importManager->loadData($_POST);
+                    $success = $importManager->loadData($_POST,$SYMB_UID);
                     echo '<li> Done Processing: ' . ($success ? 'Success' : 'No records inserted') . ' (' . date('Y-m-d H:i:s') . ')</li>';
                         if ($importType == 1){
                             echo '<li><a href="samplelist.php?id=' . $request_id . '">Return to Sample List</a></li>';
