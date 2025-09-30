@@ -35,7 +35,7 @@ else $igsnSeed = $guidManager->getIgsnSeed();
 	<?php
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
-	<script type="text/javascript" src="../../../js/jquery.js"></script>
+	<script type="text/javascript" src="../../../js/jquery-3.7.1.min.js"></script>
 	<script type="text/javascript">
 		function generateIgsnSeed(){
 			var f = document.guidform;

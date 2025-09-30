@@ -640,6 +640,15 @@ include($SERVER_ROOT.'/includes/header.php');
 						echo '</div>';
 					}
 					?>
+					<div>
+					  <button 
+						type="button" 
+						style="margin-top:12px;" 
+						onclick="window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });">
+						Scroll to Bottom
+					  </button>
+					</div>
+
 				</div>
 				<div style="float:left;">
 					<?php
@@ -1134,6 +1143,15 @@ include($SERVER_ROOT.'/includes/header.php');
 												<div style="margin:10px 0px"><button name="action" type="submit" value="exportSampleListing">Export Sample Listing</button></div>
 											</form>
 											<div ><a href="manifestloader.php"><button name="loadManifestButton" type="button">Load Another Manifest</button></a></div>
+											<div>
+											  <button 
+												type="button" 
+												style="margin-top:12px;" 
+												onclick="window.scrollTo({ top: 0, behavior: 'smooth' });">
+												Back to Top
+											  </button>
+											</div>
+
 										</div>
 										<?php
 										$collectionArr = $shipManager->getCollectionArr();

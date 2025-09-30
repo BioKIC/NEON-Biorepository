@@ -1501,6 +1501,13 @@ else{
 												<a href="#" onclick="return dwcDoc('dupe-count')" tabindex="-1"><img class="docimg" src="../../images/qmark.png" /></a><br/>
 												<input type="text" name="duplicatequantity" value="<?php echo array_key_exists('duplicatequantity',$occArr)?$occArr['duplicatequantity']:''; ?>" onchange="fieldChanged('duplicatequantity');" />
 											</div>
+											<!--neon edit-->
+											<div id="availabilityDiv">
+												<?php $hasValue = array_key_exists("availability",$occArr)&&$occArr["availability"]?1:0; ?>
+												<input type="checkbox" name="availability" value="1" <?php echo $hasValue?'CHECKED':''; ?> onchange="fieldChanged('availability');" />
+												<?php echo 'Available for Loan?' ?>
+											</div>
+											<!--end neon edit-->
 										</div>
 										<div style="padding:3px;clear:both;">
 											<div id="institutionCodeDiv" class="field-div" title="<?php echo $LANG['INST_CODE_EXPLAIN']; ?>">
