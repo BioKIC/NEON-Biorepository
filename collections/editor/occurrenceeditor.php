@@ -898,7 +898,7 @@ else{
 												<input type="text" name="eventdate2" value="<?= array_key_exists('eventdate2',$occArr)?$occArr['eventdate2']:''; ?>" onchange="eventDate2Changed(this);" >
 											</div>
 											<?php
-											if($ACTIVATE_DUPLICATES){
+											if(!EMPTY($ACTIVATE_DUPLICATES)){
 												?>
 												<div id="dupesDiv">
 													<button type="button" class="button" value="Duplicates" onclick="searchDupes(this.form, false);" ><?php echo $LANG['DUPLICATES']; ?></button><br/>

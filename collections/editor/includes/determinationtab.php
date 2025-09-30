@@ -188,11 +188,11 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 							<input type="text" name="dateidentified" style="background-color:lightyellow;" onchange="detDateChanged(this.form);" />
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['ID_REFERENCE']; ?>:</b>
+							<b><?php echo $LANG['REFERENCE']; ?>:</b>
 							<input type="text" name="identificationreferences" style="width:350px;" />
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
+							<b><?php echo $LANG['NOTES']; ?>:</b>
 							<input type="text" name="identificationremarks" style="width:350px;" />
 						</div>
 						<div style='margin:3px;'>
@@ -321,11 +321,11 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 									<input type="text" name="dateidentified" value="<?php echo $detRec['dateidentified']; ?>" style="background-color:lightyellow;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['ID_REFERENCE']; ?>:</b>
+									<b><?php echo $LANG['REFERENCE']; ?>:</b>
 									<input type="text" name="identificationreferences" value="<?php echo $detRec['identificationreferences']; ?>" style="width:350px;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
+									<b><?php echo $LANG['NOTES']; ?>:</b>
 									<input type="text" name="identificationremarks" value="<?php echo $detRec['identificationremarks']; ?>" style="width:350px;" />
 								</div>
 								<div style='margin:3px;'>
