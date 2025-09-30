@@ -243,7 +243,17 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv"><b>Number of Material Samples Linked:</b> <?php echo $sampleCnt; ?></div>
 				</div>
 				<?php
-				if(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding')) && $sampleCnt){
+				if(in_array($reqArr['status'],array('pending funding','pending sample list','pending fulfillment')) && !$sampleCnt){
+				?>
+					<div style="clear:both;padding:10px 0;">
+						<div style="float:left;">
+							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $request_id; ?>">
+								<button type="button">Load Material Samples</button>
+							</a>
+					</div>
+				<?php
+				}
+				elseif(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding')) && $sampleCnt){
 					$materialSampleList = $inquiryManager->getMaterialSamplesByID($request_id, $sampleFilter);
 					?>
 					<div style="clear:both;padding:10px 0;">
