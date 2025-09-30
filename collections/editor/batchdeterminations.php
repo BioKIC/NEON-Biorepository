@@ -521,17 +521,19 @@ if($isEditor){
 									<input type="text" name="dateidentified" id="dateidentified" style="background-color:lightyellow;" onchange="detDateChanged(this.form);" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['ID_REFERENCE']; ?>:</b>
+									<b><?php echo $LANG['ID_REFERENCES']; ?>:</b>
 									<input type="text" name="identificationreferences" style="width:350px;" />
 								</div>
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
 									<input type="text" name="identificationremarks" style="width:350px;" />
 								</div>
+								<!-- START NEON Customization
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['TAXON_REMARKS']; ?>:</b>
 									<input type="text" name="taxonremarks" style="width:350px;" />
 								</div>
+								END NEON Customization -->
 								<div id="makeCurrentDiv" style='margin:3px;'>
 									<input type="checkbox" name="makecurrent" value="1" checked /> <?php echo $LANG['MAKE_CURRENT']; ?>
 								</div>

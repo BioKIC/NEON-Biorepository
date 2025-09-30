@@ -1038,11 +1038,13 @@ else{
 												<a href="#" onclick="return dwcDoc('identification-remarks')" tabindex="-1"><img class="docimg" src="../../images/qmark.png" /></a>
 												<input type="text" name="identificationremarks" value="<?php echo array_key_exists('identificationremarks',$occArr)?$occArr['identificationremarks']:''; ?>" onchange="fieldChanged('identificationremarks');" />
 											</div>
+											<!-- START NEON CUSTOMIZATION
 											<div id="taxonRemarksDiv" class="field-div">
 												<?php echo $LANG['TAXON_REMARKS']; ?>:
 												<a href="#" onclick="return dwcDoc('taxon-remarks')" tabindex="-1"><img class="docimg" src="../../images/qmark.png" /></a>
 												<input type="text" name="taxonremarks" value="<?php echo array_key_exists('taxonremarks',$occArr)?$occArr['taxonremarks']:''; ?>" onchange="fieldChanged('taxonremarks');" />
 											</div>
+											END NEON CUSTOMIZATION -->
 										</div>
 									</fieldset>
 									<fieldset>

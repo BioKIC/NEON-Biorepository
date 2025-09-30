@@ -188,7 +188,7 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 							<input type="text" name="dateidentified" style="background-color:lightyellow;" onchange="detDateChanged(this.form);" />
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['ID_REFERENCE']; ?>:</b>
+							<b><?php echo $LANG['ID_REFERENCES']; ?>:</b>
 							<input type="text" name="identificationreferences" style="width:350px;" />
 						</div>
 						<div style='margin:3px;'>
@@ -261,7 +261,7 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 					if($detRec['identificationreferences']){
 						?>
 						<div style='margin:3px 0px 0px 15px;'>
-							<b><?php echo $LANG['ID_REFERENCE']; ?>:</b> <?php echo $detRec['identificationreferences']; ?>
+							<b><?php echo $LANG['ID_REFERENCES']; ?>:</b> <?php echo $detRec['identificationreferences']; ?>
 						</div>
 						<?php
 					}
@@ -321,17 +321,19 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 									<input type="text" name="dateidentified" value="<?php echo $detRec['dateidentified']; ?>" style="background-color:lightyellow;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['ID_REFERENCE']; ?>:</b>
+									<b><?php echo $LANG['ID_REFERENCES']; ?>:</b>
 									<input type="text" name="identificationreferences" value="<?php echo $detRec['identificationreferences']; ?>" style="width:350px;" />
 								</div>
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
 									<input type="text" name="identificationremarks" value="<?php echo $detRec['identificationremarks']; ?>" style="width:350px;" />
 								</div>
+								<!-- START NEON Customization
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['TAXON_REMARKS']; ?>:</b>
 									<input type="text" name="taxonremarks" value="<?php echo $detRec['taxonremarks']; ?>" style="width:350px;" />
 								</div>
+								END NEON customization -->
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['SORT_SEQUENCE']; ?>:</b>
 									<input type="text" name="sortsequence" value="<?php echo $detRec['sortsequence']; ?>" style="width:40px;" />
