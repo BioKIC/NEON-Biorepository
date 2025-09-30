@@ -120,7 +120,10 @@ class OccurrenceEditorManager {
 			'processingstatus' => 's',
 			'recordenteredby' => 's',
 			'observeruid' => 'n',
-			'dateentered' => 'd'
+			'dateentered' => 'd',
+			//neon edit
+			'availability' => 'n'
+			//end neon edit
 		);
 		$this->fieldArr['omoccurpaleo'] = array(
 			'eon',
