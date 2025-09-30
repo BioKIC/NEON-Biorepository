@@ -80,6 +80,10 @@ function validateBatchForm(f){
         alert("If a shipment is assigned, status must be current, completed, or loaned, not used");
         return false;
     }
+    if(!f.notes.value && ["individual(s)","tissue/material sample","subsample/aliquot"].includes(f.substance_provided.value)){
+        alert("ERROR: Notes required when substance is tissue/material sample, individual(s), or subsample/aliquot");
+        return false;
+    }
     return true;
 }
 </script>

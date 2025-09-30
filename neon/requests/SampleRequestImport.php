@@ -104,17 +104,18 @@ class SampleRequestImport extends UtilitiesFileImport {
                     $substance_provided = $recordArr[$this->fieldMap['substance_provided']] ?? null;
                     $notes = isset($this->fieldMap['notes']) ? $recordArr[$this->fieldMap['notes']] ?? null : null;
 
-                    // required fields
                     if (!$use_type || !$substance_provided) {
                         $this->logOrEcho("ERROR: Missing required fields for occid $occid", 1);
                         continue;
                     }
-                    if ($substance_provided === 'tissue/material sample' && !$notes) {
-                        $this->logOrEcho("ERROR: Notes required for occid $occid when substance is tissue/material sample", 1);
+                    if (in_array($substance_provided, ["individual(s)", "tissue/material sample", "subsample/aliquot"]) && !$notes) {
+                        $this->logOrEcho(
+                            "ERROR: Notes required for occid $occid when substance is tissue/material sample, individual(s), or subsample/aliquot", 
+                            1
+                        );
                         continue;
                     }
-
-                    // validate values
+                    
                     if (!in_array($use_type, $allowedUseTypes)) {
                         $this->logOrEcho("ERROR: Invalid use_type '$use_type' for occid $occid. Allowed: " . implode(', ', $allowedUseTypes), 1);
                         continue;
