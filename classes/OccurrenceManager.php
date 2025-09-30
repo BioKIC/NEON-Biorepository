@@ -575,7 +575,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				case 'NOT_EQUALS':
 					$condition = "o.$field != '$value'";
 					break;
-				case 'STARTS':
+				case 'STARTS_WITH':
 					$condition = "o.$field LIKE '$value%'";
 					break;
 				case 'LIKE':
@@ -584,16 +584,16 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				case 'NOT_LIKE':
 					$condition = "o.$field NOT LIKE '%$value%'";
 					break;
-				case 'GREATER':
+				case 'GREATER_THAN':
 					$condition = "o.$field > '$value'";
 					break;
-				case 'LESS':
+				case 'LESS_THAN':
 					$condition = "o.$field < '$value'";
 					break;
-				case 'NULL':
+				case 'IS_NULL':
 					$condition = "o.$field IS NULL";
 					break;
-				case 'NOTNULL':
+				case 'NOT_NULL':
 					$condition = "o.$field IS NOT NULL";
 					break;
 				default:
