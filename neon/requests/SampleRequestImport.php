@@ -153,7 +153,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                         continue;
                     }
 
-                    $insertStmt->bind_param('iisss', $this->request_id, $occid, $use_type, $substance_provided, $notes);
+                    $insertStmt->bind_param('iissss', $this->request_id, $occid, $defaultStatus, $use_type, $substance_provided, $notes);
                     if ($insertStmt->execute()) {
                         $status = true;
                         $this->logOrEcho("Sample Added: $occid", 1);
