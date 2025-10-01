@@ -489,6 +489,10 @@ if($action == 'batchAssignTag'){
 											}
 										}
 										if(!$authorLink) $authorLink = $anchorLink;
+										// NEON customization
+										$imgOwner = $imgArr['owner'];
+										if($imgOwner) $photoAuthor = $photoAuthor . '<br>' . $imgOwner;
+										// End NEON customization
 										echo $authorLink . $photoAuthor . '</a>';
 										?>
 									</div>
