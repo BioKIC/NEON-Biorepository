@@ -47,4 +47,9 @@ $LANG['MAKE_CURRENT'] = 'Make Current';
 $LANG['SURE_DELETE'] = 'Are you sure you want to delete this specimen determination?';
 $LANG['DELETE_DET'] = 'Delete Determination';
 
+// START NEON Customization
+$LANG['ID_REFERENCES'] = 'Identification Reference';
+$LANG['ID_REMARKS'] = 'Identification Remarks';
+// END NEON customization
+
 ?>
