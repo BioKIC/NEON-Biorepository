@@ -114,7 +114,7 @@ if($formSubmit == 'editInquiry' && $isEditor){
 			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success");
 			exit();
 		} else {
-			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . $inquiryManager->getError() . '</span>';
+			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
 		}
 		}
 }
@@ -201,7 +201,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success");
 			exit();
 		} else {
-			$statusStr = '<span style="color:red;">Error saving inquiry status edits: ' . $inquiryManager->getError() . '</span>';
+			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
 		}
 		}
 }
@@ -220,7 +220,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			header("Location: inquiryform.php?id=" . $updatedRequestID . "&status=success");
 			exit();
 		} else {
-			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . $inquiryManager->getError() . '</span>';
+			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
 		}
 	}
 
@@ -842,7 +842,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		<div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
 			<h2>Add New Shipment</h2>
 			<form id="shipmentform">
-				<label><b>Shipped to:</b> (if researcher is not present, go back to request editor to link shipment to the request)</label>
+				<label><b>Shipped to:</b> (if researcher is not present, go back to request editor to link researcher to the request)</label>
 				<select name="researcher_id" required style="width:100%; margin-bottom:15px;">
 					<option value="">-- Select Researcher --</option>
 					<?php 

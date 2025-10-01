@@ -15,8 +15,9 @@ class InquiriesManager extends Manager{
     private $errorStr = '';
 
     public function getErrorStr() {
-        return $this->errorStr;
+        return $this->errorMessage ?? '';
     }
+
 
   // Gets all inquiries
   public function getInquiriesOut(){
@@ -820,6 +821,36 @@ public function addCollectionInquiryLink($request_id, $collections) {
           }
       }
 
+    // update status of linked samples/material samples if necessary
+      $sampleStatusMap = [
+        'not funded'     => 'not funded',
+        'cut'            => 'funded, but cut'
+    ];
+
+    if (isset($sampleStatusMap[$status])) {
+        $newSampleStatus = $sampleStatusMap[$status];
+
+        $updateSampleSql = "UPDATE neonsamplerequestlink 
+                            SET status = ?
+                            WHERE request_id = ?";
+        $updateStmt = $this->conn->prepare($updateSampleSql);
+        if ($updateStmt) {
+            $updateStmt->bind_param("si", $newSampleStatus, $request_id);
+            $updateStmt->execute();
+            $updateStmt->close();
+        }
+
+        $updateMatSql = "UPDATE neonmaterialsamplerequestlink 
+                        SET status = ?
+                        WHERE request_id = ?";
+        $updateMatStmt = $this->conn->prepare($updateMatSql);
+        if ($updateMatStmt) {
+            $updateMatStmt->bind_param("si", $newSampleStatus, $request_id);
+            $updateMatStmt->execute();
+            $updateMatStmt->close();
+        }
+    }
+
       return $request_id;
   }
 
@@ -1614,17 +1645,51 @@ public function addCollectionInquiryLink($request_id, $collections) {
         }
     }
     
-    
-    ### edit shipment
+    // edit shipments
     public function editShipment($shipment_ids, $uid, $request_id) {
         if (!is_array($shipment_ids)) {
             $shipment_ids = [$shipment_ids];
         }
-        $newShipmentIDs = array_map('intval', $shipment_ids);
 
+        $newShipmentIDs = array_map('intval', $shipment_ids);
         $request_id = (int)$request_id;
 
-        $oldShipments = $this->getShipmentByID($request_id); 
+        $sql = "SELECT MIN(ship_date) AS earliest_ship_date FROM neonrequestshipmentrequestlink rr
+                JOIN neonrequestshipment s ON rr.shipment_id = s.id
+                WHERE rr.request_id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $request_id);
+        $stmt->execute();
+        $stmt->bind_result($earliestShipDate);
+        $stmt->fetch();
+        $stmt->close();
+
+        if (empty($newShipmentIDs)) {
+            $newShipDates = [];
+        } else {
+            $placeholders = implode(',', array_fill(0, count($newShipmentIDs), '?'));
+            $types = str_repeat('i', count($newShipmentIDs));
+            $sql = "SELECT id, ship_date FROM neonrequestshipment WHERE id IN ($placeholders)";
+            $stmt = $this->conn->prepare($sql);
+
+            $stmt->bind_param($types, ...$newShipmentIDs);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $newShipDates = [];
+            while ($row = $result->fetch_assoc()) {
+                $newShipDates[$row['id']] = $row['ship_date'];
+            }
+            $stmt->close();
+        }
+
+        foreach ($newShipDates as $id => $shipDate) {
+            if ($earliestShipDate && $shipDate < $earliestShipDate) {
+                $this->errorMessage = "Cannot attach shipment $id: shipment date ($shipDate) is earlier than request's earliest allowed shipment date ($earliestShipDate).";
+                return false;
+            }
+        }
+
+        $oldShipments = $this->getShipmentByID($request_id);
         $oldShipmentIDs = array_map('intval', array_keys($oldShipments));
 
         $removed = array_diff($oldShipmentIDs, $newShipmentIDs);
@@ -1648,7 +1713,6 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         $insertSQL = "INSERT INTO neonrequestshipmentrequestlink (request_id, shipment_id) VALUES (?, ?)";
         $stmt = $this->conn->prepare($insertSQL);
-
         foreach ($newShipmentIDs as $ship_id) {
             $stmt->bind_param("ii", $request_id, $ship_id);
             if (!$stmt->execute()) {
@@ -1656,7 +1720,6 @@ public function addCollectionInquiryLink($request_id, $collections) {
                 return false;
             }
         }
-
         $stmt->close();
 
         return $request_id;
