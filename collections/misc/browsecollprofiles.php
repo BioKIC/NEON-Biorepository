@@ -53,6 +53,9 @@ if ($SYMB_UID) {
 	.MuiAccordion-root.Mui-expanded {
 		margin: 16px 0 !important;
 	}
+	.MuiTab-wrapper {
+		font-size: 0.825rem;
+	}
 </style>
 
 

@@ -76,16 +76,16 @@ $siteData = new DatasetsMetadata();
 					<!-- Accordion selector -->
 					<input type="checkbox" id="collections" class="accordion-selector" checked=true />
 					<!-- Accordion header -->
-					<label for="collections" class="accordion-header">Collections</label>
+					<label for="collections" class="accordion-header">Sample Types</label>
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-colls">
 							<!-- Open NEON Collections modal -->
-							<div><input id="all-neon-colls-quick" data-chip="All Biorepo Collections" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span>All NEON Biorepository Collections</span></div>
+							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span>All Sample Types</span></div>
 							<!-- External Collections -->
 							<div>
 								<ul id="neonext-collections-list">
-									<li><input id="all-neon-ext" data-chip="All Add NEON Colls" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>All Additional NEON Collections</span>
+									<li><input id="all-neon-ext" data-chip="All Outside Repository Samples" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>Samples at Outside Repositories</span>
 										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
 											echo '<ul class="collapsed">';
 											foreach ($collsArr as $result) {
@@ -97,7 +97,9 @@ $siteData = new DatasetsMetadata();
 								</ul>
 							</div>
 						</div>
-						<p>Visit the <a href="<?php echo $CLIENT_ROOT . '/collections/misc/collprofiles.php'; ?>" target="_blank" rel="noopener noreferrer">Collections Information Page</a> for a full list of collections hosted by this portal.</p>
+						<p>
+						  Looking for more context on sample types? Browse the <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank" rel="noopener noreferrer">sample type profiles</a> for descriptions, associated data, and contact information.
+						</p>
 					</div>
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
@@ -105,18 +107,18 @@ $siteData = new DatasetsMetadata();
 							<button id="neon-modal-close" class="btn" style="width:auto !important">Accept and close</button>
 							<div id="colls-modal">
 								<div>
-									<h3>Activate a single criterion to filter collections</h3>
+									<h3>Activate a single criterion to filter sample types</h3>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
 									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> NEON Theme</label>
-									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Sample Type</label>
+									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Preservation Method</label>
 								</div>
 								<!-- By Taxonomic Group -->
 								<div id="taxonomic-cat" class="box" style="display: block;">
-									<h2>Select Collections by Taxonomic Group</h2>
+									<h2>Select Sample Types by Taxonomic Group</h2>
 									<?php if ($groupsArr = $collData->getBiorepoGroups('highertaxon')) {
-										echo '<ul id="collections-list1"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Biorepository Collections</span>';
+										echo '<ul id="collections-list1"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All Sample Types</span>';
 										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl1-' . implode("-", explode(" ", str_replace(",", "", strtolower($result["highertaxon"]))));
+											$cCodeId = 'cl1-' . implode("-", explode(" ", str_replace(",", "", strtolower((string)($result["highertaxon"] ?? "")))));
 											if ($result['highertaxon']) {
 												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["highertaxon"]}' checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["highertaxon"]}</span><ul class='collapsed'>";
 												$collsArr = $collData->getBiorepoColls('highertaxon', $result['highertaxon']);
@@ -139,11 +141,11 @@ $siteData = new DatasetsMetadata();
 									}; ?>
 								</div>
 								<div id="neon-theme" class="box">
-									<h2>Select Collections by NEON Theme</h2>
+									<h2>Select Sample Types by NEON Theme</h2>
 									<?php if ($groupsArr = $collData->getBiorepoGroups('neontheme')) {
-										echo '<ul id="collections-list2"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Biorepository Collections</span>';
+										echo '<ul id="collections-list2"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All Sample Types</span>';
 										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl2-' . implode("-", explode(" ", str_replace(",", "", strtolower($result["neontheme"]))));
+											$cCodeId = 'cl2-' . implode("-", explode(" ", str_replace(",", "", strtolower((string)($result["neontheme"] ?? "")))));
 											if ($result['neontheme']) {
 												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["neontheme"]}' checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["neontheme"]}</span><ul class='collapsed'>";
 												$collsArr = $collData->getBiorepoColls('neontheme', $result['neontheme']);
@@ -166,11 +168,11 @@ $siteData = new DatasetsMetadata();
 									}; ?>
 								</div>
 								<div id="sample-type" class="box">
-									<h2>Select Collections by Sample Type</h2>
+									<h2>Select Sample Types by Preservation Method</h2>
 									<?php if ($groupsArr = $collData->getBiorepoGroups('sampletype')) {
-										echo '<ul id="collections-list3"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Biorepository Collections</span>';
+										echo '<ul id="collections-list3"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All Sample Types</span>';
 										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl3-' . implode("-", explode(" ", str_replace(",", "", strtolower($result["sampletype"]))));
+											$cCodeId = 'cl3-' . implode("-", explode(" ", str_replace(",", "", strtolower((string)($result["sampletype"] ?? "")))));
 											if ($result['sampletype']) {
 												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["sampletype"]}'checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["sampletype"]}</span><ul class='collapsed'>";
 												$collsArr = $collData->getBiorepoColls('sampletype', $result['sampletype']);
