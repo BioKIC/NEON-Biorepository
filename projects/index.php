@@ -195,8 +195,10 @@ if(!$researchList && !$editMode){
 		}
 	</script>
 	<style>
-		fieldset.form-color{ background-color:#f2f2f2; margin:15px; padding:20px; }
-		fieldset.form-color legend{ font-weight: bold; }
+		fieldset.form-color { background-color:#f2f2f2; margin:15px; padding:20px; }
+		fieldset.form-color legend { font-weight: bold; }
+		li { margin-top: 3px }
+		.icon-img { width: 1em; }
 		.gridlike-form-row-label {
 			width: 100px;
 		}
@@ -257,8 +259,8 @@ if(!$researchList && !$editMode){
 				?>
 				<div style="float:right;" title="<?php echo $LANG['TOGGLEEDIT'];?>">
 					<a href="#" onclick="toggleById('tabs');return false;">
-							<?php echo $LANG['EDIT'] ?>
-							<img src="../images/edit.png" style="width:1.2em;" alt="<?php echo $LANG['PENCIL_ALT'] ?>" />
+							<?= $LANG['EDIT'] ?>
+							<img src="../images/edit.png" class="icon-img" alt="<?= $LANG['PENCIL_ALT'] ?>" />
 					</a>
 				</div>
 				<?php
@@ -384,26 +386,19 @@ if(!$researchList && !$editMode){
 					if($researchList){
 						?>
 						<div style="font-weight:bold;font-size:130%;">
-							<?php echo $LANG['RESCHECK'];?>
-							<span onclick="toggleResearchInfoBox(this);" title="<?php echo $LANG['QUESRESSPEC'];?>" style="cursor:pointer;">
-								<img src="../images/qmark.png" style="width:1em;" alt="<?php echo $LANG['QUESTION_ALT'] ?>" />
-							</span>
-							<a href="../checklists/clgmap.php?pid=<?php echo htmlspecialchars($pid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);?>" title="<?php echo htmlspecialchars($LANG['MAPCHECK'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);?>">
-								<?php echo $LANG['MAPCHECK'] ?>
-								<img src='../images/world.png' style="width:1em; height:1em;" alt="<?php echo $LANG['GLOBE_ALT'] ?>"/>
-							</a>
+							<?= $LANG['RESCHECK'] ?>
+							<a href="#" onclick="toggleResearchInfoBox(this);" title="<?= $LANG['QUESRESSPEC'] ?>"><img src="../images/qmark.png" class="icon-img" alt="<?= $LANG['QUESTION_ALT'] ?>" /></a>
+							<a href="../checklists/clgmap.php?pid=<?= $pid ?>" title="<?= $LANG['MAPCHECK'] ?>"><img src='../images/world.png' class="icon-img" alt="<?= $LANG['GLOBE_ALT'] ?>"/></a>
 						</div>
 						<div id="researchlistpopup" class="genericpopup" style="display:none;">
-							<img src="../images/qmark.png" style="width:1.3em;" alt="<?php echo $LANG['QUESTION_ALT'] ?>" />
-							<?php echo $LANG['RESCHECKQUES'];?>
+							<img src="../images/qmark.png" class="icon-img" alt="<?= $LANG['QUESTION_ALT'] ?>" />
+							<?= $LANG['RESCHECKQUES'] ?>
 						</div>
 						<?php
-						if($KEY_MOD_IS_ACTIVE){
+						if(!empty($KEY_MOD_IS_ACTIVE)){
 							?>
 							<div style="margin-left:15px;font-size:90%">
-								<?php echo $LANG['THE'];?>
-								<img src="../images/key.png" style="width: 1.3em;" alt="<?php echo $LANG['KEY_SYMBOL'] ?>" />
-								<?php echo $LANG['SYMBOLOPEN'];?>.
+								<?= $LANG['THE'] ?> <img src="../images/key.png" class="icon-img" alt="<?= $LANG['KEY_SYMBOL'] ?>" /> <?= $LANG['SYMBOLOPEN'] ?>.
 							</div>
 							<?php
 						}
@@ -435,19 +430,25 @@ if(!$researchList && !$editMode){
 						<div>
 							<ul>
 								<?php
-								foreach($researchList as $key => $listArr){
+								foreach($researchList as $listClid => $listArr){
 									?>
 									<li>
-										<a href='../checklists/checklist.php?clid=<?php echo $key."&pid=".$pid; ?>'>
-											<?php echo $listArr['name'].(strpos($listArr['access'], 'private') !== false?' <span title="Viewable only to editors">(private)</span>':''); ?>
+										<a href='../checklists/checklist.php?clid=<?= $listClid . '&pid=' . $pid ?>'>
+											<?= $listArr['name'].(strpos($listArr['access'], 'private') !== false?' <span title="' . $LANG['VIEWABLE_TO_EDITORS'] . '">(' . $LANG['PRIVATE'] . ')</span>':''); ?>
 										</a>
 										<?php
-										if($KEY_MOD_IS_ACTIVE){
+										$keyIsActivated = $KEY_MOD_IS_ACTIVE ?? false;
+										if($listArr['defaultsettings']){
+											if($settingsArr = json_decode($listArr['defaultsettings'], true)){
+												if(!empty($settingsArr['activatekey'])) $keyIsActivated = true;
+												else $keyIsActivated = false;
+											}
+										}
+										if($keyIsActivated){
 											?>
 											<span> | </span>
-											<a href='../ident/key.php?clid=<?php echo htmlspecialchars($key, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>&pid=<?php echo htmlspecialchars($pid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>&taxon=All+Species'>
-												<?php echo $LANG['KEY'] ?>
-												<img style='width:1.2em; margin-left: 0.5rem;' src='../images/key.png' alt="<?php echo $LANG['KEY_SYMBOL'] ?>" />
+											<a href='../ident/key.php?clid=<?= $listClid ?>&pid=<?= $pid ?>&taxon=All+Species'>
+												<?= $LANG['KEY'] ?><img class="icon-img" style="margin-left: 10px" src='../images/key.png' alt="<?= $LANG['KEY_SYMBOL'] ?>" />
 											</a>
 											<?php
 										}

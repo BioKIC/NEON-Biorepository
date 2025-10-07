@@ -749,7 +749,7 @@ function validateForm() {
           });
         }
         awaitingCondition = false;
-        if (value !== "NULL" && value !== "NOTNULL") {
+        if (value !== "IS_NULL" && value !== "NOT_NULL") {
           awaitingValue = true;
         }
         lastInputType = "type";

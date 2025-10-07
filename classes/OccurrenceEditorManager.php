@@ -120,7 +120,10 @@ class OccurrenceEditorManager {
 			'processingstatus' => 's',
 			'recordenteredby' => 's',
 			'observeruid' => 'n',
-			'dateentered' => 'd'
+			'dateentered' => 'd',
+			//neon edit
+			'availability' => 'n'
+			//end neon edit
 		);
 		$this->fieldArr['omoccurpaleo'] = array(
 			'eon',
@@ -1284,6 +1287,7 @@ class OccurrenceEditorManager {
 	public function addOccurrence($postArr) {
 		global $LANG;
 		$status = $LANG['SUCCESS_NEW_OCC_SUBMITTED'];
+
 		if ($postArr) {
 			$postArr = array_merge($postArr, $this->getDatefields($postArr));
 			$guid = UuidFactory::getUuidV4();

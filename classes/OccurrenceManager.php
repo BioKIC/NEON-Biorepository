@@ -604,7 +604,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				case 'NOT_EQUALS':
 					$condition = "o.$field != '$value'";
 					break;
-				case 'STARTS':
+				case 'STARTS_WITH':
 					$condition = "o.$field LIKE '$value%'";
 					break;
 				case 'LIKE':
@@ -613,16 +613,16 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				case 'NOT_LIKE':
 					$condition = "o.$field NOT LIKE '%$value%'";
 					break;
-				case 'GREATER':
+				case 'GREATER_THAN':
 					$condition = "o.$field > '$value'";
 					break;
-				case 'LESS':
+				case 'LESS_THAN':
 					$condition = "o.$field < '$value'";
 					break;
-				case 'NULL':
+				case 'IS_NULL':
 					$condition = "o.$field IS NULL";
 					break;
-				case 'NOTNULL':
+				case 'NOT_NULL':
 					$condition = "o.$field IS NOT NULL";
 					break;
 				default:
@@ -817,6 +817,47 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		return '';
 	}
 
+	public function getQueryTermArr(){
+		$queryTermArr = $this->searchTermArr;
+
+		unset($queryTermArr['countryCode']);
+		unset($queryTermArr['countryCodeRaw']);
+
+		if(isset($this->taxaArr['search'])){
+			$patternTaxonChars = '/^[a-zA-Z0-9\s\-\,\.×†]*$/';
+			if (preg_match($patternTaxonChars, $this->getTaxaSearchTerm())==1) {
+				$queryTermArr['taxa'] = $this->getTaxaSearchTerm();
+			}
+			if($this->taxaArr['usethes']) $queryTermArr['usethes'] = 1;
+			if(is_numeric($this->taxaArr['taxontype'])) {
+				$queryTermArr['taxontype'] = intval($this->taxaArr['taxontype']);
+			} else {
+				$queryTermArr['taxontype'] = 1;
+			}
+		}
+		$patternOfOnlyLettersDigitsAndSpaces = '/^[a-zA-Z0-9\s\-]*$/'; // TOOD accommodate symbols associated with extinct taxa, hybrid crosses, and abbreviations with periods, e.g. "var."?
+		if(isset($this->associationArr['search'])){
+			if (preg_match($patternOfOnlyLettersDigitsAndSpaces, $this->associationArr['search'])==1) {
+				$queryTermArr['associated-taxa'] = $this->associationArr['search'];
+			}
+		}
+
+		if(isset($this->associationArr['relationship'])){
+			if (preg_match($patternOfOnlyLettersDigitsAndSpaces, $this->associationArr['relationship'])==1) {
+				$queryTermArr['association-type'] = $this->associationArr['relationship'];
+			}
+		}
+
+		if(isset($this->associationArr['associated-taxa'])){
+			$queryTermArr['associated-taxon-type'] = $this->associationArr['associated-taxa'];
+		}
+		if(isset($this->associationArr['usethes-associations'])){
+			$queryTermArr['usethes-associations'] = $this->associationArr['usethes-associations'];
+		}
+
+		return $queryTermArr;
+	}
+
 	public function getQueryTermStr(){
 		//Returns a search variable string
 		$retStr = '';
@@ -827,11 +868,6 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			if($v) $retStr .= '&'. $this->cleanOutStr($k) . '=' . $this->cleanOutStr($v);
 		}
 		if(isset($this->taxaArr['search'])){
-			if (
-				isset($this->taxaArr['taxontype']) && $this->taxaArr['taxontype'] == 1 &&
-				preg_match('/^[^:]+:\s*(.+)$/', $this->taxaArr['search'], $matches)
-			)
-				$this->taxaArr['search'] = $matches[1];
 			$patternTaxonChars = '/^[a-zA-Z0-9\s\-\,\.×†]*$/';
 			if (preg_match($patternTaxonChars, $this->getTaxaSearchTerm())==1) {
 				$retStr .= '&taxa=' . $this->getTaxaSearchTerm();

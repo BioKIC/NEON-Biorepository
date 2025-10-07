@@ -99,7 +99,7 @@ for($x=1; $x<9; $x++){
 	if(isset($customArr[$x]['value'])) $cValue = $customArr[$x]['value'];
 
 	$divDisplay = 'none';
-	if($x == 1 || $cValue != '' || $cTerm == 'NULL' || $cTerm == 'NOTNULL') $divDisplay = 'block';
+	if($x == 1 || $cValue != '' || $cTerm == 'IS_NULL' || $cTerm == 'NOT_NULL') $divDisplay = 'block';
 	?>
 
 	<div id="customdiv<?php echo $x; ?>" class="fieldGroupDiv" style="display:<?php echo $divDisplay; ?>;">

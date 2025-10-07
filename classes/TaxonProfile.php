@@ -194,7 +194,7 @@ class TaxonProfile extends Manager {
 					echo $imgObj['creator'];
 				}
 			}
-			elseif($imgArr['owner']) {
+			elseif($imgObj['owner']) {
 				echo $imgObj['owner'];
 
 			}

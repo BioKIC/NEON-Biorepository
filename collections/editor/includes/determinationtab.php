@@ -180,19 +180,19 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 							</select>
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['DETERMINER']; ?>:</b>
+							<b><?php echo $LANG['IDENTIFIED_BY']; ?>:</b>
 							<input type="text" name="identifiedby" style="background-color:lightyellow;width:200px;" />
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['DATE']; ?>:</b>
+							<b><?php echo $LANG['DATE_IDENTIFIED']; ?>:</b>
 							<input type="text" name="dateidentified" style="background-color:lightyellow;" onchange="detDateChanged(this.form);" />
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['REFERENCE']; ?>:</b>
+							<b><?php echo $LANG['ID_REFERENCES']; ?>:</b>
 							<input type="text" name="identificationreferences" style="width:350px;" />
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['NOTES']; ?>:</b>
+							<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
 							<input type="text" name="identificationremarks" style="width:350px;" />
 						</div>
 						<div style='margin:3px;'>
@@ -252,23 +252,23 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 						?>
 					</div>
 					<div style='margin:3px 0px 0px 15px;'>
-						<b><?php echo $LANG['DETERMINER']; ?>:</b> <?php echo $detRec['identifiedby']; ?>
+						<b><?php echo $LANG['IDENTIFIED_BY']; ?>:</b> <?php echo $detRec['identifiedby']; ?>
 						<span style="margin-left:40px;">
-							<b><?php echo $LANG['DATE']; ?>:</b> <?php echo $detRec['dateidentified']; ?>
+							<b><?php echo $LANG['DATE_IDENTIFIED']; ?>:</b> <?php echo $detRec['dateidentified']; ?>
 						</span>
 					</div>
 					<?php
 					if($detRec['identificationreferences']){
 						?>
 						<div style='margin:3px 0px 0px 15px;'>
-							<b><?php echo $LANG['REFERENCE']; ?>:</b> <?php echo $detRec['identificationreferences']; ?>
+							<b><?php echo $LANG['ID_REFERENCES']; ?>:</b> <?php echo $detRec['identificationreferences']; ?>
 						</div>
 						<?php
 					}
 					if($detRec['identificationremarks']){
 						?>
 						<div style='margin:3px 0px 0px 15px;'>
-							<b><?php echo $LANG['NOTES']; ?>:</b> <?php echo $detRec['identificationremarks']; ?>
+							<b><?php echo $LANG['ID_REMARKS']; ?>:</b> <?php echo $detRec['identificationremarks']; ?>
 						</div>
 						<?php
 					}
@@ -313,25 +313,27 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 									<input type="text" name="scientificnameauthorship" value="<?php echo $detRec['scientificnameauthorship']; ?>" style="width:200px;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['DETERMINER']; ?>:</b>
+									<b><?php echo $LANG['IDENTIFIED_BY']; ?>:</b>
 									<input type="text" name="identifiedby" value="<?php echo $detRec['identifiedby']; ?>" style="background-color:lightyellow;width:200px;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['DATE']; ?>:</b>
+									<b><?php echo $LANG['DATE_IDENTIFIED']; ?>:</b>
 									<input type="text" name="dateidentified" value="<?php echo $detRec['dateidentified']; ?>" style="background-color:lightyellow;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['REFERENCE']; ?>:</b>
+									<b><?php echo $LANG['ID_REFERENCES']; ?>:</b>
 									<input type="text" name="identificationreferences" value="<?php echo $detRec['identificationreferences']; ?>" style="width:350px;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['NOTES']; ?>:</b>
+									<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
 									<input type="text" name="identificationremarks" value="<?php echo $detRec['identificationremarks']; ?>" style="width:350px;" />
 								</div>
+								<!-- START NEON Customization
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['TAXON_REMARKS']; ?>:</b>
 									<input type="text" name="taxonremarks" value="<?php echo $detRec['taxonremarks']; ?>" style="width:350px;" />
 								</div>
+								END NEON customization -->
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['SORT_SEQUENCE']; ?>:</b>
 									<input type="text" name="sortsequence" value="<?php echo $detRec['sortsequence']; ?>" style="width:40px;" />
