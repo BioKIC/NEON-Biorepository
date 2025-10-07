@@ -85,11 +85,11 @@ $siteData = new DatasetsMetadata();
 							<!-- External Collections -->
 							<div>
 								<ul id="neonext-collections-list">
-									<li><input id="all-neon-ext" data-chip="All Outside Repository Samples" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>Samples at Outside Repositories</span>
+									<li class="Mui"><input id="all-neon-ext" data-chip="All Outside Repository Samples" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>Samples at Outside Repositories</span>
 										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
 											echo '<ul class="collapsed">';
 											foreach ($collsArr as $result) {
-												echo "<li><input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'><span class='ml-1'><a href='../../collections/misc/collprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer'>{$result["collectionname"]} ({$result["institutioncode"]}  {$result["collectioncode"]})</span></a></li>";
+												echo "<li class='Mui'><input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'><span class='ml-1'><a href='../../collections/misc/collprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer'>{$result["collectionname"]} ({$result["institutioncode"]}  {$result["collectioncode"]})</span></a></li>";
 											}
 											echo '</ul>';
 										}; ?>
@@ -97,7 +97,7 @@ $siteData = new DatasetsMetadata();
 								</ul>
 							</div>
 						</div>
-						<p>
+						<p class="Mui">
 						  Looking for more context on sample types? Browse the <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank" rel="noopener noreferrer">sample type profiles</a> for descriptions, associated data, and contact information.
 						</p>
 					</div>
