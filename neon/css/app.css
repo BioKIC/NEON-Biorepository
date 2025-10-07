@@ -742,7 +742,7 @@ span.accent-color-darker {
 
 .modal .modal-content {
   background-color: white;
-  margin: 80px auto;
+  margin: 200px auto 80px;
   padding: 20px;
   width: 80%;
   -webkit-box-shadow: 0 5px 8px 0;
