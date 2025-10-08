@@ -408,37 +408,28 @@ function toggleAllSelector() {
  * @param {String} e.data.element Selector for element containing
  * list, should be passed when binding function to element
  */
-function autoToggleSelector(e) {
-  if (e.type == 'click' || e.type == 'change') {
-    let isChild = e.target.classList.contains('child');
-    if (isChild) {
-      let nearParentNode = e.target.closest('ul').parentNode;
-      let nearParentOpt = e.target
-        .closest('ul')
-        .parentNode.querySelector('.all-selector');
-      let numOptions = nearParentNode.querySelectorAll(
-        'ul > li input.child:not(.all-selector):enabled'
-      ).length;
-      let numOpChecked = nearParentNode.querySelectorAll(
-        'ul > li input.child:not(.all-selector):checked'
-      ).length;
-      numOptions == numOpChecked
-        ? (nearParentOpt.checked = true)
-        : (nearParentOpt.checked = false);
+function updateParentState(childCheckbox) {
+  let parentNode = childCheckbox.closest('ul')?.parentNode;
+  if (!parentNode) return;
 
-      if (nearParentOpt.classList.contains('child')) {
-        let parentAllNode = nearParentNode.closest('ul').parentNode;
-        let parentAllOpt = parentAllNode.querySelector('.all-selector');
-        let numOptionsAll = parentAllNode.querySelectorAll(
-          'input.child:enabled'
-        ).length;
-        let numOpCheckedAll = parentAllNode.querySelectorAll(
-          'input.child:checked'
-        ).length;
-        numOptionsAll == numOpCheckedAll
-          ? (parentAllOpt.checked = true)
-          : (parentAllOpt.checked = false);
-      }
+  let parentCheckbox = parentNode.querySelector('.all-selector');
+  if (!parentCheckbox) return;
+
+  let options = parentNode.querySelectorAll('ul > li input.child:not(.all-selector):enabled');
+  let checkedOptions = parentNode.querySelectorAll('ul > li input.child:not(.all-selector):checked');
+
+  parentCheckbox.checked = options.length === checkedOptions.length;
+
+  // recurse upward if parent is itself a child
+  if (parentCheckbox.classList.contains('child')) {
+    updateParentState(parentCheckbox);
+  }
+}
+
+function autoToggleSelector(e) {
+  if (e.type === 'click' || e.type === 'change') {
+    if (e.target.classList.contains('child')) {
+      updateParentState(e.target);
     }
   }
 }
@@ -885,10 +876,11 @@ document
   });
 // Listen for open modal click
 document
-  .getElementById('neon-modal-open')
-  .addEventListener('click', function (event) {
-    event.preventDefault();
-    openModal('#biorepo-collections-list');
+  .querySelectorAll('#neon-modal-open, .neon-modal-open').forEach(el => {
+    el.addEventListener('click', function (event) {
+      event.preventDefault();
+      openModal('#biorepo-collections-list');
+    });
   });
 // When checking "all neon collections" box, toggle checkboxes in modal
 $('#all-neon-colls-quick').click(function () {

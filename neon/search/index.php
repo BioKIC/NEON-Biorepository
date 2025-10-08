@@ -24,14 +24,108 @@ $siteData = new DatasetsMetadata();
 	<script>
 		const clientRoot = '<?php echo $CLIENT_ROOT; ?>';
 	</script>
+	<script>
+	document.addEventListener('DOMContentLoaded', () => {
+	  // expand/collapse groups
+	  document.querySelectorAll('.group-label').forEach(label => {
+		label.addEventListener('click', () => {
+		  const li = label.closest('li');
+		  const ul = li.querySelector('ul');
+		  const icon = label.querySelector('.expansion-icon');
+		  if (ul) {
+			ul.classList.toggle('collapsed');
+			icon.textContent = ul.classList.contains('collapsed') ? 'add_box' : 'indeterminate_check_box';
+		  }
+		});
+	  });
+	
+	  // toggle checkbox when clicking leaf text
+	  document.querySelectorAll('.leaf-label').forEach(label => {
+		label.addEventListener('click', e => {
+		  const checkbox = label.previousElementSibling; // the <input type="checkbox">
+		  if (checkbox && checkbox.type === 'checkbox') {
+			checkbox.checked = !checkbox.checked;
+			updateParentCheckboxes(checkbox);
+		  }
+		});
+	  });
+	});
+	</script>
+
 	<!-- Search-specific styles -->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" href="../css/app.css?v=02">
+	<style>
+	.collapsed { 
+	  display: none; 
+	}
+	.group-label { 
+	  cursor: pointer; 
+	  user-select: none; 
+	}
+	.group-label:hover { 
+	  text-decoration: underline;
+	  cursor: pointer; 
+	}
+	#neon-modal-open,
+	.neon-modal-open { 
+	  cursor: pointer; 
+	  user-select: none; 
+	}
+	
+	.neon-modal-open:hover { 
+	  text-decoration: underline;
+	  cursor: pointer; 
+	}
+	.leaf-label { cursor: pointer; user-select: none; }
+	.leaf-label:hover { text-decoration: underline; cursor: pointer; }
+	</style>
 </head>
 
 <body>
 	<?php
 	include($SERVER_ROOT . '/includes/header.php');
+
+	//function to render sample type tree
+	function renderTree($nodes, $parentId = '') {
+		$html = '';
+		foreach ($nodes as $node) {
+			$cCodeId = 'cl-' . preg_replace('/[^a-z0-9\-]/', '-', strtolower($node['name']));
+			$cCodeId = preg_replace('/-+/', '-', $cCodeId);
+	
+			$html .= "<li>";
+	
+			// leaf node (collection)
+			if (isset($node['collid'])) {
+				$collid = $node['collid'];
+				$name = htmlspecialchars($node['name']);
+	
+				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' checked>";
+				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
+				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' target='_blank' title='View Sample Type Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>";
+
+			} 
+			// group node
+			else {
+				$name = htmlspecialchars($node['name']);
+				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$name}' checked>";
+				// wrap label + icon so whole thing is clickable
+				$html .= "<span data-target='{$cCodeId}'>
+							<span class='material-icons expansion-icon'>add_box</span>
+							<span class='group-label'>{$name}</span>
+						  </span>";
+	
+				if (!empty($node['children'])) {
+					$html .= "<ul class='collapsed'>";
+					$html .= renderTree($node['children'], $cCodeId);
+					$html .= "</ul>";
+				}
+			}
+	
+			$html .= "</li>";
+		}
+		return $html;
+	}
 	?>
 	<!-- This is inner text! -->
 	<div id="innertext">
@@ -81,7 +175,7 @@ $siteData = new DatasetsMetadata();
 					<div class="content">
 						<div id="search-form-colls">
 							<!-- Open NEON Collections modal -->
-							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span>All Sample Types</span></div>
+							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">All Sample Types</span></div>
 							<!-- External Collections -->
 							<div>
 								<ul id="neonext-collections-list">
@@ -109,90 +203,72 @@ $siteData = new DatasetsMetadata();
 								<div>
 									<h3>Activate a single criterion to filter sample types</h3>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
-									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> NEON Theme</label>
+									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> Protocol</label>
 									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Preservation Method</label>
 								</div>
 								<!-- By Taxonomic Group -->
 								<div id="taxonomic-cat" class="box" style="display: block;">
 									<h2>Select Sample Types by Taxonomic Group</h2>
-									<?php if ($groupsArr = $collData->getBiorepoGroups('highertaxon')) {
-										echo '<ul id="collections-list1"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All Sample Types</span>';
-										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl1-' . implode("-", explode(" ", str_replace(",", "", strtolower((string)($result["highertaxon"] ?? "")))));
-											if ($result['highertaxon']) {
-												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["highertaxon"]}' checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["highertaxon"]}</span><ul class='collapsed'>";
-												$collsArr = $collData->getBiorepoColls('highertaxon', $result['highertaxon']);
-												if ($collsArr) {
-													foreach ($collsArr as $row) {
-														echo "<li>";
-														// IF AVAILABLE
-														if ($row['available'] == 'TRUE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' data-ccode='{$row["collectioncode"]}' data-cat='{$cCodeId}' checked><a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank' class='ml-1'>{$row["collectionname"]} ({$row["collectioncode"]})</a>";
-														} elseif ($row["available"] == 'FALSE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' disabled=''><span class='ml-1' style='color: gray'>{$row["collectionname"]} ({$row["collectioncode"]}) - Samples Unavailable</span> <a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank'>More Info</a>";
-														}
-														echo "</li>";
-													}
-												}
-												echo '</ul></li></ul>';
-											}
-										}
+									<?php
+									// load the JSON
+									$jsonFile = '../../neon-react/biorepo_lib/collections-taxonomic.json';
+									$jsonData = file_get_contents($jsonFile);
+									$dataArr = json_decode($jsonData, true);
+									
+									// render the full tree
+									if ($dataArr) {
+										echo '<ul id="collections-list1">';
+										echo '<li><input type="checkbox" class="all-selector all-neon-colls" checked>';
+										echo '<span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '<span>All Sample Types</span>';
+									
+										echo renderTree($dataArr);
+									
 										echo '</li></ul>';
-									}; ?>
+									}
+									?>
 								</div>
 								<div id="neon-theme" class="box">
-									<h2>Select Sample Types by NEON Theme</h2>
-									<?php if ($groupsArr = $collData->getBiorepoGroups('neontheme')) {
-										echo '<ul id="collections-list2"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All Sample Types</span>';
-										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl2-' . implode("-", explode(" ", str_replace(",", "", strtolower((string)($result["neontheme"] ?? "")))));
-											if ($result['neontheme']) {
-												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["neontheme"]}' checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["neontheme"]}</span><ul class='collapsed'>";
-												$collsArr = $collData->getBiorepoColls('neontheme', $result['neontheme']);
-												if ($collsArr) {
-													foreach ($collsArr as $row) {
-														echo "<li>";
-														// IF AVAILABLE
-														if ($row['available'] == 'TRUE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' data-ccode='{$row["collectioncode"]}' data-cat='{$cCodeId}' checked><a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank' class='ml-1'>{$row["collectionname"]} ({$row["collectioncode"]})</a>";
-														} elseif ($row["available"] == 'FALSE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' data-cat='{$result["neontheme"]}' class='child' disabled=''><span class='ml-1' style='color: gray'>{$row["collectionname"]} ({$row["collectioncode"]}) - Samples Unavailable</span> <a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank'>More Info</a>";
-														}
-														echo "</li>";
-													}
-												}
-												echo '</ul></li></ul>';
-											}
-										}
+									<h2>Select Sample Types by Protocol</h2>
+									<?php
+									// load the JSON
+									$jsonFile = '../../neon-react/biorepo_lib/collections-protocol.json';
+									$jsonData = file_get_contents($jsonFile);
+									$dataArr = json_decode($jsonData, true);
+									
+									// render the full tree
+									if ($dataArr) {
+										echo '<ul id="collections-list1">';
+										echo '<li><input type="checkbox" class="all-selector all-neon-colls" checked>';
+										echo '<span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '<span>All Sample Types</span>';
+									
+										echo renderTree($dataArr);
+									
 										echo '</li></ul>';
-									}; ?>
+									}
+									?>
 								</div>
 								<div id="sample-type" class="box">
 									<h2>Select Sample Types by Preservation Method</h2>
-									<?php if ($groupsArr = $collData->getBiorepoGroups('sampletype')) {
-										echo '<ul id="collections-list3"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All Sample Types</span>';
-										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl3-' . implode("-", explode(" ", str_replace(",", "", strtolower((string)($result["sampletype"] ?? "")))));
-											if ($result['sampletype']) {
-												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["sampletype"]}'checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["sampletype"]}</span><ul class='collapsed'>";
-												$collsArr = $collData->getBiorepoColls('sampletype', $result['sampletype']);
-												if ($collsArr) {
-													foreach ($collsArr as $row) {
-														echo "<li>";
-														// IF AVAILABLE
-														if ($row['available'] == 'TRUE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' data-ccode='{$row["collectioncode"]}' data-cat='{$cCodeId}' checked><a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank' class='ml-1'>{$row["collectionname"]} ({$row["collectioncode"]})</a>";
-														} elseif ($row["available"] == 'FALSE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' disabled=''><span class='ml-1' style='color: gray'>{$row["collectionname"]}  ({$row["collectioncode"]}) - Samples Unavailable</span> <a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank'>More Info</a>";
-														}
-														echo "</li>";
-													}
-												}
-												echo '</ul></li></ul>';
-											}
-										}
+									<?php
+									// load the JSON
+									$jsonFile = '../../neon-react/biorepo_lib/collections-sampletype.json';
+									$jsonData = file_get_contents($jsonFile);
+									$dataArr = json_decode($jsonData, true);
+									
+									// render the full tree
+									if ($dataArr) {
+										echo '<ul id="collections-list1">';
+										echo '<li><input type="checkbox" class="all-selector all-neon-colls" checked>';
+										echo '<span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '<span>All Sample Types</span>';
+									
+										echo renderTree($dataArr);
+									
 										echo '</li></ul>';
-									}; ?>
+									}
+									?>
 								</div>
 							</div>
 						</div>
