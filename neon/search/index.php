@@ -201,7 +201,7 @@ $siteData = new DatasetsMetadata();
 							<button id="neon-modal-close" class="btn" style="width:auto !important">Accept and close</button>
 							<div id="colls-modal">
 								<div>
-									<h3>Use the tabs, dropdowns and checkboxes to find and choose a sample type you're interested in</h3>
+									<h3>Use the tabs, dropdowns and checkboxes to find and choose a sample type you're interested in.</h3>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
 									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> Protocol</label>
 									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Preservation Method</label>
