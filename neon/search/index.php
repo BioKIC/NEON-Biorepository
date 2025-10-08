@@ -175,11 +175,11 @@ $siteData = new DatasetsMetadata();
 					<div class="content">
 						<div id="search-form-colls">
 							<!-- Open NEON Collections modal -->
-							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">All Sample Types</span></div>
+							<div><input id="all-neon-colls-quick" data-chip="At the Biorepository" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">At the Biorepository</span></div>
 							<!-- External Collections -->
 							<div>
 								<ul id="neonext-collections-list">
-									<li class="Mui"><input id="all-neon-ext" data-chip="All Outside Repository Samples" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>Samples at Outside Repositories</span>
+									<li class="Mui"><input id="all-neon-ext" data-chip="At Outside Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>At Outside Repositories</span>
 										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
 											echo '<ul class="collapsed">';
 											foreach ($collsArr as $result) {
@@ -201,14 +201,14 @@ $siteData = new DatasetsMetadata();
 							<button id="neon-modal-close" class="btn" style="width:auto !important">Accept and close</button>
 							<div id="colls-modal">
 								<div>
-									<h3>Activate a single criterion to filter sample types</h3>
+									<h3>Use the tabs, dropdowns and checkboxes to find and choose a sample type you're interested in</h3>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
 									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> Protocol</label>
 									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Preservation Method</label>
 								</div>
 								<!-- By Taxonomic Group -->
 								<div id="taxonomic-cat" class="box" style="display: block;">
-									<h2>Select Sample Types by Taxonomic Group</h2>
+									<h2>Organized by Taxonomic Group</h2>
 									<?php
 									// load the JSON
 									$jsonFile = '../../neon-react/biorepo_lib/collections-taxonomic.json';
@@ -229,7 +229,7 @@ $siteData = new DatasetsMetadata();
 									?>
 								</div>
 								<div id="neon-theme" class="box">
-									<h2>Select Sample Types by Protocol</h2>
+									<h2>Organized by Protocol</h2>
 									<?php
 									// load the JSON
 									$jsonFile = '../../neon-react/biorepo_lib/collections-protocol.json';
@@ -250,7 +250,7 @@ $siteData = new DatasetsMetadata();
 									?>
 								</div>
 								<div id="sample-type" class="box">
-									<h2>Select Sample Types by Preservation Method</h2>
+									<h2>Organized by Preservation Method</h2>
 									<?php
 									// load the JSON
 									$jsonFile = '../../neon-react/biorepo_lib/collections-sampletype.json';
