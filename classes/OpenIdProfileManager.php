@@ -64,7 +64,11 @@ class OpenIdProfileManager extends ProfileManager
 	public function linkThirdPartySid($thirdparty_sid, $local_sid, $ip)
 	{
 		if (empty($thirdparty_sid)) return;
-		$sql = 'INSERT INTO usersthirdpartysessions(thirdparty_id, localsession_id, ipaddr) VALUES (?, ?, ?)';
+		//neon edit
+		$sql = 'INSERT INTO usersthirdpartysessions(thirdparty_id, localsession_id, ipaddr)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE thirdparty_id = thirdparty_id';
+		//end neon edit
 		if ($stmt = $this->conn->prepare($sql)) {
 			if ($stmt->bind_param('sss', $thirdparty_sid, $local_sid, $ip)) {
 				$stmt->execute();
