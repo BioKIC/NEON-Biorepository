@@ -21,44 +21,44 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 <!--end of neon react links-->
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {      
+    document.addEventListener('DOMContentLoaded', function() {
         //this code happens after content but before header and sidebar
         // image resizings for homepage
         function updateElementWidth() {
             const blueDiv = document.getElementById('blue-div');
-            
+
             if (blueDiv) {
                 // blue div
                 var neonPageContent = document.querySelector('div[data-selenium="neon-page.content"]');
                 var neonPageContentWidth = neonPageContent.offsetWidth;
                 var computedStyle = window.getComputedStyle(neonPageContent);
                 var leftPadding = parseFloat(computedStyle.getPropertyValue('padding-left'));
-    
+
                 var muiContainer = document.querySelector('div.MuiContainer-root');
                 var muiContainerStyle = window.getComputedStyle(muiContainer);
                 var muiContainerRightMargin = parseFloat(muiContainerStyle.marginRight);
-    
+
                 var neonPageContentStyle = window.getComputedStyle(neonPageContent);
                 var neonPageContentpaddingLeft = parseFloat(neonPageContentStyle.paddingLeft);
-                
+
                 var innerTextDiv = document.getElementById('innertext');
                 var computedStyle = window.getComputedStyle(innerTextDiv);
                 var leftMargin = parseFloat(computedStyle.getPropertyValue('margin-left'));
-                
+
                 document.getElementById('blue-div').style.width = (neonPageContentWidth + muiContainerRightMargin) + 'px';
                 document.getElementById('blue-div').style.right = (leftPadding + leftMargin) + 'px';
                 document.getElementById('statistics-container').style.width = (neonPageContentWidth - (2* neonPageContentpaddingLeft)) + 'px';
                 document.getElementById('statistics-container').style.right = (leftPadding + leftMargin) + 'px';
             }
         }
-        
+
         function updateBreadcrumbHash() {
             const breadcrumbLink = document.querySelector('nav a[href="../misc/neoncollprofiles.php?collid=#"]');
             if (breadcrumbLink) {
                 breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?php echo isset($collid) ? $collid : '#'; ?>');
             }
         }
-        
+
         function waitForElement(selector, callback) {
             const observer = new MutationObserver(() => {
                 const element = document.querySelector(selector);
@@ -67,14 +67,14 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                     callback();
                 }
             });
-    
+
             observer.observe(document.body, { childList: true, subtree: true });
         }
-    
+
         waitForElement('.neon__sidebar-sticky', updateElementWidth);
         waitForElement('.neon__sidebar-sticky', updateBreadcrumbHash);
         window.addEventListener('resize', updateElementWidth);
-        
+
         // Create biorepo-page div
         // A page must have the innertext div
         var biorepoPage = document.createElement("div");
@@ -97,14 +97,14 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         var reactScript = document.createElement('script');
         reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.e052934a.js';
         reactScript.defer = true;
-        
+
         // this code happens after header is rendered but before sidebar
         reactScript.onload = function() {
             // edit home image link
             var logoLink = document.getElementById("block-neon-site-branding");
             if (logoLink) {
               logoLink.href = "https://www.neonscience.org/";
-            }  
+            }
             // To move innertext into neon-page.content
             var innerTextDiv = document.getElementById('innertext');
             var targetDiv = document.querySelector('div[data-selenium="neon-page.content"]');
@@ -416,7 +416,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 <!--end-->
 
 <?php
-$CSS_VERSION = '3';
+$CSS_VERSION = '4';
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- UNIVERSAL CSS –––––––––––––––––––––––––––––––––––––––––––––––––– -->
