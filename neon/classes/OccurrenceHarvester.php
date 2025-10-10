@@ -947,8 +947,20 @@ class OccurrenceHarvester{
 								}
 							}
 						}
-						if($appendIdentArr) $identArr = array_merge($identArr, $appendIdentArr);
-						$dwcArr['identifications'] = $identArr;
+					if ($appendIdentArr) {
+						$identArr = array_merge($identArr, $appendIdentArr);
+					}
+					foreach ($identArr as &$idArr) {
+						if (!empty($idArr['taxonRemarks'])) {
+							if (!empty($idArr['identificationRemarks'])) {
+								$idArr['identificationRemarks'] .= '; ' . trim($idArr['taxonRemarks']);
+							} else {
+								$idArr['identificationRemarks'] = trim($idArr['taxonRemarks']);
+							}
+							unset($idArr['taxonRemarks']);
+						}
+					}
+					$dwcArr['identifications'] = $identArr;
 					}
 				}
 				// Occurrence associations
@@ -1426,7 +1438,12 @@ class OccurrenceHarvester{
 					}
 					// set remaining baseID fields and add to dwcArr
 					$baseID['isCurrent'] = 1;
-					$baseID['taxonRemarks'] = 'Identification source: harvested from NEON API';
+					$identificationSource = 'Identification source: harvested from NEON API';
+					if (!empty($baseID['identificationRemarks'])) {
+						$baseID['identificationRemarks'] .= '; ' . trim($identificationSource);
+					} else {
+						$baseID['identificationRemarks'] = trim($identificationSource);
+					}
 					$dwcArr['identifications'][] = $baseID;
 				}
 			}
