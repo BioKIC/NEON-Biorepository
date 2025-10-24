@@ -55,6 +55,7 @@ if($isEditor){
 				if($IS_ADMIN){
 					?>
 					<li><a href="igsncontrol.php">NEON IGSN Control Panel</a></li>
+					<li><a href="editor/neoneditor.php">Occurrence Editor</a></li>
 					<?php
 				}
 				?>
