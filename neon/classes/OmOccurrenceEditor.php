@@ -25,83 +25,168 @@ class OmoccurrenceEditor extends Manager {
 		parent::__destruct();
 	}
 
-	public function getOccurrenceArr($occid) {
-		$idomoccuridentifiers = null;
-		$sql = 'SELECT idomoccuridentifiers FROM omoccuridentifiers WHERE id = ? AND identifierName = ?';
-		if ($stmt = $this->conn->prepare($sql)) {
-			$stmt->bind_param('is', $occid);
-			$stmt->execute();
-			$stmt->bind_result($idomoccuridentifiers);
-			$stmt->fetch();
-			$stmt->close();
-		}
-		return $idomoccuridentifiers;
-	}
+    public function getOccurArr($occid) {
+        $occurArr = null;
+        $sql = 'SELECT * FROM omoccurrences WHERE occid = ?';
+        if ($stmt = $this->conn->prepare($sql)) {
+            $stmt->bind_param('i', $occid);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result && $row = $result->fetch_assoc()) {
+                $occurArr = $row;
+            }
+            $stmt->close();
+        }
+        return $occurArr;
+    }
 
-	public function updateOccurrence($inputArr) {
-		$status = false;
-		if ($this->occid && $this->conn) {
-			$occidPlaceholder = null;
-			$identifierNamePlaceholder = null;
-			if (array_key_exists('occid', $inputArr)) {
-				$occidPlaceholder = (int)$inputArr['occid'];
-				unset($inputArr['occid']);
-			}
-			if (array_key_exists('identifierName', $inputArr)) {
-				$identifierNamePlaceholder = $inputArr['identifierName'];
-				unset($inputArr['identifierName']);
-			}
-			$paramArr = array();
-			$paramArr[] = $GLOBALS['SYMB_UID'];
-			$this->typeStr .= 'i';
-			$this->setParameterArr($inputArr);
-			$sqlFrag = '';
-			foreach ($this->parameterArr as $fieldName => $value) {
-				if ($fieldName !== 'occid' || $fieldName !== 'identifierName') {
-					$sqlFrag .= $fieldName . ' = ?, ';
-					if ($fieldName == 'modifiedUid' && empty($value)) {
-						$value = $GLOBALS['SYMB_UID'];
-					}
-					$paramArr[] = $value;
-				}
-			}
-			$paramArr[] = $occidPlaceholder;
-			$paramArr[] = $identifierNamePlaceholder;
-			$this->typeStr .= 'is';
-			$sql = 'UPDATE IGNORE omoccuridentifiers SET modifiedTimestamp = now(), modifiedUid = ? , ' . trim($sqlFrag, ', ') . ' WHERE (occid = ? AND identifierName = ?)';
-			if ($stmt = $this->conn->prepare($sql)) {
-				$stmt->bind_param($this->typeStr, ...$paramArr);
-				$stmt->execute();
-				if ($stmt->affected_rows || !$stmt->error) $status = true;
-				else $this->errorMessage = 'ERROR updating omoccurassociations record: ' . $stmt->error;
-				$stmt->close();
-				$this->typeStr = '';
-			} else $this->errorMessage = 'ERROR preparing statement for updating omoccurassociations: ' . $this->conn->error;
-		}
-		return $status;
-	}
 
-	private function setParameterArr($inputArr) {
-		foreach ($this->schemaMap as $field => $type) {
-			$postField = '';
-			if (isset($inputArr[$field])) $postField = $field;
-			elseif (isset($inputArr[strtolower($field)])) $postField = strtolower($field);
-			if ($postField) {
-				$value = trim($inputArr[$postField]);
-				if ($value) {
-					$postField = strtolower($postField);
-					if ($postField == 'modifiedTimestamp') $value = OccurrenceUtil::formatDate($value);
-					if ($postField == 'modifieduid') $value = OccurrenceUtil::verifyUser($value, $this->conn);
-					if ($postField == 'sortBy') { 
-						if (!is_numeric($value)) $value = 10;
-					}
-				} else $value = null;
-				$this->parameterArr[$field] = $value;
-				$this->typeStr .= $type;
-			}
-		}
-		if (isset($inputArr['occid']) && $inputArr['occid'] && !$this->occid) $this->occid = $inputArr['occid'];
-	}
+    public function updateOccurrence($inputArr, $occurArr, $postArr) {
+        $status = false;
+
+        if ($this->occid && $this->conn) {
+            $occidPlaceholder = null;
+            if (array_key_exists('occid', $inputArr)) {
+                $occidPlaceholder = (int)$inputArr['occid'];
+                unset($inputArr['occid']);
+            }
+
+            $paramArr = array();
+            $sqlFrag = '';
+            $fieldsToUpdate = [];
+            $oldValues = [];
+            $newValues = [];
+
+            if (!empty($postArr['action']) && $postArr['action'] === 'add') {
+                foreach ($inputArr as $field => $value) {
+                    if (!isset($occurArr[$field]) || is_null($occurArr[$field])) {
+                        $sqlFrag .= $field . ' = ?, ';
+                        $paramArr[] = $value;
+                        $fieldsToUpdate[] = $field;
+                        $oldValues[$field] = $occurArr[$field] ?? null;
+                        $newValues[$field] = $value;
+                    }
+                }
+            } else {
+                $this->setParameterArr($inputArr);
+                foreach ($this->parameterArr as $field => $value) {
+                    if ($field !== 'occid') {
+                        $sqlFrag .= $field . ' = ?, ';
+                        $paramArr[] = $value;
+                        $fieldsToUpdate[] = $field;
+                        $oldValues[$field] = $occurArr[$field] ?? null;
+                        $newValues[$field] = $value;
+                    }
+                }
+            }
+
+            if (!empty($fieldsToUpdate)) {
+                echo '<div style="color:green;">Updating fields: ' . implode(', ', $fieldsToUpdate) . '</div>';
+            } else {
+                echo '<div style="color:orange;">No fields to update for occid </div>';
+                return false; 
+            }
+
+            $sql = 'UPDATE omoccurrences SET dateLastModified = now(), ' . trim($sqlFrag, ', ') . ' WHERE (occid = ?)';
+
+            $paramArr[] = $occidPlaceholder;
+            $oldValues['occid'] = $occidPlaceholder;
+            $newValues['occid'] = $occidPlaceholder;
+
+            $typeStr = '';
+            foreach ($paramArr as $val) {
+                $typeStr .= is_int($val) ? 'i' : 's';
+            }
+
+            if ($stmt = $this->conn->prepare($sql)) {
+                $stmt->bind_param($typeStr, ...$paramArr);
+                $stmt->execute();
+                if ($stmt->affected_rows || !$stmt->error) {
+                    $status = true;
+                    if (array_key_exists('allow-overwrite',$postArr) && $postArr['allow-overwrite'] == 1) $user = 50;
+                    else ($user = $GLOBALS['SYMB_UID']);
+                    $this->recordEdits($oldValues,$newValues,$user);
+                }
+                else $this->errorMessage = 'ERROR updating occurrence record: ' . $stmt->error;
+                $stmt->close();
+            } else {
+                $this->errorMessage = 'ERROR preparing statement for updating omoccurrences: ' . $this->conn->error;
+            }
+        }
+
+        return $status;
+    }
+
+
+    public function recordEdits($oldValues, $newValues, $user) {
+
+        $occid = (int)$newValues['occid'];
+        foreach ($newValues as $field => $newVal) {
+            if ($field === 'occid') continue;
+
+            $oldVal = $oldValues[$field] ?? null;
+            if (is_null($oldVal)) $oldVal = '';
+            if (is_null($newVal)) $newVal = '';
+
+            if ($oldVal !== $newVal) {
+                $sql = 'INSERT INTO omoccuredits (
+                            occid,
+                            fieldName,
+                            fieldValueNew,
+                            fieldValueOld,
+                            reviewStatus,
+                            appliedStatus,
+                            editType,
+                            uid,
+                            initialTimestamp
+                        ) VALUES (?, ?, ?, ?, 1, 1, 1, ?, NOW())';
+                if ($stmt = $this->conn->prepare($sql)) {
+                    $stmt->bind_param('isssi', $occid, $field, $newVal, $oldVal, $user);
+                   if(!$stmt->execute()){
+                        echo "<div style='color:red;'>ERROR inserting edit for field '$field': " . $stmt->error . '</div>';
+                    }
+                    $stmt->close();
+                } else {
+                    echo "<div style='color:red;'>ERROR updaing field '$field': " . $this->conn->error . '</div>';
+                }
+            }
+        }
+        return true;
+    }
+
+
+    private function setParameterArr($inputArr) {
+        $inputArr = OccurrenceUtil::occurrenceArrayCleaning($inputArr);
+
+        foreach ($this->schemaMap as $field => $type) {
+            $postField = '';
+            if (isset($inputArr[$field])) {
+                $postField = $field;
+            } elseif (isset($inputArr[strtolower($field)])) {
+                $postField = strtolower($field);
+            }
+
+            if ($postField) {
+                $value = trim($inputArr[$postField]);
+                if ($value !== '') {
+                    $postFieldLower = strtolower($postField);
+                    if (in_array($postFieldLower, ['eventdate', 'eventdate2'])) {
+                        $value = OccurrenceUtil::formatDate($value);
+                    }
+                } else {
+                    $value = null;
+                }
+
+                $this->parameterArr[$field] = $value;
+                $this->typeStr .= $type;
+            }
+        }
+        if (isset($inputArr['occid']) && $inputArr['occid'] && !$this->occid) {
+            $this->occid = $inputArr['occid'];
+        }
+    }
+
+
 
 	//Setters and getters
 	public function getSchemaMap() {

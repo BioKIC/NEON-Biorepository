@@ -12,6 +12,7 @@ $associationType = array_key_exists('associationType', $_POST) ? $_POST['associa
 $createNew = array_key_exists('createNew', $_POST) ? filter_var($_POST['createNew'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $fileName = array_key_exists('fileName', $_POST) ? $_POST['fileName'] : '';
 $action = array_key_exists('submitAction', $_POST) ? $_POST['submitAction'] : '';
+$user = array_key_exists('user', $_POST) ? $_POST['user'] : '';
 
 $importManager = new NeonEditor();
 $importManager->setImportType($importType);
@@ -350,7 +351,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 									</select>
 								</div>
 								<div class="formField-div">
-									<input name="prevent-overwrite" type="checkbox" value="1">
+									<input name="allow-overwrite" type="checkbox" value="1">
 									<label for="allow-overwrite"><?= 'Allow additions or edits to be overwritten during reharvest' ?></label>
 								</div>
 							<?php
@@ -358,6 +359,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 							?>
 							<div style="margin:15px;">
 								<input name="importType" type="hidden" value="<?= $importType ?>">
+								<input name="user" type="hidden" value"<?= $SYMB_UID ?>">"
 								<input name="fileName" type="hidden" value="<?= htmlspecialchars($importManager->getFileName(), ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>">
 								<button name="submitAction" type="submit" value="importData"><?= $LANG['IMPORT_DATA'] ?></button>
 							</div>

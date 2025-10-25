@@ -15,7 +15,6 @@ class NeonEditor extends UtilitiesFileImport {
 	private $importType;
 	private $createNewRecord = false;
 
-
 	private $importManager = null;
 
     private const IMPORT_ASSOCIATIONS = 1;
@@ -283,6 +282,7 @@ class NeonEditor extends UtilitiesFileImport {
 					}
 				}
 				if (empty($identifierArr['occid'])) {
+                
 					$this->logOrEcho('ERROR loading identifier: occid could not be fetched from provided occurrence identifiers.', 1);
 					continue;
 				}
@@ -323,33 +323,33 @@ class NeonEditor extends UtilitiesFileImport {
 			}
 		}
         elseif ($this->importType == self::UPDATE_OCCURRENCE) {
-			$importManager = new OmoccurrenceEditor($this->conn);
-			foreach ($occidArr as $occid) {
-				$importManager->setOccid($occid);
-				$fieldArr = array_keys($importManager->getSchemaMap());
-                $occurrenceArr = array();
-				foreach ($fieldArr as $field) {
-					$fieldLower = strtolower($field);
-					if ($fieldLower == 'id') {
-						$occurrenceArr[$field] = $occid;
-					} else {
-						if (isset($this->fieldMap[$fieldLower])) $occurrenceArr[$field] = $this->encodeString($recordArr[$this->fieldMap[$fieldLower]]);
-					}
-				}
-				if (empty($occurrenceArr['id'])) {
-					$this->logOrEcho('ERROR: occid could not be fetched from provided occurrence identifiers.', 1);
-					continue;
-				}
-				if ($occurrenceArr['id']) {
-						$importManager->setOccurrenceID($occurrenceArr['id']);
-							$status = $importManager->updateOccurrence($occurrenceArr);
-						    $this->logOrEcho('Occurrence Updated' . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-					if (!$status) {
-							$this->logOrEcho('ERROR updating occurrence. ' . $importManager->getErrorMessage(), 1);
-					}
-				}
-			}
-		}
+            $importManager = new OmoccurrenceEditor($this->conn);
+            foreach ($occidArr as $occid) {
+                $importManager->setOccid($occid);
+                $occurArr = $importManager->getOccurArr($occid);
+                if (empty($occurArr) || empty($occurArr['occid'])) {
+                    $this->logOrEcho('ERROR: occid could not be fetched from provided occurrence identifiers.', 1);
+                    continue;
+                }
+                $inputArr = [];
+                $fieldArr = array_keys($importManager->getSchemaMap());
+                foreach ($fieldArr as $field) {
+                    $fieldLower = strtolower($field);
+                    if (isset($this->fieldMap[$fieldLower])) {
+                        $srcIndex = $this->fieldMap[$fieldLower];
+                        $inputArr[$field] = isset($recordArr[$srcIndex]) ? $this->encodeString($recordArr[$srcIndex]) : null;
+                    }
+                }
+                $inputArr['occid'] = $occid;
+                $status = $importManager->updateOccurrence($inputArr,$occurArr,$postArr);
+                if ($status){
+                    $this->logOrEcho('Occurrence Updated' . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+                }
+                if (!$status) {
+                    $this->logOrEcho('ERROR updating occurrence <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid .'" target="_blank">' . $occid . '</a>'. $importManager->getErrorMessage(), 1);
+                }
+            }
+        }
 		return $status;
 	}
 
@@ -382,10 +382,22 @@ class NeonEditor extends UtilitiesFileImport {
 			}
 			$rs->free();
 		}
-		if (!$retArr) {
-            $this->logOrEcho('SKIPPED: Unable to find record matching any provided identifier(s): ' . implode(', ', $identifierArr), 1);
-		}
+        if ($retArr) {
+            if (count($retArr) > 1) {
+                $this->logOrEcho(
+                    'ERROR: Identifier matches multiple occurrence records: ' . implode(', ', $retArr),
+                    1
+                );
+                $retArr = array();
 
+            }
+        }
+        else {
+            $this->logOrEcho(
+                'SKIPPED: Unable to find record matching any provided identifier(s): ' . implode(', ', $identifierArr),
+                1
+            );
+        }
 		return $retArr;
 	}
 
@@ -501,8 +513,7 @@ class NeonEditor extends UtilitiesFileImport {
 				$this->translationMap = array();
 			} elseif ($this->importType == self::IMPORT_IDENTIFIERS) {
 				$this->translationMap = array();
-			}
-            elseif ($this->importType == self::UPDATE_OCCURRENCE) {
+			} elseif ($this->importType == self::UPDATE_OCCURRENCE) {
 				$this->translationMap = array();
 			}
 		}
