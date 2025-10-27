@@ -222,7 +222,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 	<div role="main" id="innertext">
 		<h1 class="page-heading"><?= 'NEON Data Importer/Editor' ?></h1>
 		<div class="pageDescription-div">
-			<?= 'Example batch upload instructions and mapping details:' ?>:
+			<?= 'Example batch upload instructions and mapping details' ?>:
 			<ul>
 				<li><a href="https://docs.symbiota.org/Collection_Manager_Guide/Importing_Uploading/linked_resources" target="_blank"><?= $LANG['ASSOCIATIONS'] ?></a></li>
 				<?php if ($IS_ADMIN) echo '<li><a href="https://docs.symbiota.org/Portal_Manager_Guide/importing_determinations" target="_blank">' . $LANG['DETERMINATIONS'] . '</a></li>'; ?>
@@ -359,7 +359,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 							?>
 							<div style="margin:15px;">
 								<input name="importType" type="hidden" value="<?= $importType ?>">
-								<input name="user" type="hidden" value"<?= $SYMB_UID ?>">"
+								<input name="user" type="hidden" value="<?= $SYMB_UID ?>">
 								<input name="fileName" type="hidden" value="<?= htmlspecialchars($importManager->getFileName(), ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>">
 								<button name="submitAction" type="submit" value="importData"><?= $LANG['IMPORT_DATA'] ?></button>
 							</div>

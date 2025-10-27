@@ -14,7 +14,8 @@ class OmoccurrenceEditor extends Manager {
 		parent::__construct(null, 'write', $conn);
 		$this->schemaMap = array('associatedCollectors' => "s",'availability' => "I",'coordinateUncertaintyInMeters' => "s",
         'county' => "s",'decimalLatitude' => "s",'decimalLongitude' => "s",'disposition' => "s",'dynamicProperties' => "s",
-        'eventDate' => "s",'eventDate2' => "s",'eventID' => "s",'geodeticDatum' => "s",'habitat' => "s",'individualCount' => "s",
+        'eventDate' => "s",'eventDate2' => "s",'day'=> "i",'month'=> "i",'year' => "i",'startDayOfYear' => "i",'endDayOfYear' => "i",
+        'eventID' => "s",'geodeticDatum' => "s",'habitat' => "s",'individualCount' => "s",
         'lifeStage' => "s",'locality' => "s",'locationID' => "s",'maximumDepthInMeters' => "s",'maximumElevationInMeters' => "s",
         'minimumDepthInMeters' => "s",'minimumElevationInMeters' => "s",'occurrenceRemarks' => "s",'preparations' => "s",
         'recordedBy' => "s",'reproductiveCondition' => "s",'samplingProtocol' => "s",'sex' => "s",'stateProvince' => "s",
@@ -57,14 +58,23 @@ class OmoccurrenceEditor extends Manager {
             $oldValues = [];
             $newValues = [];
 
+            if (isset($inputArr['eventDate']) || isset($inputArr['eventDate2'])) {
+                self::updateDateFields($inputArr);
+                foreach (['eventDate', 'eventDate2'] as $f) {
+                    if (!isset($inputArr[$f]) || $inputArr[$f] === '') {
+                        $inputArr[$f] = null;
+                    }
+                }
+            }
+
             if (!empty($postArr['action']) && $postArr['action'] === 'add') {
                 foreach ($inputArr as $field => $value) {
-                    if (!isset($occurArr[$field]) || is_null($occurArr[$field])) {
+                    if (!isset($occurArr[$field]) || is_null($occurArr[$field]) || $occurArr[$field] == '') {
                         $sqlFrag .= $field . ' = ?, ';
                         $paramArr[] = $value;
-                        $fieldsToUpdate[] = $field;
                         $oldValues[$field] = $occurArr[$field] ?? null;
                         $newValues[$field] = $value;
+                        if ($oldValues[$field] != $newValues[$field]) $fieldsToUpdate[] = $field;
                     }
                 }
             } else {
@@ -73,9 +83,9 @@ class OmoccurrenceEditor extends Manager {
                     if ($field !== 'occid') {
                         $sqlFrag .= $field . ' = ?, ';
                         $paramArr[] = $value;
-                        $fieldsToUpdate[] = $field;
                         $oldValues[$field] = $occurArr[$field] ?? null;
                         $newValues[$field] = $value;
+                        if ($oldValues[$field] != $newValues[$field]) $fieldsToUpdate[] = $field;
                     }
                 }
             }
@@ -83,7 +93,7 @@ class OmoccurrenceEditor extends Manager {
             if (!empty($fieldsToUpdate)) {
                 echo '<div style="color:green;">Updating fields: ' . implode(', ', $fieldsToUpdate) . '</div>';
             } else {
-                echo '<div style="color:orange;">No fields to update for occid </div>';
+                echo '<div style="color:orange;">No fields to update </div>';
                 return false; 
             }
 
@@ -116,6 +126,50 @@ class OmoccurrenceEditor extends Manager {
 
         return $status;
     }
+
+private static function updateDateFields(array &$recMap): void {
+    $dateStr = isset($recMap['eventDate']) ? trim($recMap['eventDate']) : '';
+    $dateStr2 = isset($recMap['eventDate2']) ? trim($recMap['eventDate2']) : '';
+    if ($dateStr === '') {
+        $recMap['eventDate'] = null;
+        $recMap['year'] = null;
+        $recMap['month'] = null;
+        $recMap['day'] = null;
+        $recMap['startDayOfYear'] = null;
+    } else {
+        $formatted = OccurrenceUtil::formatDate($dateStr);
+        if ($formatted) {
+            $recMap['eventDate'] = $formatted;
+            $date = date_create($formatted);
+            $recMap['year'] = (int)$date->format('Y');
+            $recMap['month'] = (int)$date->format('m');
+            $recMap['day'] = (int)$date->format('d');
+            $recMap['startDayOfYear'] = (int)$date->format('z') + 1;
+        } else {
+            echo "Invalid eventDate: $dateStr → NULL<br>";
+            $recMap['eventDate'] = null;
+            $recMap['year'] = null;
+            $recMap['month'] = null;
+            $recMap['day'] = null;
+            $recMap['startDayOfYear'] = null;
+        }
+    }
+    if ($dateStr2 === '') {
+        $recMap['eventDate2'] = null;
+        $recMap['endDayOfYear'] = null;
+    } else {
+        $formatted2 = OccurrenceUtil::formatDate($dateStr2);
+        if ($formatted2) {
+            $recMap['eventDate2'] = $formatted2;
+            $date2 = date_create($formatted2);
+            $recMap['endDayOfYear'] = (int)$date2->format('z') + 1;
+        } else {
+            echo "Invalid eventDate2: $dateStr2 → NULL<br>";
+            $recMap['eventDate2'] = null;
+            $recMap['endDayOfYear'] = null;
+        }
+    }
+}
 
 
     public function recordEdits($oldValues, $newValues, $user) {
@@ -156,34 +210,39 @@ class OmoccurrenceEditor extends Manager {
 
 
     private function setParameterArr($inputArr) {
+
         $inputArr = OccurrenceUtil::occurrenceArrayCleaning($inputArr);
 
         foreach ($this->schemaMap as $field => $type) {
-            $postField = '';
-            if (isset($inputArr[$field])) {
-                $postField = $field;
-            } elseif (isset($inputArr[strtolower($field)])) {
-                $postField = strtolower($field);
+            $postField = null;
+
+            foreach ($inputArr as $k => $v) {
+                if (strcasecmp($k, $field) === 0) {
+                    $postField = $k;
+                    break;
+                }
             }
 
-            if ($postField) {
-                $value = trim($inputArr[$postField]);
-                if ($value !== '') {
-                    $postFieldLower = strtolower($postField);
-                    if (in_array($postFieldLower, ['eventdate', 'eventdate2'])) {
-                        $value = OccurrenceUtil::formatDate($value);
-                    }
-                } else {
+            if ($postField === null) continue;
+
+            $value = $inputArr[$postField];
+
+            // Normalize string values
+            if (is_string($value)) {
+                $value = trim($value);
+                if ($value === '') {
                     $value = null;
                 }
-
-                $this->parameterArr[$field] = $value;
-                $this->typeStr .= $type;
             }
+
+            $this->parameterArr[$field] = $value;
+            $this->typeStr .= $type;
         }
+
         if (isset($inputArr['occid']) && $inputArr['occid'] && !$this->occid) {
-            $this->occid = $inputArr['occid'];
+            $this->occid = (int)$inputArr['occid'];
         }
+
     }
 
 
