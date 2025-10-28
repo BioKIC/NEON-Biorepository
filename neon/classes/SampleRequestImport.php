@@ -107,13 +107,21 @@ class SampleRequestImport extends UtilitiesFileImport {
             $insertSql = "INSERT INTO neonsamplerequestlink 
                         (request_id, occid, status, available, use_type, substance_provided, notes, initialTimestamp,editedTimestamp)
                         VALUES (?, ?, ?, 'yes', ?, ?, ?, NOW(),NOW())";
-            $checkSql = "SELECT COUNT(*) as cnt FROM neonsamplerequestlink 
+            $checkDupeSql = "SELECT COUNT(*) as cnt FROM neonsamplerequestlink 
                         WHERE request_id = ? AND occid = ?";
+            $checkReqSql = "SELECT COUNT(*) as cnt FROM neonsamplerequestlink s
+                        JOIN omoccurrences o
+                        ON s.occid = o.occid
+                        WHERE s.request_id != ? AND s.occid = ? AND s.status IN ('current','pending fulfillment') ";
+            $checkAvailSql = "SELECT availability FROM omoccurrences
+                        WHERE occid = ?";
 
             $insertStmt = $this->conn->prepare($insertSql);
-            $checkStmt  = $this->conn->prepare($checkSql);
+            $checkDupeStmt  = $this->conn->prepare($checkDupeSql);
+            $checkReqStmt  = $this->conn->prepare($checkReqSql);
+            $checkAvailStmt = $this->conn->prepare($checkAvailSql);
 
-            if ($insertStmt && $checkStmt) {
+            if ($insertStmt && $checkDupeStmt && $checkReqStmt && $checkAvailStmt) {
                 foreach ($sampArr as $occid) {
                     $use_type = $recordArr[$this->fieldMap['use_type']] ?? null;
                     $substance_provided = $recordArr[$this->fieldMap['substance_provided']] ?? null;
@@ -140,16 +148,42 @@ class SampleRequestImport extends UtilitiesFileImport {
                         continue;
                     }
 
-                    // duplicate check
-                    $checkStmt->bind_param('ii', $this->request_id, $occid);
-                    $checkStmt->execute();
-                    $checkStmt->store_result();
-                    $checkStmt->bind_result($count);
-                    $checkStmt->fetch();
-                    $checkStmt->free_result();
+                    // duplicate within request check
+                    $checkDupeStmt->bind_param('ii', $this->request_id, $occid);
+                    $checkDupeStmt->execute();
+                    $checkDupeStmt->store_result();
+                    $checkDupeStmt->bind_result($countdupe);
+                    $checkDupeStmt->fetch();
+                    $checkDupeStmt->free_result();
 
-                    if ($count > 0) {
+                    if ($countdupe > 0) {
                         $this->logOrEcho("Skipping occid $occid: already exists for this request", 1);
+                        continue;
+                    }
+
+                    //  duplicate across other current requests check
+                    $checkReqStmt->bind_param('ii', $this->request_id, $occid);
+                    $checkReqStmt->execute();
+                    $checkReqStmt->store_result();
+                    $checkReqStmt->bind_result($countreq);
+                    $checkReqStmt->fetch();
+                    $checkReqStmt->free_result();
+
+                    if ($countreq > 0) {
+                        $this->logOrEcho("Skipping occid $occid: already associated with another current or pending request", 1);
+                        continue;
+                    }
+
+                    //  check availability
+                    $checkAvailStmt->bind_param('i', $occid);
+                    $checkAvailStmt->execute();
+                    $checkAvailStmt->store_result();
+                    $checkAvailStmt->bind_result($availability);
+                    $checkAvailStmt->fetch();
+                    $checkAvailStmt->free_result();
+
+                    if ($availability === 0) {
+                        $this->logOrEcho("Skipping occid $occid: sample is unavailable according to occurrence record", 1);
                         continue;
                     }
 
@@ -165,8 +199,9 @@ class SampleRequestImport extends UtilitiesFileImport {
                 $this->syncCollidsForRequest($uid);
 
                 $insertStmt->close();
-                $checkStmt->close();
-
+                $checkDupeStmt->close();
+                $checkReqStmt->close();
+                $checkAvailStmt->close();
 
             } else {
                 $this->logOrEcho("ERROR preparing statement: " . $this->conn->error, 1);
