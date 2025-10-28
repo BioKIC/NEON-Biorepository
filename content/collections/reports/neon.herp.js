@@ -31,7 +31,7 @@ labels.forEach((label) => {
           bcSrc.src =
             'https://barcodeapi.org/api/128/' +
             barcode +
-            '?&height=18';
+            '?&height=18&qz=0';
         hasBc = 'true';
         return hasBc;
       }
@@ -45,7 +45,7 @@ labels.forEach((label) => {
           bcSrc.src =
             'https://barcodeapi.org/api/128/' +
             label.querySelector('.catalognumber').innerText +
-            '?&height=18';
+            '?&height=18&qz=0';
       }
     } else if (catNum.includes('sampleID:')) {
       // add sampleID to bottom

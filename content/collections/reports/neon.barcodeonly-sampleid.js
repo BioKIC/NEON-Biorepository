@@ -26,7 +26,7 @@ labels.forEach((label) => {
 			let barcode = catNum.match(/(?<=barcode\): ).*/)[0].trim();
             //newBcSrc = "getBarcodeCode128.php?bcheight=40&bctext=" + barcode;
 			//newBcSrc = "https://barcode.tec-it.com/barcode.ashx?data=" + barcode + "&code=Code128";
-			newBcSrc = "https://barcodeapi.org/api/128/" + barcode + "?&height=18";
+			newBcSrc = "https://barcodeapi.org/api/128/" + barcode + "?&height=18&qz=0";
 			return true;
 		}
 	});
