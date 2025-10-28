@@ -1717,7 +1717,7 @@ class OccurrenceHarvester{
 					if(isset($dwcArr['associations'])) $this->setAssociations($occid, $dwcArr['associations'],$dwcArr['collid']);
 					$this->setDatasetIndexing($domainID,$occid);
 					$this->setDatasetIndexing($siteID,$occid);
-					if(isset($dwcArr['habitat'])) $this->setDatasetIndexing(strtok((string)($dwcArr['habitat'] ?? ''), ';'), $occid);
+					if(isset($landcover)) $this->setDatasetIndexing($landcover, $occid);
 				}
 				else{
 					$this->errorStr = 'ERROR updating/creating new occurrence record: '.$this->conn->error;

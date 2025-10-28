@@ -24,20 +24,28 @@ labels.forEach((label) => {
     if (catNum.includes('barcode')) {
       if (bcSrc) {
         let barcode = catNum.match(/(?<=barcode\): ).*/)[0].trim();
-        bcSrc.src =
-          'https://barcode.tec-it.com/barcode.ashx?data=' +
-          barcode +
-          '&code=Code128';
+          //bcSrc.src =
+          //  'https://barcode.tec-it.com/barcode.ashx?data=' +
+          //  barcode +
+          //  '&code=Code128';
+          bcSrc.src =
+            'https://barcodeapi.org/api/128/' +
+            barcode +
+            '?&height=18&qz=0';
         hasBc = 'true';
         return hasBc;
       }
 
       if (hasBc != 'true') {
         // if there is no NEON barcode, uses the IGSN (catalogNumber instead)
-        bcSrc.src =
-          'https://barcode.tec-it.com/barcode.ashx?data=' +
-          label.querySelector('.catalognumber').innerText +
-          '&code=Code128';
+          //bcSrc.src =
+          //  'https://barcode.tec-it.com/barcode.ashx?data=' +
+          //  label.querySelector('.catalognumber').innerText +
+          //  '&code=Code128';
+          bcSrc.src =
+            'https://barcodeapi.org/api/128/' +
+            label.querySelector('.catalognumber').innerText +
+            '?&height=18&qz=0';
       }
     } else if (catNum.includes('sampleID:')) {
       // add sampleID to bottom
