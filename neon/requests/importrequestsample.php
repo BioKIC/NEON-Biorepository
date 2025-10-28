@@ -75,34 +75,26 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 
 
 		function validateMappingForm(f) {
-			let sourceArr = [];
-			let targetArr = [];
-			let requiredFieldArr = [];
-			<?php
-			?>
-			let subjectIdentifierIsMapped = false;
-			let identifierNameIsMapped = false;
-			let identifierValueIsMapped = false;
-			let objectIdentifierIsMapped = false;
+			const sourceArr = [];
+			const targetArr = [];
 
 			const form_data = new FormData(f);
 
 			for (const [key, value] of form_data.entries()) {
-				if (key.substring(0, 3) == "sf[") {
-					if (sourceArr.indexOf(value) > -1) {
-						alert("Duplicate Source Field" + value + ")");
+				if (key.startsWith("sf[")) {
+					if (sourceArr.includes(value)) {
+						alert("Duplicate Source Field: " + value);
 						return false;
 					}
-					sourceArr[sourceArr.length] = value;
-				} else if (value != "") {
-					if (key.substring(0, 3) == "tf[") {
-						if (targetArr.indexOf(value) > -1) {
-							alert("Duplicate Targe Field" + value + ")");
-							return false;
-						}
-						targetArr[targetArr.length] = value;
+					sourceArr.push(value);
+				} else if (key.startsWith("tf[") && value !== "") {
+					if (targetArr.includes(value)) {
+						alert("Duplicate Target Field: " + value);
+						return false;
 					}
+					targetArr.push(value);
 				}
+			}
 			return true;
 		}
 
