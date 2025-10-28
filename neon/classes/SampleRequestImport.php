@@ -213,13 +213,16 @@ class SampleRequestImport extends UtilitiesFileImport {
                         (request_id, matSampleID, occid, status, use_type, sampleType, notes, initialTimestamp,editedTimestamp)
                         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
-            $checkSql = "SELECT COUNT(*) as cnt FROM neonmaterialsamplerequestlink 
+            $checkDupeSql = "SELECT COUNT(*) as cnt FROM neonmaterialsamplerequestlink 
                         WHERE request_id = ? AND matSampleID = ?";
+            $checkReqSql = "SELECT COUNT(*) as cnt FROM neonmaterialsamplerequestlink 
+                        WHERE request_id != ? AND matSampleID = ? AND status IN ('current','pending fulfillment')";
 
             $insertStmt = $this->conn->prepare($insertSql);
-            $checkStmt  = $this->conn->prepare($checkSql);
+            $checkDupeStmt  = $this->conn->prepare($checkDupeSql);
+            $checkReqStmt  = $this->conn->prepare($checkReqSql);
 
-            if (!$insertStmt || !$checkStmt) {
+            if (!$insertStmt || !$checkDupeStmt || !$checkReqStmt) {
                 $this->logOrEcho("ERROR preparing statement: " . $this->conn->error, 1);
                 return false;
             }
@@ -266,15 +269,28 @@ class SampleRequestImport extends UtilitiesFileImport {
                 }
 
                 // duplicate check
-                $checkStmt->bind_param('is', $this->request_id, $matSampleID);
-                $checkStmt->execute();
-                $checkStmt->store_result();
-                $checkStmt->bind_result($count);
-                $checkStmt->fetch();
-                $checkStmt->free_result();
+                $checkDupeStmt->bind_param('is', $this->request_id, $matSampleID);
+                $checkDupeStmt->execute();
+                $checkDupeStmt->store_result();
+                $checkDupeStmt->bind_result($countdupe);
+                $checkDupeStmt->fetch();
+                $checkDupeStmt->free_result();
 
-                if ($count > 0) {
+                if ($countdupe > 0) {
                     $this->logOrEcho("Skipping matSampleID $matSampleID: already linked to this request", 1);
+                    continue;
+                }
+
+                // in another request check
+                $checkReqStmt->bind_param('is', $this->request_id, $matSampleID);
+                $checkReqStmt->execute();
+                $checkReqStmt->store_result();
+                $checkReqStmt->bind_result($countreq);
+                $checkReqStmt->fetch();
+                $checkReqStmt->free_result();
+
+                if ($countreq > 0) {
+                    $this->logOrEcho("Skipping matSampleID $matSampleID: linked to another current or pending request", 1);
                     continue;
                 }
 
@@ -289,7 +305,9 @@ class SampleRequestImport extends UtilitiesFileImport {
             }
 
             $insertStmt->close();
-            $checkStmt->close();
+            $checkDupeStmt->close();
+            $checkReqStmt->close();
+
         }
         return $status;
     }
