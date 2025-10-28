@@ -1,6 +1,6 @@
 <?php
 include_once('../../config/symbini.php');
-include_once('../../neon/requests/InquiriesManager.php');
+include_once('../../neon/classes/InquiriesManager.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 
 

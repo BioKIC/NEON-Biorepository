@@ -7,12 +7,9 @@ header('Content-Type: application/json');
 
 
 include_once('../../config/symbini.php');
-include_once('../../neon/requests/InquiriesManager.php');
+include_once('../../neon/classes/InquiriesManager.php');
 
 try {
-    if (!class_exists('InquiriesManager')) {
-        throw new Exception('InquiriesManager class not found.');
-    }
 
     $inquiryManager = new InquiriesManager();
 

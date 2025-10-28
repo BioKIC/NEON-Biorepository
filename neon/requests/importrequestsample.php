@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/neon/requests/SampleRequestImport.php');
+include_once($SERVER_ROOT.'/neon/classes/SampleRequestImport.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 
 // redirect if not logged in
@@ -26,7 +26,7 @@ $importManager->setRequestID($request_id);
 $importManager->setFileName($fileName);
 
 $isEditor = false;
-if ($IS_ADMIN || (array_key_exists('SuperAdmin', $USER_RIGHTS) && in_array($collid, $USER_RIGHTS['SuperAdmin']))) {
+if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 	$isEditor = true;
 }
 ?>

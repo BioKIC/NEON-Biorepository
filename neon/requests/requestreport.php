@@ -14,7 +14,7 @@ $utilities = new Utilities();
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 
-elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
+elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 ?>
 <html>
 	<head>
