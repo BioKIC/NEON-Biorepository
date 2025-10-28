@@ -8,11 +8,16 @@ header("Content-Type: text/html; charset=".$CHARSET);
 // redirect if not logged in
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl='.$CLIENT_ROOT.'/neon/requests/importrequestsample.php');
 
-$request_id = 0;
+$request_id = null;
+
 if (isset($_REQUEST['request_id'])) {
-    $request_id = filter_var($_REQUEST['request_id'], FILTER_SANITIZE_NUMBER_INT);
+    $request_id = filter_var($_REQUEST['request_id'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 } elseif (isset($_GET['id'])) {
-    $request_id = filter_var($_GET['id'], FILTER_SANITIZE_NUMBER_INT);
+    $request_id = filter_var($_GET['id'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+}
+
+if (!$request_id) {
+    die('<h2 style="color:red;">Error: A valid request_id must be provided.</h2>');
 }
 
 $importType = isset($_REQUEST['importType']) ? filter_var($_REQUEST['importType'], FILTER_SANITIZE_NUMBER_INT) : 0;
