@@ -114,7 +114,6 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 					if (value == "identifiername") {
 						identifierNameIsMapped = true;
 					}
-
 					if (value == 'identifiervalue') {
 						identifierValueIsMapped = true;
 					}
@@ -356,6 +355,17 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 								</div>
 							<?php
 							}
+							if ($importType == 7) {
+							?>
+								<div class="formField-div">
+									<label for='action'><?= $LANG['ACTION'] ?>:</label>
+									<select name="action" id='action'>
+										<option value="add"><?= 'Batch add links' ?></option>
+										<option value="update"><?= 'Batch update links' ?></option>
+									</select>
+								</div>
+							<?php
+							}
 							?>
 							<div style="margin:15px;">
 								<input name="importType" type="hidden" value="<?= $importType ?>">
@@ -390,8 +400,8 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 									echo '<option value="4">' . $LANG['MATERIAL_SAMPLE'] . '</option>';
 								?>
 								<option value="5"><?= $LANG['IDENTIFIERS'] ?></option>
-								<option value="6"><?= 'Occurrence' ?></opetion>
-
+								<option value="6"><?= 'Occurrence' ?></option>
+								<option value="7"><?= 'Genetic' ?></option>
 							</select>
 						</div>
 						<div id="associationType-div" class="formField-div" style="display:none">

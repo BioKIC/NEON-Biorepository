@@ -6,6 +6,7 @@ include_once('OmAssociations.php');
 include_once('OmDeterminations.php');
 include_once('OmIdentifiers.php');
 include_once('OmOccurrenceEditor.php');
+include_once('OmGenetic.php');
 include_once('OccurrenceMaintenance.php');
 include_once('Media.php');
 include_once('utilities/UuidFactory.php');
@@ -23,6 +24,7 @@ class NeonEditor extends UtilitiesFileImport {
 	private const IMPORT_MATERIAL_SAMPLE = 4;
 	private const IMPORT_IDENTIFIERS = 5;
     private const UPDATE_OCCURRENCE = 6;
+	private const IMPORT_GENETIC = 7;
 
 	function __construct() {
 		parent::__construct(null, 'write');
@@ -350,6 +352,37 @@ class NeonEditor extends UtilitiesFileImport {
                 }
             }
         }
+		elseif ($this->importType == self::IMPORT_GENETIC) {
+			$importManager = new OmGenetic($this->conn);
+			foreach ($occidArr as $occid) {
+				$importManager->setOccid($occid);
+				$fieldArr = array_keys($importManager->getSchemaMap());
+				$genArr = array();
+					foreach ($fieldArr as $field) {
+						$fieldLower = strtolower($field);
+						if (isset($this->fieldMap[$fieldLower])) {
+							$value = $recordArr[$this->fieldMap[$fieldLower]] ?? null;
+							$genArr[$field] = $this->encodeString($value);
+						}
+					}
+				}
+				if($postArr['action'] == 'add'){
+					if ($importManager->insertGeneticLink($genArr) ) {
+						$this->logOrEcho('Genetic links loaded: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+						$status = true;
+						} else {
+						$this->logOrEcho('ERROR loading Genetic Link: ' . $importManager->getErrorMessage(), 1);
+					}
+				} elseif($postArr['action'] == 'update'){
+					if ($importManager->updateGeneticLink($genArr) ) {
+						$this->logOrEcho('Genetic links updated: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+						$status = true;
+					} else {
+						$this->logOrEcho('ERROR updating Genetic Link: ' . $importManager->getErrorMessage(), 1);
+					}
+				}
+
+			}
 		return $status;
 	}
 
@@ -486,6 +519,17 @@ class NeonEditor extends UtilitiesFileImport {
 			$schemaMap = $detManager->getSchemaMap();
 			$fieldArr = array_keys($schemaMap);
 		}
+		elseif ($this->importType == self::IMPORT_GENETIC) {
+			$fieldArr = array(
+				'occid',
+				'identifier',
+				'resourcename',
+				'title',
+				'locus',
+				'resourceurl',
+				'notes'
+			);
+		}
 		sort($fieldArr);
 		foreach ($fieldArr as $field) {
 			$this->targetFieldMap[strtolower($field)] = $field;
@@ -514,6 +558,9 @@ class NeonEditor extends UtilitiesFileImport {
 			} elseif ($this->importType == self::IMPORT_IDENTIFIERS) {
 				$this->translationMap = array();
 			} elseif ($this->importType == self::UPDATE_OCCURRENCE) {
+				$this->translationMap = array();
+			}
+			elseif ($this->importType == self::IMPORT_GENETIC) {
 				$this->translationMap = array();
 			}
 		}
