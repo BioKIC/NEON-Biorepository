@@ -189,6 +189,8 @@ select {
   -webkit-box-align: self-start;
       -ms-flex-align: self-start;
           align-items: self-start;
+  align-items: baseline;
+  justify-items: center;
 }
 
 #search-form-colls {
@@ -197,6 +199,7 @@ select {
   -ms-grid-columns: 1fr 2fr;
       grid-template-columns: 1fr 2fr;
   grid-gap: 10px;
+  justify-items: center;
 }
 
 #search-form-colls ul {
@@ -231,6 +234,7 @@ select {
   -ms-grid-columns: 1fr 1fr;
       grid-template-columns: 1fr 1fr;
   grid-gap: 10px;
+  justify-items: center;
 }
 
 #search-form-sample {
@@ -239,6 +243,7 @@ select {
   -ms-grid-columns: 1fr 1fr;
       grid-template-columns: 1fr 1fr;
   grid-gap: 10px;
+  
 }
 
 .errors {

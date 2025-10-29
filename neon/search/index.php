@@ -134,33 +134,46 @@ $siteData = new DatasetsMetadata();
 		<form id="params-form">
 			<!-- Criteria forms -->
 			<div class="accordions">
-				<!-- Taxonomy -->
+				<!-- Sample Properties -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="taxonomy" class="accordion-selector" checked=true />
-
+					<input type="checkbox" id="sample" class="accordion-selector"/>
 					<!-- Accordion header -->
-					<label for="taxonomy" class="accordion-header">Taxonomy</label>
-
-					<!-- Taxonomy -->
-					<div id="search-form-taxonomy" class="content">
-						<div id="taxa-text" class="input-text-container">
-							<label for="taxa" class="input-text--outlined">
-								<input type="text" name="taxa" id="taxa" data-chip="Taxa">
-								<span data-label="Taxon"></span></label>
-							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
+					<label for="sample" class="accordion-header">Sample Properties</label>
+					<!-- Accordion content -->
+					<div class="content">
+						<div id="search-form-sample">
+							<div>
+								<div class="text-area-container">
+									<label for="" class="text-area--outlined">
+										<textarea name="catnum" data-chip="Identifier" style="width: 100%"></textarea>
+										<span data-label="Identifiers"></span></label>
+									<span class="assistive-text">Separate multiple with commas or new lines.</span>
+								</div>
+								<div style="display:none">
+									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>
+									<label for="includeothercatnum">Search all identifiers</label>
+								</div>
+								<div>
+									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
+									<label for="includematerialsample">Include material samples</label>
+								</div>
+							</div>
+							<div>
+								<div>
+									<input type="checkbox" name="hasimages" value=1 data-chip="Only with images">
+									<label for="hasimages">Specimens with images</label>
+								</div>
+								<div>
+									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
+									<label for="hasgenetic">Specimens with genetic data</label>
+								</div>
+								<div>
+									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
+									<label for="availableforloan">Specimens available for loan</label>
+								</div>
+							</div>
 						</div>
-						<div class="select-container">
-							<select name="taxontype">
-								<option value="1">Any name</option>
-								<option value="2">Scientific name</option>
-								<option value="3">Family</option>
-								<option value="4">Taxonomic group</option>
-								<option value="5">Common name</option>
-							</select>
-							<span class="assistive-text">Taxon type.</span>
-						</div>
-						<div><input type="checkbox" name="usethes" id="usethes" data-chip="Include Synonyms" value="1" checked><span class="ml-1">Include Synonyms</span></div>
 					</div>
 				</section>
 				<!-- Collections -->
@@ -173,11 +186,11 @@ $siteData = new DatasetsMetadata();
 					<div class="content">
 						<div id="search-form-colls">
 							<!-- Open NEON Collections modal -->
-							<div><input id="all-neon-colls-quick" data-chip="At the Biorepository" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">At the Biorepository</span></div>
+							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">At the Biorepository</span></div>
 							<!-- External Collections -->
 							<div>
 								<ul id="neonext-collections-list">
-									<li class="Mui"><input id="all-neon-ext" data-chip="At Outside Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>At Outside Repositories</span>
+									<li class="Mui"><input id="all-neon-ext" data-chip="Sample Types at Other Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>At Other Repositories</span>
 										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
 											echo '<ul class="collapsed">';
 											foreach ($collsArr as $result) {
@@ -190,7 +203,7 @@ $siteData = new DatasetsMetadata();
 							</div>
 						</div>
 						<p class="Mui">
-						  Looking for more context on sample types? Browse the <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank" rel="noopener noreferrer">sample type profiles</a> for descriptions, associated data, and contact information.
+						  Looking for more about NEON's sample types? Browse the <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank" rel="noopener noreferrer">sample type profiles</a> for descriptions, associated data, and contact information.
 						</p>
 					</div>
 					<!-- NEON Biorepository Collections Modal -->
@@ -284,54 +297,12 @@ $siteData = new DatasetsMetadata();
 						</div>
 					</div>
 				</section>
-				<!-- Sample Properties -->
-				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="sample" class="accordion-selector" checked=true />
-					<!-- Accordion header -->
-					<label for="sample" class="accordion-header">Sample Properties</label>
-					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-sample">
-							<div>
-								<div>
-									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" data-chip="Include other IDs" checked>
-									<label for="includeothercatnum">Include other sample identifiers (e.g. Sample Tag (sampleID), Barcode (sampleCode), sampleUuid, occid)</label>
-								</div>
-								<div>
-									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material sample IDs" >
-									<label for="includematerialsample">Include material sample catalog numbers</label>
-								</div>
-								<div class="text-area-container">
-									<label for="" class="text-area--outlined">
-										<textarea name="catnum" data-chip="Catalog Number" style="width: 100%"></textarea>
-										<span data-label="Catalog Number (archiveGUID)"></span></label>
-									<span class="assistive-text">Separate multiple with commas or new lines.</span>
-								</div>
-							</div>
-							<div>
-								<div>
-									<input type="checkbox" name="hasimages" value=1 data-chip="Only with images">
-									<label for="hasimages">Limit to specimens with images</label>
-								</div>
-								<div>
-									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
-									<label for="hasgenetic">Limit to specimens with genetic data</label>
-								</div>
-								<div>
-									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
-									<label for="availableforloan">Limit to specimens available for loan</label>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
 				<!-- Locality -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="locality" class="accordion-selector" />
+					<input type="checkbox" id="locality" class="accordion-selector" checked=true />
 					<!-- Accordion header -->
-					<label for="locality" class="accordion-header">Locality</label>
+					<label for="locality" class="accordion-header">Domains & Sites</label>
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-locality">
@@ -390,6 +361,58 @@ $siteData = new DatasetsMetadata();
 									</div>
 								</div>
 							</div>
+						</div>
+					</div>
+				</section>
+				<!-- Collecting Event -->
+				<section>
+					<!-- Accordion selector -->
+					<input type="checkbox" id="coll-event" class="accordion-selector" checked=true />
+					<!-- Accordion header -->
+					<label for="coll-event" class="accordion-header">Collecting Event</label>
+					<!-- Accordion content -->
+					<div class="content">
+						<div id="search-form-coll-event">
+							<div class="input-text-container">
+								<label for="eventdate1" class="input-text--outlined">
+									<input type="text" name="eventdate1" data-chip="Event Date Start">
+									<span data-label="Collection Start Date"></span></label>
+								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+							<div class="input-text-container">
+								<label for="eventdate2" class="input-text--outlined">
+									<input type="text" name="eventdate2" data-chip="Event Date End">
+									<span data-label="Collection End Date"></span></label>
+								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+							<div class="input-text-container">
+								<label for="collector" class="input-text--outlined">
+									<input type="text" name="collector" data-chip="Collector/ORCID">
+									<span data-label="Collector/ORCID"></span></label>
+								<span class="assistive-text">Any part of a collector's name or ORCID iD (XXXX-XXXX-XXXX-XXXX).</span>
+							</div>
+						</div>
+					</div>
+				</section>
+				<!-- Taxonomy -->
+				<section>
+					<!-- Accordion selector -->
+					<input type="checkbox" id="taxonomy" class="accordion-selector"/>
+
+					<!-- Accordion header -->
+					<label for="taxonomy" class="accordion-header">Taxonomy</label>
+
+					<!-- Taxonomy -->
+					<div id="search-form-taxonomy" class="content">
+						<div id="taxa-text" class="input-text-container">
+							<label for="taxa" class="input-text--outlined">
+								<input type="text" name="taxa" id="taxa" data-chip="Taxa">
+								<span data-label="Taxon"></span></label>
+							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
+						</div>
+						<div>
+						  <input type="checkbox" name="usethes" id="usethes" data-chip="Exclude Synonyms" value="1">
+						  <span class="ml-1">Exclude Synonyms</span>
 						</div>
 					</div>
 				</section>
@@ -496,36 +519,6 @@ $siteData = new DatasetsMetadata();
 										<span data-label="Radius"></span></label>
 									<span class="assistive-text">Any positive values.</span>
 								</div>
-							</div>
-						</div>
-					</div>
-				</section>
-				<!-- Collecting Event -->
-				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="coll-event" class="accordion-selector" />
-					<!-- Accordion header -->
-					<label for="coll-event" class="accordion-header">Collecting Event</label>
-					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-coll-event">
-							<div class="input-text-container">
-								<label for="eventdate1" class="input-text--outlined">
-									<input type="text" name="eventdate1" data-chip="Event Date Start">
-									<span data-label="Collection Start Date"></span></label>
-								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
-							</div>
-							<div class="input-text-container">
-								<label for="eventdate2" class="input-text--outlined">
-									<input type="text" name="eventdate2" data-chip="Event Date End">
-									<span data-label="Collection End Date"></span></label>
-								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
-							</div>
-							<div class="input-text-container">
-								<label for="collector" class="input-text--outlined">
-									<input type="text" name="collector" data-chip="Collector/ORCID">
-									<span data-label="Collector/ORCID"></span></label>
-								<span class="assistive-text">Any part of a collector's name or ORCID iD (XXXX-XXXX-XXXX-XXXX).</span>
 							</div>
 						</div>
 					</div>

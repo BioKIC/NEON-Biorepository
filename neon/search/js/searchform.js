@@ -227,7 +227,7 @@ function updateChip(e) {
     )
   );
   if (!biorepoAllChecked && biorepoChecked.length > 0) {
-    addChip(getCollsChips(getCriterionSelected(), 'Some Biorepo Colls'));
+    addChip(getCollsChips(getCriterionSelected(), 'Some Sample Types'));
   }
   // if any additional NEON colls are selected (except for "all"), then add chip
   let addCols = document.querySelectorAll(
@@ -237,7 +237,7 @@ function updateChip(e) {
     '#neonext-collections-list input[type=checkbox]:checked'
   );
   if (addColsChecked.length > 0 && addColsChecked.length < addCols.length) {
-    addChip(getCollsChips('neonext-collections-list', 'Some Add NEON Colls'));
+    addChip(getCollsChips('neonext-collections-list', 'Some Sample Types at Other Repos'));
   }
   // if any external NEON colls are selected (expect for "all"), then add chip
   let extCols = document.querySelectorAll(
