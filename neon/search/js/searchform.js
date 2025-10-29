@@ -408,30 +408,66 @@ function toggleAllSelector() {
  * @param {String} e.data.element Selector for element containing
  * list, should be passed when binding function to element
  */
-function updateParentState(childCheckbox) {
-  let parentNode = childCheckbox.closest('ul')?.parentNode;
-  if (!parentNode) return;
 
-  let parentCheckbox = parentNode.querySelector('.all-selector');
-  if (!parentCheckbox) return;
+function updateGlobalMaster() {
+  const $allKids = $('#collections-list1 input.child:enabled, #collections-list2 input.child:enabled, #collections-list3 input.child:enabled');
+  const total = $allKids.length;
+  const checked = $allKids.filter(':checked').length;
+  const anyInd = $allKids.filter(function () { return this.indeterminate; }).length > 0;
+  const $master = $('#all-neon-colls-quick');
+  $master.prop('checked', total > 0 && checked === total && !anyInd);
+  $master.prop('indeterminate', (checked > 0 && checked < total) || anyInd);
+}
 
-  let options = parentNode.querySelectorAll('ul > li input.child:not(.all-selector):enabled');
-  let checkedOptions = parentNode.querySelectorAll('ul > li input.child:not(.all-selector):checked');
+function updateAncestors(fromCheckbox) {
+  // start at the LI that owns this checkbox
+  let li = fromCheckbox.closest('li');
 
-  parentCheckbox.checked = options.length === checkedOptions.length;
+  while (li) {
+    const parentLi = li.parentElement?.closest('li');
+    if (!parentLi) break; // reached the root
 
-  // recurse upward if parent is itself a child
-  if (parentCheckbox.classList.contains('child')) {
-    updateParentState(parentCheckbox);
+    const parentCb = parentLi.querySelector(':scope > input.all-selector');
+    if (parentCb) {
+      // consider ONLY direct child checkboxes (leaves or groups)
+      const kids = parentLi.querySelectorAll(':scope > ul > li > input.child:enabled');
+
+      let total = 0, checkedCount = 0, anyIndeterminate = false;
+      kids.forEach(cb => {
+        total++;
+        if (cb.indeterminate) anyIndeterminate = true;
+        if (cb.checked) checkedCount++;
+      });
+
+      parentCb.checked = total > 0 && checkedCount === total && !anyIndeterminate;
+      parentCb.indeterminate = anyIndeterminate || (checkedCount > 0 && checkedCount < total);
+    }
+
+    // climb
+    li = parentLi;
   }
 }
 
 function autoToggleSelector(e) {
-  if (e.type === 'click' || e.type === 'change') {
-    if (e.target.classList.contains('child')) {
-      updateParentState(e.target);
+  if (e.type !== 'click' && e.type !== 'change') return;
+
+  const t = e.target;
+  if (!t.classList.contains('child')) return;
+
+  // If a group/all-selector changed, propagate to all descendants first
+  if (t.classList.contains('all-selector')) {
+    const li = t.closest('li');
+    if (li) {
+      li.querySelectorAll(':scope ul input.child:enabled').forEach(cb => {
+        cb.checked = t.checked;
+        cb.indeterminate = false;
+      });
     }
   }
+
+  // Then recompute all ancestors up to the root
+  updateAncestors(t);
+  updateGlobalMaster();
 }
 
 /**
@@ -916,16 +952,16 @@ formInputs.forEach((formInput) => {
 // on default (on document load): All Neon Collections, All Domains & Sites, Include other IDs, All Domains & Sites
 window.addEventListener('load', updateChip);
 // Binds expansion function to plus and minus icons in selectors, uses jQuery
-$('.expansion-icon').click(function () {
-  if ($(this).siblings('ul').hasClass('collapsed')) {
-    $(this)
-      .html('indeterminate_check_box')
-      .siblings('ul')
-      .removeClass('collapsed');
-  } else {
-    $(this).html('add_box').siblings('ul').addClass('collapsed');
-  }
+$('#collections-list1, #collections-list2, #collections-list3').on('click', '.expansion-icon', function () {
+  const $li = $(this).closest('li');
+  const $childUl = $li.children('ul').first();
+
+  if (!$childUl.length) return; // no children here
+
+  const isCollapsed = $childUl.toggleClass('collapsed').hasClass('collapsed');
+  $(this).text(isCollapsed ? 'add_box' : 'indeterminate_check_box');
 });
+
 // Hides MOSC-BU checkboxes
 hideColCheckbox(58);
 // Hides identified zoops for now

@@ -34,7 +34,6 @@ $siteData = new DatasetsMetadata();
 		  const icon = label.querySelector('.expansion-icon');
 		  if (ul) {
 			ul.classList.toggle('collapsed');
-			icon.textContent = ul.classList.contains('collapsed') ? 'add_box' : 'indeterminate_check_box';
 		  }
 		});
 	  });
@@ -45,7 +44,6 @@ $siteData = new DatasetsMetadata();
 		  const checkbox = label.previousElementSibling; // the <input type="checkbox">
 		  if (checkbox && checkbox.type === 'checkbox') {
 			checkbox.checked = !checkbox.checked;
-			updateParentCheckboxes(checkbox);
 		  }
 		});
 	  });
@@ -218,13 +216,17 @@ $siteData = new DatasetsMetadata();
 									// render the full tree
 									if ($dataArr) {
 										echo '<ul id="collections-list1">';
-										echo '<li><input type="checkbox" class="all-selector all-neon-colls" checked>';
-										echo '<span class="material-icons expansion-icon">indeterminate_check_box</span>';
-										echo '<span>All Sample Types</span>';
-									
-										echo renderTree($dataArr);
-									
-										echo '</li></ul>';
+										echo '  <li>';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls" checked>';
+										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '    <span>All Sample Types</span>';
+										
+										echo '    <ul>';
+										echo          renderTree($dataArr);
+										echo '    </ul>';
+										
+										echo '  </li>';
+										echo '</ul>';
 									}
 									?>
 								</div>
@@ -238,14 +240,18 @@ $siteData = new DatasetsMetadata();
 									
 									// render the full tree
 									if ($dataArr) {
-										echo '<ul id="collections-list1">';
-										echo '<li><input type="checkbox" class="all-selector all-neon-colls" checked>';
-										echo '<span class="material-icons expansion-icon">indeterminate_check_box</span>';
-										echo '<span>All Sample Types</span>';
-									
-										echo renderTree($dataArr);
-									
-										echo '</li></ul>';
+										echo '<ul id="collections-list2">';
+										echo '  <li>';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls" checked>';
+										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '    <span>All Sample Types</span>';
+										
+										echo '    <ul>';
+										echo          renderTree($dataArr);
+										echo '    </ul>';
+										
+										echo '  </li>';
+										echo '</ul>';
 									}
 									?>
 								</div>
@@ -259,14 +265,18 @@ $siteData = new DatasetsMetadata();
 									
 									// render the full tree
 									if ($dataArr) {
-										echo '<ul id="collections-list1">';
-										echo '<li><input type="checkbox" class="all-selector all-neon-colls" checked>';
-										echo '<span class="material-icons expansion-icon">indeterminate_check_box</span>';
-										echo '<span>All Sample Types</span>';
-									
-										echo renderTree($dataArr);
-									
-										echo '</li></ul>';
+										echo '<ul id="collections-list3">';
+										echo '  <li>';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls" checked>';
+										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '    <span>All Sample Types</span>';
+										
+										echo '    <ul>';
+										echo          renderTree($dataArr);
+										echo '    </ul>';
+										
+										echo '  </li>';
+										echo '</ul>';
 									}
 									?>
 								</div>
