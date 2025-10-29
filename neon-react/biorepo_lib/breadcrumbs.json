@@ -100,19 +100,19 @@
   "/collections/misc/browsecollprofiles.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles" }
+    { "name": "Browse Sample Types" }
     ],
   "/collections/misc/collprofiles.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "browsecollprofiles.php" },
-    { "name": "Collection Profile" }
+    { "name": "Browse Sample Types", "href": "browsecollprofiles.php" },
+    { "name": "Sample Type Profile" }
     ],
   "/collections/misc/neoncollprofiles.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "browsecollprofiles.php" },
-    { "name": "Collection Profile" }
+    { "name": "Browse Sample Types", "href": "browsecollprofiles.php" },
+    { "name": "Sample Type Profile" }
     ],
   "/neon/index.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
@@ -213,57 +213,57 @@
   "/collections/editor/occurrencetabledisplay.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "../misc/browsecollprofiles.php" },
-    { "name": "Collection Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
     { "name": "Occurrence Table View" }
     ],
   "/collections/editor/batchdeterminations.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "../misc/browsecollprofiles.php" },
-    { "name": "Collection Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
     { "name": "Batch Determination Editor" }
     ],
   "/collections/misc/collmetadata.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "browsecollprofiles.php" },
-    { "name": "Collection Profile", "href": "neoncollprofiles.php?collid=#" },
+    { "name": "Browse Sample Types", "href": "browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "neoncollprofiles.php?collid=#" },
     { "name": "Collection Metadata" }
     ],
   "/collections/misc/collpermissions.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "browsecollprofiles.php" },
-    { "name": "Collection Profile", "href": "neoncollprofiles.php?collid=#" },
+    { "name": "Browse Sample Types", "href": "browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "neoncollprofiles.php?collid=#" },
     { "name": "Collection Permissions" }
     ],
   "/collections/admin/specupload.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "../misc/browsecollprofiles.php" },
-    { "name": "Collection Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
     { "name": "Data Upload" }
     ],
   "/collections/specprocessor/index.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "../misc/browsecollprofiles.php" },
-    { "name": "Collection Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
     { "name": "Processing Toolbox" }
     ],
   "/collections/editor/editreviewer.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "../misc/browsecollprofiles.php" },
-    { "name": "Collection Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
     { "name": "Specimen Edit Reviewer" }
     ],
   "/collections/admin/restorebackup.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
     { "name": "About Samples", "href": "../../misc/aboutsamples.php" },
-    { "name": "Browse Collection Profiles", "href": "../misc/browsecollprofiles.php" },
-    { "name": "Collection Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
     { "name": "Restore Backup File" }
     ],
   "/taxa/index.php": [
