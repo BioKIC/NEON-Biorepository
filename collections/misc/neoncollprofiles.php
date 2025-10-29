@@ -669,18 +669,14 @@ ER  -
 							if ($collData['publishtogbif'] && $datasetKey && file_exists($SERVER_ROOT . '/includes/citationgbif.php')) {
 								$gbifUrl = 'http://api.gbif.org/v1/dataset/' . $datasetKey;
 								$responseData = json_decode(file_get_contents($gbifUrl));
+								if ($responseData === null && json_last_error() !== JSON_ERROR_NONE) {
+									error_log('Error in JSON decoding: ' . json_last_error_msg());
+									throw new Exception('Error in JSON decoding');
+								}
 								$collData['gbiftitle'] = $responseData->title;
 								$collData['doi'] = $responseData->doi;
 								$_SESSION['colldata'] = $collData;
 								include($SERVER_ROOT . '/includes/citationgbif.php');
-							} elseif ($collData['dynamicproperties'] && array_key_exists('edi', json_decode($collData['dynamicproperties'], true))) { // If EDI DOI is available, fetch EDI format from API
-								$doiNum = json_decode($collData['dynamicproperties'], true)['edi'];
-								if (substr($doiNum, 0, 4) === 'doi:') {
-									$doiNum = substr($doiNum, 4);
-								}
-								$collData['doi'] = $doiNum;
-								$_SESSION['colldata'] = $collData;
-								include($SERVER_ROOT . '/includes/citationedi.php');
 							} else {
 								include($SERVER_ROOT . '/includes/citationcollection.php');
 							}
