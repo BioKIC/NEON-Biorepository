@@ -219,7 +219,7 @@ class OccurrenceEditReview extends Manager{
 				$sqlBase .= 'AND (r.initialtimestamp >= "'.$this->startDateFilter.'") ';
 			}
 			if($this->endDateFilter){
-				$sqlBase .= 'AND (r.initialtimestamp <= "'.$this->endDateFilter.'") ';
+				$sqlBase .= 'AND (r.initialtimestamp < "'.$this->endDateFilter.'") ';
 			}
 			if($this->queryOccidFilter){
 				$sqlBase .= 'AND (r.occid = '.$this->queryOccidFilter.') ';
@@ -591,7 +591,7 @@ class OccurrenceEditReview extends Manager{
 
 	public function setEndDateFilter($d){
 		if(preg_match('/^[\d-]+$/', $d)){
-			$this->endDateFilter = $d;
+			$this->endDateFilter = date('Y-m-d', strtotime($d . ' +1 day'));
 		}
 	}
 
