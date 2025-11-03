@@ -386,6 +386,16 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$identFrag = array();
 			$matSampleFrag = array();
 			foreach($catArr as $v){
+				// Begin NEON customization, remove all range searching
+				$vStr = trim($v);
+				if($vStr !== ''){
+					$inFrag[] = $vStr;
+					if(is_numeric($vStr) && substr($vStr,0,1) == '0'){
+						$inFrag[] = ltrim($vStr, '0');
+					}
+				}
+			}
+				/*
 				if($p = strpos($v,' - ')){
 					$term1 = trim(substr($v,0,$p));
 					$term2 = trim(substr($v,$p+3));
@@ -398,7 +408,6 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 							$betweenFrag[] = '(o.othercatalognumbers BETWEEN '.$term1.' AND '.$term2.')';
 							//$betweenFrag[] = '(oi.identifiervalue BETWEEN '.$term1.' AND '.$term2.')';
 							$identFrag[] = '(identifiervalue BETWEEN '.$term1.' AND '.$term2.')';
-							End of NEON Customization */
 
 						}
 
@@ -406,11 +415,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 						if($includeMaterialSample){
 							$matSampleFrag[] = '(catalogNumber BETWEEN '.$term1.' AND '.$term2.')';
 						}
-						End of NEON Customization */
 
 					}
 
-					/* NEON customization - commented out
 					else{
 						$catTerm = 'o.catalogNumber BETWEEN "'.$term1.'" AND "'.$term2.'"';
 						if(strlen($term1) == strlen($term2)) $catTerm .= ' AND length(o.catalogNumber) = '.strlen($term2);
@@ -421,7 +428,6 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 							$identFrag[] = '(identifiervalue BETWEEN "'.$term1.'" AND "'.$term2.'")';
 						}
 					}
-					End of NEON Customization */
 
 				}
 				else{
@@ -432,6 +438,8 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 					}
 				}
 			}
+			 End of NEON customizaton */
+
 			$catWhere = '';
 			if($betweenFrag){
 				$catWhere .= 'OR '.implode(' OR ',$betweenFrag);
