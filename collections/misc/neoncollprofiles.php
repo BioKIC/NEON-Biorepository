@@ -574,7 +574,7 @@ ER  -
 			
 			<div class="grid grid-cols-1 gap-4 mb-6">
 				<div id="fulldescription-container">
-					<h2 class="text-xl font-semibold mb-2">About</h2>
+					<h2 class="text-xl font-semibold mb-2">Abstract</h2>
 					<?php
 					echo $collData["fulldescription"];
 					?>
