@@ -29,7 +29,7 @@
     "links": [
         {
           "name": "Biorepository Sample Portal",
-          "hash": "search/index.php"
+          "hash": "neon/search/index.php"
         },
         {
           "name": "About Samples",
