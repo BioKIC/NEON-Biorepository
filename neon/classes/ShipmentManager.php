@@ -360,32 +360,35 @@ class ShipmentManager{
 			($this->uploadFileName?'"'.$this->cleanInStr($this->uploadFileName).'"':'NULL').','.
 			$GLOBALS['SYMB_UID'].')';
 		//echo '<div>'.$sql.'</div>';
-		if($this->conn->query($sql)){
+		try {
+			$this->conn->query($sql);
 			$shipmentPK = $this->conn->insert_id;
 			echo '<li>New shipment created (#<a href="manifestviewer.php?shipmentPK='.$shipmentPK.'" target="_blank">'.$recArr['shipmentid'].'</a>)</li>';
-		}
-		else{
-			if($this->conn->errno == 1062){
+		} catch (mysqli_sql_exception $e) {
+			if ($e->getCode() == 1062) {
 				$existingFileName = '';
-				$sql = 'SELECT shipmentpk, filename FROM NeonShipment WHERE shipmentID = "'.$this->cleanInStr($recArr['shipmentid']).'"';
-				$rs = $this->conn->query($sql);
-				if($r = $rs->fetch_object()){
+				$sqlSel = 'SELECT shipmentpk, filename FROM NeonShipment WHERE shipmentID = "'.$this->cleanInStr($recArr['shipmentid']).'"';
+				$rs = $this->conn->query($sqlSel);
+				if ($r = $rs->fetch_object()) {
 					$shipmentPK = $r->shipmentpk;
-					$existingFileName = $r->filename;
+					$existingFileName = $r->filename ?? '';
 				}
 				$rs->free();
-				if(!in_array($this->uploadFileName,explode('|',$existingFileName))){
-					//Append new filename to existing
-					$this->conn->query('UPDATE NeonShipment SET filename = "'.trim($this->cleanInStr($existingFileName.'|'.$this->uploadFileName),' |').'" WHERE shipmentpk = '.$shipmentPK);
+		
+				if (!in_array($this->uploadFileName, explode('|', (string)$existingFileName), true)) {
+					$newName = trim($this->cleanInStr($existingFileName.'|'.$this->uploadFileName), ' |');
+					$this->conn->query('UPDATE NeonShipment SET filename = "'.$newName.'" WHERE shipmentpk = '.$shipmentPK);
 				}
+		
 				echo '<li><span style="color:orange">NOTICE:</span> Samples mapped to existing shipment: <a href="manifestviewer.php?shipmentPK='.$shipmentPK.'" target="_blank">'.$recArr['shipmentid'].'</a></li>';
-			}
-			else{
-				echo '<li style="margin-left:15px"><span style="color:red">ERROR</span> loading shipment record (errNo: '.$this->conn->errno.'): '.$this->conn->error.'</li>';
+		
+			} else {
+				echo '<li style="margin-left:15px"><span style="color:red">ERROR</span> loading shipment record (errNo: '.$e->getCode().'): '.$e->getMessage().'</li>';
 				echo '<li style="margin-left:15px">SQL: '.$sql.'</li>';
 				return 0;
 			}
 		}
+
 		return $shipmentPK;
 	}
 
@@ -786,29 +789,34 @@ class ShipmentManager{
 							(isset($recArr['filtervolume']) && $recArr['filtervolume']?'"'.$this->cleanInStr($recArr['filtervolume']).'"':'NULL').','.
 							(isset($recArr['domainremarks']) && $recArr['domainremarks']?'"'.$this->cleanInStr($recArr['domainremarks']).'"':'NULL').','.
 							(isset($recArr['samplenotes']) && $recArr['samplenotes']?'"'.$this->cleanInStr($recArr['samplenotes']).'"':'NULL').')';
-						if($this->conn->query($sql)){
+						try {
+							$this->conn->query($sql);
 							$status = true;
-							if(isset($recArr['checkinsample']) && $recArr['checkinsample']){
-								$sqlUpdate = 'UPDATE NeonSample SET checkinUid = '.$GLOBALS['SYMB_UID'].', checkinTimestamp = now(), sampleReceived = 1, acceptedForAnalysis = 1, sampleCondition = "ok" WHERE (samplePK = '.$this->conn->insert_id.') ';
-								if(!$this->conn->query($sqlUpdate)){
-									$this->errorStr = 'ERROR checking-in NEON sample(2): '.$this->conn->error;
+						
+							if (!empty($recArr['checkinsample'])) {
+								try {
+									$sqlUpdate = 'UPDATE NeonSample
+												  SET checkinUid = '.$GLOBALS['SYMB_UID'].',
+													  checkinTimestamp = NOW(),
+													  sampleReceived = 1,
+													  acceptedForAnalysis = 1,
+													  sampleCondition = "ok"
+												  WHERE samplePK = '.$this->conn->insert_id;
+									$this->conn->query($sqlUpdate);
+								} catch (mysqli_sql_exception $e) {
+									$this->errorStr = 'ERROR checking-in NEON sample(2): '.$e->getMessage();
 									$status = false;
 								}
 							}
-						}
-						else{
-							if($this->conn->errno == 1062){
-								$id = $sampleCode;
-								if(!$id) $id = $sampleID;
+						
+						} catch (mysqli_sql_exception $e) {
+							if ($e->getCode() == 1062) {
+								$id = $sampleCode ?: $sampleID;
 								$this->errorStr = '<span style="color:red">FAILURE:</span> record already in system with duplicate: <a href="manifestviewer.php?quicksearch='.$id.'" target="_blank">'.$id.'</a>';
-								if($verbose) echo '<li>'.$this->errorStr.'</li>';
-							}
-							else{
-								$this->errorStr = '<span style="color:red">ERROR</span> adding sample: '.$this->conn->error;
-								if($verbose){
-									echo '<li style="margin-left:15px">'.$this->errorStr.'</li>';
-									//echo '<li style="margin-left:25px">SQL: '.$sql.'</li>';
-								}
+								if ($verbose) echo '<li>'.$this->errorStr.'</li>';
+							} else {
+								$this->errorStr = '<span style="color:red">ERROR</span> adding sample: '.$e->getMessage();
+								if ($verbose) echo '<li style="margin-left:15px">'.$this->errorStr.'</li>';
 							}
 							$status = false;
 						}
