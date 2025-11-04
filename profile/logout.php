@@ -1,5 +1,4 @@
 <?php
-define('IN_AUTH_CALLBACK', true);
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OpenIdProfileManager.php');
 

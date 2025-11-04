@@ -10,25 +10,6 @@ $CODE_VERSION = '3.3.9';
 set_include_path(get_include_path() . PATH_SEPARATOR . $SERVER_ROOT . PATH_SEPARATOR . $SERVER_ROOT.'/config/' . PATH_SEPARATOR . $SERVER_ROOT.'/classes/');
 
 session_start(array('gc_maxlifetime'=>3600,'cookie_path'=>$CLIENT_ROOT,'cookie_secure'=>true,'cookie_httponly'=>true, 'use_only_cookies' => true));
-//
-//$_SESSION = [];            // empty the session array
-//
-//// remove the session cookie from the browser
-//if (ini_get("session.use_cookies")) {
-//    $params = session_get_cookie_params();
-//    setcookie(
-//        session_name(),
-//        '',
-//        time() - 42000,
-//        $params["path"],
-//        $params["domain"],
-//        $params["secure"],
-//        $params["httponly"]
-//    );
-//}
-//
-//// destroy the session file on the server
-//session_destroy();
 
 include_once($SERVER_ROOT . '/classes/utilities/Encryption.php');
 include_once($SERVER_ROOT . '/classes/ProfileManager.php');
@@ -42,64 +23,31 @@ if (isset($_SESSION['force_logout'])){
 }
 $pHandler = null;
 
-//neon edit
 $PARAMS_ARR = Array();				//params => 'un=egbot&dn=Edward&uid=301'
 $USER_RIGHTS = Array();
 if(isset($_SESSION['userparams'])) $PARAMS_ARR = $_SESSION['userparams'];
 if(isset($_SESSION['userrights'])) $USER_RIGHTS = $_SESSION['userrights'];
-//don't run user profile code if symbbase is being called by authCallback.php or logout.php
-if (!defined('IN_AUTH_CALLBACK') && !isset($_SESSION['force_logout']) && !isset($_SESSION['silent_attempted'])) {
-	// Try silent login with Auth0
-	if (!isset($_SESSION['userparams'])) {
-		include_once($SERVER_ROOT . '/config/auth_config.php');
-		require_once($SERVER_ROOT . '/vendor/autoload.php');
-		
-		$AUTH_PROVIDER = $AUTH_PROVIDER ?? 'oid';
-		$oidc = new \Jumbojett\OpenIDConnectClient(
-		  $PROVIDER_URLS[$AUTH_PROVIDER],
-		  $CLIENT_IDS[$AUTH_PROVIDER],
-		  $CLIENT_SECRETS[$AUTH_PROVIDER]
-		);
-		$oidc->setRedirectUrl(GeneralUtil::getDomain() . $CLIENT_ROOT . $CALLBACK_REDIRECT);
-		$oidc->addScope(['openid','email']);
-		$oidc->addAuthParam(['prompt' => 'none']);
-	
-		try {
-			//silent login
-			$_SESSION['silent_attempted'] = true;
-			$oidc->authenticate();
-		} catch (Exception $e) {
-			if (strpos($e->getMessage(), 'login_required') !== false) {
-				// Not logged in anywhere → leave as guest
-			} else {
-				throw $e;
-			}
+if(isset($_COOKIE['SymbiotaCrumb']) && !$PARAMS_ARR){
+	$tokenArr = json_decode(Encryption::decrypt($_COOKIE['SymbiotaCrumb']), true);
+	if($tokenArr){
+		if($pHandler === null) $pHandler = new ProfileManager();
+		if((isset($_REQUEST['submit']) && $_REQUEST['submit'] == 'logout') || isset($_REQUEST['loginas'])){
+	        $pHandler->deleteToken($pHandler->getUid($tokenArr[0]),$tokenArr[1]);
 		}
-	}
-
-	if(isset($_COOKIE['SymbiotaCrumb']) && !$PARAMS_ARR){
-		$tokenArr = json_decode(Encryption::decrypt($_COOKIE['SymbiotaCrumb']), true);
-		if($tokenArr){
-			if($pHandler === null) $pHandler = new ProfileManager();
-			if((isset($_REQUEST['submit']) && $_REQUEST['submit'] == 'logout') || isset($_REQUEST['loginas'])){
-				$pHandler->deleteToken($pHandler->getUid($tokenArr[0]),$tokenArr[1]);
-			}
-			else{
-				if($pHandler->setUserName($tokenArr[0])){
-					$pHandler->setRememberMe(true);
-					$pHandler->setToken($tokenArr[1]);
-					if($pHandler->authenticate()){
-						if(isset($_SESSION['userparams'])) $PARAMS_ARR = $_SESSION['userparams'];
-						if(isset($_SESSION['userrights'])) $USER_RIGHTS = $_SESSION['userrights'];
-					}
-					else $pHandler->reset();
+		else{
+			if($pHandler->setUserName($tokenArr[0])){
+				$pHandler->setRememberMe(true);
+				$pHandler->setToken($tokenArr[1]);
+				if($pHandler->authenticate()){
+					if(isset($_SESSION['userparams'])) $PARAMS_ARR = $_SESSION['userparams'];
+					if(isset($_SESSION['userrights'])) $USER_RIGHTS = $_SESSION['userrights'];
 				}
+				else $pHandler->reset();
 			}
 		}
 	}
 }
-	
-//end neon edit
+
 if(!isset($CSS_BASE_PATH) || $CSS_BASE_PATH == $CLIENT_ROOT . '/css/symb') $CSS_BASE_PATH = $CLIENT_ROOT . '/css';
 
 $EXTERNAL_PORTAL_HOSTS = [];
@@ -108,6 +56,7 @@ $USER_DISPLAY_NAME = (array_key_exists('dn',$PARAMS_ARR)?$PARAMS_ARR['dn']:'');
 $USERNAME = (array_key_exists('un',$PARAMS_ARR)?$PARAMS_ARR['un']:0);
 $SYMB_UID = (array_key_exists('uid',$PARAMS_ARR)?$PARAMS_ARR['uid']:0);
 $IS_ADMIN = (array_key_exists('SuperAdmin',$USER_RIGHTS)?1:0);
+
 
 $PORTAL_PRIVATE = $PRIVATE_VIEWING_ONLY ?? false;
 if (!$SYMB_UID && $PORTAL_PRIVATE){

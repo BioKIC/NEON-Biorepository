@@ -1,5 +1,4 @@
 <?php
-define('IN_AUTH_CALLBACK', true);
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OpenIdProfileManager.php');
 include_once($SERVER_ROOT . '/config/auth_config.php');
@@ -46,7 +45,7 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
   }
   catch (Exception $ex){
     $_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' ' . $ex->getMessage() . ' <ERR/>';
-    //header('Location:' . $CLIENT_ROOT . '/profile/index.php');
+    header('Location:' . $CLIENT_ROOT . '/profile/index.php');
     exit();
   }  
   if($status){
@@ -56,7 +55,7 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
 
     if($profManager->authenticate($sub, $PROVIDER_URLS[$AUTH_PROVIDER])){
       $profManager->linkThirdPartySid($sid, session_id(), $_SERVER['REMOTE_ADDR']);
-      if (isset($_SESSION['refurl']) && $_SESSION['refurl']) {
+      if($_SESSION['refurl']){
         header("Location:" . $_SESSION['refurl']);
         unset($_SESSION['refurl']);
       } else {
