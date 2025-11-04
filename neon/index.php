@@ -61,6 +61,7 @@ if($isEditor){
 				if($IS_ADMIN){
 					?>
 					<li><a href="igsncontrol.php">NEON IGSN Control Panel</a></li>
+					<li><a href="editor/neoneditor.php">NEON Occurrence and Extended Data Editor</a></li>
 					<?php
 				}
 				?>
