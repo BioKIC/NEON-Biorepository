@@ -561,6 +561,8 @@ ER  -
 						}
 					}
 					?>
+				</div>
+				<div class="flex justify-left space-x-3 mt-4">
 					<a href="<?php echo $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>" target="_blank" rel="noopener noreferrer">
 							<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
 									<span class="MuiButton-label">Browse Records</span>

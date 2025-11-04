@@ -27,16 +27,17 @@ $siteData = new DatasetsMetadata();
 	<script>
 	document.addEventListener('DOMContentLoaded', () => {
 	  // expand/collapse groups
-	  document.querySelectorAll('.group-label').forEach(label => {
-		label.addEventListener('click', () => {
-		  const li = label.closest('li');
-		  const ul = li.querySelector('ul');
-		  const icon = label.querySelector('.expansion-icon');
-		  if (ul) {
-			ul.classList.toggle('collapsed');
-		  }
+		document.querySelectorAll('.group-label, .expansion-icon').forEach(el => {
+		  el.addEventListener('click', () => {
+			const li = el.closest('li');
+			const ul = li.querySelector(':scope > ul');
+			const icon = li.querySelector(':scope > .expansion-icon');
+			if (!ul) return;
+		
+			const isCollapsed = ul.classList.toggle('collapsed');
+			if (icon) icon.textContent = isCollapsed ? 'add_box' : 'indeterminate_check_box';
+		  });
 		});
-	  });
 	
 	  // toggle checkbox when clicking leaf text
 	  document.querySelectorAll('.leaf-label').forEach(label => {
@@ -77,6 +78,15 @@ $siteData = new DatasetsMetadata();
 	}
 	.leaf-label { cursor: pointer; user-select: none; }
 	.leaf-label:hover { text-decoration: underline; cursor: pointer; }
+	
+	#neonext-collections-list li > span.group-label {
+	  cursor: pointer;
+	  text-decoration: none;
+	}
+	
+	#neonext-collections-list li > span.group-label:hover {
+	  text-decoration: underline;
+	}
 	</style>
 </head>
 
@@ -134,48 +144,6 @@ $siteData = new DatasetsMetadata();
 		<form id="params-form">
 			<!-- Criteria forms -->
 			<div class="accordions">
-				<!-- Sample Properties -->
-				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="sample" class="accordion-selector"/>
-					<!-- Accordion header -->
-					<label for="sample" class="accordion-header">Sample Properties</label>
-					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-sample">
-							<div>
-								<div class="text-area-container">
-									<label for="" class="text-area--outlined">
-										<textarea name="catnum" data-chip="Identifier" style="width: 100%"></textarea>
-										<span data-label="Identifiers"></span></label>
-									<span class="assistive-text">Separate multiple with commas or new lines.</span>
-								</div>
-								<div style="display:none">
-									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>
-									<label for="includeothercatnum">Search all identifiers</label>
-								</div>
-								<div>
-									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
-									<label for="includematerialsample">Include material samples</label>
-								</div>
-							</div>
-							<div>
-								<div>
-									<input type="checkbox" name="hasimages" value=1 data-chip="Only with images">
-									<label for="hasimages">Specimens with images</label>
-								</div>
-								<div>
-									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
-									<label for="hasgenetic">Specimens with genetic data</label>
-								</div>
-								<div>
-									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
-									<label for="availableforloan">Specimens available for loan</label>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
 				<!-- Collections -->
 				<section>
 					<!-- Accordion selector -->
@@ -190,11 +158,15 @@ $siteData = new DatasetsMetadata();
 							<!-- External Collections -->
 							<div>
 								<ul id="neonext-collections-list">
-									<li class="Mui"><input id="all-neon-ext" data-chip="Sample Types at Other Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>At Other Repositories</span>
+									<li class="Mui"><input id="all-neon-ext" data-chip="Sample Types at Other Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span class="group-label">At Other Repositories</span>
 										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
 											echo '<ul class="collapsed">';
 											foreach ($collsArr as $result) {
-												echo "<li class='Mui'><input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'><span class='ml-1'><a href='../../collections/misc/collprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer'>{$result["collectionname"]} ({$result["institutioncode"]}  {$result["collectioncode"]})</span></a></li>";
+												echo "<li class='Mui'>";
+												echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
+												echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]} ({$result["institutioncode"]} {$result["collectioncode"]})</span>";
+												echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>";
+												echo "</li>";
 											}
 											echo '</ul>';
 										}; ?>
@@ -306,17 +278,22 @@ $siteData = new DatasetsMetadata();
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-locality">
-							<ul id="site-list"><input id="all-sites" data-chip="All Domains & Sites" type="checkbox" class="all-selector" checked="" data-form-id='search-form-locality'><span class="material-icons expansion-icon">indeterminate_check_box</span><span><a href="https://www.neonscience.org/field-sites/explore-field-sites" target="_blank" rel="noopener noreferrer">All NEON Domains and Sites</a></span>
+							<ul id="site-list"><li class='Mui'><input id="all-sites" data-chip="All Domains & Sites" type="checkbox" class="all-selector" checked="" data-form-id='search-form-locality'><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Domains and Sites</span>
 								<?php if ($domainsArr = $siteData->getNeonDomains()) {
 									echo '<ul>';
 									foreach ($domainsArr as $domain) {
-										echo "<li><input type='checkbox' id='{$domain["domainnumber"]}' class='all-selector child' name='datasetid' value='{$domain["datasetid"]}' checked=''><span class='material-icons expansion-icon'>add_box</span><span>{$domain["domainnumber"]} - {$domain["domainname"]}</span>";
+										echo "<li class='Mui'><input type='checkbox' id='{$domain["domainnumber"]}' class='all-selector child' name='datasetid' value='{$domain["datasetid"]}' checked=''><span class='material-icons expansion-icon'>add_box</span><span class='group-label'>{$domain["domainnumber"]} - {$domain["domainname"]}</span>";
 										echo "<ul class='collapsed'>";
 										// ECHO SITES PER DOMAINS
 										$sitesArr = $siteData->getNeonSitesByDom($domain["domainnumber"]);
 										if ($sitesArr) {
 											foreach ($sitesArr as $site) {
-												echo "<li><input type='checkbox' id='{$site["siteid"]}' name='datasetid' value={$site["datasetid"]} class='child' data-domain={$domain["domainnumber"]} checked=''><span class='ml-1'><a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer'>({$site["siteid"]}) {$site["sitename"]}</a></span></li>";
+												echo "<li class='Mui'>";
+												echo "<input type='checkbox' id='{$site["siteid"]}' name='datasetid' value='{$site["datasetid"]}' class='child' data-domain='{$domain["domainnumber"]}' checked>";
+												echo "<span class='leaf-label ml-1 child'>({$site["siteid"]}) {$site["sitename"]}</span>";
+												echo " <a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer' title='View Site Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>";
+												echo "</li>";
+
 											}
 										};
 										echo "</ul>";
@@ -324,6 +301,7 @@ $siteData = new DatasetsMetadata();
 									}
 									echo '</ul>';
 								}; ?>
+								</li>
 							</ul>
 							<div>
 								<div>
@@ -369,21 +347,63 @@ $siteData = new DatasetsMetadata();
 					<!-- Accordion selector -->
 					<input type="checkbox" id="coll-event" class="accordion-selector" checked=true />
 					<!-- Accordion header -->
-					<label for="coll-event" class="accordion-header">Collecting Event</label>
+					<label for="coll-event" class="accordion-header">Date</label>
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-coll-event">
 							<div class="input-text-container">
 								<label for="eventdate1" class="input-text--outlined">
 									<input type="text" name="eventdate1" data-chip="Event Date Start">
-									<span data-label="Collection Start Date"></span></label>
+									<span data-label="Start Date"></span></label>
 								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
 							</div>
 							<div class="input-text-container">
 								<label for="eventdate2" class="input-text--outlined">
 									<input type="text" name="eventdate2" data-chip="Event Date End">
-									<span data-label="Collection End Date"></span></label>
+									<span data-label="End Date"></span></label>
 								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+						</div>
+					</div>
+				</section>
+				<!-- Sample Properties -->
+				<section>
+					<!-- Accordion selector -->
+					<input type="checkbox" id="sample" class="accordion-selector"/>
+					<!-- Accordion header -->
+					<label for="sample" class="accordion-header">Sample Properties</label>
+					<!-- Accordion content -->
+					<div class="content">
+						<div id="search-form-sample">
+							<div>
+								<div class="text-area-container">
+									<label for="" class="text-area--outlined">
+										<textarea name="catnum" data-chip="Identifier" style="width: 100%"></textarea>
+										<span data-label="Identifiers"></span></label>
+									<span class="assistive-text">Separate multiple with commas or new lines.</span>
+								</div>
+								<div style="display:none">
+									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>
+									<label for="includeothercatnum">Search all identifiers</label>
+								</div>
+								<div>
+									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
+									<label for="includematerialsample">Include material samples</label>
+								</div>
+							</div>
+							<div>
+								<div>
+									<input type="checkbox" name="hasimages" value=1 data-chip="Only with images">
+									<label for="hasimages">Specimens with images</label>
+								</div>
+								<div>
+									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
+									<label for="hasgenetic">Specimens with genetic data</label>
+								</div>
+								<div>
+									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
+									<label for="availableforloan">Specimens available for loan</label>
+								</div>
 							</div>
 							<div class="input-text-container">
 								<label for="collector" class="input-text--outlined">

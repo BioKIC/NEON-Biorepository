@@ -199,7 +199,6 @@ select {
   -ms-grid-columns: 1fr 2fr;
       grid-template-columns: 1fr 2fr;
   grid-gap: 10px;
-  justify-items: center;
 }
 
 #search-form-colls ul {
