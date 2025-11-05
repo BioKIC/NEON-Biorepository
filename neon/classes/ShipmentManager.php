@@ -630,15 +630,15 @@ class ShipmentManager{
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				$occid = $r->occid;
-				if(strpos($r->identifierName,'sampleID')){
+				if (is_string($r->identifierName) && str_contains($r->identifierName, 'sampleID')) {
 					$identifierArr[$r->occid]['NEON sampleID']['idKey'] = $r->idomoccuridentifiers;
 					$identifierArr[$r->occid]['NEON sampleID']['idValue'] = $r->identifierValue;
 				}
-				elseif(strpos($r->identifierName,'sampleCode')){
+				elseif (is_string($r->identifierName) && str_contains($r->identifierName, 'sampleCode')) {
 					$identifierArr[$r->occid]['NEON sampleCode (barcode)']['idKey'] = $r->idomoccuridentifiers;
 					$identifierArr[$r->occid]['NEON sampleCode (barcode)']['idValue'] = $r->identifierValue;
 				}
-				elseif(strpos($r->identifierName,'sampleUUID')){
+				elseif (is_string($r->identifierName) && str_contains($r->identifierName, 'sampleUUID')) {
 					$identifierArr[$r->occid]['NEON sampleUUID']['idKey'] = $r->idomoccuridentifiers;
 					$identifierArr[$r->occid]['NEON sampleUUID']['idValue']  = $r->identifierValue;
 				}
