@@ -792,19 +792,10 @@ class ShipmentManager{
 						try {
 							$this->conn->query($sql);
 							$status = true;
-						
-							if (!empty($recArr['checkinsample'])) {
-								try {
-									$sqlUpdate = 'UPDATE NeonSample
-												  SET checkinUid = '.$GLOBALS['SYMB_UID'].',
-													  checkinTimestamp = NOW(),
-													  sampleReceived = 1,
-													  acceptedForAnalysis = 1,
-													  sampleCondition = "ok"
-												  WHERE samplePK = '.$this->conn->insert_id;
-									$this->conn->query($sqlUpdate);
-								} catch (mysqli_sql_exception $e) {
-									$this->errorStr = 'ERROR checking-in NEON sample(2): '.$e->getMessage();
+							if(isset($recArr['checkinsample']) && $recArr['checkinsample']){
+								$sqlUpdate = 'UPDATE NeonSample SET checkinUid = '.$GLOBALS['SYMB_UID'].', checkinTimestamp = now(), sampleReceived = 1, acceptedForAnalysis = 1, sampleCondition = "ok" WHERE (samplePK = '.$this->conn->insert_id.') ';
+								if(!$this->conn->query($sqlUpdate)){
+									$this->errorStr = 'ERROR checking-in NEON sample(2): '.$this->conn->error;
 									$status = false;
 								}
 							}
@@ -846,7 +837,7 @@ class ShipmentManager{
 		$sqlCond = '';
 		if($sampleID && $sampleClass) $sqlCond .= '(sampleID = "'.$this->cleanInStr($sampleID).'" AND sampleClass = "'.$this->cleanInStr($sampleClass).'") ';
 		if($sampleCode) $sqlCond .= ($sqlCond?'OR':'').' (sampleCode = "'.$this->cleanInStr($sampleCode).'")';
-		$sql = 'SELECT shipmentPK, sampleID, sampleCode FROM NeonSample WHERE (sampleReceived IS NULL) AND ('.$sqlCond.')';
+		$sql = 'SELECT shipmentPK, sampleID, sampleCode FROM NeonSample WHERE ((sampleReceived IS NULL) OR (sampleReceived = 1)) AND ('.$sqlCond.')';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
 			if($r->sampleID) $retArr[$r->shipmentPK]['sampleID'] = $r->sampleID;
