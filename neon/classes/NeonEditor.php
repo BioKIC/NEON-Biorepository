@@ -5,24 +5,26 @@ include_once('OmMaterialSample.php');
 include_once('OmAssociations.php');
 include_once('OmDeterminations.php');
 include_once('OmIdentifiers.php');
+include_once('OmOccurrenceEditor.php');
+include_once('OmGenetic.php');
 include_once('OccurrenceMaintenance.php');
 include_once('Media.php');
 include_once('utilities/UuidFactory.php');
 
-class OccurrenceImport extends UtilitiesFileImport {
+class NeonEditor extends UtilitiesFileImport {
 
-	private $collid;
-	private $collMetaArr = array();
 	private $importType;
 	private $createNewRecord = false;
 
 	private $importManager = null;
 
-	private const IMPORT_ASSOCIATIONS = 1;
+    private const IMPORT_ASSOCIATIONS = 1;
 	private const IMPORT_DETERMINATIONS = 2;
 	private const IMPORT_IMAGE_MAP = 3;
 	private const IMPORT_MATERIAL_SAMPLE = 4;
 	private const IMPORT_IDENTIFIERS = 5;
+    private const UPDATE_OCCURRENCE = 6;
+	private const IMPORT_GENETIC = 7;
 
 	function __construct() {
 		parent::__construct(null, 'write');
@@ -64,12 +66,6 @@ class OccurrenceImport extends UtilitiesFileImport {
 					}
 					$occurMain = new OccurrenceMaintenance($this->conn);
 					$this->logOrEcho($LANG['UPDATING_STATS'] . '...');
-					if (!$occurMain->updateCollectionStatsBasic($this->collid)) {
-						$errorArr = $occurMain->getErrorArr();
-						foreach ($errorArr as $errorStr) {
-							$this->logOrEcho($errorStr, 1);
-						}
-					}
 				}
 				$this->deleteImportFile();
 			}
@@ -143,7 +139,7 @@ class OccurrenceImport extends UtilitiesFileImport {
 					if ($errors = Media::getErrors()) {
 						$this->logOrEcho('ERROR: ' . array_pop($errors));
 					} else {
-						$this->logOrEcho($LANG['IMAGE_LOADED'] . ': <a href="../editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+						$this->logOrEcho($LANG['IMAGE_LOADED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
 						$status = true;
 					}
 				} catch (MediaException $th) {
@@ -179,8 +175,8 @@ class OccurrenceImport extends UtilitiesFileImport {
 					$paramArr['dateIdentified'] = 's.d.';
 				}
 				if ($detManager->insertDetermination($detArr)) {
-					$this->logOrEcho($LANG['DETERMINATION_ADDED'] . ': <a href="../editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-					$status = true;
+					 $this->logOrEcho($LANG['DETERMINATION_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+                    $status = true;
 				} else {
 					$this->logOrEcho('ERROR loading determination: ' . $detManager->getErrorMessage(), 1);
 				}
@@ -225,14 +221,15 @@ class OccurrenceImport extends UtilitiesFileImport {
 									$importManager->setAssocID($assocID);
 									if ($assocArr['relationship'] == 'DELETE') {
 										if ($importManager->deleteAssociation()) {
-											$this->logOrEcho($LANG['ASSOC_DELETED'] . ': <a href="../editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+                                            $this->logOrEcho($LANG['ASSOC_DELETED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+
 										} else {
 											$this->logOrEcho($LANG['ERROR_DELETING'] . ': ' . $importManager->getErrorMessage(), 1);
 										}
 									} else {
 										if ($importManager->updateAssociation($assocArr)) {
-											$this->logOrEcho($LANG['ASSOC_UPDATED'] . ': <a href="../editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-											$status = true;
+						                    $this->logOrEcho($LANG['ASSOC_UPDATED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+                                            $status = true;
 										} else {
 											$this->logOrEcho($LANG['ERROR_UPDATING'] . ': ' . $importManager->getErrorMessage(), 1);
 										}
@@ -242,8 +239,9 @@ class OccurrenceImport extends UtilitiesFileImport {
 								$this->logOrEcho($LANG['TARGET_NOT_FOUND'], 1);
 							}
 						} elseif ($importManager->insertAssociation($assocArr)) {
-							$this->logOrEcho($LANG['ASSOC_ADDED'] . ': <a href="../editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-							$status = true;
+							$this->logOrEcho($LANG['ASSOC_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+
+                            $status = true;
 						} else {
 							$this->logOrEcho($LANG['ERROR_ADDING'] . ': ' . $importManager->getErrorMessage(), 1);
 						}
@@ -265,8 +263,8 @@ class OccurrenceImport extends UtilitiesFileImport {
 					unset($msArr['ms_catalogNumber']);
 				}
 				if ($importManager->insertMaterialSample($msArr)) {
-					$this->logOrEcho($LANG['MAT_SAMPLE_ADDED'] . ': <a href="../editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-					$status = true;
+					$this->logOrEcho($LANG['MAT_SAMPLE_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+                    $status = true;
 				} else {
 					$this->logOrEcho('ERROR loading Material Sample: ' . $importManager->getErrorMessage(), 1);
 				}
@@ -286,6 +284,7 @@ class OccurrenceImport extends UtilitiesFileImport {
 					}
 				}
 				if (empty($identifierArr['occid'])) {
+                
 					$this->logOrEcho('ERROR loading identifier: occid could not be fetched from provided occurrence identifiers.', 1);
 					continue;
 				}
@@ -308,12 +307,12 @@ class OccurrenceImport extends UtilitiesFileImport {
 						}
 						if (!empty($postArr['replace-identifier'])) {
 							$status = $importManager->updateIdentifier($identifierArr);
-							$this->logOrEcho($LANG['IDENTIFIER_UPDATED'] . ': <a href="../editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+                            $this->logOrEcho($LANG['IDENTIFIER_UPDATED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
 						}
 					}
 					if (!$existingIdentifier) {
 						$status = $importManager->insertIdentifier($identifierArr);
-						$this->logOrEcho($LANG['IDENTIFIER_ADDED'] . ': <a href="../editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+						$this->logOrEcho($LANG['IDENTIFIER_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
 					}
 					if (!$status) {
 						if ($existingIdentifier) {
@@ -325,6 +324,65 @@ class OccurrenceImport extends UtilitiesFileImport {
 				}
 			}
 		}
+        elseif ($this->importType == self::UPDATE_OCCURRENCE) {
+            $importManager = new OmoccurrenceEditor($this->conn);
+            foreach ($occidArr as $occid) {
+                $importManager->setOccid($occid);
+                $occurArr = $importManager->getOccurArr($occid);
+                if (empty($occurArr) || empty($occurArr['occid'])) {
+                    $this->logOrEcho('ERROR: occid could not be fetched from provided occurrence identifiers.', 1);
+                    continue;
+                }
+                $inputArr = [];
+                $fieldArr = array_keys($importManager->getSchemaMap());
+                foreach ($fieldArr as $field) {
+                    $fieldLower = strtolower($field);
+                    if (isset($this->fieldMap[$fieldLower])) {
+                        $srcIndex = $this->fieldMap[$fieldLower];
+                        $inputArr[$field] = isset($recordArr[$srcIndex]) ? $this->encodeString($recordArr[$srcIndex]) : null;
+                    }
+                }
+                $inputArr['occid'] = $occid;
+                $status = $importManager->updateOccurrence($inputArr,$occurArr,$postArr);
+                if ($status){
+                    $this->logOrEcho('Occurrence Updated' . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+                }
+                if (!$status) {
+                    $this->logOrEcho('ERROR updating occurrence <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid .'" target="_blank">' . $occid . '</a>'. $importManager->getErrorMessage(), 1);
+                }
+            }
+        }
+		elseif ($this->importType == self::IMPORT_GENETIC) {
+			$importManager = new OmGenetic($this->conn);
+			foreach ($occidArr as $occid) {
+				$importManager->setOccid($occid);
+				$fieldArr = array_keys($importManager->getSchemaMap());
+				$genArr = array();
+					foreach ($fieldArr as $field) {
+						$fieldLower = strtolower($field);
+						if (isset($this->fieldMap[$fieldLower])) {
+							$value = $recordArr[$this->fieldMap[$fieldLower]] ?? null;
+							$genArr[$field] = $this->encodeString($value);
+						}
+					}
+				}
+				if($postArr['action'] == 'add'){
+					if ($importManager->insertGeneticLink($genArr) ) {
+						$this->logOrEcho('Genetic links loaded: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+						$status = true;
+						} else {
+						$this->logOrEcho('ERROR loading Genetic Link: ' . $importManager->getErrorMessage(), 1);
+					}
+				} elseif($postArr['action'] == 'update'){
+					if ($importManager->updateGeneticLink($genArr) ) {
+						$this->logOrEcho('Genetic links updated: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+						$status = true;
+					} else {
+						$this->logOrEcho('ERROR updating Genetic Link: ' . $importManager->getErrorMessage(), 1);
+					}
+				}
+
+			}
 		return $status;
 	}
 
@@ -350,57 +408,30 @@ class OccurrenceImport extends UtilitiesFileImport {
 			$sql .= 'LEFT JOIN omoccuridentifiers i ON o.occid = i.occid ';
 		}
 		if ($sqlConditionArr) {
-			$sql .= 'WHERE (o.collid = ' . $this->collid . ') AND (' . implode(' OR ', $sqlConditionArr) . ') ';
+			$sql .= 'WHERE (' . implode(' OR ', $sqlConditionArr) . ') ';
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
 				$retArr[] = $r->occid;
 			}
 			$rs->free();
 		}
-		if (!$retArr) {
-			if ($this->createNewRecord) {
-				$newOccid = $this->insertNewOccurrence($identifierArr);
-				if ($newOccid) $retArr[] = $newOccid;
-			} else $this->logOrEcho('SKIPPED: Unable to find record matching any provided identifier(s): ' . implode(', ', $identifierArr), 1);
-		}
+        if ($retArr) {
+            if (count($retArr) > 1) {
+                $this->logOrEcho(
+                    'ERROR: Identifier matches multiple occurrence records: ' . implode(', ', $retArr),
+                    1
+                );
+                $retArr = array();
 
+            }
+        }
+        else {
+            $this->logOrEcho(
+                'SKIPPED: Unable to find record matching any provided identifier(s): ' . implode(', ', $identifierArr),
+                1
+            );
+        }
 		return $retArr;
-	}
-
-	protected function insertNewOccurrence($identifierArr) {
-		$newOccid = 0;
-		if (isset($identifierArr['occurrenceID'])) {
-			$this->logOrEcho('SKIPPED: Unable to create new record based on occurrenceID', 1);
-			return false;
-		}
-		$catNum = null;
-		if (isset($identifierArr['catalogNumber'])) $catNum = $identifierArr['catalogNumber'];
-		$sql = 'INSERT INTO omoccurrences(collid, catalogNumber, recordID, processingstatus, recordEnteredBy, dateentered) VALUES(?, ?, ?, "unprocessed", ?, now())';
-		if ($stmt = $this->conn->prepare($sql)) {
-			$recordID = UuidFactory::getUuidV4();
-			$stmt->bind_param('isss', $this->collid, $catNum, $recordID, $GLOBALS['USERNAME']);
-			$stmt->execute();
-			$newOccid = $stmt->insert_id;
-			$stmt->close();
-		}
-		if ($newOccid) {
-			if (isset($identifierArr['otherCatalogNumbers'])) $this->insertAdditionalIdentifier($newOccid, $identifierArr['otherCatalogNumbers']);
-			$this->logOrEcho('Unable to find record with matching ' . implode(',', $identifierArr) . '; new occurrence record created', 1);
-		}
-		return $newOccid;
-	}
-
-	protected function insertAdditionalIdentifier($occid, $identifierValue) {
-		$status = false;
-		$sql = 'INSERT INTO omoccuridentifiers(occid, identifierValue, modifiedUid) VALUES(?, ?, ?) ';
-		if ($stmt = $this->conn->prepare($sql)) {
-			$stmt->bind_param('iss', $occid, $identifierValue, $GLOBALS['SYMB_UID']);
-			$stmt->execute();
-			if ($stmt->affected_rows || !$stmt->error) $status = true;
-			else $this->errorMessage = 'ERROR inserting additional identifier: ' . $stmt->error;
-			$stmt->close();
-		} else $this->errorMessage = 'ERROR preparing statement for inserting additional identifier: ' . $this->conn->error;
-		return $status;
 	}
 
 	//Mapping functions
@@ -483,6 +514,22 @@ class OccurrenceImport extends UtilitiesFileImport {
 				// 'sortBy',
 			);
 		}
+        elseif ($this->importType == self::UPDATE_OCCURRENCE) {
+			$detManager = new OmOccurrenceEditor($this->conn);
+			$schemaMap = $detManager->getSchemaMap();
+			$fieldArr = array_keys($schemaMap);
+		}
+		elseif ($this->importType == self::IMPORT_GENETIC) {
+			$fieldArr = array(
+				'occid',
+				'identifier',
+				'resourcename',
+				'title',
+				'locus',
+				'resourceurl',
+				'notes'
+			);
+		}
 		sort($fieldArr);
 		foreach ($fieldArr as $field) {
 			$this->targetFieldMap[strtolower($field)] = $field;
@@ -510,30 +557,17 @@ class OccurrenceImport extends UtilitiesFileImport {
 				$this->translationMap = array();
 			} elseif ($this->importType == self::IMPORT_IDENTIFIERS) {
 				$this->translationMap = array();
+			} elseif ($this->importType == self::UPDATE_OCCURRENCE) {
+				$this->translationMap = array();
+			}
+			elseif ($this->importType == self::IMPORT_GENETIC) {
+				$this->translationMap = array();
 			}
 		}
 	}
 
 	//Data set functions
-	private function setCollMetaArr() {
-		$sql = 'SELECT institutionCode, collectionCode, collectionName, dynamicProperties FROM omcollections WHERE collid = ' . $this->collid;
-		$rs = $this->conn->query($sql);
-		while ($r = $rs->fetch_object()) {
-			$this->collMetaArr['instCode'] = $r->institutionCode;
-			$this->collMetaArr['collCode'] = $r->collectionCode;
-			$this->collMetaArr['collName'] = $r->collectionName;
-			if ($r->dynamicProperties) {
-				if (strpos($r->dynamicProperties, '"matSample":{"status":1')) $this->collMetaArr['materialSample'] = 1;
-			}
-		}
-		$rs->free();
-	}
 
-	public function materialSampleModuleActive() {
-		if (!$this->collMetaArr) $this->setCollMetaArr();
-		if (isset($this->collMetaArr['matsample'])) return true;
-		return false;
-	}
 
 	public function getControlledVocabulary($tableName, $fieldName, $filterVariable = '') {
 		$retArr = array();
@@ -557,20 +591,6 @@ class OccurrenceImport extends UtilitiesFileImport {
 	}
 
 	//Basic setters and getters
-	public function setCollid($id) {
-		if (is_numeric($id)) $this->collid = $id;
-	}
-
-	public function getCollid() {
-		return $this->collid;
-	}
-
-	public function getCollMeta($field) {
-		$fieldValue = '';
-		if (!$this->collMetaArr) $this->setCollMetaArr();
-		if (isset($this->collMetaArr[$field])) return $this->collMetaArr[$field];
-		return $fieldValue;
-	}
 
 	public function setCreateNewRecord($b) {
 		if ($b) $this->createNewRecord = true;

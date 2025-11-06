@@ -266,7 +266,7 @@ class OccurrenceIndividual extends Manager{
 
 	private function setImages(){
 		global $MEDIA_DOMAIN;
-		
+
 		/* Commented out in favor of NEON customization
 		$sql = 'SELECT m.mediaID, m.url, m.thumbnailurl, m.originalurl, m.sourceurl, m.notes, m.caption, m.mediaType, m.format,
 			CONCAT_WS(" ",u.firstname,u.lastname) as innerCreator, m.creator, m.rights, m.accessRights, m.copyright
@@ -410,12 +410,9 @@ class OccurrenceIndividual extends Manager{
 
 	private function setOccurrenceRelationships(){
 		$relOccidArr = array();
-		// NEON customization to include collection
-		$sql = 'SELECT a.assocID, a.occid, a.occidAssociate, a.relationship, a.subType, a.resourceUrl, a.objectID, a.dynamicProperties, a.verbatimSciname, a.tid, c.collectionCode
+		$sql = 'SELECT a.assocID, a.occid, a.occidAssociate, a.relationship, a.subType, a.resourceUrl, a.objectID, a.dynamicProperties, a.verbatimSciname, a.tid
 			FROM omoccurassociations a LEFT JOIN omoccurrences o ON a.occidAssociate = o.occid
-			LEFT JOIN omcollections c ON o.collid=c.collID
 			WHERE (a.occid = ? OR a.occidAssociate = ?) ';
-		// End NEON customization
 		$sql .= OccurrenceUtil::appendFullProtectionSQL(true);
 		if($stmt = $this->conn->prepare($sql)){
 			$stmt->bind_param('ii', $this->occid, $this->occid);
@@ -435,9 +432,6 @@ class OccurrenceIndividual extends Manager{
 					$this->occArr['relation'][$r->assocID]['resourceurl'] = $r->resourceUrl;
 					$this->occArr['relation'][$r->assocID]['objectID'] = $r->objectID;
 					$this->occArr['relation'][$r->assocID]['sciname'] = $r->verbatimSciname;
-					// Begin NEON customization
-					$this->occArr['relation'][$r->assocID]['collectionCode'] = $r->collectionCode;
-					// End NEON customization
 				}
 				$rs->free();
 			}
@@ -462,6 +456,7 @@ class OccurrenceIndividual extends Manager{
 					else $objectID = $r->recordID;
 					$this->occArr['relation'][$targetAssocID]['objectID'] = $objectID;
 					$this->occArr['relation'][$targetAssocID]['sciname'] = $r->sciname;
+					$this->occArr['relation'][$targetAssocID]['collectionCode'] = $r->collCode;
 				}
 			}
 			$rs->free();
@@ -602,13 +597,13 @@ class OccurrenceIndividual extends Manager{
 					foreach ($this->occArr['othercatalognumbers'] as $idArr) {
 						$tagName = $idArr['name'] ?? '';
 						$idValue = $idArr['value'] ?? '';
-				
+
 						if ($tagName === $key && !empty($idValue)) {
 							$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $idValue, $iUrl);
 							if ($key === 'NEON sampleCode (barcode)' || $key === 'Originating NEON barcode') {
 								$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
 							}
-				
+
 							if ($key === 'NEON sampleID') {
 								$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ?';
 								if ($stmt = $this->conn->prepare($sql)) {
@@ -624,7 +619,7 @@ class OccurrenceIndividual extends Manager{
 									$stmt->close();
 								}
 							} elseif ($key === 'Originating NEON sampleID') {
-								$sql = 'SELECT s.sampleClass 
+								$sql = 'SELECT s.sampleClass
 										FROM NeonSample s
 										LEFT JOIN omoccurassociations a
 										ON s.occid = a.occid
@@ -644,7 +639,7 @@ class OccurrenceIndividual extends Manager{
 									$stmt->close();
 								}
 							}
-				
+
 							break 2;
 						}
 					}
