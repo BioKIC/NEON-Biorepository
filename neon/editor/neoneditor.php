@@ -366,6 +366,16 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 								</div>
 							<?php
 							}
+							if ($importType == 2) {
+							?>
+								<div class="formField-div">
+								<div class="formField-div">
+									<input name="associatedoccurrences" type="checkbox" value="1">
+									<label for="associatedoccurrences"><?= 'Propogate determinations to all samples with "derivedFromSameIndividual" relationship' ?></label>
+								</div>
+								</div>
+							<?php
+							}
 							?>
 							<div style="margin:15px;">
 								<input name="importType" type="hidden" value="<?= $importType ?>">

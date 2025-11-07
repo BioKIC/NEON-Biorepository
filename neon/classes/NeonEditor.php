@@ -174,7 +174,25 @@ class NeonEditor extends UtilitiesFileImport {
 				if (empty($detArr['dateIdentified'])) {
 					$paramArr['dateIdentified'] = 's.d.';
 				}
-				if ($detManager->insertDetermination($detArr)) {
+				if ($postArr['associatedoccurrences'] == 1){
+					$results = $detManager->insertAndPropagateDetermination($occid, $detArr);
+						if ($results !== false) {
+							foreach ($results as $id => $res) {
+								if ($res['success']) {
+									$this->logOrEcho('Determination added for associated occid: <a href="' . 
+										$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . 
+										$id . '" target="_blank">' . $id . '</a>', 1);
+								} else {
+									$this->logOrEcho('Error adding determination for occid ' . $id . ': ' . 
+										htmlspecialchars($res['message']), 1);
+								}
+							}
+							$status = true;
+						} else {
+							$this->logOrEcho('ERROR retrieving associated occurrences: ' . $detManager->getErrorMessage(), 1);
+						}
+				}
+				else if ($detManager->insertDetermination($detArr)) {
 					 $this->logOrEcho($LANG['DETERMINATION_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
                     $status = true;
 				} else {
@@ -601,4 +619,5 @@ class NeonEditor extends UtilitiesFileImport {
 		if (is_numeric($importType)) $this->importType = $importType;
 		$this->defineTranslationMap();
 	}
+
 }
