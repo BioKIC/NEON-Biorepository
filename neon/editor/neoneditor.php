@@ -364,6 +364,16 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 										<option value="update"><?= 'Batch update links' ?></option>
 									</select>
 								</div>
+								<div class="formField-div">
+								<div class="formField-div">
+									<input name="propagatederived" type="checkbox" value="1">
+									<label for="propagatederived"><?= 'Propagate genetic links to all samples with "derivedFromSameIndividual" relationship' ?></label>
+								</div>
+								<div class="formField-div">
+									<input name="propagateoriginating" type="checkbox" value="1">
+									<label for="propagateoriginating"><?= 'Propagate genetic links to all samples with "originatingSampleOf"/"subsampleOf" relationship' ?></label>
+								</div>
+								</div>
 							<?php
 							}
 							if ($importType == 2) {
@@ -371,7 +381,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 								<div class="formField-div">
 								<div class="formField-div">
 									<input name="associatedoccurrences" type="checkbox" value="1">
-									<label for="associatedoccurrences"><?= 'Propogate determinations to all samples with "derivedFromSameIndividual" relationship' ?></label>
+									<label for="associatedoccurrences"><?= 'Propagate determinations to all samples with "derivedFromSameIndividual" relationship' ?></label>
 								</div>
 								</div>
 							<?php

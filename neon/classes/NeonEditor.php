@@ -376,24 +376,74 @@ class NeonEditor extends UtilitiesFileImport {
 				$importManager->setOccid($occid);
 				$fieldArr = array_keys($importManager->getSchemaMap());
 				$genArr = array();
-					foreach ($fieldArr as $field) {
-						$fieldLower = strtolower($field);
-						if (isset($this->fieldMap[$fieldLower])) {
-							$value = $recordArr[$this->fieldMap[$fieldLower]] ?? null;
-							$genArr[$field] = $this->encodeString($value);
-						}
+
+				foreach ($fieldArr as $field) {
+					$fieldLower = strtolower($field);
+					if (isset($this->fieldMap[$fieldLower])) {
+						$value = $recordArr[$this->fieldMap[$fieldLower]] ?? null;
+						$genArr[$field] = $this->encodeString($value);
 					}
 				}
-				if($postArr['action'] == 'add'){
-					if ($importManager->insertGeneticLink($genArr) ) {
-						$this->logOrEcho('Genetic links loaded: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-						$status = true;
+
+				$propagateDerived = $postArr['propagatederived'] ?? 0;
+				$propagateOriginating = $postArr['propagateoriginating'] ?? 0;
+
+				if ($postArr['action'] == 'add') {
+					if ($propagateDerived == 1 || $propagateOriginating == 1) {
+						$type = 'both';
+						if ($propagateDerived == 1 && !$propagateOriginating) $type = 'derived';
+						if (!$propagateDerived && $propagateOriginating == 1) $type = 'originating';
+
+						$results = $importManager->insertAndPropagateGeneticLink($occid, $genArr, $type);
+						if ($results !== false) {
+							foreach ($results as $id => $res) {
+								if ($res['success']) {
+									$this->logOrEcho('Genetic link added for associated occid: <a href="' .
+										$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' .
+										$id . '" target="_blank">' . $id . '</a>', 1);
+								} else {
+									$this->logOrEcho('Error adding genetic link for occid ' . $id . ': ' .
+										htmlspecialchars($res['message']), 1);
+								}
+							}
+							$status = true;
 						} else {
+							$this->logOrEcho('ERROR retrieving associated occurrences: ' . $importManager->getErrorMessage(), 1);
+						}
+					} elseif ($importManager->insertGeneticLink($genArr)) {
+						$this->logOrEcho('Genetic links loaded: <a href="' .
+							$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid .
+							'" target="_blank">' . $occid . '</a>', 1);
+						$status = true;
+					} else {
 						$this->logOrEcho('ERROR loading Genetic Link: ' . $importManager->getErrorMessage(), 1);
 					}
-				} elseif($postArr['action'] == 'update'){
-					if ($importManager->updateGeneticLink($genArr) ) {
-						$this->logOrEcho('Genetic links updated: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+				} elseif ($postArr['action'] == 'update') {
+					if ($propagateDerived == 1 || $propagateOriginating == 1) {
+						$type = 'both';
+						if ($propagateDerived == 1 && !$propagateOriginating) $type = 'derived';
+						if (!$propagateDerived && $propagateOriginating == 1) $type = 'originating';
+
+						$results = $importManager->updateAndPropagateGeneticLink($occid, $genArr, $type);
+						if ($results !== false) {
+							foreach ($results as $id => $res) {
+								if ($res['success']) {
+									$this->logOrEcho('Genetic link updated for associated occid: <a href="' .
+										$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' .
+										$id . '" target="_blank">' . $id . '</a>', 1);
+								} else {
+									$this->logOrEcho('Error updating genetic link for occid ' . $id . ': ' .
+										htmlspecialchars($res['message']), 1);
+								}
+							}
+							$status = true;
+						} else {
+							$this->logOrEcho('ERROR retrieving associated occurrences: ' . $importManager->getErrorMessage(), 1);
+						}
+					} elseif ($importManager->updateGeneticLink($genArr)) {
+						$this->logOrEcho('Genetic links updated: <a href="' .
+							$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid .
+							'" target="_blank">' . $occid . '</a>', 1);
 						$status = true;
 					} else {
 						$this->logOrEcho('ERROR updating Genetic Link: ' . $importManager->getErrorMessage(), 1);
@@ -401,6 +451,8 @@ class NeonEditor extends UtilitiesFileImport {
 				}
 
 			}
+		}
+
 		return $status;
 	}
 
