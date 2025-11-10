@@ -339,8 +339,14 @@ class NeonEditor extends UtilitiesFileImport {
                     $fieldLower = strtolower($field);
                     if (isset($this->fieldMap[$fieldLower])) {
                         $srcIndex = $this->fieldMap[$fieldLower];
-                        $inputArr[$field] = isset($recordArr[$srcIndex]) ? $this->encodeString($recordArr[$srcIndex]) : null;
-                    }
+						$value = $recordArr[$srcIndex] ?? null;
+
+						if ($value === '0' || $value === 0) {
+							$inputArr[$field] = 0;
+						} else {
+							$inputArr[$field] = $this->encodeString($value);
+						}                   
+					}
                 }
                 $inputArr['occid'] = $occid;
                 $status = $importManager->updateOccurrence($inputArr,$occurArr,$postArr);
