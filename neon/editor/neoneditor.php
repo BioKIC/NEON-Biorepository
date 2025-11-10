@@ -296,6 +296,9 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 								</div>
 							<?php
 							}
+							if ($importType ==2){
+								echo '<b>Note:</b> any new determinations with isCurrent=1 will become the only current determination for the occurrence';
+							}
 							?>
 							<div class="formField-div">
 								<?php
