@@ -12,7 +12,7 @@ class OmoccurrenceEditor extends Manager {
 
 	public function __construct($conn) {
 		parent::__construct(null, 'write', $conn);
-		$this->schemaMap = array('associatedCollectors' => "s",'availability' => "I",'coordinateUncertaintyInMeters' => "s",
+		$this->schemaMap = array('associatedCollectors' => "s",'availability' => "i",'coordinateUncertaintyInMeters' => "s",
         'county' => "s",'decimalLatitude' => "s",'decimalLongitude' => "s",'disposition' => "s",'dynamicProperties' => "s",
         'eventDate' => "s",'eventDate2' => "s",'day'=> "i",'month'=> "i",'year' => "i",'startDayOfYear' => "i",'endDayOfYear' => "i",
         'eventID' => "s",'geodeticDatum' => "s",'habitat' => "s",'individualCount' => "s",
@@ -233,6 +233,15 @@ private static function updateDateFields(array &$recMap): void {
                 if ($value === '') {
                     $value = null;
                 }
+            }
+
+            if (in_array($field, [
+                'availability', 'day', 'month', 'year',
+                'startDayOfYear', 'endDayOfYear',
+                'maximumElevationInMeters', 'minimumElevationInMeters',
+                'maximumDepthInMeters', 'minimumDepthInMeters'
+            ])) {
+                $value = ($value === null || $value === '') ? null : (int)$value;
             }
 
             $this->parameterArr[$field] = $value;
