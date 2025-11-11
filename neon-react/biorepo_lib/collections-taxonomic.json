@@ -131,7 +131,7 @@
         "children": [
           {
             "id": 16,
-            "name": "DNA Extracts",
+            "name": "DNA Extracts (Bout 2)",
             "collid": 61
           },
           {
@@ -151,17 +151,17 @@
           },
           {
             "id": 20,
-            "name": "Taxonomic Reference Collection",
+            "name": "Taxonomic References",
             "collid": 48
           },
           {
             "id": 21,
-            "name": "Taxonomy Subsample",
+            "name": "Identified and Pooled Samples",
             "collid": 57
           },
           {
             "id": 22,
-            "name": "Unsorted Bulk Sample",
+            "name": "Unprocessed Samples (Bouts 1 & 3)",
             "collid": 21
           }
         ]
@@ -260,12 +260,12 @@
           },
           {
             "id": 41,
-            "name": "Taxonomy Samples",
+            "name": "Bulk Taxonomy Samples",
             "collid": 45
           },
           {
             "id": 42,
-            "name": "Unprocessed DNA Samples (Bouts 1 & 3)",
+            "name": "Unprocessed Samples (Bouts 1 & 3)",
             "collid": 60
           }
         ]

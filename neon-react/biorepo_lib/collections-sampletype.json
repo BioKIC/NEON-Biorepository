@@ -208,12 +208,12 @@
           },
           {
             "id": 31,
-            "name": "Benthic Macroinvertebrate Taxonomy Subsample",
+            "name": "Benthic Macroinvertebrate Identified and Pooled Samples",
             "collid": 57
           },
           {
             "id": 32,
-            "name": "Benthic Macroinvertebrate Unsorted Bulk Sample",
+            "name": "Benthic Macroinvertebrate Unprocessed Samples (Bouts 1 & 3)",
             "collid": 21
           },
           {
@@ -228,12 +228,12 @@
           },
           {
             "id": 35,
-            "name": "Zooplankton Taxonomy Samples",
+            "name": "Zooplankton Bulk Taxonomy Samples",
             "collid": 45
           },
           {
             "id": 36,
-            "name": "Zooplankton Unprocessed Samples (For DNA; Bouts 1 & 3)",
+            "name": "Zooplankton Unprocessed Samples (Bouts 1 & 3)",
             "collid": 60
           }
         ]
@@ -255,7 +255,7 @@
         "children": [
           {
             "id": 40,
-            "name": "Benthic Macroinvertebrate Taxonomy Reference Collection",
+            "name": "Benthic Macroinvertebrate Taxonomic References",
             "collid": 48
           },
           {
