@@ -198,12 +198,12 @@
           },
           {
             "id": 29,
-            "name": "Beetles (Carabids) Samples (from Pitfall Sampling; Multi-trap Pooled)",
+            "name": "Beetles (Carabids) Samples (from Pitfall Sampling; Pooled Catches)",
             "collid": 11
           },
           {
             "id": 30,
-            "name": "Beetles (Carabids) Samples (from Pitfall Sampling; Single-trap)",
+            "name": "Beetles (Carabids) Samples (from Pitfall Sampling; Unpooled Catches)",
             "collid": 14
           },
           {
@@ -218,12 +218,12 @@
           },
           {
             "id": 33,
-            "name": "Invertebrate Specimen Bycatch (from Pitfall Sampling; Multi-trap Pooled)",
+            "name": "Invertebrate Specimen Bycatch (from Pitfall Sampling; Pooled Catches)",
             "collid": 13
           },
           {
             "id": 34,
-            "name": "Invertebrate Specimen Bycatch (from Pitfall Sampling; Single-trap)",
+            "name": "Invertebrate Specimen Bycatch (from Pitfall Sampling; Unpooled Catches)",
             "collid": 16
           },
           {
@@ -275,7 +275,7 @@
           },
           {
             "id": 44,
-            "name": "Mammal Specimen Bycatch (from Pitfall Sampling; Single-trap)",
+            "name": "Mammal Specimen Bycatch (from Pitfall Sampling; Unpooled Catches)",
             "collid": 17
           },
           {
@@ -285,12 +285,12 @@
           },
           {
             "id": 46,
-            "name": "Reptiles and Amphibians Specimen Bycatch (from Pitfall Sampling; Multi-trap Pooled)",
+            "name": "Reptiles and Amphibians Specimen Bycatch (from Pitfall Sampling; Pooled Catches)",
             "collid": 12
           },
           {
             "id": 47,
-            "name": "Reptiles and Amphibians Specimen Bycatch (from Pitfall Sampling; Single-trap)",
+            "name": "Reptiles and Amphibians Specimen Bycatch (from Pitfall Sampling; Unpooled Catches)",
             "collid": 15
           },
           {

@@ -182,12 +182,12 @@
           },
           {
             "id": 26,
-            "name": "Pitfall Samples (Multi-trap Pooled)",
+            "name": "Pitfall Samples (Pooled Catches)",
             "collid": 11
           },
           {
             "id": 27,
-            "name": "Pitfall Samples (Single-trap)",
+            "name": "Pitfall Samples (Unpooled Catches)",
             "collid": 14
           }
         ]
@@ -229,12 +229,12 @@
           },
           {
             "id": 35,
-            "name": "Invertebrate Bycatch (from Pitfall Sampling; Multi-trap Pooled)",
+            "name": "Invertebrate Bycatch (from Pitfall Sampling; Pooled Catches)",
             "collid": 13
           },
           {
             "id": 36,
-            "name": "Invertebrate Bycatch (from Pitfall Sampling; Single-trap)",
+            "name": "Invertebrate Bycatch (from Pitfall Sampling; Unpooled Catches)",
             "collid": 16
           },
           {
@@ -461,7 +461,7 @@
           },
           {
             "id": 76,
-            "name": "Bycatch Specimens (from Pitfall Sampling; Single-trap)",
+            "name": "Bycatch Specimens (from Pitfall Sampling; Unpooled Catches)",
             "collid": 17
           },
           {
@@ -482,12 +482,12 @@
         "children": [
           {
             "id": 80,
-            "name": "Bycatch Specimens (from Pitfall Sampling; Multi-trap Pooled)",
+            "name": "Bycatch Specimens (from Pitfall Sampling; Pooled Catches)",
             "collid": 12
           },
           {
             "id": 81,
-            "name": "Bycatch Specimens (from Pitfall Sampling; Single-trap)",
+            "name": "Bycatch Specimens (from Pitfall Sampling; Unpooled Catches)",
             "collid": 15
           },
           {

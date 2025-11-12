@@ -188,7 +188,7 @@
       },
       {
         "id": 26,
-        "name": "Multi-trap Pooled Samples",
+        "name": "Pooled Catches",
         "children": [
           {
             "id": 27,
@@ -209,7 +209,7 @@
       },
       {
         "id": 30,
-        "name": "Single-trap Samples",
+        "name": "Unpooled Catches",
         "children": [
           {
             "id": 19,
