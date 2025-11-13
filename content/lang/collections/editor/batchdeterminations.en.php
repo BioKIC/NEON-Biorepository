@@ -50,4 +50,9 @@ $LANG['ADD_DETERS'] = 'Add New Determinations';
 $LANG['NO_PERMISSIONS'] = 'You do not have permissions to set batch determinations for this collection.
 						Please contact the site administrator to obtain the necessary permissions.';
 
+// START NEON Customization
+$LANG['ID_REFERENCES'] = 'Identification Reference';
+$LANG['ID_REMARKS'] = 'Identification Remarks';
+// END NEON customization
+
 ?>

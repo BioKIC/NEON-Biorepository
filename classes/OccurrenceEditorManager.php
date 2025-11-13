@@ -120,7 +120,10 @@ class OccurrenceEditorManager {
 			'processingstatus' => 's',
 			'recordenteredby' => 's',
 			'observeruid' => 'n',
-			'dateentered' => 'd'
+			'dateentered' => 'd',
+			//neon edit
+			'availability' => 'n'
+			//end neon edit
 		);
 		$this->fieldArr['omoccurpaleo'] = array(
 			'eon',
@@ -1755,12 +1758,12 @@ class OccurrenceEditorManager {
 
 			//Remap determinations
 			$sql = <<<'SQL'
-			UPDATE omoccurdeterminations 
+			UPDATE omoccurdeterminations
 			SET occid = ? WHERE occid = ?
 			AND detid NOT IN (
 				SELECT source.detid FROM omoccurdeterminations source
-				JOIN omoccurdeterminations target ON target.occid = ? 
-				WHERE source.occid = ? 
+				JOIN omoccurdeterminations target ON target.occid = ?
+				WHERE source.occid = ?
 				AND source.sciname = target.sciname
 				AND source.dateIdentified = target.dateIdentified
 				AND source.identifiedBy = target.identifiedBy
@@ -1782,7 +1785,7 @@ class OccurrenceEditorManager {
 
 				$parameters = str_repeat('?,', count($currentDeterminations) - 1) . '?';
 				$sql = <<<"SQL"
-				UPDATE omoccurdeterminations 
+				UPDATE omoccurdeterminations
 				SET isCurrent = 0
 				WHERE occid = ? AND isCurrent = 1 AND detid NOT IN ($parameters);
 				SQL;

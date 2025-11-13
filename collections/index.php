@@ -221,4 +221,14 @@ $otherCatArr = $collManager->getOccurVoucherProjects();
 	include($SERVER_ROOT.'/includes/footer.php');
 	?>
 	</body>
+    <script>
+    // Forces external collections to be unchecked by default
+    function deselectColls(categoryId){
+      let category = document.getElementById(`cat-0-${categoryId}-Input`);
+      category.checked = false;
+      selectAllCat(this, `cat-0-${categoryId}`);
+    }
+    deselectColls(6);
+    deselectColls(8);
+  </script>
 </html>

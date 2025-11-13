@@ -586,7 +586,9 @@ class OccurrenceTaxaManager {
 					$str .= " => ".implode(",",$taxonArr["scinames"]);
 				}
 				if(array_key_exists("synonyms",$taxonArr)){
-					$str .= " (".implode(", ",$taxonArr["synonyms"]).")";
+					//neon edit
+					$str .= " (Synonyms: ".implode(", ",$taxonArr["synonyms"]).")";
+					//end neon edit
 				}
 				$returnArr[] = $str;
 			}
