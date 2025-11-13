@@ -39,8 +39,8 @@ if ($SYMB_UID) {
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
-	<script src="../../js/jquery.js?ver=20130917" type="text/javascript"></script>
-	<script src="../../js/jquery-ui.js?ver=20130917" type="text/javascript"></script>
+	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 </head>
 
 <style type="text/css">
