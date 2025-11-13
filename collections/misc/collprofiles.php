@@ -1,4 +1,15 @@
 <?php
+//neon edit
+// Redirect all collprofiles.php requests to neoncollprofiles.php with the same collid parameter
+if (isset($_GET['collid'])) {
+    $collid = intval($_GET['collid']);
+    header("Location: neoncollprofiles.php?collid=$collid", true, 301);
+    exit;
+}
+header("Location: neoncollprofiles.php", true, 301);
+exit;
+//end neon edit
+
 include_once('../../config/symbini.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/misc/collprofiles.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/misc/collprofiles.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/misc/collprofiles.en.php');
