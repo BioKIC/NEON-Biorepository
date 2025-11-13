@@ -138,8 +138,8 @@ class DwcArchiverOccurrence extends Manager{
 		$this->occurDefArr['fields']['dataGeneralizations'] = 'o.dataGeneralizations';
 		$this->occurDefArr['terms']['dynamicProperties'] = 'http://rs.tdwg.org/dwc/terms/dynamicProperties';
 		$this->occurDefArr['fields']['dynamicProperties'] = 'o.dynamicProperties';
-		//$this->occurDefArr['terms']['associatedOccurrences'] = 'http://rs.tdwg.org/dwc/terms/associatedOccurrences';
-		//$this->occurDefArr['fields']['associatedOccurrences'] = '';
+		$this->occurDefArr['terms']['associatedOccurrences'] = 'http://rs.tdwg.org/dwc/terms/associatedOccurrences';
+		$this->occurDefArr['fields']['associatedOccurrences'] = '';
 		$this->occurDefArr['terms']['associatedSequences'] = 'http://rs.tdwg.org/dwc/terms/associatedSequences';
 		$this->occurDefArr['fields']['associatedSequences'] = '';
 		$this->occurDefArr['terms']['associatedTaxa'] = 'http://rs.tdwg.org/dwc/terms/associatedTaxa';
@@ -398,7 +398,7 @@ class DwcArchiverOccurrence extends Manager{
 				if ($r->identifierName == 'NEON sampleID' && $hideSampleID) {
 					continue;
 				}
-			
+
 				if ($r->identifierName) $retStr .= $r->identifierName.': ';
 				$retStr .= $r->identifierValue.'; ';
 			}

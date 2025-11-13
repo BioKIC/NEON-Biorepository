@@ -1846,7 +1846,7 @@ class DwcArchiverCore extends Manager{
 						//$r['dynamicProperties'] = $dynProp;
 					}
 					*/
-					//if ($assocOccurStr = $dwcOccurManager->getAssociationStr($r['occid'])) $r['t_associatedOccurrences'] = $assocOccurStr;
+					if ($assocOccurStr = $dwcOccurManager->getAssociationStr($r['occid'])) $r['t_associatedOccurrences'] = $assocOccurStr;
 					if ($assocSeqStr = $dwcOccurManager->getAssociatedSequencesStr($r['occid'])) $r['t_associatedSequences'] = $assocSeqStr;
 					//if ($assocTaxa = $dwcOccurManager->getAssociationStr($r['occid'], 'observational')) $r['associatedTaxa'] = $assocTaxa;
 				}
@@ -1855,9 +1855,9 @@ class DwcArchiverCore extends Manager{
 				if ($rankStr = $dwcOccurManager->getTaxonRank($r['rankid'])) $r['t_taxonRank'] = $rankStr;
 				unset($r['rankid']);
 
-				if(isset($r['dynamicProperties'])) {
-					$r['dynamicProperties'] = json_encode($r['dynamicProperties']);
-				}
+				// if(isset($r['dynamicProperties'])) {
+				// 	$r['dynamicProperties'] = json_encode($r['dynamicProperties']);
+				// }
 				$this->encodeArr($r);
 				$this->addcslashesArr($r);
 				$this->writeOutRecord($fh, $r);
