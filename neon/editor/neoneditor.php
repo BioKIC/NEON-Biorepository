@@ -296,6 +296,9 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 								</div>
 							<?php
 							}
+							if ($importType ==2){
+								echo '<b>Note:</b> any new determinations with isCurrent=1 will become the only current determination for the occurrence';
+							}
 							?>
 							<div class="formField-div">
 								<?php
@@ -363,6 +366,26 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 										<option value="add"><?= 'Batch add links' ?></option>
 										<option value="update"><?= 'Batch update links' ?></option>
 									</select>
+								</div>
+								<div class="formField-div">
+								<div class="formField-div">
+									<input name="propagatederived" type="checkbox" value="1">
+									<label for="propagatederived"><?= 'Propagate genetic links to all samples with "derivedFromSameIndividual" relationship' ?></label>
+								</div>
+								<div class="formField-div">
+									<input name="propagateoriginating" type="checkbox" value="1">
+									<label for="propagateoriginating"><?= 'Propagate genetic links to all samples with "originatingSampleOf"/"subsampleOf" relationship' ?></label>
+								</div>
+								</div>
+							<?php
+							}
+							if ($importType == 2) {
+							?>
+								<div class="formField-div">
+								<div class="formField-div">
+									<input name="associatedoccurrences" type="checkbox" value="1">
+									<label for="associatedoccurrences"><?= 'Propagate determinations to all samples with "derivedFromSameIndividual" relationship' ?></label>
+								</div>
 								</div>
 							<?php
 							}

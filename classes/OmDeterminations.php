@@ -88,6 +88,24 @@ class OmDeterminations extends Manager{
 						if($stmt->affected_rows || !$stmt->error){
 							$this->detID = $stmt->insert_id;
 							$status = true;
+
+							// Start NEON Customization
+							if (!empty($inputArr['isCurrent']) && intval($inputArr['isCurrent']) === 1) {
+                            $updateSql = 'UPDATE omoccurdeterminations 
+                                          SET isCurrent = 0 
+                                          WHERE occid = ? AND detid != ? AND isCurrent = 1';
+                            if ($updateStmt = $this->conn->prepare($updateSql)) {
+                                $updateStmt->bind_param('ii', $this->occid, $this->detID);
+                                if (!$updateStmt->execute()) {
+                                    $this->errorMessage = 'ERROR updating isCurrent value: ' . $updateStmt->error;
+                                }
+                                $updateStmt->close();
+                            } else {
+                                $this->errorMessage = 'ERROR preparing isCurrent query: ' . $this->conn->error;
+                            }
+							// End NEON customization
+                        }
+
 						}
 						else $this->errorMessage = 'ERROR inserting omoccurdeterminations record (2): '.$stmt->error;
 					}
@@ -192,5 +210,54 @@ class OmDeterminations extends Manager{
 	public function getSchemaMap(){
 		return $this->schemaMap;
 	}
+
+	// NEON specific functions
+
+	public function insertAndPropagateDetermination($occid, $inputArr) {
+		$results = []; 
+		$occidList = [];
+
+		$sql = 'SELECT occid, occidAssociate 
+				FROM omoccurassociations 
+				WHERE (occid = ? OR occidAssociate = ?) 
+				AND relationship = "derivedFromSameIndividual"';
+
+		if ($stmt = $this->conn->prepare($sql)) {
+			$stmt->bind_param('ii', $occid, $occid);
+			if ($stmt->execute()) {
+				$result = $stmt->get_result();
+				while ($row = $result->fetch_assoc()) {
+					if (!empty($row['occid'])) $occidList[$row['occid']] = true;
+					if (!empty($row['occidAssociate'])) $occidList[$row['occidAssociate']] = true;
+				}
+			} else {
+				$this->errorMessage = 'ERROR executing association query: ' . $stmt->error;
+				return false;
+			}
+			$stmt->close();
+		} else {
+			$this->errorMessage = 'ERROR preparing association query: ' . $this->conn->error;
+			return false;
+		}
+
+		$occidList[$occid] = true;
+
+		foreach (array_keys($occidList) as $assocOccid) {
+			$this->occid = $assocOccid;
+			if ($this->insertDetermination($inputArr)) {
+				$results[$assocOccid] = ['success' => true, 'message' => 'Inserted successfully'];
+			} else {
+				$results[$assocOccid] = [
+					'success' => false,
+					'message' => $this->errorMessage ?: 'Unknown error during insert'
+				];
+			}
+		}
+
+		return $results;
+	}
+
+
+
 }
 ?>
