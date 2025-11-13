@@ -27,7 +27,7 @@ $siteData = new DatasetsMetadata();
 	<script>
 	document.addEventListener('DOMContentLoaded', () => {
 	  // expand/collapse groups
-		document.querySelectorAll('.group-label, .expansion-icon').forEach(el => {
+		document.querySelectorAll('[data-target], .group-label, .expansion-icon').forEach(el => {
 		  el.addEventListener('click', () => {
 			const li = el.closest('li');
 			const ul = li.querySelector(':scope > ul');
@@ -205,7 +205,7 @@ $siteData = new DatasetsMetadata();
 										echo '  <li>';
 										echo '    <input type="checkbox" class="all-selector all-neon-colls" checked>';
 										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
-										echo '    <span>All Sample Types</span>';
+										echo '    <span class="group-label">All Sample Types</span>';
 										
 										echo '    <ul>';
 										echo          renderTree($dataArr);
@@ -230,7 +230,7 @@ $siteData = new DatasetsMetadata();
 										echo '  <li>';
 										echo '    <input type="checkbox" class="all-selector all-neon-colls" checked>';
 										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
-										echo '    <span>All Sample Types</span>';
+										echo '    <span class="group-label">All Sample Types</span>';
 										
 										echo '    <ul>';
 										echo          renderTree($dataArr);
@@ -255,7 +255,7 @@ $siteData = new DatasetsMetadata();
 										echo '  <li>';
 										echo '    <input type="checkbox" class="all-selector all-neon-colls" checked>';
 										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
-										echo '    <span>All Sample Types</span>';
+										echo '    <span class="group-label">All Sample Types</span>';
 										
 										echo '    <ul>';
 										echo          renderTree($dataArr);
