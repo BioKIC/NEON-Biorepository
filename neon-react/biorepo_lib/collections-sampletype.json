@@ -14,7 +14,7 @@
           },
           {
             "id": 4,
-            "name": "Mammal Hair Samples",
+            "name": "Small Mammal Hair Samples",
             "collid": 27
           },
           {
@@ -129,12 +129,12 @@
           },
           {
             "id": 20,
-            "name": "Mammal Specimens (Standard Sampling)",
+            "name": "Small Mammal Specimens (Standard Sampling)",
             "collid": 28
           },
           {
             "id": 21,
-            "name": "Mammal Specimens (Outside of Standard Sampling)",
+            "name": "Small Mammal Specimens (Outside of Standard Sampling)",
             "collid": 19
           }
         ]
@@ -265,22 +265,22 @@
           },
           {
             "id": 42,
-            "name": "Mammal Specimens (Standard Sampling)",
+            "name": "Small Mammal Specimens (Standard Sampling)",
             "collid": 28
           },
           {
             "id": 43,
-            "name": "Mammal Specimens (Opportunistic)",
+            "name": "Small Mammal Specimens (Opportunistic)",
             "collid": 19
           },
           {
             "id": 44,
-            "name": "Mammal Specimen Bycatch (from Pitfall Sampling; Unpooled Catches)",
+            "name": "Small Mammal Specimen Bycatch (from Pitfall Sampling; Unpooled Catches)",
             "collid": 17
           },
           {
             "id": 45,
-            "name": "Mammal Parasites",
+            "name": "Small Mammal Parasites",
             "collid": 85
           },
           {
@@ -323,17 +323,17 @@
       },
       {
         "id": 53,
-        "name": "Mammal Blood Samples",
+        "name": "Small Mammal Blood Samples",
         "collid": 24
       },
       {
         "id": 54,
-        "name": "Mammal Ear Tissue",
+        "name": "Small Mammal Ear Tissue",
         "collid": 25
       },
       {
         "id": 55,
-        "name": "Mammal Fecal Samples",
+        "name": "Small Mammal Fecal Samples",
         "collid": 26
       },
       {
@@ -388,7 +388,7 @@
           },
           {
             "id": 66,
-            "name": "Mammal",
+            "name": "Small Mammal",
             "collid": 71
           },
           {
@@ -419,12 +419,12 @@
         "children": [
           {
             "id": 72,
-            "name": "Mammal (from Blood)",
+            "name": "Small Mammal (from Blood)",
             "collid": 91
           },
           {
             "id": 73,
-            "name": "Mammal (from Ear Tissue)",
+            "name": "Small Mammal (from Ear Tissue)",
             "collid": 90
           },
           {
