@@ -737,6 +737,14 @@ class OccurrenceHarvester{
 						if(!in_array($dwcArr['collid'],array(31,47,50,73))){
 							if(!empty($sampleArr['preservative_type'])) $prepArr[] = 'preservative type: '.$sampleArr['preservative_type'];
 						}
+						if(in_array($dwcArr['collid'],array(67,68))){
+							if (in_array($sampleArr['sampleClass'],array('mic_dnaExtraction_in.amcBlankSampleID','mic_dnaExtraction_in.ambBlankSampleID'))){
+								$prepArr[] = 'Field blank';
+							}
+							if (in_array($sampleArr['sampleClass'],array('mic_dnaPooling_in.ambPoolDnaSampleID','mic_dnaPooling_in.amcPoolDnaSampleID'))){
+								$prepArr[] = 'Pooled extract from two sterivex filters';
+							}
+						}
 						if(!empty($sampleArr['preservative_volume'])) $prepArr[] = 'preservative volume: '.$sampleArr['preservative_volume'];
 						if(!empty($sampleArr['preservative_concentration'])) $prepArr[] = 'preservative concentration: '.$sampleArr['preservative_concentration'];
 						if(!empty($sampleArr['sample_mass']) && strpos($sampleArr['symbiotaTarget'],'sample mass') === false) $prepArr[] = 'sample mass: '.$sampleArr['sample_mass'];
@@ -826,7 +834,7 @@ class OccurrenceHarvester{
 						$taxonCode = '';
 						$taxonRemarks = '';
 						if(in_array($dwcArr['collid'], array(5,6,67,68,46,98))){
-							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1','dna2-dna1','1','2','3'];
+							$nonTaxa = ['amc', 'arc', 'arc-dna1','blank-dna1','dna','met-dna1','pool','ss','re','c0','c1','c2','dna-dna1','dna2-dna1','1','2','3'];
 
 							$parts = explode('.', $sampleArr['sampleID']);
 							$foundDate = false;
