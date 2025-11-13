@@ -10,10 +10,10 @@
   --menu-font-size: 1rem;
   --body-bg-color: #fafafa;
   --body-text-color: #000000;
-  --body-font-size: 1rem;
-  --body-font-family: "Open Sans", sans-serif;
+  --body-font-size: .95rem;
+  --body-font-family: "Inter", Helvetica, Arial, sans-serif; /** neon edit **/
   --footer-bg-color: #f2f0e9;
-  --heading-font-family: "Open Sans", sans-serif;
+  --heading-font-family: "Inter", Helvetica, Arial, sans-serif; /** neon edit **/
   --link-color: #126c00;
   --darkest-color: #1b3d2f;
   --medium-color: #5a5a53;
