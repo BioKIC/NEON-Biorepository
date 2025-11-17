@@ -101,8 +101,13 @@
       },
       {
         "id": 10,
-        "name": "Soils (Standard Sampling)",
+        "name": "Soils (Air Dried)",
         "collid": 30
+      },
+      {
+        "id": 53,
+        "name": "Soils (Frozen)",
+        "collid": 31
       },
       {
         "id": 11,
@@ -330,7 +335,7 @@
         "children": [
           {
             "id": 53,
-            "name": "Bulk Subsamples",
+            "name": "Frozen Soils",
             "collid": 31
           },
           {
