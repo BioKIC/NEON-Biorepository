@@ -1,4 +1,6 @@
 <?php
+header("Location: https://www.testing-z6am3cq-di4alr4iwbwyg.us-2.platformsh.site/", true, 301);
+exit;
 //error_reporting(E_ALL);
 //ini_set('display_errors', '1');
 include_once('config/symbini.php');
