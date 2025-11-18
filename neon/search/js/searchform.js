@@ -1005,19 +1005,30 @@ function prefillFromUrl() {
     }
 
     // --- SITE TREE (datasetid) ---
-    if (key === 'datasetid') {
-      const values = value.split(',');
-      const leafCheckboxes = document.querySelectorAll(
-        '#site-list input[name="datasetid"]'
-      );
+if (key === 'datasetid') {
+  const values = value.split(',');
 
-      values.forEach(v => {
-        leafCheckboxes.forEach(cb => {
-          if (cb.value === v) cb.checked = true;
-        });
-      });
-      return;
-    }
+  values.forEach(v => {
+    document.querySelectorAll(
+      `#site-list input[name="datasetid"][value="${v}"]`
+    ).forEach(cb => {
+      cb.checked = true;
+      cb.indeterminate = false;
+
+      // If this is a domain (parent), also check all its descendant sites
+      if (cb.classList.contains('all-selector')) {
+        const li = cb.closest('li');
+        if (li) {
+          li.querySelectorAll(':scope ul input.child:enabled').forEach(child => {
+            child.checked = true;
+            child.indeterminate = false;
+          });
+        }
+      }
+    });
+  });
+  return;
+}
 
     // (other single-value text fields, selects, etc.)
     const el = document.querySelector(`[name="${key}"]`);
