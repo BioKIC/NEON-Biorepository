@@ -993,7 +993,7 @@ function prefillFromUrl() {
     if (key === 'db') {
       const values = value.split(',');
       const leafCheckboxes = document.querySelectorAll(
-        '#biorepo-collections-list, #neonext-collections-list input[name="db"]'
+        '#biorepo-collections-list input[name="db"], #neonext-collections-list input[name="db"]'
       );
 
       values.forEach(v => {
