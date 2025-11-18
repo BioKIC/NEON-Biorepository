@@ -643,7 +643,7 @@ ER  -
 						<?php
 						if (file_exists($SERVER_ROOT . '/includes/citationcollection.php')) {
 							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;"">
-							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large">';
+							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">';
 							// If GBIF dataset key is available, fetch GBIF format from API
 							if ($collData['publishtogbif'] && $datasetKey && file_exists($SERVER_ROOT . '/includes/citationgbif.php')) {
 								$gbifUrl = 'http://api.gbif.org/v1/dataset/' . $datasetKey;
