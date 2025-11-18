@@ -111,7 +111,7 @@ $siteData = new DatasetsMetadata();
 	
 				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}' checked>";
 				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
-				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' target='_blank' title='View Sample Type Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>";
+				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' title='View Sample Type Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>";
 
 			} 
 			// group node
