@@ -543,32 +543,40 @@ ER  -
 				<?php
 				echo '<h1 class="text-3xl font-bold text-left mb-4">' . $collData['collectionname'] . '</h1>';
 				?>
-				<div class="flex justify-left space-x-3 mt-4">
-					<?php
-					if ($datasetKey) {
-						echo '<iframe src="https://www.gbif.org/api/widgets/literature/button?gbifDatasetKey=' . $datasetKey . '" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="false" style="width: 140px; height: 24px;"></iframe>';
-						// Check if the Bionomia badge has been created yet - typically lags ~2 weeks behind GBIF publication
-						$bionomiaUrl = 'https://api.bionomia.net/dataset/' . $datasetKey . '/badge.svg';
-						$ch = curl_init($bionomiaUrl);
-						curl_setopt($ch, CURLOPT_NOBODY, true);
-						curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-						curl_exec($ch);
-						$responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-						curl_close($ch);
-						// Check the response code - display image if exists
-						if ($responseCode === 200) {			
-							echo '<a href="https://bionomia.net/dataset/' . $datasetKey . '"><img src="' . $bionomiaUrl . '" alt="Bionomia dataset badge" style="width:262px; height:24px;"></a>';
+				<div class="flex justify-between items-center">
+					<div class="flex justify-left space-x-3 mt-4">
+						<?php
+						if ($datasetKey) {
+							echo '<iframe src="https://www.gbif.org/api/widgets/literature/button?gbifDatasetKey=' . $datasetKey . '" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="false" style="width: 140px; height: 24px;"></iframe>';
+							// Check if the Bionomia badge has been created yet - typically lags ~2 weeks behind GBIF publication
+							$bionomiaUrl = 'https://api.bionomia.net/dataset/' . $datasetKey . '/badge.svg';
+							$ch = curl_init($bionomiaUrl);
+							curl_setopt($ch, CURLOPT_NOBODY, true);
+							curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+							curl_exec($ch);
+							$responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+							curl_close($ch);
+							// Check the response code - display image if exists
+							if ($responseCode === 200) {			
+								echo '<a href="https://bionomia.net/dataset/' . $datasetKey . '"><img src="' . $bionomiaUrl . '" alt="Bionomia dataset badge" style="width:262px; height:24px;"></a>';
+							}
 						}
-					}
-					?>
-				</div>
-				<div class="flex justify-left space-x-3 mt-4">
-					<a href="<?php echo $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>">
-							<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
-									<span class="MuiButton-label">Browse Records</span>
-									<span class="MuiTouchRipple-root"></span>
-							</button>
-					</a>
+						?>
+					</div>
+					<div class="flex justify-right space-x-3 mt-4">
+						<a href="<?php echo $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>">
+								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+										<span class="MuiButton-label">Browse Records</span>
+										<span class="MuiTouchRipple-root"></span>
+								</button>
+						</a>
+						<a href="<?php echo $CLIENT_ROOT . '/neon/search/index.php?db=' . $collid; ?>">
+								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+										<span class="MuiButton-label">Search this Sample Type</span>
+										<span class="MuiTouchRipple-root"></span>
+								</button>
+						</a>						
+					</div>
 				</div>
 			</div>
 			
