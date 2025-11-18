@@ -993,7 +993,7 @@ function prefillFromUrl() {
     if (key === 'db') {
       const values = value.split(',');
       const leafCheckboxes = document.querySelectorAll(
-        '#biorepo-collections-list input[name="db"]'
+        '#biorepo-collections-list, #neonext-collections-list input[name="db"]'
       );
 
       values.forEach(v => {
@@ -1028,7 +1028,7 @@ function prefillFromUrl() {
   updateGlobalMaster();
 
   document.querySelectorAll(
-    '#biorepo-collections-list input.child, #site-list input.child'
+    '#biorepo-collections-list input.child, #site-list input.child, #neonext-collections-list input.child'
   ).forEach(cb => {
     updateAncestors(cb);
   });
