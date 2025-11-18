@@ -28,10 +28,11 @@ $siteData = new DatasetsMetadata();
 	document.addEventListener('DOMContentLoaded', () => {
 	  // expand/collapse groups
 		document.querySelectorAll('[data-target], .group-label, .expansion-icon').forEach(el => {
-		  el.addEventListener('click', () => {
+		  el.addEventListener('click', e => {
+			e.stopPropagation();
 			const li = el.closest('li');
-			const ul = li.querySelector(':scope > ul');
-			const icon = li.querySelector(':scope > .expansion-icon');
+			const ul = li.querySelector('ul');
+			const icon = li.querySelector('.expansion-icon');
 			if (!ul) return;
 		
 			const isCollapsed = ul.classList.toggle('collapsed');
