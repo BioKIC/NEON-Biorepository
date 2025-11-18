@@ -545,6 +545,20 @@ ER  -
 				?>
 				<div class="flex justify-between items-center">
 					<div class="flex justify-left space-x-3 mt-4">
+						<a href="<?php echo $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>">
+								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+										<span class="MuiButton-label">Browse Records</span>
+										<span class="MuiTouchRipple-root"></span>
+								</button>
+						</a>
+						<a href="<?php echo $CLIENT_ROOT . '/neon/search/index.php?db=' . $collid; ?>">
+								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+										<span class="MuiButton-label">Search this Sample Type</span>
+										<span class="MuiTouchRipple-root"></span>
+								</button>
+						</a>						
+					</div>
+					<div class="flex justify-right space-x-3 mt-4">
 						<?php
 						if ($datasetKey) {
 							echo '<iframe src="https://www.gbif.org/api/widgets/literature/button?gbifDatasetKey=' . $datasetKey . '" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="false" style="width: 140px; height: 24px;"></iframe>';
@@ -562,20 +576,6 @@ ER  -
 							}
 						}
 						?>
-					</div>
-					<div class="flex justify-right space-x-3 mt-4">
-						<a href="<?php echo $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>">
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
-										<span class="MuiButton-label">Browse Records</span>
-										<span class="MuiTouchRipple-root"></span>
-								</button>
-						</a>
-						<a href="<?php echo $CLIENT_ROOT . '/neon/search/index.php?db=' . $collid; ?>">
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
-										<span class="MuiButton-label">Search this Sample Type</span>
-										<span class="MuiTouchRipple-root"></span>
-								</button>
-						</a>						
 					</div>
 				</div>
 			</div>
