@@ -399,6 +399,7 @@ function toggleAllSelector() {
     .siblings()
     .find('input[type=checkbox]:enabled')
     .prop('checked', this.checked)
+    .prop('indeterminate', false)
     .attr('checked', this.checked);
 }
 
