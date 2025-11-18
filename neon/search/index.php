@@ -580,4 +580,5 @@ $siteData = new DatasetsMetadata();
 	?>
 </body>
 <script src="js/searchform.js?ver=14" type="text/javascript"></script>
+<script> window.addEventListener('load', updateChip);</script>
 </html>

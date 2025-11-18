@@ -962,6 +962,87 @@ $('#collections-list1, #collections-list2, #collections-list3').on('click', '.ex
   $(this).text(isCollapsed ? 'add_box' : 'indeterminate_check_box');
 });
 
+////////////////////////////////////////////////////////////////////////////
+// Prefill form from URL params
+function prefillFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+
+  const hasDbParam = params.has('db');
+  const hasDatasetParam = params.has('datasetid');
+
+  // Reset ONLY collections tree if db= is present
+  if (hasDbParam) {
+    document.querySelectorAll('#biorepo-collections-list input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      cb.indeterminate = false;
+    });
+  }
+
+  // Reset ONLY site tree if datasetid= is present
+  if (hasDatasetParam) {
+    document.querySelectorAll('#site-list input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      cb.indeterminate = false;
+    });
+  }
+
+  // Apply URL params
+  params.forEach((value, key) => {
+
+    // --- COLLECTIONS TREE (db) ---
+    if (key === 'db') {
+      const values = value.split(',');
+      const leafCheckboxes = document.querySelectorAll(
+        '#biorepo-collections-list input[name="db"]'
+      );
+
+      values.forEach(v => {
+        leafCheckboxes.forEach(cb => {
+          if (cb.value === v) cb.checked = true;
+        });
+      });
+      return;
+    }
+
+    // --- SITE TREE (datasetid) ---
+    if (key === 'datasetid') {
+      const values = value.split(',');
+      const leafCheckboxes = document.querySelectorAll(
+        '#site-list input[name="datasetid"]'
+      );
+
+      values.forEach(v => {
+        leafCheckboxes.forEach(cb => {
+          if (cb.value === v) cb.checked = true;
+        });
+      });
+      return;
+    }
+
+    // (other single-value text fields, selects, etc.)
+    const el = document.querySelector(`[name="${key}"]`);
+    if (el) el.value = value;
+  });
+
+  // Recalculate ancestors & chips
+  updateGlobalMaster();
+
+  document.querySelectorAll(
+    '#biorepo-collections-list input.child, #site-list input.child'
+  ).forEach(cb => {
+    updateAncestors(cb);
+  });
+
+  updateChip();
+}
+
+
+// Run prefill after DOM + default state loads
+window.addEventListener('load', function () {
+  prefillFromUrl();
+});
+
+
 // Hides MOSC-BU checkboxes
 hideColCheckbox(58);
 // Hides identified zoops for now
