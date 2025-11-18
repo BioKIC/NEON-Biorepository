@@ -28,40 +28,24 @@
     "sidebarTitle": "Samples & Specimens",
     "links": [
         {
-          "name": "Biorepository Sample Portal",
+          "name": "Biorepository Sample Portal at ASU",
           "hash": "neon/search/index.php"
         },
         {
-          "name": "About Samples",
-          "hash": "https://www.neonscience.org/samples/about-samples"
-        },
-        {
           "name": "Loans & Archival Requests",
-          "hash": "https://www.neonscience.org/samples/sample-services"
+          "hash": "https://www.testing-z6am3cq-di4alr4iwbwyg.us-2.platformsh.site/loans-archival-requests"
         },
         {
-          "name": "Sample Types",
-          "hash": "collections/misc/browsecollprofiles.php"
+          "name": "About Samples",
+          "hash": "https://www.testing-z6am3cq-di4alr4iwbwyg.us-2.platformsh.site/about-samples"
         },
         {
-          "name": "Species Checklists",
-          "hash": "projects/browsechecklists.php"
+          "name": "Finding and Accessing Sample Data",
+          "hash": "https://www.testing-z6am3cq-di4alr4iwbwyg.us-2.platformsh.site/finding-and-accessing-sample-data"
         },
         {
-          "name": "Guidelines & Policies",
-          "hash": "https://www.neonscience.org/data-samples/guidelines-policies/usage-policies"
-        },
-        {
-          "name": "Sample Explorer",
-          "hash": "https://data.neonscience.org/sample-explorer"
-        },
-        {
-          "name": "Biorepository Sample API",
-          "hash": "https://biorepo.neonscience.org/portal/api/v2/documentation"
-        },
-        {
-          "name": "ASU NEON Biorepository Staff",
-          "hash": "https://www.neonscience.org/samples/asu-neon-biorepository-staff"
+          "name": "Requesting and Using Samples",
+          "hash": "https://www.testing-z6am3cq-di4alr4iwbwyg.us-2.platformsh.site/using-samples"
         }
     ]
   }
