@@ -234,12 +234,12 @@
           },
           {
             "id": 35,
-            "name": "Invertebrate Bycatch (from Pitfall Sampling; Pooled Catches)",
+            "name": "Invertebrate Bycatch (from Beetle Sampling; Pooled Catches)",
             "collid": 13
           },
           {
             "id": 36,
-            "name": "Invertebrate Bycatch (from Pitfall Sampling; Unpooled Catches)",
+            "name": "Invertebrate Bycatch (from Beetle Sampling; Unpooled Catches)",
             "collid": 16
           },
           {
@@ -466,7 +466,7 @@
           },
           {
             "id": 76,
-            "name": "Bycatch Specimens (from Pitfall Sampling; Unpooled Catches)",
+            "name": "Bycatch Specimens (from Beetle Sampling; Unpooled Catches)",
             "collid": 17
           },
           {
@@ -487,12 +487,12 @@
         "children": [
           {
             "id": 80,
-            "name": "Bycatch Specimens (from Pitfall Sampling; Pooled Catches)",
+            "name": "Bycatch Specimens (from Beetle Sampling; Pooled Catches)",
             "collid": 12
           },
           {
             "id": 81,
-            "name": "Bycatch Specimens (from Pitfall Sampling; Unpooled Catches)",
+            "name": "Bycatch Specimens (from Beetle Sampling; Unpooled Catches)",
             "collid": 15
           },
           {

@@ -198,12 +198,12 @@
           },
           {
             "id": 29,
-            "name": "Beetles (Carabids) Samples (from Pitfall Sampling; Pooled Catches)",
+            "name": "Beetles (Carabids) Samples (from Beetle Sampling; Pooled Catches)",
             "collid": 11
           },
           {
             "id": 30,
-            "name": "Beetles (Carabids) Samples (from Pitfall Sampling; Unpooled Catches)",
+            "name": "Beetles (Carabids) Samples (from Beetle Sampling; Unpooled Catches)",
             "collid": 14
           },
           {
@@ -218,12 +218,12 @@
           },
           {
             "id": 33,
-            "name": "Invertebrate Specimen Bycatch (from Pitfall Sampling; Pooled Catches)",
+            "name": "Invertebrate Specimen Bycatch (from Beetle Sampling; Pooled Catches)",
             "collid": 13
           },
           {
             "id": 34,
-            "name": "Invertebrate Specimen Bycatch (from Pitfall Sampling; Unpooled Catches)",
+            "name": "Invertebrate Specimen Bycatch (from Beetle Sampling; Unpooled Catches)",
             "collid": 16
           },
           {
@@ -275,7 +275,7 @@
           },
           {
             "id": 44,
-            "name": "Small Mammal Specimen Bycatch (from Pitfall Sampling; Unpooled Catches)",
+            "name": "Small Mammal Specimen Bycatch (from Beetle Sampling; Unpooled Catches)",
             "collid": 17
           },
           {
@@ -285,12 +285,12 @@
           },
           {
             "id": 46,
-            "name": "Reptiles and Amphibians Specimen Bycatch (from Pitfall Sampling; Pooled Catches)",
+            "name": "Reptiles and Amphibians Specimen Bycatch (from Beetle Sampling; Pooled Catches)",
             "collid": 12
           },
           {
             "id": 47,
-            "name": "Reptiles and Amphibians Specimen Bycatch (from Pitfall Sampling; Unpooled Catches)",
+            "name": "Reptiles and Amphibians Specimen Bycatch (from Beetle Sampling; Unpooled Catches)",
             "collid": 15
           },
           {
