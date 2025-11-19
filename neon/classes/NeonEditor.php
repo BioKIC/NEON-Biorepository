@@ -267,6 +267,11 @@ class NeonEditor extends UtilitiesFileImport {
 				}
 			}
 		} elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
+			if (!in_array('ms_catalognumber', array_map('strtolower', array_keys($this->fieldMap)))) {
+				echo '<script>alert("ERROR: You must map the material sample catalogNumber (ms_catalogNumber) before importing.");</script>';
+				$this->logOrEcho('ERROR: ms_catalogNumber is not mapped in the import field map.', 1);
+				return;
+			}
 			$importManager = new OmMaterialSample($this->conn);
 			foreach ($occidArr as $occid) {
 				$importManager->setOccid($occid);
@@ -274,11 +279,27 @@ class NeonEditor extends UtilitiesFileImport {
 				$msArr = array();
 				foreach ($fieldArr as $field) {
 					$fieldLower = strtolower($field);
-					if (isset($this->fieldMap[$fieldLower]) && !empty($recordArr[$this->fieldMap[$fieldLower]])) $msArr[$field] = $this->encodeString($recordArr[$this->fieldMap[$fieldLower]]);
+					$recordIdx = $this->fieldMap[$fieldLower] ?? $this->fieldMap['ms_' . $fieldLower] ?? null;
+					if ($recordIdx !== null && !empty($recordArr[$recordIdx])) {
+						$msArr[$field] = $this->encodeString($recordArr[$recordIdx]);
+					}
 				}
 				if (isset($msArr['ms_catalogNumber']) && $msArr['ms_catalogNumber']) {
-					$msArr['catalogNumber'] = $msArr['ms_catalogNumber'];
-					unset($msArr['ms_catalogNumber']);
+				 	$msArr['catalogNumber'] = $msArr['ms_catalogNumber'];
+				 	unset($msArr['ms_catalogNumber']);
+				}
+				$existingSamples = $importManager->getMaterialSampleArr();
+				$alreadyExists = false;
+				foreach ($existingSamples as $sample) {
+					if ($sample['catalogNumber'] === $msArr['catalogNumber']) {
+						$alreadyExists = true;
+						break;
+					}
+				}
+
+				if ($alreadyExists) {
+					$this->logOrEcho('SKIPPED: Material Sample with catalogNumber "' . $msArr['catalogNumber'] . '" already exists for occid ' . $occid, 1);
+					continue; 
 				}
 				if ($importManager->insertMaterialSample($msArr)) {
 					$this->logOrEcho($LANG['MAT_SAMPLE_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
