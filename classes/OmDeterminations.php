@@ -213,7 +213,7 @@ class OmDeterminations extends Manager{
 
 	// NEON specific functions
 
-	public function insertAndPropagateDetermination($occid, $inputArr) {
+	public function insertAndPropagateNEONDetermination($occid, $inputArr) {
 		$results = []; 
 		$occidList = [];
 
@@ -244,7 +244,7 @@ class OmDeterminations extends Manager{
 
 		foreach (array_keys($occidList) as $assocOccid) {
 			$this->occid = $assocOccid;
-			if ($this->insertDetermination($inputArr)) {
+			if ($this->insertNEONDetermination($inputArr)) {
 				$results[$assocOccid] = ['success' => true, 'message' => 'Inserted successfully'];
 			} else {
 				$results[$assocOccid] = [
@@ -256,6 +256,111 @@ class OmDeterminations extends Manager{
 
 		return $results;
 	}
+
+	public function insertNEONDetermination($inputArr){
+		$status = false;
+		if($this->occid){
+			if(!isset($inputArr['createdUid'])) $inputArr['createdUid'] = $GLOBALS['SYMB_UID'];
+
+			// insert determination
+			$sql = 'INSERT INTO omoccurdeterminations(occid, recordID';
+			$sqlValues = '?, ?, ';
+			$paramArr = [$this->occid, UuidFactory::getUuidV4()];
+			$this->typeStr = 'is';
+			$this->setParameterArr($inputArr);
+			foreach($this->parameterArr as $fieldName => $value){
+				$sql .= ', '.$fieldName;
+				$sqlValues .= '?, ';
+				$paramArr[] = $value;
+			}
+			$sql .= ') VALUES('.trim($sqlValues, ', ').')';
+
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param($this->typeStr, ...$paramArr);
+
+				try {
+					if($stmt->execute()){
+						$this->detID = $stmt->insert_id;
+						$status = true;
+
+
+						// tid lookup
+						try {
+							$tid = null;
+							$tidSql = 'SELECT t.tid FROM taxa t WHERE t.sciName = ? LIMIT 2';
+							if ($tidstmt = $this->conn->prepare($tidSql)) {
+								$tidstmt->bind_param('s', $inputArr['sciname']);
+								if ($tidstmt->execute()) {
+									$result = $tidstmt->get_result();
+									if($result->num_rows === 1){
+										$tid = (int)$result->fetch_assoc()['tid'];
+										$updateSql = 'UPDATE omoccurdeterminations SET tidInterpreted = ? WHERE detid = ?';
+										if($updateStmt = $this->conn->prepare($updateSql)){
+											$updateStmt->bind_param('ii', $tid, $this->detID);
+											$updateStmt->execute();
+											$updateStmt->close();
+										} else $this->errorMessage .= ' ERROR preparing tid update: '.$this->conn->error;
+									} elseif ($result->num_rows > 1){
+										$this->errorMessage .= ' Multiple taxa found for sciname.';
+									} else {
+										$this->errorMessage .= ' No tid found for sciname.';
+									}
+								} else $this->errorMessage .= ' ERROR executing tid query: '.$tidstmt->error;
+								$tidstmt->close();
+							} else $this->errorMessage .= ' ERROR preparing tid query: '.$this->conn->error;
+						} catch(Exception $e){
+							$this->errorMessage .= ' TID lookup exception: '.$e->getMessage();
+						}
+
+						if(!empty($inputArr['isCurrent']) && intval($inputArr['isCurrent']) === 1){
+							try {
+								// if current determination,set all others to isCurrent = 0 
+								$updateSql = 'UPDATE omoccurdeterminations 
+											SET isCurrent = 0 
+											WHERE occid = ? AND detid != ? AND isCurrent = 1';
+								if ($updateStmt = $this->conn->prepare($updateSql)){
+									$updateStmt->bind_param('ii', $this->occid, $this->detID);
+									$updateStmt->execute();
+									$updateStmt->close();
+								} else $this->errorMessage .= ' ERROR preparing isCurrent clear query: '.$this->conn->error;
+
+								// Update occurrence for current determination
+								$occUpdateSql = 'UPDATE omoccurrences o
+									JOIN omoccurdeterminations d ON o.occid = d.occid
+									SET 
+										o.identifiedBy = d.identifiedBy,
+										o.dateIdentified = d.dateIdentified,
+										o.family = d.family,
+										o.sciname = d.sciname,
+										o.scientificName = d.sciname,
+										o.scientificNameAuthorship = d.scientificNameAuthorship,
+										o.tidInterpreted = d.tidInterpreted,
+										o.identificationQualifier = d.identificationQualifier,
+										o.identificationReferences = d.identificationReferences,
+										o.identificationRemarks = d.identificationRemarks
+									WHERE d.detid = ? AND d.isCurrent = 1';
+								if ($occStmt = $this->conn->prepare($occUpdateSql)){
+									$occStmt->bind_param('i', $this->detID);
+									$occStmt->execute();
+									$occStmt->close();
+								} else $this->errorMessage .= ' ERROR preparing omoccurrences update query: '.$this->conn->error;
+							} catch(Exception $e){
+								$this->errorMessage .= ' Omoccurrences update exception: '.$e->getMessage();
+							}
+						}
+
+					} else $this->errorMessage .= ' ERROR inserting determination: '.$stmt->error;
+				} catch (mysqli_sql_exception $e){
+					if(in_array($e->getCode(), [1062, 1406])) $this->errorMessage .= ' '.$e->getMessage();
+					else throw $e;
+				}
+				$stmt->close();
+			} else $this->errorMessage .= ' ERROR preparing insert: '.$this->conn->error;
+		}
+
+		return $status; 
+	}
+
 
 
 

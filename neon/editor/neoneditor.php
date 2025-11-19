@@ -297,7 +297,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 							<?php
 							}
 							if ($importType ==2){
-								echo '<b>Note:</b> any new determinations with isCurrent=1 will become the only current determination for the occurrence';
+								echo '<b>Note:</b> any new determinations with isCurrent=1 will become the only current determination for the occurrence. If isCurrent is not set in upload, new determinations will not be considered current';
 							}
 							?>
 							<div class="formField-div">

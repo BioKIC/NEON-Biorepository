@@ -174,8 +174,8 @@ class NeonEditor extends UtilitiesFileImport {
 				if (empty($detArr['dateIdentified'])) {
 					$paramArr['dateIdentified'] = 's.d.';
 				}
-				if ($postArr['associatedoccurrences'] == 1){
-					$results = $detManager->insertAndPropagateDetermination($occid, $detArr);
+				if (!empty($postArr['associatedoccurrences']) && $postArr['associatedoccurrences'] == 1) {
+					$results = $detManager->insertAndPropagateNEONDetermination($occid, $detArr);
 						if ($results !== false) {
 							foreach ($results as $id => $res) {
 								if ($res['success']) {
@@ -192,7 +192,7 @@ class NeonEditor extends UtilitiesFileImport {
 							$this->logOrEcho('ERROR retrieving associated occurrences: ' . $detManager->getErrorMessage(), 1);
 						}
 				}
-				else if ($detManager->insertDetermination($detArr)) {
+				else if ($detManager->insertNEONDetermination($detArr)) {
 					 $this->logOrEcho($LANG['DETERMINATION_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
                     $status = true;
 				} else {
