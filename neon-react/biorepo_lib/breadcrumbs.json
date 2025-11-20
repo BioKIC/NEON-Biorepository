@@ -13,6 +13,7 @@
   ],
   "/projects/browsechecklists.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.testing-z6am3cq-di4alr4iwbwyg.us-2.platformsh.site/finding-and-accessing-sample-data" },
     { "name": "Browse Species Checklists" }
     ],
   "/checklists/checklist.php": [
