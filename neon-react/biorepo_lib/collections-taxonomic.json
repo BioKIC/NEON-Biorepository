@@ -466,12 +466,12 @@
           },
           {
             "id": 76,
-            "name": "Bycatch Specimens (from Beetle Sampling; Unpooled Catches)",
+            "name": "Bycatch Specimens (from Beetle Sampling)",
             "collid": 17
           },
           {
             "id": 77,
-            "name": "Specimens (Outside of Standard Sampling)",
+            "name": "Specimens (Incidental)",
             "collid": 19
           },
           {
