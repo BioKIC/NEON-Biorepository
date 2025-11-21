@@ -44,10 +44,15 @@ class OmMaterialSample{
 	public function insertMaterialSample($inputArr){
 		$status = false;
 		if($this->occid && $this->conn){
+			// START NEON Customization
+			$newUuid = UuidFactory::getUuidV4();
 			$sql = 'INSERT INTO ommaterialsample(occid, recordID';
 			$sqlValues = '?, ?, ';
-			$paramArr = array($this->occid);
-			$paramArr[] = UuidFactory::getUuidV4();
+			$paramArr = array($this->occid,$newUuid);
+			// End NEON Customization
+			if(empty($inputArr['guid'])){
+				$inputArr['guid'] = $newUuid;
+			}
 			$this->typeStr = 'is';
 			$this->setParameterArr($inputArr);
 			foreach($this->parameterArr as $fieldName => $value){
