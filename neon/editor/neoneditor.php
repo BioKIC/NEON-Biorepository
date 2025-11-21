@@ -328,6 +328,17 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 								</div>
 							<?php
 							}
+							if ($importType == 4){
+							?>
+								<div class="formField-div">
+									<label for='action'><?= $LANG['ACTION'] ?>:</label>
+									<select name="action" id='action'>
+										<option value="add"><?= 'Batch add material samples' ?></option>
+										<option value="update"><?= 'Batch update material samples' ?></option>
+									</select>
+								</div>
+							<?php
+							} 
 							if ($importType == 5) {
 							?>
 								<div class="formField-div">

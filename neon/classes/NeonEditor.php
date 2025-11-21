@@ -268,7 +268,6 @@ class NeonEditor extends UtilitiesFileImport {
 			}
 		} elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
 			if (!in_array('ms_catalognumber', array_map('strtolower', array_keys($this->fieldMap)))) {
-				echo '<script>alert("ERROR: You must map the material sample catalogNumber (ms_catalogNumber) before importing.");</script>';
 				$this->logOrEcho('ERROR: ms_catalogNumber is not mapped in the import field map.', 1);
 				return;
 			}
@@ -288,25 +287,40 @@ class NeonEditor extends UtilitiesFileImport {
 				 	$msArr['catalogNumber'] = $msArr['ms_catalogNumber'];
 				 	unset($msArr['ms_catalogNumber']);
 				}
-				$existingSamples = $importManager->getMaterialSampleArr();
-				$alreadyExists = false;
-				foreach ($existingSamples as $sample) {
-					if ($sample['catalogNumber'] === $msArr['catalogNumber']) {
-						$alreadyExists = true;
-						break;
-					}
-				}
 
-				if ($alreadyExists) {
-					$this->logOrEcho('SKIPPED: Material Sample with catalogNumber "' . $msArr['catalogNumber'] . '" already exists for occid ' . $occid, 1);
-					continue; 
-				}
-				if ($importManager->insertMaterialSample($msArr)) {
-					$this->logOrEcho($LANG['MAT_SAMPLE_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-                    $status = true;
-				} else {
-					$this->logOrEcho('ERROR loading Material Sample: ' . $importManager->getErrorMessage(), 1);
-				}
+				if ($postArr['action'] === 'add') {
+					$existingoccid = $importManager->getMatSampleIdByCatalogNumber($msArr['catalogNumber']);
+					if ($existingoccid) {
+						$this->logOrEcho('SKIPPED: Material Sample with catalogNumber "' . $msArr['catalogNumber'] .
+							'" already exists for <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $existingoccid . '" target="_blank">' . $existingoccid . '</a>', 1);
+					} elseif ($importManager->insertMaterialSample($msArr)) {
+						$this->logOrEcho($LANG['MAT_SAMPLE_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+						$status = true;
+					} else {
+						$this->logOrEcho('ERROR loading Material Sample: ' . $importManager->getErrorMessage(), 1);
+					}
+				} elseif ($postArr['action'] === 'update') {
+						$matSampleID = $importManager->getMatSampleIdByOccidAndCatalogNumber($occid, $msArr['catalogNumber']);
+
+						if (!$matSampleID) {
+							$this->logOrEcho(
+								'SKIPPED: No existing material sample found for occid ' . 
+								$occid . ' with catalogNumber "' . $msArr['catalogNumber'] . '"',
+								1
+							);
+							continue;
+						}
+
+						$importManager->setMatSampleID($matSampleID);
+
+						if ($importManager->updateMaterialSample($msArr)) {
+							$this->logOrEcho(
+								'Material sample updated: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+							$status = true;
+						} else {
+							$this->logOrEcho('ERROR updating Material Sample: ' . $importManager->getErrorMessage(), 1);
+						}
+					}
 			}
 		} elseif ($this->importType == self::IMPORT_IDENTIFIERS) {
 			$importManager = new OmIdentifiers($this->conn);
