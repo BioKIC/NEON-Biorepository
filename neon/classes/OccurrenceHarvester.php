@@ -1525,7 +1525,7 @@ class OccurrenceHarvester{
 					}
 					$baseID['identificationRemarks'] = 'Identification source: parsed from NEON sampleID';
 					if ($dwcArr['recordedBy']) $baseID['identifiedBy'] = $dwcArr['recordedBy'];
-					if ($dwcArr['eventDate'])$baseID['dateIdentified'] = $dwcArr['eventDate'];
+					if ($dwcArr['eventDate']) $baseID['dateIdentified'] = $dwcArr['eventDate'];
 				}	
 			}
 
@@ -1825,6 +1825,10 @@ class OccurrenceHarvester{
 					if(isset($dwcArr['assocMedia'])) $this->setAssociatedMedia($dwcArr['assocMedia'], $occid);
 					if(isset($dwcArr['identifications'])) $this->setIdentifications($occid, $dwcArr['identifications'],$dwcArr['collid']);
 					if(isset($dwcArr['associations'])) $this->setAssociations($occid, $dwcArr['associations'],$dwcArr['collid']);
+					if(in_array($siteID,array('ARIK','BIGC','BLDE','CARI','COMO','CUPE','GUIL','HOPB','KING','LECO','LEWI','MART','MAYF','MCDI','MCRA','OKSR','POSE','PRIN','REDB','SYCA','TECR','WALK','WLOU'))) $aquaticSiteType = 'Wadeable Stream';
+					elseif(in_array($siteID,array('BARC','CRAM','LIRO','PRLA','PRPO','SUGG','TOOK'))) $aquaticSiteType = 'Lake';
+					elseif(in_array($siteID,array('BLUE','BLWA','FLNT','TOMB'))) $aquaticSiteType = 'Non-wadeable River';
+					$this->setDatasetIndexing($aquaticSiteType,$occid);
 					$this->setDatasetIndexing($domainID,$occid);
 					$this->setDatasetIndexing($siteID,$occid);
 					if(isset($landcover)) $this->setDatasetIndexing($landcover, $occid);
@@ -2315,6 +2319,19 @@ class OccurrenceHarvester{
 						  WHERE occid = '.$occid.'
 						  AND datasetid != '.$datasetID.'
 						  AND datasetid >=132 AND datasetid <=142';
+
+				if (!$this->conn->query($deleteSql)) {
+					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
+					return; // Stop execution if there's an error with the DELETE
+				}
+			}
+
+			if ($datasetID >= 199 AND $datasetID <=201){
+				// Delete existing entries for the given occid, if necessary
+				$deleteSql = 'DELETE FROM omoccurdatasetlink
+						  WHERE occid = '.$occid.'
+						  AND datasetid != '.$datasetID.'
+						  AND datasetid >=199 AND datasetid <=201';
 
 				if (!$this->conn->query($deleteSql)) {
 					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
