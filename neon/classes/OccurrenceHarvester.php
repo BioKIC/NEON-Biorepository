@@ -733,6 +733,11 @@ class OccurrenceHarvester{
 					}
 				}
 				$prepArr = array();
+					if(!empty($sampleArr['extract_rna_concentration'])) $prepArr[] = 'RNA concentration: '.$sampleArr['extract_rna_concentration'] .'ng/uL';
+					if(!empty($sampleArr['extract_dna_concentration'])) $prepArr[] = 'DNA concentration: '.$sampleArr['extract_dna_concentration'] .'ng/uL';
+					if(!empty($sampleArr['nucleic_acid_concentration'])) $prepArr[] = 'Nucleic acid concentration: '.$sampleArr['nucleic_acid_concentration'] .'ng/uL';
+					if(!empty($sampleArr['nucleic_acid_purity'])) $prepArr[] = 'Nucleic acid purity: '.$sampleArr['nucleic_acid_purity'];
+					if(!empty($sampleArr['nucleic_acid_quantification_method'])) $prepArr[] = 'Nucleic acid quantification method: '.$sampleArr['nucleic_acid_quantification_method'];
 					if(!in_array($dwcArr['collid'], array(7,8,9,17,19,28,42,46,49,64))){
 						if(!in_array($dwcArr['collid'],array(31,47,50,73))){
 							if(!empty($sampleArr['preservative_type'])) $prepArr[] = 'preservative type: '.$sampleArr['preservative_type'];
