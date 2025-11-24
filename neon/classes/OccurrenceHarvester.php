@@ -1828,7 +1828,7 @@ class OccurrenceHarvester{
 					if(in_array($siteID,array('ARIK','BIGC','BLDE','CARI','COMO','CUPE','GUIL','HOPB','KING','LECO','LEWI','MART','MAYF','MCDI','MCRA','OKSR','POSE','PRIN','REDB','SYCA','TECR','WALK','WLOU'))) $aquaticSiteType = 'Wadeable Stream';
 					elseif(in_array($siteID,array('BARC','CRAM','LIRO','PRLA','PRPO','SUGG','TOOK'))) $aquaticSiteType = 'Lake';
 					elseif(in_array($siteID,array('BLUE','BLWA','FLNT','TOMB'))) $aquaticSiteType = 'Non-wadeable River';
-					$this->setDatasetIndexing($aquaticSiteType,$occid);
+					if(isset($aquaticSiteType)) $this->setDatasetIndexing($aquaticSiteType,$occid);
 					$this->setDatasetIndexing($domainID,$occid);
 					$this->setDatasetIndexing($siteID,$occid);
 					if(isset($landcover)) $this->setDatasetIndexing($landcover, $occid);
