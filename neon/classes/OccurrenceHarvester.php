@@ -474,7 +474,7 @@ class OccurrenceHarvester{
 				//if(strpos($tableName,'identification')) continue;
 				//if(strpos($tableName,'sorting')) continue;
 				if($tableName == 'scs_archivedata_in') continue;
-				if($tableName == 'qualityCheck') continue;
+				if(strpos($tableName,'qualityCheck')) continue;
 				if($tableName == 'mam_barcoding_in') continue;
 				if($tableName == 'bet_barcoding_in') continue;
 				if(strpos($tableName,'dnaStandardTaxon')) continue;
@@ -560,7 +560,7 @@ class OccurrenceHarvester{
 						elseif($fArr['smsKey'] == 'remarks' && $fArr['smsValue'] && $sampleRank == 0 && !in_array($tableName,array('ptx_taxonomy_in'))) {
 							$tableArr['remarks'] = $fArr['smsValue'];
 						}
-						elseif ($sampleArr['sampleClass'] !='ptx_taxonomy_in.slideID'){
+						elseif (!in_array($sampleArr['sampleClass'],array('ptx_taxonomy_in.slideID','ptx_taxonomy_in.preserved'))){
 							if($fArr['smsKey'] == 'preservative_concentration' && $fArr['smsValue']) $tableArr['preservative_concentration'] = $fArr['smsValue'];
 							elseif($fArr['smsKey'] == 'preservative_volume' && $fArr['smsValue']) $tableArr['preservative_volume'] = $fArr['smsValue'];
 							elseif($fArr['smsKey'] == 'preservative_type' && $fArr['smsValue']) $tableArr['preservative_type'] = $fArr['smsValue'];
@@ -754,6 +754,7 @@ class OccurrenceHarvester{
 						if(!empty($sampleArr['preservative_concentration'])) $prepArr[] = 'preservative concentration: '.$sampleArr['preservative_concentration'];
 						if(!empty($sampleArr['sample_mass']) && strpos($sampleArr['symbiotaTarget'],'sample mass') === false) $prepArr[] = 'sample mass: '.$sampleArr['sample_mass'];
 						if(!empty($sampleArr['sample_volume']) && strpos($sampleArr['symbiotaTarget'],'sample volume') === false) $prepArr[] = 'sample volume: '.$sampleArr['sample_volume'];
+						if(!empty($sampleArr['filterVolume'])) $prepArr[] = 'filter volume: '.$sampleArr['filterVolume'];
 						if(!empty($sampleArr['sex'])){
 							if($sampleArr['sex'] == 'M') $dwcArr['sex'] = 'Male';
 							elseif($sampleArr['sex'] == 'F') $dwcArr['sex'] = 'Female';
@@ -768,7 +769,6 @@ class OccurrenceHarvester{
 					}
 				if($prepArr) $dwcArr['preparations'] = implode(', ',$prepArr);
 				$dynProp = array();
-				if(!empty($sampleArr['filterVolume'])) $dynProp[] = 'filterVolume: '.$sampleArr['filterVolume'];
 				if(!empty($sampleArr['temperature'])) $dynProp[] = 'temperature: '.$sampleArr['temperature'];
 				if(!empty($sampleArr['minimum_depth_in_meters'])) $dynProp[] = 'minimum depth: '.$sampleArr['minimum_depth_in_meters'].'m ';
 				if(!empty($sampleArr['maximum_depth_in_meters'])) $dynProp[] = 'maximum depth: '.$sampleArr['maximum_depth_in_meters'].'m ';
