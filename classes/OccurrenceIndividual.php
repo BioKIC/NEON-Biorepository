@@ -236,10 +236,12 @@ class OccurrenceIndividual extends Manager{
 	}
 
 	private function setDeterminations(){
-		$sql = 'SELECT detid, dateidentified, identifiedby, sciname, scientificnameauthorship, identificationqualifier, identificationreferences, identificationremarks, iscurrent
+		//Start neon customization
+		$sql = 'SELECT detid, dateidentified, identifiedby, sciname, scientificnameauthorship, identificationqualifier, identificationreferences, identificationremarks, iscurrent, securitystatus
 			FROM omoccurdeterminations
 			WHERE (occid = ?) AND appliedstatus = 1
 			ORDER BY sortsequence';
+		//End neon customization
 		if($stmt = $this->conn->prepare($sql)){
 			$stmt->bind_param('i', $this->occid);
 			$stmt->execute();
@@ -254,6 +256,9 @@ class OccurrenceIndividual extends Manager{
 					$this->occArr['dets'][$detId]['ref'] = $row->identificationreferences;
 					$this->occArr['dets'][$detId]['notes'] = $row->identificationremarks;
 					$this->occArr['dets'][$detId]['iscurrent'] = $row->iscurrent;
+					//Start neon customization
+					$this->occArr['dets'][$detId]['securitystatus'] = $row->securitystatus;
+					//End neon customization
 				}
 				$rs->free();
 			}
