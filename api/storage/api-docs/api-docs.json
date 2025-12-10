@@ -40,6 +40,24 @@
                         }
                     },
                     {
+                        "name": "datasetID",
+                        "in": "query",
+                        "description": "associated NEON sampleClasses",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "productID",
+                        "in": "query",
+                        "description": "associated NEON product IDs",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "limit",
                         "in": "query",
                         "description": "Controls the number of results per page",
@@ -1453,7 +1471,7 @@
                 "tags": [
                     ""
                 ],
-                "description": "If an existing record can be located within target collection based on matching the input identifier, empty (null) target fields will be updated with Skeletal Data.\n\t\t\tIf the target field contains data, it will remain unaltered.\n\t\t\tIf multiple records are returned matching the input identifier, data will be added only to the first record.\n\t\t\tIf an identifier is not provided or a matching record can not be found, a new Skeletal record will be created and primed with input data.\n\t\t\tNote that catalogNumber or otherCatalogNumber must be provided to create a new skeletal record. If processingStatus is not defined, new skeletal records will be set as 'unprocessed'",
+                "description": "If an existing record can be located within target collection based on matching the input identifier, empty (null) target fields will be updated with Skeletal Data.\r\n\t\t\tIf the target field contains data, it will remain unaltered.\r\n\t\t\tIf multiple records are returned matching the input identifier, data will be added only to the first record.\r\n\t\t\tIf an identifier is not provided or a matching record can not be found, a new Skeletal record will be created and primed with input data.\r\n\t\t\tNote that catalogNumber or otherCatalogNumber must be provided to create a new skeletal record. If processingStatus is not defined, new skeletal records will be set as 'unprocessed'",
                 "operationId": "skeletalImport",
                 "parameters": [
                     {
@@ -1598,53 +1616,10 @@
                 "operationId": "/api/v2/taxonomy",
                 "parameters": [
                     {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Controls the number of results in the page.",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 100
-                        }
-                    },
-                    {
-                        "name": "offset",
-                        "in": "query",
-                        "description": "Determines the starting point for the search results. A limit of 100 and offset of 200, will display 100 records starting the 200th record.",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 0
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Returns list of inventories registered within system",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error: Bad request. "
-                    }
-                }
-            }
-        },
-        "/api/v2/taxonomy/search": {
-            "get": {
-                "tags": [
-                    ""
-                ],
-                "operationId": "/api/v2/taxonomy/search",
-                "parameters": [
-                    {
                         "name": "taxon",
                         "in": "query",
                         "description": "Taxon search term",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -1663,6 +1638,37 @@
                                 "WHOLEWORD",
                                 "WILD"
                             ]
+                        }
+                    },
+                    {
+                        "name": "taxonGroup",
+                        "in": "query",
+                        "description": "Search term for NEON defined Taxon Group",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ALGAE",
+                                "BEETLE",
+                                "BIRD",
+                                "FISH",
+                                "HERPETOLOGY",
+                                "MACROINVERTEBRATE",
+                                "MOSQUITO",
+                                "MOSQUITO_PATHOGENS",
+                                "PLANT",
+                                "SMALL_MAMMAL",
+                                "TICK"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "taxonCode",
+                        "in": "query",
+                        "description": "Search term for NEON defined Taxon Code",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {

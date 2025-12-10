@@ -24,4 +24,8 @@ class Taxonomy extends Model{
 	public function media(){
 		return $this->hasMany(media::class, 'tid', 'tid');
 	}
+
+	public function taxonCodes(){
+		return $this->hasMany(NeonTaxonomy::class, 'tid', 'tid');
+	}
 }

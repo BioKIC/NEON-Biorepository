@@ -1,6 +1,7 @@
 <?php
-include_once("OccurrenceManager.php");
-include_once("OccurrenceAccessStats.php");
+include_once('OccurrenceManager.php');
+include_once('OccurrenceAccessStats.php');
+include_once('OmDeterminations.php');
 
 class OccurrenceListManager extends OccurrenceManager{
 
@@ -27,10 +28,10 @@ class OccurrenceListManager extends OccurrenceManager{
 		$sqlWhere = $this->getSqlWhere();
 		if(!$this->recordCount || $this->reset) $this->setRecordCnt($sqlWhere);
 		$sql = 'SELECT o.occid, o.collid, c.institutioncode, c.collectioncode, c.icon, o.institutioncode AS instcodeoverride, o.collectioncode AS collcodeoverride, '.
-			'o.catalognumber, o.family, o.sciname, o.scientificnameauthorship, o.tidinterpreted, o.recordedby, o.recordnumber, o.eventdate, '.
-			'o.country, o.stateprovince, o.county, o.locality, o.decimallatitude, o.decimallongitude, o.recordsecurity, o.securityreason, '.
-			'o.habitat, o.substrate, o.minimumelevationinmeters, o.maximumelevationinmeters, o.observeruid, c.sortseq '.
-			'FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid ';
+				'o.catalognumber, o.family, o.sciname, o.scientificnameauthorship, o.tidinterpreted, o.recordedby, o.recordnumber, o.eventdate, '.
+				'o.country, o.stateprovince, o.county, o.locality, o.decimallatitude, o.decimallongitude, o.recordsecurity, o.securityreason, '.
+				'o.habitat, o.substrate, o.minimumelevationinmeters, o.maximumelevationinmeters, o.observeruid, c.sortseq '.
+				'FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid ';
 		$sql .= $this->getTableJoins($sqlWhere).$sqlWhere;
 		//Don't allow someone to query all occurrences if there are no conditions
 		if(!$sqlWhere) $sql .= 'WHERE o.occid IS NULL ';
@@ -71,14 +72,14 @@ class OccurrenceListManager extends OccurrenceManager{
 				$retArr[$row->occid]['tid'] = $row->tidinterpreted;
 				$retArr[$row->occid]['author'] = $this->cleanOutStr($row->scientificnameauthorship);
 				/*
-				if(isset($row->scinameprotected) && $row->scinameprotected && !$securityClearance){
-					$retArr[$row->occid]['taxonsecure'] = 1;
-					$retArr[$row->occid]['sciname'] = $this->cleanOutStr($row->scinameprotected);
-					$retArr[$row->occid]['author'] = '';
-					$retArr[$row->occid]['family'] = $row->familyprotected;
-					$retArr[$row->occid]['tid'] = $row->tidprotected;
-				}
-				*/
+				 if(isset($row->scinameprotected) && $row->scinameprotected && !$securityClearance){
+				 $retArr[$row->occid]['taxonsecure'] = 1;
+				 $retArr[$row->occid]['sciname'] = $this->cleanOutStr($row->scinameprotected);
+				 $retArr[$row->occid]['author'] = '';
+				 $retArr[$row->occid]['family'] = $row->familyprotected;
+				 $retArr[$row->occid]['tid'] = $row->tidprotected;
+				 }
+				 */
 				$retArr[$row->occid]['collector'] = $this->cleanOutStr($row->recordedby);
 				$retArr[$row->occid]['country'] = $this->cleanOutStr($row->country);
 				$retArr[$row->occid]['state'] = $this->cleanOutStr($row->stateprovince);

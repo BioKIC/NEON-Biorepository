@@ -59,9 +59,9 @@ $router->group(['prefix' => 'v2'], function () use ($router) {
 	$router->patch('media/{id}', ['uses' => 'MediaController@update']);
 	$router->delete('media/{id}', ['uses' => 'MediaController@delete']);
 
-	$router->get('morphology', ['uses' => 'MorphologyController@showAllCharacters']);
-	$router->get('morphology/{id}', ['uses' => 'MorphologyController@showOneCharacter']);
-	$router->get('morphology/{id}/attribute', ['uses' => 'MorphologyController@showCharacterAttributes']);
+	//$router->get('morphology', ['uses' => 'MorphologyController@showAllCharacters']);
+	//$router->get('morphology/{id}', ['uses' => 'MorphologyController@showOneCharacter']);
+	//$router->get('morphology/{id}/attribute', ['uses' => 'MorphologyController@showCharacterAttributes']);
 
 	$router->get('taxonomy', ['uses' => 'TaxonomyController@showAllTaxa']);
 	$router->get('taxonomy/search', ['uses' => 'TaxonomyController@showAllTaxaSearch']);

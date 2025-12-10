@@ -13,6 +13,7 @@ class TaxonomyController extends Controller {
 	 *
 	 * @return void
 	 */
+
 	public function __construct() {
 		parent::__construct();
 	}
@@ -22,6 +23,41 @@ class TaxonomyController extends Controller {
 	 *	 path="/api/v2/taxonomy",
 	 *	 operationId="/api/v2/taxonomy",
 	 *	 tags={""},
+	 *	 @OA\Parameter(
+	 *		 name="taxon",
+	 *		 in="query",
+	 *		 description="Taxon search term",
+	 *		 required=false,
+	 *		 @OA\Schema(type="string")
+	 *	 ),
+	 *	 @OA\Parameter(
+	 *		 name="type",
+	 *		 in="query",
+	 *		 description="Type of search",
+	 *		 required=false,
+	 *		 @OA\Schema(
+	 *			type="string",
+	 *			default="EXACT",
+	 *			enum={"EXACT", "START", "WHOLEWORD", "WILD"}
+	 *		)
+	 *	 ),
+	 *	 @OA\Parameter(
+	 *		 name="taxonGroup",
+	 *		 in="query",
+	 *		 description="Search term for NEON defined Taxon Group",
+	 *		 required=false,
+	 *		 @OA\Schema(
+	 *			type="string",
+	 *			enum={"ALGAE","BEETLE","BIRD","FISH","HERPETOLOGY","MACROINVERTEBRATE","MOSQUITO","MOSQUITO_PATHOGENS","PLANT","SMALL_MAMMAL","TICK"}
+	 *		)
+	 *	 ),
+	 *	 @OA\Parameter(
+	 *		 name="taxonCode",
+	 *		 in="query",
+	 *		 description="Search term for NEON defined Taxon Code",
+	 *		 required=false,
+	 *		 @OA\Schema(type="string")
+	 *	 ),
 	 *	 @OA\Parameter(
 	 *		 name="limit",
 	 *		 in="query",
@@ -49,99 +85,55 @@ class TaxonomyController extends Controller {
 	 */
 	public function showAllTaxa(Request $request) {
 		$this->validate($request, [
+			'type' => 'in:EXACT,exact,START,start,WHOLEWORD,wholeword,WILD,wild',
+			'taxonGroup' => 'in:ALGAE,BEETLE,BIRD,FISH,HERPETOLOGY,MACROINVERTEBRATE,MOSQUITO,MOSQUITO_PATHOGENS,PLANT,SMALL_MAMMAL,TICK',
 			'limit' => 'integer',
 			'offset' => 'integer'
 		]);
 		$limit = $request->input('limit', 100);
 		$offset = $request->input('offset', 0);
 
-		$fullCnt = Taxonomy::count();
-		$result = Taxonomy::skip($offset)->take($limit)->get();
+		$type = strtoupper($request->input('type', 'EXACT'));
 
-		$eor = false;
-		$retObj = [
-			'offset' => (int)$offset,
-			'limit' => (int)$limit,
-			'endOfRecords' => $eor,
-			'count' => $fullCnt,
-			'results' => $result
-		];
-		return response()->json($retObj);
-	}
+		//Define model
+		$taxaModel = Taxonomy::with('taxonCodes');
 
-	/**
-	 * @OA\Get(
-	 *	 path="/api/v2/taxonomy/search",
-	 *	 operationId="/api/v2/taxonomy/search",
-	 *	 tags={""},
-	 *	 @OA\Parameter(
-	 *		 name="taxon",
-	 *		 in="query",
-	 *		 description="Taxon search term",
-	 *		 required=true,
-	 *		 @OA\Schema(type="string")
-	 *	 ),
-	 *	 @OA\Parameter(
-	 *		 name="type",
-	 *		 in="query",
-	 *		 description="Type of search",
-	 *		 required=false,
-	 *		 @OA\Schema(
-	 *			type="string",
-	 *			default="EXACT",
-	 *			enum={"EXACT", "START", "WHOLEWORD", "WILD"}
-	 *		)
-	 *	 ),
-	 *	 @OA\Parameter(
-	 *		 name="limit",
-	 *		 in="query",
-	 *		 description="Controls the number of results in the page.",
-	 *		 required=false,
-	 *		 @OA\Schema(type="integer", default=100)
-	 *	 ),
-	 *	 @OA\Parameter(
-	 *		 name="offset",
-	 *		 in="query",
-	 *		 description="Determines the starting point for the search results. A limit of 100 and offset of 200, will display 100 records starting the 200th record.",
-	 *		 required=false,
-	 *		 @OA\Schema(type="integer", default=0)
-	 *	 ),
-	 *	 @OA\Response(
-	 *		 response="200",
-	 *		 description="Returns list of inventories registered within system",
-	 *		 @OA\JsonContent()
-	 *	 ),
-	 *	 @OA\Response(
-	 *		 response="400",
-	 *		 description="Error: Bad request. ",
-	 *	 ),
-	 * )
-	 */
-	public function showAllTaxaSearch(Request $request) {
-		$this->validate($request, [
-			'taxon' => 'required',
-			'limit' => 'integer',
-			'offset' => 'integer'
-		]);
-		$limit = $request->input('limit', 100);
-		$offset = $request->input('offset', 0);
-
-		$type = $request->input('type', 'EXACT');
-
-		$taxaModel = Taxonomy::query();
-		if ($type == 'START') {
-			$taxaModel->where('sciname', 'LIKE', $request->taxon . '%');
-		} elseif ($type == 'WILD') {
-			$taxaModel->where('sciname', 'LIKE', '%' . $request->taxon . '%');
-		} elseif ($type == 'WHOLEWORD') {
-			$taxaModel->where('unitname1', $request->taxon)
-				->orWhere('unitname2', $request->taxon)
-				->orWhere('unitname3', $request->taxon);
-		} else {
-			//Exact match
-			$taxaModel->where('sciname', $request->taxon);
+		//Taxonomy term search
+		if($request->taxon){
+			if($type == 'START'){
+				$taxaModel->where('sciname', 'LIKE', $request->taxon . '%');
+			}
+			elseif($type == 'WILD'){
+				$taxaModel->where('sciname', 'LIKE', '%' . $request->taxon . '%');
+			}
+			elseif($type == 'WHOLEWORD'){
+				$taxaModel->where('unitname1', $request->taxon)
+					->orWhere('unitname2', $request->taxon)
+					->orWhere('unitname3', $request->taxon);
+			}
+			else{
+				//Exact match
+				$taxaModel->where('sciname', $request->taxon);
+			}
 		}
 
+		//taxonGroup search term submit
+		if($request->taxonGroup){
+			$searchTerm = $request->taxonGroup;
+			$taxaModel->whereHas('taxonCodes', function ($query) use ($searchTerm) {
+				$query->where('taxonGroup', "{$searchTerm}");
+			});
+		}
+
+		//taxonCode search term submit
+		if($request->taxonCode){
+			$searchTerm = $request->taxonCode;
+			$taxaModel->whereHas('taxonCodes', function ($query) use ($searchTerm) {
+				$query->where('taxonCode', "{$searchTerm}");
+			});
+		}
+
+		//Prepare output
 		$fullCnt = $taxaModel->count();
 		$result = $taxaModel->skip($offset)->take($limit)->get();
 
@@ -207,13 +199,15 @@ class TaxonomyController extends Controller {
 
 		//Set parent
 		$parStatus = DB::table('taxaenumtree as e')
-			->select('p.tid', 'p.sciname as scientificName', 'p.author', 'p.rankid')
-			->join('taxa as p', 'e.parentTid', '=', 'p.tid')
-			->where('e.tid', $id)->where('e.taxauthid', 1);
+		->select('p.tid', 'p.sciname as scientificName', 'p.author', 'p.rankid')
+		->join('taxa as p', 'e.parentTid', '=', 'p.tid')
+		->where('e.tid', $id)->where('e.taxauthid', 1);
 		$parStatusResult = $parStatus->get();
 		$taxonObj->classification = $parStatusResult;
 
-		if (!$taxonObj->count()) $taxonObj = ['status' => false, 'error' => 'Unable to locate inventory based on identifier'];
+		$taxonObj->taxonCodes;
+
+		if(!$taxonObj->count()) $taxonObj = ['status' =>false, 'error' => 'Unable to locate inventory based on identifier'];
 		return response()->json($taxonObj);
 	}
 

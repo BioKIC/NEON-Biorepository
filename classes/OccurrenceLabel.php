@@ -84,8 +84,11 @@ class OccurrenceLabel {
 				$recordedBy = $this->cleanInStr($postArr['recordedby']);
 				$sqlWhere .= 'AND (MATCH(o.recordedby) AGAINST("' . $recordedBy . '" IN BOOLEAN MODE)) ';
 			}
-			if ($postArr['identifier']) {
-				$iArr = explode(',', $this->cleanInStr($postArr['identifier']));
+			if($postArr['identifier']){
+				// Start NEON customatization
+				$catNum = $this->cleanInStr(str_replace(array(',', "\n", "\r\n", "\r", ' '), ';', $postArr['identifier']));
+				$iArr = array_filter(array_map('trim', explode(';', $catNum)));
+				// End NEON customatization
 				$iBetweenFrag = array();
 				$iInFrag = array();
 				foreach ($iArr as $v) {
@@ -113,9 +116,28 @@ class OccurrenceLabel {
 			if ($this->collArr['colltype'] == 'General Observations') {
 				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
 				if (!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= ' AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
-			} elseif (!array_key_exists('extendedsearch', $postArr)) {
+			}
+			// Start NEON customization
+			/*
+			elseif (!array_key_exists('extendedsearch', $postArr)) {
 				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
 			}
+			*/
+			else{
+				if(array_key_exists('extendedsearch', $postArr)){
+					if(array_key_exists('excludesubsamples', $postArr)){
+						$sqlWhere .= 'AND (o.collid NOT BETWEEN 100 AND 111) ';
+					}
+				} else {
+					if(array_key_exists('excludesubsamples', $postArr) && $this->collid >= 100 && $this->collid <= 111){
+						$sqlWhere .= 'AND (1=0) ';
+					} else {
+						$sqlWhere .= 'AND (o.collid = '.$this->collid.') ';
+					}
+				}
+			}
+			// End NEON customization
+
 			$sql = 'SELECT DISTINCT o.occid, o.collid, IFNULL(o.duplicatequantity,1) AS q, CONCAT_WS(" ",o.recordedby,IFNULL(o.recordnumber,o.eventdate)) AS collector, o.observeruid,
 				o.family, o.sciname, CONCAT_WS("; ",o.country, o.stateProvince, o.county, o.locality) AS locality, IFNULL(o.recordSecurity,0) AS recordSecurity
 				FROM omoccurrences o ';
@@ -166,7 +188,7 @@ class OccurrenceLabel {
 			}
 			//Get occurrence records
 			$this->setLabelFieldArr();
-			$sql2 = 'SELECT '.implode(',',$this->labelFieldArr).' FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.tid LEFT JOIN taxstatus ts ON ts.tid = o.tidinterpreted LEFT JOIN taxstatus pts ON ts.parenttid = pts.tid LEFT JOIN taxa pt ON pts.tid = pt.tid '.$sqlWhere;
+			$sql2 = 'SELECT DISTINCT '.implode(',',$this->labelFieldArr).' FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.tid LEFT JOIN taxstatus ts ON ts.tid = o.tidinterpreted LEFT JOIN taxstatus pts ON ts.parenttid = pts.tid LEFT JOIN taxa pt ON pts.tid = pt.tid '.$sqlWhere;
 			if ($rs2 = $this->conn->query($sql2)) {
 				while ($row2 = $rs2->fetch_assoc()) {
 					$occid = $row2['occid'];
@@ -205,6 +227,37 @@ class OccurrenceLabel {
 						$retArr[$occid]['othercatalognumbers'] = $ocnStr;
 					}
 				}
+				// NEON edit
+				// get identifiers of associate occurrence records
+				$sql = 'SELECT oa.occid, oa.occidAssociate, oi.identifiername, oi.identifiervalue
+						FROM omoccurassociations oa
+						LEFT JOIN omoccuridentifiers oi ON oa.occidAssociate = oi.occid
+						WHERE oa.occid IN(' . implode(',', array_keys($retArr)) . ')
+						ORDER BY oi.sortBy';
+			
+				if ($rs = $this->conn->query($sql)) {
+					$assocArr = array();
+					while ($r = $rs->fetch_object()) {
+						$assocArr[$r->occid][] = array(
+							'n' => $r->identifiername ?? '',
+							'v' => $r->identifiervalue,
+							'associd' => $r->occidAssociate
+						);
+					}
+					$rs->free();
+			
+					foreach ($assocArr as $occid => $idArrs) {
+						$assocStr = '';
+						foreach ($idArrs as $idArr) {
+							$assocStr .= '; ' . ($idArr['n'] ? $idArr['n'] . ': ' : '') . $idArr['v'];
+						}
+						$assocStr = trim($assocStr, ';,: ');
+			
+						// store in retArr under a new key
+						$retArr[$occid]['associateidentifiers'] = $assocStr;
+					}
+				}
+				//end NEON edit
 			}
 		}
 		return $retArr;
@@ -285,6 +338,9 @@ class OccurrenceLabel {
 				'recordNumber'=>'o.recordnumber',
 				'associatedCollectors' => 'o.associatedcollectors',
 				'eventDate' => 'DATE_FORMAT(o.eventdate,"%e %M %Y") AS eventdate',
+				//NEON edit
+				'eventDate2' => 'DATE_FORMAT(o.eventdate2,"%e %M %Y") AS eventdate2',
+				//end NEON edit
 				'year' => 'o.year',
 				'month' => 'o.month',
 				'day' => 'o.day',
