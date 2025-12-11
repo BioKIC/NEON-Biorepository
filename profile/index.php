@@ -8,36 +8,16 @@ if(!empty($THIRD_PARTY_OID_AUTH_ENABLED)){
 }
 use Jumbojett\OpenIDConnectClient;
 
-//neon edit
-if (empty($SYMB_UID)) {
-    if (isset($_REQUEST['refurl']) && is_string($_REQUEST['refurl'])) {
-        $_SESSION['refurl'] = $_REQUEST['refurl'];
-    }
-
-    $target = $CLIENT_ROOT . '/profile/openIdAuth.php';
-
-    if (!empty($_SESSION['refurl'])) {
-        $glue = (strpos($target, '?') === false) ? '?' : '&';
-        $target .= $glue . 'refurl=' . rawurlencode($_SESSION['refurl']);
-    }
-
-    header('Location: ' . $target);
-    exit;
-}
-
-//end neon edit
-
 if($SYMB_UID){
-	if(!empty($_SESSION['refurl'])){
-		$url = $_SESSION['refurl'];
+	if($_SESSION['refurl'] ?? false){
+		header("Location:" . $_SESSION['refurl']);
 		unset($_SESSION['refurl']);
-		header('Location:' . $url);
 	}
-	elseif(!empty($_REQUEST['refurl'])){
-		header('Location:' . $_REQUEST['refurl']);
+	if ($_REQUEST['refurl'] ?? false){
+		header("Location:" . $_REQUEST['refurl']);
 	}
-	elseif(!isset($_REQUEST['submit']) || $_REQUEST['submit'] != 'logout'){
-		header('Location:' . GeneralUtil::getDomain() . $CLIENT_ROOT . '/index.php');
+	else{
+		header("Location:" . GeneralUtil::getDomain() . $CLIENT_ROOT . '/profile/viewprofile.php');
 	}
 }
 
@@ -45,7 +25,12 @@ include_once($SERVER_ROOT.'/classes/ProfileManager.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/profile/index.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/profile/index.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/profile/index.en.php');
 
+
 header("Content-Type: text/html; charset=".$CHARSET);
+
+$THIRD_PARTY_OID_AUTH_ENABLED = $THIRD_PARTY_OID_AUTH_ENABLED ?? false;
+$SYMBIOTA_LOGIN_ENABLED = $SYMBIOTA_LOGIN_ENABLED ?? true;
+$LOGIN_ACTION_PAGE = $LOGIN_ACTION_PAGE ?? $CLIENT_ROOT . '/profile/openIdAuth.php';
 
 $login = array_key_exists('login',$_REQUEST)?$_REQUEST['login']:'';
 $remMe = array_key_exists("remember",$_POST)?$_POST["remember"]:'';
@@ -100,25 +85,10 @@ if($remMe) $pHandler->setRememberMe(true);
 if($action == 'logout'){
 	//check if using third party auth
 	if(array_key_exists('AUTH_PROVIDER', $_SESSION)){
-		//$oidc = new OpenIDConnectClient($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], $CLIENT_IDS[$_SESSION['AUTH_PROVIDER']], $CLIENT_SECRETS[$_SESSION['AUTH_PROVIDER']], $PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']]);
-		//$pHandler->reset();
-		//$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
-		//$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
+		$oidc = new OpenIDConnectClient($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], $CLIENT_IDS[$_SESSION['AUTH_PROVIDER']], $CLIENT_SECRETS[$_SESSION['AUTH_PROVIDER']], $PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']]);
+		$pHandler->reset();
+		$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
 
-		//neon edit
-		$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
-		$baseUrl = rtrim($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], '/');
-
-		$logoutUrl = sprintf(
-			'%s/v2/logout?returnTo=%s&client_id=%s',
-			$baseUrl,
-			urlencode($redirect),
-			$CLIENT_IDS[$_SESSION['AUTH_PROVIDER']]
-		);
-
-		header("Location: $logoutUrl");
-		exit;
-		//end neon edit
 	}
 	else{
 		$pHandler->reset();
@@ -137,6 +107,10 @@ elseif($action == 'login'){
 	else{
 		if($pHandler->getErrorMessage()){
 			$statusStr = $pHandler->getErrorMessage();
+			if(preg_match('/^[A-Z_]+$/', $statusStr)){
+				//Error is a LANG code
+				$statusStr = $LANG[$statusStr].'<ERR/>';
+			}
 		}
 		else{
 			if(isset($LANG['INCORRECT'])) $statusStr = $LANG['INCORRECT'];
@@ -266,7 +240,7 @@ include($SERVER_ROOT.'/includes/header.php');
 	<div class="gridlike-form justify-center-full-screen" style="margin: 0;">
 		<div class="flex-item-login bottom-breathing-room-rel">
 			<form id="loginform" name="loginform" action="index.php" onsubmit="return checkCreds();" method="post">
-				<?php if(!empty($SYMBIOTA_LOGIN_ENABLED)){ ?>
+				<?php if($SYMBIOTA_LOGIN_ENABLED){ ?>
 					<fieldset class="profile-fieldset">
 						<legend class="profile-legend"><?php echo (isset($LANG['PORTAL_LOGIN'])?$LANG['PORTAL_LOGIN']:'Portal Login'); ?></legend>
 						<div>
@@ -293,10 +267,9 @@ include($SERVER_ROOT.'/includes/header.php');
 			</form>
 		</div>
 		<?php
-		if(!empty($THIRD_PARTY_OID_AUTH_ENABLED)){
-			if(!empty($_REQUEST['refurl'])) $_SESSION['refurl'] = $_REQUEST['refurl'];
-			if(empty($LOGIN_ACTION_PAGE)) $LOGIN_ACTION_PAGE = $CLIENT_ROOT . '/profile/openIdAuth.php';
-			?>
+			if($THIRD_PARTY_OID_AUTH_ENABLED){
+				$_SESSION['refurl'] = array_key_exists('refurl', $_REQUEST) ? $_REQUEST['refurl'] : '';
+		?>
 			<div class="flex-item-login bottom-breathing-room-rel">
 				<form action='<?= $LOGIN_ACTION_PAGE ?>' onsubmit="">
 					<fieldset  class="profile-fieldset">
@@ -307,23 +280,24 @@ include($SERVER_ROOT.'/includes/header.php');
 					</fieldset>
 				</form>
 			</div>
-			<?php
-		}
+		<?php
+			}
 		?>
 		<div class="flex-item-login" style="text-align:center">
 			<?php
-			$shouldBeAbleToCreatePublicUser = $SHOULD_BE_ABLE_TO_CREATE_PUBLIC_USER ?? true;
-			if($shouldBeAbleToCreatePublicUser){
-				?>
+				$shouldBeAbleToCreatePublicUser = $SHOULD_BE_ABLE_TO_CREATE_PUBLIC_USER ?? true;
+				if($shouldBeAbleToCreatePublicUser){
+			?>
 				<div style="font-weight:bold;">
 					<?php echo (isset($LANG['NO_ACCOUNT'])?$LANG['NO_ACCOUNT']:"Don't have an Account?"); ?>
 				</div>
 				<div>
 					<a href="newprofile.php?refurl=<?php echo htmlspecialchars($refUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"><?php echo htmlspecialchars((isset($LANG['CREATE_ACCOUNT'])?$LANG['CREATE_ACCOUNT']:'Create an account'), ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></a>
 				</div>
-				<?php
-	 		}
-			if(!empty($SYMBIOTA_LOGIN_ENABLED)){ ?>
+			<?php
+		 		}
+			?>
+			<?php if($SYMBIOTA_LOGIN_ENABLED){ ?>
 				<div style="font-weight:bold;margin-top:5px">
 					<?php echo (isset($LANG['REMEMBER_PWD'])?$LANG['REMEMBER_PWD']:"Can't Remember your password?"); ?>
 				</div>

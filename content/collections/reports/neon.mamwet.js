@@ -72,33 +72,16 @@ labels.forEach((label) => {
   let dynProps = label.querySelector('.dynamicproperties');
   if (dynProps) {
     let prepBy = '';
-    if (dynProps.innerText.includes('preparedBy')) {
-      let arr = dynProps.innerText.split(',');
-      // console.log(idx);
-      arr.forEach((i) => {
-        if (i.includes('preparedBy')) {
-          prepBy = i.match(/(?<=preparedBy:).*/)[0].trim();
-          return prepBy;
-        }
-      });
-
-      let prepDate = '';
-      if (dynProps.innerText.includes('preparedDate')) {
-        let dArr = dynProps.innerText.split(',');
-        dArr.forEach((j) => {
-          if (j.includes('preparedDate')) {
-            prepDate = j.match(/(?<=preparedDate:).*/)[0].trim();
-            return prepDate;
-          }
-        });
+    try {
+      const obj = JSON.parse(dynProps.innerText.trim());
+      if (obj.prepared_by) {
+        prepBy = obj.prepared_by;
       }
-      // dynProps.innerText = 'Prep. by: ' + prepBy + ' (' + prepDate + ')';
-      dynProps.innerText = 'Prep. by: ' + prepBy;
-    } else {
-      // dynProps.style = 'display:none';
-      // Leave 'Prep. by:' even if empty
-      dynProps.innerText = 'Prep. by: ';
+    } catch (e) {
+      // If invalid JSON, leave prepBy empty
     }
+
+  dynProps.innerText = 'Prep. by: ' + (prepBy || '');
   } else {
     // Create 'Prep. by:' when no dynProps are found, after collector div (only if collector exists)
     if (recordedBy) {
