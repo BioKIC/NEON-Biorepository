@@ -82,15 +82,24 @@ class OmGenetic{
 
             if ($stmt = $this->conn->prepare($sql)) {
                 $stmt->bind_param($this->typeStr, ...$paramArr);
-                if ($stmt->execute()) {
-                    if ($stmt->affected_rows || !$stmt->error) {
-                        $this->idoccurgenetic = $stmt->insert_id;
-                        $status = true;
+
+                try {
+                    if ($stmt->execute()) {
+                        if ($stmt->affected_rows || !$stmt->error) {
+                            $this->idoccurgenetic = $stmt->insert_id;
+                            $status = true;
+                        } else {
+                            $this->errorMessage = 'ERROR inserting genetic record (2): ' . $stmt->error;
+                        }
                     } else {
-                        $this->errorMessage = 'ERROR inserting genetic record (2): ' . $stmt->error;
+                        $this->errorMessage = 'ERROR inserting genetic record (1): ' . $stmt->error;
                     }
-                } else {
-                    $this->errorMessage = 'ERROR inserting genetic record (1): ' . $stmt->error;
+                } catch (mysqli_sql_exception $e) {
+                    if ($e->getCode() == 1062) {
+                        $this->errorMessage = "Duplicate conflict: (occid={$this->occid}, resourceurl={$this->parameterArr['resourceurl']}) already exists.";
+                    } else {
+                        $this->errorMessage = 'Database error inserting genetic record: ' . $e->getMessage();
+                    }
                 }
                 $stmt->close();
             } else {
@@ -162,12 +171,23 @@ class OmGenetic{
 
         if ($stmt = $this->conn->prepare($sql)) {
             $stmt->bind_param($typeStr, ...$paramArr);
-            $stmt->execute();
 
-            if ($stmt->affected_rows || !$stmt->error) {
-                $status = true;
-            } else {
-                $this->errorMessage = 'ERROR updating genetic link: '.$stmt->error;
+            try {
+                if ($stmt->execute()) {
+                    if ($stmt->affected_rows || !$stmt->error) {
+                        $status = true;
+                    } else {
+                        $this->errorMessage = 'ERROR updating genetic link: ' . $stmt->error;
+                    }
+                } else {
+                    $this->errorMessage = 'ERROR executing update statement: ' . $stmt->error;
+                }
+            } catch (mysqli_sql_exception $e) {
+                if ($e->getCode() == 1062) {
+                    $this->errorMessage = "Duplicate conflict: (occid={$this->occid}, resourceurl={$this->parameterArr['resourceurl']}) already exists.";
+                } else {
+                    $this->errorMessage = 'Database error updating genetic link: ' . $e->getMessage();
+                }
             }
 
             $stmt->close();
@@ -178,7 +198,125 @@ class OmGenetic{
         return $status;
     }
 
+    public function insertAndPropagateGeneticLink($occid, $inputArr,$type) {
+		$results = []; 
+		$occidList = [];
+
+        if ($type == 'derived'){
+		    $sql = 'SELECT occid, occidAssociate 
+				FROM omoccurassociations 
+				WHERE (occid = ? OR occidAssociate = ?) 
+				AND relationship = "derivedFromSameIndividual"';
+        }
+        if ($type == 'originating'){
+		    $sql = 'SELECT occid, occidAssociate 
+				FROM omoccurassociations 
+				WHERE (occid = ? OR occidAssociate = ?) 
+				AND relationship IN ("originatingSampleOf","subsampleOf")';
+        }
+        if ($type == 'both'){
+		    $sql = 'SELECT occid, occidAssociate 
+				FROM omoccurassociations 
+				WHERE (occid = ? OR occidAssociate = ?) 
+				AND relationship IN ("originatingSampleOf","subsampleOf","derivedFromSameIndividual")';
+        }
+
+		if ($stmt = $this->conn->prepare($sql)) {
+			$stmt->bind_param('ii', $occid, $occid);
+			if ($stmt->execute()) {
+				$result = $stmt->get_result();
+				while ($row = $result->fetch_assoc()) {
+					if (!empty($row['occid'])) $occidList[$row['occid']] = true;
+					if (!empty($row['occidAssociate'])) $occidList[$row['occidAssociate']] = true;
+				}
+			} else {
+				$this->errorMessage = 'ERROR executing association query: ' . $stmt->error;
+				return false;
+			}
+			$stmt->close();
+		} else {
+			$this->errorMessage = 'ERROR preparing association query: ' . $this->conn->error;
+			return false;
+		}
+
+		$occidList[$occid] = true;
+
+		foreach (array_keys($occidList) as $assocOccid) {
+			$this->occid = $assocOccid;
+			if ($this->insertGeneticLink($inputArr)) {
+				$results[$assocOccid] = ['success' => true, 'message' => 'Inserted successfully'];
+			} else {
+				$results[$assocOccid] = [
+					'success' => false,
+					'message' => $this->errorMessage ?: 'Unknown error during insert'
+				];
+			}
+		}
+
+		return $results;
+	}
+
+    public function updateAndPropagateGeneticLink($occid, $inputArr,$type) {
+		$results = []; 
+		$occidList = [];
+
+        if ($type == 'derived'){
+		    $sql = 'SELECT occid, occidAssociate 
+				FROM omoccurassociations 
+				WHERE (occid = ? OR occidAssociate = ?) 
+				AND relationship = "derivedFromSameIndividual"';
+        }
+        if ($type == 'originating'){
+		    $sql = 'SELECT occid, occidAssociate 
+				FROM omoccurassociations 
+				WHERE (occid = ? OR occidAssociate = ?) 
+				AND relationship IN ("originatingSampleOf","subsampleOf")';
+        }
+        if ($type == 'both'){
+		    $sql = 'SELECT occid, occidAssociate 
+				FROM omoccurassociations 
+				WHERE (occid = ? OR occidAssociate = ?) 
+				AND relationship IN ("originatingSampleOf","subsampleOf","derivedFromSameIndividual")';
+        }
+
+		if ($stmt = $this->conn->prepare($sql)) {
+			$stmt->bind_param('ii', $occid, $occid);
+			if ($stmt->execute()) {
+				$result = $stmt->get_result();
+				while ($row = $result->fetch_assoc()) {
+					if (!empty($row['occid'])) $occidList[$row['occid']] = true;
+					if (!empty($row['occidAssociate'])) $occidList[$row['occidAssociate']] = true;
+				}
+			} else {
+				$this->errorMessage = 'ERROR executing association query: ' . $stmt->error;
+				return false;
+			}
+			$stmt->close();
+		} else {
+			$this->errorMessage = 'ERROR preparing association query: ' . $this->conn->error;
+			return false;
+		}
+
+		$occidList[$occid] = true;
+
+		foreach (array_keys($occidList) as $assocOccid) {
+			$this->occid = $assocOccid;
+			if ($this->updateGeneticLink($inputArr)) {
+				$results[$assocOccid] = ['success' => true, 'message' => 'Updated successfully'];
+			} else {
+				$results[$assocOccid] = [
+					'success' => false,
+					'message' => $this->errorMessage ?: 'Unknown error during update'
+				];
+			}
+		}
+
+		return $results;
+	}
+
 	private function setParameterArr($inputArr){
+        $this->parameterArr = [];
+        $this->typeStr = '';
 		foreach($this->schemaMap as $field => $type){
 			$postField = '';
 			if(isset($inputArr[$field])) $postField = $field;

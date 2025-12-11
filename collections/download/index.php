@@ -157,7 +157,7 @@ $dwcManager = new DwcArchiverCore();
 								<br/>
 								<?php
 								if($dwcManager->hasAttributes()) echo '<input type="checkbox" name="attributes" id="attributes" value="1" onchange="extensionSelected(this)" checked /> <label for="attributes">' . $LANG['INCLUDE_ATTR'] . '</label><br/>';
-								if($dwcManager->hasMaterialSamples()) echo '<input type="checkbox" name="materialsample" id="materialsample" value="1" onchange="extensionSelected(this)" checked /><label for="materialsample">' . $LANG['IMCLUDE_MAT'] . '</label><br/>';
+								if($dwcManager->hasMaterialSamples()) echo '<input type="checkbox" name="materialsample" id="materialsample" value="1" onchange="extensionSelected(this)" checked /><label for="materialsample"> ' . $LANG['IMCLUDE_MAT'] . '</label><br/>';
 								if($dwcManager->hasIdentifiers()) echo '<input type="checkbox" name="identifiers" id="identifiers" value="1" onchange="extensionSelected(this)" checked /> <label for="identifiers">' . $LANG['INCLUDE_IDENT'] . '</label><br/>';
 								?>
 								*<?= $LANG['DATA_EXT_NOTE'] ?>

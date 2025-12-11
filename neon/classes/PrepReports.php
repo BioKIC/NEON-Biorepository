@@ -35,12 +35,12 @@
     SUM(skinPrepCnt) +  SUM(flatskinPrepCnt) +SUM(fluidPrepCnt) AS total
 FROM (
     SELECT 
-        TRIM(REGEXP_SUBSTR(dynamicProperties, "(?<=preparedBy:)(.*?)(?=,)")) AS prepBy, 
+        TRIM(JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, "$.prepared_by"))) AS prepBy, 
         COUNT(occid) AS skinPrepCnt,
         0 AS flatskinPrepCnt,
         0 AS fluidPrepCnt
     FROM omoccurrences
-    WHERE dynamicProperties LIKE "%preparedBy%" 
+    WHERE JSON_EXTRACT(dynamicProperties, "$.prepared_by") IS NOT NULL
     AND preparations LIKE "%skin%" AND preparations NOT LIKE "%flat%"
     AND collid IN (17, 19, 28)
     GROUP BY prepBy
@@ -48,12 +48,12 @@ FROM (
     UNION ALL
 
         SELECT 
-        TRIM(REGEXP_SUBSTR(dynamicProperties, "(?<=preparedBy:)(.*?)(?=,)")) AS prepBy, 
+        TRIM(JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, "$.prepared_by"))) AS prepBy,
         0 AS skinPrepCnt,
         COUNT(occid) AS flatskinPrepCnt,
         0 AS fluidPrepCnt
     FROM omoccurrences
-    WHERE dynamicProperties LIKE "%preparedBy%" 
+    WHERE JSON_EXTRACT(dynamicProperties, "$.prepared_by") IS NOT NULL
     AND preparations LIKE "%flat%"
     AND collid IN (17, 19, 28)
     GROUP BY prepBy
@@ -61,18 +61,18 @@ FROM (
     UNION ALL
     
     SELECT 
-        TRIM(REGEXP_SUBSTR(dynamicProperties, "(?<=preparedBy:)(.*?)(?=,)")) AS prepBy, 
+        TRIM(JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, "$.prepared_by"))) AS prepBy,
         0 AS skinPrepCnt,
         0 AS flatskinPrepCnt,
         COUNT(occid) AS fluidPrepCnt
     FROM omoccurrences
-    WHERE dynamicProperties LIKE "%preparedBy%" 
+    WHERE JSON_EXTRACT(dynamicProperties, "$.prepared_by") IS NOT NULL
     AND preparations LIKE "%eth%" 
     AND collid IN (17, 19, 28)
     GROUP BY prepBy
 ) AS combined
 GROUP BY prepBy
-ORDER BY preparator;';
+ORDER BY prepBy;';
     $result = $this->conn->query($sql);
 
     if ($result) {

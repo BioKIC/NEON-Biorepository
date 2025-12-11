@@ -44,10 +44,15 @@ class OmMaterialSample{
 	public function insertMaterialSample($inputArr){
 		$status = false;
 		if($this->occid && $this->conn){
+			// START NEON Customization
+			$newUuid = UuidFactory::getUuidV4();
 			$sql = 'INSERT INTO ommaterialsample(occid, recordID';
 			$sqlValues = '?, ?, ';
-			$paramArr = array($this->occid);
-			$paramArr[] = UuidFactory::getUuidV4();
+			$paramArr = array($this->occid,$newUuid);
+			// End NEON Customization
+			if(empty($inputArr['guid'])){
+				$inputArr['guid'] = $newUuid;
+			}
 			$this->typeStr = 'is';
 			$this->setParameterArr($inputArr);
 			foreach($this->parameterArr as $fieldName => $value){
@@ -176,5 +181,47 @@ class OmMaterialSample{
 	public function getErrorMessage(){
 		return $this->errorMessage;
 	}
+
+	// START NEON specific functions
+
+	public function getMatSampleIdByOccidAndCatalogNumber($occid, $catalogNumber) {
+		$occid = intval($occid);
+		$catalogNumber = $this->conn->real_escape_string($catalogNumber);
+
+		$sql = 'SELECT matSampleID 
+				FROM ommaterialsample 
+				WHERE occid = ' . $occid . ' 
+				AND catalogNumber = "' . $catalogNumber . '" 
+				LIMIT 1';
+
+		if ($rs = $this->conn->query($sql)) {
+			if ($row = $rs->fetch_assoc()) {
+				return $row['matSampleID'];
+			}
+		}
+		return null;
+	}
+
+	public function getMatSampleIdByCatalogNumber($catalogNumber){
+		$sql = 'SELECT occid 
+				FROM ommaterialsample 
+				WHERE catalogNumber = ? 
+				LIMIT 1';
+
+		$stmt = $this->conn->prepare($sql);
+		$stmt->bind_param('s', $catalogNumber);
+		$stmt->execute();
+		$stmt->bind_result($occid);
+
+		if($stmt->fetch()){
+			return $occid;
+		}
+
+		return false;
+	}
+
+	// END NEON specific Function
+
+
 }
 ?>
