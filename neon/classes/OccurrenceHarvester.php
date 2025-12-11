@@ -474,7 +474,7 @@ class OccurrenceHarvester{
 				//if(strpos($tableName,'identification')) continue;
 				//if(strpos($tableName,'sorting')) continue;
 				if($tableName == 'scs_archivedata_in') continue;
-				if(strpos($tableName,'qualityCheck')) continue;
+				if($tableName == 'qualityCheck') continue;
 				if($tableName == 'mam_barcoding_in') continue;
 				if($tableName == 'bet_barcoding_in') continue;
 				if(strpos($tableName,'dnaStandardTaxon')) continue;
@@ -560,7 +560,7 @@ class OccurrenceHarvester{
 						elseif($fArr['smsKey'] == 'remarks' && $fArr['smsValue'] && $sampleRank == 0 && !in_array($tableName,array('ptx_taxonomy_in'))) {
 							$tableArr['remarks'] = $fArr['smsValue'];
 						}
-						elseif (!in_array($sampleArr['sampleClass'],array('ptx_taxonomy_in.slideID','ptx_taxonomy_in.preserved'))){
+						elseif ($sampleArr['sampleClass'] !='ptx_taxonomy_in.slideID'){
 							if($fArr['smsKey'] == 'preservative_concentration' && $fArr['smsValue']) $tableArr['preservative_concentration'] = $fArr['smsValue'];
 							elseif($fArr['smsKey'] == 'preservative_volume' && $fArr['smsValue']) $tableArr['preservative_volume'] = $fArr['smsValue'];
 							elseif($fArr['smsKey'] == 'preservative_type' && $fArr['smsValue']) $tableArr['preservative_type'] = $fArr['smsValue'];
@@ -733,28 +733,14 @@ class OccurrenceHarvester{
 					}
 				}
 				$prepArr = array();
-					if(!empty($sampleArr['extract_rna_concentration'])) $prepArr[] = 'RNA concentration: '.$sampleArr['extract_rna_concentration'] .'ng/uL';
-					if(!empty($sampleArr['extract_dna_concentration'])) $prepArr[] = 'DNA concentration: '.$sampleArr['extract_dna_concentration'] .'ng/uL';
-					if(!empty($sampleArr['nucleic_acid_concentration'])) $prepArr[] = 'Nucleic acid concentration: '.$sampleArr['nucleic_acid_concentration'] .'ng/uL';
-					if(!empty($sampleArr['nucleic_acid_purity'])) $prepArr[] = 'Nucleic acid purity: '.$sampleArr['nucleic_acid_purity'];
-					if(!empty($sampleArr['nucleic_acid_quantification_method'])) $prepArr[] = 'Nucleic acid quantification method: '.$sampleArr['nucleic_acid_quantification_method'];
 					if(!in_array($dwcArr['collid'], array(7,8,9,17,19,28,42,46,49,64))){
 						if(!in_array($dwcArr['collid'],array(31,47,50,73))){
 							if(!empty($sampleArr['preservative_type'])) $prepArr[] = 'preservative type: '.$sampleArr['preservative_type'];
-						}
-						if(in_array($dwcArr['collid'],array(67,68))){
-							if (in_array($sampleArr['sampleClass'],array('mic_dnaExtraction_in.amcBlankSampleID','mic_dnaExtraction_in.ambBlankSampleID'))){
-								$prepArr[] = 'Field blank';
-							}
-							if (in_array($sampleArr['sampleClass'],array('mic_dnaPooling_in.ambPoolDnaSampleID','mic_dnaPooling_in.amcPoolDnaSampleID'))){
-								$prepArr[] = 'Pooled extract from two sterivex filters';
-							}
 						}
 						if(!empty($sampleArr['preservative_volume'])) $prepArr[] = 'preservative volume: '.$sampleArr['preservative_volume'];
 						if(!empty($sampleArr['preservative_concentration'])) $prepArr[] = 'preservative concentration: '.$sampleArr['preservative_concentration'];
 						if(!empty($sampleArr['sample_mass']) && strpos($sampleArr['symbiotaTarget'],'sample mass') === false) $prepArr[] = 'sample mass: '.$sampleArr['sample_mass'];
 						if(!empty($sampleArr['sample_volume']) && strpos($sampleArr['symbiotaTarget'],'sample volume') === false) $prepArr[] = 'sample volume: '.$sampleArr['sample_volume'];
-						if(!empty($sampleArr['filterVolume'])) $prepArr[] = 'filter volume: '.$sampleArr['filterVolume'];
 						if(!empty($sampleArr['sex'])){
 							if($sampleArr['sex'] == 'M') $dwcArr['sex'] = 'Male';
 							elseif($sampleArr['sex'] == 'F') $dwcArr['sex'] = 'Female';
@@ -769,6 +755,7 @@ class OccurrenceHarvester{
 					}
 				if($prepArr) $dwcArr['preparations'] = implode(', ',$prepArr);
 				$dynProp = array();
+				if(!empty($sampleArr['filterVolume'])) $dynProp[] = 'filterVolume: '.$sampleArr['filterVolume'];
 				if(!empty($sampleArr['temperature'])) $dynProp[] = 'temperature: '.$sampleArr['temperature'];
 				if(!empty($sampleArr['minimum_depth_in_meters'])) $dynProp[] = 'minimum depth: '.$sampleArr['minimum_depth_in_meters'].'m ';
 				if(!empty($sampleArr['maximum_depth_in_meters'])) $dynProp[] = 'maximum depth: '.$sampleArr['maximum_depth_in_meters'].'m ';
@@ -839,7 +826,7 @@ class OccurrenceHarvester{
 						$taxonCode = '';
 						$taxonRemarks = '';
 						if(in_array($dwcArr['collid'], array(5,6,67,68,46,98))){
-							$nonTaxa = ['amc', 'arc', 'arc-dna1','blank-dna1','dna','met-dna1','pool','ss','re','c0','c1','c2','dna-dna1','dna2-dna1','1','2','3'];
+							$nonTaxa = ['amc', 'arc', 'dna','ss','re','c0','c1','c2','dna-dna1','dna2-dna1','1','2','3'];
 
 							$parts = explode('.', $sampleArr['sampleID']);
 							$foundDate = false;
@@ -1530,7 +1517,7 @@ class OccurrenceHarvester{
 					}
 					$baseID['identificationRemarks'] = 'Identification source: parsed from NEON sampleID';
 					if ($dwcArr['recordedBy']) $baseID['identifiedBy'] = $dwcArr['recordedBy'];
-					if ($dwcArr['eventDate']) $baseID['dateIdentified'] = $dwcArr['eventDate'];
+					if ($dwcArr['eventDate'])$baseID['dateIdentified'] = $dwcArr['eventDate'];
 				}	
 			}
 
@@ -1830,10 +1817,6 @@ class OccurrenceHarvester{
 					if(isset($dwcArr['assocMedia'])) $this->setAssociatedMedia($dwcArr['assocMedia'], $occid);
 					if(isset($dwcArr['identifications'])) $this->setIdentifications($occid, $dwcArr['identifications'],$dwcArr['collid']);
 					if(isset($dwcArr['associations'])) $this->setAssociations($occid, $dwcArr['associations'],$dwcArr['collid']);
-					if(in_array($siteID,array('ARIK','BIGC','BLDE','CARI','COMO','CUPE','GUIL','HOPB','KING','LECO','LEWI','MART','MAYF','MCDI','MCRA','OKSR','POSE','PRIN','REDB','SYCA','TECR','WALK','WLOU'))) $aquaticSiteType = 'Wadeable Stream';
-					elseif(in_array($siteID,array('BARC','CRAM','LIRO','PRLA','PRPO','SUGG','TOOK'))) $aquaticSiteType = 'Lake';
-					elseif(in_array($siteID,array('BLUE','BLWA','FLNT','TOMB'))) $aquaticSiteType = 'Non-wadeable River';
-					if(isset($aquaticSiteType)) $this->setDatasetIndexing($aquaticSiteType,$occid);
 					$this->setDatasetIndexing($domainID,$occid);
 					$this->setDatasetIndexing($siteID,$occid);
 					if(isset($landcover)) $this->setDatasetIndexing($landcover, $occid);
@@ -2324,19 +2307,6 @@ class OccurrenceHarvester{
 						  WHERE occid = '.$occid.'
 						  AND datasetid != '.$datasetID.'
 						  AND datasetid >=132 AND datasetid <=142';
-
-				if (!$this->conn->query($deleteSql)) {
-					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;
-					return; // Stop execution if there's an error with the DELETE
-				}
-			}
-
-			if ($datasetID >= 199 AND $datasetID <=201){
-				// Delete existing entries for the given occid, if necessary
-				$deleteSql = 'DELETE FROM omoccurdatasetlink
-						  WHERE occid = '.$occid.'
-						  AND datasetid != '.$datasetID.'
-						  AND datasetid >=199 AND datasetid <=201';
 
 				if (!$this->conn->query($deleteSql)) {
 					$this->errorStr = 'ERROR deleting unmatched entries for occid '.$occid.': '.$this->conn->errno.' - '.$this->conn->error;

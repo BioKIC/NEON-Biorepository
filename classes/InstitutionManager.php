@@ -125,7 +125,7 @@ class InstitutionManager extends Manager{
 	}
 
 	public function deleteInstitution($delIid){
-		$status = false;
+		$status = true;
 		if($this->verifyInstitutionDeletion($delIid)){
 			$sql = 'DELETE FROM institutions WHERE iid = ?';
 			if($stmt = $this->conn->prepare($sql)){

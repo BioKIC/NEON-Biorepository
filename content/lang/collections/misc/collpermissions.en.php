@@ -66,6 +66,5 @@ $LANG['NO_ID_PERMS'] = 'There are no Identification Editor permissions';
 $LANG['NOT_AUTH'] = 'Unauthorized to view this page. You must have administrative right for this collection.';
 
 $LANG['DROP_ICON'] = 'Drop Icon';
-$LANG['SEL_USER'] = 'Select User';
 
 ?>

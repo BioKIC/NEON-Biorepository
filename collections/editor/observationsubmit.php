@@ -40,7 +40,6 @@ if($collMap){
 		$isEditor = 1;
 	}
 	if($isEditor && $action == "Submit"){
-		$_POST['observeruid'] = $GLOBALS['SYMB_UID'];
 		$occurManager->addOccurrence($_POST);
 		$occid = $occurManager->getOccId();
 
@@ -61,7 +60,7 @@ if($collMap){
 					$file, 
 					new LocalStorage($path)
 				);
-
+				
 				if($errors = Media::getErrors()) {
 					$mediaErrors[$i] = $errors;
 				} else {

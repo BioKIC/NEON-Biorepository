@@ -341,6 +341,7 @@ fieldset{
 
 #locationIdDiv{
 	float:	left;
+	margin-left: 5px;
 }
 
 #locationIdDiv input{
@@ -771,34 +772,6 @@ fieldset{
 	width:150px;
 }
 
-#languageDiv{
-	float:left;
-}
-
-#languageDiv input{
-	width:150px;
-}
-
-#labelProjectDiv{
-	float:left;
-}
-
-#duplicateQuantityDiv{
-	float:left;
-}
-
-#duplicateQuantityDiv input{
-	width: 100px;
-}
-
-#dataGeneralizationsDiv{
-	float:left;
-}
-
-#dataGeneralizationsDiv input{
-	width: 500px;
-}
-
 #institutionCodeDiv{
 	float:left;
 }
@@ -831,9 +804,35 @@ fieldset{
 	width:150px;
 }
 
-#processingStatusDiv{
-	float:left;	
+#languageDiv{
+	float:left;
 }
+
+#languageDiv input{
+	width:150px;
+}
+
+#labelProjectDiv{
+	float:left;
+}
+
+#duplicateQuantityDiv{
+	float:left;
+}
+
+#duplicateQuantityDiv input{
+	width:35px;
+}
+
+#dataGeneralizationsDiv{
+	float:left;
+}
+
+#dataGeneralizationsDiv input{
+	width: 500px;
+}
+
+#processingStatusDiv{	float:left;	margin:3px;}
 
 #pkDiv{
 	padding:3px;

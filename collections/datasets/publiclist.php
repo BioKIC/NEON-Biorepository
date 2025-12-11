@@ -6,11 +6,6 @@ header('Content-Type: text/html; charset='.$CHARSET);
 
 $datasetManager = new OccurrenceDataset();
 $dArr = $datasetManager->getPublicDatasets();
-
-$dArr = array_filter($dArr, function($row) {
-    return isset($row['category']) && $row['category'] !== null && $row['category'] !== '';
-});
-
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">

@@ -328,11 +328,29 @@ class DwcArchiverPublisher extends DwcArchiverCore{
 		$size = false;
 
 		if($fileParts = UploadUtil::decomposeUrl($filePath)) {
-			$localPath = $CLIENT_ROOT? str_replace($CLIENT_ROOT, '', $fileParts['path']): $fileParts['path'];
+			$host = $fileParts['host'] . (isset($fileParts['port'])? ':' . $fileParts['port']: '');
 
-			if(file_exists($SERVER_ROOT . $localPath)) {
-				$size = @filesize($SERVER_ROOT . $localPath);
-			} 
+			if($host !== $SERVER_HOST) {
+				if($headerArr = @get_headers($filePath, 1)){
+					$size = array_change_key_case($headerArr, CASE_LOWER);
+					if( strcasecmp($size[0], 'HTTP/1.1 200 OK') != 0 ) {
+						$size = $size['content-length'][1];
+					}
+					else {
+						$size = $size['content-length'];
+					}
+				}
+			} else {
+				$path = $fileParts['path'];
+
+				// If $CLIENT_ROOT is present remove from path to prevent
+				// double up as it is already in $SERVER_ROOT
+				if($CLIENT_ROOT) {
+					$path = str_replace($CLIENT_ROOT, '',$path);
+				}
+
+				$size = @filesize($SERVER_ROOT . $path);
+			}
 		}
 
 		return $size;
