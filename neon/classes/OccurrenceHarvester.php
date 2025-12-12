@@ -1,7 +1,7 @@
 <?php
 include_once($SERVER_ROOT.'/classes/OccurrenceCollectionProfile.php');
 include_once($SERVER_ROOT.'/classes/utilities/TaxonomyUtil.php');
-include_once($SERVER_ROOT.'/classes/TaxonomyHarvester.php');
+//include_once($SERVER_ROOT.'/classes/TaxonomyHarvester.php');
 include_once($SERVER_ROOT.'/classes/GuidManager.php');
 include_once($SERVER_ROOT.'/config/symbini.php');
 
@@ -2528,15 +2528,15 @@ class OccurrenceHarvester{
 					$rs->free();
 				}
 				else echo 'ERROR populating taxonomy codes: '.$sql;
-				if(!$tid && $sciname){
-					//Verify name via Catalog of Life and if valid, add to thesaurus
-					$harvester = new TaxonomyHarvester();
-					$harvester->setKingdomName($this->getKingdomName());
-					$harvester->setTaxonomicResources(array('col'));
-					if($newTid = $harvester->processSciname($sciname)){
-						$this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'] = $newTid;
-					}
-				}
+				// if(!$tid && $sciname){
+				// 	//Verify name via Catalog of Life and if valid, add to thesaurus
+				// 	$harvester = new TaxonomyHarvester();
+				// 	$harvester->setKingdomName($this->getKingdomName());
+				// 	$harvester->setTaxonomicResources(array('col'));
+				// 	if($newTid = $harvester->processSciname($sciname)){
+				// 		$this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'] = $newTid;
+				// 	}
+				// }
 			}
 			if(isset($this->taxonCodeArr[$taxonGroup][$taxonCode])){
 				$retArr['tidInterpreted'] = $this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'];
@@ -2587,15 +2587,15 @@ class OccurrenceHarvester{
 					if(!empty($scinameArr['author'])) $retArr['scientificNameAuthorship'] = $scinameArr['author'];
 				}
 			}
-			if(!$retArr){
-				//Verify name via Catalog of Life and if valid, add to thesaurus
-				$harvester = new TaxonomyHarvester();
-				$harvester->setKingdomName($this->getKingdomName());
-				$harvester->setTaxonomicResources(array('col'));
-				if($harvester->processSciname($sciname)){
-					$retArr = $this->getTaxon($sciname);
-				}
-			}
+			// if(!$retArr){
+			// 	//Verify name via Catalog of Life and if valid, add to thesaurus
+			// 	$harvester = new TaxonomyHarvester();
+			// 	$harvester->setKingdomName($this->getKingdomName());
+			// 	$harvester->setTaxonomicResources(array('col'));
+			// 	if($harvester->processSciname($sciname)){
+			// 		$retArr = $this->getTaxon($sciname);
+			// 	}
+			// }
 		}
 
 		return $retArr;
