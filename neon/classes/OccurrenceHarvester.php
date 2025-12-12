@@ -384,38 +384,90 @@ class OccurrenceHarvester{
 				$sampleArr['hashedSampleID'] = $viewArr['sampleTag'];
 			}
 			else{
-				$this->errorStr .= '; DATA ISSUE: sampleID failing to match';
-				$status = false;
-				/*
-				 if($this->updateSampleID($viewArr['sampleTag'], $sampleArr['sampleID'], $sampleArr['samplePK'], $sampleArr['occid'])){
-				 $this->errorLogArr[] = 'NOTICE: sampleID updated from '.$sampleArr['sampleID'].' to '.$viewArr['sampleTag'].' (samplePK: '.$sampleArr['samplePK'].', occid: '.$sampleArr['occid'].')';
-				 }
-				 else{
-				 $errMsg = (isset($neonSampleUpdate['errorMessage'])?$neonSampleUpdate['errorMessage'].'; ':'');
-				 $errMsg .= 'DATA ISSUE: failed to reset sampleID using changed API value';
-				 $this->setSampleErrorMessage($sampleArr['samplePK'], $errMsg);
-				 }
-				 */
+				$deprecated = null;
+				if(isset($viewArr['sampleEvents']) && is_array($viewArr['sampleEvents'])){
+					foreach($viewArr['sampleEvents'] as $event){
+						if(!isset($event['smsFieldEntries'])) continue;
+						foreach($event['smsFieldEntries'] as $entry){
+							if($entry['smsKey'] === 'deprecated_sample_tag'){
+								$deprecated = $entry['smsValue'];
+								break 2;
+							}
+						}
+					}
+				}
+				if(isset($deprecated) && $sampleArr['sampleID'] == $deprecated){
+					// Attempt to update
+					$success = $this->updateSampleID($viewArr['sampleTag'], $sampleArr['sampleID'], $sampleArr['samplePK'], $sampleArr['occid']);
+					if (!$success){
+						// do not harvest
+						$this->setSampleErrorMessage($sampleArr['samplePK'], trim($this->errorStr,'; '));
+						return false;
+					}
+					else $sampleArr['sampleID'] = $viewArr['sampleTag'];
+
+					// Log update
+					$this->errorLogArr[] = 'NOTICE: sampleID updated from '.$sampleArr['sampleID'].' to '.$viewArr['sampleTag'].' (samplePK: '.$sampleArr['samplePK'].', occid: '.$sampleArr['occid'].')';
+
+				} else {
+					$this->errorStr .= '; DATA ISSUE: sampleID failing to match';
+					$status = false;
+				}
 			}
 		}
-		if(!$status) $this->setSampleErrorMessage($sampleArr['samplePK'], trim($this->errorStr, '; '));
-		$this->updateSampleRecord($neonSampleUpdate,$sampleArr['samplePK']);
-		return $status;
+		if(!$status){
+			$this->setSampleErrorMessage($sampleArr['samplePK'], trim($this->errorStr,'; '));
+			return false; // abort harvest
+		}
+		$this->updateSampleRecord($neonSampleUpdate, $sampleArr['samplePK']);
+		return true;
 	}
 
 	private function updateSampleID($newSampleID, $oldSampleID, $samplePK, $occid){
-		$status = true;
-		$sql = 'UPDATE NeonSample SET sampleID = "'.$newSampleID.'", alternativeSampleID = CONCAT_WS(", ",alternativeSampleID,"'.$oldSampleID.'") WHERE samplePK = '.$samplePK;
-		if(!$this->conn->query($sql)){
-			$status = false;
+		// check if alternativeSampleID already exists, abort if so
+		$checkSql = 'SELECT alternativeSampleID FROM NeonSample WHERE samplePK = '.$samplePK;
+		$rs = $this->conn->query($checkSql);
+
+		if(!$rs){
+			$this->errorStr .= '; SQL error checking alternativeSampleID';
+			return false;
 		}
-		if($occid){
-			$sql = 'UPDATE omoccuridentifiers SET identifierValue = "'.$newSampleID.'" WHERE identifiername = "NEON sampleID" AND occid = '.$occid;
-			if(!$this->conn->query($sql)){
-				$status = false;
+
+		$row = $rs->fetch_assoc();
+		if (!empty($row['alternativeSampleID'])) {
+			if ($row['alternativeSampleID'] != '') {
+				$this->errorStr .= '; DATA ISSUE: cannot update sampleID because alternativeSampleID already exists';
+				return false; 
 			}
 		}
-		return $status;
+
+		// update NeonSample
+		$sql = 'UPDATE NeonSample SET sampleID = "'.$newSampleID.'", alternativeSampleID = "'.$oldSampleID.'" WHERE samplePK = '.$samplePK;
+		if(!$this->conn->query($sql)){
+			$this->errorStr .= '; SQL error updating NeonSample identifiers';
+			return false;
+		}
+		$sql = "UPDATE NeonSample SET notes = CASE WHEN notes IS NULL OR notes = '' THEN 'sampleID updated based on API value' ELSE CONCAT(notes, '; sampleID updated based on API value') END WHERE samplePK = $samplePK";
+		if(!$this->conn->query($sql)){
+			$this->errorStr .= '; SQL error updating NeonSample notes';
+			return false;
+		}
+		// Update omoccuridentifiers if occid exists
+		if($occid){
+			$sql = 'UPDATE omoccuridentifiers SET identifierValue = "'.$newSampleID.'" WHERE identifierName = "NEON sampleID" AND occid = '.$occid;
+			if(!$this->conn->query($sql)){
+				$this->errorStr .= '; SQL error updating sampleID';
+				return false;
+			}
+
+			// insert deprecated ID
+			$sql = 'INSERT INTO omoccuridentifiers (identifierName, identifierValue, occid, sortBy) VALUES ("deprecated NEON sampleID", "'.$oldSampleID.'", '.$occid.', 30)';
+			if(!$this->conn->query($sql)){
+				$this->errorStr .= '; SQL error inserting deprecated NEON sampleID';
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private function updateSampleRecord($neonSampleUpdate,$samplePK){
