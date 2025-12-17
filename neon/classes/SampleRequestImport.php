@@ -105,14 +105,14 @@ class SampleRequestImport extends UtilitiesFileImport {
         if ($this->importType == self::IMPORT_SAMPLE) {
             $allowedSubstances = ['whole sample', 'subsample/aliquot', 'tissue/material sample', 'individual(s)', 'image', 'data'];
             $insertSql = "INSERT INTO neonsamplerequestlink 
-                        (request_id, occid, status, available, use_type, substance_provided, notes, initialTimestamp,editedTimestamp)
+                        (requestID, occid, status, available, useType, substanceProvided, notes, initialTimestamp,editedTimestamp)
                         VALUES (?, ?, ?, 'yes', ?, ?, ?, NOW(),NOW())";
             $checkDupeSql = "SELECT COUNT(*) as cnt FROM neonsamplerequestlink 
-                        WHERE request_id = ? AND occid = ?";
+                        WHERE requestID = ? AND occid = ?";
             $checkReqSql = "SELECT COUNT(*) as cnt FROM neonsamplerequestlink s
                         JOIN omoccurrences o
                         ON s.occid = o.occid
-                        WHERE s.request_id != ? AND s.occid = ? AND s.status IN ('current','pending fulfillment') ";
+                        WHERE s.requestID != ? AND s.occid = ? AND s.status IN ('current','pending fulfillment') ";
             $checkAvailSql = "SELECT availability FROM omoccurrences
                         WHERE occid = ?";
 
@@ -123,8 +123,8 @@ class SampleRequestImport extends UtilitiesFileImport {
 
             if ($insertStmt && $checkDupeStmt && $checkReqStmt && $checkAvailStmt) {
                 foreach ($sampArr as $occid) {
-                    $use_type = $recordArr[$this->fieldMap['use_type']] ?? null;
-                    $substance_provided = $recordArr[$this->fieldMap['substance_provided']] ?? null;
+                    $use_type = $recordArr[$this->fieldMap['useType']] ?? null;
+                    $substance_provided = $recordArr[$this->fieldMap['substanceProvided']] ?? null;
                     $notes = isset($this->fieldMap['notes']) ? $recordArr[$this->fieldMap['notes']] ?? null : null;
 
                     if (!$use_type || !$substance_provided) {
@@ -210,13 +210,13 @@ class SampleRequestImport extends UtilitiesFileImport {
 
         elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
             $insertSql = "INSERT INTO neonmaterialsamplerequestlink 
-                        (request_id, matSampleID, occid, status, use_type, sampleType, notes, initialTimestamp,editedTimestamp)
+                        (requestID, matSampleID, occid, status, useType, sampleType, notes, initialTimestamp,editedTimestamp)
                         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
             $checkDupeSql = "SELECT COUNT(*) as cnt FROM neonmaterialsamplerequestlink 
-                        WHERE request_id = ? AND matSampleID = ?";
+                        WHERE requestID = ? AND matSampleID = ?";
             $checkReqSql = "SELECT COUNT(*) as cnt FROM neonmaterialsamplerequestlink 
-                        WHERE request_id != ? AND matSampleID = ? AND status IN ('current','pending fulfillment')";
+                        WHERE requestID != ? AND matSampleID = ? AND status IN ('current','pending fulfillment')";
 
             $insertStmt = $this->conn->prepare($insertSql);
             $checkDupeStmt  = $this->conn->prepare($checkDupeSql);
@@ -234,7 +234,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                     "SELECT s.occid
                     FROM ommaterialsample s
                     INNER JOIN neonsamplerequestlink r ON s.occid = r.occid
-                    WHERE r.request_id = ? AND s.matSampleID = ?"
+                    WHERE r.requestID = ? AND s.matSampleID = ?"
                 );
                 $occidStmt->bind_param('ii', $this->request_id, $matSampleID);
                 $occidStmt->execute();
@@ -246,7 +246,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                     $this->logOrEcho("Found occid '$occid' for matSampleID '$matSampleID'", 1);
                 } else {
                     $this->logOrEcho(
-                        "ERROR: matSampleID '$matSampleID' cannot be imported — no linked occid found for request_id {$this->request_id}",
+                        "ERROR: matSampleID '$matSampleID' cannot be imported — no linked occid found for requestID {$this->request_id}",
                         1
                     );
                     $occidStmt->close();
@@ -254,7 +254,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                 }
                 $occidStmt->close();
 
-                $use_type   = $recordArr[$this->fieldMap['use_type']] ?? null;
+                $use_type   = $recordArr[$this->fieldMap['useType']] ?? null;
                 $sampleType = $recordArr[$this->fieldMap['sampletype']] ?? null;
                 $notes      = isset($this->fieldMap['notes']) ? $recordArr[$this->fieldMap['notes']] ?? null : null;
 
@@ -264,7 +264,7 @@ class SampleRequestImport extends UtilitiesFileImport {
                 }
 
                 if (!in_array($use_type, $allowedUseTypes)) {
-                    $this->logOrEcho("ERROR: Invalid use_type '$use_type' for matSampleID $matSampleID. Allowed: " . implode(', ', $allowedUseTypes), 1);
+                    $this->logOrEcho("ERROR: Invalid useType '$use_type' for matSampleID $matSampleID. Allowed: " . implode(', ', $allowedUseTypes), 1);
                     continue;
                 }
 
@@ -318,7 +318,7 @@ class SampleRequestImport extends UtilitiesFileImport {
         $sql = "SELECT DISTINCT o.collid
             FROM neonsamplerequestlink r
             JOIN omoccurrences o ON r.occid = o.occid
-            WHERE r.request_id = ?";
+            WHERE r.requestID = ?";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $this->request_id);
@@ -331,7 +331,7 @@ class SampleRequestImport extends UtilitiesFileImport {
         }
         $stmt->close();
 
-        $sql = "SELECT coll_id FROM neoncollectionrequestlink WHERE request_id = ?";
+        $sql = "SELECT collID FROM neoncollectionrequestlink WHERE requestID = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('i', $this->request_id);
         $stmt->execute();
@@ -339,7 +339,7 @@ class SampleRequestImport extends UtilitiesFileImport {
 
         $currentCollids = [];
         while ($row = $res->fetch_assoc()) {
-            $currentCollids[] = (int)$row['coll_id'];
+            $currentCollids[] = (int)$row['collID'];
         }
         $stmt->close();
 
@@ -350,7 +350,7 @@ class SampleRequestImport extends UtilitiesFileImport {
         $toDelete = array_diff($currentSet, $expectedSet);
 
         if (!empty($toAdd)) {
-            $insertSql = "INSERT INTO neoncollectionrequestlink (request_id, coll_id) VALUES ";
+            $insertSql = "INSERT INTO neoncollectionrequestlink (requestID, collID) VALUES ";
             $insertSql .= implode(',', array_fill(0, count($toAdd), '(?, ?)'));
 
             $stmt = $this->conn->prepare($insertSql);
@@ -368,8 +368,8 @@ class SampleRequestImport extends UtilitiesFileImport {
             $stmt->close();
 
             $editSql = "INSERT INTO neonrequestedit
-                (request_id, tableName, fieldName, oldValue, newValue, uid, editTimeStamp)
-                VALUES (?, 'neoncollectionrequestlink', 'coll_id', ?, ?, ?, NOW())";
+                (requestID, tableName, fieldName, oldValue, newValue, uid, editTimeStamp)
+                VALUES (?, 'neoncollectionrequestlink', 'collID', ?, ?, ?, NOW())";
             $stmt = $this->conn->prepare($editSql);
             foreach ($toAdd as $c) {
                 $oldVal = '';
@@ -383,7 +383,7 @@ class SampleRequestImport extends UtilitiesFileImport {
         if (!empty($toDelete)) {
             $placeholders = implode(',', array_fill(0, count($toDelete), '?'));
             $sql = "DELETE FROM neoncollectionrequestlink 
-                    WHERE request_id = ? AND coll_id IN ($placeholders)";
+                    WHERE requestID = ? AND collID IN ($placeholders)";
             $stmt = $this->conn->prepare($sql);
             $types = 'i' . str_repeat('i', count($toDelete));
             $params = [$this->request_id, ...$toDelete];
@@ -395,8 +395,8 @@ class SampleRequestImport extends UtilitiesFileImport {
             $stmt->close();
 
             $editSql = "INSERT INTO neonrequestedit
-                (request_id, tableName, fieldName, oldValue, newValue, uid, editTimeStamp)
-                VALUES (?, 'neoncollectionrequestlink', 'coll_id', ?, ?, ?, NOW())";
+                (requestID, tableName, fieldName, oldValue, newValue, uid, editTimeStamp)
+                VALUES (?, 'neoncollectionrequestlink', 'collID', ?, ?, ?, NOW())";
             $stmt = $this->conn->prepare($editSql);
             foreach ($toDelete as $c) {
                 $oldVal = $c;
@@ -514,11 +514,11 @@ class SampleRequestImport extends UtilitiesFileImport {
     private function setRequestMetaArr() {
 		$sql = 'SELECT r.id, p.name,r.title FROM neonrequest r
             LEFT JOIN neonresearcher p
-            ON r.researcher_id = p.researcher_id
+            ON r.researcherID = p.researcherID
             WHERE r.id = ' . $this->request_id;
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_object()) {
-			$this->requestMetaArr['request_id'] = $r->id;
+			$this->requestMetaArr['requestID'] = $r->id;
 			$this->requestMetaArr['name'] = $r->name;
 			$this->requestMetaArr['title'] = $r->title;
 		}

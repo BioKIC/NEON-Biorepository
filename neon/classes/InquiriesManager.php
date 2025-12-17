@@ -22,7 +22,7 @@ class InquiriesManager extends Manager{
   // Gets all inquiries
   public function getInquiriesOut(){
   	$dataArr = array();
-    $sql = 'SELECT r.id, p.name AS researcher, DATE(r.inquiry_date) AS date, r.title, r.status, COUNT(s.occid) AS samples FROM neonrequest AS r LEFT JOIN neonresearcher AS p ON r.researcher_id = p.researcher_id LEFT JOIN neonsamplerequestlink AS s ON r.id = s.request_id GROUP BY r.id;';
+    $sql = 'SELECT r.id, p.name AS researcher, DATE(r.inquiryDate) AS date, r.title, r.status, COUNT(s.occid) AS samples FROM neonrequest AS r LEFT JOIN neonresearcher AS p ON r.researcherID = p.researcherID LEFT JOIN neonsamplerequestlink AS s ON r.id = s.requestID GROUP BY r.id;';
     if($result = $this->conn->query($sql)){
       while($row = $result->fetch_assoc()){
         $dataArr[] = array(
@@ -113,7 +113,7 @@ public function getCollections(){
   public function getResearchers(){
       $retArr = array();
 
-      $sql = 'SELECT researcher_id, name, institution
+      $sql = 'SELECT researcherID, name, institution
               FROM neonresearcher 
               ORDER BY name';
 
@@ -136,11 +136,11 @@ public function getCollections(){
 public function getFields(){
     $retArr = array();
 
-    $sql = 'SELECT DISTINCT primary_research_field 
+    $sql = 'SELECT DISTINCT primaryResearchField 
             FROM neonrequest 
-            WHERE primary_research_field IS NOT NULL 
-            AND primary_research_field <> "" 
-            ORDER BY primary_research_field';
+            WHERE primaryResearchField IS NOT NULL 
+            AND primaryResearchField <> "" 
+            ORDER BY primaryResearchField';
 
     $rs = $this->conn->query($sql);
 
@@ -181,11 +181,11 @@ public function getFields(){
 public function getHowFoundUs(){
     $retArr = array();
 
-    $sql = 'SELECT DISTINCT how_found_us 
+    $sql = 'SELECT DISTINCT howFoundUs 
             FROM neonrequest 
-            WHERE how_found_us  IS NOT NULL 
-            AND how_found_us  <> "" 
-            ORDER BY how_found_us ';
+            WHERE howFoundUs  IS NOT NULL 
+            AND howFoundUs  <> "" 
+            ORDER BY howFoundUs ';
 
     $rs = $this->conn->query($sql);
 
@@ -215,7 +215,7 @@ public function getHowFoundUs(){
       $address = $this->conn->real_escape_string($address);
       $phone = $this->conn->real_escape_string($phone);
 
-      $sql = "INSERT INTO neonresearcher (name, institution, contact_email, address, phone) 
+      $sql = "INSERT INTO neonresearcher (name, institution, contactEmail, address, phone) 
               VALUES ('$name', '$institution', '$contact_email', '$address', '$phone')";
 
       if ($this->conn->query($sql)) {
@@ -249,7 +249,7 @@ public function getHowFoundUs(){
 
 
     $sql = "INSERT INTO neonrequest 
-        (collection_manager, inquiry_date,researcher_id,status, title, primary_research_field, secondary_research_field, funded, funding_source, description, how_found_us, data_produced, existing_samples, future_samples, generating_samples, folder_name,uses_aiml, internal,cut,last_updated) 
+        (collectionManager, inquiryDate, researcherID, status, title, primaryResearchField, secondaryResearchField, funded, fundingSource, description, howFoundUs, dataProduced, existingSamples, futureSamples, generatingSamples, folderName,usesAIML, internal,cut,lastUpdated) 
         VALUES 
         ('$collection_manager', '$inquiry_date','$researcher_id', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder','$aiml','$internal','no', NOW())";
 
@@ -285,7 +285,7 @@ public function addResearcherInquiryLink($request_id, $allResearchers) {
     foreach ($allResearchers as $rid) {
         $rid = $this->conn->real_escape_string((string)$rid);
 
-        $sql = "INSERT INTO neonresearcherrequestlink (request_id, researcher_id) 
+        $sql = "INSERT INTO neonresearcherrequestlink (requestID, researcherID) 
                 VALUES ('$request_id', '$rid')";
 
         if (!$this->conn->query($sql)) {
@@ -306,7 +306,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
     foreach ($collections as $collid) {
         $collid = $this->conn->real_escape_string((string)$collid);
 
-        $sql = "INSERT INTO neoncollectionrequestlink (request_id, coll_id) 
+        $sql = "INSERT INTO neoncollectionrequestlink (requestID, collID) 
                 VALUES ('$request_id', '$collid')";
 
         if (!$this->conn->query($sql)) {
@@ -345,11 +345,11 @@ public function addCollectionInquiryLink($request_id, $collections) {
       public function getResearchersByID($request_id) {
           $request_id = (int)$request_id;
 
-          $sql = "SELECT r.researcher_id, CONCAT(r.name,' (',r.institution,')') as researcher
+          $sql = "SELECT r.researcherID, CONCAT(r.name,' (',r.institution,')') as researcher
                   FROM neonresearcherrequestlink l
                   LEFT JOIN neonresearcher r
-                      ON l.researcher_id = r.researcher_id
-                  WHERE l.request_id = $request_id";
+                      ON l.researcherID = r.researcherID
+                  WHERE l.requestID = $request_id";
           $rs = $this->conn->query($sql);
 
           if (!$rs) {
@@ -370,14 +370,14 @@ public function addCollectionInquiryLink($request_id, $collections) {
       public function getAdditionalResearchersByID($request_id) {
           $request_id = (int)$request_id;
 
-          $sql = "SELECT r.researcher_id, CONCAT(r.name,' (',r.institution,')') as researcher
+          $sql = "SELECT r.researcherID, CONCAT(r.name,' (',r.institution,')') as researcher
                   FROM neonresearcherrequestlink l
                   LEFT JOIN neonresearcher r
-                      ON l.researcher_id = r.researcher_id
+                      ON l.researcherID = r.researcherID
                   LEFT JOIN neonrequest s
-                      ON l.request_id = s.id
-                  WHERE l.request_id = $request_id
-                  AND l.researcher_id != s.researcher_id";
+                      ON l.requestID = s.id
+                  WHERE l.requestID = $request_id
+                  AND l.researcherID != s.researcherID";
           $rs = $this->conn->query($sql);
 
           if (!$rs) {
@@ -387,7 +387,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
           $researchers = [];
           while ($row = $rs->fetch_assoc()) {
-              $researchers[$row['researcher_id']] = $row['researcher'];
+              $researchers[$row['researcherID']] = $row['researcher'];
           }
           $rs->free();
 
@@ -399,11 +399,11 @@ public function addCollectionInquiryLink($request_id, $collections) {
   public function getCollectionsByID($request_id) {
       $request_id = (int)$request_id;
 
-      $sql = "SELECT l.coll_id AS collID, c.collectionName
+      $sql = "SELECT l.collID AS collID, c.collectionName
               FROM neoncollectionrequestlink l
               LEFT JOIN omcollections c
-              ON l.coll_id = c.collID
-              WHERE l.request_id = $request_id";
+              ON l.collID = c.collID
+              WHERE l.requestID = $request_id";
 
       $rs = $this->conn->query($sql);
       if (!$rs) {
@@ -425,9 +425,9 @@ public function addCollectionInquiryLink($request_id, $collections) {
   public function getCMByID($request_id) {
       $request_id = (int)$request_id;
 
-      $sql = "SELECT u.uid,r.collection_manager,concat(u.firstName, ' ',u.lastName) as name FROM neonrequest r
+      $sql = "SELECT u.uid,r.collectionManager,concat(u.firstName, ' ',u.lastName) as name FROM neonrequest r
               LEFT JOIN  users u
-              ON r.collection_manager = u.uid
+              ON r.collectionManager = u.uid
               WHERE r.id = $request_id";
       $rs = $this->conn->query($sql);
 
@@ -451,9 +451,9 @@ public function addCollectionInquiryLink($request_id, $collections) {
   public function getPrimaryContactByID($request_id) {
       $request_id = (int)$request_id;
 
-      $sql = "SELECT p.researcher_id,p.name,p.institution FROM neonrequest r
+      $sql = "SELECT p.researcherID,p.name,p.institution FROM neonrequest r
               LEFT JOIN  neonresearcher p
-              ON r.researcher_id = p.researcher_id
+              ON r.researcherID = p.researcherID
               WHERE r.id = $request_id";
       $rs = $this->conn->query($sql);
 
@@ -476,7 +476,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
   public function clearResearcherInquiryLink($request_id) {
       $request_id = (int)$request_id; 
 
-      $sql = "DELETE FROM neonresearcherrequestlink WHERE request_id = $request_id";
+      $sql = "DELETE FROM neonresearcherrequestlink WHERE requestID = $request_id";
       
       if (!$this->conn->query($sql)) {
           $this->errorMessage = "Database Error: " . $this->conn->error;
@@ -489,7 +489,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
   public function clearCollectionInquiryLink($request_id) {
       $request_id = (int)$request_id; 
 
-      $sql = "DELETE FROM neoncollectionrequestlink WHERE request_id = $request_id";
+      $sql = "DELETE FROM neoncollectionrequestlink WHERE requestID = $request_id";
       
       if (!$this->conn->query($sql)) {
           $this->errorMessage = "Database Error: " . $this->conn->error;
@@ -539,23 +539,23 @@ public function addCollectionInquiryLink($request_id, $collections) {
       }
 
       $sql = "UPDATE neonrequest 
-              SET collection_manager = ?, 
-                  researcher_id = ?, 
+              SET collectionManager = ?, 
+                  researcherID = ?, 
                   title = ?, 
-                  primary_research_field = ?, 
-                  secondary_research_field = ?, 
+                  primaryResearchField = ?, 
+                  secondaryResearchField = ?, 
                   funded = ?, 
-                  funding_source = ?, 
+                  fundingSource = ?, 
                   description = ?, 
-                  how_found_us = ?, 
-                  data_produced = ?, 
-                  existing_samples = ?, 
-                  future_samples = ?, 
-                  generating_samples = ?, 
-                  folder_name = ?, 
-                  uses_aiml = ?, 
+                  howFoundUs = ?, 
+                  dataProduced = ?, 
+                  existingSamples = ?, 
+                  futureSamples = ?, 
+                  generatingSamples = ?, 
+                  folderName = ?, 
+                  usesAIML = ?, 
                   internal = ?,
-                  last_updated = NOW() 
+                  lastUpdated = NOW() 
               WHERE id = ?";
 
       $stmt = $this->conn->prepare($sql);
@@ -592,21 +592,21 @@ public function addCollectionInquiryLink($request_id, $collections) {
       $stmt->close();
 
       $newData = [
-          "collection_manager" => $collection_manager,
-          "researcher_id" => $researcher_id,
+          "collectionManager" => $collection_manager,
+          "researcherID" => $researcher_id,
           "title" => $title,
-          "primary_research_field" => $field,
-          "secondary_research_field" => $secondaryfields,
+          "primaryResearchField" => $field,
+          "secondaryResearchField" => $secondaryfields,
           "funded" => $funded,
-          "funding_source" => $fundingsource,
+          "fundingSource" => $fundingsource,
           "description" => $description,
-          "how_found_us" => $howfound,
-          "data_produced" => $dataproduced,
-          "existing_samples" => $existing,
-          "future_samples" => $future,
-          "generating_samples" => $new,
-          "folder_name" => $drivefolder,
-          "uses_aiml" => $aiml,
+          "howFoundUs" => $howfound,
+          "dataProduced" => $dataproduced,
+          "existingSamples" => $existing,
+          "futureSamples" => $future,
+          "generatingSamples" => $new,
+          "folderName" => $drivefolder,
+          "usesAIML" => $aiml,
           "internal" => $internal
       ];
 
@@ -626,21 +626,21 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
       $oldAdditional = $this->getAdditionalResearchersByID($request_id); 
       $oldAdditionalIDs = array_map('intval', array_keys($oldAdditional));
-      $oldMainID = (int)$oldData['researcher_id'];
+      $oldMainID = (int)$oldData['researcherID'];
 
         if ($oldMainID !== (int)$researcher_id) {
-      $this->logEdit($request_id, "neonresearcherrequestlink", "researcher_id", $oldMainID, null, $uid);
-      $this->logEdit($request_id, "neonresearcherrequestlink", "researcher_id", null, $researcher_id, $uid);
+      $this->logEdit($request_id, "neonresearcherrequestlink", "researcherID", $oldMainID, null, $uid);
+      $this->logEdit($request_id, "neonresearcherrequestlink", "researcherID", null, $researcher_id, $uid);
       }
 
       $added   = array_diff($newResearcherIDs, array_merge([$researcher_id], $oldAdditionalIDs));
       $removed = array_diff($oldAdditionalIDs, $additionalresearchers);
 
       foreach ($added as $rid) {
-          $this->logEdit($request_id, "neonresearcherrequestlink", "researcher_id", null, $rid, $uid);
+          $this->logEdit($request_id, "neonresearcherrequestlink", "researcherID", null, $rid, $uid);
       }
       foreach ($removed as $rid) {
-          $this->logEdit($request_id, "neonresearcherrequestlink", "researcher_id", $rid, null, $uid);
+          $this->logEdit($request_id, "neonresearcherrequestlink", "researcherID", $rid, null, $uid);
       }
 
       $this->clearResearcherInquiryLink($request_id);
@@ -658,10 +658,10 @@ public function addCollectionInquiryLink($request_id, $collections) {
           $this->addCollectionInquiryLink($request_id, $newCollectionIds);
 
           foreach ($added as $cid) {
-              $this->logEdit($request_id, "neoncollectionrequestlink", "coll_id", null, $cid, $uid);
+              $this->logEdit($request_id, "neoncollectionrequestlink", "collID", null, $cid, $uid);
           }
           foreach ($removed as $cid) {
-              $this->logEdit($request_id, "neoncollectionrequestlink", "coll_id", $cid, null, $uid);
+              $this->logEdit($request_id, "neoncollectionrequestlink", "collID", $cid, null, $uid);
           }
       }
 
@@ -680,7 +680,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
           return;
       }
 
-      $sql = "INSERT INTO neonrequestedit (request_id,tableName, fieldName, oldValue, newValue, uid, editTimestamp) 
+      $sql = "INSERT INTO neonrequestedit (requestID,tableName, fieldName, oldValue, newValue, uid, editTimestamp) 
               VALUES (?, ?, ?, ?, ?, ?, NOW())";
       $stmt = $this->conn->prepare($sql);
       $stmt->bind_param("issssi", $request_id,$table, $field, $oldValue, $newValue, $uid);
@@ -759,17 +759,17 @@ public function addCollectionInquiryLink($request_id, $collections) {
       $sql = "UPDATE neonrequest 
               SET 
                   status = ?,
-                  status_date = ?,
+                  statusDate = ?,
                   funded = ?,
-                  inquiry_date = ?, 
-                  pending_funding_date = ?, 
-                  not_funded_date = ?, 
+                  inquiryDate = ?, 
+                  pendingFundingDate = ?, 
+                  notFundedDate = ?, 
                   cut = ?,
-                  pending_sample_list_date = ?, 
-                  pending_fulfillment_date = ?,
-                  active_date = ?, 
-                  complete_date = ?, 
-                  last_updated = NOW() 
+                  pendingSampleListDate = ?, 
+                  pendingFulfillmentDate = ?,
+                  activeDate = ?, 
+                  completeDate = ?, 
+                  lastUpdated = NOW() 
               WHERE id = ?";
 
       $stmt = $this->conn->prepare($sql);
@@ -802,16 +802,16 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
       $newData = [
           "status" => $status,
-          "status_date" => $status_date,
+          "statusDate" => $status_date,
           "funded" => $funded,
-          "inquiry_date" => $inquiry_date,
-          "pending_funding_date" => $pendingfunding,
-          "not_funded_date" => $notfunded,
+          "inquiryDate" => $inquiry_date,
+          "pendingFundingDate" => $pendingfunding,
+          "notFundedDate" => $notfunded,
           "cut" => $cut,
-          "pending_sample_list_date" => $pendinglist,
-          "pending_fulfillment_date" => $fulfillment,
-          "active_date" => $active,
-          "complete_date" => $complete
+          "pendingSampleListDate" => $pendinglist,
+          "pendingFulfillmentDate" => $fulfillment,
+          "activeDate" => $active,
+          "completeDate" => $complete
       ];
 
       foreach ($newData as $field => $newValue) {
@@ -832,7 +832,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         $updateSampleSql = "UPDATE neonsamplerequestlink 
                             SET status = ?
-                            WHERE request_id = ?";
+                            WHERE requestID = ?";
         $updateStmt = $this->conn->prepare($updateSampleSql);
         if ($updateStmt) {
             $updateStmt->bind_param("si", $newSampleStatus, $request_id);
@@ -842,7 +842,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         $updateMatSql = "UPDATE neonmaterialsamplerequestlink 
                         SET status = ?
-                        WHERE request_id = ?";
+                        WHERE requestID = ?";
         $updateMatStmt = $this->conn->prepare($updateMatSql);
         if ($updateMatStmt) {
             $updateMatStmt->bind_param("si", $newSampleStatus, $request_id);
@@ -861,8 +861,8 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT occid,status,use_type,substance_provided,available,notes,shipment_id FROM neonsamplerequestlink
-            WHERE request_id = ?";
+      $sql = "SELECT occid,status,useType,substanceProvided,available,notes,shipmentID FROM neonsamplerequestlink
+            WHERE requestID = ?";
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
           $this->errorMessage = "Dababase error: " . $this->conn->error;
@@ -888,8 +888,8 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT matSampleID,occid,status,use_type,sampleType,notes,shipment_id FROM neonmaterialsamplerequestlink
-            WHERE request_id = ?";
+      $sql = "SELECT matSampleID,occid,status,useType,sampleType,notes,shipmentID FROM neonmaterialsamplerequestlink
+            WHERE requestID = ?";
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
           $this->errorMessage = "Dababase error: " . $this->conn->error;
@@ -913,9 +913,9 @@ public function addCollectionInquiryLink($request_id, $collections) {
     public function getSampleCountByID($request_id){
         $request_id = (int)$request_id;
 
-        $sql = "SELECT COUNT(*) AS sample_count
+        $sql = "SELECT COUNT(*) AS sampleCount
                 FROM neonsamplerequestlink
-                WHERE request_id = ?";
+                WHERE requestID = ?";
 
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -929,7 +929,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         $count = 0;
         if ($row = $result->fetch_assoc()) {
-            $count = (int)$row['sample_count'];
+            $count = (int)$row['sampleCount'];
         }
 
         $stmt->close();
@@ -941,9 +941,9 @@ public function addCollectionInquiryLink($request_id, $collections) {
     public function getMaterialSampleCountByID($request_id){
         $request_id = (int)$request_id;
 
-        $sql = "SELECT COUNT(*) AS sample_count
+        $sql = "SELECT COUNT(*) AS sampleCount
                 FROM neonmaterialsamplerequestlink
-                WHERE request_id = ?";
+                WHERE requestID = ?";
 
         $stmt = $this->conn->prepare($sql);
         if (!$stmt) {
@@ -957,7 +957,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         $count = 0;
         if ($row = $result->fetch_assoc()) {
-            $count = (int)$row['sample_count'];
+            $count = (int)$row['sampleCount'];
         }
 
         $stmt->close();
@@ -971,7 +971,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
         $sql = "SELECT r.title, p.name, r.status
                 FROM neonrequest r
                 LEFT JOIN neonresearcher p
-                ON r.researcher_id = p.researcher_id
+                ON r.researcherID = p.researcherID
                 WHERE r.id = ?";
 
         $stmt = $this->conn->prepare($sql);
@@ -997,11 +997,11 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT id,n.sampleID,n.sampleClass,n.sampleCode,status,use_type,substance_provided,available,s.notes,shipment_id,s.occid 
+      $sql = "SELECT id,n.sampleID,n.sampleClass,n.sampleCode,status,useType,substanceProvided,available,s.notes,shipmentID,s.occid 
             FROM neonsamplerequestlink s
             LEFT JOIN NeonSample n
             ON s.occid=n.occid
-            WHERE request_id = ?";
+            WHERE requestID = ?";
 
         if($filter){
                     if($filter == 'available'){
@@ -1048,13 +1048,13 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
       $request_id = (int)$request_id;
 
-      $sql = "SELECT s.id,s.matSampleID,t.catalogNumber,n.sampleID,n.sampleClass,n.sampleCode,s.status,s.use_type,s.sampleType,s.notes,s.shipment_id,s.occid 
+      $sql = "SELECT s.id,s.matSampleID,t.catalogNumber,n.sampleID,n.sampleClass,n.sampleCode,s.status,s.useType,s.sampleType,s.notes,s.shipmentID,s.occid 
             FROM neonmaterialsamplerequestlink s
             LEFT JOIN NeonSample n
             ON s.occid=n.occid
             LEFT JOIN ommaterialsample t
             ON s.matSampleID = t.matSampleID
-            WHERE request_id = ?";
+            WHERE requestID = ?";
 
         if($filter){
                     if($filter == 'pendingfunding'){
@@ -1097,7 +1097,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
       $retArr = [];
 
       $sql = "SELECT id,n.sampleID,n.sampleClass,n.sampleCode,status,
-            use_type,substance_provided,available,s.notes,shipment_id,s.occid 
+            useType,substanceProvided,available,s.notes,shipmentID,s.occid 
             FROM neonsamplerequestlink s
             LEFT JOIN NeonSample n
             ON s.occid=n.occid
@@ -1133,10 +1133,10 @@ public function addCollectionInquiryLink($request_id, $collections) {
             n.sampleCode     AS sampleCode,
             n.occid          AS occid,
             s.status         AS status,
-            s.use_type       AS use_type,
+            s.useType       AS useType,
             s.sampleType     AS sampleType,
             s.notes          AS notes,
-            s.shipment_id    AS shipment_id
+            s.shipmentID    AS shipmentID
         FROM neonmaterialsamplerequestlink s
         LEFT JOIN NeonSample n ON s.occid = n.occid
         LEFT JOIN ommaterialsample o ON s.matSampleID = o.matSampleID
@@ -1165,17 +1165,17 @@ public function addCollectionInquiryLink($request_id, $collections) {
   public function getShipments(){
       $retArr = array();
 
-      $sql = 'SELECT id, name, ship_date
+      $sql = 'SELECT id, name, shipDate
               FROM neonrequestshipment s
               LEFT JOIN neonresearcher r
-              ON s.researcher_id=r.researcher_id';
+              ON s.researcherID = r.researcherID';
 
       $rs = $this->conn->query($sql);
 
       while($r = $rs->fetch_object()){
         $id = $this->cleanOutStr($r->id);
         $name = $this->cleanOutStr($r->name);
-        $date = $this->cleanOutStr($r->ship_date);
+        $date = $this->cleanOutStr($r->shipDate);
 
         $display = $id ? "$id - $name ($date)" : $name;
 
@@ -1190,13 +1190,13 @@ public function addCollectionInquiryLink($request_id, $collections) {
     public function getShipmentByID($request_id){
         $retArr = array();
 
-        $sql = 'SELECT s.id, r.name, s.ship_date
+        $sql = 'SELECT s.id, r.name, s.shipDate
                 FROM neonrequestshipment s
                 LEFT JOIN neonresearcher r
-                    ON s.researcher_id = r.researcher_id
+                    ON s.researcherID = r.researcherID
                 LEFT JOIN neonrequestshipmentrequestlink l
-                    ON s.id = l.shipment_id
-                WHERE l.request_id = ?';
+                    ON s.id = l.shipmentID
+                WHERE l.requestID = ?';
 
         $stmt = $this->conn->prepare($sql);
 
@@ -1260,17 +1260,17 @@ public function addCollectionInquiryLink($request_id, $collections) {
 		if(is_numeric($postArr['id'])){
 
 			$sql = 'UPDATE neonsamplerequestlink
-				SET status = ?, use_type = ?,
-				available = ?, substance_provided = ?, notes = ?, shipment_id = ? WHERE (id = ?)';
+				SET status = ?, useType = ?,
+				available = ?, substanceProvided = ?, notes = ?, shipmentID = ? WHERE (id = ?)';
 			$stmt = $this->conn->stmt_init();
 			$stmt->prepare($sql);
 			if($stmt->error==null) {
 				$stat = isset($postArr['status'])&&$postArr['status']?$postArr['status']:NULL;
-				$use_type = $postArr['use_type']?$postArr['use_type']:NULL;
+				$use_type = $postArr['useType']?$postArr['useType']:NULL;
 				$available = isset($postArr['available'])&&$postArr['available']?$postArr['available']:NULL;
-				$substance_provided = isset($postArr['substance_provided'])&&$postArr['substance_provided']?$postArr['substance_provided']:NULL;
+				$substance_provided = isset($postArr['substanceProvided'])&&$postArr['substanceProvided']?$postArr['substanceProvided']:NULL;
 				$notes = isset($postArr['notes'])&&$postArr['notes']?$postArr['notes']:NULL;
-                $shipment_id = (isset($_POST['shipment_id']) && $_POST['shipment_id'] !== '') ? (int)$_POST['shipment_id'] : NULL;
+                $shipment_id = (isset($_POST['shipmentID']) && $_POST['shipmentID'] !== '') ? (int)$_POST['shipmentID'] : NULL;
 				$stmt->bind_param('ssssssi', $stat, $use_type, $available, $substance_provided, $notes, $shipment_id, $postArr['id']);
 				$stmt->execute();
 				if($stmt->error==null) $status = true;
@@ -1298,19 +1298,18 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         if(is_numeric($postArr['id'])){
             $sql = 'UPDATE neonmaterialsamplerequestlink
-                    SET status = ?, use_type = ?, sampleType = ?, notes = ?, shipment_id = ?
+                    SET status = ?, useType = ?, sampleType = ?, notes = ?, shipmentID = ?
                     WHERE id = ?';
             $stmt = $this->conn->stmt_init();
             $stmt->prepare($sql);
 
             if($stmt->error == null) {
 
-                // Pull values from lowercase keys
                 $stat        = !empty($postArr['status']) ? $postArr['status'] : NULL;
-                $use_type    = !empty($postArr['use_type']) ? $postArr['use_type'] : NULL;
-                $sampleType  = !empty($postArr['sampletype']) ? $postArr['sampletype'] : NULL; // lowercase key!
+                $use_type    = !empty($postArr['useType']) ? $postArr['useType'] : NULL;
+                $sampleType  = !empty($postArr['sampleType']) ? $postArr['sampleType'] : NULL;
                 $notes       = !empty($postArr['notes']) ? $postArr['notes'] : NULL;
-                $shipment_id = isset($postArr['shipment_id']) && $postArr['shipment_id'] !== '' ? (int)$postArr['shipment_id'] : NULL;
+                $shipment_id = isset($postArr['shipmentID']) && $postArr['shipmentID'] !== '' ? (int)$postArr['shipmentID'] : NULL;
                 $id          = (int)$postArr['id'];
 
                 $stmt->bind_param('ssssii', $stat, $use_type, $sampleType, $notes, $shipment_id, $id);
@@ -1338,7 +1337,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         $fileName = 'sampleRequestExport_' . $request_id . '_' . date('Y-m-d') . '.csv';
 
-        $sql = 'SELECT * FROM neonsamplerequestlink WHERE request_id = ?';
+        $sql = 'SELECT * FROM neonsamplerequestlink WHERE requestID = ?';
         $stmt = $this->conn->prepare($sql);
         if(!$stmt){
             die('SQL prepare failed: ' . $this->conn->error);
@@ -1379,7 +1378,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         $fileName = 'materialSampleRequestExport_' . $request_id . '_' . date('Y-m-d') . '.csv';
 
-        $sql = 'SELECT * FROM neonmaterialsamplerequestlink WHERE request_id = ?';
+        $sql = 'SELECT * FROM neonmaterialsamplerequestlink WHERE requestID = ?';
         $stmt = $this->conn->prepare($sql);
         if(!$stmt){
             die('SQL prepare failed: ' . $this->conn->error);
@@ -1429,7 +1428,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
             'LEFT JOIN NeonSample m ON s.occid=m.occid '.
 			'INNER JOIN omoccurrences o ON m.occid = o.occid '.
             'LEFT JOIN omcollections c ON o.collid=c.collid '.
-            'WHERE s.request_id = ?';
+            'WHERE s.requestID = ?';
 
         $stmt = $this->conn->prepare($sql);
         if(!$stmt){
@@ -1479,7 +1478,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
             'LEFT JOIN NeonSample m ON s.occid=m.occid '.
 			'INNER JOIN omoccurrences o ON t.occid = o.occid '.
             'LEFT JOIN omcollections c ON o.collid=c.collid '.
-            'WHERE s.request_id = ?';
+            'WHERE s.requestID = ?';
 
         $stmt = $this->conn->prepare($sql);
         if(!$stmt){
@@ -1524,7 +1523,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
             return false;
         }
         $updatedFields = [];
-        foreach(['status','use_type','available','substance_provided','notes','shipment_id'] as $field){
+        foreach(['status','useType','available','substanceProvided','notes','shipmentID'] as $field){
             if(array_key_exists($field, $postArr) && $postArr[$field] !== ''){
                 $updatedFields[$field] = $postArr[$field];
             }
@@ -1539,7 +1538,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
                 }
                 $newData = array_merge($sample, $updatedFields, ['id' => $id]);
                 $needsShipment = in_array($newData['status'], ["current","completed","loaned, not used"]);
-                $hasShipment   = !empty($newData['shipment_id']);
+                $hasShipment   = !empty($newData['shipmentID']);
 
                 if($needsShipment && !$hasShipment){
                     throw new Exception("Sample #$id: A shipment must be assigned if status is {$newData['status']}.");
@@ -1547,7 +1546,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
                 if($hasShipment && !$needsShipment){
                     throw new Exception("Sample #$id: If a shipment is assigned, status must be current, completed, or loaned, not used.");
                 }
-                foreach(['status','use_type','available','substance_provided'] as $field){
+                foreach(['status','useType','available','substanceProvided'] as $field){
                     if(empty($newData[$field])){
                         throw new Exception("Sample #$id is missing a required field: $field");
                     }
@@ -1576,7 +1575,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
             return false;
         }
         $updatedFields = [];
-        foreach(['status','use_type','sampleType','notes','shipment_id'] as $field){
+        foreach(['status','useType','sampleType','notes','shipmentID'] as $field){
             if(array_key_exists($field, $postArr)){
                 $updatedFields[$field] = $postArr[$field]; 
             }
@@ -1591,7 +1590,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
                 }
                 $newData = array_merge($sample, $updatedFields, ['id' => $id]);
                 $needsShipment = in_array($newData['status'], ["current","complete"]);
-                $hasShipment   = !empty($newData['shipment_id']);
+                $hasShipment   = !empty($newData['shipmentID']);
 
                 if($needsShipment && !$hasShipment){
                     throw new Exception("Material sample #$id: A shipment must be assigned if status is {$newData['status']}.");
@@ -1599,7 +1598,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
                 if($hasShipment && !$needsShipment){
                     throw new Exception("Material sample #$id: If a shipment is assigned, status must be current or complete.");
                 }
-                foreach(['status','use_type','sampleType'] as $field){
+                foreach(['status','useType','sampleType'] as $field){
                     if(empty($newData[$field])){
                         throw new Exception("Material sample #$id is missing a required field: $field");
                     }
@@ -1625,7 +1624,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
             return false;
         }
 
-        $sql = "INSERT INTO neonrequestshipment (researcher_id, ship_date, address, shipped_by) 
+        $sql = "INSERT INTO neonrequestshipment (researcherID, shipDate, address, shippedBy) 
                 VALUES (?, ?, ?, ?)";
 
         if ($stmt = $this->conn->prepare($sql)) {
@@ -1654,9 +1653,9 @@ public function addCollectionInquiryLink($request_id, $collections) {
         $newShipmentIDs = array_map('intval', $shipment_ids);
         $request_id = (int)$request_id;
 
-        $sql = "SELECT MIN(ship_date) AS earliest_ship_date FROM neonrequestshipmentrequestlink rr
-                JOIN neonrequestshipment s ON rr.shipment_id = s.id
-                WHERE rr.request_id = ?";
+        $sql = "SELECT MIN(shipDate) AS earliestShipDate FROM neonrequestshipmentrequestlink rr
+                JOIN neonrequestshipment s ON rr.shipmentID = s.id
+                WHERE rr.requestID = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param("i", $request_id);
         $stmt->execute();
@@ -1669,7 +1668,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
         } else {
             $placeholders = implode(',', array_fill(0, count($newShipmentIDs), '?'));
             $types = str_repeat('i', count($newShipmentIDs));
-            $sql = "SELECT id, ship_date FROM neonrequestshipment WHERE id IN ($placeholders)";
+            $sql = "SELECT id, shipDate FROM neonrequestshipment WHERE id IN ($placeholders)";
             $stmt = $this->conn->prepare($sql);
 
             $stmt->bind_param($types, ...$newShipmentIDs);
@@ -1677,7 +1676,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
             $result = $stmt->get_result();
             $newShipDates = [];
             while ($row = $result->fetch_assoc()) {
-                $newShipDates[$row['id']] = $row['ship_date'];
+                $newShipDates[$row['id']] = $row['shipDate'];
             }
             $stmt->close();
         }
@@ -1694,15 +1693,15 @@ public function addCollectionInquiryLink($request_id, $collections) {
 
         $removed = array_diff($oldShipmentIDs, $newShipmentIDs);
         foreach ($removed as $ship_id) {
-            $this->logEdit($request_id, "neonrequestshipmentrequestlink", "shipment_id", $ship_id, null, $uid);
+            $this->logEdit($request_id, "neonrequestshipmentrequestlink", "shipmentID", $ship_id, null, $uid);
         }
 
         $added = array_diff($newShipmentIDs, $oldShipmentIDs);
         foreach ($added as $ship_id) {
-            $this->logEdit($request_id, "neonrequestshipmentrequestlink", "shipment_id", null, $ship_id, $uid);
+            $this->logEdit($request_id, "neonrequestshipmentrequestlink", "shipmentID", null, $ship_id, $uid);
         }
 
-        $deleteSQL = "DELETE FROM neonrequestshipmentrequestlink WHERE request_id = ?";
+        $deleteSQL = "DELETE FROM neonrequestshipmentrequestlink WHERE requestID = ?";
         $stmt = $this->conn->prepare($deleteSQL);
         $stmt->bind_param("i", $request_id);
         if (!$stmt->execute()) {
@@ -1711,7 +1710,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
         }
         $stmt->close();
 
-        $insertSQL = "INSERT INTO neonrequestshipmentrequestlink (request_id, shipment_id) VALUES (?, ?)";
+        $insertSQL = "INSERT INTO neonrequestshipmentrequestlink (requestID, shipmentID) VALUES (?, ?)";
         $stmt = $this->conn->prepare($insertSQL);
         foreach ($newShipmentIDs as $ship_id) {
             $stmt->bind_param("ii", $request_id, $ship_id);
@@ -1792,9 +1791,7 @@ public function addCollectionInquiryLink($request_id, $collections) {
     public function getSampleDispositionTable(array $ids) {
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
-        $sql = "SELECT n.sampleID, 
-                    n.sampleCode, 
-                    o.disposition
+        $sql = "SELECT n.sampleID, n.sampleCode, o.disposition
                 FROM neonsamplerequestlink s
                 INNER JOIN omoccurrences o ON s.occid = o.occid
                 INNER JOIN NeonSample n     ON s.occid = n.occid
