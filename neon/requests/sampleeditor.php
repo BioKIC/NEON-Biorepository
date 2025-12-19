@@ -7,7 +7,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl='.$CLIENT_ROOT.'/neon/requests/sampleeditor.php');
 
 $action = array_key_exists("action",$_POST)?$_POST["action"]:"";
-$request_id = array_key_exists("request_id",$_REQUEST)?$_REQUEST["request_id"]:"";
+$requestID = array_key_exists("requestID",$_REQUEST)?$_REQUEST["requestID"]:"";
 $id = array_key_exists("id",$_REQUEST)?$_REQUEST["id"]:"";
 
 $inquiryManager = new InquiriesManager();
@@ -92,13 +92,13 @@ if ($isEditor && isset($_POST['action'])) {
 		});
 
 		function validateSampleForm(f){
-			if(!f.available.value.trim() || !f.use_type.value.trim() || !f.status.value.trim() || !f.substance_provided.value.trim()){
+			if(!f.available.value.trim() || !f.useType.value.trim() || !f.status.value.trim() || !f.substanceProvided.value.trim()){
 				alert("All required fields must be filled.");
 				return false;
 			}
 
 			const status = f.status.value.trim();
-			const shipmentAssigned = f.shipment_id.value.trim() !== "";
+			const shipmentAssigned = f.shipmentID.value.trim() !== "";
 			const validShipmentStatuses = ["current", "completed", "loaned, not used"];
 
 			if(!shipmentAssigned && validShipmentStatuses.includes(status)){
@@ -116,7 +116,7 @@ if ($isEditor && isset($_POST['action'])) {
 				return false;
 			}
 
-			if(!f.notes.value && ["individual(s)","tissue/material sample","subsample/aliquot"].includes(f.substance_provided.value)){
+			if(!f.notes.value && ["individual(s)","tissue/material sample","subsample/aliquot"].includes(f.substanceProvided.value)){
 				alert("ERROR: Notes required when substance is tissue/material sample, individual(s), or subsample/aliquot");
 				return false;
 			}
@@ -144,7 +144,7 @@ if ($isEditor && isset($_POST['action'])) {
 		if($errStr) echo '<div style="color:red;margin:15px;">'.$errStr.'</div>';
 		$sampleArr = array();
 		if($id) $sampleArr = $inquiryManager->getSampleForEditor($id);
-		if($id) $reqArr = $inquiryManager->getRequestData($request_id);
+		if($id) $reqArr = $inquiryManager->getRequestData($requestID);
 		?>
 		<script>
     		const reqArr = <?php echo json_encode($reqArr); ?>;
@@ -180,9 +180,9 @@ if ($isEditor && isset($_POST['action'])) {
                     <div class="fieldDiv">
 						<b>Type of Use:</b>
                         <?php
-                        $useValue = $sampleArr['use_type']
+                        $useValue = $sampleArr['useType']
                         ?>
-						<select name="use_type">
+						<select name="usetype">
 							<option value="">-----</option>
 							<option value="non-destructive" <?php if($useValue=='non-destructive') echo 'SELECTED'; ?>>non-destructive</option>
 							<option value="invasive" <?php if($useValue=='invasive') echo 'SELECTED'; ?>>invasive</option>
@@ -214,9 +214,9 @@ if ($isEditor && isset($_POST['action'])) {
                     <div class="fieldDiv">
 						<b>Substance Provided:</b>
                         <?php
-                        $subValue = $sampleArr['substance_provided']
+                        $subValue = $sampleArr['substanceProvided']
                         ?>
-						<select name="substance_provided">
+						<select name="substanceprovided">
 							<option value="">-----</option>
 							<option value="whole sample" <?php if($subValue=='whole sample') echo 'SELECTED'; ?>>whole sample</option>
 							<option value="individual(s)" <?php if($subValue=='individual(s)') echo 'SELECTED'; ?>>individual(s) - indicate number in notes</option>
@@ -225,7 +225,7 @@ if ($isEditor && isset($_POST['action'])) {
                             <option value="image" <?php if($subValue=='image') echo 'SELECTED'; ?>>image</option>
                             <option value="data" <?php if($subValue=='data') echo 'SELECTED'; ?>>data only</option>
                             <?php
-							if($subValue && in_array($subValue,array("whole sample","individual(s)","tissue/material sample","subsample/aliquot","image","data"))){
+							if($subValue && inIDarray($subValue,array("whole sample","individual(s)","tissue/material sample","subsample/aliquot","image","data"))){
 								echo '<option value="'.$subValue.'" SELECTED>'.$subValue.'</option>';
 							}
 							?>
@@ -243,14 +243,14 @@ if ($isEditor && isset($_POST['action'])) {
 						<strong>Shipment:</strong> (return to inquiry form to add shipment to request)
 					</span><br />
 					<span>
-						<?php $currentShipmentId = isset($sampleArr['shipment_id']) ? (string)$sampleArr['shipment_id'] : ''; ?>
-						<select name="shipment_id" style="width:400px;" aria-label="shipment">
+						<?php $currentShipmentId = isset($sampleArr['shipmentID']) ? (string)$sampleArr['shipmentID'] : ''; ?>
+						<select name="shipmentID" style="width:400px;" aria-label="shipment">
 							<option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?> <?php echo ($currentShipmentId !== '' ? 'disabled' : ''); ?>>
 								-- No Shipment Assigned --
 							</option>
 							<option disabled>----------------------------</option>
 							<?php
-								$shipArr = $inquiryManager->getShipmentByID($request_id);
+								$shipArr = $inquiryManager->getShipmentByID($requestID);
 								foreach ($shipArr as $shipid => $displayName) {
 									$selected = ($currentShipmentId !== '' && (string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
 									echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.htmlspecialchars($displayName).'</option>';
@@ -273,12 +273,12 @@ if ($isEditor && isset($_POST['action'])) {
 		</fieldset>
 		<?php
 		if($id){
-			$shipment_id = (isset($sampleArr['shipment_id']) && $sampleArr['shipment_id']?$sampleArr['shipment_id']:'');
+			$shipmentID = (isset($sampleArr['shipmentID']) && $sampleArr['shipmentID']?$sampleArr['shipmentID']:'');
 			?>
 			<fieldset style="width:800px;margin-left:auto;margin-right:auto;">
 				<legend><b>Delete From Request<?php echo ' (#'.$id.')'; ?></b></legend>
 				<?php
-				if($shipment_id){
+				if($shipmentID){
 					echo '<div style="color:red;margin:20px 0px">';
 					echo 'Sample can\'t be deleted until it is unlinked from the shipment.';
 					echo '</div>';

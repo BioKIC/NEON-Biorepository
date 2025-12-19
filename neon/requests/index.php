@@ -19,9 +19,9 @@ $statusStr = '';
 
 
 if($formSubmit == 'createInquiry' && $isEditor){
-    $collection_manager = $_POST['inqmanager'] ?? '';
-    $researcher_id = $_POST['inqresearcher'] ?? '';
-    $inquiry_date = $_POST['inqdate'] ?? '';
+    $collectionManager = $_POST['inqmanager'] ?? '';
+    $researcherID = $_POST['inqresearcher'] ?? '';
+    $inquiryDate = $_POST['inqdate'] ?? '';
 	$title = $_POST['inqtitle'] ?? '';
 	$collections = $_POST['inqcolls'] ?? '';
 	$field = $_POST['inqfield'] ?? '';
@@ -35,15 +35,16 @@ if($formSubmit == 'createInquiry' && $isEditor){
 	$existing = $_POST['inqexist'] ?? '';
 	$future = $_POST['inqfuture'] ?? '';
 	$new = $_POST['inqnew'] ?? '';
+	$processing = $_POST['inqprocess'] ?? '';
 	$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
 	$drivefolder = $_POST['inqdrive'] ?? '';
 	$internal = $_POST['inqinternal'] ?? '';
 
 
-    if(!$collection_manager || !$researcher_id || !$inquiry_date || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder || !$aiml || !$internal){
+    if(!$collectionManager || !$researcherID || !$inquiryDate || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder || !$aiml || !$internal || !$processing){
         $statusStr = '<span style="color:red;">Missing required fields.</span>';
     } else {
-        $insertId = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder, $aiml, $internal);
+        $insertId = $inquiryManager->addInquiry($collectionManager, $researcherID, $inquiryDate, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder, $aiml, $internal, $processing);
 	 if ($insertId) {
         header("Location: inquiryform.php?id=" . $insertId);
         exit();
@@ -113,18 +114,6 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			alert("Insert data produced");
 			return false;
 		}
-		if (f.inqexist.value === "") {
-			alert("Select whether the request would use existing samples");
-			return false;
-		}
-		if (f.inqfuture.value === "") {
-			alert("Select whether the request would use future samples");
-			return false;
-		}
-		if (f.inqnew.value === "") {
-			alert("Select whether new samples will be generated");
-			return false;
-		}
 		if (!f.inqadditionalresearcher.value || f.inqadditionalresearcher.value.length === 0) {
 			alert("Select additional researchers");
 			return false;
@@ -135,6 +124,10 @@ if($formSubmit == 'createInquiry' && $isEditor){
 		}
 		if (f.inqaiml.value === "") {
 			alert("Select whether the request involves AI/ML methods");
+			return false;
+		}
+		if (f.inqprocess.value === "") {
+			alert("Select whether the request involves subsampling or additional processing");
 			return false;
 		}
 		if (f.inqinternal.value === "") {
@@ -179,7 +172,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			}
 			?>
 			
-					<div id="newinqdiv" style="display:<?php echo ($List ); ?>;">
+					<div id="newinqdiv" style="display:block;">
 						<form name="newinqform" action="index.php" method="post" onsubmit="return verifyInquiryAddForm(this);">
 							<fieldset>
 								<legend><?php echo 'Create New Record' ?></legend>
@@ -225,13 +218,11 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									<span>
        								<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong>
 									</span><br />
-									<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong><br />
-									<span>
 										<select name="inqadditionalresearcher[]" style="width:800px;" multiple aria-label="<?php echo 'Researchers' ?>">
 											<option value=""><?php echo 'Select Researchers'; ?></option>
 											<option value="">------------------------------------------</option>
 											<?php
-											$selectedResearchers = $inquiryManager->getAdditionalResearchersByID($request_id);
+											$selectedResearchers = $inquiryManager->getAdditionalResearchersByID($requestID);
 											$researcherArr = $inquiryManager->getResearchers();
 											foreach ($researcherArr as $k => $v) {
 												$selected = (in_array($k, $selectedResearchers)) ? 'selected' : '';
@@ -255,7 +246,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv"> <strong>
-										Initial Inquiry Date:</strong> <input name="inqdate" type="date" value="<?php echo $inquiry_date; ?>" />
+										Initial Inquiry Date:</strong> <input name="inqdate" type="date" value="<?php echo $inquiryDate; ?>" />
 									</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
@@ -329,9 +320,10 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqsecondaryfields"><strong><?php echo 'Secondary Research Fields or Keywords (separate multiple with semicolons):'; ?></strong>:</label><br>
+       										<label for="inqsecondaryfields"><strong><?php echo 'Secondary Research Fields or Keywords (separate multiple with semicolons):'; ?></strong></label><br>
         									<input name="inqsecondaryfields" id="inqsecondaryfields" type="text" style="width:400px;" value="<?php echo htmlspecialchars($secondaryfields ?? '', ENT_QUOTES); ?>" />
-   								 	</div>
+   								 		</div>
+										</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
@@ -339,6 +331,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
        										<label for="inqdata"><strong><?php echo 'Types of Data Produced (separate multiple with semicolons)'; ?>:</strong></label><br>
         									<input name="inqdata" id="inqdata" type="text" style="width:400px;" value="<?php echo htmlspecialchars($dataproduced ?? '', ENT_QUOTES); ?>" />
    								 	</div>
+									</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
@@ -410,6 +403,23 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									<input type="hidden" name="inqnew" value="no" />
 									<input type="checkbox" id="inqnew" name="inqnew" value="yes" <?php echo (!empty($new) && $new === 'yes') ? 'checked' : ''; ?> />
 								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+       								<strong><?php echo 'Involves subsampling or signficant processing?'; ?></strong>
+									</span><br />
+								<span>
+									<select name="inqprocess" style="width:400px;" aria-label="Select additional processing">
+										<option value="">Select additional processing</option>
+										<option value="">------------------------------------------</option>
+										<?php
+										$processingArr = array('yes','no');
+										foreach($processingArr as $text){
+											echo '<option value="' . htmlspecialchars($text) . '">' . htmlspecialchars($text) . '</option>';
+										}
+										?>
+									</select>
+								</span>
+								</div>
 									<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
@@ -446,7 +456,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 				<input type="text" name="institution" required style="width:100%;"><br><br>
 
 				<label>Email:</label>
-				<input type="text" name="contact_email"  style="width:100%;"><br><br>
+				<input type="text" name="contactemail"  style="width:100%;"><br><br>
 
 				<label>Address:</label>
 				<input type="text" name="address"  style="width:100%;"><br><br>
@@ -495,7 +505,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 
             // Create new option
             let optionPrimary = document.createElement('option');
-            optionPrimary.value = data.researcher_id;
+            optionPrimary.value = data.researcherID;
             optionPrimary.text = data.name + ' (' + data.institution + ')';
 
             let optionAdditional = optionPrimary.cloneNode(true);
@@ -512,7 +522,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 
             // Only auto-select in primary if added via primary button
             if(document.getElementById('researcherModal').dataset.source === 'primary') {
-                primaryDropdown.value = data.researcher_id;
+                primaryDropdown.value = data.researcherID;
             }
 
             document.getElementById('researcherModal').style.display = 'none';

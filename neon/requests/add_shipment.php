@@ -13,28 +13,28 @@ try {
 
     $inquiryManager = new InquiriesManager();
 
-    $researcher_id = trim($_POST['researcher_id'] ?? '');
-    $ship_date     = trim($_POST['ship_date'] ?? '');
+    $researcherID = trim($_POST['researcherid'] ?? '');
+    $shipDate     = trim($_POST['shipdate'] ?? '');
     $address       = trim($_POST['address'] ?? '');
-    $shipped_by    = trim($_POST['shipped_by'] ?? '');
+    $shippedBy    = trim($_POST['shippedby'] ?? '');
 
-    if (!$researcher_id || !$ship_date || !$address || !$shipped_by) {
+    if (!$researcherID || !$shipDate || !$address || !$shippedBy) {
         throw new Exception('All fields are required.');
     }
 
-    $shipment_id = $inquiryManager->addShipment($researcher_id, $ship_date, $address, $shipped_by);
+    $shipmentID = $inquiryManager->addShipment($researcherID, $shipDate, $address, $shippedBy);
 
-    if (!$shipment_id) {
+    if (!$shipmentID) {
         throw new Exception($inquiryManager->errorMessage ?: 'Failed to add shipment.');
     }
 
     echo json_encode([
         'success'      => true,
-        'shipment_id'  => $shipment_id,
-        'researcher_id'=> $researcher_id,
-        'ship_date'    => $ship_date,
+        'shipmentid'  => $shipmentID,
+        'researcherid'=> $researcherID,
+        'shipdate'    => $shipDate,
         'address'      => $address,
-        'shipped_by'   => $shipped_by
+        'shippedby'   => $shippedBy
     ]);
 
 } catch (Exception $e) {

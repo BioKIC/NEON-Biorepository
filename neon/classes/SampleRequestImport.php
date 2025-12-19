@@ -7,7 +7,7 @@ include_once('utilities/UuidFactory.php');
 
 class SampleRequestImport extends UtilitiesFileImport {
 
-	private $request_id;
+	private $requestID;
 	private $importType;
 
 	private $importManager = null;
@@ -31,7 +31,7 @@ class SampleRequestImport extends UtilitiesFileImport {
     private function getRequestStatus() {
         $sql = "SELECT status FROM neonrequest WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('i', $this->request_id);
+        $stmt->bind_param('i', $this->requestID);
         $stmt->execute();
         $stmt->bind_result($status);
         $stmt->fetch();
@@ -40,63 +40,79 @@ class SampleRequestImport extends UtilitiesFileImport {
     }
 
     // load sample data
-	public function loadData($postArr,$uid) {
-		$status = false;
-		if ($this->fileName && isset($postArr['tf'])) {
-			$this->fieldMap = array_flip($postArr['tf']);
-			if ($this->setTargetPath()) {
-				if ($this->getHeaderArr()) {
-					$cnt = 1;
-					while ($recordArr = $this->getRecordArr()) {
+    public function loadData($postArr, $uid) {
 
-						$identifierArr = array();
+        $imported = false;
 
-                        if ($this->importType == self::IMPORT_SAMPLE) {
+        if (!$this->fileName || !isset($postArr['tf'])) {
+            return false;
+        }
 
-                            if (isset($this->fieldMap['occid'])) {
-                                if ($recordArr[$this->fieldMap['occid']]) $identifierArr['occid'] = $recordArr[$this->fieldMap['occid']];
-                            }
-                            if (isset($this->fieldMap['occurrenceid'])) {
-                                if ($recordArr[$this->fieldMap['occurrenceid']]) $identifierArr['occurrenceID'] = $recordArr[$this->fieldMap['occurrenceid']];
-                            }
-                            if (isset($this->fieldMap['catalognumber'])) {
-                                if ($recordArr[$this->fieldMap['catalognumber']]) $identifierArr['catalogNumber'] = $recordArr[$this->fieldMap['catalognumber']];
-                            }
-                            if (isset($this->fieldMap['othercatalognumbers'])) {
-                                if ($recordArr[$this->fieldMap['othercatalognumbers']]) $identifierArr['otherCatalogNumbers'] = $recordArr[$this->fieldMap['othercatalognumbers']];
-                            }
-                            $this->logOrEcho('#' . $cnt . ': Processing Sample: ' . implode(', ', $identifierArr));
-                            if ($sampArr = $this->getSampPK($identifierArr)) {
-                                $inserted = $this->insertRecord($recordArr, $sampArr, $postArr, $uid);
-                                if ($inserted) $status = true; 
-                            }
-                            $cnt++;
-                        }
-                        if ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
-                            if (isset($this->fieldMap['matsampleid'])) {
-                                if ($recordArr[$this->fieldMap['matsampleid']]) $identifierArr['matsampleid'] = $recordArr[$this->fieldMap['matsampleid']];
-                            }
-                            if (isset($this->fieldMap['catalognumber'])) {
-                                if ($recordArr[$this->fieldMap['catalognumber']]) $identifierArr['catalogNumber'] = $recordArr[$this->fieldMap['catalognumber']];
-                            }
-                            $this->logOrEcho('#' . $cnt . ': Processing Material Sample: ' . implode(', ', $identifierArr));
-                            if ($sampArr = $this->getSampPK($identifierArr)) {
-                                $inserted = $this->insertRecord($recordArr, $sampArr, $postArr, $uid);
-                                if ($inserted) $status = true;                             }
-                            $cnt++;
-                        }
-					}
-				}
-				$this->deleteImportFile();
-			}
-		}
-		return $status;
-	}
+        $this->fieldMap = array_flip($postArr['tf']);
+
+        if (!$this->setTargetPath() || !$this->getHeaderArr()) {
+            return false;
+        }
+
+        try {
+            while ($recordArr = $this->getRecordArr()) {
+
+                $identifierArr = [];
+
+                if ($this->importType == self::IMPORT_SAMPLE) {
+                    if (isset($this->fieldMap['occid']) && $recordArr[$this->fieldMap['occid']] !== '') {
+                        $identifierArr['occid'] = $recordArr[$this->fieldMap['occid']];
+                    }
+                    if (isset($this->fieldMap['occurrenceID']) && $recordArr[$this->fieldMap['occurrenceID']] !== '') {
+                        $identifierArr['occurrenceID'] = $recordArr[$this->fieldMap['occurrenceid']];
+                    }
+                    if (isset($this->fieldMap['catalogNumber']) && $recordArr[$this->fieldMap['catalogNumber']] !== '') {
+                        $identifierArr['catalogNumber'] = $recordArr[$this->fieldMap['catalognumber']];
+                    }
+                    if (isset($this->fieldMap['otherCatalogNumber']) && $recordArr[$this->fieldMap['otherCatalogNumber']] !== '') {
+                        $identifierArr['otherCatalogNumbers'] = $recordArr[$this->fieldMap['othercatalognumbers']];
+                    }
+
+                    $this->logOrEcho('Processing Sample: ' . implode(', ', $identifierArr));
+
+                } elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
+
+                    if (isset($this->fieldMap['matsampleid']) && $recordArr[$this->fieldMap['matsampleid']] !== '') {
+                        $identifierArr['matsampleid'] = $recordArr[$this->fieldMap['matsampleid']];
+                    }
+                    if (isset($this->fieldMap['catalogNumber']) && $recordArr[$this->fieldMap['catalogNumber']] !== '') {
+                        $identifierArr['catalogNumber'] = $recordArr[$this->fieldMap['catalognumber']];
+                    }
+
+                    $this->logOrEcho('Processing Material Sample: ' . implode(', ', $identifierArr));
+                }
+
+                $sampArr = $this->getSampPK($identifierArr);
+                if (!$sampArr) {
+                    continue;
+                }
+
+                try {
+                    // insert record
+                    if ($this->insertRecord($recordArr, $sampArr, $postArr, $uid)) {
+                        $imported = true;
+                    }
+                } catch (Exception $e) {
+                    throw $e;
+                }
+            }
+        } 
+        finally {
+            $this->deleteImportFile();
+        }
+
+        return $imported;
+    }
+
 
     # insert samples/material sample request links
     private function insertRecord($recordArr, $sampArr, $postArr, $uid) {
 
-        $status = false;
         $allowedUseTypes = ['destructive', 'consumptive', 'invasive', 'non-destructive'];
         $requestStatus = $this->getRequestStatus();
         $defaultStatus = ($requestStatus === 'pending funding') ? 'pending funding' : 'pending fulfillment';
@@ -107,12 +123,13 @@ class SampleRequestImport extends UtilitiesFileImport {
             $insertSql = "INSERT INTO neonsamplerequestlink 
                         (requestID, occid, status, available, useType, substanceProvided, notes, initialTimestamp,editedTimestamp)
                         VALUES (?, ?, ?, 'yes', ?, ?, ?, NOW(),NOW())";
-            $checkDupeSql = "SELECT COUNT(*) as cnt FROM neonsamplerequestlink 
-                        WHERE requestID = ? AND occid = ?";
-            $checkReqSql = "SELECT COUNT(*) as cnt FROM neonsamplerequestlink s
+            $checkDupeSql = "SELECT 1 FROM neonsamplerequestlink 
+                        WHERE requestID = ? AND occid = ? LIMIT 1";
+            $checkReqSql = "SELECT 1 FROM neonsamplerequestlink s
                         JOIN omoccurrences o
                         ON s.occid = o.occid
-                        WHERE s.requestID != ? AND s.occid = ? AND s.status IN ('current','pending fulfillment') ";
+                        WHERE s.requestID != ? AND s.occid = ? AND s.status LIKE 'pending%' LIMIT 1";
+
             $checkAvailSql = "SELECT availability FROM omoccurrences
                         WHERE occid = ?";
 
@@ -121,196 +138,159 @@ class SampleRequestImport extends UtilitiesFileImport {
             $checkReqStmt  = $this->conn->prepare($checkReqSql);
             $checkAvailStmt = $this->conn->prepare($checkAvailSql);
 
-            if ($insertStmt && $checkDupeStmt && $checkReqStmt && $checkAvailStmt) {
-                foreach ($sampArr as $occid) {
-                    $use_type = $recordArr[$this->fieldMap['useType']] ?? null;
-                    $substance_provided = $recordArr[$this->fieldMap['substanceProvided']] ?? null;
-                    $notes = isset($this->fieldMap['notes']) ? $recordArr[$this->fieldMap['notes']] ?? null : null;
+            foreach ($sampArr as $occid) {
+                $useType = $recordArr[$this->fieldMap['usetype']] ?? null;
+                $substanceProvided = $recordArr[$this->fieldMap['substanceprovided']] ?? null;
+                $notes = isset($this->fieldMap['notes']) ? $recordArr[$this->fieldMap['notes']] ?? null : null;
 
-                    if (!$use_type || !$substance_provided) {
-                        $this->logOrEcho("ERROR: Missing required fields for occid $occid", 1);
-                        continue;
-                    }
-                    if (in_array($substance_provided, ["individual(s)", "tissue/material sample", "subsample/aliquot"]) && !$notes) {
-                        $this->logOrEcho(
-                            "ERROR: Notes required for occid $occid when substance is tissue/material sample, individual(s), or subsample/aliquot", 
-                            1
-                        );
-                        continue;
-                    }
-                    
-                    if (!in_array($use_type, $allowedUseTypes)) {
-                        $this->logOrEcho("ERROR: Invalid use_type '$use_type' for occid $occid. Allowed: " . implode(', ', $allowedUseTypes), 1);
-                        continue;
-                    }
-                    if (!in_array($substance_provided, $allowedSubstances)) {
-                        $this->logOrEcho("ERROR: Invalid substance_provided '$substance_provided' for occid $occid. Allowed: " . implode(', ', $allowedSubstances), 1);
-                        continue;
-                    }
-
-                    // duplicate within request check
-                    $checkDupeStmt->bind_param('ii', $this->request_id, $occid);
-                    $checkDupeStmt->execute();
-                    $checkDupeStmt->store_result();
-                    $checkDupeStmt->bind_result($countdupe);
-                    $checkDupeStmt->fetch();
-                    $checkDupeStmt->free_result();
-
-                    if ($countdupe > 0) {
-                        $this->logOrEcho("Skipping occid $occid: already exists for this request", 1);
-                        continue;
-                    }
-
-                    //  duplicate across other current requests check
-                    $checkReqStmt->bind_param('ii', $this->request_id, $occid);
-                    $checkReqStmt->execute();
-                    $checkReqStmt->store_result();
-                    $checkReqStmt->bind_result($countreq);
-                    $checkReqStmt->fetch();
-                    $checkReqStmt->free_result();
-
-                    if ($countreq > 0) {
-                        $this->logOrEcho("Skipping occid $occid: already associated with another current or pending request", 1);
-                        continue;
-                    }
-
-                    //  check availability
-                    $checkAvailStmt->bind_param('i', $occid);
-                    $checkAvailStmt->execute();
-                    $checkAvailStmt->store_result();
-                    $checkAvailStmt->bind_result($availability);
-                    $checkAvailStmt->fetch();
-                    $checkAvailStmt->free_result();
-
-                    if ($availability === 0) {
-                        $this->logOrEcho("Skipping occid $occid: sample is unavailable according to occurrence record", 1);
-                        continue;
-                    }
-
-                    $insertStmt->bind_param('iissss', $this->request_id, $occid, $defaultStatus, $use_type, $substance_provided, $notes);
-                    if ($insertStmt->execute()) {
-                        $status = true;
-                        $this->logOrEcho("Sample Added: $occid", 1);
-                    } else {
-                        $this->logOrEcho("ERROR loading Sample: $occid - " . $insertStmt->error, 1);
-                    }
+                if (!$useType || !$substanceProvided) {
+                    throw new Exception("ERROR: Missing required fields (useType and/or sampleType) for occid $occid");
+                }
+                if (in_array($substanceProvided, ["individual(s)", "tissue/material sample", "subsample/aliquot"]) && !$notes) {
+                    throw new Exception("ERROR: Notes required for occid $occid when substance is tissue/material sample, individual(s), or subsample/aliquot");                    
+                }
+                if (!in_array($useType, $allowedUseTypes)) {
+                    throw new Exception("ERROR: Invalid useType '$useType' for occid $occid. Allowed: " . implode(', ', $allowedUseTypes));
+                }
+                if (!in_array($substanceProvided, $allowedSubstances)) {
+                    throw new Exception("ERROR: Invalid substanceProvided '$substanceProvided' for occid $occid. Allowed: " . implode(', ', $allowedSubstances));
                 }
 
-                $this->syncCollidsForRequest($uid);
+                    // skip duplicates in this request
+                $checkDupeStmt->bind_param('ii', $this->requestID, $occid);
+                $checkDupeStmt->execute();
 
-                $insertStmt->close();
-                $checkDupeStmt->close();
-                $checkReqStmt->close();
-                $checkAvailStmt->close();
+                if ($checkDupeStmt->get_result()->num_rows) {
+                    $this->logOrEcho("Skipping occid $occid (already in request)", 1);
+                    continue;
+                }
 
-            } else {
-                $this->logOrEcho("ERROR preparing statement: " . $this->conn->error, 1);
+                    // block samples associated with pending request         
+                $checkReqStmt->bind_param('ii', $this->requestID, $occid);
+                $checkReqStmt->execute();
+
+                if ($checkReqStmt->get_result()->num_rows) {
+                    throw new Exception("ERROR: occid $occid already linked to another pending request");
+                }
+
+                $checkAvailStmt->bind_param('i', $occid);
+                $checkAvailStmt->execute();
+                $availability = $checkAvailStmt->get_result()->fetch_row()[0] ?? 0;
+                if (!$availability) {
+                    throw new Exception("ERROR: occid $occid is unavailable according to occurrence record");
+                }
+
+                // insert record
+                $insertStmt->bind_param('iissss', $this->requestID, $occid, $defaultStatus, $useType, $substanceProvided, $notes);
+
+                if (!$insertStmt->execute()) {
+                    throw new Exception("Insert failed for occid $occid: ".$insertStmt->error);
+                }
+
+                $this->logOrEcho('<strong style="color:green;">Sample Added: ' . (int)$occid . '</strong>', 1);
+
             }
+
+            $insertStmt->close();
+            $checkDupeStmt->close();
+            $checkReqStmt->close();
+            $checkAvailStmt->close();
+
+            $this->syncCollidsForRequest($uid);
+            $this->moreThan100($this->requestID);
+            return true;
         }
 
         elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
             $insertSql = "INSERT INTO neonmaterialsamplerequestlink 
-                        (requestID, matSampleID, occid, status, useType, sampleType, notes, initialTimestamp,editedTimestamp)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                    (requestID, matSampleID, occid, status, useType, sampleType, notes, initialTimestamp,editedTimestamp)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+            $checkDupeSql = "SELECT 1 FROM neonmaterialsamplerequestlink 
+                    WHERE requestID = ? AND matSampleID = ? LIMIT 1";
+            $checkReqSql = "SELECT 1 FROM neonmaterialsamplerequestlink 
+                    WHERE requestID != ? AND matSampleID = ? AND status LIKE 'pending%' LIMIT 1";
 
-            $checkDupeSql = "SELECT COUNT(*) as cnt FROM neonmaterialsamplerequestlink 
-                        WHERE requestID = ? AND matSampleID = ?";
-            $checkReqSql = "SELECT COUNT(*) as cnt FROM neonmaterialsamplerequestlink 
-                        WHERE requestID != ? AND matSampleID = ? AND status IN ('current','pending fulfillment')";
-
-            $insertStmt = $this->conn->prepare($insertSql);
-            $checkDupeStmt  = $this->conn->prepare($checkDupeSql);
-            $checkReqStmt  = $this->conn->prepare($checkReqSql);
+                $insertStmt = $this->conn->prepare($insertSql);
+                $checkDupeStmt  = $this->conn->prepare($checkDupeSql);
+                $checkReqStmt  = $this->conn->prepare($checkReqSql);
 
             if (!$insertStmt || !$checkDupeStmt || !$checkReqStmt) {
-                $this->logOrEcho("ERROR preparing statement: " . $this->conn->error, 1);
-                return false;
+                throw new Exception("ERROR: preparing statement: " . $this->conn->error);
             }
 
             foreach ($sampArr as $matSampleID) {
-                $matSampleID = trim($matSampleID); 
+                    $matSampleID = (int)$matSampleID;
 
-                $occidStmt = $this->conn->prepare(
+                    $occidStmt = $this->conn->prepare(
                     "SELECT s.occid
                     FROM ommaterialsample s
                     INNER JOIN neonsamplerequestlink r ON s.occid = r.occid
                     WHERE r.requestID = ? AND s.matSampleID = ?"
-                );
-                $occidStmt->bind_param('ii', $this->request_id, $matSampleID);
+                    );
+                $occidStmt->bind_param('ii', $this->requestID, $matSampleID);
                 $occidStmt->execute();
                 $occidRes = $occidStmt->get_result();
 
                 if ($occidRes && $occidRes->num_rows > 0) {
                     $row = $occidRes->fetch_assoc();
-                    $occid = $row['occid'];
+                    $occid = (int)$row['occid'];
                     $this->logOrEcho("Found occid '$occid' for matSampleID '$matSampleID'", 1);
                 } else {
-                    $this->logOrEcho(
-                        "ERROR: matSampleID '$matSampleID' cannot be imported — no linked occid found for requestID {$this->request_id}",
-                        1
-                    );
-                    $occidStmt->close();
-                    continue;  
+                     $occidStmt->close();
+                    throw new Exception("ERROR: matSampleID '$matSampleID' cannot be imported — no linked occid found for requestID {$this->requestID}");
                 }
                 $occidStmt->close();
 
-                $use_type   = $recordArr[$this->fieldMap['useType']] ?? null;
+                $useType   = $recordArr[$this->fieldMap['usetype']] ?? null;
                 $sampleType = $recordArr[$this->fieldMap['sampletype']] ?? null;
                 $notes      = isset($this->fieldMap['notes']) ? $recordArr[$this->fieldMap['notes']] ?? null : null;
 
-                if (!$use_type || !$sampleType) {
-                    $this->logOrEcho("ERROR: Missing required fields for matSampleID $matSampleID", 1);
-                    continue;
+                if (!$useType || !$sampleType) {
+                    throw new Exception("ERROR: Missing required fields (useType and/or sampleType) for matSampleID $matSampleID");
                 }
 
-                if (!in_array($use_type, $allowedUseTypes)) {
-                    $this->logOrEcho("ERROR: Invalid useType '$use_type' for matSampleID $matSampleID. Allowed: " . implode(', ', $allowedUseTypes), 1);
-                    continue;
+                if (!in_array($useType, $allowedUseTypes)) {
+                    throw new Exception("ERROR: Invalid useType '$useType' for matSampleID $matSampleID. Allowed: " . implode(', ', $allowedUseTypes));
                 }
 
                 // duplicate check
-                $checkDupeStmt->bind_param('is', $this->request_id, $matSampleID);
+                $checkDupeStmt->bind_param('ii', $this->requestID, $matSampleID);
                 $checkDupeStmt->execute();
-                $checkDupeStmt->store_result();
-                $checkDupeStmt->bind_result($countdupe);
-                $checkDupeStmt->fetch();
-                $checkDupeStmt->free_result();
 
-                if ($countdupe > 0) {
+                if ($checkDupeStmt->get_result()->num_rows) {
                     $this->logOrEcho("Skipping matSampleID $matSampleID: already linked to this request", 1);
                     continue;
                 }
 
-                // in another request check
-                $checkReqStmt->bind_param('is', $this->request_id, $matSampleID);
+                    // in another request check
+                $checkReqStmt->bind_param('ii', $this->requestID, $matSampleID);
                 $checkReqStmt->execute();
-                $checkReqStmt->store_result();
-                $checkReqStmt->bind_result($countreq);
-                $checkReqStmt->fetch();
-                $checkReqStmt->free_result();
 
-                if ($countreq > 0) {
-                    $this->logOrEcho("Skipping matSampleID $matSampleID: linked to another current or pending request", 1);
-                    continue;
+                if ($checkReqStmt->get_result()->num_rows) {
+                    throw new Exception("ERROR: matSampleID $matSampleID linked to another pending request");
                 }
 
-                // insert
-                $insertStmt->bind_param('iiissss', $this->request_id, $matSampleID, $occid, $defaultStatus, $use_type, $sampleType, $notes);
+                    // insert
+                $insertStmt->bind_param('iiissss', $this->requestID, $matSampleID, $occid, $defaultStatus, $useType, $sampleType, $notes);
                 if ($insertStmt->execute()) {
-                    $status = true;
-                    $this->logOrEcho("Material Sample Added: matSampleID $matSampleID", 1);
+                    $this->logOrEcho('<strong style="color:green;">Material sample Added: ' . (int)$matSampleID . '</strong>', 1);
                 } else {
-                    $this->logOrEcho("ERROR inserting matSampleID $matSampleID: " . $insertStmt->error, 1);
+                    throw new Exception("ERROR inserting matSampleID $matSampleID: " . $insertStmt->error);
                 }
+                
             }
 
             $insertStmt->close();
             $checkDupeStmt->close();
             $checkReqStmt->close();
 
+            $this->moreThan100($this->requestID);
+
+
         }
-        return $status;
-    }
+
+        return false;
+     }
 
         // link collids to request
     private function syncCollidsForRequest($uid) {
@@ -321,7 +301,7 @@ class SampleRequestImport extends UtilitiesFileImport {
             WHERE r.requestID = ?";
 
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('i', $this->request_id);
+        $stmt->bind_param('i', $this->requestID);
         $stmt->execute();
         $res = $stmt->get_result();
 
@@ -333,7 +313,7 @@ class SampleRequestImport extends UtilitiesFileImport {
 
         $sql = "SELECT collID FROM neoncollectionrequestlink WHERE requestID = ?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('i', $this->request_id);
+        $stmt->bind_param('i', $this->requestID);
         $stmt->execute();
         $res = $stmt->get_result();
 
@@ -357,13 +337,13 @@ class SampleRequestImport extends UtilitiesFileImport {
             $types = str_repeat('i', count($toAdd) * 2);
             $values = [];
             foreach ($toAdd as $c) {
-                $values[] = $this->request_id;
+                $values[] = $this->requestID;
                 $values[] = $c;
             }
 
             $stmt->bind_param($types, ...$values);
             if (!$stmt->execute()) {
-                $this->logOrEcho("ERROR adding collids: " . $stmt->error, 1);
+                $this->logOrEcho("ERROR adding collids to request: " . $stmt->error, 1);
             }
             $stmt->close();
 
@@ -374,7 +354,7 @@ class SampleRequestImport extends UtilitiesFileImport {
             foreach ($toAdd as $c) {
                 $oldVal = '';
                 $newVal = $c;
-                $stmt->bind_param('issi', $this->request_id, $oldVal, $newVal, $uid);
+                $stmt->bind_param('issi', $this->requestID, $oldVal, $newVal, $uid);
                 $stmt->execute();
             }
             $stmt->close();
@@ -386,11 +366,11 @@ class SampleRequestImport extends UtilitiesFileImport {
                     WHERE requestID = ? AND collID IN ($placeholders)";
             $stmt = $this->conn->prepare($sql);
             $types = 'i' . str_repeat('i', count($toDelete));
-            $params = [$this->request_id, ...$toDelete];
+            $params = [$this->requestID, ...$toDelete];
             $stmt->bind_param($types, ...$params);
 
             if (!$stmt->execute()) {
-                $this->logOrEcho("ERROR deleting collids: " . $stmt->error, 1);
+                throw new Exception("ERROR deleting collids from request: " . $stmt->error);
             }
             $stmt->close();
 
@@ -401,13 +381,41 @@ class SampleRequestImport extends UtilitiesFileImport {
             foreach ($toDelete as $c) {
                 $oldVal = $c;
                 $newVal = '';
-                $stmt->bind_param('issi', $this->request_id, $oldVal, $newVal, $uid);
+                $stmt->bind_param('issi', $this->requestID, $oldVal, $newVal, $uid);
                 $stmt->execute();
             }
             $stmt->close();
         }
 
         return true;
+    }
+
+    // update 'moreThan100' value
+    private function moreThan100($requestID) {
+
+        $sampsql = "SELECT COUNT(*) FROM neonsamplerequestlink WHERE requestID = ?";
+        $sampstmt = $this->conn->prepare($sampsql);
+        $sampstmt->bind_param('i', $requestID);
+        $sampstmt->execute();
+        $sampstmt->bind_result($sampCount);
+        $sampstmt->fetch();
+        $sampstmt->close();
+
+        $matsampsql = "SELECT COUNT(*) FROM neonmaterialsamplerequestlink WHERE requestID = ?";
+        $matsampstmt = $this->conn->prepare($matsampsql);
+        $matsampstmt->bind_param('i', $requestID);
+        $matsampstmt->execute();
+        $matsampstmt->bind_result($matSampCount);
+        $matsampstmt->fetch();
+        $matsampstmt->close();
+
+        $moreThan100 = ($sampCount > 100 || $matSampCount > 100) ? 1 : 0;
+
+        $updatesql = "UPDATE neonrequest SET moreThan100 = ? WHERE id = ?";
+        $updatestmt = $this->conn->prepare($updatesql);
+        $updatestmt->bind_param('ii', $moreThan100, $requestID);
+        $updatestmt->execute();
+        $updatestmt->close();
     }
 
 
@@ -482,12 +490,12 @@ class SampleRequestImport extends UtilitiesFileImport {
             $this->targetFieldMap['occurrenceid'] = 'subject identifier: occurrenceID';
             $this->targetFieldMap['occid'] = 'subject identifier: occid';
             $this->targetFieldMap[''] = '------------------------------------';
-            $fieldArr = array('use_type', 'substance_provided','notes');
+            $fieldArr = array('useType', 'substanceProvided','notes');
         } elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
             $this->targetFieldMap['mat_catalognumber'] = 'subject identifier: catalogNumber';
             $this->targetFieldMap['matsampleid'] = 'subject identifier: matSampleID';
             $this->targetFieldMap[''] = '------------------------------------';
-            $fieldArr = array('use_type','sampleType','notes');
+            $fieldArr = array('useType','sampleType','notes');
         } else {
             $fieldArr = [];
         }
@@ -515,7 +523,7 @@ class SampleRequestImport extends UtilitiesFileImport {
 		$sql = 'SELECT r.id, p.name,r.title FROM neonrequest r
             LEFT JOIN neonresearcher p
             ON r.researcherID = p.researcherID
-            WHERE r.id = ' . $this->request_id;
+            WHERE r.id = ' . $this->requestID;
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_object()) {
 			$this->requestMetaArr['requestID'] = $r->id;
@@ -527,11 +535,11 @@ class SampleRequestImport extends UtilitiesFileImport {
 
 	//Basic setters and getters
     public function setRequestID($id) {
-        $this->request_id = (int) $id;
+        $this->requestID = (int) $id;
     }
 
 	public function getRequestID() {
-		return $this->request_id;
+		return $this->requestID;
 	}
 
 	public function getRequestMeta($field) {
@@ -545,4 +553,5 @@ class SampleRequestImport extends UtilitiesFileImport {
 		if (is_numeric($importType)) $this->importType = $importType;
 		$this->defineTranslationMap();
 	}
+
 }

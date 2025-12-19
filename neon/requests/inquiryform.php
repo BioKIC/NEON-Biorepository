@@ -14,7 +14,7 @@ $tabIndex = array_key_exists('tabindex',$_REQUEST)?$_REQUEST['tabindex']:0;
 if(!is_numeric($tabIndex)) $tabIndex = 0;
 
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-    $request_id = (int) $_GET['id'];
+    $requestID = (int) $_GET['id'];
 } else {
     die("Invalid or missing request ID.");
 }
@@ -32,11 +32,11 @@ $utilities = new Utilities();
 
 $statusStr = '';
 
-$inquirydata = $inquiryManager->getInquiryDataByID($request_id);
-$cm = $inquiryManager->getCMByID($request_id);
-$pc = $inquiryManager->getPrimaryContactByID($request_id);
-$sampledata = $inquiryManager->getSampleTableByID($request_id);
-$materialsampledata = $inquiryManager->getMaterialSampleTableByID($request_id);
+$inquirydata = $inquiryManager->getInquiryDataByID($requestID);
+$cm = $inquiryManager->getCMByID($requestID);
+$pc = $inquiryManager->getPrimaryContactByID($requestID);
+$sampledata = $inquiryManager->getSampleTableByID($requestID);
+$materialsampledata = $inquiryManager->getMaterialSampleTableByID($requestID);
 
 
 if($formSubmit == 'editInquiry' && $isEditor){
@@ -46,8 +46,8 @@ if($formSubmit == 'editInquiry' && $isEditor){
 	$collections = isset($_POST['inqcolls']) && is_array($_POST['inqcolls']) ? $_POST['inqcolls'] : [];
 	$additionalresearchers = isset($_POST['additionalresearchers']) && is_array($_POST['additionalresearchers']) ? $_POST['additionalresearchers'] : [];
 
-		$collection_manager = $_POST['inqmanager'] ?? '';
-		$researcher_id = $_POST['inqresearcher'] ?? '';
+		$collectionManager = $_POST['inqmanager'] ?? '';
+		$researcherID = $_POST['inqresearcher'] ?? '';
 		$title = $_POST['inqtitle'] ?? '';
 		$collections = $_POST['inqcolls'] ?? '';
 		$field = $_POST['inqfield'] ?? '';
@@ -64,9 +64,11 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
 		$drivefolder = $_POST['inqdrive'] ?? '';
 		$internal = $_POST['inqinternal'] ?? '';
+		$processing = $_POST['inqprocess'] ?? '';
 
-	if (empty($collection_manager)) $missing[] = 'Collection Manager';
-	if (empty($researcher_id)) $missing[] = 'Researcher';
+
+	if (empty($collectionManager)) $missing[] = 'Collection Manager';
+	if (empty($researcherID)) $missing[] = 'Researcher';
 	if (empty($title)) $missing[] = 'Title';
 	if (empty($collections)) $missing[] = 'Collections of Interest';
 	if (empty($field)) $missing[] = 'Primary Research Field';
@@ -83,14 +85,16 @@ if($formSubmit == 'editInquiry' && $isEditor){
 	if (empty($drivefolder)) $missing[] = 'Drive Folder';
 	if (empty($aiml)) $missing[] = 'AI/ML Usage';
 	if (empty($internal)) $missing[] = 'Battelle/Contractor Request';
+	if (empty($internal)) $missing[] = 'Processing Requirements';
+
 
 	if (!empty($missing)) {
 		$statusStr = '<span style="color:red;">Missing required fields: ' . implode(', ', $missing) . '</span>';
 	} else {
 		$updatedrequestid = $inquiryManager->editInquiry(
-			$request_id,
-			$collection_manager,
-			$researcher_id,
+			$requestID,
+			$collectionManager,
+			$researcherID,
 			$title,
 			$collections,
 			$field,
@@ -107,6 +111,7 @@ if($formSubmit == 'editInquiry' && $isEditor){
 			$drivefolder,
 			$aiml,
 			$internal,
+			$processing,
 			$SYMB_UID
 		);
 
@@ -123,7 +128,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 
 	$errorMessage = [];
 
-		$inquiry_date = $_POST['inqdate'] ?? '';
+		$inquiryDate = $_POST['inqdate'] ?? '';
 		$pendingfunding = $_POST['inqpendfunddate'] ?? '';
 		$notfunded = $_POST['inqnotfunddate'] ?? '';
 		$cut = $_POST['inqcut'] ?? '';
@@ -142,7 +147,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			empty($active) &&
 			empty($complete)
 		)
-		&& empty($inquiry_date)
+		&& empty($inquiryDate)
 	) {
 		$errorMessage[] = 'Initial Inquiry Date required.';
 	}
@@ -168,25 +173,25 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Funding Date';
 		}
 	}
-	if (!empty($inquiry_date) && !empty($pendingfunding)) {
-		if (strtotime($pendingfunding) <= strtotime($inquiry_date)) {
+	if (!empty($inquiryDate) && !empty($pendingfunding)) {
+		if (strtotime($pendingfunding) <= strtotime($inquiryDate)) {
 			$errorMessage[] = 'Pending Funding Date cannot be before or equal to Inquiry Date';
 		}
 	}
-	if (!empty($inquiry_date) && !empty($fulfillment)) {
-		if (strtotime($fulfillment) <= strtotime($inquiry_date)) {
+	if (!empty($inquiryDate) && !empty($fulfillment)) {
+		if (strtotime($fulfillment) <= strtotime($inquiryDate)) {
 			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Inquiry Date';
 		}
 	}
 	
-	if(!empty($fulfillment) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Fulfillment Date.';
+	if(!empty($active) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Fulfillment Date.';
 
 	if (!empty($errorMessage)) {
 		$statusStr = '<span style="color:red;">' . implode(', ', $errorMessage) . '</span>';
 	} else {
 		$updatedrequestid = $inquiryManager->editStatus(
-			$request_id,
-			$inquiry_date,
+			$requestID,
+			$inquiryDate,
 			$pendingfunding,
 			$notfunded,
 			$cut,
@@ -208,12 +213,12 @@ if($formSubmit == 'editStatus' && $isEditor){
 
 	if($formSubmit == 'editShipment' && $isEditor){
 
-		$shipment_ids = isset($_POST['inqshipmentids']) && is_array($_POST['inqshipmentids']) ? $_POST['inqshipmentids'] : [];
+		$shipmentIDs = isset($_POST['inqshipmentids']) && is_array($_POST['inqshipmentids']) ? $_POST['inqshipmentids'] : [];
 
 		$updatedRequestID = $inquiryManager->editShipment(
-			$shipment_ids,
+			$shipmentIDs,
 			$SYMB_UID,
-			$request_id  
+			$requestID  
 		);
 
 		if ($updatedRequestID) {
@@ -317,6 +322,10 @@ if($formSubmit == 'editStatus' && $isEditor){
 			alert("Select whether the request is for Battelle/Contractor");
 			return false;
 		}
+		if (f.inqprocess.value === "") {
+			alert("Select whether the request involves subsampling or additional processing");
+			return false;
+		}
 		return true;
 	}
 
@@ -374,12 +383,12 @@ if($formSubmit == 'editStatus' && $isEditor){
 
 				</ul>
 					<div id="editinqdiv" style="display:<?php echo ($List ); ?>;">
-						<form name="editinqform" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryAddForm(this);">
+						<form name="editinqform" action="inquiryform.php?id=<?php echo $requestID; ?>" method="post" onsubmit="return verifyInquiryAddForm(this);">
 							<fieldset>
 								<legend><?php echo 'Basic sample use inquiry record' ?></legend>
 								<div style="padding-top:4px;float:left;">
 									<span>
-										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
+										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['lastUpdated']; ?>
 									</span><br />
 								</div>
 								<div style="clear:both;padding-top:4px;float:left;">
@@ -413,7 +422,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 											<?php
 											$researcherArr = $inquiryManager->getResearchers();
 											foreach($researcherArr as $id => $name){
-												$selected = ($id == $pc['researcher_id']) ? 'selected' : '';
+												$selected = ($id == $pc['researcherID']) ? 'selected' : '';
 												echo '<option value="' . $id . '" ' . $selected . '>' . htmlspecialchars($name) . '</option>';
 											}
 											?>
@@ -431,7 +440,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 										<option disabled><?php echo 'Select Researchers'; ?></option>
 										<option disabled>------------------------------------------</option>
 										<?php
-											$selectedResearchers = $inquiryManager->getAdditionalResearchersByID($request_id);
+											$selectedResearchers = $inquiryManager->getAdditionalResearchersByID($requestID);
 											$researcherArr = $inquiryManager->getResearchers();
 											foreach ($researcherArr as $id => $name) {
 												$selected = array_key_exists($id, $selectedResearchers) ? 'selected' : '';
@@ -462,7 +471,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 											<option disabled>------------------------------------------</option>
 											<?php
 												// Get existing collections for this request
-												$selectedCollections = array_keys($inquiryManager->getCollectionsByID($request_id));
+												$selectedCollections = array_keys($inquiryManager->getCollectionsByID($requestID));
 												// Get all possible collections
 												$allCollections = $inquiryManager->getCollections();
 
@@ -486,7 +495,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 										<?php
 										$fieldArr = $inquiryManager->getFields();
 										foreach($fieldArr as $k => $v){
-											$selected = ($inquirydata['primary_research_field'] == $k) ? 'selected' : '';
+											$selected = ($inquirydata['primaryResearchField'] == $k) ? 'selected' : '';
 											echo '<option value="' . htmlspecialchars($k) . '" ' . $selected . '>' . htmlspecialchars($v) . '</option>';
 										}
 										?>
@@ -504,7 +513,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 										<?php
 										$aimlArr = array('yes','no');
 										foreach($aimlArr as $text){
-											$selected = ($inquirydata['uses_aiml'] === $text) ? 'selected' : '';
+											$selected = ($inquirydata['usesAIML'] === $text) ? 'selected' : '';
 											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
 										}
 										?>
@@ -533,14 +542,14 @@ if($formSubmit == 'editStatus' && $isEditor){
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
        										<label for="inqsecondaryfields"><strong><?php echo 'Secondary Research Fields or Keywords (separate multiple with semicolons): ';?></strong> </label><br>
-        									<input name="inqsecondaryfields" id="inqsecondaryfields" type="text" style="width:800px;" value="<?php echo $inquirydata['secondary_research_field']; ?>" />
+        									<input name="inqsecondaryfields" id="inqsecondaryfields" type="text" style="width:800px;" value="<?php echo $inquirydata['secondaryResearchField']; ?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
        										<label for="inqdata"><strong><?php echo 'Types of Data Produced (separate multiple with semicolons): '?></strong> </label><br>
-        									<input name="inqdata" id="inqdata" type="text" style="width:800px;" value="<?php echo $inquirydata['data_produced'];?>" />
+        									<input name="inqdata" id="inqdata" type="text" style="width:800px;" value="<?php echo $inquirydata['dataProduced'];?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -570,7 +579,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
        										<label for="inqfundingsource"><strong><?php echo 'Funding Source: '; ?></strong></label><br>
-        									<input name="inqfundingsource" id="inqfundingsource" type="text" style="width:400px;" value="<?php echo $inquirydata['funding_source'];?>" />
+        									<input name="inqfundingsource" id="inqfundingsource" type="text" style="width:400px;" value="<?php echo $inquirydata['fundingSource'];?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -583,7 +592,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<strong><?php echo 'How did the researchers find us?'; ?></strong><?php $inquirydata['how_found_us']; ?>
+										<strong><?php echo 'How did the researchers find us?'; ?></strong><?php $inquirydata['howFoundUs']; ?>
 									</span><br />
 									<span>
 										<select name="inqhowfound" style="width:400px;" aria-label="How did the researchers find us">
@@ -592,7 +601,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 											<?php
 											$howfoundArr = $inquiryManager->getHowFoundUs();
 											foreach($howfoundArr as $id => $label){
-												$selected = ($label == $inquirydata['how_found_us']) ? 'selected' : '';
+												$selected = ($label == $inquirydata['howFoundUs']) ? 'selected' : '';
 												echo '<option value="' . htmlspecialchars($label) . '" ' . $selected . '>' . htmlspecialchars($label) . '</option>';
 											}
 											?>
@@ -603,25 +612,44 @@ if($formSubmit == 'editStatus' && $isEditor){
 									<label for="inqexist"><strong><?php echo 'May use existing samples?' ?></strong></label>
 									<input type="hidden" name="inqexist" value="no" />
 									<input type="checkbox" name="inqexist" value="yes"
-										<?php echo (!empty($inquirydata['existing_samples']) && $inquirydata['existing_samples'] === 'yes') ? 'checked' : ''; ?> />
+										<?php echo (!empty($inquirydata['existingSamples']) && $inquirydata['existingSamples'] === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<label for="inqfuture"><strong><?php echo 'May use future samples not yet at the Biorepository?' ?></strong></label>
 									<input type="hidden" name="inqfuture" value="no" />
 									<input type="checkbox" name="inqfuture" value="yes"
-										<?php echo (!empty($inquirydata['future_samples']) && $inquirydata['future_samples'] === 'yes') ? 'checked' : ''; ?> />
+										<?php echo (!empty($inquirydata['futureSamples']) && $inquirydata['futureSamples'] === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<label for="inqnew"><strong><?php echo 'May generate new samples?'; ?></strong></label>
 									<input type="hidden" name="inqnew" value="no" />
 									<input type="checkbox" id="inqnew" name="inqnew" value="yes"
-										<?php echo (!empty($inquirydata['generating_samples']) && $inquirydata['generating_samples'] === 'yes') ? 'checked' : ''; ?> />
+										<?php echo (!empty($inquirydata['generatingSamples']) && $inquirydata['generatingSamples'] === 'yes') ? 'checked' : ''; ?> />
+								</div>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+       								<strong><?php echo 'Involves subsampling or signficant processing?'; ?></strong>
+									</span><br />
+								<span>
+									<select name="inqprocess" style="width:400px;" aria-label="Select additional processing">
+										<option value="">Select additional processing</option>
+										<option value="">------------------------------------------</option>
+										<?php
+										$processingArr = array('yes','no');
+										foreach($processingArr as $text){
+											$selected = ($inquirydata['processing'] === $text) ? 'selected' : '';
+											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
+										}
+										?>
+									</select>
+								</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
        										<label for="inqdrive"><strong><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
-        									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo $inquirydata['folder_name']; ?>" />
+        									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo $inquirydata['folderName']; ?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:8px;float:left;">
@@ -633,12 +661,12 @@ if($formSubmit == 'editStatus' && $isEditor){
 						</form>
 					</div>
 					<div id="editstatus" style="">
-						<form name="editingstatus" action="inquiryform.php?id=<?php echo $request_id; ?>" method="post" onsubmit="return verifyInquiryStatusForm(this);">
+						<form name="editingstatus" action="inquiryform.php?id=<?php echo $requestID; ?>" method="post" onsubmit="return verifyInquiryStatusForm(this);">
 							<fieldset>
 								<legend><?php echo 'Current status' ?></legend>
 								<div style="clear:both;padding-top:4px;float:left;">
 									<span>
-										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['last_updated']; ?>
+										<strong><?php echo 'Last Updated: '; ?></strong> <?php echo $inquirydata['lastUpdated']; ?>
 									</span><br />
 								</div>
 								<div style="clear:both;padding-top:4px;float:left;">
@@ -653,7 +681,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Initial Inquiry Date: '?></strong>
-										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiry_date']; ?>" />
+										<input name="inqdate" type="date" value="<?php echo $inquirydata['inquiryDate']; ?>" />
 									</div>
 								</div>
 							</fieldset>
@@ -662,13 +690,13 @@ if($formSubmit == 'editStatus' && $isEditor){
 								<div style="clear:both;padding-top:4px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Pending Funding Date: '?></strong>
-										<input name="inqpendfunddate" type="date" value="<?php echo $inquirydata['pending_funding_date']; ?>" />
+										<input name="inqpendfunddate" type="date" value="<?php echo $inquirydata['pendingFundingDate']; ?>" />
 									</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Not Funded (or funded but cut) Date: '?></strong>
-										<input name="inqnotfunddate" type="date" value="<?php echo $inquirydata['not_funded_date']; ?>" />
+										<input name="inqnotfunddate" type="date" value="<?php echo $inquirydata['notFundedDate']; ?>" />
 									</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -680,7 +708,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Funded/Pending Sample List Date: '?></strong>
-										<input name="inqpendlistdate" type="date" value="<?php echo $inquirydata['pending_sample_list_date']; ?>" />
+										<input name="inqpendlistdate" type="date" value="<?php echo $inquirydata['pendingSampleListDate']; ?>" />
 									</div>
 								</div>
 							</fieldset>
@@ -690,13 +718,13 @@ if($formSubmit == 'editStatus' && $isEditor){
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Pending Fulfillment Date: '?></strong>
-										<input name="inqpendffdate" type="date" value="<?php echo $inquirydata['pending_fulfillment_date']; ?>" />
+										<input name="inqpendffdate" type="date" value="<?php echo $inquirydata['pendingFulfillmentDate']; ?>" />
 									</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Active/Shipment Date: '?></strong>
-										<input name="inqshipdate" type="date" value="<?php echo $inquirydata['active_date']; ?>" />
+										<input name="inqshipdate" type="date" value="<?php echo $inquirydata['activeDate']; ?>" />
 									</div>
 								</div>
 							</fieldset>
@@ -706,7 +734,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
 										<strong><?php echo 'Completed Date: '?></strong>
-										<input name="inqcompletedate" type="date" value="<?php echo $inquirydata['complete_date']; ?>" />
+										<input name="inqcompletedate" type="date" value="<?php echo $inquirydata['completeDate']; ?>" />
 									</div>
 								</div>
 							</fieldset>
@@ -721,7 +749,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 						<fieldset>
 							<legend><?php echo 'Samples'; ?></legend>									
 							<div style="clear:both;padding-top:8px;float:left;">
-								<button type="button" onclick="window.location.href='samplelist.php?id=<?php echo $request_id; ?>'">
+								<button type="button" onclick="window.location.href='samplelist.php?id=<?php echo $requestID; ?>'">
 								Update/Export Sample List
 								</button>
 							</div>
@@ -744,7 +772,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 							<fieldset>
 								<legend><?php echo 'Material Samples'; ?></legend>									
 								<div style="clear:both;padding-top:8px;float:left;">
-									<button type="button" onclick="window.location.href='materialsamplelist.php?id=<?php echo $request_id; ?>'">
+									<button type="button" onclick="window.location.href='materialsamplelist.php?id=<?php echo $requestID; ?>'">
 									Update/Export Material Sample List
 									</button>
 								</div>
@@ -775,12 +803,12 @@ if($formSubmit == 'editStatus' && $isEditor){
 				<div style="clear:both;padding-top:6px;float:left;">
 					<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
 					<span>
-						<form method="post" action="inquiryform.php?id=<?php echo $request_id; ?>">
+						<form method="post" action="inquiryform.php?id=<?php echo $requestID; ?>">
 						<select name="inqshipmentids[]" style="width:800px;" multiple aria-label="<?php echo 'Shipments' ?>">
 							<option disabled><?php echo 'Select Shipments'; ?></option>
 							<option disabled>------------------------------------------</option>
 							<?php
-								$selectedShipments = $inquiryManager->getShipmentByID($request_id); // array [id => display]
+								$selectedShipments = $inquiryManager->getShipmentByID($requestID); // array [id => display]
 								$allShipments = $inquiryManager->getShipments(); // array [id => display]
 
 								foreach ($allShipments as $id => $name) {
@@ -843,10 +871,10 @@ if($formSubmit == 'editStatus' && $isEditor){
 			<h2>Add New Shipment</h2>
 			<form id="shipmentform">
 				<label><b>Shipped to:</b> (if researcher is not present, go back to request editor to link researcher to the request)</label>
-				<select name="researcher_id" required style="width:100%; margin-bottom:15px;">
+				<select name="researcherid" required style="width:100%; margin-bottom:15px;">
 					<option value="">-- Select Researcher --</option>
 					<?php 
-					$researchers = $inquiryManager->getResearchersByID($request_id); 
+					$researchers = $inquiryManager->getResearchersByID($requestID); 
 					foreach($researchers as $id => $name): ?>
 						<option value="<?= htmlspecialchars($id) ?>">
 							<?= htmlspecialchars($name) ?>
@@ -855,13 +883,13 @@ if($formSubmit == 'editStatus' && $isEditor){
 				</select>
 				
 				<label><b>Shipment Date:</b></label>
-				<input type="date" name="ship_date" required style="width:100%;"><br><br>
+				<input type="date" name="shipdate" required style="width:100%;"><br><br>
 
 				<label><b>Address:</b></label>
 				<input type="text" name="address" required style="width:100%;"><br><br>
 
 				<label><b>Shipped By:</b></label>
-				<select name="shipped_by" required style="width:100%; margin-bottom:15px;">
+				<select name="shippedby" required style="width:100%; margin-bottom:15px;">
 					<option value="">-- Select Manager --</option>
 					<?php foreach($managerArr as $id => $name): ?>
 						<option value="<?= htmlspecialchars($id) ?>">
@@ -909,7 +937,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
             let selectedAdditional = Array.from(additionalDropdown.selectedOptions).map(opt => opt.value);
 
             let optionPrimary = document.createElement('option');
-            optionPrimary.value = data.researcher_id;
+            optionPrimary.value = data.researcherID;
             optionPrimary.text = data.name + ' (' + data.institution + ')';
 
             let optionAdditional = optionPrimary.cloneNode(true);
@@ -923,7 +951,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
             });
 
             if(document.getElementById('researcherModal').dataset.source === 'primary') {
-                primaryDropdown.value = data.researcher_id;
+                primaryDropdown.value = data.researcherID;
             }
 
             document.getElementById('researcherModal').style.display = 'none';

@@ -16,7 +16,7 @@ try {
 
     $name = trim($_POST['name'] ?? '');
     $institution = trim($_POST['institution'] ?? '');
-    $contact_email = trim($_POST['contact_email'] ?? '');
+    $contactEmail = trim($_POST['contactEmail'] ?? '');
     $address = trim($_POST['address'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
 
@@ -28,18 +28,18 @@ try {
         throw new Exception('addResearcher method not defined in inquiries manager.');
     }
 
-    $researcher_id = $inquiryManager->addResearcher($name, $institution, $contact_email, $address, $phone);
+    $researcherID = $inquiryManager->addResearcher($name, $institution, $contactEmail, $address, $phone);
 
-    if (!$researcher_id) {
+    if (!$researcherID) {
         throw new Exception('Failed to add researcher.');
     }
 
     echo json_encode([
         'success' => true,
-        'researcher_id' => $researcher_id,
+        'researcherID' => $researcherID,
         'name' => $name,
         'institution' => $institution,
-        'contact_email' => $contact_email,
+        'contactEmail' => $contactEmail,
         'address' => $address,
         'phone' => $phone
     ]);

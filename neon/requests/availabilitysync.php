@@ -8,7 +8,7 @@ if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl='.$CLIENT_ROOT.'
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 
 $action = $_POST['action'] ?? '';
-$request_id = $_REQUEST['request_id'] ?? '';
+$requestID = $_REQUEST['requestID'] ?? '';
 $ids = isset($_POST['ids']) ? array_map('intval', $_POST['ids']) : [];
 
 $inquiryManager = new InquiriesManager();
@@ -86,7 +86,7 @@ tr:hover { background-color: #f1f1f1; }
     <?php foreach($ids as $id): ?>
         <input type="hidden" name="ids[]" value="<?= htmlspecialchars($id) ?>">
     <?php endforeach; ?>
-    <input type="hidden" name="request_id" value="<?= htmlspecialchars($request_id) ?>">
+    <input type="hidden" name="requestid" value="<?= htmlspecialchars($requestID) ?>">
 
     <fieldset>
         <legend><b>Sync Availability (<?= count($ids) ?> selected)</b></legend>

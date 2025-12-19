@@ -2,7 +2,7 @@
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/neon/classes/InquiriesManager.php');
 
-$request_id = (isset($_POST['request_id'])?$_POST['request_id']:'');
+$requestID = (isset($_POST['requestID'])?$_POST['requestID']:'');
 $exportTask = $_POST['exportTask'];
 
 $isEditor = false;
@@ -13,16 +13,16 @@ $status = '';
 if($isEditor){
 	$inquiryManager = new InquiriesManager();
     if ($exportTask == "samplesrequest"){
-	    $inquiryManager->exportSampleList($request_id);
+	    $inquiryManager->exportSampleList($requestID);
     }
     elseif($exportTask == "occurrences"){
-        $inquiryManager->exportOccurList($request_id);
+        $inquiryManager->exportOccurList($requestID);
     }
     if ($exportTask == "materialsamplesrequest"){
-	    $inquiryManager->exportMaterialSampleList($request_id);
+	    $inquiryManager->exportMaterialSampleList($requestID);
     }
     elseif($exportTask == "materialsamplestable"){
-        $inquiryManager->exportMaterialSampleTable($request_id);
+        $inquiryManager->exportMaterialSampleTable($requestID);
     }
 }
 ?>

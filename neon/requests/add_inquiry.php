@@ -14,26 +14,26 @@ try {
 
     $inquiryManager = new InquiriesManager();
 
-    $collection_manager = trim($_POST['collection_manager'] ?? '');
-    $researcher_id = trim($_POST['researcher_id'] ?? '');
-    $inquiry_date = trim($_POST['inquiry_date'] ?? '');
+    $collectionManager = trim($_POST['collectionManager'] ?? '');
+    $researcherID = trim($_POST['researcherID'] ?? '');
+    $inquiryDate = trim($_POST['inquiryDate'] ?? '');
 
 
-    if (!$researcher_id || !$collection_manager || !$inquiry_date) {
+    if (!$researcherID || !$collectionManager || !$inquiryDate) {
         throw new Exception('All fields required');
     }
 
-    $id = $inquiryManager->addInquiry($collection_manager, $researcher_id, $inquiry_date);
+    $id = $inquiryManager->addInquiry($collectionManager, $researcherID, $inquiryDate);
 
-    if (!$researcher_id) {
+    if (!$researcherID) {
         throw new Exception('Failed to add inquiry.');
     }
 
     echo json_encode([
         'success' => true,
-        'researcher_id' => $researcher_id,
-        'inquiry_date' => $inquiry_date,
-        'collection_manager' => $collection_manager
+        'researcherID' => $researcherID,
+        'inquiryDate' => $inquiryDate,
+        'collectionManager' => $collectionManager
     ]);
 
 } catch (Exception $e) {

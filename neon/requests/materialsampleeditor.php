@@ -7,7 +7,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl='.$CLIENT_ROOT.'/neon/requests/materialsampleeditor.php');
 
 $action = array_key_exists("action",$_POST)?$_POST["action"]:"";
-$request_id = array_key_exists("request_id",$_REQUEST)?$_REQUEST["request_id"]:"";
+$requestID = array_key_exists("requestID",$_REQUEST)?$_REQUEST["requestID"]:"";
 $id = array_key_exists("id",$_REQUEST)?$_REQUEST["id"]:"";
 
 $inquiryManager = new InquiriesManager();
@@ -93,13 +93,13 @@ if ($isEditor && isset($_POST['action'])) {
 		});
 
 		function validateMaterialSampleForm(f){
-			if(!f.status.value.trim() || !f.use_type.value.trim() || !f.sampleType.value.trim()){
+			if(!f.status.value.trim() || !f.useType.value.trim() || !f.sampleType.value.trim()){
 				alert("All required fields must be filled.");
 				return false;
 			}
 
 			const status = f.status.value.trim();
-			const shipmentAssigned = f.shipment_id.value.trim() !== "";
+			const shipmentAssigned = f.shipmentID.value.trim() !== "";
 			const validShipmentStatuses = ["current", "complete"];
 
 			if(!shipmentAssigned && validShipmentStatuses.includes(status)){
@@ -135,7 +135,7 @@ if ($isEditor && isset($_POST['action'])) {
 		if($errStr) echo '<div style="color:red;margin:15px;">'.$errStr.'</div>';
 		$materialsampleArr = array();
 		if($id) $materialsampleArr = $inquiryManager->getMaterialSampleForEditor($id);
-		if($id) $reqArr = $inquiryManager->getRequestData($request_id);
+		if($id) $reqArr = $inquiryManager->getRequestData($requestID);
 		?>
 		<script>
     		const reqArr = <?php echo json_encode($reqArr); ?>;
@@ -171,9 +171,9 @@ if ($isEditor && isset($_POST['action'])) {
                     <div class="fieldDiv">
 						<b>Type of Use:</b>
                         <?php
-                        $useValue = $materialsampleArr['use_type']
+                        $useValue = $materialsampleArr['useType']
                         ?>
-						<select name="use_type">
+						<select name="useType">
 							<option value="">-----</option>
 							<option value="non-destructive" <?php if($useValue=='non-destructive') echo 'SELECTED'; ?>>non-destructive</option>
 							<option value="invasive" <?php if($useValue=='invasive') echo 'SELECTED'; ?>>invasive</option>
@@ -213,14 +213,14 @@ if ($isEditor && isset($_POST['action'])) {
                     <strong><?php echo 'Shipment'; ?>:</strong> <?php echo '(edit inquiry to add new shipment to request)';?>
                 </span><br />
                 <span>
-                    <?php $currentShipmentId = isset($materialsampleArr['shipment_id']) ? (string)$materialsampleArr['shipment_id'] : ''; ?>
-                    <select name="shipment_id" style="width:400px;" aria-label="shipment">
+                    <?php $currentShipmentId = isset($materialsampleArr['shipmentID']) ? (string)$materialsampleArr['shipmentID'] : ''; ?>
+                    <select name="shipmentID" style="width:400px;" aria-label="shipment">
                     <option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?>>
                         -- No Shipment Assigned --
                     </option>
                     <option disabled>----------------------------</option>
                     <?php
-                        $shipArr = $inquiryManager->getShipmentByID($request_id);
+                        $shipArr = $inquiryManager->getShipmentByID($requestID);
                         foreach ($shipArr as $shipid => $name) {
                             $selected = ($currentShipmentId !== '' && (string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
                             echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.htmlspecialchars($name).'</option>';
@@ -243,12 +243,12 @@ if ($isEditor && isset($_POST['action'])) {
 		</fieldset>
 		<?php
 		if($id){
-			$shipment_id = (isset($materialsampleArr['shipment_id']) && $materialsampleArr['shipment_id']?$materialsampleArr['shipment_id']:'');
+			$shipmentID = (isset($materialsampleArr['shipmentID']) && $materialsampleArr['shipmentID']?$materialsampleArr['shipmentID']:'');
 			?>
 			<fieldset style="width:800px;margin-left:auto;margin-right:auto;">
 				<legend><b>Delete From Request<?php echo ' (#'.$id.')'; ?></b></legend>
 				<?php
-				if($shipment_id){
+				if($shipmentID){
 					echo '<div style="color:red;margin:20px 0px">';
 					echo 'Material sample can\'t be deleted until it is unlinked from the shipment.';
 					echo '</div>';

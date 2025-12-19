@@ -8,7 +8,7 @@ if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl='.$CLIENT_ROOT.'
 
 
 $action = array_key_exists("action",$_POST)?$_POST["action"]:"";
-$request_id = array_key_exists("request_id",$_REQUEST)?$_REQUEST["request_id"]:"";
+$requestID = array_key_exists("requestID",$_REQUEST)?$_REQUEST["requestID"]:"";
 $ids = isset($_POST['ids']) ? array_map('intval', $_POST['ids']) : [];
 
 $inquiryManager = new InquiriesManager();
@@ -18,12 +18,40 @@ $isEditor = $IS_ADMIN || isset($USER_RIGHTS['SuperAdmin']);
 $errStr = '';
 $status = '';
 
+define('BATCH_NOCHANGE', '__NOCHANGE__');
+define('BATCH_MULTIPLE', '__MULTIPLE__');
+define('BATCH_REMOVE', '__REMOVE__');
 
 if($isEditor && isset($_POST['action'])){
     if($_POST['action'] === 'batchSave'){
-        if($inquiryManager->batchEditMaterialSamples($_POST)){
+        $allowed = ['status','useType','sampleType','shipmentID','notes'];
+        $updates = [];
+        foreach ($allowed as $field) {
+            if (!isset($_POST[$field])) {
+                continue;
+            }
+            $val = $_POST[$field];
+            if (
+                $val === BATCH_NOCHANGE ||
+                $val === BATCH_MULTIPLE ||
+                $val === ''
+            ) {
+                continue;
+            }
+            if ($field === 'shipmentID' && $val === BATCH_REMOVE) {
+                $updates[$field] = null;
+                continue;
+            }
+            $updates[$field] = $val;
+        }
+
+        if (!$updates) {
+            $errStr = 'No changes selected.';
+        }
+        elseif ($inquiryManager->batchEditMaterialSamples($updates, $ids)) {
             $status = 'close';
-        } else {
+        }
+        else {
             $errStr = $inquiryManager->getErrorStr();
         }
     }
@@ -43,8 +71,14 @@ if($isEditor && isset($_POST['action'])){
 
 function getCommonValue($samples, $field){
     $values = array_unique(array_column($samples, $field));
-    return (count($values) === 1) ? $values[0] : '';
+
+    if (count($values) === 1) {
+        return $values[0] === '' ? BATCH_NOCHANGE : $values[0];
+    }
+
+    return BATCH_MULTIPLE;
 }
+
 
 $samples = [];
 if($ids){
@@ -54,7 +88,7 @@ if($ids){
 }
 
 $common = [];
-foreach(['status','use_type','sampleType','shipment_id','notes'] as $field){
+foreach(['status','useType','sampleType','shipmentID','notes'] as $field){
     $common[$field] = getCommonValue($samples, $field);
 }
 ?>
@@ -68,18 +102,36 @@ foreach(['status','use_type','sampleType','shipment_id','notes'] as $field){
 <script>
 function validateBatchForm(f){
 
-    if(!f.status.value || !f.use_type.value || !f.sampleType.value){
+    if (
+        f.status.value === "__NOCHANGE__" &&
+        f.useType.value === "__NOCHANGE__" &&
+        f.sampleType.value === "__NOCHANGE__" &&
+        f.shipmentID.value === "__NOCHANGE__" &&
+        !f.notes.value
+    ) {
+            alert("No changes selected.");
+            return false;
+    }
+
+    if(!f.status.value || !f.useType.value || !f.sampleType.value){
         alert("All fields must be assigned during batch update");
         return false;
     }
-        if(!f.shipment_id.value && ["current","complete"].includes(f.status.value)){
+    const hasShipment =
+        f.shipmentID.value &&
+        f.shipmentID.value !== "__NOCHANGE__" &&
+        f.shipmentID.value !== "__REMOVE__";
+
+    if (!hasShipment && ["current","complete"].includes(f.status.value)) {
         alert("A shipment must be assigned if the status is current or complete");
         return false;
     }
-    if(f.shipment_id.value && !["current","complete"].includes(f.status.value)){
+
+    if (hasShipment && !["current","complete"].includes(f.status.value)) {
         alert("If a shipment is assigned, status must be current or complete");
         return false;
     }
+    
     return true;
 }
 </script>
@@ -104,7 +156,7 @@ button { cursor:pointer; }
     <?php foreach($ids as $id): ?>
         <input type="hidden" name="ids[]" value="<?= htmlspecialchars($id) ?>">
     <?php endforeach; ?>
-    <input type="hidden" name="request_id" value="<?= htmlspecialchars($request_id) ?>">
+    <input type="hidden" name="requestID" value="<?= htmlspecialchars($requestID) ?>">
 
     <fieldset>
         <legend><b>Batch Update Material Samples (<?= count($ids) ?> selected)</b></legend>
@@ -112,7 +164,11 @@ button { cursor:pointer; }
         <div class="fieldDiv">
             <label><b>Status:</b></label>
             <select name="status" required>
-                <option value="">-- choose --</option>
+                <option value="<?= BATCH_NOCHANGE ?>" selected>-- do not change --</option>
+
+                <?php if ($common['status'] === BATCH_MULTIPLE): ?>
+                    <option value="<?= BATCH_MULTIPLE ?>" disabled>-- multiple values --</option>
+                <?php endif; ?>                
                 <?php
                 $options = ["pending fulfillment","current","complete","pending funding"];
                 foreach($options as $opt){
@@ -125,12 +181,16 @@ button { cursor:pointer; }
 
         <div class="fieldDiv">
             <label><b>Type of Use:</b></label>
-            <select name="use_type" required>
-                <option value="">-- choose --</option>
+            <select name="useType" required>
+                <option value="<?= BATCH_NOCHANGE ?>" selected>-- do not change --</option>
+
+                <?php if ($common['usetype'] === BATCH_MULTIPLE): ?>
+                    <option value="<?= BATCH_MULTIPLE ?>" disabled>-- multiple values --</option>
+                <?php endif; ?>
                 <?php
                 $options = ["non-destructive","invasive","consumptive","destructive"];
-                foreach($options as $opt){
-                    $sel = ($common['use_type']==$opt?'selected':'');
+                foreach ($options as $opt) {
+                    $sel = ($common['usetype'] === $opt) ? 'selected' : '';
                     echo "<option value=\"$opt\" $sel>$opt</option>";
                 }
                 ?>
@@ -141,17 +201,16 @@ button { cursor:pointer; }
         <div class="fieldDiv">
             <b>Sample Type:</b>
                 <?php 
-                $commonSampValue = $common['sampleType'];
                 $sampleTypes = $inquiryManager->getMaterialSampleTypes();
                 ?>
                 <select name="sampleType" required>
-                    <?php if($commonSampValue === ''): ?>
-                        <option value="" selected>-- multiple values --</option>
-                    <?php else: ?>
-                        <option value="">-- Select option --</option>
+                    <option value="<?= BATCH_NOCHANGE ?>" selected>-- do not change --</option>
+
+                    <?php if ($common['sampletype'] === BATCH_MULTIPLE): ?>
+                     <option value="<?= BATCH_MULTIPLE ?>" disabled>-- multiple values --</option>
                     <?php endif; ?>
                     <?php foreach($sampleTypes as $type => $label):
-                        $selected = ($type == $commonSampValue) ? 'selected' : '';
+                        $selected = ($type == $common['sampletype']) ? 'selected' : '';
                     ?>
                         <option value="<?= htmlspecialchars($type) ?>" <?= $selected ?>><?= htmlspecialchars($label) ?></option>
                     <?php endforeach; ?>
@@ -159,18 +218,26 @@ button { cursor:pointer; }
         </div>
         <div class="fieldDiv">
             <label><b>Notes:</b></label>
-            <input type="text" name="notes" style="width:400px" value="<?= htmlspecialchars($common['notes'] ?? '', ENT_COMPAT | ENT_HTML401); ?>">
+            <input
+                type="text" name="notes" style="width:400px"
+                placeholder="-- do not change --"
+                value="<?= ($common['notes'] !== BATCH_MULTIPLE ? htmlspecialchars((string)($notes ?? '')): '') ?>"
+            >        
         </div>
-
         <div class="fieldDiv">
-            <label><b>Shipment:</b> (edit inquiry to add new shipment to request)</label>
-            <select name="shipment_id" required>
-                <option value="">-- none --</option>
+            <label><b>Shipment:</b> (edit request to add new shipment)</label>
+            <select name="shipmentID" required>
+                <option value="<?= BATCH_NOCHANGE ?>" selected>-- do not change --</option>
+
+                <?php if ($common['shipmentid'] === BATCH_MULTIPLE): ?>
+                    <option value="<?= BATCH_MULTIPLE ?>" disabled>-- multiple values --</option>
+                <?php endif; ?>
+                <option value="<?= BATCH_REMOVE ?>">-- remove shipment --</option>
                 <?php
-                $shipArr = $inquiryManager->getShipmentByID($request_id);
+                $shipArr = $inquiryManager->getShipmentByID($requestID);
                 foreach($shipArr as $shipid => $name){
-                    $sel = ($common['shipment_id']==$shipid?'selected':'');
-                    echo '<option value="'.htmlspecialchars($shipid).'" '.$sel.'>'.htmlspecialchars($name).'</option>';
+                    $sel = ($common['shipmentid']==$shipid?'selected':'');
+                    echo '<option value="'.htmlspecialchars((string)($shipid ?? '')).'" '.$sel.'>'.htmlspecialchars((string)($name ?? '')).'</option>';
                 }
                 ?>
             </select>
@@ -188,7 +255,7 @@ button { cursor:pointer; }
             <?php
             $hasShipment = false;
             foreach($samples as $s){
-                if(!empty($s['shipment_id'])){
+                if(!empty($s['shipmentID'])){
                     $hasShipment = true;
                     break;
                 }

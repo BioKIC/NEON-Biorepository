@@ -6,15 +6,15 @@ include_once($SERVER_ROOT.'/neon/classes/InquiriesManager.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT . '/neon/requests/inquiryform.php?' . $_SERVER['QUERY_STRING']);
 
-$request_id = array_key_exists('id', $_REQUEST) ? filter_var($_REQUEST['id'], FILTER_SANITIZE_NUMBER_INT) : '';
+$requestID = array_key_exists('id', $_REQUEST) ? filter_var($_REQUEST['id'], FILTER_SANITIZE_NUMBER_INT) : '';
 $sampleFilter = isset($_REQUEST['sampleFilter']) ? $_REQUEST['sampleFilter'] : '';
 $quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
 $sortableTable = isset($_REQUEST['sortabletable']) ? filter_var($_REQUEST['sortabletable'], FILTER_SANITIZE_NUMBER_INT) : false;
 $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 
 $inquiryManager = new inquiriesManager();
-$sampleCnt = $inquiryManager->getSampleCountByID($request_id);
-$researchers = $inquiryManager->getResearchersByID($request_id);
+$sampleCnt = $inquiryManager->getSampleCountByID($requestID);
+$researchers = $inquiryManager->getResearchersByID($requestID);
 $managers = $inquiryManager->getManagers();
 
 if($sortableTable === false){
@@ -95,7 +95,7 @@ if($IS_ADMIN) $isEditor = true;
 		}
 
 		function openSampleEditor(id, requestId){
-			var url = "sampleeditor.php?id=" + id + "&request_id=" + requestId;
+			var url = "sampleeditor.php?id=" + id + "&requestID=" + requestId;
 			openPopup(url, "sample1window");
 			return false;
 		}
@@ -114,8 +114,8 @@ if($IS_ADMIN) $isEditor = true;
 			batchForm.target = "batchEditorWindow";
 			const req = document.createElement("input");
 			req.type = "hidden";
-			req.name = "request_id";
-			req.value = "<?= $request_id ?>";
+			req.name = "requestID";
+			req.value = "<?= $requestID ?>";
 			batchForm.appendChild(req);
 
 			checked.forEach(cb => {
@@ -153,8 +153,8 @@ if($IS_ADMIN) $isEditor = true;
 			availabilityForm.target = "AvailabilitySyncWindow";
 			const req = document.createElement("input");
 			req.type = "hidden";
-			req.name = "request_id";
-			req.value = "<?= $request_id ?>";
+			req.name = "requestID";
+			req.value = "<?= $requestID ?>";
 			availabilityForm.appendChild(req);
 
 			checked.forEach(cb => {
@@ -257,27 +257,36 @@ include($SERVER_ROOT.'/includes/header.php');
 	<a href="../../index.php">Home</a> &gt;&gt;
 	<a href="../../neon/index.php">Management Tools</a> &gt;&gt;
 	<a href="../../neon/requests/inquiries.php">Inquiry List</a> &gt;&gt;
-	<a href="inquiryform.php?id=<?php echo $request_id; ?>">Inquiry Record</a> &gt;&gt;
+	<a href="inquiryform.php?id=<?php echo $requestID; ?>">Inquiry Record</a> &gt;&gt;
 	<b>Sample List</b>
 </div>
 <div id="innertext">
 	<?php
 	if($isEditor){
-		$reqArr = $inquiryManager->getRequestData($request_id);
+		$reqArr = $inquiryManager->getRequestData($requestID);
 		if($reqArr){
 			?>
 			<fieldset style="margin-top:30px">
 				<legend>Samples Associated with Request</legend>
 				<div style="float:left;margin-right:40px;width:1000px;">
 					<div class="displayFieldDiv">
-						<b>Request ID:</b> <?php echo $request_id; ?>
-						<a href="<?php echo $CLIENT_ROOT . '/neon/requests/inquiryform.php?id=' . $request_id; ?>">
+						<b>Request ID:</b> <?php echo $requestID; ?>
+						<a href="<?php echo $CLIENT_ROOT . '/neon/requests/inquiryform.php?id=' . $requestID; ?>">
 							Edit request
 						</a>
 					</div>
 					<div class="displayFieldDiv"><b>Title:</b> <?php echo $reqArr['title']; ?></div>
 					<div class="displayFieldDiv"><b>Primary Contact:</b> <?php echo $reqArr['name']; ?></div>
 					<div class="displayFieldDiv"><b>Status:</b> <?php echo $reqArr['status']; ?></div>
+					<?php
+					if (!in_array($reqArr['status'],array('active use','completed')) && $sampleCnt >0) {
+					?>
+						<div style='font-weight:bold;margin:30px;color:red;'>
+							Check status of request relative to samples. Edit request if necessary
+						</div>
+					<?php 
+						}
+					?>
 					<div class="displayFieldDiv"><b>Number of Samples Linked:</b> <?php echo $sampleCnt; ?></div>
 				</div>
 				<?php
@@ -285,24 +294,24 @@ include($SERVER_ROOT.'/includes/header.php');
 				?>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
-							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $request_id; ?>">
+							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $requestID; ?>">
 								<button type="button">Load Samples</button>
 							</a>
 					</div>
 				<?php
 				}
 				elseif(in_array($reqArr['status'],array('active use','completed','pending funding','pending fulfillment')) && $sampleCnt){
-					$sampleList = $inquiryManager->getSamplesByID($request_id, $sampleFilter);
+					$sampleList = $inquiryManager->getSamplesByID($requestID, $sampleFilter);
 					?>
 					<div style="clear:both;padding:10px 0;">
 						<!-- <div style="float:left;margin-right:10px;">
-							<a href="#" onclick="return addSample(<?php echo $request_id; ?>);">
+							<a href="#" onclick="return addSample(<?php echo $requestID; ?>);">
 								<button type="button">Add New Sample</button>
 							</a>
 						</div> -->
 						<div style="float:left;">
 							<form name="exportSampleListForm" action="exporthandler.php" method="post">
-								<input type="hidden" name="request_id" value="<?php echo $request_id; ?>" />
+								<input type="hidden" name="requestID" value="<?php echo $requestID; ?>" />
 								<input type="hidden" name="exportTask" value="samplesrequest" />
 								<button type="submit" name="action" value="exportSampleListing">
 									Export Samples
@@ -313,7 +322,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
 							<form name="exportOccurForm" action="exporthandler.php" method="post">
-								<input type="hidden" name="request_id" value="<?php echo $request_id; ?>" />
+								<input type="hidden" name="requestID" value="<?php echo $requestID; ?>" />
 								<input type="hidden" name="exportTask" value="occurrences" />
 								<button type="submit" name="action" value="exportOccurListing">
 									Export Occurrences
@@ -335,7 +344,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
-							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $request_id; ?>">
+							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $requestID; ?>">
 								<button type="button">Load Samples</button>
 							</a>
 					</div>
@@ -356,7 +365,7 @@ include($SERVER_ROOT.'/includes/header.php');
 											<option value="current" <?php echo ($sampleFilter=='current'?'SELECTED':''); ?>>Current</option>
 											<option value="completed" <?php echo ($sampleFilter=='completed'?'SELECTED':''); ?>>Completed</option>
 										</select>
-											<input name="id" type="hidden" value="<?php echo $request_id; ?>" />
+											<input name="id" type="hidden" value="<?php echo $requestID; ?>" />
 									</form>
 								</div>
 							</div>
@@ -373,9 +382,9 @@ include($SERVER_ROOT.'/includes/header.php');
 													$headerOutArr = current($sampleList);
 													echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
 													$headerArr = array('sampleID' => 'sampleID','sampleClass' => 'sampleClass',
-																'sampleCode' =>'sampleCode','status'=>'Status', 'use_type'=>'Use Type', 
-																'substance_provided'=>'Substance Provided', 'available'=>'Available',
-																'notes'=> 'Notes','shipment_id' => 'Shipment ID','occid'=> 'occid');
+																'sampleCode' =>'sampleCode','status'=>'Status', 'useType'=>'Use Type', 
+																'substanceProvided'=>'Substance Provided', 'available'=>'Available',
+																'notes'=> 'Notes','shipmentID' => 'Shipment ID','occid'=> 'occid');
 													$rowCnt = 1;
 													foreach($headerArr as $fieldName => $headerTitle){
 														if(array_key_exists($fieldName, $headerOutArr) || $fieldName == 'occid'){
@@ -402,18 +411,18 @@ include($SERVER_ROOT.'/includes/header.php');
 													}
 													echo '<td>';
 													echo '<input id="scbox-'.$sampleArr['id'].'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$sampleArr['id'].'" />';
-													echo '<a href="#" onclick="return openSampleEditor('.$sampleArr['id'].', '.$request_id.')"><img src="../../images/edit.png" style="width:12px" /></a>';
+													echo '<a href="#" onclick="return openSampleEditor('.$sampleArr['id'].', '.$requestID.')"><img src="../../images/edit.png" style="width:12px" /></a>';
 													echo '</td>';
 
 													echo '<td>'.$sampleArr['sampleID'].'</td>';
 													echo '<td>'.$sampleArr['sampleClass'].'</td>';
 													echo '<td>'.$sampleArr['sampleCode'].'</td>';
 													echo '<td>'.$sampleArr['status'].'</td>';
-													echo '<td>'.$sampleArr['use_type'].'</td>';
-													echo '<td>'.$sampleArr['substance_provided'].'</td>';
+													echo '<td>'.$sampleArr['useType'].'</td>';
+													echo '<td>'.$sampleArr['substanceProvided'].'</td>';
 													echo '<td>'.$sampleArr['available'].'</td>';
 													echo '<td>'.$sampleArr['notes'].'</td>';
-													echo '<td>'.$sampleArr['shipment_id'].'</td>';
+													echo '<td>'.$sampleArr['shipmentID'].'</td>';
 													
 													echo '</td>';
 													echo '<td style="text-align:center">';
