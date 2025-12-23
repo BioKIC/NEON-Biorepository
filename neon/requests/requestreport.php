@@ -18,7 +18,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 ?>
 <html>
 	<head>
-		<title><?php echo $DEFAULT_TITLE; ?> Requests Report</title>
+		<title><?php echo $DEFAULT_TITLE; ?> Request Status Report</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 		<?php
 		$activateJQuery = true;
@@ -36,13 +36,13 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<div class="navpath">
 			<a href="../../../index.php">Home</a> &gt;&gt;
 			<a href="../index.php">Management Tools</a> &gt;&gt;
-			<b>Requests Report</b>
+			<b>Request Status Report</b>
 		</div>
 		<div id="innertext">
 <?php
 if ($isEditor) {
 ?>
-  <h1>Requests Report</h1>
+  <h1>Request Status Report</h1>
 
   <form method="post" action="exportrequesthandler.php">
     <button type="submit">Export Report</button>
