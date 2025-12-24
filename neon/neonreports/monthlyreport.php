@@ -60,20 +60,71 @@ if ($isEditor) {
 		echo '<p><strong>Report generated: </strong> ' . htmlspecialchars($reportDate) . '</p>';
 	}
 	if (!empty($reportsArr)) {
-		$reportsTable = $utilities->htmlTable($reportsArr, $headerArr);
-		echo $reportsTable;
+
+		$general = [];
+		$request = [];
+		$sample  = [];
+
+		foreach ($reportsArr as $row) {
+			$type = array_shift($row); 
+
+			switch ($type) {
+				case 'general':
+					$general[] = $row;
+					break;
+				case 'request':
+					$request[] = $row;
+					break;
+				case 'sample':
+					$sample[] = $row;
+					break;
+			}
+		}
+
+		if ($general) {
+			echo '<h2>General Statistics</h2>';
+			echo $utilities->htmlTable($general, $headerArr);
+		}
+
+		?>
+		<form method="post" action="exportmonthlyreporthandler.php">
+			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
+			<input type="hidden" name="type" value="general">
+			<button type="submit">Export General Statistics Report</button>
+		</form>
+		<?php
+
+		if ($request) {
+			echo '<h2>Request Summary</h2>';
+			echo $utilities->htmlTable($request, $headerArr);
+		}
+
+		?>
+		<form method="post" action="exportmonthlyreporthandler.php">
+			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
+			<input type="hidden" name="type" value="request">
+			<button type="submit">Export Request Summary</button>
+		</form>
+		<?php
+
+		if ($sample) {
+			echo '<h2>Samples Received</h2>';
+			echo $utilities->htmlTable($sample, $headerArr);
+		}
+		?>
+		<form method="post" action="exportmonthlyreporthandler.php">
+			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
+			<input type="hidden" name="type" value="sample">
+			<button type="submit">Export Samples Received</button>
+		</form>
+		<?php
+
 	}
 } 
 else {
 	echo '<h3>Please login to get access to this page.</h3>';
 }
 ?>
-
-	<form method="post" action="exportmonthlyreporthandler.php">
-		<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
-		<button type="submit">Export Report</button>
-	</form>
-
 		</div>
 		<?php
 		include($SERVER_ROOT.'/includes/footer.php');

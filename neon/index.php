@@ -85,6 +85,8 @@ if($isEditor){
 				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
 				<li><a href="shipment/prepreports.php">Preparations Report</a></li>
 				<li><a href="neonreports/monthlyreportactions.php">Monthly Report</a></li>
+				<li><a href="neonreports/quarterlyreportactions.php">Quarterly Sample Use Report</a></li>
+
 			</ul>
 		</fieldset>
 	</div>

@@ -205,13 +205,17 @@ function getScholarProfileStats() {
             }
         }
 
-        foreach ($dataArr as $statName => $statValue) {
-            $ins = $this->conn->prepare(
-                "INSERT INTO neonmonthlyreport (`name`, `statistic`, `statValue`, `date`) VALUES (?, ?, ?, ?)"
-            );
+        $type = 'general';
 
-            // Bind all as strings to avoid type mismatch
-            $ins->bind_param('ssss', $name, $statName, $statValue, $reportDate);
+        foreach ($dataArr as $statName => $statValue) {
+
+            if ($statName === 'active use') {
+                $type = 'request';
+            }
+
+            $ins = $this->conn->prepare("INSERT INTO neonmonthlyreport (`name`, `type`, `statistic`, `statValue`, `date`) VALUES (?, ?, ?, ?, ?)");
+
+            $ins->bind_param('sssss', $name, $type, $statName, $statValue, $reportDate);
             $ins->execute();
 
             if ($ins->error) {
@@ -219,61 +223,98 @@ function getScholarProfileStats() {
             }
         }
 
+        $samplesql = "SELECT sampleClass, COUNT(*) AS count FROM NeonSample GROUP BY sampleClass";
+
+        $result = $this->conn->query($samplesql);
+
+        if ($result) {
+            $ins = $this->conn->prepare(
+                "INSERT INTO neonmonthlyreport (`name`, `type`, `statistic`, `statValue`, `date`)
+                VALUES (?, 'sample', ?, ?, ?)"
+            );
+
+            while ($row = $result->fetch_assoc()) {
+                $statistic = $row['sampleClass'] ?? 'Unknown sampleClass';
+                $statValue = $row['count'];
+
+                $ins->bind_param(
+                    'ssss',
+                    $name,
+                    $statistic,
+                    $statValue,
+                    $reportDate
+                );
+
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Sample insert error ($statistic): " . $ins->error);
+                }
+            }
+
+            $ins->close();
+        }
+
         return $name;
     }
 
 
-  // Gets data from Monthly Report
-    public function getMonthlyReport($month){
-        $dataArr = array();
+    // Gets data for Monthly Report tables
+    public function getMonthlyReport($month) {
 
-        $currentsql = 'SELECT * FROM neonmonthlyreport WHERE name = ?';
+        $currentsql = 'SELECT statistic, statValue, type, date
+                    FROM neonmonthlyreport
+                    WHERE name = ?';
+
         $currentstmt = $this->conn->prepare($currentsql);
-        if (!$currentstmt) {
-            $this->errorMessage = $this->conn->error;
-            return null;
-        }
-
         $currentstmt->bind_param('s', $month);
         $currentstmt->execute();
         $current = $currentstmt->get_result();
         $currentstmt->close();
 
-        $priorsql = 'SELECT * FROM neonmonthlyreport WHERE name = (SELECT DISTINCT name FROM neonmonthlyreport WHERE name < ? ORDER BY name DESC LIMIT 1);';
-        $priorstmt = $this->conn->prepare($priorsql);
-        if (!$priorstmt) {
-            $this->errorMessage = $this->conn->error;
-            return null;
-        }
+        $priorsql = '
+            SELECT statistic, statValue, type, date
+            FROM neonmonthlyreport
+            WHERE name = (
+                SELECT DISTINCT name
+                FROM neonmonthlyreport
+                WHERE name < ?
+                ORDER BY name DESC
+                LIMIT 1
+            )';
 
+        $priorstmt = $this->conn->prepare($priorsql);
         $priorstmt->bind_param('s', $month);
         $priorstmt->execute();
         $prior = $priorstmt->get_result();
         $priorstmt->close();
 
         $currentDate = null;
-        $current->data_seek(0);
+        $priorDate   = null;
+
         if ($row = $current->fetch_assoc()) {
             $currentDate = $row['date'];
         }
-        $priorDate = null;
-        $prior->data_seek(0);
+        $current->data_seek(0);
+
         if ($row = $prior->fetch_assoc()) {
             $priorDate = $row['date'];
         }
+        $prior->data_seek(0);
 
         $dayChange = '';
-
         if ($currentDate && $priorDate) {
             $d1 = new DateTime($priorDate);
             $d2 = new DateTime($currentDate);
-            $days = $d1->diff($d2)->days;
-            $dayChange = '+' . $days . ' days';
+            $dayChange = '+' . $d1->diff($d2)->days . ' days';
         }
 
         $currentData = [];
         while ($row = $current->fetch_assoc()) {
-            $currentData[$row['statistic']] = (int)$row['statValue'];
+            $currentData[$row['statistic']] = [
+                'value' => (int)$row['statValue'],
+                'type'  => $row['type']
+            ];
         }
 
         $priorData = [];
@@ -284,12 +325,15 @@ function getScholarProfileStats() {
         $reportRows = [];
 
         $reportRows[] = [
-            'prior report date',
+            'general',
+            'Prior report date',
             $priorDate ? date('Y-m-d', strtotime($priorDate)) : 'N/A',
             $dayChange
         ];
-        foreach ($currentData as $stat => $currentValue) {
-            $priorValue = $priorData[$stat] ?? null;
+        foreach ($currentData as $stat => $data) {
+            $currentValue = $data['value'];
+            $type         = $data['type'];
+            $priorValue   = $priorData[$stat] ?? null;
 
             if ($priorValue === null) {
                 $change = '';  
@@ -299,6 +343,7 @@ function getScholarProfileStats() {
             }
 
             $reportRows[] = [
+                $type,
                 $stat,
                 $currentValue,
                 $change
