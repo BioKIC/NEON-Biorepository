@@ -243,7 +243,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv"><b>Number of Material Samples Linked:</b> <?php echo $sampleCnt; ?></div>
 				</div>
 				<?php
-				if(in_array($reqArr['status'],array('pending funding','pending sample list','pending fulfillment')) && !$sampleCnt){
+				if(in_array($reqArr['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed')) && !$sampleCnt){
 				?>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">

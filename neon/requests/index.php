@@ -39,12 +39,13 @@ if($formSubmit == 'createInquiry' && $isEditor){
 	$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
 	$drivefolder = $_POST['inqdrive'] ?? '';
 	$internal = $_POST['inqinternal'] ?? '';
+	$outreach = $_POST['inqoutreach'] ?? '';
 
 
-    if(!$collectionManager || !$researcherID || !$inquiryDate || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder || !$aiml || !$internal || !$processing){
+    if(!$collectionManager || !$researcherID || !$inquiryDate || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder || !$aiml || !$internal || !$outreach || !$processing){
         $statusStr = '<span style="color:red;">Missing required fields.</span>';
     } else {
-        $insertId = $inquiryManager->addInquiry($collectionManager, $researcherID, $inquiryDate, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder, $aiml, $internal, $processing);
+        $insertId = $inquiryManager->addInquiry($collectionManager, $researcherID, $inquiryDate, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder, $aiml, $internal, $outreach, $processing);
 	 if ($insertId) {
         header("Location: inquiryform.php?id=" . $insertId);
         exit();
@@ -132,6 +133,10 @@ if($formSubmit == 'createInquiry' && $isEditor){
 		}
 		if (f.inqinternal.value === "") {
 			alert("Select whether the request is for Battelle/Contractor");
+			return false;
+		}
+		if (f.inqoutreach.value === "") {
+			alert("Select whether the request is primarily for outreach/education");
 			return false;
 		}
 		return true;
@@ -255,7 +260,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									</span><br />
 									<span>
 										<select name="inqcolls[]" style="width:800px; height:120px;" multiple aria-label="<?php echo 'Collections' ?>">
-											<option value=""><strong><?php echo 'Select all Collections of Interest'; ?><strong></option>
+											<option value="">Select all Collections of Interest</option>
 											<option value="">------------------------------------------</option>
 											<?php
 											$collectionArr = $inquiryManager->getCollections();
@@ -302,11 +307,28 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'For Battelle (except IRAD) or Contractor?'; ?></strong>
+       								<strong><?php echo 'For Battelle (except IRAD), Contractor, or Biorepo team?'; ?></strong>
 									</span><br />
 								<span>
 									<select name="inqinternal" style="width:400px;" aria-label="Select Battelle/Contractor">
 										<option value="">Select Battelle/Contractor</option>
+										<option value="">------------------------------------------</option>
+										<?php
+										$intArr = array('yes','no');
+										foreach($intArr as $text){
+											echo '<option value="' . htmlspecialchars($text) . '">' . htmlspecialchars($text) . '</option>';
+										}
+										?>
+									</select>
+								</span>
+								</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+       								<strong><?php echo 'Primarily for outreach and/or education?'; ?></strong>
+									</span><br />
+								<span>
+									<select name="inqoutreach" style="width:400px;" aria-label="Select Outreach/Education">
+										<option value="">Select Outreach/Education</option>
 										<option value="">------------------------------------------</option>
 										<?php
 										$intArr = array('yes','no');

@@ -64,6 +64,7 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
 		$drivefolder = $_POST['inqdrive'] ?? '';
 		$internal = $_POST['inqinternal'] ?? '';
+		$outreach = $_POST['inqoutreach'] ?? '';
 		$processing = $_POST['inqprocess'] ?? '';
 
 
@@ -85,8 +86,8 @@ if($formSubmit == 'editInquiry' && $isEditor){
 	if (empty($drivefolder)) $missing[] = 'Drive Folder';
 	if (empty($aiml)) $missing[] = 'AI/ML Usage';
 	if (empty($internal)) $missing[] = 'Battelle/Contractor Request';
-	if (empty($internal)) $missing[] = 'Processing Requirements';
-
+	if (empty($outreach)) $missing[] = 'Primarily Outreach/Education Request';
+	if (empty($processing)) $missing[] = 'Processing Requirements';
 
 	if (!empty($missing)) {
 		$statusStr = '<span style="color:red;">Missing required fields: ' . implode(', ', $missing) . '</span>';
@@ -111,6 +112,7 @@ if($formSubmit == 'editInquiry' && $isEditor){
 			$drivefolder,
 			$aiml,
 			$internal,
+			$outreach,
 			$processing,
 			$SYMB_UID
 		);
@@ -326,6 +328,10 @@ if($formSubmit == 'editStatus' && $isEditor){
 			alert("Select whether the request involves subsampling or additional processing");
 			return false;
 		}
+		if (f.inqoutreach.value === "") {
+			alert("Select whether the request is primarily for outreach and/or education?");
+			return false;
+		}
 		return true;
 	}
 
@@ -522,7 +528,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'For Battelle (except IRAD) or Contractor?'; ?></strong>
+       								<strong><?php echo 'For Battelle (except IRAD), Contractor, or Biorepo team?'; ?></strong>
 									</span><br />
 								<span>
 									<select name="inqinternal" style="width:400px;" aria-label="Select Battelle/Contractor">
@@ -532,6 +538,24 @@ if($formSubmit == 'editStatus' && $isEditor){
 										$intArr = array('yes','no');
 										foreach($intArr as $text){
 											$selected = ($inquirydata['internal'] === $text) ? 'selected' : '';
+											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
+										}
+										?>
+									</select>
+								</span>
+																</div>
+								<div style="clear:both;padding-top:6px;float:left;">
+									<span>
+       								<strong><?php echo 'Primarily for outreach and/or education?'; ?></strong>
+									</span><br />
+								<span>
+									<select name="inqoutreach" style="width:400px;" aria-label="Select Outreach/Education">
+										<option value="">Select Outreach/Education</option>
+										<option value="">------------------------------------------</option>
+										<?php
+										$intArr = array('yes','no');
+										foreach($intArr as $text){
+											$selected = ($inquirydata['outreach'] === $text) ? 'selected' : '';
 											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
 										}
 										?>
