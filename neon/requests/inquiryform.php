@@ -806,7 +806,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 										echo '<div class="table-container">';
 										$materialSamplesTable = $utilities->htmlTable(
 											$materialsampledata, 
-											['material sample PK','occid','status','use type','sample type','shipment']
+											['material sample PK','occid','status','use type','sample type','notes','shipment']
 										);
 										echo $materialSamplesTable;
 										echo '</div>';
