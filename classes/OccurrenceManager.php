@@ -457,7 +457,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 
 				// NEON customization - addition
 				if($includeMaterialSample){
-					$matSampleFrag[] = '(catalogNumber IN("'.implode('","',$inFrag).'"))';
+					$matSampleFrag[] = '(catalogNumber IN("'.implode('","',$inFrag).'") OR guid IN("'.implode('","',$inFrag).'") OR matSampleID IN("'.implode('","',$inFrag).'") OR recordID IN("'.implode('","',$inFrag).'") )';
 				}
 				// End of NEON customization
 
