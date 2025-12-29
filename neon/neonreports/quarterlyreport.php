@@ -6,19 +6,16 @@ include_once($SERVER_ROOT.'/neon/classes/NEONReports.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 
-$month = $_POST['month'] ?? $_GET['month'] ?? null;
+$quarter = $_POST['quarter'] ?? $_GET['quarter'] ?? null;
 
-if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
-    $month = date('Y-m');
-}
 
-if (!$month) {
-    die('No report month selected.');
+if (!$quarter) {
+    die('No report quarter selected.');
 }
 
 $reports = new NEONReports();
-$reportsArr = $reports->getMonthlyReport($month);
-$reportDate = $reports->getReportDate($month,'monthly');
+$reportsArr = $reports->getQuartleryReport($quarter);
+$reportDate = $reports->getReportDate($quarter,'quarterly');
 $headerArr = ['Statistic', 'Current','Change'];
 $utilities = new Utilities();
 
@@ -29,7 +26,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 ?>
 <html>
 	<head>
-		<title><?php echo $DEFAULT_TITLE; ?> NEON Monthly Report </title>
+		<title><?php echo $DEFAULT_TITLE; ?> NEON Quarterly Sample Use Report </title>
 		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 		<?php
 		$activateJQuery = true;
@@ -47,13 +44,13 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<div class="navpath">
 			<a href="../../../index.php">Home</a> &gt;&gt;
 			<a href="../index.php">Management Tools</a> &gt;&gt;
-			<b>NEON Monthly Report</b>
+			<b>NEON Quarterly Sample Use Report</b>
 		</div>
 		<div id="innertext">
 <?php
 if ($isEditor) {
 ?>
-	<h1>NEON Monthly Report: <?php echo htmlspecialchars($month); ?></h1>
+	<h1>NEON Quarterly Sample Use Report: <?php echo htmlspecialchars($quarter); ?></h1>
  <?php
 
 	if ($reportDate) {
@@ -86,46 +83,27 @@ if ($isEditor) {
 			echo $utilities->htmlTable($general, $headerArr);
 		}
 
-		?>
-		<form method="post" action="exportmonthlyreporthandler.php">
-			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
-			<input type="hidden" name="type" value="general">
-			<button type="submit">Export General Statistics Report</button>
-		</form>
-		<?php
-
 		if ($request) {
 			echo '<h2>Request Summary</h2>';
 			echo $utilities->htmlTable($request, $headerArr);
 		}
 
-		?>
-		<form method="post" action="exportmonthlyreporthandler.php">
-			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
-			<input type="hidden" name="type" value="request">
-			<button type="submit">Export Request Summary</button>
-		</form>
-		<?php
 
 		if ($sample) {
 			echo '<h2>Samples Received</h2>';
 			echo $utilities->htmlTable($sample, $headerArr);
 		}
-		?>
-		<form method="post" action="exportmonthlyreporthandler.php">
-			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
-			<input type="hidden" name="type" value="sample">
-			<button type="submit">Export Samples Received</button>
-		</form>
-		<?php
-
 	}
 } 
 else {
 	echo '<h3>Please login to get access to this page.</h3>';
 }
 ?>
-		</div>
+	<form method="post" action="exportquarterlyreporthandler.php">
+		<input type="hidden" name="quarter" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
+		<button type="submit">Export Sample Use Report</button>
+	</form>
+	</div>
 		<?php
 		include($SERVER_ROOT.'/includes/footer.php');
 		?>

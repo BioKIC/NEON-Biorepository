@@ -70,7 +70,7 @@ if($isEditor){
 			</ul>
 		</fieldset>
 		<fieldset>
-			<legend><b>Other Reports</b></legend>
+			<legend><b>Reports</b></legend>
 			<ul>
 				<li><a href="#" onclick="$('.nps-report').show();return false">NPS Year End Reports</a></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=110&year=2020" onclick="$('#BLDE20-working').show();">BLDE - 2020</a><span id="BLDE20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>

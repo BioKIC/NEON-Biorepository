@@ -21,13 +21,18 @@
 
   // Main functions
 
-// Find list of available monthly reports
-    public function getAvailableMonthlyReports() {
-        $sql = "SELECT DISTINCT name FROM neonmonthlyreport ORDER BY name DESC";
+// Find list of available  reports
+    public function getAvailableReports($type) {
+        if ($type == 'monthly'){
+            $sql = "SELECT DISTINCT name FROM neonmonthlyreport ORDER BY name DESC";
+        }
+        if ($type == 'quarterly'){
+            $sql = "SELECT DISTINCT name FROM neonquarterlyreport ORDER BY name DESC";
+        }
         $result = $this->conn->query($sql);
 
         if (!$result) {
-            $this->errorMessage = 'Monthly report query was not successful';
+            $this->errorMessage = 'Report query was not successful';
             return [];
         }
 
@@ -39,9 +44,17 @@
         return $months;
     }
 
-// Find monthly report date
-    public function getMonthlyReportDate($month) {
-        $sql = "SELECT date FROM neonmonthlyreport WHERE name = ? LIMIT 1";
+// Find  report date
+    public function getReportDate($period,$type) {
+
+        if ($type == 'monthly'){
+            $sql = "SELECT date FROM neonmonthlyreport WHERE name = ? LIMIT 1";
+        }
+        if ($type == 'quarterly'){
+           $sql = "SELECT date FROM neonquarterlyreport WHERE name = ? LIMIT 1";
+
+        }
+
         $stmt = $this->conn->prepare($sql);
 
         if (!$stmt) {
@@ -49,7 +62,7 @@
             return null;
         }
 
-        $stmt->bind_param('s', $month);
+        $stmt->bind_param('s', $period);
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -142,7 +155,7 @@ function getScholarProfileStats() {
 }
 
 
-    // Generates data for Monthly Report Data
+    // Generates data for Monthly Report 
     public function generateMonthlyReport() {
         $dataArr = [];
 
@@ -353,5 +366,113 @@ function getScholarProfileStats() {
         return $reportRows;
     
     }
+
+    public function generateQuarterlyReport() {
+        $reportDate = date('Y-m-d H:i:s');
+
+        $year = date('y');  
+        //$month = (int)date('n');
+        $month = 1;
+
+        $quarterMap = [1  => 1, 4  => 2, 7  => 3, 11 => 4];
+
+
+        if (!isset($quarterMap[$month])) {
+            throw new Exception('Quarterly report can only be generated in the month directly following completion of a quarter.');
+        }
+
+        $quarter = $quarterMap[$month];
+        $name = "AY{$year} Q{$quarter}";
+
+        preg_match('/AY(\d{2})Q([1-4])/', $name, $matches);
+
+        $ayYear  = 2000 + $year; 
+
+        switch ($quarter) {
+            case 1:
+                $startDate = ($ayYear - 1) . '-11-01';
+                $endDate   = ($ayYear - 1) . '-12-31';
+                break;
+
+            case 2:
+                $startDate = $ayYear . '-01-01';
+                $endDate   = $ayYear . '-03-31';
+                break;
+
+            case 3:
+                $startDate = $ayYear . '-04-01';
+                $endDate   = $ayYear . '-06-30';
+                break;
+
+            case 4:
+                $startDate = $ayYear . '-07-01';
+                $endDate   = $ayYear . '-10-31';
+                break;
+
+            default:
+                throw new Exception('Invalid quarter');
+        }
+
+        $this->researchersRequestsStatus($name,$ayYear,$reportDate,$startDate,$endDate);
+
+        return $name;
+    
+    }
+
+    public function researchersRequestsStatus($name,$ayYear,$reportDate,$startDate,$endDate){
+
+        $sql = "SELECT r.status as status,
+                    COUNT(DISTINCT p.requestID) AS requests,
+                    COUNT(DISTINCT p.researcherID) AS researchers
+                FROM neonrequest r
+                JOIN neonresearcherrequestlink p
+                    ON r.id = p.requestID
+                WHERE r.status IN (
+                    'active use',
+                    'pending fulfillment',
+                    'pending funding',
+                    'pending sample list'
+                )
+                AND ((r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
+                OR (r.status = 'pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
+                OR (r.status = 'pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
+                OR (r.status = 'pending sample list' AND r.pendingSampleListDate BETWEEN ? AND ?))
+                GROUP BY r.status";
+
+        $stmt = $this->conn->prepare($sql);
+
+
+        $periodtypes = array('Quarter','Award Year','To Date');
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startDate;
+            elseif ($period == 'Award Year') $start = ($ayYear - 1) . '-11-01';
+            elseif ($period == 'To Date') $start = '2010-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endDate,
+                $start, $endDate,
+                $start, $endDate,
+                $start, $endDate
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `status`, `requests`,`researchers`,`date`) VALUES (?, ?, 'Researchers and Requests by Status', ?, ?, ?, ?)");
+
+                $ins->bind_param('sssiis', $name, $period, $row['status'],$row['requests'],$row['researchers'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for $statName: " . $ins->error);
+                }
+            }
+        }
+    }
+
 }
 ?>

@@ -9,21 +9,21 @@ include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 
 $reports = new NEONReports();
-$availableReports = $reports->getAvailableReports('monthly'); 
+$availableReports = $reports->getAvailableReports('quarterly'); 
 $utilities = new Utilities();
 
 $isEditor = false;
 if($IS_ADMIN || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 
 if ($isEditor && isset($_POST['generate_report'])) {
-    $month = $reports->generateMonthlyReport(); 
-    header("Location: monthlyreport.php?month=" . $month);
+    $quarter = $reports->generatequarterlyReport(); 
+    header("Location: quarterlyreport.php?quarter=" . $quarter);
     exit();
 }
 ?>
 <html>
 <head>
-    <title><?php echo $DEFAULT_TITLE; ?> NEON Monthly Report</title>
+    <title><?php echo $DEFAULT_TITLE; ?> NEON Quarterly Sample Use Report</title>
     <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
     <?php
     $activateJQuery = true;
@@ -41,33 +41,33 @@ include($SERVER_ROOT.'/includes/header.php');
 <div class="navpath">
     <a href="../../../index.php">Home</a> &gt;&gt;
     <a href="../index.php">Management Tools</a> &gt;&gt;
-    <b>NEON Monthly Report</b>
+    <b>NEON Quarterly Sample Use Report</b>
 </div>
 <div id="innertext">
 <?php
 if ($isEditor) {
 ?>
-    <h1>NEON Monthly Report</h1>
+    <h1>NEON Quarterly Sample Use Report</h1>
 
-    <form method="get" action="monthlyreport.php">
-        <label for="month"><strong>Select report month:</strong></label><br>
-        <select name="month" id="month" required>
-            <option value="">-- Select Month --</option>
+    <form method="get" action="quarterlyreport.php">
+        <label for=""><strong>Select report quarter:</strong></label><br>
+        <select name="quarter" id="quarter" required>
+            <option value="">-- Select quarter --</option>
             <?php
-            foreach ($availableReports as $month) {
-                echo '<option value="' . htmlspecialchars($month, ENT_QUOTES) . '">' .
-                    htmlspecialchars($month) .
+            foreach ($availableReports as $quarter) {
+                echo '<option value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">' .
+                    htmlspecialchars($quarter) .
                     '</option>';
             }
             ?>
         </select>
         <br><br>
-        <button type="submit">View Existing Monthly Report</button>
+        <button type="submit">View Existing Quarterly Report</button>
     </form>
 
-    <form method="post" onsubmit="return confirm('Are you sure you want to generate the new monthly report?');">
+    <form method="post" onsubmit="return confirm('Are you sure you want to generate the new quarterly report?');">
         <input type="hidden" name="generate_report" value="1">
-        <button type="submit">Generate New Monthly Report</button>
+        <button type="submit">Generate New Quarterly Report</button>
     </form>
 
 <?php
