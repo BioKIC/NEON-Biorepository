@@ -63,13 +63,13 @@ class SampleRequestImport extends UtilitiesFileImport {
                     if (isset($this->fieldMap['occid']) && $recordArr[$this->fieldMap['occid']] !== '') {
                         $identifierArr['occid'] = $recordArr[$this->fieldMap['occid']];
                     }
-                    if (isset($this->fieldMap['occurrenceID']) && $recordArr[$this->fieldMap['occurrenceID']] !== '') {
+                    if (isset($this->fieldMap['occurrenceid']) && $recordArr[$this->fieldMap['occurrenceid']] !== '') {
                         $identifierArr['occurrenceID'] = $recordArr[$this->fieldMap['occurrenceid']];
                     }
-                    if (isset($this->fieldMap['catalogNumber']) && $recordArr[$this->fieldMap['catalogNumber']] !== '') {
+                    if (isset($this->fieldMap['catalognumber']) && $recordArr[$this->fieldMap['catalognumber']] !== '') {
                         $identifierArr['catalogNumber'] = $recordArr[$this->fieldMap['catalognumber']];
                     }
-                    if (isset($this->fieldMap['otherCatalogNumber']) && $recordArr[$this->fieldMap['otherCatalogNumber']] !== '') {
+                    if (isset($this->fieldMap['othercatalognumbers']) && $recordArr[$this->fieldMap['othercatalognumbers']] !== '') {
                         $identifierArr['otherCatalogNumbers'] = $recordArr[$this->fieldMap['othercatalognumbers']];
                     }
 
@@ -78,18 +78,27 @@ class SampleRequestImport extends UtilitiesFileImport {
                 } elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
 
                     if (isset($this->fieldMap['matsampleid']) && $recordArr[$this->fieldMap['matsampleid']] !== '') {
-                        $identifierArr['matsampleid'] = $recordArr[$this->fieldMap['matsampleid']];
+                        $identifierArr['matSampleID'] = $recordArr[$this->fieldMap['matsampleid']];
                     }
-                    if (isset($this->fieldMap['catalogNumber']) && $recordArr[$this->fieldMap['catalogNumber']] !== '') {
+                    if (isset($this->fieldMap['catalognumber']) && $recordArr[$this->fieldMap['catalognumber']] !== '') {
                         $identifierArr['catalogNumber'] = $recordArr[$this->fieldMap['catalognumber']];
+                    }
+                    if (isset($this->fieldMap['recordid']) && $recordArr[$this->fieldMap['recordid']] !== '') {
+                        $identifierArr['recordID'] = $recordArr[$this->fieldMap['recordid']];
+                    }
+                    if (isset($this->fieldMap['guid']) && $recordArr[$this->fieldMap['guid']] !== '') {
+                        $identifierArr['guid'] = $recordArr[$this->fieldMap['guid']];
                     }
 
                     $this->logOrEcho('Processing Material Sample: ' . implode(', ', $identifierArr));
                 }
 
                 $sampArr = $this->getSampPK($identifierArr);
-                if (!$sampArr) {
-                    continue;
+                if (empty($sampArr)) {
+                    throw new Exception("ERROR: No matching identifier found for " . json_encode($identifierArr));
+                }
+                if (count($sampArr) > 1) {
+                    throw new Exception("ERROR: Identifier is not unique. " . "Found " . count($sampArr) . " matches for " . json_encode($identifierArr));
                 }
 
                 try {
@@ -425,6 +434,8 @@ class SampleRequestImport extends UtilitiesFileImport {
 
         if ($this->importType == self::IMPORT_SAMPLE) {
             $sql = 'SELECT DISTINCT o.occid FROM omoccurrences o ';
+            $sql .= ' LEFT JOIN omoccuridentifiers i ON o.occid = i.occid ';
+
             $sqlConditionArr = array();
 
             if (isset($identifierArr['occid'])) {
@@ -441,7 +452,6 @@ class SampleRequestImport extends UtilitiesFileImport {
             if (isset($identifierArr['otherCatalogNumbers'])) {
                 $otherCatalogNumbers = $this->cleanInStr($identifierArr['otherCatalogNumbers']);
                 $sqlConditionArr[] = '(o.othercatalognumbers = "' . $otherCatalogNumbers . '" OR i.identifierValue = "' . $otherCatalogNumbers . '")';
-                $sql .= ' LEFT JOIN omoccuridentifiers i ON o.occid = i.occid ';
             }
 
             if ($sqlConditionArr) {
@@ -459,12 +469,18 @@ class SampleRequestImport extends UtilitiesFileImport {
                     ON m.occid = s.occid';
             $sqlConditionArr = array();
 
-            if (isset($identifierArr['matsampleid'])) {
-                $matSampleID = $this->cleanInStr($identifierArr['matsampleid']);
+            if (isset($identifierArr['matSampleID'])) {
+                $matSampleID = $this->cleanInStr($identifierArr['matSampleID']);
                 $sqlConditionArr[] = '(m.matSampleID = "' . $matSampleID . '")';
             }
             if (isset($identifierArr['catalogNumber'])) {
                 $sqlConditionArr[] = '(m.catalogNumber = "' . $this->cleanInStr($identifierArr['catalogNumber']) . '")';
+            }
+            if (isset($identifierArr['recordID'])) {
+                $sqlConditionArr[] = '(m.recordID = "' . $this->cleanInStr($identifierArr['recordID']) . '")';
+            }
+             if (isset($identifierArr['guid'])) {
+                $sqlConditionArr[] = '(m.guid = "' . $this->cleanInStr($identifierArr['guid']) . '")';
             }
 
             if ($sqlConditionArr) {
@@ -485,15 +501,17 @@ class SampleRequestImport extends UtilitiesFileImport {
     public function setTargetFieldArr() {
         $this->targetFieldMap = []; // reset
         if ($this->importType == self::IMPORT_SAMPLE) {
-            $this->targetFieldMap['sample_catalognumber'] = 'subject identifier: catalogNumber';
+            $this->targetFieldMap['catalognumber'] = 'subject identifier: catalogNumber';
             $this->targetFieldMap['othercatalognumbers'] = 'subject identifier: otherCatalogNumbers';
             $this->targetFieldMap['occurrenceid'] = 'subject identifier: occurrenceID';
             $this->targetFieldMap['occid'] = 'subject identifier: occid';
             $this->targetFieldMap[''] = '------------------------------------';
             $fieldArr = array('useType', 'substanceProvided','notes');
         } elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
-            $this->targetFieldMap['mat_catalognumber'] = 'subject identifier: catalogNumber';
-            $this->targetFieldMap['matsampleid'] = 'subject identifier: matSampleID';
+            $this->targetFieldMap['catalognumber'] = 'subject identifier: catalogNumber';
+            $this->targetFieldMap['guid'] = 'subject identifier: materialSampleID (guid)';
+            $this->targetFieldMap['matsampleid'] = 'subject identifier: matSampleID (PK)';
+            $this->targetFieldMap['recordid'] = 'subject identifier: recordID';
             $this->targetFieldMap[''] = '------------------------------------';
             $fieldArr = array('useType','sampleType','notes');
         } else {
