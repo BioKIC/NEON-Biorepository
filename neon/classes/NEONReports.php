@@ -371,8 +371,11 @@ function getScholarProfileStats() {
         $reportDate = date('Y-m-d H:i:s');
 
         $year = date('y');  
-        //$month = (int)date('n');
-        $month = 1;
+        $year = date('m');  
+
+        ### REMOVE BELOW BEFORE PuttING INTO PRODUCTION
+        $year = 25;
+        $month = 11;
 
         $quarterMap = [1  => 1, 4  => 2, 7  => 3, 11 => 4];
 
@@ -387,39 +390,48 @@ function getScholarProfileStats() {
         preg_match('/AY(\d{2})Q([1-4])/', $name, $matches);
 
         $ayYear  = 2000 + $year; 
+        $startyear = ($ayYear - 1) . '-10-01';
 
         switch ($quarter) {
             case 1:
-                $startDate = ($ayYear - 1) . '-11-01';
-                $endDate   = ($ayYear - 1) . '-12-31';
+                $startquarter = ($ayYear - 1) . '-10-01';
+                $endquarter   = ($ayYear - 1) . '-12-31';
                 break;
 
             case 2:
-                $startDate = $ayYear . '-01-01';
-                $endDate   = $ayYear . '-03-31';
+                $startquarter = $ayYear . '-01-01';
+                $endquarter   = $ayYear . '-03-31';
                 break;
 
             case 3:
-                $startDate = $ayYear . '-04-01';
-                $endDate   = $ayYear . '-06-30';
+                $startquarter = $ayYear . '-04-01';
+                $endquarter   = $ayYear . '-06-30';
                 break;
 
             case 4:
-                $startDate = $ayYear . '-07-01';
-                $endDate   = $ayYear . '-10-31';
+                $startquarter = $ayYear . '-07-01';
+                $endquarter   = $ayYear . '-09-30';
                 break;
 
             default:
                 throw new Exception('Invalid quarter');
         }
 
-        $this->researchersRequestsStatus($name,$ayYear,$reportDate,$startDate,$endDate);
+        $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
+        $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
+        $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
+        $this->samplesDistributed($name,$reportDate,$startquarter,$endquarter);
+        $this->dataEdits($startquarter,$endquarter);
+        $this->samplesGenerated($startquarter,$endquarter);
+        $this->datasetsGenerated($startquarter,$endquarter);
+
+        ### turn all into downloadable tables on the report page, add graphs
 
         return $name;
     
     }
 
-    public function researchersRequestsStatus($name,$ayYear,$reportDate,$startDate,$endDate){
+    public function researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear){
 
         $sql = "SELECT r.status as status,
                     COUNT(DISTINCT p.requestID) AS requests,
@@ -427,12 +439,7 @@ function getScholarProfileStats() {
                 FROM neonrequest r
                 JOIN neonresearcherrequestlink p
                     ON r.id = p.requestID
-                WHERE r.status IN (
-                    'active use',
-                    'pending fulfillment',
-                    'pending funding',
-                    'pending sample list'
-                )
+                WHERE p.researcherID != 371
                 AND ((r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
                 OR (r.status = 'pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
                 OR (r.status = 'pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
@@ -446,15 +453,15 @@ function getScholarProfileStats() {
 
         foreach ($periodtypes as $period) {
 
-            if ($period == 'Quarter') $start = $startDate;
-            elseif ($period == 'Award Year') $start = ($ayYear - 1) . '-11-01';
-            elseif ($period == 'To Date') $start = '2010-01-01';
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2019-01-01';
 
             $stmt->bind_param('ssssssss',
-                $start, $endDate,
-                $start, $endDate,
-                $start, $endDate,
-                $start, $endDate
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
             );
 
             $stmt->execute();
@@ -462,17 +469,219 @@ function getScholarProfileStats() {
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `status`, `requests`,`researchers`,`date`) VALUES (?, ?, 'Researchers and Requests by Status', ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `status`,`requests`,`researchers`, `date`) VALUES (?, ?, 'Researchers and Requests by Status', ?, ?, ?, ?)");
 
-                $ins->bind_param('sssiis', $name, $period, $row['status'],$row['requests'],$row['researchers'], $reportDate);
+                $ins->bind_param('sssiis', $name, $period, $row['status'],  $row['requests'], $row['researchers'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
-                    error_log("Insert error for $statName: " . $ins->error);
+                    error_log("Insert error for Researchers and Requests by Status: " . $ins->error);
                 }
             }
         }
     }
+
+    public function researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear){
+        $sql = "WITH filtered_requests AS (
+                SELECT id
+                FROM neonrequest r
+                WHERE 
+                (r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
+                OR (r.status ='pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
+                OR (r.status ='pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
+                OR (r.status ='pending sample list' AND r.pendingSampleListDate BETWEEN ? AND ?)
+                ),
+
+                coll_request_map AS (
+                SELECT DISTINCT cr.collID, cr.requestID
+                FROM neoncollectionrequestlink cr
+                JOIN filtered_requests fr ON cr.requestID = fr.id
+                ),
+
+                researchers_per_coll AS (
+                SELECT
+                crm.collID,
+                COUNT(DISTINCT rr.researcherID) AS distinct_researchers
+                FROM coll_request_map crm
+                JOIN neonresearcherrequestlink rr
+                ON rr.requestID = crm.requestID
+                GROUP BY crm.collID
+                ),
+
+                samples_per_coll AS (
+                SELECT
+                o.collID,
+                COUNT(s.id) AS samples
+                FROM neonsamplerequestlink s
+                JOIN omoccurrences o
+                ON o.occid=s.occid
+                GROUP BY o.collID
+                )
+
+                SELECT 
+                c.collectionName AS collectionName,
+                COALESCE(rpc.distinct_researchers, 0) AS researchers,
+                COALESCE(spc.samples, 0) AS samples
+                FROM omcollections c
+                JOIN researchers_per_coll rpc
+                ON c.collID = rpc.collID 
+                JOIN samples_per_coll spc
+                ON c.collID = spc.collID
+                ORDER BY c.collectionName";
+
+
+        $stmt = $this->conn->prepare($sql);
+
+
+        $periodtypes = array('Quarter','Award Year','To Date');
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2019-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionname`,`researchers`, `samples`,`date`) VALUES (?, ?, 'Researchers and Samples by Collection', ?, ?, ?, ?)");
+
+                $ins->bind_param('sssiis', $name, $period, $row['collectionName'],  $row['researchers'], $row['samples'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Researchers and Samples by Collection: " . $ins->error);
+                }
+            }
+        }
+    }
+
+    public function samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear){
+        $sql = "WITH filtered_requests AS (
+                SELECT id, primaryResearchField
+                FROM neonrequest r
+                WHERE 
+                (r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
+                OR (r.status ='pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
+                OR (r.status ='pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
+                OR (r.status ='pending sample list' AND r.pendingSampleListDate BETWEEN ? AND ?)
+                )
+
+                SELECT 
+                r.primaryResearchField AS field,
+                COUNT(s.id) AS samples 
+                FROM neonsamplerequestlink s
+                JOIN filtered_requests r
+                ON s.requestID = r.id 
+                GROUP BY r.primaryResearchField";
+
+
+        $stmt = $this->conn->prepare($sql);
+
+
+        $periodtypes = array('Quarter','Award Year','To Date');
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2019-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', ?, ?, ?)");
+
+                $ins->bind_param('sssis', $name, $period, $row['field'],$row['samples'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Samples by Primary Research Field: " . $ins->error);
+                }
+            }
+        }
+    }
+
+    public function samplesDistributed($name,$reportDate,$startquarter,$endquarter){
+        $sql = 'SELECT s.occid,s.sampleID,s.sampleCode,s.sampleClass,r.name,r.institution
+                FROM neonsamplerequestlink s
+                LEFT JOIN neonrequestshipment h ON s.shipmentID= h.id
+                LEFT JOIN neonresearcherrequestlink ON h.researcherID=r.researcherID
+                LEFT JOIN NeonSample n
+                ON s.occid=n.occid
+                WHERE h.shipDate >= ? AND h.shipDate ?';
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bind_param('ss',$startquarter, $endquarter);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+         if (!$result) {
+            error_log("Error for Samples Distributed This Quarter: " . $ins->error);
+        }
+    }
+
+    public function dataEdits($startquarter,$endquarter){
+        $sql = 'SELECT * FROM omoccuredits WHERE initialTimestamp >= ? AND initialTimestamp <= ?';
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bind_param('ss',$startquarter, $endquarter);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+         if (!$result) {
+            error_log("Error for Data Edits This Quarter: " . $ins->error);
+        }
+    }
+
+    public function samplesGenerated($startquarter,$endquarter){
+        $sql = 'SELECT * FROM omoccurrences WHERE collid IN (4,85) AND dateEntered >= ? AND dateEntered <= ?';
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bind_param('ss',$startquarter, $endquarter);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+         if (!$result) {
+            error_log("Error for Samples Generated This Quarter: " . $ins->error);
+        }
+    }
+
+    public function datasetsGenerated($startquarter,$endquarter){
+        $sql = 'SELECT * FROM omoccurdatasets WHERE initialTimestamp >= ? AND initialTimestamp <= ?';
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bind_param('ss',$startquarter, $endquarter);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+         if (!$result) {
+            error_log("Error for Datasets Generated This Quarter: " . $ins->error);
+        }
+    }
+    
 
 }
 ?>
