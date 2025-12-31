@@ -1245,7 +1245,7 @@ class OccurrenceHarvester{
 		}
 		elseif(in_array($dwcArr['collid'], array(19,28))){
 			$dwcArr['preparations'] = '-20 degrees Celsius';
-			$dwcArr['dynamicProperties'] = 'totalLength: NA, tailLength: NA, hindfootLengthSU: NA, hindfootLengthCU: NA, earLength: NA, weight: NA, embryoCount: NA, crownRumpLength: NA, placentalScars: NA, testisLength: NA, testisWidth: NA, preparedBy: NAp, preparedDate: NAp';
+			$dwcArr['dynamicProperties'] = '{"total_length_mm":"NA", "taill_length_mm":"NA", "hind_foot_length_without_claw_mm":"NA", "hind_foot_length_with_claw_mm":"NA", "ear_length_mm":"NA", "body_mass_grams":"NA", "embryo_count_left":"NA", "embryo_count_right":"NA", "crown_rump_length_mm":"NA", "placental_scar_count_left":"NA", "placental_scar_count_right":"NA", "testis_length_mm":"NA", "testis_width_mm":"NA", "prepared_by":"NAp", "prepared_date":"NAp"}';
 		}
 		elseif ($dwcArr['collid'] == 56) {
 			// bulk identified mosquitos
