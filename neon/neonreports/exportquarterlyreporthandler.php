@@ -14,15 +14,27 @@ header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename=neon_quarterly_report_' . $tabletype . '_' . $quarter . '_' . $period . '.csv');
 
 $output = fopen('php://output', 'w');
-fputcsv($output, ['Status', 'Collection Name', 'Field', 'Requests', 'Researchers', 'Samples']);
+$rows = [];
 
 foreach ($reportsArr as $row) {
-    if ($row[0] === $tabletype && $row[0] === $quarter && $row[0] === $period) {
-        fputcsv($output, array_slice($row, 1));
+    if (
+        $row['tabletype'] === $tabletype &&
+        $row['name'] === $quarter &&
+        $row['period'] === $period
+    ) {
+        unset($row['pk'], $row['name'], $row['period'], $row['tabletype'], $row['date']);
+        $rows[] = $row;
     }
 }
 
-# then drop from output any column that is all NULL
+$rows = $reports->removeNullColumns($rows);
+
+if (!empty($rows)) {
+    fputcsv($output, array_keys($rows[0]));
+    foreach ($rows as $r) {
+        fputcsv($output, array_values($r));
+    }
+}
 
 fclose($output);
 exit;

@@ -16,7 +16,7 @@ $isEditor = false;
 if($IS_ADMIN || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 
 if ($isEditor && isset($_POST['generate_report'])) {
-    $quarter = $reports->generatequarterlyReport(); 
+    $quarter = $reports->generateQuarterlyReport(); 
     header("Location: quarterlyreport.php?quarter=" . $quarter);
     exit();
 }

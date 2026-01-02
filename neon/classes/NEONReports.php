@@ -370,15 +370,10 @@ function getScholarProfileStats() {
     public function generateQuarterlyReport() {
         $reportDate = date('Y-m-d H:i:s');
 
-        $year = date('y');  
-        $year = date('m');  
-
-        ### REMOVE BELOW BEFORE PuttING INTO PRODUCTION
-        $year = 25;
-        $month = 11;
+        $year = (int) date('y');  
+        $month = (int) date('m');
 
         $quarterMap = [1  => 1, 4  => 2, 7  => 3, 11 => 4];
-
 
         if (!isset($quarterMap[$month])) {
             throw new Exception('Quarterly report can only be generated in the month directly following completion of a quarter.');
@@ -420,12 +415,6 @@ function getScholarProfileStats() {
         $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
-        $this->samplesDistributed($name,$reportDate,$startquarter,$endquarter);
-        $this->dataEdits($startquarter,$endquarter);
-        $this->samplesGenerated($startquarter,$endquarter);
-        $this->datasetsGenerated($startquarter,$endquarter);
-
-        ### turn all into downloadable tables on the report page, add graphs
 
         return $name;
     
@@ -433,18 +422,30 @@ function getScholarProfileStats() {
 
     public function researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear){
 
-        $sql = "SELECT r.status as status,
+        $sql = "SELECT
+                    CASE
+                        WHEN r.status IN ('completed','active use')
+                            THEN 'active/complete'
+                        ELSE r.status
+                    END AS status,
                     COUNT(DISTINCT p.requestID) AS requests,
                     COUNT(DISTINCT p.researcherID) AS researchers
                 FROM neonrequest r
                 JOIN neonresearcherrequestlink p
                     ON r.id = p.requestID
                 WHERE p.researcherID != 371
-                AND ((r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
-                OR (r.status = 'pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
-                OR (r.status = 'pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
-                OR (r.status = 'pending sample list' AND r.pendingSampleListDate BETWEEN ? AND ?))
-                GROUP BY r.status";
+                AND (
+                    (r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
+                    OR (r.status = 'pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
+                    OR (r.status = 'pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
+                    OR (r.status = 'pending sample list' AND r.pendingSampleListDate BETWEEN ? AND ?)
+                )
+                GROUP BY
+                    CASE
+                        WHEN r.status IN ('completed','active use')
+                            THEN 'active/complete'
+                        ELSE r.status
+                    END";
 
         $stmt = $this->conn->prepare($sql);
 
@@ -455,7 +456,7 @@ function getScholarProfileStats() {
 
             if ($period == 'Quarter') $start = $startquarter;
             elseif ($period == 'Award Year') $start = $startyear;
-            elseif ($period == 'To Date') $start = '2019-01-01';
+            elseif ($period == 'To Date') $start = '2010-01-01';
 
             $stmt->bind_param('ssssssss',
                 $start, $endquarter,
@@ -643,44 +644,117 @@ function getScholarProfileStats() {
     public function dataEdits($startquarter,$endquarter){
         $sql = 'SELECT * FROM omoccuredits WHERE initialTimestamp >= ? AND initialTimestamp <= ?';
 
-        $stmt = $this->conn->prepare($sql);
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param('ss', $startquarter, $endquarter);
+            $stmt->execute();
 
-        $stmt->bind_param('ss',$startquarter, $endquarter);
+            $result = $stmt->get_result();
 
-        $stmt->execute();
-        $result = $stmt->get_result();
-         if (!$result) {
-            error_log("Error for Data Edits This Quarter: " . $ins->error);
+            if (!$result) {
+                error_log("Error for Data Edits This Quarter: " . $ins->error);
+            }
+            $rows = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $rows[] = $row;
+            }
+
+            $stmt->close();
+            return $rows;
         }
-    }
 
     public function samplesGenerated($startquarter,$endquarter){
         $sql = 'SELECT * FROM omoccurrences WHERE collid IN (4,85) AND dateEntered >= ? AND dateEntered <= ?';
 
         $stmt = $this->conn->prepare($sql);
-
-        $stmt->bind_param('ss',$startquarter, $endquarter);
-
+        $stmt->bind_param('ss', $startquarter, $endquarter);
         $stmt->execute();
+
         $result = $stmt->get_result();
+        $rows = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
          if (!$result) {
             error_log("Error for Samples Generated This Quarter: " . $ins->error);
         }
+            $stmt->close();
+            return $rows;
     }
 
     public function datasetsGenerated($startquarter,$endquarter){
         $sql = 'SELECT * FROM omoccurdatasets WHERE initialTimestamp >= ? AND initialTimestamp <= ?';
 
         $stmt = $this->conn->prepare($sql);
-
-        $stmt->bind_param('ss',$startquarter, $endquarter);
-
+        $stmt->bind_param('ss', $startquarter, $endquarter);
         $stmt->execute();
+
         $result = $stmt->get_result();
+        $rows = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
          if (!$result) {
             error_log("Error for Datasets Generated This Quarter: " . $ins->error);
         }
+
+        $stmt->close();
+        return $rows;
     }
+
+        // Gets data for Quarterly Report tables
+    public function getQuarterlyReport($quarter) {
+
+        $sql = 'SELECT *
+                FROM neonquarterlyreport
+                WHERE name = ?';
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $quarter);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $rows = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+
+        $stmt->close();
+        return $rows;
+    }
+
+    // Remove empty columns
+    public function removeNullColumns(array $rows): array {
+
+        if (empty($rows)) return $rows;
+
+        $columns = array_keys($rows[0]);
+        $keep = [];
+
+        foreach ($columns as $col) {
+            foreach ($rows as $row) {
+                if ($row[$col] !== null) {
+                    $keep[] = $col;
+                    break;
+                }
+            }
+        }
+
+        $final = [];
+        foreach ($rows as $row) {
+            $newRow = [];
+            foreach ($keep as $col) {
+                $newRow[$col] = $row[$col];
+            }
+            $final[] = $newRow;
+        }
+
+        return $final;
+}
+
     
 
 }

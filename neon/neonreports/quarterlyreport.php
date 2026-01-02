@@ -14,9 +14,8 @@ if (!$quarter) {
 }
 
 $reports = new NEONReports();
-$reportsArr = $reports->getQuartleryReport($quarter);
+$reportsArr = $reports->getQuarterlyReport($quarter);
 $reportDate = $reports->getReportDate($quarter,'quarterly');
-$headerArr = ['Statistic', 'Current','Change'];
 $utilities = new Utilities();
 
 $isEditor = false;
@@ -58,51 +57,74 @@ if ($isEditor) {
 	}
 	if (!empty($reportsArr)) {
 
-		$general = [];
-		$request = [];
-		$sample  = [];
+		$tables = [];
 
 		foreach ($reportsArr as $row) {
-			$type = array_shift($row); 
+			$period    = $row['period'];
+			$tabletype = $row['tabletype'];
 
-			switch ($type) {
-				case 'general':
-					$general[] = $row;
-					break;
-				case 'request':
-					$request[] = $row;
-					break;
-				case 'sample':
-					$sample[] = $row;
-					break;
+			$tables[$period][$tabletype][] = $row;
+		}
+
+		foreach ($tables as $period => $tableTypes) {
+
+			foreach ($tableTypes as $tableType => $rows) {
+
+				foreach ($rows as &$r) {
+					unset($r['pk'], $r['name'], $r['period'], $r['tabletype'], $r['date']);
+				}
+				unset($r);
+
+				$rows =  $reports->removeNullColumns($rows);
+
+				if (empty($rows)) continue;
+
+				echo '<h2>' . htmlspecialchars($period) . ': ' . htmlspecialchars($tableType) . '</h2>';
+				$headers = array_map(
+					fn($h) => ucwords(str_replace('_', ' ', $h)),
+					array_keys($rows[0])
+				);
+
+				echo $utilities->htmlTable(array_map('array_values', $rows),$headers);
+
+		echo '
+			<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
+				<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
+				<input type="hidden" name="period" value="' . htmlspecialchars($period, ENT_QUOTES) . '">
+				<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
+				<button type="submit">Download CSV</button>
+			</form>';
+
 			}
 		}
-
-		if ($general) {
-			echo '<h2>General Statistics</h2>';
-			echo $utilities->htmlTable($general, $headerArr);
-		}
-
-		if ($request) {
-			echo '<h2>Request Summary</h2>';
-			echo $utilities->htmlTable($request, $headerArr);
-		}
-
-
-		if ($sample) {
-			echo '<h2>Samples Received</h2>';
-			echo $utilities->htmlTable($sample, $headerArr);
-		}
 	}
+?>
+	<h2>Quarterly Data Exports</h2>
+
+	<form method="post" action="exportquarterlydataset.php">
+		<input type="hidden" name="type" value="data_edits">
+		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+		<button type="submit">Download Data Edits (CSV)</button>
+	</form>
+
+	<form method="post" action="exportquarterlydataset.php">
+		<input type="hidden" name="type" value="samples_generated">
+		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+		<button type="submit">Download Samples Generated (CSV)</button>
+	</form>
+
+	<form method="post" action="exportquarterlydataset.php">
+		<input type="hidden" name="type" value="datasets_generated">
+		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+		<button type="submit">Download Datasets Generated (CSV)</button>
+	</form>
+<?php
+
 } 
 else {
 	echo '<h3>Please login to get access to this page.</h3>';
 }
 ?>
-	<form method="post" action="exportquarterlyreporthandler.php">
-		<input type="hidden" name="quarter" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
-		<button type="submit">Export Sample Use Report</button>
-	</form>
 	</div>
 		<?php
 		include($SERVER_ROOT.'/includes/footer.php');
