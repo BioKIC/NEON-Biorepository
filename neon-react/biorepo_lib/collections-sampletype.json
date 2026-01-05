@@ -184,7 +184,18 @@
           {
             "id": 26,
             "name": "Aquatic Microalgae",
-            "collid": 47
+            "children": [
+              {
+                "id": 45,
+                "name": "Bulk Samples",
+                "collid": 47
+              },
+              {
+                "id": 46,
+                "name": "Identified Individals Within Bulk Samples",
+                "collid": 110
+              }
+            ]
           },
           {
             "id": 27,
@@ -459,7 +470,18 @@
       {
         "id": 79,
         "name": "Aquatic Microalgae (Diatoms)",
-        "collid": 49
+        "children": [
+          {
+            "id": 45,
+            "name": "Slide Samples",
+            "collid": 49
+          },
+          {
+            "id": 46,
+            "name": "Identified Individals Within Slide Samples",
+            "collid": 111
+          }
+        ]
       },
       {
         "id": 80,
