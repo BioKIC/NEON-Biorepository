@@ -126,19 +126,19 @@ if(!$schemaVersion){
 			<ul>
 				<li><a href="collections/datasets/publiclist.php"><?= $LANG['ALLPUBDAT'] ?></a></li>
 			</ul>
-			<div id="dynamiclists"><h2><?= $LANG['DYNAMIC'] ?></h2></div>
-			<ul>
-				<li>
-					<a href="checklists/dynamicmap.php?interface=checklist">
-						<?= $LANG['CHECKLIST'] ?>
-					</a> - <?= $LANG['BUILDCHECK'] ?>
-				</li>
-				<li>
-					<a href="checklists/dynamicmap.php?interface=key">
-						<?= $LANG['DYNAMICKEY'] ?>
-					</a> - <?= $LANG['BUILDDKEY'] ?>
-				</li>
-			</ul>
+			<!--<div id="dynamiclists"><h2><?= $LANG['DYNAMIC'] ?></h2></div>-->
+			<!--<ul>-->
+			<!--	<li>-->
+			<!--		<a href="checklists/dynamicmap.php?interface=checklist">-->
+			<!--			<?= $LANG['CHECKLIST'] ?>-->
+			<!--		</a> - <?= $LANG['BUILDCHECK'] ?>-->
+			<!--	</li>-->
+			<!--	<li>-->
+			<!--		<a href="checklists/dynamicmap.php?interface=key">-->
+			<!--			<?= $LANG['DYNAMICKEY'] ?>-->
+			<!--		</a> - <?= $LANG['BUILDDKEY'] ?>-->
+			<!--	</li>-->
+			<!--</ul>-->
 
 			<section id="admin" class="fieldset-like" style="padding: 0 0 0 0">
 				<h1>
