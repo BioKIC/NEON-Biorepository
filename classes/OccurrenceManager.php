@@ -154,7 +154,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		if(array_key_exists('datasetid',$this->searchTermArr)){
 
 			$sqlWhere .= 'AND (ds.datasetid IN('.$this->searchTermArr['datasetid'].')) ';
-			$this->displaySearchArr[] = $this->LANG['DATASET'] . ': ' . $this->getDatasetTitle($this->searchTermArr['datasetid']);
+			//neon edit
+			$this->displaySearchArr[] = 'Dataset: ' . $this->getDatasetTitle($this->searchTermArr['datasetid']);
+			//end neon edit
 		}
 		$sqlWhere .= $this->getTaxonWhereFrag();
 		$hasValidRelationship = isset($this->associationArr['relationship']) && $this->associationArr['relationship']!=='none';
