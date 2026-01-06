@@ -261,7 +261,9 @@ $_SESSION['citationvar'] = $searchVar;
 							}
 							if ($cnt > 11) $collSearchStr .= '</span>';
 						}
-						echo '<div><b>' . $LANG['DATASET'] . ':</b> ' . $collSearchStr . '</div>';
+						//neon edit
+						echo '<div><b>Sample Type(s):</b> ' . $collSearchStr . '</div>';
+						//end neon edit
 						if ($taxaSearchStr = $collManager->getTaxaSearchStr()) {
 							if (strlen($taxaSearchStr) > 300) $taxaSearchStr = substr($taxaSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.taxa-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="taxa-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>';
 							echo '<div><b>' . $LANG['TAXA'] . ':</b> ' . $taxaSearchStr . '</div>';
