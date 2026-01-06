@@ -566,7 +566,7 @@ $siteData = new DatasetsMetadata();
 				</section>
 			</div>
 			<!-- Criteria panel -->
-			<div id="criteria-panel" style="position: sticky; top: 0; height: 100vh">
+			<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
 				<button id="search-btn">Search</button>
 				<button id="reset-btn">Reset</button>
 				<h2>Criteria</h2>
