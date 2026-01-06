@@ -155,7 +155,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 
 			$sqlWhere .= 'AND (ds.datasetid IN('.$this->searchTermArr['datasetid'].')) ';
 			//neon edit
-			$this->displaySearchArr[] = 'Dataset: ' . $this->getDatasetTitle($this->searchTermArr['datasetid']);
+			$this->displaySearchArr[] = 'Domain/Site(s): ' . $this->getDatasetTitle($this->searchTermArr['datasetid']);
 			//end neon edit
 		}
 		$sqlWhere .= $this->getTaxonWhereFrag();
