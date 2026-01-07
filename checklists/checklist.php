@@ -452,7 +452,7 @@ $taxonFilter = htmlspecialchars($taxonFilter, ENT_COMPAT | ENT_HTML401 | ENT_SUB
 								?>
 								<div class="family-div" id="<?php echo strip_tags($group);?>">
 									<i>
-										<a href="<?php echo strip_tags($famUrl) . '&usethes=1'; ?>" target="_blank" style="color:black;">
+										<a href="<?php echo strip_tags($famUrl); ?>" target="_blank" style="color:black;">
 											<?php echo strip_tags($group);?>
 										</a>
 									</i>
