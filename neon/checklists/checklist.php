@@ -453,7 +453,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                 if (!empty(strip_tags($group))) {
                                     echo '  <div class="family-div" id="'.strip_tags($group).'">'."\n";
                                     echo '    <a href="'.$famUrl.'" title="View Taxon Page" style="color:black;">'.strip_tags($group).'</a>'."\n";
-                                    echo '    <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'" title="View Specimens">'."\n";
+                                    echo '    <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'&usethes=1'.'" title="View Specimens">'."\n";
                                     echo '      <img src="../../images/magnifying-glass-chart-solid-full.svg" alt="View Specimens" width="16" height="16" style="vertical-align:middle; cursor:pointer;" />'."\n";
                                     echo '    </a>'."\n";
                                     echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'&tabindex=3" title="View Specimen Images">';
