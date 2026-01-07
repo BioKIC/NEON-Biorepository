@@ -32,10 +32,6 @@
           "hash": "neon/search/index.php"
         },
         {
-          "name": "Loans & Archival Requests",
-          "hash": "https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/loans-archival-requests"
-        },
-        {
           "name": "About Samples",
           "hash": "https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/about-samples"
         },
