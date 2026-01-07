@@ -298,7 +298,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 			<h1 class="page-heading">
 				<?php echo $clManager->getClName(); ?>
 			</h1>
-            <p><strong>About this checklist:</strong> This list is generated from specimens stored in the NEON Biorepository at Arizona State University and reflects the most current identifications available. It includes only collected specimens—not all species present or observed at NEON sites. Identifications vary in rank (species, genus, or higher) and may change as records are updated. <i>This is not a complete or authoritative taxonomic list.</i></p>
+            <p><strong>About this checklist:</strong> This list is generated from specimens stored in the NEON Biorepository at Arizona State University and reflects the most current identifications available. It includes only collected specimens—not all species present or observed at NEON sites as not all species recorded are collected. Identifications vary in rank (species, genus, or higher) and may change as records are updated. <i>This is not a complete or authoritative taxonomic list.</i></p>
 
 			<?php
 			echo '<div style="clear:both;"></div>';
