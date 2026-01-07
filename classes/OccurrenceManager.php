@@ -777,7 +777,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 	public function getCollectionSearchStr(){
 		$retStr ="";
 		if(!array_key_exists('db',$this->searchTermArr) || $this->searchTermArr['db'] == 'all'){
-			$retStr = "All Collections";
+			//neon edit
+			$retStr = "All Sample Types";
+			//end neon edit
 		}
 		elseif($this->searchTermArr['db'] == 'allspec'){
 			$retStr = "All Specimen Collections";
