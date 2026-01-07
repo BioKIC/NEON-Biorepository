@@ -433,7 +433,7 @@ $siteData = new DatasetsMetadata();
 							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
 						</div>
 						<div>
-						  <input type="checkbox" name="usethes" id="usethes" data-chip="Exclude Synonyms" value="1">
+						  <input type="checkbox" name="usethes" id="usethes" data-chip="Exclude Synonyms">
 						  <span class="ml-1">Exclude Synonyms</span>
 						</div>
 					</div>

@@ -29,7 +29,6 @@ let paramNames = [
   'eventdate1',
   'eventdate2',
   'taxa',
-  'usethes',
   'taxontype',
   'availableforloan',
 ];
@@ -631,6 +630,12 @@ function getSearchUrl() {
   paramNames.forEach((param, i) => {
     return getParam(paramNames[i]);
   });
+  
+  // Adds useThes if box is not checked
+  const useThesCb = document.getElementById('usethes');
+  if (useThesCb && !useThesCb.checked) {
+    baseUrl.searchParams.set('usethes', '1');
+  }
 
   // Appends each key value for each param in search url
   let queryString = Object.keys(paramsArr).map((key) => {
