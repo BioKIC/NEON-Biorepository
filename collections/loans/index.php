@@ -472,23 +472,32 @@ if($isEditor){
 			<?php
 		}else{
 			?>
+			<!--neon edit-->
 			<div id="admincollection">
-				<h4>
-					List of collections you have permissions to manage
-				</h4>
-				<p><a href="<?php echo $CLIENT_ROOT; ?>/neon/loans.php">Loans Report</a></p>
+				<h3>Summary Report</h3>
+				<div>
+					<ul>
+						<li>
+							<a href="<?php echo $CLIENT_ROOT; ?>/neon/loans.php">Full Loan Report</a>
+						</li>
+					</ul>
+				</div>
+				
+				<h3>List of collections you have permissions to manage</h3>
 				<ul>
 				<?php
-				$smManager->setCollectionList();
-				if($collList = $smManager->getCollArr()){
-					foreach($collList as $k => $cArr){
-						echo '<li>';
-						echo '<a href="'.$CLIENT_ROOT.'/collections/loans/index.php?collid='.$k.'">';
-						echo $cArr['name'];
-						echo '</a>';
-						echo '</li>';
+				if($collList = $smManager->getCollectionList()){
+					foreach($collList as $group => $groupArr){
+						foreach($groupArr as $k => $cArr){
+							echo '<li>';
+							echo '<a href="'.$CLIENT_ROOT.'/collections/loans/index.php?collid='.$k.'">';
+							echo $cArr['name'];
+							echo '</a>';
+							echo '</li>';
+						}
 					}
 				}
+				//end neon edit
 				else{
 					echo "<li>".$LANG['NOEDITCOLL']."</li>";
 				}
