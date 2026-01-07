@@ -83,14 +83,6 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         var innerText = document.getElementById("innertext");
         if (innerText) {
             innerText.parentNode.insertBefore(biorepoPage, innerText);
-            //old page link
-            var oldPageUrl = window.location.href.replace("prodreview", "portal");
-            var returnLink = document.createElement("a");
-            returnLink.href = oldPageUrl;
-            returnLink.textContent = "View the original page version";
-            returnLink.style.display = "block"; // Makes it a full-width block element
-            returnLink.style.marginBottom = "10px"; // Adds spacing below
-            innerText.insertBefore(returnLink, innerText.firstChild);
         }
 
         //javascript code created by React
