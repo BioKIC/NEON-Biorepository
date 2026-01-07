@@ -18,205 +18,153 @@ class OccurrenceLabel {
 	}
 
 	//Label functions
-	public function queryOccurrences($postArr, $limit, $collidList = null) {
+	public function queryOccurrences($postArr, $limit) {
 		global $USER_RIGHTS;
-	
-		// Normalize allowed collid list (when searching across multiple collections)
-		$useCollidList = is_array($collidList);
-		if($useCollidList){
-			$collidList = array_values(array_unique(array_map('intval', $collidList)));
-			if(!count($collidList)) return [];
-		}
-	
-		// Rare spp read permission
 		$canReadRareSpp = false;
-		if ($GLOBALS['IS_ADMIN']
-			|| array_key_exists('CollAdmin', $USER_RIGHTS)
-			|| array_key_exists('RareSppAdmin', $USER_RIGHTS)
-			|| array_key_exists('RareSppReadAll', $USER_RIGHTS)
-		) {
+		if ($GLOBALS['IS_ADMIN'] || array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('RareSppAdmin', $USER_RIGHTS) || array_key_exists('RareSppReadAll', $USER_RIGHTS)) {
+			$canReadRareSpp = true;
+		} elseif ((array_key_exists('CollEditor', $USER_RIGHTS) && in_array($this->collid, $USER_RIGHTS['CollEditor'])) || (array_key_exists('RareSppReader', $USER_RIGHTS) && in_array($this->collid, $USER_RIGHTS['RareSppReader']))) {
 			$canReadRareSpp = true;
 		}
-		else {
-			// In single-coll mode, preserve existing behavior
-			if(!$useCollidList){
-				if ((array_key_exists('CollEditor', $USER_RIGHTS) && in_array($this->collid, $USER_RIGHTS['CollEditor']))
-					|| (array_key_exists('RareSppReader', $USER_RIGHTS) && in_array($this->collid, $USER_RIGHTS['RareSppReader']))
-				) {
-					$canReadRareSpp = true;
-				}
+		$retArr = array();
+		if ($this->collid) {
+			$sqlWhere = '';
+			$sqlOrderBy = '';
+			if ($postArr['taxa']) {
+				$sqlWhere .= 'AND (o.sciname LIKE "' . $this->cleanInStr($postArr['taxa']) . '%") ';
 			}
-			// In multi-coll mode, allow if they have CollEditor or RareSppReader for ANY of the allowed collids
-			else{
-				$ce = (array_key_exists('CollEditor', $USER_RIGHTS) && is_array($USER_RIGHTS['CollEditor'])) ? array_map('intval', $USER_RIGHTS['CollEditor']) : [];
-				$rr = (array_key_exists('RareSppReader', $USER_RIGHTS) && is_array($USER_RIGHTS['RareSppReader'])) ? array_map('intval', $USER_RIGHTS['RareSppReader']) : [];
-				if(array_intersect($collidList, $ce) || array_intersect($collidList, $rr)){
-					$canReadRareSpp = true;
-				}
+			if ($postArr['labelproject']) {
+				$sqlWhere .= 'AND (o.labelproject = "' . $this->cleanInStr($postArr['labelproject']) . '") ';
 			}
-		}
-	
-		$retArr = [];
-	
-		$sqlWhere = '';
-		$sqlOrderBy = '';
-	
-		// ---- existing filters (unchanged) ----
-		if (!empty($postArr['taxa'])) {
-			$sqlWhere .= 'AND (o.sciname LIKE "' . $this->cleanInStr($postArr['taxa']) . '%") ';
-		}
-		if (!empty($postArr['labelproject'])) {
-			$sqlWhere .= 'AND (o.labelproject = "' . $this->cleanInStr($postArr['labelproject']) . '") ';
-		}
-		if (!empty($postArr['recordenteredby'])) {
-			$sqlWhere .= 'AND (o.recordenteredby = "' . $this->cleanInStr($postArr['recordenteredby']) . '") ';
-		}
-	
-		$date1 = $this->cleanInStr($postArr['date1'] ?? '');
-		$date2 = $this->cleanInStr($postArr['date2'] ?? '');
-		if (!$date1 && $date2) {
-			$date1 = $date2;
-			$date2 = '';
-		}
-		$dateTarget = $this->cleanInStr($postArr['datetarget'] ?? '');
-		if ($date1 && $dateTarget) {
-			if ($date2) $sqlWhere .= 'AND (DATE(o.' . $dateTarget . ') BETWEEN "' . $date1 . '" AND "' . $date2 . '") ';
-			else $sqlWhere .= 'AND (DATE(o.' . $dateTarget . ') = "' . $date1 . '") ';
-			$sqlOrderBy .= ',o.' . $dateTarget;
-		}
-	
-		if (!empty($postArr['recordnumber'])) {
-			$rnArr = explode(',', $this->cleanInStr($postArr['recordnumber']));
-			$rnBetweenFrag = array();
-			$rnInFrag = array();
-			foreach ($rnArr as $v) {
-				$v = trim($v);
-				if ($p = strpos($v, ' - ')) {
-					$term1 = trim(substr($v, 0, $p));
-					$term2 = trim(substr($v, $p + 3));
-					if (is_numeric($term1) && is_numeric($term2)) {
-						$rnBetweenFrag[] = '(o.recordnumber BETWEEN ' . $term1 . ' AND ' . $term2 . ')';
+			if ($postArr['recordenteredby']) {
+				$sqlWhere .= 'AND (o.recordenteredby = "' . $this->cleanInStr($postArr['recordenteredby']) . '") ';
+			}
+			$date1 = $this->cleanInStr($postArr['date1']);
+			$date2 = $this->cleanInStr($postArr['date2']);
+			if (!$date1 && $date2) {
+				$date1 = $date2;
+				$date2 = '';
+			}
+			$dateTarget = $this->cleanInStr($postArr['datetarget']);
+			if ($date1) {
+				if ($date2) $sqlWhere .= 'AND (DATE(o.' . $dateTarget . ') BETWEEN "' . $date1 . '" AND "' . $date2 . '") ';
+				else $sqlWhere .= 'AND (DATE(o.' . $dateTarget . ') = "' . $date1 . '") ';
+				$sqlOrderBy .= ',o.' . $dateTarget;
+			}
+			if ($postArr['recordnumber']) {
+				$rnArr = explode(',', $this->cleanInStr($postArr['recordnumber']));
+				$rnBetweenFrag = array();
+				$rnInFrag = array();
+				foreach ($rnArr as $v) {
+					$v = trim($v);
+					if ($p = strpos($v, ' - ')) {
+						$term1 = trim(substr($v, 0, $p));
+						$term2 = trim(substr($v, $p + 3));
+						if (is_numeric($term1) && is_numeric($term2)) {
+							$rnBetweenFrag[] = '(o.recordnumber BETWEEN ' . $term1 . ' AND ' . $term2 . ')';
+						} else {
+							$catTerm = 'o.recordnumber BETWEEN "' . $term1 . '" AND "' . $term2 . '"';
+							if (strlen($term1) == strlen($term2)) $catTerm .= ' AND length(o.recordnumber) = ' . strlen($term2);
+							$rnBetweenFrag[] = '(' . $catTerm . ')';
+						}
 					} else {
-						$catTerm = 'o.recordnumber BETWEEN "' . $term1 . '" AND "' . $term2 . '"';
-						if (strlen($term1) == strlen($term2)) $catTerm .= ' AND length(o.recordnumber) = ' . strlen($term2);
-						$rnBetweenFrag[] = '(' . $catTerm . ')';
+						$rnInFrag[] = $v;
+					}
+				}
+				$rnWhere = '';
+				if ($rnBetweenFrag) {
+					$rnWhere .= 'OR ' . implode(' OR ', $rnBetweenFrag);
+				}
+				if ($rnInFrag) {
+					$rnWhere .= 'OR (o.recordnumber IN("' . implode('","', $rnInFrag) . '")) ';
+				}
+				$sqlWhere .= 'AND (' . substr($rnWhere, 3) . ') ';
+			}
+			if ($postArr['recordedby']) {
+				$recordedBy = $this->cleanInStr($postArr['recordedby']);
+				$sqlWhere .= 'AND (MATCH(o.recordedby) AGAINST("' . $recordedBy . '" IN BOOLEAN MODE)) ';
+			}
+			if($postArr['identifier']){
+				// Start NEON customatization
+				$catNum = $this->cleanInStr(str_replace(array(',', "\n", "\r\n", "\r", ' '), ';', $postArr['identifier']));
+				$iArr = array_filter(array_map('trim', explode(';', $catNum)));
+				// End NEON customatization
+				$iBetweenFrag = array();
+				$iInFrag = array();
+				foreach ($iArr as $v) {
+					$v = trim($v);
+					if ($p = strpos($v, ' - ')) {
+						$term1 = trim(substr($v, 0, $p));
+						$term2 = trim(substr($v, $p + 3));
+						if (is_numeric($term1) && is_numeric($term2)) {
+							$iBetweenFrag[] = '((o.catalogNumber BETWEEN ' . $term1 . ' AND ' . $term2 . ') OR (o.otherCatalogNumbers BETWEEN ' . $term1 . ' AND ' . $term2 . ') OR (i.identifiervalue BETWEEN ' . $term1 . ' AND ' . $term2 . '))';
+						} else {
+							$catTerm = '(o.catalogNumber BETWEEN "' . $term1 . '" AND "' . $term2 . '" OR o.othercatalogNumbers BETWEEN "' . $term1 . '" AND "' . $term2 . '" OR i.identifiervalue BETWEEN "' . $term1 . '" AND "' . $term2 . '")';
+							//if(strlen($term1) == strlen($term2)) $catTerm .= ' AND length(IFNULL(i.identifiervalue, o.catalogNumber)) = '.strlen($term2);
+							$iBetweenFrag[] = '(' . $catTerm . ')';
+						}
+					} else $iInFrag[] = $v;
+				}
+				$iWhere = '';
+				if ($iBetweenFrag) $iWhere .= 'OR ' . implode(' OR ', $iBetweenFrag);
+				if ($iInFrag) {
+					$iWhere .= 'OR (o.catalogNumber IN("' . implode('","', $iInFrag) . '") OR o.otherCatalogNumbers IN("' . implode('","', $iInFrag) . '") OR i.identifiervalue IN("' . implode('","', $iInFrag) . '")) ';
+				}
+				$sqlWhere .= 'AND (' . substr($iWhere, 3) . ') ';
+				$sqlOrderBy .= ',i.identifiervalue,o.catalogNumber,o.otherCatalogNumbers';
+			}
+			if ($this->collArr['colltype'] == 'General Observations') {
+				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
+				if (!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= ' AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
+			}
+			// Start NEON customization
+			/*
+			elseif (!array_key_exists('extendedsearch', $postArr)) {
+				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
+			}
+			*/
+			else{
+				if(array_key_exists('extendedsearch', $postArr)){
+					if(array_key_exists('excludesubsamples', $postArr)){
+						$sqlWhere .= 'AND (o.collid NOT BETWEEN 100 AND 111) ';
 					}
 				} else {
-					$rnInFrag[] = $v;
+					if(array_key_exists('excludesubsamples', $postArr) && $this->collid >= 100 && $this->collid <= 111){
+						$sqlWhere .= 'AND (1=0) ';
+					} else {
+						$sqlWhere .= 'AND (o.collid = '.$this->collid.') ';
+					}
 				}
 			}
-			$rnWhere = '';
-			if ($rnBetweenFrag) $rnWhere .= 'OR ' . implode(' OR ', $rnBetweenFrag);
-			if ($rnInFrag) $rnWhere .= 'OR (o.recordnumber IN("' . implode('","', $rnInFrag) . '")) ';
-			$sqlWhere .= 'AND (' . substr($rnWhere, 3) . ') ';
-		}
-	
-		if (!empty($postArr['recordedby'])) {
-			$recordedBy = $this->cleanInStr($postArr['recordedby']);
-			$sqlWhere .= 'AND (MATCH(o.recordedby) AGAINST("' . $recordedBy . '" IN BOOLEAN MODE)) ';
-		}
-	
-		if (!empty($postArr['identifier'])) {
-			// Start NEON customization
-			$catNum = $this->cleanInStr(str_replace(array(',', "\n", "\r\n", "\r", ' '), ';', $postArr['identifier']));
-			$iArr = array_filter(array_map('trim', explode(';', $catNum)));
 			// End NEON customization
-	
-			$iBetweenFrag = array();
-			$iInFrag = array();
-			foreach ($iArr as $v) {
-				$v = trim($v);
-				if ($p = strpos($v, ' - ')) {
-					$term1 = trim(substr($v, 0, $p));
-					$term2 = trim(substr($v, $p + 3));
-					if (is_numeric($term1) && is_numeric($term2)) {
-						$iBetweenFrag[] = '((o.catalogNumber BETWEEN ' . $term1 . ' AND ' . $term2 . ') OR (o.otherCatalogNumbers BETWEEN ' . $term1 . ' AND ' . $term2 . ') OR (i.identifiervalue BETWEEN ' . $term1 . ' AND ' . $term2 . '))';
-					} else {
-						$catTerm = '(o.catalogNumber BETWEEN "' . $term1 . '" AND "' . $term2 . '" OR o.othercatalogNumbers BETWEEN "' . $term1 . '" AND "' . $term2 . '" OR i.identifiervalue BETWEEN "' . $term1 . '" AND "' . $term2 . '")';
-						$iBetweenFrag[] = '(' . $catTerm . ')';
-					}
-				} else $iInFrag[] = $v;
+
+			$sql = 'SELECT DISTINCT o.occid, o.collid, IFNULL(o.duplicatequantity,1) AS q, CONCAT_WS(" ",o.recordedby,IFNULL(o.recordnumber,o.eventdate)) AS collector, o.observeruid,
+				o.family, o.sciname, CONCAT_WS("; ",o.country, o.stateProvince, o.county, o.locality) AS locality, IFNULL(o.recordSecurity,0) AS recordSecurity
+				FROM omoccurrences o ';
+			if ($postArr['identifier']) $sql .= 'LEFT JOIN omoccuridentifiers i ON o.occid = i.occid ';
+			if ($sqlWhere) $sql .= 'WHERE ' . substr($sqlWhere, 4);
+			if ($sqlOrderBy) $sql .= ' ORDER BY ' . substr($sqlOrderBy, 1);
+			else $sql .= ' ORDER BY (o.recordnumber+1)';
+			$sql .= ' LIMIT ' . $limit;
+			//echo '<div>'.$sql.'</div>';
+			$rs = $this->conn->query($sql);
+			while ($r = $rs->fetch_object()) {
+				$recordSecurity = $r->recordSecurity;
+				if (!$recordSecurity || $canReadRareSpp || ($r->observeruid == $GLOBALS['SYMB_UID'])) {
+					$occId = $r->occid;
+					$retArr[$occId]['collid'] = $r->collid;
+					$retArr[$occId]['q'] = $r->q;
+					$retArr[$occId]['c'] = $r->collector;
+					//$retArr[$occId]['f'] = $r->family;
+					$retArr[$occId]['s'] = $r->sciname;
+					$retArr[$occId]['l'] = $r->locality;
+					$retArr[$occId]['uid'] = $r->observeruid;
+				}
 			}
-			$iWhere = '';
-			if ($iBetweenFrag) $iWhere .= 'OR ' . implode(' OR ', $iBetweenFrag);
-			if ($iInFrag) {
-				$iWhere .= 'OR (o.catalogNumber IN("' . implode('","', $iInFrag) . '") OR o.otherCatalogNumbers IN("' . implode('","', $iInFrag) . '") OR i.identifiervalue IN("' . implode('","', $iInFrag) . '")) ';
-			}
-			$sqlWhere .= 'AND (' . substr($iWhere, 3) . ') ';
-			$sqlOrderBy .= ',i.identifiervalue,o.catalogNumber,o.otherCatalogNumbers';
+			$rs->free();
 		}
-	
-		// ---- collection scoping / NEON rules ----
-	
-		// Apply collection restriction
-		if($useCollidList){
-			$sqlWhere .= 'AND (o.collid IN (' . implode(',', $collidList) . ')) ';
-		}
-		else{
-			if(!$this->collid) return []; // keep old behavior: no collid and no list => nothing
-			$sqlWhere .= 'AND (o.collid = ' . (int)$this->collid . ') ';
-		}
-	
-		// Start NEON customization (adapted to list mode)
-		if(array_key_exists('extendedsearch', $postArr)){
-			if(array_key_exists('excludesubsamples', $postArr)){
-				$sqlWhere .= 'AND (o.collid NOT BETWEEN 100 AND 111) ';
-			}
-		}
-		else{
-			// if not extendedsearch and excludesubsamples, exclude subsample range for BOTH modes
-			if(array_key_exists('excludesubsamples', $postArr)){
-				$sqlWhere .= 'AND (o.collid NOT BETWEEN 100 AND 111) ';
-			}
-		}
-	
-		// General Observations rule:
-		// Previously, General Observations collections also require observeruid = current user unless extendedsearch.
-		// In multi-coll mode, we can't rely on $this->collArr['colltype'], so we join omcollections and apply rule by colltype.
-		$needCollJoin = $useCollidList && !array_key_exists('extendedsearch', $postArr);
-	
-		// ---- build SQL ----
-		$sql = 'SELECT DISTINCT o.occid, o.collid, IFNULL(o.duplicatequantity,1) AS q, CONCAT_WS(" ",o.recordedby,IFNULL(o.recordnumber,o.eventdate)) AS collector, o.observeruid,
-			o.family, o.sciname, CONCAT_WS("; ",o.country, o.stateProvince, o.county, o.locality) AS locality, IFNULL(o.recordSecurity,0) AS recordSecurity
-			FROM omoccurrences o ';
-	
-		if ($postArr['identifier']) $sql .= 'LEFT JOIN omoccuridentifiers i ON o.occid = i.occid ';
-	
-		if($needCollJoin){
-			$sql .= 'INNER JOIN omcollections c ON o.collid = c.collid ';
-			// If NOT extendedsearch, restrict General Observations to current user’s records
-			$sqlWhere .= 'AND (c.colltype <> "General Observations" OR o.observeruid = ' . (int)$GLOBALS['SYMB_UID'] . ') ';
-		}
-		else{
-			// preserve original single-coll behavior for General Observations
-			if(!$useCollidList && isset($this->collArr['colltype']) && $this->collArr['colltype'] == 'General Observations'){
-				if (!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= 'AND (o.observeruid = ' . (int)$GLOBALS['SYMB_UID'] . ') ';
-			}
-		}
-	
-		if ($sqlWhere) $sql .= 'WHERE ' . substr($sqlWhere, 4);
-		if ($sqlOrderBy) $sql .= ' ORDER BY ' . substr($sqlOrderBy, 1);
-		else $sql .= ' ORDER BY (o.recordnumber+1)';
-		$sql .= ' LIMIT ' . (int)$limit;
-	
-		$rs = $this->conn->query($sql);
-		while ($r = $rs->fetch_object()) {
-			$recordSecurity = $r->recordSecurity;
-			if (!$recordSecurity || $canReadRareSpp || ($r->observeruid == $GLOBALS['SYMB_UID'])) {
-				$occId = $r->occid;
-				$retArr[$occId]['collid'] = $r->collid;
-				$retArr[$occId]['q'] = $r->q;
-				$retArr[$occId]['c'] = $r->collector;
-				$retArr[$occId]['s'] = $r->sciname;
-				$retArr[$occId]['l'] = $r->locality;
-				$retArr[$occId]['uid'] = $r->observeruid;
-			}
-		}
-		$rs->free();
-	
 		return $retArr;
 	}
-
 
 	public function getLabelArray($occidArr, $speciesAuthors = false) {
 		$retArr = array();
@@ -964,20 +912,7 @@ class OccurrenceLabel {
 	public function getCollName() {
 		return $this->collArr['collname'] . ' (' . $this->collArr['instcode'] . ($this->collArr['collcode'] ? ':' . $this->collArr['collcode'] : '') . ')';
 	}
-	//neon edit
-	public function getCollNameById($collid){
-		$collid = (int)$collid;
-		if(!$collid) return '';
-	
-		$sql = 'SELECT collectionname FROM omcollections WHERE collid = '.$collid;
-		$rs = $this->conn->query($sql);
-		if($rs && ($r = $rs->fetch_row())){
-			$rs->free();
-			return $r[0];
-		}
-		return '';
-	}
-	//edit neon edit
+
 	public function getAnnoCollName() {
 		return $this->collArr['collname'] . ' (' . $this->collArr['instcode'] . ')';
 	}
