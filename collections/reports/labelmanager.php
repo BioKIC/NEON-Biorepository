@@ -8,32 +8,58 @@ header("Content-Type: text/html; charset=".$CHARSET);
 
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=../collections/reports/labelmanager.php?'.htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
-$collid = $_REQUEST['collid'];
+//neon edit
+$collidRaw = $_REQUEST['collid'] ?? '';
+$collidRaw = is_string($collidRaw) ? trim($collidRaw) : $collidRaw;
+
+$globalMode = ($collidRaw === '' || $collidRaw === null);
+
+$collid = 0;
+if(!$globalMode && is_numeric($collidRaw)) $collid = (int)$collidRaw;
+
 $action = array_key_exists('submitaction',$_REQUEST)?$_REQUEST['submitaction']:'';
 
-//Sanitation
-if(!is_numeric($collid)) $collid = 0;
-
 $labelManager = new OccurrenceLabel();
-$labelManager->setCollid($collid);
+if(!$globalMode && $collid){
+	$labelManager->setCollid($collid);
+}
+//end neon edit
 
 $limit = (ini_get('max_input_vars')/2) - 100;
 if(!$limit) $limit = 400;
 elseif($limit > 1000) $limit = 1000;
 
+//neon edit
+// Build list of collections the user can edit
+$editableCollids = [];
+if(array_key_exists("CollAdmin",$USER_RIGHTS) && is_array($USER_RIGHTS["CollAdmin"])){
+	$editableCollids = array_merge($editableCollids, $USER_RIGHTS["CollAdmin"]);
+}
+if(array_key_exists("CollEditor",$USER_RIGHTS) && is_array($USER_RIGHTS["CollEditor"])){
+	$editableCollids = array_merge($editableCollids, $USER_RIGHTS["CollEditor"]);
+}
+$editableCollids = array_values(array_unique(array_map('intval', $editableCollids)));
+
 $isEditor = 0;
-$occArr = array();
-if($IS_ADMIN || (array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"]))){
-	$isEditor = 1;
+$occArr = [];
+
+// Permission:
+// - globalMode: must have at least one editable collection (or admin)
+// - single collection: must be admin or have rights for that collid
+if($globalMode){
+	$isEditor = ($IS_ADMIN || count($editableCollids) > 0) ? 1 : 0;
 }
-elseif(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"])){
-	$isEditor = 1;
+else{
+	$isEditor = ($IS_ADMIN || in_array($collid, $editableCollids, true)) ? 1 : 0;
 }
+
 if($isEditor){
 	if($action == (isset($LANG['FILT_SPEC_REC']) ? $LANG['FILT_SPEC_REC'] : 'Filter Specimen Records')){
-		$occArr = $labelManager->queryOccurrences($_POST, $limit);
+		// IMPORTANT: this requires queryOccurrences to support a collid list
+		$occArr = $labelManager->queryOccurrences($_POST, $limit, $globalMode ? $editableCollids : null);
 	}
 }
+//end neon edit
 $labelFormatArr = $labelManager->getLabelFormatArr(true);
 ?>
 <!DOCTYPE html>
@@ -191,10 +217,30 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
 		<h1 class="page-heading"><?= $LANG['SPEC_LABEL_MANAGER']; ?></h1>
+		<!--neon edit-->
+		<?php if($globalMode && $isEditor): ?>
+			<div style="margin:15px 0;">
+				<h2>Your editable collections (collections that will be searched)</h2>
+				<ul>
+					<?php
+					foreach($editableCollids as $id){
+						$name = $labelManager->getCollNameById($id);
+						$url  = 'labelmanager.php?collid='.(int)$id;
+						echo '<li><a href="'.htmlspecialchars($url, ENT_QUOTES).'">'.htmlspecialchars($name, ENT_QUOTES).'</a></li>';
+					}
+					?>
+				</ul>
+			</div>
+		<?php endif; ?>
+		<!--end neon edit-->
 		<?php
 		if($isEditor){
 			$isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General Observations')?true:false);
-			echo '<h2>'.$labelManager->getCollName().'</h2>';
+			//neon edit
+			if(!$globalMode && $collid){
+				echo '<h2>'.$labelManager->getCollName().'</h2>';
+			}
+			//end neon edit
 			?>
 			<div>
 				<form name="datasetqueryform" action="labelmanager.php" method="post" onsubmit="return validateQueryForm(this)">
