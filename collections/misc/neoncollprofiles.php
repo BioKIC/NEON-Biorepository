@@ -1001,17 +1001,19 @@ ER  -
 					<h2 class="text-xl font-semibold mb-2">Contact Information</h2>
 					<?php
 					$contacts = json_decode($collData["contactjson"], true);
-					foreach ($contacts as $contact) {
-						$output = '<p class="mb-4">';
-						if (!empty($contact["role"])) {
-							$output .= htmlspecialchars($contact["role"]) . ': ';
+					if (is_array($contacts)) {
+						foreach ($contacts as $contact) {
+							$output = '<p class="mb-4">';
+							if (!empty($contact["role"])) {
+								$output .= htmlspecialchars($contact["role"]) . ': ';
+							}
+							$output .= htmlspecialchars($contact["firstName"]) . ' ' . htmlspecialchars($contact["lastName"]);
+							if (!empty($contact["orcid"])) {
+								$output .= ' (ORCID ID: <a href="https://orcid.org/' . htmlspecialchars($contact["orcid"]) . '" target="_blank">' . htmlspecialchars($contact["orcid"]) . '</a>)';
+							}
+							$output .= '</p>';
+							echo $output;
 						}
-						$output .= htmlspecialchars($contact["firstName"]) . ' ' . htmlspecialchars($contact["lastName"]);
-						if (!empty($contact["orcid"])) {
-							$output .= ' (ORCID ID: <a href="https://orcid.org/' . htmlspecialchars($contact["orcid"]) . '" target="_blank">' . htmlspecialchars($contact["orcid"]) . '</a>)';
-						}
-						$output .= '</p>';
-						echo $output;
 					}
 					?>
 					<a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">
