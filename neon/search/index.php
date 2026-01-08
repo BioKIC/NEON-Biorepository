@@ -111,7 +111,7 @@ $siteData = new DatasetsMetadata();
 	
 				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}' checked>";
 				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
-				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' title='View Sample Type Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>";
+				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' title='View Sample Type Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
 
 			} 
 			// group node
@@ -155,19 +155,19 @@ $siteData = new DatasetsMetadata();
 					<div class="content">
 						<div id="search-form-colls">
 							<!-- Open NEON Collections modal -->
-							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">At the NEON Biorepository</span></div>
+							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">NEON Samples at the NEON Biorepository</span></div>
 							<!-- External Collections -->
 							<div>
 								<ul id="neonext-collections-list">
-									<li class="Mui"><input id="all-neon-ext" data-chip="Sample Types at Other Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span class="group-label">At Other Repositories</span>
-									<a href='https://www.neonscience.org/samples/sample-repositories' target='_blank' rel='noopener noreferrer' title='View More Information'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>
+									<li class="Mui"><input id="all-neon-ext" data-chip="Sample Types at Other Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span class="group-label">NEON Samples at Other Repositories</span>
+									<a href='https://www.neonscience.org/samples/sample-repositories' target='_blank' rel='noopener noreferrer' title='View More Information'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>
 										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
 											echo '<ul class="collapsed">';
 											foreach ($collsArr as $result) {
 												echo "<li class='Mui'>";
 												echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
 												echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]} </span>";
-												echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>";
+												echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
 												echo "</li>";
 											}
 											echo '</ul>';
@@ -293,7 +293,7 @@ $siteData = new DatasetsMetadata();
 												echo "<li class='Mui'>";
 												echo "<input type='checkbox' id='{$site["siteid"]}' name='datasetid' value='{$site["datasetid"]}' class='child' data-domain='{$domain["domainnumber"]}' checked>";
 												echo "<span class='leaf-label ml-1 child'>({$site["siteid"]}) {$site["sitename"]}</span>";
-												echo " <a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer' title='View Site Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>help</span></a>";
+												echo " <a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer' title='View Site Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
 												echo "</li>";
 
 											}
