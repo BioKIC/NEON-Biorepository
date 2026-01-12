@@ -155,12 +155,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Bulk Taxonomy Samples",
                 "collid": 50            
               },
               {
                 "id": 1,
-                "name": "Identified Individals Within Bulk Samples",
+                "name": "Bulk Taxonomy Sample Identifications",
                 "collid": 105           
               }
             ]
@@ -171,12 +171,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Bulk Taxonomy Samples",
                 "collid": 73            
               },
               {
                 "id": 1,
-                "name": "Identified Individals Within Bulk Samples",
+                "name": "Bulk Taxonomy Sample Identifications",
                 "collid": 106           
               }
             ]
@@ -187,25 +187,15 @@
             "children": [
               {
                 "id": 45,
-                "name": "Bulk Samples",
+                "name": "Bulk Taxonomy Samples",
                 "collid": 47
               },
               {
                 "id": 46,
-                "name": "Identified Individals Within Bulk Samples",
+                "name": "Bulk Taxonomy Sample Identifications",
                 "collid": 110
               }
             ]
-          },
-          {
-            "id": 27,
-            "name": "Aquatic Midge Specimens (Chironomids)",
-            "collid": 22
-          },
-          {
-            "id": 28,
-            "name": "Aquatic Worm Specimens (Oligochaetes)",
-            "collid": 52
           },
           {
             "id": 29,
@@ -218,14 +208,25 @@
             "collid": 14
           },
           {
-            "id": 31,
-            "name": "Benthic Macroinvertebrate Identified and Pooled Samples",
-            "collid": 57
-          },
-          {
-            "id": 32,
-            "name": "Benthic Macroinvertebrate Unprocessed Samples (Bouts 1 & 3)",
-            "collid": 21
+            "id": 17,
+            "name": "Benthic Macroinvertebrates",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 57                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 103                    
+              },
+              {
+                "id": 32,
+                "name": "Unprocessed Samples (Bouts 1 & 3)",
+                "collid": 21
+              }
+            ]
           },
           {
             "id": 33,
@@ -238,14 +239,57 @@
             "collid": 16
           },
           {
-            "id": 35,
-            "name": "Zooplankton Bulk Taxonomy Samples",
-            "collid": 45
+            "id": 17,
+            "name": "Midges (Chironomids)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 22                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 100                    
+              }
+            ]
           },
           {
-            "id": 36,
-            "name": "Zooplankton Unprocessed Samples (Bouts 1 & 3)",
-            "collid": 60
+            "id": 17,
+            "name": "Worms (Oligochaetes)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 52                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 101                    
+              }
+            ]
+          },
+          {
+            "id": 17,
+            "name": "Zooplankton",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 45                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 104                    
+              },
+              {
+                "id": 32,
+                "name": "Unprocessed Samples (Bouts 1 & 3)",
+                "collid": 60
+              }
+            ]
           }
         ]
       },
@@ -473,20 +517,31 @@
         "children": [
           {
             "id": 45,
-            "name": "Slide Samples",
+            "name": "Bulk Taxonomy Samples",
             "collid": 49
           },
           {
             "id": 46,
-            "name": "Identified Individals Within Slide Samples",
+            "name": "Bulk Taxonomy Sample Identifications",
             "collid": 111
           }
         ]
       },
       {
-        "id": 80,
-        "name": "Benthic Midges and Worms (Chironomids/Oligochaetes)",
-        "collid": 53
+        "id": 24,
+        "name": "Chironomids and Oligochaetes",
+        "children": [
+          {
+            "id": 16,
+            "name": "Bulk Taxonomy Samples",
+            "collid": 53                    
+          },
+          {
+            "id": 16,
+            "name": "Bulk Taxonomy Sample Identifications",
+            "collid": 102                    
+          }
+        ]
       }
     ]
   }

@@ -135,39 +135,89 @@
         "name": "Aquatic Macroinvertebrates",
         "children": [
           {
+            "id": 22,
+            "name": "Unprocessed Samples (Bouts 1 & 3)",
+            "collid": 21
+          },
+          {
             "id": 16,
             "name": "DNA Extracts (Bout 2)",
             "collid": 61
           },
           {
-            "id": 17,
-            "name": "Fluid Preserved Midges (Chironomids)",
-            "collid": 22
+            "id": 23,
+            "name": "General Macroinvertebrates",
+            "children": [
+              {
+                "id": 21,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 57
+              },
+              {
+                "id": 21,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 103
+              },
+              {
+                "id": 20,
+                "name": "Taxonomic References",
+                "collid": 48
+              }
+            ]
           },
           {
-            "id": 18,
-            "name": "Fluid Preserved Worms (Oligochaetes)",
-            "collid": 52
-          },
-          {
-            "id": 19,
-            "name": "Slide Mounted Midges and Worms (Chironomids/Oligochaetes)",
-            "collid": 53
-          },
-          {
-            "id": 20,
-            "name": "Taxonomic References",
-            "collid": 48
-          },
-          {
-            "id": 21,
-            "name": "Identified and Pooled Samples",
-            "collid": 57
-          },
-          {
-            "id": 22,
-            "name": "Unprocessed Samples (Bouts 1 & 3)",
-            "collid": 21
+            "id": 24,
+            "name": "Chironomids and Oligochaetes",
+            "children": [
+              {
+                "id": 17,
+                "name": "Fluid Preserved Midges (Chironomids)",
+                "children": [
+                  {
+                    "id": 16,
+                    "name": "Bulk Taxonomy Samples",
+                    "collid": 22                    
+                  },
+                  {
+                    "id": 16,
+                    "name": "Bulk Taxonomy Sample Identifications",
+                    "collid": 100                    
+                  }
+                ]
+              },
+              {
+                "id": 17,
+                "name": "Fluid Preserved Worms (Oligochaetes)",
+                "children": [
+                  {
+                    "id": 16,
+                    "name": "Bulk Taxonomy Samples",
+                    "collid": 52                    
+                  },
+                  {
+                    "id": 16,
+                    "name": "Bulk Taxonomy Sample Identifications",
+                    "collid": 101                    
+                  }
+                ]
+              },
+              {
+                "id": 19,
+                "name": "Slide Mounted Midges and Worms (Chironomids/Oligochaetes)",
+                "children": [
+                  {
+                    "id": 16,
+                    "name": "Bulk Taxonomy Samples",
+                    "collid": 53                    
+                  },
+                  {
+                    "id": 16,
+                    "name": "Bulk Taxonomy Sample Identifications",
+                    "collid": 102                    
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -259,6 +309,11 @@
         "name": "Zooplankton",
         "children": [
           {
+            "id": 42,
+            "name": "Unprocessed Samples (Bouts 1 & 3)",
+            "collid": 60
+          },
+          {
             "id": 40,
             "name": "DNA Extracts (Bout 2)",
             "collid": 62
@@ -269,9 +324,9 @@
             "collid": 45
           },
           {
-            "id": 42,
-            "name": "Unprocessed Samples (Bouts 1 & 3)",
-            "collid": 60
+            "id": 41,
+            "name": "Bulk Taxonomy Sample Identifications",
+            "collid": 104
           }
         ]
       }
@@ -356,15 +411,15 @@
         "name": "Soil Microbes",
         "children": [
           {
+            "id": 54,
+            "name": "DNA Extracts",
+            "collid": 69
+          },
+          {
             "id": 53,
             "name": "Frozen Soils",
             "collid": 31
           },
-          {
-            "id": 54,
-            "name": "DNA Extracts",
-            "collid": 69
-          }
         ]
       },
       {

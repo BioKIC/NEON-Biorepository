@@ -321,39 +321,89 @@
     "name": "INV – Aquatic Macroinvertebrate Sampling",
     "children": [
       {
-        "id": 42,
-        "name": "Benthic Macroinvertebrate DNA Extracts (Bout 2)",
-        "collid": 61
-      },
-      {
-        "id": 43,
-        "name": "Benthic Macroinvertebrate Taxonomic References",
-        "collid": 48
-      },
-      {
-        "id": 44,
-        "name": "Benthic Macroinvertebrate Identified and Pooled Samples",
-        "collid": 57
-      },
-      {
         "id": 45,
         "name": "Benthic Macroinvertebrate Unprocessed Samples (Bouts 1 & 3)",
         "collid": 21
       },
       {
-        "id": 46,
-        "name": "Fluid Preserved Midges (Chironomids)",
-        "collid": 22
+        "id": 42,
+        "name": "Benthic Macroinvertebrate DNA Extracts (Bout 2)",
+        "collid": 61
       },
       {
-        "id": 47,
-        "name": "Fluid Preserved Worms (Oligochaetes)",
-        "collid": 52
+        "id": 17,
+        "name": "Benthic Macroinvertebrates Taxonomy Samples",
+        "children": [
+          {
+            "id": 16,
+            "name": "Bulk Taxonomy Samples",
+            "collid": 57                    
+          },
+          {
+            "id": 16,
+            "name": "Bulk Taxonomy Sample Identifications",
+            "collid": 103                    
+          },
+          {
+            "id": 32,
+            "name": "Taxonomic References",
+            "collid": 48
+          }
+        ]
       },
       {
-        "id": 48,
-        "name": "Slide Mounted Midges and Worms (Chironomids/Oligochaetes)",
-        "collid": 53
+        "id": 24,
+        "name": "Chironomid and Oligochaete Taxonomy Samples",
+        "children": [
+          {
+            "id": 17,
+            "name": "Fluid Preserved Midges (Chironomids)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 22                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 100                    
+              }
+            ]
+          },
+          {
+            "id": 17,
+            "name": "Fluid Preserved Worms (Oligochaetes)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 52                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 101                    
+              }
+            ]
+          },
+          {
+            "id": 19,
+            "name": "Slide Mounted Midges and Worms (Chironomids/Oligochaetes)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 53                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 102                    
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -547,6 +597,11 @@
     "name": "ZOO – Zooplankton Sampling In Lakes",
     "children": [
       {
+        "id": 86,
+        "name": "Zooplankton Unprocessed Samples (Bouts 1 & 3)",
+        "collid": 60
+      },
+      {
         "id": 84,
         "name": "Zooplankton DNA Extracts (Bout 2)",
         "collid": 62
@@ -557,9 +612,9 @@
         "collid": 45
       },
       {
-        "id": 86,
-        "name": "Zooplankton Unprocessed Samples (Bouts 1 & 3)",
-        "collid": 60
+        "id": 85,
+        "name": "Zooplankton Bulk Taxonomy Sample Identifications",
+        "collid": 45
       }
     ]
   }
