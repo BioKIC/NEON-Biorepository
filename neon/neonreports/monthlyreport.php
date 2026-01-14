@@ -38,6 +38,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
     <link rel="stylesheet" href="../css/tables.css">
 		<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	</head>
 	<body>
 		<?php
@@ -108,7 +109,17 @@ if ($isEditor) {
 		<?php
 
 		if ($sample) {
-			echo '<h2>Samples Received</h2>';
+						
+			?>
+			<h2>Samples Received by Class</h2>
+
+			<div style="width:100%; max-width:900px;">
+				<canvas id="samplesByClassChart"></canvas>
+			</div>
+
+			<h2>Samples Received</h2>
+			<?php
+
 			echo $utilities->htmlTable($sample, $headerArr);
 		}
 		?>
@@ -119,7 +130,14 @@ if ($isEditor) {
 		</form>
 		<?php
 
+
 	}
+	$chartData = $reports->samplesReceivedBarChart($reportDate);
+?>
+	<script>
+	const chartData_<?= md5($reportDate) ?> = <?= json_encode($chartData) ?>;
+	</script>
+<?php
 } 
 else {
 	echo '<h3>Please login to get access to this page.</h3>';
@@ -131,4 +149,61 @@ else {
 		?>
   </body>
   <script src="../js/sortables.js"></script>
+
+  <script>
+	(function () {
+
+		const rawData = chartData_<?= md5($reportDate) ?>;
+
+		const labels = rawData.map(r => r.sampleClass);
+		const counts = rawData.map(r => r.count);
+
+		const ctx = document.getElementById('samplesByClassChart').getContext('2d');
+
+		new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: labels, 
+				datasets: [{
+					label: 'Samples',
+					data: counts
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+
+				scales: {
+					x: {
+						display: false					},
+					y: {
+						beginAtZero: true,
+						title: {
+							display: true,
+							text: 'Log Number of Samples'
+						}
+					}
+				},
+
+				plugins: {
+					legend: {
+						display: false
+					},
+					tooltip: {
+						callbacks: {
+							title: function (tooltipItems) {
+								return labels[tooltipItems[0].dataIndex];
+							},
+							label: function (tooltipItem) {
+								return 'Samples: ' + tooltipItem.formattedValue;
+							}
+						}
+					}
+				}
+			}
+		});
+
+	})();
+</script>
+
 </html>

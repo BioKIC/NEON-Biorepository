@@ -66,9 +66,18 @@ if ($isEditor) {
 			$tables[$period][$tabletype][] = $row;
 		}
 
+		$excludeTableTypes = [
+				'Samples Use Bar Chart'
+			];
+
+
 		foreach ($tables as $period => $tableTypes) {
 
 			foreach ($tableTypes as $tableType => $rows) {
+
+				if (in_array($tableType, $excludeTableTypes, true)) {
+					continue;
+				}
 
 				foreach ($rows as &$r) {
 					unset($r['pk'], $r['name'], $r['period'], $r['tabletype'], $r['date']);
@@ -86,14 +95,13 @@ if ($isEditor) {
 				);
 
 				echo $utilities->htmlTable(array_map('array_values', $rows),$headers);
-
-		echo '
-			<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
-				<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
-				<input type="hidden" name="period" value="' . htmlspecialchars($period, ENT_QUOTES) . '">
-				<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
-				<button type="submit">Download CSV</button>
-			</form>';
+				echo '
+					<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
+						<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
+						<input type="hidden" name="period" value="' . htmlspecialchars($period, ENT_QUOTES) . '">
+						<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
+						<button type="submit">Download CSV</button>
+					</form>';
 
 			}
 		}
@@ -104,19 +112,19 @@ if ($isEditor) {
 	<form method="post" action="exportquarterlydataset.php">
 		<input type="hidden" name="type" value="data_edits">
 		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Data Edits (CSV)</button>
+		<button type="submit">Download Data Edits</button>
 	</form>
 
 	<form method="post" action="exportquarterlydataset.php">
 		<input type="hidden" name="type" value="samples_generated">
 		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Samples Generated (CSV)</button>
+		<button type="submit">Download Samples Generated</button>
 	</form>
 
 	<form method="post" action="exportquarterlydataset.php">
 		<input type="hidden" name="type" value="datasets_generated">
 		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Datasets Generated (CSV)</button>
+		<button type="submit">Download Datasets Generated</button>
 	</form>
 <?php
 

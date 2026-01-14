@@ -367,6 +367,19 @@ function getScholarProfileStats() {
     
     }
 
+    public function samplesReceivedBarChart($reportDate) {
+        $sql = "SELECT sampleClass,LOG(COUNT(samplePK)) AS count
+                FROM NeonSample 
+                WHERE initialTimeStamp <= ? 
+                GROUP BY sampleClass";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $reportDate);
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
     public function generateQuarterlyReport() {
         $reportDate = date('Y-m-d H:i:s');
 
@@ -415,6 +428,7 @@ function getScholarProfileStats() {
         $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
+        $this->sampleUseBarchart($name,$reportDate,$startyear,$endquarter);
 
         return $name;
     
@@ -540,7 +554,7 @@ function getScholarProfileStats() {
 
             if ($period == 'Quarter') $start = $startquarter;
             elseif ($period == 'Award Year') $start = $startyear;
-            elseif ($period == 'To Date') $start = '2019-01-01';
+            elseif ($period == 'To Date') $start = '2010-01-01';
 
             $stmt->bind_param('ssssssss',
                 $start, $endquarter,
@@ -595,7 +609,7 @@ function getScholarProfileStats() {
 
             if ($period == 'Quarter') $start = $startquarter;
             elseif ($period == 'Award Year') $start = $startyear;
-            elseif ($period == 'To Date') $start = '2019-01-01';
+            elseif ($period == 'To Date') $start = '2010-01-01';
 
             $stmt->bind_param('ssssssss',
                 $start, $endquarter,
@@ -753,9 +767,28 @@ function getScholarProfileStats() {
         }
 
         return $final;
+    }
+
+    public function sampleUseBarChart($name,$reportDate,$startyear,$endquarter){
+        $sql = "";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+
+            $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `tabletype`, `initiationAY`, `status`, `requests`,`date`) VALUES (?, 'Sample Use Bar Chart', ?, ?, ?, ?)");
+
+            $ins->bind_param('sssis', $name, $row['initiationAY'], $row['status'],$row['requests'], $reportDate);
+               $ins->execute();
+
+            if ($ins->error) {
+                error_log("Insert error for Bar Chart Data: " . $ins->error);
+            }
+        }
+    }
 }
 
-    
-
-}
 ?>
