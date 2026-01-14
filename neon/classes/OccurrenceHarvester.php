@@ -2513,16 +2513,17 @@ class OccurrenceHarvester{
 			if(!isset($this->taxonCodeArr[$taxonGroup][$taxonCode])){
 				$tid = 0;
 				$sciname = '';
-				$sql = 'SELECT t.tid, n.sciname, n.scientificNameAuthorship, n.family
+				$sql = 'SELECT t.tid, t.sciName, t.author, s.family
 					FROM neon_taxonomy n LEFT JOIN taxa t ON n.sciname = t.sciname
+					LEFT JOIN taxstatus s ON t.tid = s.tid
 					WHERE n.taxonGroup = "'.$this->cleanInStr($taxonGroup).'" AND n.taxonCode = "'.$this->cleanInStr($taxonCode).'"';
 				if($rs = $this->conn->query($sql)){
 					while($r = $rs->fetch_object()){
 						$tid = $r->tid;
-						$sciname = $r->sciname;
+						$sciname = $r->sciName;
 						$this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'] = $tid;
 						$this->taxonCodeArr[$taxonGroup][$taxonCode]['sciname'] = $sciname;
-						$this->taxonCodeArr[$taxonGroup][$taxonCode]['author'] = $r->scientificNameAuthorship;
+						$this->taxonCodeArr[$taxonGroup][$taxonCode]['author'] = $r->author;
 						$this->taxonCodeArr[$taxonGroup][$taxonCode]['family'] = $r->family;
 					}
 					$rs->free();
