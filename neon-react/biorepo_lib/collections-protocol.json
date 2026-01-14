@@ -14,7 +14,7 @@
           },
           {
             "id": 46,
-            "name": "Identified Individals Within Bulk Samples",
+            "name": "Bulk Sample Identifications",
             "collid": 110
           }
         ]
@@ -35,7 +35,7 @@
           },
           {
             "id": 46,
-            "name": "Identified Individals Within Slide Samples",
+            "name": "Slide Sample Identifications",
             "collid": 111
           }
         ]
@@ -92,7 +92,7 @@
               },
               {
                 "id": 1,
-                "name": "Identified Individals Within Bulk Samples",
+                "name": "Bulk Sample Identifications",
                 "collid": 105           
               }
             ]
@@ -108,7 +108,7 @@
               },
               {
                 "id": 1,
-                "name": "Identified Individals Within Bulk Samples",
+                "name": "Bulk Sample Identifications",
                 "collid": 107           
               }
             ]
@@ -130,7 +130,7 @@
               },
               {
                 "id": 1,
-                "name": "Identified Individals Within Bulk Samples",
+                "name": "Bulk Sample Identifications",
                 "collid": 106           
               }
             ]
@@ -146,7 +146,7 @@
               },
               {
                 "id": 1,
-                "name": "Identified Individals Within Bulk Samples",
+                "name": "Bulk Sample Identifications",
                 "collid": 108           
               }
             ]
@@ -168,7 +168,7 @@
               },
               {
                 "id": 1,
-                "name": "Identified Individals Within Bulk Samples",
+                "name": "Bulk Sample Identifications",
                 "collid": 109           
               }
             ]
