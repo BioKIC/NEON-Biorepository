@@ -368,7 +368,7 @@ function getScholarProfileStats() {
     }
 
     public function samplesReceivedBarChart($reportDate) {
-        $sql = "SELECT sampleClass,LOG(COUNT(samplePK)) AS count
+        $sql = "SELECT sampleClass,COUNT(samplePK) AS count
                 FROM NeonSample 
                 WHERE initialTimeStamp <= ? 
                 GROUP BY sampleClass";

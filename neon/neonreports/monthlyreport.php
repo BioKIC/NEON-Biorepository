@@ -116,8 +116,6 @@ if ($isEditor) {
 			<div style="width:100%; max-width:900px;">
 				<canvas id="samplesByClassChart"></canvas>
 			</div>
-
-			<h2>Samples Received</h2>
 			<?php
 
 			echo $utilities->htmlTable($sample, $headerArr);
@@ -156,7 +154,8 @@ else {
 		const rawData = chartData_<?= md5($reportDate) ?>;
 
 		const labels = rawData.map(r => r.sampleClass);
-		const counts = rawData.map(r => r.count);
+		const rawCounts = rawData.map(r => r.count);
+		const logCounts = rawCounts.map(v => Math.log10(v));
 
 		const ctx = document.getElementById('samplesByClassChart').getContext('2d');
 
@@ -166,7 +165,7 @@ else {
 				labels: labels, 
 				datasets: [{
 					label: 'Samples',
-					data: counts
+					data: logCounts
 				}]
 			},
 			options: {
@@ -195,7 +194,8 @@ else {
 								return labels[tooltipItems[0].dataIndex];
 							},
 							label: function (tooltipItem) {
-								return 'Samples: ' + tooltipItem.formattedValue;
+								const index = tooltipItem.dataIndex;
+								return 'Samples: ' + rawCounts[index].toLocaleString();
 							}
 						}
 					}
