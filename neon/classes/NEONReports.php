@@ -370,7 +370,8 @@ function getScholarProfileStats() {
     public function samplesReceivedBarChart($reportDate) {
         $sql = "SELECT sampleClass,COUNT(samplePK) AS count
                 FROM NeonSample 
-                WHERE initialTimeStamp <= ? 
+                WHERE initialTimeStamp <= ?
+                AND sampleClass NOT LIKE 'EMPTY%' 
                 GROUP BY sampleClass";
         
         $stmt = $this->conn->prepare($sql);
@@ -503,51 +504,94 @@ function getScholarProfileStats() {
 
     public function researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear){
         $sql = "WITH filtered_requests AS (
-                SELECT id
-                FROM neonrequest r
-                WHERE 
-                (r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
-                OR (r.status ='pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
-                OR (r.status ='pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
-                OR (r.status ='pending sample list' AND r.pendingSampleListDate BETWEEN ? AND ?)
-                ),
+            SELECT id
+            FROM neonrequest r
+            WHERE r.status IN (
+                'completed',
+                'active use',
+                'pending fulfillment',
+                'pending funding',
+                'pending sample list'
+            )
+            AND (
+                r.activeDate              BETWEEN ? AND ?
+                OR r.pendingFulfillmentDate  BETWEEN ? AND ?
+                OR r.pendingFundingDate      BETWEEN ? AND ?
+                OR r.pendingSampleListDate   BETWEEN ? AND ?
+            )
+        ),
 
-                coll_request_map AS (
-                SELECT DISTINCT cr.collID, cr.requestID
-                FROM neoncollectionrequestlink cr
-                JOIN filtered_requests fr ON cr.requestID = fr.id
-                ),
+        coll_request_map AS (
+            SELECT DISTINCT
+                cr.collID,
+                cr.requestID
+            FROM neoncollectionrequestlink cr
+            JOIN filtered_requests fr
+                ON cr.requestID = fr.id
+        ),
 
-                researchers_per_coll AS (
-                SELECT
+        researchers_per_coll AS (
+            SELECT
                 crm.collID,
-                COUNT(DISTINCT rr.researcherID) AS distinct_researchers
-                FROM coll_request_map crm
-                JOIN neonresearcherrequestlink rr
+                COUNT(DISTINCT rr.researcherID) AS researchers
+            FROM coll_request_map crm
+            JOIN neonresearcherrequestlink rr
                 ON rr.requestID = crm.requestID
-                GROUP BY crm.collID
-                ),
+            GROUP BY crm.collID
+        ),
 
-                samples_per_coll AS (
-                SELECT
-                o.collID,
-                COUNT(s.id) AS samples
-                FROM neonsamplerequestlink s
-                JOIN omoccurrences o
-                ON o.occid=s.occid
-                GROUP BY o.collID
+        samples_per_coll AS (
+            SELECT
+                oa.collID,
+                COUNT(DISTINCT sr.id) AS samples
+            FROM neonsamplerequestlink sr
+            JOIN filtered_requests fr
+                ON sr.requestID = fr.id
+            JOIN omoccurrences oa
+                ON sr.occid = oa.occid
+            GROUP BY oa.collID
+        ),
+
+        physical_samples_per_coll AS (
+            SELECT
+                oa.collID,
+                COUNT(DISTINCT sr.id) AS physical_samples
+            FROM neonsamplerequestlink sr
+            JOIN filtered_requests fr
+                ON sr.requestID = fr.id
+            JOIN neonrequest r
+                ON sr.requestID = r.id
+            JOIN omoccurrences oa
+                ON sr.occid = oa.occid
+            WHERE
+                (
+                    sr.substanceProvided IS NULL
+                    OR sr.substanceProvided NOT IN ('image', 'data')
                 )
+                AND (
+                    r.outreach != 'yes'
+                    OR r.internal != 'yes'
+                )
+            GROUP BY oa.collID
+        )
 
-                SELECT 
-                c.collectionName AS collectionName,
-                COALESCE(rpc.distinct_researchers, 0) AS researchers,
-                COALESCE(spc.samples, 0) AS samples
-                FROM omcollections c
-                JOIN researchers_per_coll rpc
-                ON c.collID = rpc.collID 
-                JOIN samples_per_coll spc
-                ON c.collID = spc.collID
-                ORDER BY c.collectionName";
+        SELECT
+            o.collectionName,
+            COALESCE(rpc.researchers, 0)      AS researchers,
+            COALESCE(spc.samples, 0)          AS samples,
+            COALESCE(psc.physical_samples, 0) AS physicalSamples
+        FROM omcollections o
+        LEFT JOIN researchers_per_coll rpc
+            ON o.collID = rpc.collID
+        LEFT JOIN samples_per_coll spc
+            ON o.collID = spc.collID
+        LEFT JOIN physical_samples_per_coll psc
+            ON o.collID = psc.collID
+        WHERE
+            COALESCE(rpc.researchers, 0) > 0
+            OR COALESCE(spc.samples, 0) > 0
+            OR COALESCE(psc.physical_samples, 0) > 0
+        ORDER BY o.collectionName";
 
 
         $stmt = $this->conn->prepare($sql);
@@ -573,9 +617,9 @@ function getScholarProfileStats() {
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionname`,`researchers`, `samples`,`date`) VALUES (?, ?, 'Researchers and Samples by Collection', ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionname`,`researchers`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Researchers and Samples by Collection', ?, ?, ?, ?, ?)");
 
-                $ins->bind_param('sssiis', $name, $period, $row['collectionName'],  $row['researchers'], $row['samples'], $reportDate);
+                $ins->bind_param('sssiiis', $name, $period, $row['collectionName'],  $row['researchers'], $row['samples'],$row['physicalSamples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
@@ -587,24 +631,52 @@ function getScholarProfileStats() {
 
     public function samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear){
         $sql = "WITH filtered_requests AS (
-                    SELECT id, primaryResearchField
-                    FROM neonrequest r
-                    WHERE r.status IN ('active use','completed','pending sample list','pending funding','pending fulfillment')
-                    AND (
-                        r.activeDate               BETWEEN ?  AND ? 
-                        OR r.pendingFulfillmentDate   BETWEEN ?  AND ? 
-                        OR r.pendingFundingDate       BETWEEN ?  AND ? 
-                        OR r.pendingSampleListDate    BETWEEN ?  AND ? 
-                    )
-                )
+            SELECT
+                r.id,
+                r.primaryResearchField,
+                r.outreach,
+                r.internal
+            FROM neonrequest r
+            WHERE r.status IN (
+                'active use',
+                'completed',
+                'pending sample list',
+                'pending funding',
+                'pending fulfillment'
+            )
+            AND (
+                r.activeDate              BETWEEN ? AND ?
+                OR r.pendingFulfillmentDate  BETWEEN ? AND ?
+                OR r.pendingFundingDate      BETWEEN ? AND ?
+                OR r.pendingSampleListDate   BETWEEN ? AND ?
+            )
+        )
 
-                SELECT 
-                r.primaryResearchField AS field,
-                COUNT(s.id) AS samples 
-                FROM neonsamplerequestlink s
-                JOIN filtered_requests r
-                ON s.requestID = r.id 
-                GROUP BY r.primaryResearchField";
+        SELECT 
+            r.primaryResearchField AS field,
+
+            COUNT(s.id) AS samples,
+
+            COUNT(
+                CASE
+                    WHEN
+                        (
+                            s.substanceProvided IS NULL
+                            OR s.substanceProvided NOT IN ('image','data')
+                        )
+                        AND (
+                            r.outreach != 'yes'
+                            OR r.internal != 'yes'
+                        )
+                    THEN s.id
+                END
+            ) AS physicalSamples
+
+        FROM neonsamplerequestlink s
+        JOIN filtered_requests r
+            ON s.requestID = r.id
+        GROUP BY r.primaryResearchField
+        ";
 
 
         $stmt = $this->conn->prepare($sql);
@@ -630,9 +702,9 @@ function getScholarProfileStats() {
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', ?, ?, ?, ?)");
 
-                $ins->bind_param('sssis', $name, $period, $row['field'],$row['samples'], $reportDate);
+                $ins->bind_param('sssiis', $name, $period, $row['field'], $row['samples'], $row['physicalSamples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
@@ -642,24 +714,81 @@ function getScholarProfileStats() {
         }
     }
 
-    public function samplesDistributed($name,$reportDate,$startquarter,$endquarter){
+    public function samplesDistributed($startquarter,$endquarter){
         $sql = 'SELECT s.occid,s.sampleID,s.sampleCode,s.sampleClass,r.name,r.institution
-                FROM neonsamplerequestlink s
-                LEFT JOIN neonrequestshipment h ON s.shipmentID= h.id
-                LEFT JOIN neonresearcherrequestlink ON h.researcherID=r.researcherID
-                LEFT JOIN NeonSample n
-                ON s.occid=n.occid
-                WHERE h.shipDate >= ? AND h.shipDate ?';
+                FROM neonsamplerequestlink sr
+                LEFT JOIN neonrequestshipment h 
+                ON sr.shipmentID= h.id
+                LEFT JOIN neonresearcher r
+                ON h.researcherID=r.researcherID
+                LEFT JOIN NeonSample s
+                ON sr.occid=s.occid
+                WHERE h.shipDate >= ? AND h.shipDate <= ?';
 
         $stmt = $this->conn->prepare($sql);
 
         $stmt->bind_param('ss',$startquarter, $endquarter);
 
         $stmt->execute();
+
+        if (!$stmt) {
+            error_log($this->conn->error);
+            return [];
+        }
+
         $result = $stmt->get_result();
-         if (!$result) {
+        
+        if (!$result) {
             error_log("Error for Samples Distributed This Quarter: " . $ins->error);
         }
+
+        $rows = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+
+        $stmt->close();
+        return $rows;
+        
+    }
+
+    public function samplesConsumed($startquarter,$endquarter){
+        $sql = "SELECT n.sampleID,n.sampleCode,s.useType
+                FROM neonsamplerequestlink s
+                LEFT JOIN neonrequestshipment h
+                ON s.shipmentID = h.id
+                LEFT JOIN NeonSample n
+                ON s.occid=n.occid
+                WHERE h.shipDate >= ? AND h.shipDate <= ?
+                AND s.useType IN ('destructive','consumptive')";
+
+        $stmt = $this->conn->prepare($sql);
+
+        $stmt->bind_param('ss',$startquarter, $endquarter);
+
+        $stmt->execute();
+
+        if (!$stmt) {
+            error_log($this->conn->error);
+            return [];
+        }
+
+        $result = $stmt->get_result();
+        
+        if (!$result) {
+            error_log("Error for Samples Consumed This Quarter: " . $ins->error);
+        }
+
+        $rows = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+
+        $stmt->close();
+        return $rows;
+        
     }
 
     public function dataEdits($startquarter,$endquarter){
@@ -776,26 +905,27 @@ function getScholarProfileStats() {
         return $final;
     }
 
-    // public function sampleUseBarChart($name,$reportDate,$startyear,$endquarter){
-    //     $sql = "";
+     public function sampleUseBarChart($name,$reportDate,$endquarter){
+        $sql = "SELECT inquiryDate,status,COUNT(DISTINCT(id))
+                FROM neonrequest";
 
-    //     $stmt = $this->conn->prepare($sql);
+        $stmt = $this->conn->prepare($sql);
 
-    //     $stmt->execute();
-    //     $result = $stmt->get_result();
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    //     while ($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch_assoc()) {
 
-    //         $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `tabletype`, `initiationAY`, `status`, `requests`,`date`) VALUES (?, 'Sample Use Bar Chart', ?, ?, ?, ?)");
+            $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `tabletype`, `initiationAY`, `status`, `requests`,`date`) VALUES (?, 'Sample Use Bar Chart', ?, ?, ?, ?)");
 
-    //         $ins->bind_param('sssis', $name, $row['initiationAY'], $row['status'],$row['requests'], $reportDate);
-    //            $ins->execute();
+            $ins->bind_param('sssis', $name, $row['initiationAY'], $row['status'],$row['requests'], $reportDate);
+               $ins->execute();
 
-    //         if ($ins->error) {
-    //             error_log("Insert error for Bar Chart Data: " . $ins->error);
-    //         }
-    //     }
-    // }
+            if ($ins->error) {
+                error_log("Insert error for Bar Chart Data: " . $ins->error);
+            }
+        }
+    }
 }
 
 ?>

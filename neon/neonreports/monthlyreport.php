@@ -111,9 +111,9 @@ if ($isEditor) {
 		if ($sample) {
 						
 			?>
-			<h2>Samples Received by Class</h2>
+			<h2>Samples Received by Class To Date</h2>
 
-			<div style="width:100%; max-width:900px;">
+			<div style="width:100%; max-width:1000px;">
 				<canvas id="samplesByClassChart"></canvas>
 			</div>
 			<?php
@@ -148,7 +148,7 @@ else {
   </body>
   <script src="../js/sortables.js"></script>
 
-  <script>
+<script>
 	(function () {
 
 		const rawData = chartData_<?= md5($reportDate) ?>;
@@ -157,16 +157,68 @@ else {
 		const rawCounts = rawData.map(r => r.count);
 		const logCounts = rawCounts.map(v => Math.log10(v));
 
-		const ctx = document.getElementById('samplesByClassChart').getContext('2d');
+		const prefixes = [...new Set(
+			rawData.map(r => r.sampleClass.substring(0, 3))
+		)];
+
+		const colorPalette = [
+			'#4e79a7', // blue
+			'#f28e2b', // orange
+			'#e15759', // red
+			'#76b7b2', // teal
+			'#59a14f', // green
+			'#edc949', // yellow
+			'#af7aa1', // purple
+			'#ff9da7', // pink
+			'#9c755f', // brown
+			'#bab0ab', // gray
+
+			'#1f77b4', // dark blue
+			'#ff7f0e', // dark orange
+			'#2ca02c', // dark green
+			'#d62728', // dark red
+			'#9467bd', // violet
+			'#8c564b', // coffee
+			'#e377c2', // magenta
+			'#7f7f7f', // neutral gray
+			'#bcbd22', // olive
+			'#17becf', // cyan
+
+			'#393b79', // indigo
+			'#637939', // moss
+			'#8c6d31', // gold-brown
+			'#843c39', // brick
+			'#7b4173', // plum
+			'#3182bd', // steel blue
+			'#31a354', // emerald
+			'#756bb1', // lavender
+			'#636363', // charcoal
+			'#e6550d'  // burnt orange
+		];
+
+
+		const datasets = prefixes.map((prefix, i) => ({
+			label: prefix,
+			backgroundColor: colorPalette[i % colorPalette.length],
+			data: rawData.map((r, idx) =>
+				r.sampleClass.startsWith(prefix)
+					? logCounts[idx]
+					: null
+			),
+			categoryPercentage: 3.0,
+			barPercentage: 3.0
+		}));
+
+
+		const ctx = document
+			.getElementById('samplesByClassChart')
+			.getContext('2d');
 
 		new Chart(ctx, {
 			type: 'bar',
 			data: {
-				labels: labels, 
-				datasets: [{
-					label: 'Samples',
-					data: logCounts
-				}]
+				labels: labels,
+				datasets: datasets
 			},
 			options: {
 				responsive: true,
@@ -174,7 +226,8 @@ else {
 
 				scales: {
 					x: {
-						display: false					},
+						display: false
+					},
 					y: {
 						beginAtZero: true,
 						title: {
@@ -186,7 +239,8 @@ else {
 
 				plugins: {
 					legend: {
-						display: false
+						display: true,
+						position: 'bottom'
 					},
 					tooltip: {
 						callbacks: {
@@ -204,6 +258,7 @@ else {
 		});
 
 	})();
-</script>
+	</script>
+
 
 </html>

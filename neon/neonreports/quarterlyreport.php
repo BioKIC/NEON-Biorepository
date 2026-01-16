@@ -94,31 +94,64 @@ if ($isEditor) {
 					array_keys($rows[0])
 				);
 
+				if ($tableType == 'Researchers and Requests by Status') {
+					echo 'The number of requests are those newly reaching a maximum status during the indicated period. Completed 
+					requests are only included within the active request category if they were also 
+					newly active within the period. Researchers includes all researchers associated with those requests. 
+					Researchers may be repeated across different statuses.';
+				}
+				elseif ($tableType == 'Researchers and Samples by Collection'){
+					echo 'The number of researchers is the total number of researchers involved in any requests that are newly active
+					 or pending within the period and associated with the collection.  Researchers may be repeated across 
+					 collections but are unique within a collection. "Samples" indicate the number of samples associated with the 
+					 included requests. "PhysicalSamples" removes samples for which only images or Biorepository-collected data are explicitly involved in research, 
+					 excluding requests entirely for outreach or internal purposes. In either case, samples" may be repeated if they are involved in multiple requests. 
+					 Samples values of zero indicate that the collection is involved only in pending requests for which samples have not yet been identified';
+
+				}
+				if ($tableType == 'Samples by Primary Research Field') {
+					echo 'Sample numbers are calculated as in the Researchers and Samples by Collection table';
+				}
+
 				echo $utilities->htmlTable(array_map('array_values', $rows),$headers);
 				echo '
 					<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
 						<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
 						<input type="hidden" name="period" value="' . htmlspecialchars($period, ENT_QUOTES) . '">
 						<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
-						<button type="submit">Download CSV</button>
+						<button type="submit">Download table above as CSV</button>
 					</form>';
 
 			}
 		}
 	}
 ?>
-	<h2>Quarterly Data Exports</h2>
+	<h2>Samples Distributed, Consumed, and Generated</h2>
 
 	<form method="post" action="exportquarterlydataset.php">
-		<input type="hidden" name="type" value="data_edits">
+		<input type="hidden" name="type" value="samples_distributed">
 		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Data Edits</button>
+		<button type="submit">Download Samples Distributed</button>
+	</form>
+
+	<form method="post" action="exportquarterlydataset.php">
+		<input type="hidden" name="type" value="samples_consumed">
+		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+		<button type="submit">Download Samples Consumed</button>
 	</form>
 
 	<form method="post" action="exportquarterlydataset.php">
 		<input type="hidden" name="type" value="samples_generated">
 		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
 		<button type="submit">Download Samples Generated</button>
+	</form>
+
+	<h2>Data Updates From Sample Use</h2>
+
+	<form method="post" action="exportquarterlydataset.php">
+		<input type="hidden" name="type" value="data_edits">
+		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+		<button type="submit">Download Data Edits</button>
 	</form>
 
 	<form method="post" action="exportquarterlydataset.php">

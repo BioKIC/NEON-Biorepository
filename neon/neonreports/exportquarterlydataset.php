@@ -44,14 +44,25 @@ switch ($q) {
 $reports = new NEONReports();
 
 switch ($type) {
-    case 'data_edits':
-        $rows = $reports->dataEdits($start, $end);
-        $filename = "data_edits_{$quarter}.csv";
+
+    case 'samples_distributed':
+        $rows = $reports->samplesDistributed($start, $end);
+        $filename = "samples_distributed_{$quarter}.csv";
+        break;
+
+    case 'samples_consumed':
+        $rows = $reports->samplesConsumed($start, $end);
+        $filename = "samples_consumed_{$quarter}.csv";
         break;
 
     case 'samples_generated':
         $rows = $reports->samplesGenerated($start, $end);
         $filename = "samples_generated_{$quarter}.csv";
+        break;
+
+    case 'data_edits':
+        $rows = $reports->dataEdits($start, $end);
+        $filename = "data_edits_{$quarter}.csv";
         break;
 
     case 'datasets_generated':
