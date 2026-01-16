@@ -428,7 +428,7 @@ function getScholarProfileStats() {
         $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
-        $this->sampleUseBarchart($name,$reportDate,$startyear,$endquarter);
+        //$this->sampleUseBarchart($name,$reportDate,$startyear,$endquarter);
 
         return $name;
     
@@ -438,28 +438,29 @@ function getScholarProfileStats() {
 
         $sql = "SELECT
                     CASE
-                        WHEN r.status IN ('completed','active use')
+                        WHEN r.activeDate BETWEEN ? AND ? 
                             THEN 'active/complete'
-                        ELSE r.status
-                    END AS status,
+                        WHEN r.pendingFulfillmentDate BETWEEN ?  AND ? 
+                            THEN 'pending fulfillment'
+                        WHEN r.pendingSampleListDate BETWEEN ?  AND ? 
+                            THEN 'pending sample list'
+                        WHEN r.pendingFundingDate BETWEEN ?  AND ? 
+                            THEN 'pending funding'
+                    END AS periodStatus,
                     COUNT(DISTINCT p.requestID) AS requests,
                     COUNT(DISTINCT p.researcherID) AS researchers
                 FROM neonrequest r
                 JOIN neonresearcherrequestlink p
                     ON r.id = p.requestID
                 WHERE p.researcherID != 371
+                AND r.status IN ('active use','completed','pending sample list','pending funding','pending fulfillment')
                 AND (
-                    (r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
-                    OR (r.status = 'pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
-                    OR (r.status = 'pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
-                    OR (r.status = 'pending sample list' AND r.pendingSampleListDate BETWEEN ? AND ?)
+                    r.activeDate               BETWEEN ?  AND ? 
+                    OR r.pendingFulfillmentDate   BETWEEN ?  AND ? 
+                    OR r.pendingFundingDate       BETWEEN ?  AND ? 
+                    OR r.pendingSampleListDate    BETWEEN ?  AND ? 
                 )
-                GROUP BY
-                    CASE
-                        WHEN r.status IN ('completed','active use')
-                            THEN 'active/complete'
-                        ELSE r.status
-                    END";
+                GROUP BY periodStatus";
 
         $stmt = $this->conn->prepare($sql);
 
@@ -472,7 +473,11 @@ function getScholarProfileStats() {
             elseif ($period == 'Award Year') $start = $startyear;
             elseif ($period == 'To Date') $start = '2010-01-01';
 
-            $stmt->bind_param('ssssssss',
+            $stmt->bind_param('ssssssssssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
                 $start, $endquarter,
                 $start, $endquarter,
                 $start, $endquarter,
@@ -486,7 +491,7 @@ function getScholarProfileStats() {
 
                 $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `status`,`requests`,`researchers`, `date`) VALUES (?, ?, 'Researchers and Requests by Status', ?, ?, ?, ?)");
 
-                $ins->bind_param('sssiis', $name, $period, $row['status'],  $row['requests'], $row['researchers'], $reportDate);
+                $ins->bind_param('sssiis', $name, $period, $row['periodStatus'],  $row['requests'], $row['researchers'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
@@ -582,13 +587,15 @@ function getScholarProfileStats() {
 
     public function samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear){
         $sql = "WITH filtered_requests AS (
-                SELECT id, primaryResearchField
-                FROM neonrequest r
-                WHERE 
-                (r.status IN ('completed','active use') AND r.activeDate BETWEEN ? AND ?)
-                OR (r.status ='pending fulfillment' AND r.pendingFulfillmentDate BETWEEN ? AND ?)
-                OR (r.status ='pending funding' AND r.pendingFundingDate BETWEEN ? AND ?)
-                OR (r.status ='pending sample list' AND r.pendingSampleListDate BETWEEN ? AND ?)
+                    SELECT id, primaryResearchField
+                    FROM neonrequest r
+                    WHERE r.status IN ('active use','completed','pending sample list','pending funding','pending fulfillment')
+                    AND (
+                        r.activeDate               BETWEEN ?  AND ? 
+                        OR r.pendingFulfillmentDate   BETWEEN ?  AND ? 
+                        OR r.pendingFundingDate       BETWEEN ?  AND ? 
+                        OR r.pendingSampleListDate    BETWEEN ?  AND ? 
+                    )
                 )
 
                 SELECT 
@@ -769,26 +776,26 @@ function getScholarProfileStats() {
         return $final;
     }
 
-    public function sampleUseBarChart($name,$reportDate,$startyear,$endquarter){
-        $sql = "";
+    // public function sampleUseBarChart($name,$reportDate,$startyear,$endquarter){
+    //     $sql = "";
 
-        $stmt = $this->conn->prepare($sql);
+    //     $stmt = $this->conn->prepare($sql);
 
-        $stmt->execute();
-        $result = $stmt->get_result();
+    //     $stmt->execute();
+    //     $result = $stmt->get_result();
 
-        while ($row = $result->fetch_assoc()) {
+    //     while ($row = $result->fetch_assoc()) {
 
-            $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `tabletype`, `initiationAY`, `status`, `requests`,`date`) VALUES (?, 'Sample Use Bar Chart', ?, ?, ?, ?)");
+    //         $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `tabletype`, `initiationAY`, `status`, `requests`,`date`) VALUES (?, 'Sample Use Bar Chart', ?, ?, ?, ?)");
 
-            $ins->bind_param('sssis', $name, $row['initiationAY'], $row['status'],$row['requests'], $reportDate);
-               $ins->execute();
+    //         $ins->bind_param('sssis', $name, $row['initiationAY'], $row['status'],$row['requests'], $reportDate);
+    //            $ins->execute();
 
-            if ($ins->error) {
-                error_log("Insert error for Bar Chart Data: " . $ins->error);
-            }
-        }
-    }
+    //         if ($ins->error) {
+    //             error_log("Insert error for Bar Chart Data: " . $ins->error);
+    //         }
+    //     }
+    // }
 }
 
 ?>
