@@ -1,7 +1,7 @@
 <?php
 include_once($SERVER_ROOT.'/classes/OccurrenceCollectionProfile.php');
 include_once($SERVER_ROOT.'/classes/utilities/TaxonomyUtil.php');
-include_once($SERVER_ROOT.'/classes/TaxonomyHarvester.php');
+//include_once($SERVER_ROOT.'/classes/TaxonomyHarvester.php');
 include_once($SERVER_ROOT.'/classes/GuidManager.php');
 include_once($SERVER_ROOT.'/config/symbini.php');
 
@@ -384,38 +384,90 @@ class OccurrenceHarvester{
 				$sampleArr['hashedSampleID'] = $viewArr['sampleTag'];
 			}
 			else{
-				$this->errorStr .= '; DATA ISSUE: sampleID failing to match';
-				$status = false;
-				/*
-				 if($this->updateSampleID($viewArr['sampleTag'], $sampleArr['sampleID'], $sampleArr['samplePK'], $sampleArr['occid'])){
-				 $this->errorLogArr[] = 'NOTICE: sampleID updated from '.$sampleArr['sampleID'].' to '.$viewArr['sampleTag'].' (samplePK: '.$sampleArr['samplePK'].', occid: '.$sampleArr['occid'].')';
-				 }
-				 else{
-				 $errMsg = (isset($neonSampleUpdate['errorMessage'])?$neonSampleUpdate['errorMessage'].'; ':'');
-				 $errMsg .= 'DATA ISSUE: failed to reset sampleID using changed API value';
-				 $this->setSampleErrorMessage($sampleArr['samplePK'], $errMsg);
-				 }
-				 */
+				$deprecated = null;
+				if(isset($viewArr['sampleEvents']) && is_array($viewArr['sampleEvents'])){
+					foreach($viewArr['sampleEvents'] as $event){
+						if(!isset($event['smsFieldEntries'])) continue;
+						foreach($event['smsFieldEntries'] as $entry){
+							if($entry['smsKey'] === 'deprecated_sample_tag'){
+								$deprecated = $entry['smsValue'];
+								break 2;
+							}
+						}
+					}
+				}
+				if(isset($deprecated) && $sampleArr['sampleID'] == $deprecated){
+					// Attempt to update
+					$success = $this->updateSampleID($viewArr['sampleTag'], $sampleArr['sampleID'], $sampleArr['samplePK'], $sampleArr['occid']);
+					if (!$success){
+						// do not harvest
+						$this->setSampleErrorMessage($sampleArr['samplePK'], trim($this->errorStr,'; '));
+						return false;
+					}
+					else $sampleArr['sampleID'] = $viewArr['sampleTag'];
+
+					// Log update
+					$this->errorLogArr[] = 'NOTICE: sampleID updated from '.$sampleArr['sampleID'].' to '.$viewArr['sampleTag'].' (samplePK: '.$sampleArr['samplePK'].', occid: '.$sampleArr['occid'].')';
+
+				} else {
+					$this->errorStr .= '; DATA ISSUE: sampleID failing to match';
+					$status = false;
+				}
 			}
 		}
-		if(!$status) $this->setSampleErrorMessage($sampleArr['samplePK'], trim($this->errorStr, '; '));
-		$this->updateSampleRecord($neonSampleUpdate,$sampleArr['samplePK']);
-		return $status;
+		if(!$status){
+			$this->setSampleErrorMessage($sampleArr['samplePK'], trim($this->errorStr,'; '));
+			return false; // abort harvest
+		}
+		$this->updateSampleRecord($neonSampleUpdate, $sampleArr['samplePK']);
+		return true;
 	}
 
 	private function updateSampleID($newSampleID, $oldSampleID, $samplePK, $occid){
-		$status = true;
-		$sql = 'UPDATE NeonSample SET sampleID = "'.$newSampleID.'", alternativeSampleID = CONCAT_WS(", ",alternativeSampleID,"'.$oldSampleID.'") WHERE samplePK = '.$samplePK;
-		if(!$this->conn->query($sql)){
-			$status = false;
+		// check if alternativeSampleID already exists, abort if so
+		$checkSql = 'SELECT alternativeSampleID FROM NeonSample WHERE samplePK = '.$samplePK;
+		$rs = $this->conn->query($checkSql);
+
+		if(!$rs){
+			$this->errorStr .= '; SQL error checking alternativeSampleID';
+			return false;
 		}
-		if($occid){
-			$sql = 'UPDATE omoccuridentifiers SET identifierValue = "'.$newSampleID.'" WHERE identifiername = "NEON sampleID" AND occid = '.$occid;
-			if(!$this->conn->query($sql)){
-				$status = false;
+
+		$row = $rs->fetch_assoc();
+		if (!empty($row['alternativeSampleID'])) {
+			if ($row['alternativeSampleID'] != '') {
+				$this->errorStr .= '; DATA ISSUE: cannot update sampleID because alternativeSampleID already exists';
+				return false; 
 			}
 		}
-		return $status;
+
+		// update NeonSample
+		$sql = 'UPDATE NeonSample SET sampleID = "'.$newSampleID.'", alternativeSampleID = "'.$oldSampleID.'" WHERE samplePK = '.$samplePK;
+		if(!$this->conn->query($sql)){
+			$this->errorStr .= '; SQL error updating NeonSample identifiers';
+			return false;
+		}
+		$sql = "UPDATE NeonSample SET notes = CASE WHEN notes IS NULL OR notes = '' THEN 'sampleID updated based on API value' ELSE CONCAT(notes, '; sampleID updated based on API value') END WHERE samplePK = $samplePK";
+		if(!$this->conn->query($sql)){
+			$this->errorStr .= '; SQL error updating NeonSample notes';
+			return false;
+		}
+		// Update omoccuridentifiers if occid exists
+		if($occid){
+			$sql = 'UPDATE omoccuridentifiers SET identifierValue = "'.$newSampleID.'" WHERE identifierName = "NEON sampleID" AND occid = '.$occid;
+			if(!$this->conn->query($sql)){
+				$this->errorStr .= '; SQL error updating sampleID';
+				return false;
+			}
+
+			// insert deprecated ID
+			$sql = 'INSERT INTO omoccuridentifiers (identifierName, identifierValue, occid, sortBy) VALUES ("deprecated NEON sampleID", "'.$oldSampleID.'", '.$occid.', 30)';
+			if(!$this->conn->query($sql)){
+				$this->errorStr .= '; SQL error inserting deprecated NEON sampleID';
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private function updateSampleRecord($neonSampleUpdate,$samplePK){
@@ -1193,7 +1245,7 @@ class OccurrenceHarvester{
 		}
 		elseif(in_array($dwcArr['collid'], array(19,28))){
 			$dwcArr['preparations'] = '-20 degrees Celsius';
-			$dwcArr['dynamicProperties'] = 'totalLength: NA, tailLength: NA, hindfootLengthSU: NA, hindfootLengthCU: NA, earLength: NA, weight: NA, embryoCount: NA, crownRumpLength: NA, placentalScars: NA, testisLength: NA, testisWidth: NA, preparedBy: NAp, preparedDate: NAp';
+			$dwcArr['dynamicProperties'] = '{"total_length_mm":"NA", "taill_length_mm":"NA", "hind_foot_length_without_claw_mm":"NA", "hind_foot_length_with_claw_mm":"NA", "ear_length_mm":"NA", "body_mass_grams":"NA", "embryo_count_left":"NA", "embryo_count_right":"NA", "crown_rump_length_mm":"NA", "placental_scar_count_left":"NA", "placental_scar_count_right":"NA", "testis_length_mm":"NA", "testis_width_mm":"NA", "prepared_by":"NAp", "prepared_date":"NAp"}';
 		}
 		elseif ($dwcArr['collid'] == 56) {
 			// bulk identified mosquitos
@@ -2461,30 +2513,31 @@ class OccurrenceHarvester{
 			if(!isset($this->taxonCodeArr[$taxonGroup][$taxonCode])){
 				$tid = 0;
 				$sciname = '';
-				$sql = 'SELECT t.tid, n.sciname, n.scientificNameAuthorship, n.family
+				$sql = 'SELECT t.tid, t.sciName, t.author, s.family
 					FROM neon_taxonomy n LEFT JOIN taxa t ON n.sciname = t.sciname
+					LEFT JOIN taxstatus s ON t.tid = s.tid
 					WHERE n.taxonGroup = "'.$this->cleanInStr($taxonGroup).'" AND n.taxonCode = "'.$this->cleanInStr($taxonCode).'"';
 				if($rs = $this->conn->query($sql)){
 					while($r = $rs->fetch_object()){
 						$tid = $r->tid;
-						$sciname = $r->sciname;
+						$sciname = $r->sciName;
 						$this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'] = $tid;
 						$this->taxonCodeArr[$taxonGroup][$taxonCode]['sciname'] = $sciname;
-						$this->taxonCodeArr[$taxonGroup][$taxonCode]['author'] = $r->scientificNameAuthorship;
+						$this->taxonCodeArr[$taxonGroup][$taxonCode]['author'] = $r->author;
 						$this->taxonCodeArr[$taxonGroup][$taxonCode]['family'] = $r->family;
 					}
 					$rs->free();
 				}
 				else echo 'ERROR populating taxonomy codes: '.$sql;
-				if(!$tid && $sciname){
-					//Verify name via Catalog of Life and if valid, add to thesaurus
-					$harvester = new TaxonomyHarvester();
-					$harvester->setKingdomName($this->getKingdomName());
-					$harvester->setTaxonomicResources(array('col'));
-					if($newTid = $harvester->processSciname($sciname)){
-						$this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'] = $newTid;
-					}
-				}
+				// if(!$tid && $sciname){
+				// 	//Verify name via Catalog of Life and if valid, add to thesaurus
+				// 	$harvester = new TaxonomyHarvester();
+				// 	$harvester->setKingdomName($this->getKingdomName());
+				// 	$harvester->setTaxonomicResources(array('col'));
+				// 	if($newTid = $harvester->processSciname($sciname)){
+				// 		$this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'] = $newTid;
+				// 	}
+				// }
 			}
 			if(isset($this->taxonCodeArr[$taxonGroup][$taxonCode])){
 				$retArr['tidInterpreted'] = $this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'];
@@ -2535,15 +2588,15 @@ class OccurrenceHarvester{
 					if(!empty($scinameArr['author'])) $retArr['scientificNameAuthorship'] = $scinameArr['author'];
 				}
 			}
-			if(!$retArr){
-				//Verify name via Catalog of Life and if valid, add to thesaurus
-				$harvester = new TaxonomyHarvester();
-				$harvester->setKingdomName($this->getKingdomName());
-				$harvester->setTaxonomicResources(array('col'));
-				if($harvester->processSciname($sciname)){
-					$retArr = $this->getTaxon($sciname);
-				}
-			}
+			// if(!$retArr){
+			// 	//Verify name via Catalog of Life and if valid, add to thesaurus
+			// 	$harvester = new TaxonomyHarvester();
+			// 	$harvester->setKingdomName($this->getKingdomName());
+			// 	$harvester->setTaxonomicResources(array('col'));
+			// 	if($harvester->processSciname($sciname)){
+			// 		$retArr = $this->getTaxon($sciname);
+			// 	}
+			// }
 		}
 
 		return $retArr;
