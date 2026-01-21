@@ -428,7 +428,7 @@ $siteData = new DatasetsMetadata();
 					<div id="search-form-taxonomy" class="content">
 						<div id="taxa-text" class="input-text-container">
 							<label for="taxa" class="input-text--outlined">
-								<input type="text" name="taxa" id="taxa" data-chip="Taxa">
+								<input type="text" name="taxa" id="taxa" data-chip="Taxa" placeholder="Scientific names only (e.g., Carabidae)">
 								<span data-label="Taxon"></span></label>
 							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
 						</div>
