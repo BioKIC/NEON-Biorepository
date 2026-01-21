@@ -240,16 +240,45 @@ class OccurrenceHarvester{
 			return false;
 		}
 
-		foreach ($urlConfigs as $config) {
-			$url = '';
-			if (!empty($sampleArr[$config['key']])) $url = $this->buildApiurl($config, $sampleArr);
+		// first try sampleID -- required due to implementation of hashed identifiers
+		if (!empty($sampleArr['sampleID']) && !empty($sampleArr['sampleClass'])) {
 
-			if (!empty($url)){
-				//echo 'url: ' . $url . '<br/>';
-				$sampleViewArr = $this->checkApiforData($url, $sampleArr);
-				if ($sampleViewArr) {
-					return $this->checkApiDataforErrors($sampleArr, $sampleViewArr);
-				}
+			$config = [
+				'key'   => 'sampleID',
+				'param' => 'sampleTag',
+				'key2'  => 'sampleClass',
+				'param2'=> 'sampleClass'
+			];
+
+			$url = $this->buildApiurl($config, $sampleArr);
+
+			if (!$url) return false;
+
+			$sampleViewArr = $this->checkApiforData($url, $sampleArr);
+
+			if (!$sampleViewArr) {
+				$this->errorStr = 'DATA ISSUE: sampleID + sampleClass returned no views from NEON API';
+				$this->setSampleErrorMessage($sampleArr['samplePK'], $this->errorStr);
+				return false;
+			}
+
+			return $this->checkApiDataforErrors($sampleArr, $sampleViewArr);
+		}
+
+		foreach ($urlConfigs as $config) {
+
+    	// Skip sampleID here — already handled above
+			if ($config['key'] === 'sampleID') continue;
+
+			if (empty($sampleArr[$config['key']])) continue;
+
+			$url = $this->buildApiurl($config, $sampleArr);
+			if (!$url) continue;
+
+			$sampleViewArr = $this->checkApiforData($url, $sampleArr);
+
+			if ($sampleViewArr) {
+				return $this->checkApiDataforErrors($sampleArr, $sampleViewArr);
 			}
 		}
 		return false;
@@ -377,9 +406,14 @@ class OccurrenceHarvester{
 				}
 			}
 		}
+		if($sampleArr['hashedSampleID'] && isset($viewArr['sampleTag']) && $sampleArr['hashedSampleID'] != $viewArr['sampleTag']){
+			//hashed id does not match, just record within NeonSample error field and then skip harvest of this record
+			$this->errorStr .= '; DATA ISSUE: Hashed sampleID failing to match (old: '.$sampleArr['hashedSampleID'].', new: '.$viewArr['sampleTag'].')';
+			$status = false;
+		}
 		if($sampleArr['sampleID'] && isset($viewArr['sampleTag']) && $sampleArr['sampleID'] != $viewArr['sampleTag'] && $sampleArr['hashedSampleID'] != $viewArr['sampleTag']){
 			//sampleIDs (sampleTags) are not equal; report error and abort harvest
-			if(substr($viewArr['sampleTag'],-1) == '=' || !preg_match('/[_\.]+/',$viewArr['sampleTag'])){
+			if(empty($sampleArr['hashedSampleID']) && (substr($viewArr['sampleTag'],-1) == '=' || !preg_match('/[_\.]+/',$viewArr['sampleTag']))){
 				$neonSampleUpdate['hashedSampleID'] = $viewArr['sampleTag'];
 				$sampleArr['hashedSampleID'] = $viewArr['sampleTag'];
 			}
