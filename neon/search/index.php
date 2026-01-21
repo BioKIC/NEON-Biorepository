@@ -579,6 +579,6 @@ $siteData = new DatasetsMetadata();
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
 </body>
-<script src="js/searchform.js?ver=14" type="text/javascript"></script>
+<script src="js/searchform.js?ver=<?= date('Y-m-d') ?>" type="text/javascript"></script>
 <script> window.addEventListener('load', updateChip);</script>
 </html>
