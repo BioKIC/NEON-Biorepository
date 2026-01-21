@@ -155,11 +155,11 @@ $siteData = new DatasetsMetadata();
 					<div class="content">
 						<div id="search-form-colls">
 							<!-- Open NEON Collections modal -->
-							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">All NEON Samples at the Biorepository</span></div>
+							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">All NEON Sample Types at the Biorepository</span></div>
 							<!-- External Collections -->
 							<div>
 								<ul id="neonext-collections-list">
-									<li class="Mui"><input id="all-neon-ext" data-chip="Sample Types at Other Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span class="group-label">All NEON Samples at Other Repositories</span>
+									<li class="Mui"><input id="all-neon-ext" data-chip="Sample Types at Other Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span class="group-label">All NEON Sample Types at Other Repositories</span>
 									<a href='https://www.neonscience.org/samples/sample-repositories' target='_blank' rel='noopener noreferrer' title='View More Information'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>
 										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
 											echo '<ul class="collapsed">';
