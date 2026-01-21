@@ -248,7 +248,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
               p.innerHTML =
                 `Welcome to NEON's development website! Feel free to explore this site and provide your feedback through
-                <a href="https://forms.gle/ZWEjBJMgFL4HQTnp7"
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJlcJCdFtnKRQrd7tkmnsue4g1wCVPXS4RLw8DKUIqihH_LQ/viewform"
                    style="color:#0073CF; text-decoration:underline;"
                    onmouseover="this.style.color='#0092E2'"
                    onmouseout="this.style.color='#0073CF'">this webform</a>
