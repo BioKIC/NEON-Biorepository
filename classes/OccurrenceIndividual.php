@@ -586,9 +586,11 @@ class OccurrenceIndividual extends Manager{
 
 				$preferredKeys = [
 					'NEON sampleCode (barcode)',
+					'NEON sampleID Hash',
 					'NEON sampleID',
 					'Originating NEON barcode',
-					'Originating NEON sampleID'
+					'Originating NEON sampleID',
+					'Originating NEON sampleID Hash'
 				];
 
 				$sampleClass = '';
@@ -604,7 +606,7 @@ class OccurrenceIndividual extends Manager{
 								$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
 							}
 
-							if ($key === 'NEON sampleID') {
+							if ($key === 'NEON sampleID' || $key === 'NEON sampleID Hash') {
 								$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ?';
 								if ($stmt = $this->conn->prepare($sql)) {
 									$stmt->bind_param('i', $this->occArr['occid']);
@@ -618,7 +620,7 @@ class OccurrenceIndividual extends Manager{
 									}
 									$stmt->close();
 								}
-							} elseif ($key === 'Originating NEON sampleID') {
+							} elseif ($key === 'Originating NEON sampleID' || $key === 'Originating NEON sampleID Hash') {
 								$sql = 'SELECT s.sampleClass
 										FROM NeonSample s
 										LEFT JOIN omoccurassociations a
