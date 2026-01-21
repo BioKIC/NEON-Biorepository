@@ -270,7 +270,7 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 		}
 		else{
 			//neon edit
-			$sql .= 'LEFT JOIN omoccurrences o ON m.occid = o.occid INNER JOIN omoccurdatasetlink ds ON o.occid = ds.occid LEFT JOIN omoccurdatasetlink dl ON o.occid = dl.occid';
+			$sql .= 'LEFT JOIN omoccurrences o ON m.occid = o.occid INNER JOIN omoccurdatasetlink ds ON o.occid = ds.occid LEFT JOIN omoccurdatasetlink dl ON o.occid = dl.occid ';
 			//end neon edit
 		}
 		return $sql;
