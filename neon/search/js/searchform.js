@@ -658,7 +658,7 @@ function validateForm() {
   if (anyCollsSelected.length === 0) {
     errors.push({
       elId: 'search-form-colls',
-      errorMsg: 'Please select at least one collection.',
+      errorMsg: 'Please select at least one sample type.',
     });
   }
   // HTML5 built-in validation
