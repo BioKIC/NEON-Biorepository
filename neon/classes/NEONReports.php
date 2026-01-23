@@ -908,27 +908,51 @@ function getScholarProfileStats() {
 
     public function sampleUseByInitiationAYBarChart($name,$reportDate,$endquarter){
         $sql = "SELECT
-                CASE
-                    WHEN inquiryDate < '2018-10-01'
-                    THEN 'AY<2019'
-                    WHEN MONTH(inquiryDate) >= 10
-                    THEN CONCAT('AY', YEAR(inquiryDate) + 1)
-                    ELSE CONCAT('AY', YEAR(inquiryDate))
-                END AS initiationAY,
-                CASE    
-                    WHEN status IN('active use','completed')
-                    THEN 'current/complete'
-                    WHEN status LIKE '%pend%'
-                    THEN 'pending funding/fulfillment'
-                    WHEN status = 'not funded'
-                        THEN 'not funded' 
-                    ELSE 'initial inquiry only'
-                END AS statustype,
-                COUNT(DISTINCT id) AS requests
-                FROM neonrequest
-                WHERE inquiryDate < ?
-                GROUP BY initiationAY, statustype
-                ORDER BY initiationAY, statustype";
+                    CASE
+                        WHEN EXTRACT(MONTH FROM inquiryDate) >= 10
+                            THEN EXTRACT(YEAR FROM inquiryDate) + 1
+                        ELSE EXTRACT(YEAR FROM inquiryDate)
+                    END AS initiationAY,
+                    statustype,
+                    COUNT(id) as requests
+                FROM (
+                    SELECT
+                        id,
+                        inquiryDate,
+                        statustype,
+                        date,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY id
+                            ORDER BY date DESC
+                        ) AS rn
+                    FROM (
+                        SELECT id, inquiryDate,'initial inquiry only' AS statustype, inquiryDate AS date
+                        FROM neonrequest
+
+                        UNION ALL
+                        SELECT id,inquiryDate, 'active/complete', activeDate
+                        FROM neonrequest
+
+                        UNION ALL
+                        SELECT id,inquiryDate, 'pending funding/fulfillment', pendingFundingDate
+                        FROM neonrequest
+
+                        UNION ALL
+                        SELECT id, inquiryDate,'pending funding/fulfillment', pendingSampleListDate
+                        FROM neonrequest
+
+                        UNION ALL
+                        SELECT id, inquiryDate,'pending funding/fulfillment', pendingFulfillmentDate
+                        FROM neonrequest
+                        
+                        UNION ALL
+                        SELECT id, inquiryDate,'not funded', notFundedDate
+                        FROM neonrequest
+                    ) t
+                    WHERE date IS NOT NULL AND date <= ?
+                ) ranked
+                WHERE rn = 1
+                GROUP BY initiationAY, statustype";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('s',$endquarter);
@@ -949,49 +973,71 @@ function getScholarProfileStats() {
         }
     }
 
-    // below has major issue --> status date is an issue if mismatch in interim between when report made
-    // public function sampleUseByStatusAYBarChart($name,$reportDate,$endquarter){
-    //     $sql = "SELECT
-    //             CASE
-    //                 WHEN statusDate < '2018-10-01'
-    //                 THEN 'AY<2019'
-    //                 WHEN MONTH(statusDate) >= 10
-    //                 THEN CONCAT('AY', YEAR(statusDate) + 1)
-    //                 ELSE CONCAT('AY', YEAR(statusDate))
-    //             END AS statusAY,
-    //             CASE    
-    //                 WHEN status IN('active use','completed')
-    //                 THEN 'current/complete'
-    //                 WHEN status LIKE '%pend%'
-    //                 THEN 'pending funding/fulfillment'
-    //                 WHEN status = 'not funded'
-    //                     THEN 'not funded' 
-    //                 ELSE 'initial inquiry only'
-    //             END AS statustype,
-    //             COUNT(DISTINCT id) AS requests
-    //             FROM neonrequest
-    //             WHERE statusDate < ?
-    //             GROUP BY statusAY, statustype
-    //             ORDER BY statusAY, statustype";
+    public function sampleUseByStatusAYBarChart($name,$reportDate,$endquarter){
+        $sql = "SELECT
+                    CASE
+                        WHEN EXTRACT(MONTH FROM date) >= 10
+                            THEN EXTRACT(YEAR FROM date) + 1
+                        ELSE EXTRACT(YEAR FROM date)
+                    END AS statusAY,
+                    statustype,
+                    COUNT(id) as requests
+                FROM (
+                    SELECT
+                        id,
+                        statustype,
+                        date,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY id
+                            ORDER BY date DESC
+                        ) AS rn
+                    FROM (
+                        SELECT id, 'initial inquiry only' AS statustype, inquiryDate AS date
+                        FROM neonrequest
 
-    //     $stmt = $this->conn->prepare($sql);
-    //     $stmt->bind_param('s',$endquarter);
+                        UNION ALL
+                        SELECT id, 'active/complete', activeDate
+                        FROM neonrequest
 
-    //     $stmt->execute();
-    //     $result = $stmt->get_result();
+                        UNION ALL
+                        SELECT id, 'pending funding/fulfillment', pendingFundingDate
+                        FROM neonrequest
+
+                        UNION ALL
+                        SELECT id,'pending funding/fulfillment', pendingSampleListDate
+                        FROM neonrequest
+
+                        UNION ALL
+                        SELECT id,'pending funding/fulfillment', pendingFulfillmentDate
+                        FROM neonrequest
+                        
+                        UNION ALL
+                        SELECT id, 'not funded', notFundedDate
+                        FROM neonrequest
+                    ) t
+                    WHERE date IS NOT NULL AND date <= ?
+                ) ranked
+                WHERE rn = 1
+                GROUP BY statusAY,statustype";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s',$endquarter);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
         
-    //     $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `initiationOrStatusAY`, `status`, `requests`,`date`) VALUES (?, 'To Date', 'Sample Use By Status Year Bar Chart', ?, ?, ?, ?)");
+        $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `initiationOrStatusAY`, `status`, `requests`,`date`) VALUES (?, 'To Date', 'Sample Use By Status Year Bar Chart', ?, ?, ?, ?)");
 
-    //     while ($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch_assoc()) {
 
-    //         $ins->bind_param('sssis', $name, $row['statusAY'], $row['statustype'], $row['requests'], $reportDate);
-    //            $ins->execute();
+            $ins->bind_param('sssis', $name, $row['statusAY'], $row['statustype'], $row['requests'], $reportDate);
+               $ins->execute();
 
-    //         if ($ins->error) {
-    //             error_log("Insert error for Bar Chart Data: " . $ins->error);
-    //         }
-    //     }
-    // }
+            if ($ins->error) {
+                error_log("Insert error for Bar Chart Data: " . $ins->error);
+            }
+        }
+    }
 }
 
 ?>

@@ -34,6 +34,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
     <link rel="stylesheet" href="../css/tables.css">
 		<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	</head>
 	<body>
 		<?php
@@ -67,7 +68,8 @@ if ($isEditor) {
 		}
 
 		$excludeTableTypes = [
-				'Samples Use Bar Chart'
+				'Sample Use By Initiation Year Bar Chart',
+				'Sample Use By Status Year Bar Chart'
 			];
 
 
@@ -159,7 +161,22 @@ if ($isEditor) {
 		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
 		<button type="submit">Download Datasets Generated</button>
 	</form>
+
+	<h2>Requests by Initiation Award Year</h2>
+
+	<div style="height: 450px; max-width: 1000px;">
+		<canvas id="requestsByInitiationAY"></canvas>
+	</div>
+
+	<h2>Requests by Award Year of Status Update</h2>
+
+	<div style="height: 450px; max-width: 1000px;">
+		<canvas id="requestsByStatusAY"></canvas>
+	</div>
+	
 <?php
+
+
 
 } 
 else {
@@ -173,83 +190,94 @@ else {
   </body>
   <script src="../js/sortables.js"></script>
 
+<?php
+$chartDataInit = [];
+
+foreach ($reportsArr as $row) {
+    if ($row['tabletype'] === 'Sample Use By Initiation Year Bar Chart') {
+        $chartDataInit[] = [
+            'initiationAY' => (string)$row['initiationOrStatusAY'],
+            'status'       => $row['status'],
+            'requests'     => (int)$row['requests']
+        ];
+    }
+}
+?>
+
+<script>
+    const chartDataInit_<?= md5($reportDate) ?> = <?= json_encode($chartDataInit) ?>;
+</script>
+
 <script>
 	(function () {
 
-		const rawData = chartData_<?= md5($reportDate) ?>;
+		const rawData = chartDataInit_<?= md5($reportDate) ?>;
 
-		const labels = rawData.map(r => r.awardYear);
-		const rawCounts = rawData.map(r => r.count);
+		const years = [...new Set(rawData.map(r => r.initiationAY))].sort();
 
-		const prefixes = [...new Set(
-			rawData.map(r => r.awardYear.substring(0, 3))
-		)];
-
-		const colorPalette = [
-			'#4e79a7', // blue
-			'#1f77b4', // dark blue
-			'#7f7f7f', // neutral gray
-			'#393b79', // indigo
-			'#3182bd', // steel blue
-			'#e6550d'  // burnt orange
+		const statuses = [
+			'active/complete',
+			'pending funding/fulfillment',
+			'not funded',
+			'initial inquiry only'
 		];
+		const colorPalette = {
+			'initial inquiry only': '#dfdfe0',
+			'active/complete': '#0472cf',
+			'pending funding/fulfillment': '#d18710ff',
+			'not funded': '#4b372f'
+		};
 
-
-		const datasets = prefixes.map((prefix, i) => ({
-			label: prefix,
-			backgroundColor: colorPalette[i % colorPalette.length],
-			data: rawData.map((r, idx) =>
-				r.awardYear.startsWith(prefix)
-					? rawCounts[idx]
-					: null
-			),
-			categoryPercentage: 3.0,
-			barPercentage: 3.0
+		const datasets = statuses.map(status => ({
+			label: status,
+			backgroundColor: colorPalette[status] || '#999999',
+			data: years.map(year => {
+				const row = rawData.find(
+					r => r.initiationAY === year && r.status === status
+				);
+				return row ? row.requests : 0;
+			})
 		}));
 
-
 		const ctx = document
-			.getElementById('samplesByClassChart')
+			.getElementById('requestsByInitiationAY')
 			.getContext('2d');
 
 		new Chart(ctx, {
 			type: 'bar',
 			data: {
-				labels: labels,
+				labels: years,
 				datasets: datasets
 			},
 			options: {
 				responsive: true,
 				maintainAspectRatio: false,
-
 				scales: {
 					x: {
+						stacked: true,
 						title: {
 							display: true,
 							text: 'Award Year of Initiation'
-						}					},
+						}
+					},
 					y: {
+						stacked: true,
 						beginAtZero: true,
 						title: {
 							display: true,
-							text: 'Number of Inquiries'
+							text: 'Number of Requests'
 						}
 					}
 				},
-
 				plugins: {
 					legend: {
-						display: true,
 						position: 'bottom'
 					},
 					tooltip: {
 						callbacks: {
-							title: function (tooltipItems) {
-								return labels[tooltipItems[0].dataIndex];
-							},
-							label: function (tooltipItem) {
-								const index = tooltipItem.dataIndex;
-								return 'Samples: ' + rawCounts[index].toLocaleString();
+							label: function (ctx) {
+								return ctx.dataset.label + ': ' +
+									ctx.raw.toLocaleString();
 							}
 						}
 					}
@@ -258,7 +286,104 @@ else {
 		});
 
 	})();
-	</script>
+</script>
 
+<?php
+$chartDataStat = [];
+
+foreach ($reportsArr as $row) {
+    if ($row['tabletype'] === 'Sample Use By Status Year Bar Chart') {
+        $chartDataStat[] = [
+            'statusAY' => (string)$row['initiationOrStatusAY'],
+            'status'       => $row['status'],
+            'requests'     => (int)$row['requests']
+        ];
+    }
+}
+?>
+
+<script>
+    const chartDataStat_<?= md5($reportDate) ?> = <?= json_encode($chartDataStat) ?>;
+</script>
+
+<script>
+	(function () {
+
+		const rawData = chartDataStat_<?= md5($reportDate) ?>;
+
+		const years = [...new Set(rawData.map(r => r.statusAY))].sort();
+
+		const statuses = [
+			'active/complete',
+			'pending funding/fulfillment',
+			'not funded',
+			'initial inquiry only'
+		];
+		const colorPalette = {
+			'initial inquiry only': '#dfdfe0',
+			'active/complete': '#0472cf',
+			'pending funding/fulfillment': '#d18710ff',
+			'not funded': '#4b372f'
+		};
+
+		const datasets = statuses.map(status => ({
+			label: status,
+			backgroundColor: colorPalette[status] || '#999999',
+			data: years.map(year => {
+				const row = rawData.find(
+					r => r.statusAY === year && r.status === status
+				);
+				return row ? row.requests : 0;
+			})
+		}));
+
+		const ctx = document
+			.getElementById('requestsByStatusAY')
+			.getContext('2d');
+
+		new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: years,
+				datasets: datasets
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					x: {
+						stacked: true,
+						title: {
+							display: true,
+							text: 'Award Year of Status Update'
+						}
+					},
+					y: {
+						stacked: true,
+						beginAtZero: true,
+						title: {
+							display: true,
+							text: 'Number of Requests'
+						}
+					}
+				},
+				plugins: {
+					legend: {
+						position: 'bottom'
+					},
+					tooltip: {
+						callbacks: {
+							label: function (ctx) {
+								return ctx.dataset.label + ': ' +
+									ctx.raw.toLocaleString();
+							}
+						}
+					}
+				}
+			}
+		});
+
+	})();
+</script>
 
 </html>
