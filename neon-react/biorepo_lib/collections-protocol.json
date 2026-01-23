@@ -263,7 +263,7 @@
     "children": [
       {
         "id": 31,
-        "name": "Belowground Biomass (Tower Plots)",
+        "name": "Root Cores (Tower Plots)",
         "collid": 10
       }
     ]
@@ -526,7 +526,7 @@
         "children": [
           {
             "id": 71,
-            "name": "Particulate Mass Filters",
+            "name": "Particulate Mass Filters (Dust)",
             "collid": 41
           }
         ]
@@ -587,7 +587,7 @@
     "children": [
       {
         "id": 82,
-        "name": "Belowground Biomass (Megapit)",
+        "name": "Root Cores (Megapit)",
         "collid": 76
       }
     ]

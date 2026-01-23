@@ -13,6 +13,16 @@
             "collid": 46
           },
           {
+            "id": 8,
+            "name": "Root Cores (Megapit)",
+            "collid": 76
+          },
+          {
+            "id": 9,
+            "name": "Root Cores (Tower Plots)",
+            "collid": 10
+          },
+          {
             "id": 4,
             "name": "Small Mammal Hair Samples",
             "collid": 27
@@ -34,18 +44,8 @@
         "name": "Environmental",
         "children": [
           {
-            "id": 8,
-            "name": "Belowground Biomass (Megapit)",
-            "collid": 76
-          },
-          {
-            "id": 9,
-            "name": "Belowground Biomass (Tower Plots)",
-            "collid": 10
-          },
-          {
             "id": 10,
-            "name": "Particulate Mass Filters",
+            "name": "Particulate Mass Filters (Dust)",
             "collid": 41
           },
           {
