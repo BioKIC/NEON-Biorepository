@@ -142,7 +142,7 @@ function addChip(element) {
       };
     }
   } else if (
-    (element.name == 'neonext-collections-list') |
+    (element.name == 'neonext-collections-items') |
     (element.name == 'ext-collections-list') |
     (element.name == 'taxonomic-cat') |
     (element.name == 'neon-theme') |
@@ -230,13 +230,13 @@ function updateChip(e) {
   }
   // if any additional NEON colls are selected (except for "all"), then add chip
   let addCols = document.querySelectorAll(
-    '#neonext-collections-list input[type=checkbox]'
+    '#neonext-collections-items input[type=checkbox]'
   );
   let addColsChecked = document.querySelectorAll(
-    '#neonext-collections-list input[type=checkbox]:checked'
+    '#neonext-collections-items input[type=checkbox]:checked'
   );
   if (addColsChecked.length > 0 && addColsChecked.length < addCols.length) {
-    addChip(getCollsChips('neonext-collections-list', 'Some Sample Types at Other Repos'));
+    addChip(getCollsChips('neonext-collections-items', 'Some Sample Types at Other Repos'));
   }
   // if any external NEON colls are selected (expect for "all"), then add chip
   let extCols = document.querySelectorAll(
@@ -394,6 +394,20 @@ function getAdvancedSearchChip() {
  * Uses jQuery
  */
 function toggleAllSelector() {
+  // CASE 1: accordion-style (all-selector inside .accordion-subheader)
+  const accordionHeader = this.closest('.accordion-subheader');
+  if (accordionHeader) {
+    const li = accordionHeader.closest('li');
+    if (!li) return;
+
+    li.querySelectorAll('.content input.child:enabled').forEach(cb => {
+      cb.checked = this.checked;
+      cb.indeterminate = false;
+    });
+    return;
+  }
+
+  // CASE 2: original behavior (unchanged)
   $(this)
     .siblings()
     .find('input[type=checkbox]:enabled')
@@ -401,6 +415,7 @@ function toggleAllSelector() {
     .prop('indeterminate', false)
     .attr('checked', this.checked);
 }
+
 
 /**
  * Triggers toggling of checked/unchecked boxes in nested lists
@@ -427,26 +442,53 @@ function updateAncestors(fromCheckbox) {
     const parentLi = li.parentElement?.closest('li');
     if (!parentLi) break; // reached the root
 
-    const parentCb = parentLi.querySelector(':scope > input.all-selector');
+    // --- CASE A: original structure ---
+    // <li>
+    //   <input class="all-selector">
+    //   <ul> <li><input class="child"> ...
+    // </li>
+    let parentCb = parentLi.querySelector(':scope > input.all-selector');
+    let kids = null;
+
     if (parentCb) {
-      // consider ONLY direct child checkboxes (leaves or groups)
-      const kids = parentLi.querySelectorAll(':scope > ul > li > input.child:enabled');
-
-      let total = 0, checkedCount = 0, anyIndeterminate = false;
-      kids.forEach(cb => {
-        total++;
-        if (cb.indeterminate) anyIndeterminate = true;
-        if (cb.checked) checkedCount++;
-      });
-
-      parentCb.checked = total > 0 && checkedCount === total && !anyIndeterminate;
-      parentCb.indeterminate = anyIndeterminate || (checkedCount > 0 && checkedCount < total);
+      kids = parentLi.querySelectorAll(':scope > ul > li > input.child:enabled');
+    } else {
+      // --- CASE B: your accordion structure ---
+      // <li>
+      //   <label class="accordion-subheader">
+      //     <input class="all-selector">
+      //   </label>
+      //   <div class="content">
+      //     <ul> ... <input class="child"> ...
+      // </li>
+      parentCb = parentLi.querySelector(':scope > label.accordion-subheader input.all-selector');
+      if (parentCb) {
+        // only count real leaf checkboxes in the content area
+        kids = parentLi.querySelectorAll(':scope > .content input.child:enabled');
+      }
     }
+
+    // If this parent LI doesn't have a group checkbox in either shape, just climb
+    if (!parentCb || !kids) {
+      li = parentLi;
+      continue;
+    }
+
+    let total = 0, checkedCount = 0, anyIndeterminate = false;
+    kids.forEach(cb => {
+      total++;
+      if (cb.indeterminate) anyIndeterminate = true;
+      if (cb.checked) checkedCount++;
+    });
+
+    parentCb.checked = total > 0 && checkedCount === total && !anyIndeterminate;
+    parentCb.indeterminate = anyIndeterminate || (checkedCount > 0 && checkedCount < total);
 
     // climb
     li = parentLi;
   }
 }
+
 
 function autoToggleSelector(e) {
   if (e.type !== 'click' && e.type !== 'change') return;

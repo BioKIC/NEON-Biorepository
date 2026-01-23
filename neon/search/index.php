@@ -117,7 +117,8 @@ $siteData = new DatasetsMetadata();
 			// group node
 			else {
 				$name = htmlspecialchars($node['name']);
-				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$name}'>";
+				$catAttr = $parentId !== '' ? " data-cat='{$parentId}'" : '';
+				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child'{$catAttr} data-ccode='{$name}'>";
 				// wrap label + icon so whole thing is clickable
 				$html .= "<span data-target='{$cCodeId}'>
 							<span class='material-icons expansion-icon'>add_box</span>
@@ -154,27 +155,54 @@ $siteData = new DatasetsMetadata();
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-colls">
-							<!-- Open NEON Collections modal -->
-							<div><input id="all-neon-colls-quick" data-chip="All Sample Types" class="all-selector" type="checkbox" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span class="neon-modal-open">All NEON Sample Types at the Biorepository</span></div>
-							<!-- External Collections -->
-							<div>
+							<section>
+								<!-- Open NEON Collections modal -->
+								<label class="accordion-subheader neon-modal-open">
+									<input id="all-neon-colls-quick" data-chip="All Sample Types at the Biorepository" type="checkbox" data-form-id="biorepo-collections-list">
+									<span>All NEON Sample Types at the Biorepository</span>
+								</label>
+							</section>
+							<section>
+								<!-- External Collections -->
 								<ul id="neonext-collections-list">
-									<li class="Mui"><input id="all-neon-ext" data-chip="Sample Types at Other Repositories" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span class="group-label">All NEON Sample Types at Other Repositories</span>
-									<a href='https://www.neonscience.org/samples/sample-repositories' target='_blank' rel='noopener noreferrer' title='View More Information'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>
-										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
-											echo '<ul class="collapsed">';
-											foreach ($collsArr as $result) {
-												echo "<li class='Mui'>";
-												echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
-												echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]} </span>";
-												echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
-												echo "</li>";
-											}
-											echo '</ul>';
-										}; ?>
+									<li class="Mui">
+										<!-- Accordion selector -->
+										<input type="checkbox" id="other-repos" class="accordion-selector" />
+										<!-- Accordion header -->
+										<label for="other-repos" class="accordion-subheader">
+											<input
+											  id="all-neon-ext"
+											  data-chip="All Sample Types at Other Repositories"
+											  type="checkbox"
+											  class="all-selector"
+											  data-form-id="neonext-collections-list"
+											>
+										  All NEON Sample Types at Other Repositories
+										  <a href="https://www.neonscience.org/samples/sample-repositories"
+											 target="_blank" rel="noopener noreferrer" title="View More Information">
+											<span class="material-icons" style="color:#565a5c; vertical-align:middle;">info</span>
+										  </a>
+										</label>
+									
+										<!-- Accordion content -->
+										<div class="content">
+											<ul id="neonext-collections-items">
+											  <?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
+												echo '<ul>';
+												foreach ($collsArr as $result) {
+												  echo "<li class='Mui'>";
+												  echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
+												  echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]}</span>";
+												  echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
+												  echo "</li>";
+												}
+												echo '</ul>';
+											  } ?>
+											</ul>
+										</div>
 									</li>
 								</ul>
-							</div>
+							</section>
 						</div>
 						<p class="Mui">
 						  Looking for more about NEON's sample types? Browse the <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank" rel="noopener noreferrer">sample type profiles</a> for descriptions, associated data, and contact information.

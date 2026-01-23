@@ -125,7 +125,6 @@ select:focus {
 }
 
 #all-neon-colls-quick {
-  margin-top: 1.2em;
 }
 
 select {
@@ -194,16 +193,13 @@ select {
 }
 
 #search-form-colls {
-  display: -ms-grid;
-  display: grid;
-  -ms-grid-columns: 1fr 2fr;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 10px;
+
 }
 
 #search-form-colls ul {
   list-style-type: none;
-  padding-left: 20px;
+  padding-left: 0px;
+  margin: 0px;
 }
 
 #search-form-locality {
@@ -466,6 +462,35 @@ span.accent-color-darker {
 }
 
 .accordions label.accordion-header::after {
+  font-family: "Material Icons";
+  font-size: 24px;
+  content: "\e313";
+  position: absolute;
+  right: 20px;
+  bottom: 1px;
+}
+
+.accordions label.accordion-subheader {
+  font-size: 16px;
+  font-weight: 600;
+  display: block;
+  padding: 8px 22px;
+  margin: 0 0 1px 0;
+  cursor: pointer;
+  background-color: #ffffff;
+  border-radius: 2px;
+  border: 1px solid #0073cf;
+  color: #0073cf;
+  -webkit-transition: ease .5s;
+  transition: ease .5s;
+  position: relative;
+}
+
+.accordions label.accordion-subheader:hover {
+  background: #e6e6e6;
+}
+
+.accordions label.accordion-subheader::after {
   font-family: "Material Icons";
   font-size: 24px;
   content: "\e313";
