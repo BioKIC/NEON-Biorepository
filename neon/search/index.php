@@ -139,9 +139,10 @@ $siteData = new DatasetsMetadata();
 	?>
 	<!-- This is inner text! -->
 	<div id="innertext">
-		<!-- neon edit -->
-		<h1>Biorepository Sample Portal</h1>
-		<!-- end neon edit -->
+		<h1 style="
+			margin-bottom: 30px;
+			font-size: 2.3rem;
+		">Explore Samples &amp; Specimens</h1>
 		<div id="error-msgs" class="errors"></div>
 		<form id="params-form">
 			<!-- Criteria forms -->
