@@ -172,4 +172,93 @@ else {
 		?>
   </body>
   <script src="../js/sortables.js"></script>
+
+<script>
+	(function () {
+
+		const rawData = chartData_<?= md5($reportDate) ?>;
+
+		const labels = rawData.map(r => r.awardYear);
+		const rawCounts = rawData.map(r => r.count);
+
+		const prefixes = [...new Set(
+			rawData.map(r => r.awardYear.substring(0, 3))
+		)];
+
+		const colorPalette = [
+			'#4e79a7', // blue
+			'#1f77b4', // dark blue
+			'#7f7f7f', // neutral gray
+			'#393b79', // indigo
+			'#3182bd', // steel blue
+			'#e6550d'  // burnt orange
+		];
+
+
+		const datasets = prefixes.map((prefix, i) => ({
+			label: prefix,
+			backgroundColor: colorPalette[i % colorPalette.length],
+			data: rawData.map((r, idx) =>
+				r.awardYear.startsWith(prefix)
+					? rawCounts[idx]
+					: null
+			),
+			categoryPercentage: 3.0,
+			barPercentage: 3.0
+		}));
+
+
+		const ctx = document
+			.getElementById('samplesByClassChart')
+			.getContext('2d');
+
+		new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: labels,
+				datasets: datasets
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+
+				scales: {
+					x: {
+						title: {
+							display: true,
+							text: 'Award Year of Initiation'
+						}					},
+					y: {
+						beginAtZero: true,
+						title: {
+							display: true,
+							text: 'Number of Inquiries'
+						}
+					}
+				},
+
+				plugins: {
+					legend: {
+						display: true,
+						position: 'bottom'
+					},
+					tooltip: {
+						callbacks: {
+							title: function (tooltipItems) {
+								return labels[tooltipItems[0].dataIndex];
+							},
+							label: function (tooltipItem) {
+								const index = tooltipItem.dataIndex;
+								return 'Samples: ' + rawCounts[index].toLocaleString();
+							}
+						}
+					}
+				}
+			}
+		});
+
+	})();
+	</script>
+
+
 </html>

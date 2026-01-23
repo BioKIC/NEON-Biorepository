@@ -172,7 +172,6 @@ else {
 			'#ff9da7', // pink
 			'#9c755f', // brown
 			'#bab0ab', // gray
-
 			'#1f77b4', // dark blue
 			'#ff7f0e', // dark orange
 			'#2ca02c', // dark green
@@ -183,7 +182,6 @@ else {
 			'#7f7f7f', // neutral gray
 			'#bcbd22', // olive
 			'#17becf', // cyan
-
 			'#393b79', // indigo
 			'#637939', // moss
 			'#8c6d31', // gold-brown

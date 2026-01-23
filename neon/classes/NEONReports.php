@@ -429,7 +429,8 @@ function getScholarProfileStats() {
         $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
-        //$this->sampleUseBarchart($name,$reportDate,$startyear,$endquarter);
+        $this->sampleUseByInitiationAYBarChart($name,$reportDate,$endquarter);
+        $this->sampleUseByStatusAYBarChart($name,$reportDate,$endquarter);
 
         return $name;
     
@@ -905,20 +906,41 @@ function getScholarProfileStats() {
         return $final;
     }
 
-     public function sampleUseBarChart($name,$reportDate,$endquarter){
-        $sql = "SELECT inquiryDate,status,COUNT(DISTINCT(id))
-                FROM neonrequest";
+    public function sampleUseByInitiationAYBarChart($name,$reportDate,$endquarter){
+        $sql = "SELECT
+                CASE
+                    WHEN inquiryDate < '2018-10-01'
+                    THEN 'AY<2019'
+                    WHEN MONTH(inquiryDate) >= 10
+                    THEN CONCAT('AY', YEAR(inquiryDate) + 1)
+                    ELSE CONCAT('AY', YEAR(inquiryDate))
+                END AS initiationAY,
+                CASE    
+                    WHEN status IN('active use','completed')
+                    THEN 'current/complete'
+                    WHEN status LIKE '%pend%'
+                    THEN 'pending funding/fulfillment'
+                    WHEN status = 'not funded'
+                        THEN 'not funded' 
+                    ELSE 'initial inquiry only'
+                END AS statustype,
+                COUNT(DISTINCT id) AS requests
+                FROM neonrequest
+                WHERE inquiryDate < ?
+                GROUP BY initiationAY, statustype
+                ORDER BY initiationAY, statustype";
 
         $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s',$endquarter);
 
         $stmt->execute();
         $result = $stmt->get_result();
+        
+        $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `initiationOrStatusAY`, `status`, `requests`,`date`) VALUES (?, 'To Date', 'Sample Use By Initiation Year Bar Chart', ?, ?, ?, ?)");
 
         while ($row = $result->fetch_assoc()) {
 
-            $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `tabletype`, `initiationAY`, `status`, `requests`,`date`) VALUES (?, 'Sample Use Bar Chart', ?, ?, ?, ?)");
-
-            $ins->bind_param('sssis', $name, $row['initiationAY'], $row['status'],$row['requests'], $reportDate);
+            $ins->bind_param('sssis', $name, $row['initiationAY'], $row['statustype'], $row['requests'], $reportDate);
                $ins->execute();
 
             if ($ins->error) {
@@ -926,6 +948,50 @@ function getScholarProfileStats() {
             }
         }
     }
+
+    // below has major issue --> status date is an issue if mismatch in interim between when report made
+    // public function sampleUseByStatusAYBarChart($name,$reportDate,$endquarter){
+    //     $sql = "SELECT
+    //             CASE
+    //                 WHEN statusDate < '2018-10-01'
+    //                 THEN 'AY<2019'
+    //                 WHEN MONTH(statusDate) >= 10
+    //                 THEN CONCAT('AY', YEAR(statusDate) + 1)
+    //                 ELSE CONCAT('AY', YEAR(statusDate))
+    //             END AS statusAY,
+    //             CASE    
+    //                 WHEN status IN('active use','completed')
+    //                 THEN 'current/complete'
+    //                 WHEN status LIKE '%pend%'
+    //                 THEN 'pending funding/fulfillment'
+    //                 WHEN status = 'not funded'
+    //                     THEN 'not funded' 
+    //                 ELSE 'initial inquiry only'
+    //             END AS statustype,
+    //             COUNT(DISTINCT id) AS requests
+    //             FROM neonrequest
+    //             WHERE statusDate < ?
+    //             GROUP BY statusAY, statustype
+    //             ORDER BY statusAY, statustype";
+
+    //     $stmt = $this->conn->prepare($sql);
+    //     $stmt->bind_param('s',$endquarter);
+
+    //     $stmt->execute();
+    //     $result = $stmt->get_result();
+        
+    //     $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `initiationOrStatusAY`, `status`, `requests`,`date`) VALUES (?, 'To Date', 'Sample Use By Status Year Bar Chart', ?, ?, ?, ?)");
+
+    //     while ($row = $result->fetch_assoc()) {
+
+    //         $ins->bind_param('sssis', $name, $row['statusAY'], $row['statustype'], $row['requests'], $reportDate);
+    //            $ins->execute();
+
+    //         if ($ins->error) {
+    //             error_log("Insert error for Bar Chart Data: " . $ins->error);
+    //         }
+    //     }
+    // }
 }
 
 ?>
