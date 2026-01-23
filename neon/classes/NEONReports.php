@@ -92,7 +92,7 @@
 
     // gbif literature citation count
     public function gbifLit(){
-        $gbifUrl = 'https://api.gbif.org/v1/literature/search?publishingOrg=e794e60e-e558-4549-99f8-cfb241cdce24&limit=0';
+        $gbifUrl = 'https://api.gbif.org/v1/literature/search?publishingOrganizationKey=e794e60e-e558-4549-99f8-cfb241cdce24&limit=0';
 
         $ch = curl_init($gbifUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1037,6 +1037,10 @@ function getScholarProfileStats() {
                 error_log("Insert error for Bar Chart Data: " . $ins->error);
             }
         }
+    }
+
+    public function cumulativeRequests($endquarter) {
+
     }
 }
 
