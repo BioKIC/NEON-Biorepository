@@ -13,16 +13,6 @@
             "collid": 46
           },
           {
-            "id": 8,
-            "name": "Root Cores (Megapit)",
-            "collid": 76
-          },
-          {
-            "id": 9,
-            "name": "Root Cores (Tower Plots)",
-            "collid": 10
-          },
-          {
             "id": 4,
             "name": "Small Mammal Hair Samples",
             "collid": 27
@@ -36,12 +26,22 @@
             "id": 6,
             "name": "Litterfall",
             "collid": 23
+          },
+          {
+            "id": 8,
+            "name": "Root Cores (Megapit)",
+            "collid": 76
+          },
+          {
+            "id": 9,
+            "name": "Root Cores (Tower Plots)",
+            "collid": 10
           }
         ]
       },
       {
         "id": 7,
-        "name": "Environmental",
+        "name": "Geochemical",
         "children": [
           {
             "id": 10,
