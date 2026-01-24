@@ -35,6 +35,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 	</head>
 	<body>
 		<?php
@@ -161,6 +162,18 @@ if ($isEditor) {
 		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
 		<button type="submit">Download Datasets Generated</button>
 	</form>
+
+	<h2>Cumulative Requests</h2>
+
+	<div style="height: 450px; max-width: 1000px;">
+		<canvas id="cumulativeRequests"></canvas>
+	</div>
+
+	<h2>Cumulative Sample Use</h2>
+
+	<div style="height: 450px; max-width: 1000px;">
+		<canvas id="cumulativeSampleRequests"></canvas>
+	</div>
 
 	<h2>Requests by Initiation Award Year</h2>
 
@@ -385,5 +398,193 @@ foreach ($reportsArr as $row) {
 
 	})();
 </script>
+
+	<?php
+		$chartDataCumReq = $reports->getCumulativeRequests($reportDate);
+	?>
+		<script>
+		const chartDataCumReq_<?= md5($reportDate) ?> = <?= json_encode($chartDataCumReq) ?>;
+		</script>
+
+<script>
+(function () {
+
+    const rawData = chartDataCumReq_<?= md5($reportDate) ?>;
+
+    const allInquiries = rawData
+        .filter(r => r.statustype === 'all inquiries')
+        .map(r => ({
+            x: r.date,
+            y: r.rank
+        }))
+        .sort((a, b) => new Date(a.x) - new Date(b.x));
+
+    const activeRequests = rawData
+        .filter(r => r.statustype === 'active requests')
+        .map(r => ({
+            x: r.date,
+            y: r.rank
+        }))
+        .sort((a, b) => new Date(a.x) - new Date(b.x));
+
+    const ctx = document
+        .getElementById('cumulativeRequests')
+        .getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'All inquiries',
+                    data: allInquiries,
+                    borderColor: '#000000',
+                    backgroundColor: '#000000',
+                    pointRadius: 0,
+                    tension: 0.2
+                },
+                {
+                    label: 'Active requests',
+                    data: activeRequests,
+                    borderColor: '#0472cf',
+                    backgroundColor: '#0472cf',
+                    pointRadius: 0,
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'nearest',
+                intersect: false
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'year',
+                        tooltipFormat: 'yyyy-MM-dd'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Cumulative Number of Requests'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+})();
+</script>
+
+</script>
+
+	<?php
+		$chartDataCumSamp = $reports->getCumulativeSamplesRequests($reportDate);
+	?>
+		<script>
+		const chartDataCumSamp_<?= md5($reportDate) ?> = <?= json_encode($chartDataCumSamp) ?>;
+		</script>
+
+<script>
+(function () {
+
+    const rawData = chartDataCumSamp_<?= md5($reportDate) ?>;
+
+    const allSamps = rawData
+        .filter(r => r.type === 'all sample use')
+        .map(r => ({
+            x: r.date,
+            y: r.samples
+        }))
+        .sort((a, b) => new Date(a.x) - new Date(b.x));
+
+    const resSamps = rawData
+        .filter(r => r.type === 'research use of physical samples')
+        .map(r => ({
+            x: r.date,
+            y: r.samples
+        }))
+        .sort((a, b) => new Date(a.x) - new Date(b.x));
+
+    const ctx = document
+        .getElementById('cumulativeSampleRequests')
+        .getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'All Sample Use',
+                    data: allSamps,
+                    borderColor: '#000000',
+                    backgroundColor: '#000000',
+                    pointRadius: 0,
+                    tension: 0.2
+                },
+                {
+                    label: 'Excluding use of only images/data and use for internal or outreach purposes',
+                    data: resSamps,
+                    borderColor: '#0472cf',
+                    backgroundColor: '#0472cf',
+                    pointRadius: 0,
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'nearest',
+                intersect: false
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'year',
+                        tooltipFormat: 'yyyy-MM-dd'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Cumulative Number of Samples'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+})();
+</script>
+
+
 
 </html>

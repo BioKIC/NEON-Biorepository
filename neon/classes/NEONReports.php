@@ -1078,6 +1078,30 @@ function getScholarProfileStats() {
         }
     }
 
+    public function getCumulativeRequests($reportDate) {
+        $sql = "SELECT date,statustype,rank FROM neoncumulativerequest
+                WHERE reportDate = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s',$reportDate);
+
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        
+    }
+
+    public function getCumulativeSamplesRequests($reportDate) {
+        $sql = "SELECT date,type,samples FROM neoncumulativesamplerequest
+                WHERE reportDate = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s',$reportDate);
+
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        
+    }
+
     public function cumulativeSampleRequests($endquarter,$reportDate) {
         $sql = "SELECT h.shipDate as date, 'all sample use' as type, 
                     ROW_NUMBER() OVER (ORDER BY h.shipDate) AS samples
