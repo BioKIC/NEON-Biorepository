@@ -431,6 +431,8 @@ function getScholarProfileStats() {
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->sampleUseByInitiationAYBarChart($name,$reportDate,$endquarter);
         $this->sampleUseByStatusAYBarChart($name,$reportDate,$endquarter);
+        $this->cumulativeRequests($endquarter,$reportDate);
+        $this->cumulativeSampleRequests($endquarter,$reportDate);
 
         return $name;
     
@@ -1039,8 +1041,86 @@ function getScholarProfileStats() {
         }
     }
 
-    public function cumulativeRequests($endquarter) {
+    public function cumulativeRequests($endquarter,$reportDate) {
+        $sql = "SELECT
+                    inquiryDate AS date,
+                    'all inquiries' AS statustype,
+                    ROW_NUMBER() OVER (ORDER BY inquiryDate) AS rank
+                FROM neonrequest
+                WHERE inquiryDate <= ?
 
+                UNION ALL
+
+                SELECT
+                    activeDate AS date,
+                    'active requests' AS statustype,
+                    ROW_NUMBER() OVER (ORDER BY activeDate) AS rank
+                FROM neonrequest
+                WHERE activeDate IS NOT NULL
+                AND activeDate <= ? ";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss',$endquarter,$endquarter);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $ins = $this->conn->prepare("INSERT INTO neoncumulativerequest (`date`, `statustype`, `rank`,`reportDate`) VALUES (?, ?, ?, ?)");
+
+        while ($row = $result->fetch_assoc()) {
+
+            $ins->bind_param('ssis', $row['date'], $row['statustype'], $row['rank'], $reportDate);
+               $ins->execute();
+
+            if ($ins->error) {
+                error_log("Insert error for cumulative requests: " . $ins->error);
+            }
+        }
+    }
+
+    public function cumulativeSampleRequests($endquarter,$reportDate) {
+        $sql = "SELECT h.shipDate as date, 'all sample use' as type, 
+                    ROW_NUMBER() OVER (ORDER BY h.shipDate) AS samples
+                FROM neonsamplerequestlink s
+                LEFT JOIN neonrequestshipment h
+                ON s.shipmentID=h.id
+                LEFT JOIN neonrequest r
+                ON s.requestID=r.id
+                WHERE h.shipDate <= ?
+                AND s.status NOT IN ('not funded','request not fulfilled')
+
+                UNION ALL
+
+                SELECT h.shipDate as date, 'research use of physical samples' as type,
+                    ROW_NUMBER() OVER (ORDER BY h.shipDate) AS samples
+                FROM neonsamplerequestlink s
+                LEFT JOIN neonrequestshipment h
+                ON s.shipmentID=h.id
+                LEFT JOIN neonrequest r
+                ON s.requestID=r.id
+                WHERE h.shipDate <= ?
+                AND s.status NOT IN ('not funded','request not fulfilled')
+                AND s.substanceProvided NOT IN ('image','data')
+                AND r.internal = 'no'
+                AND r.outreach = 'no'";
+        
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss',$endquarter,$endquarter);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $ins = $this->conn->prepare("INSERT INTO neoncumulativesamplerequest (`date`, `type`, `samples`,`reportDate`) VALUES (?, ?, ?, ?)");
+
+        while ($row = $result->fetch_assoc()) {
+
+            $ins->bind_param('ssis', $row['date'], $row['type'], $row['samples'], $reportDate);
+               $ins->execute();
+
+            if ($ins->error) {
+                error_log("Insert error for cumulative samples: " . $ins->error);
+            }
+        }
     }
 }
 
