@@ -396,8 +396,6 @@ function getScholarProfileStats() {
         $quarter = $quarterMap[$month];
         $name = "AY{$year} Q{$quarter}";
 
-        preg_match('/AY(\d{2})Q([1-4])/', $name, $matches);
-
         $ayYear  = 2000 + $year; 
         $startyear = ($ayYear - 1) . '-10-01';
 
@@ -435,6 +433,171 @@ function getScholarProfileStats() {
         $this->cumulativeSampleRequests($endquarter,$reportDate);
 
         return $name;
+    
+    }
+
+    public function generateQuarterlyReportSummary() {
+        $reportDate = date('Y-m-d H:i:s');
+
+        $year = (int) date('y');  
+        $month = (int) date('m');
+
+        $quarterMap = [1  => 1, 4  => 2, 7  => 3, 11 => 4];
+
+        if (!isset($quarterMap[$month])) {
+            throw new Exception('Quarterly report can only be generated in the month directly following completion of a quarter.');
+        }
+
+        $quarter = $quarterMap[$month];
+        $name = "AY{$year} Q{$quarter}";
+
+        $ayYear  = 2000 + $year; 
+        $startyear = ($ayYear - 1) . '-10-01';
+
+        switch ($quarter) {
+            case 1:
+                $startquarter = ($ayYear - 1) . '-10-01';
+                $endquarter   = ($ayYear - 1) . '-12-31';
+                break;
+
+            case 2:
+                $startquarter = $ayYear . '-01-01';
+                $endquarter   = $ayYear . '-03-31';
+                break;
+
+            case 3:
+                $startquarter = $ayYear . '-04-01';
+                $endquarter   = $ayYear . '-06-30';
+                break;
+
+            case 4:
+                $startquarter = $ayYear . '-07-01';
+                $endquarter   = $ayYear . '-09-30';
+                break;
+
+            default:
+                throw new Exception('Invalid quarter');
+        }
+
+        $sql = 'SELECT COUNT(id) AS total FROM neonrequest WHERE inquiryDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $inquiries = (int)$row['total'];
+
+        $sql = 'SELECT COUNT(id) AS total FROM neonrequest WHERE activeDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $active = (int)$row['total'];
+
+        $sql = 'SELECT COUNT(s.id) AS total FROM neonsamplerequestlink s
+            JOIN neonrequestshipment h ON s.shipmentID = h.id
+            WHERE h.shipDate >= ? AND h.shipDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $startquarter, $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $quartersamples = (int)$row['total'];
+
+        $sql = 'SELECT COUNT(DISTINCT(o.collid)) AS colls FROM neonsamplerequestlink s
+            JOIN omoccurrences o ON s.occid=o.occid
+            JOIN neonrequestshipment h ON s.shipmentID = h.id
+            WHERE h.shipDate >= ? AND h.shipDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $startquarter, $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $quartercolls = (int)$row['colls'];
+
+        $sql = 'SELECT COUNT(DISTINCT(rr.researcherID)) AS res FROM neonresearcherrequestlink rr
+            JOIN neonrequest r ON rr.requestID = r.id
+            WHERE r.activeDate >= ? AND r.activeDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $startquarter, $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $quarterresearchers = (int)$row['res'];
+
+        $sql = 'SELECT COUNT(s.id) AS total FROM neonsamplerequestlink s
+            JOIN neonrequestshipment h ON s.shipmentID = h.id
+            WHERE h.shipDate >= ? AND h.shipDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $startyear, $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $yearsamples = (int)$row['total'];
+
+        $sql = 'SELECT COUNT(DISTINCT(o.collid)) AS colls FROM neonsamplerequestlink s
+            JOIN omoccurrences o ON s.occid=o.occid
+            JOIN neonrequestshipment h ON s.shipmentID = h.id
+            WHERE h.shipDate >= ? AND h.shipDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $startyear, $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $yearcolls = (int)$row['colls'];
+
+        $sql = 'SELECT COUNT(DISTINCT(rr.researcherID)) AS res FROM neonresearcherrequestlink rr
+            JOIN neonrequest r ON rr.requestID = r.id
+            WHERE r.activeDate >= ? AND r.activeDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $startyear, $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $yearresearchers = (int)$row['res'];
+
+                $sql = 'SELECT COUNT(s.id) AS total FROM neonsamplerequestlink s
+            JOIN neonrequestshipment h ON s.shipmentID = h.id
+            WHERE h.shipDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $samples = (int)$row['total'];
+
+        $sql = 'SELECT COUNT(DISTINCT(o.collid)) AS colls FROM neonsamplerequestlink s
+            JOIN omoccurrences o ON s.occid=o.occid
+            JOIN neonrequestshipment h ON s.shipmentID = h.id
+            WHERE h.shipDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $colls = (int)$row['colls'];
+
+        $sql = 'SELECT COUNT(DISTINCT(rr.researcherID)) AS res FROM neonresearcherrequestlink rr
+            JOIN neonrequest r ON rr.requestID = r.id
+            WHERE r.activeDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $researchers = (int)$row['res'];
+
+        $summary = 'A total of <b>' . $inquiries . '</b> sample use inquiries has been received over the life 
+        of the Biorepository, with a total of <b>' . $active . '</b> active or complete loans. <br><br> In ' . $name . 
+        ', <b>' . $quartersamples . '</b> unique samples across <b>' . $quartercolls . '</b> sample types have been newly requested by <b>' 
+        . $quarterresearchers . '</b> different researchers. <br><br>In AY' . $year . ' to date, <b>' . $yearsamples . '</b> unique samples across <b>'
+        . $yearcolls . '</b> sample types have been newly requested by <b>' . $yearresearchers . '</b> different 
+        researchers. <br><br>To date, <b>' . $samples . '</b> unique samples across <b>'
+        . $colls . '</b> sample types have been newly requested by <b>' . $researchers . '</b> different 
+        researchers.';  
+        
+        return $summary;
     
     }
 
@@ -598,8 +761,6 @@ function getScholarProfileStats() {
 
 
         $stmt = $this->conn->prepare($sql);
-
-
         $periodtypes = array('Quarter','Award Year','To Date');
 
         foreach ($periodtypes as $period) {

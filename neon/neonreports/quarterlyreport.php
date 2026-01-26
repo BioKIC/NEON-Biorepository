@@ -57,6 +57,13 @@ if ($isEditor) {
 	if ($reportDate) {
 		echo '<p><strong>Report generated: </strong> ' . htmlspecialchars($reportDate) . '</p>';
 	}
+
+	?>
+	<h2>Summary:</h2>
+	<?php
+	$summary = $reports->generateQuarterlyReportSummary();
+	echo '<p>' . $summary . '</p>';
+
 	if (!empty($reportsArr)) {
 
 		$tables = [];
@@ -98,22 +105,22 @@ if ($isEditor) {
 				);
 
 				if ($tableType == 'Researchers and Requests by Status') {
-					echo 'The number of requests are those newly reaching a maximum status during the indicated period. Completed 
+					echo '<p>The number of requests for a given status are those newly reaching that maximum status during the indicated period. Completed 
 					requests are only included within the active request category if they were also 
 					newly active within the period. Researchers includes all researchers associated with those requests. 
-					Researchers may be repeated across different statuses.';
+					Researchers may be repeated across different statuses.</p>';
 				}
 				elseif ($tableType == 'Researchers and Samples by Collection'){
-					echo 'The number of researchers is the total number of researchers involved in any requests that are newly active
+					echo '<p>The number of researchers is the total number of researchers involved in any requests that are newly active
 					 or pending within the period and associated with the collection.  Researchers may be repeated across 
 					 collections but are unique within a collection. "Samples" indicate the number of samples associated with the 
-					 included requests. "PhysicalSamples" removes samples for which only images or Biorepository-collected data are explicitly involved in research, 
+					 included requests. "Physical Samples" removes samples for which only images or Biorepository-collected data are explicitly involved in research, 
 					 excluding requests entirely for outreach or internal purposes. In either case, samples" may be repeated if they are involved in multiple requests. 
-					 Samples values of zero indicate that the collection is involved only in pending requests for which samples have not yet been identified';
+					 Samples values of zero indicate that the collection is involved only in pending requests for which samples have not yet been identified</p>';
 
 				}
 				if ($tableType == 'Samples by Primary Research Field') {
-					echo 'Sample numbers are calculated as in the Researchers and Samples by Collection table';
+					echo '<p>Sample numbers are calculated as in the Researchers and Samples by Collection table</p>';
 				}
 
 				echo $utilities->htmlTable(array_map('array_values', $rows),$headers);
