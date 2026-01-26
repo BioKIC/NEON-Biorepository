@@ -1190,7 +1190,7 @@ class OccurrenceHarvester{
 					$dwcArr['county'] = $propValue;
 				} elseif (!isset($dwcArr['geodeticDatum']) && $propName == 'Value for Geodetic datum') {
 					$dwcArr['geodeticDatum'] = $propValue;
-				} elseif (!isset($dwcArr['plotDim']) && $propName == 'Value for Plot dimensions') {
+				} elseif (!isset($dwcArr['plotDim']) && $propName == 'Value for Plot dimensions' && $propValue != '0m' ) {
 					$dwcArr['plotDim'] = ' (plot dimensions: ' . $propValue . ')';
 				} elseif (!isset($habitatArr['landcover']) && strpos($propName, 'Value for National Land Cover Database') !== false) {
 					$habitatArr['landcover'] = $propValue;
