@@ -295,7 +295,7 @@
       },
       {
         "id": 37,
-        "name": "Environmental",
+        "name": "Geochemical",
         "children": [
           {
             "id": 38,
@@ -419,7 +419,7 @@
     "children": [
       {
         "id": 61,
-        "name": "DNA Extracts",
+        "name": "Barcoding Extracts",
         "children": [
           {
             "id": 62,
@@ -470,7 +470,7 @@
       },
       {
         "id": 71,
-        "name": "For Pathogen Testing",
+        "name": "Total Nucleic Acid Extracts",
         "children": [
           {
             "id": 72,

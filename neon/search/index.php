@@ -156,7 +156,7 @@ $siteData = new DatasetsMetadata();
 					<!-- Accordion content -->
 					<div class="content">
 						<p class="Mui">
-						  Looking for pinned specimens, blood vials, frozen soils, root cores, or other NEON samples? Choose an available sample type here. 
+						  Looking for pinned specimens, blood vials, DNA extracts, microbes or other NEON samples? Choose an available sample type here. 
 						</p>
 						<div id="search-form-colls">
 							<section>
@@ -187,7 +187,9 @@ $siteData = new DatasetsMetadata();
 											<span class="material-icons" style="color:#565a5c; vertical-align:middle;">info</span>
 										  </a>
 										</label>
-									
+										<p class="Mui">
+										  Unsure what sample type to choose? Browse our <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank">sample type profiles</a> for descriptions, collection methods and associated data or <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> for help!
+										</p>									
 										<!-- Accordion content -->
 										<div class="content">
 											<ul id="neonext-collections-items">
