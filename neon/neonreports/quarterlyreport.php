@@ -72,7 +72,7 @@ if ($isEditor) {
 			$period    = $row['period'];
 			$tabletype = $row['tabletype'];
 
-			$tables[$period][$tabletype][] = $row;
+			$tables[$tabletype][$period][] = $row;
 		}
 
 		$excludeTableTypes = [
@@ -81,60 +81,127 @@ if ($isEditor) {
 			];
 
 
-		foreach ($tables as $period => $tableTypes) {
+		foreach ($tables as $tableType => $periodData) {
 
-			foreach ($tableTypes as $tableType => $rows) {
+			if (in_array($tableType, $excludeTableTypes, true)) {
+				continue;
+			}
 
-				if (in_array($tableType, $excludeTableTypes, true)) {
-					continue;
+			echo '<h2>' . htmlspecialchars($tableType) . '</h2>';
+
+			$cleaned = [];
+
+			foreach ($periodData as $period => $rows) {
+
+				foreach ($rows as $r) {
+
+					unset(
+						$r['pk'],
+						$r['name'],
+						$r['period'],
+						$r['tabletype'],
+						$r['date']
+					);
+
+					$cleaned[$period][] = $r;
 				}
 
-				foreach ($rows as &$r) {
-					unset($r['pk'], $r['name'], $r['period'], $r['tabletype'], $r['date']);
-				}
-				unset($r);
-
-				$rows =  $reports->removeNullColumns($rows);
-
-				if (empty($rows)) continue;
-
-				echo '<h2>' . htmlspecialchars($period) . ': ' . htmlspecialchars($tableType) . '</h2>';
-				$headers = array_map(
-					fn($h) => ucwords(str_replace('_', ' ', $h)),
-					array_keys($rows[0])
-				);
-
-				if ($tableType == 'Researchers and Requests by Status') {
-					echo '<p>The number of requests for a given status are those newly reaching that maximum status during the indicated period. Completed 
-					requests are only included within the active request category if they were also 
-					newly active within the period. Researchers includes all researchers associated with those requests. 
-					Researchers may be repeated across different statuses.</p>';
-				}
-				elseif ($tableType == 'Researchers and Samples by Collection'){
-					echo '<p>The number of researchers is the total number of researchers involved in any requests that are newly active
-					 or pending within the period and associated with the collection.  Researchers may be repeated across 
-					 collections but are unique within a collection. "Samples" indicate the number of samples associated with the 
-					 included requests. "Physical Samples" removes samples for which only images or Biorepository-collected data are explicitly involved in research, 
-					 excluding requests entirely for outreach or internal purposes. In either case, samples" may be repeated if they are involved in multiple requests. 
-					 Samples values of zero indicate that the collection is involved only in pending requests for which samples have not yet been identified</p>';
-
-				}
-				if ($tableType == 'Samples by Primary Research Field') {
-					echo '<p>Sample numbers are calculated as in the Researchers and Samples by Collection table</p>';
-				}
-
-				echo $utilities->htmlTable(array_map('array_values', $rows),$headers);
-				echo '
-					<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
-						<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
-						<input type="hidden" name="period" value="' . htmlspecialchars($period, ENT_QUOTES) . '">
-						<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
-						<button type="submit">Download table above as CSV</button>
-					</form>';
+				$cleaned[$period] = $reports->removeNullColumns($cleaned[$period]);
 
 			}
-		}
+
+			$sampleRow = null;
+
+			foreach ($cleaned as $rows) {
+				if (!empty($rows)) {
+					$sampleRow = $rows[0];
+					break;
+				}
+			}
+
+			if (!$sampleRow) continue;
+
+			$rowKeys = array_keys($sampleRow);
+			$rowLabelKey = $rowKeys[0];
+			$valueKeys = array_slice($rowKeys, 1);
+
+			$allLabels = [];
+
+			foreach ($cleaned as $rows) {
+				foreach ($rows as $r) {
+					$allLabels[$r[$rowLabelKey]] = true;
+				}
+			}
+
+			$allLabels = array_keys($allLabels);
+
+			$headers = [ucwords(str_replace('_',' ',$rowLabelKey))];
+
+			foreach ($cleaned as $period => $rows) {
+				foreach ($valueKeys as $valKey) {
+					if ($period == 'Quarter') $title = $quarter;
+					elseif ($period == 'Award Year') $title = substr($quarter,0,4);
+					elseif ($period == 'To Date') $title = 'To Date';
+					if ($valKey == 'physicalSamples') $valKey = 'Physical Samples'; 
+					$headers[] = $title . ':<br>' . ucwords($valKey);
+				}
+			}
+
+			$finalRows = [];
+
+			foreach ($allLabels as $label) {
+
+				$rowOut = [$label];
+
+				foreach ($cleaned as $period => $rows) {
+
+					$match = null;
+
+					foreach ($rows as $r) {
+						if ($r[$rowLabelKey] == $label) {
+							$match = $r;
+							break;
+						}
+					}
+
+					foreach ($valueKeys as $valKey) {
+						$rowOut[] = $match[$valKey] ?? 0;
+					}
+				}
+
+				$finalRows[] = $rowOut;
+			}
+
+			if ($tableType == 'Researchers and Requests by Status') {
+				echo '<p>The number of requests for a given status are those newly reaching that maximum status during the indicated period. Completed 
+				requests are only included within the active request category if they were also 
+				newly active within the period. Researchers includes all researchers associated with those requests. 
+				Researchers may be repeated across different statuses.</p>';
+			}
+			elseif ($tableType == 'Researchers and Samples by Collection'){
+				echo '<p>The number of researchers is the total number of researchers involved in any requests that are newly active
+				or pending within the period and associated with the collection.  Researchers may be repeated across 
+				collections but are unique within a collection. "Samples" indicate the number of samples associated with the 
+				included requests. "Physical Samples" removes samples for which only images or Biorepository-collected data are explicitly involved in research, 
+				excluding requests entirely for outreach or internal purposes. In either case, samples" may be repeated if they are involved in multiple requests. 
+				Samples values of zero indicate that the collection is involved only in pending requests for which samples have not yet been identified</p>';
+			}
+				if ($tableType == 'Samples by Primary Research Field') {
+					echo '<p>Sample numbers are calculated as in the Researchers and Samples by Collection table</p>';
+			}
+
+			echo $utilities->htmlTable($finalRows, $headers);
+
+
+			echo '<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
+				<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
+				<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
+				<button type="submit">Download table above as CSV</button>
+				</form>';		
+		
 	}
+}
+	
 ?>
 	<h2>Samples Distributed, Consumed, and Generated</h2>
 
