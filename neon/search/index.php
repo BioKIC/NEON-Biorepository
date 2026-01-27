@@ -156,7 +156,7 @@ $siteData = new DatasetsMetadata();
 					<!-- Accordion content -->
 					<div class="content">
 						<p class="Mui">
-						  Looking for pinned specimens, blood vials, frozen soils, root cores, or other NEON samples? Choose a sample type. 
+						  Looking for pinned specimens, blood vials, frozen soils, root cores, or other NEON samples? Choose an available sample type. 
 						</p>
 						<div id="search-form-colls">
 							<section>
