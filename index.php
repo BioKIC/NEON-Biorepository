@@ -49,11 +49,11 @@ $taxaArr = $stats->getNeonTaxa();
 	<!-- This is inner text! -->
 	<div id="innertext" class="container" style="margin-top: 2rem">
 		<h1 class="centered">Discover and access sample-based data</h1>
-		<!-- <section>
+		<section>
 			<div style="border-bottom-width:2px;border-color:#F0AB00;border-left-width:20px;border-right-width:2px;border-style:solid;border-top-width:2px;padding:10px;">
-				<p>Please be aware that the NEON Biorepository is experiencing technical difficulties, which are impacting availability. Resolution ETA is unknown at this time.</p>
+				<p><b>Biorepository Portal Update Coming Soon!</b> The update will more seamlessly integrate the Biorepository portal into the site with a refreshed design and simplified navigation. You’ll have access to all the same data in a more unified and easy-to-use experience. For a brief summary of changes visit <a href="https://www.neonscience.org/neon-website-and-biorepository-sample-portal-updates-feb-2026">this page</a>. Explore the in-development site <a href="https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/">here</a>. Your feedback is welcome through <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJlcJCdFtnKRQrd7tkmnsue4g1wCVPXS4RLw8DKUIqihH_LQ/viewform">our webform</a> through February 20.</p>
 			</div>
-		</section> -->
+		</section>
 		<section>
 			<div class="row">
 				<img src="images/layout/Home-Map-2.jpg" alt="Map with samples collected within NEON sites" class="hide-on-small" style="width:100%;">
