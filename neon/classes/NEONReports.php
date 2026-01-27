@@ -424,6 +424,7 @@ function getScholarProfileStats() {
                 throw new Exception('Invalid quarter');
         }
 
+        $this->compareRequests($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
@@ -604,6 +605,141 @@ function getScholarProfileStats() {
         
         return $summary;
     
+    }
+
+    public function compareRequests($name,$reportDate,$startquarter,$endquarter,$startyear){
+
+        $sql = "SELECT
+                    CASE
+                        WHEN r.activeDate BETWEEN ? AND ? 
+                            THEN 'active/complete'
+                        WHEN (r.pendingFulfillmentDate BETWEEN ?  AND ?) 
+                            OR (r.pendingSampleListDate BETWEEN ?  AND ?) 
+                            OR (r.pendingFundingDate BETWEEN ?  AND ?) 
+                            THEN 'pending*'
+                    END AS periodStatus,
+                    COUNT(r.id) as requests
+                FROM neonrequest r
+                WHERE r.status IN ('active use','completed','pending sample list','pending funding','pending fulfillment')
+                AND (
+                    r.activeDate               BETWEEN ?  AND ? 
+                    OR r.pendingFulfillmentDate   BETWEEN ?  AND ? 
+                    OR r.pendingFundingDate       BETWEEN ?  AND ? 
+                    OR r.pendingSampleListDate    BETWEEN ?  AND ? 
+                )
+                GROUP BY periodStatus";
+
+        $stmt = $this->conn->prepare($sql);
+        $periodtypes = array('Prior Quarter','Quarter','Prior Award Year','Award Year','To Date');
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Prior Quarter') {
+                $start = date('Y-m-d', strtotime($startquarter . ' -1 year'));
+                $end   = date('Y-m-d', strtotime($endquarter . ' -1 year'));
+            }
+            elseif ($period == 'Quarter') {
+                $start = $startquarter;
+                $end = $endquarter;
+            }
+            elseif ($period == 'Prior Award Year') {
+                $start = date('Y-m-d', strtotime($startyear . ' -1 year'));
+                $end   = date('Y-m-d', strtotime($endquarter . ' -1 year'));
+            }
+            elseif ($period == 'Award Year') {
+                $start = $startyear;
+                $end = $endquarter;
+            }
+            elseif ($period == 'To Date') {
+                $start = '2010-01-01';
+                $end = $endquarter;
+            }
+
+            $stmt->bind_param('ssssssssssssssss',
+                $start, $end,
+                $start, $end,
+                $start, $end,
+                $start, $end,
+                $start, $end,
+                $start, $end,
+                $start, $end,
+                $start, $end
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `status`, `requests`, `date`) VALUES (?, ?, 'Requests by Status Comparisons by AY', ?, ?, ?)");
+
+                $ins->bind_param('sssis', $name, $period, $row['periodStatus'], $row['requests'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Comparing Requests across AY: " . $ins->error);
+                }
+            }
+        }
+
+        $sql = "SELECT COUNT(r.id) as requests
+                FROM neonrequest r
+                WHERE r.status IN ('active use','completed','pending sample list','pending funding','pending fulfillment')
+                AND (
+                    r.activeDate               BETWEEN ?  AND ? 
+                    OR r.pendingFulfillmentDate   BETWEEN ?  AND ? 
+                    OR r.pendingFundingDate       BETWEEN ?  AND ? 
+                    OR r.pendingSampleListDate    BETWEEN ?  AND ? 
+                )";
+
+        $stmt = $this->conn->prepare($sql);
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Prior Quarter') {
+                $start = date('Y-m-d', strtotime($startquarter . ' -1 year'));
+                $end   = date('Y-m-d', strtotime($endquarter . ' -1 year'));
+            }
+            elseif ($period == 'Quarter') {
+                $start = $startquarter;
+                $end = $endquarter;
+            }
+            elseif ($period == 'Prior Award Year') {
+                $start = date('Y-m-d', strtotime($startyear . ' -1 year'));
+                $end   = date('Y-m-d', strtotime($endquarter . ' -1 year'));
+            }
+            elseif ($period == 'Award Year') {
+                $start = $startyear;
+                $end = $endquarter;
+            }
+            elseif ($period == 'To Date') {
+                $start = '2010-01-01';
+                $end = $endquarter;
+            }
+
+            $stmt->bind_param('ssssssss',
+                $start, $end,
+                $start, $end,
+                $start, $end,
+                $start, $end
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `status`, `requests`, `date`) VALUES (?, ?, 'Requests by Status Comparisons by AY', 'Total', ?, ?)");
+
+                $ins->bind_param('ssis', $name, $period, $row['requests'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Comparing Requests across AY: " . $ins->error);
+                }
+            }
+        }
+        
     }
 
     public function researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear){
@@ -844,9 +980,7 @@ function getScholarProfileStats() {
         FROM neonsamplerequestlink s
         JOIN filtered_requests r
             ON s.requestID = r.id
-        GROUP BY r.primaryResearchField
-        ";
-
+        GROUP BY r.primaryResearchField";
 
         $stmt = $this->conn->prepare($sql);
 

@@ -93,6 +93,10 @@ if ($isEditor) {
 
 			foreach ($periodData as $period => $rows) {
 
+				if (str_contains($quarter, 'Q1') && ($period === 'Award Year' || $period === 'Prior Award Year')) {
+				 	continue;
+				}
+
 				foreach ($rows as $r) {
 
 					unset(
@@ -137,11 +141,26 @@ if ($isEditor) {
 
 			$headers = [ucwords(str_replace('_',' ',$rowLabelKey))];
 
+			$year = (int) substr($quarter, 2, 2);
+
 			foreach ($cleaned as $period => $rows) {
 				foreach ($valueKeys as $valKey) {
-					if ($period == 'Quarter') $title = $quarter;
-					elseif ($period == 'Award Year') $title = substr($quarter,0,4);
-					elseif ($period == 'To Date') $title = 'To Date';
+					if ($period === 'Quarter') $title = $quarter;
+					if ($period === 'Prior Quarter') {
+						$newYear = $year - 1; 
+						$title = 'AY' . str_pad($newYear, 2, '0', STR_PAD_LEFT) . substr($quarter, 4);
+					}
+					elseif ($period === 'Award Year') {
+						$title = substr($quarter,0,4); 
+						if($tableType == 'Requests by Status Comparisons by AY'){
+							$title = 'AY' . str_pad($year, 2, '0', STR_PAD_LEFT) . ' Q1-' . substr($quarter, 4);
+						}
+					}
+					elseif ($period === 'Prior Award Year') {
+						$newYear = $year - 1; 
+						$title = 'AY' . str_pad($newYear, 2, '0', STR_PAD_LEFT) . ' Q1-' . substr($quarter, 4);
+					}
+					elseif ($period === 'To Date') $title = 'To Date';
 					if ($valKey == 'physicalSamples') $valKey = 'Physical Samples'; 
 					$headers[] = $title . ':<br>' . ucwords($valKey);
 				}
