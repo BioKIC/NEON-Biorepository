@@ -155,6 +155,9 @@ $siteData = new DatasetsMetadata();
 					<label for="collections" class="accordion-header">Sample Types</label>
 					<!-- Accordion content -->
 					<div class="content">
+						<p class="Mui">
+						  Looking for pinned specimens, blood vials, frozen soils, root cores, or other NEON samples? Choose a sample type. 
+						</p>
 						<div id="search-form-colls">
 							<section>
 								<!-- Open NEON Collections modal -->
@@ -205,9 +208,6 @@ $siteData = new DatasetsMetadata();
 								</ul>
 							</section>
 						</div>
-						<p class="Mui">
-						  Looking for more about NEON's sample types? Browse the <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank" rel="noopener noreferrer">sample type profiles</a> for descriptions, associated data, and contact information.
-						</p>
 					</div>
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
