@@ -807,6 +807,52 @@ function getScholarProfileStats() {
                 }
             }
         }
+
+                $sql = "SELECT
+                    COUNT(DISTINCT p.requestID) AS requests,
+                    COUNT(DISTINCT p.researcherID) AS researchers
+                FROM neonrequest r
+                JOIN neonresearcherrequestlink p
+                    ON r.id = p.requestID
+                WHERE p.researcherID != 371
+                AND r.status IN ('active use','completed','pending sample list','pending funding','pending fulfillment')
+                AND (
+                    r.activeDate               BETWEEN ?  AND ? 
+                    OR r.pendingFulfillmentDate   BETWEEN ?  AND ? 
+                    OR r.pendingFundingDate       BETWEEN ?  AND ? 
+                    OR r.pendingSampleListDate    BETWEEN ?  AND ? 
+                )";
+
+        $stmt = $this->conn->prepare($sql);
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2010-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `status`,`requests`,`researchers`, `date`) VALUES (?, ?, 'Researchers and Requests by Status', 'Total Unique', ?, ?, ?)");
+
+                $ins->bind_param('ssiis', $name, $period, $row['requests'], $row['researchers'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Researchers and Requests by Status: " . $ins->error);
+                }
+            }
+        }
     }
 
     public function researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear){
@@ -932,6 +978,97 @@ function getScholarProfileStats() {
                 }
             }
         }
+
+        $sql = "WITH filtered_requests AS (
+                    SELECT DISTINCT r.id
+                    FROM neonrequest r
+                    WHERE r.status IN (
+                        'completed',
+                        'active use',
+                        'pending fulfillment',
+                        'pending funding',
+                        'pending sample list'
+                    )
+                    AND (
+                        r.activeDate                BETWEEN ? AND ?
+                        OR r.pendingFulfillmentDate BETWEEN ? AND ?
+                        OR r.pendingFundingDate     BETWEEN ? AND ?
+                        OR r.pendingSampleListDate  BETWEEN ? AND ?
+                    )
+                ),
+
+                researchers_total AS (
+                    SELECT COUNT(DISTINCT rr.researcherID) AS researchers
+                    FROM neonresearcherrequestlink rr
+                    JOIN filtered_requests fr
+                        ON rr.requestID = fr.id
+                ),
+
+                samples_total AS (
+                    SELECT COUNT(DISTINCT sr.occid) AS samples
+                    FROM neonsamplerequestlink sr
+                    JOIN filtered_requests fr
+                        ON sr.requestID = fr.id
+                ),
+
+                physical_samples_total AS (
+                    SELECT COUNT(DISTINCT sr.occid) AS physicalSamples
+                    FROM neonsamplerequestlink sr
+                    JOIN filtered_requests fr
+                        ON sr.requestID = fr.id
+                    JOIN neonrequest r
+                        ON sr.requestID = r.id
+                    WHERE
+                        (
+                            sr.substanceProvided IS NULL
+                            OR sr.substanceProvided NOT IN ('image', 'data')
+                        )
+                        AND (
+                            r.outreach != 'yes'
+                            OR r.internal != 'yes'
+                        )
+                )
+
+                SELECT
+                    rt.researchers,
+                    st.samples,
+                    pst.physicalSamples
+                FROM researchers_total rt
+                CROSS JOIN samples_total st
+                CROSS JOIN physical_samples_total pst";
+
+
+        $stmt = $this->conn->prepare($sql);
+        $periodtypes = array('Quarter','Award Year','To Date');
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2010-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionname`,`researchers`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Researchers and Samples by Collection', 'Total Unique', ?, ?, ?, ?)");
+
+                $ins->bind_param('ssiiis', $name, $period,$row['researchers'], $row['samples'],$row['physicalSamples'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Researchers and Samples by Collection: " . $ins->error);
+                }
+            }
+        }
     }
 
     public function samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear){
@@ -1008,6 +1145,90 @@ function getScholarProfileStats() {
                 $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', ?, ?, ?, ?)");
 
                 $ins->bind_param('sssiis', $name, $period, $row['field'], $row['samples'], $row['physicalSamples'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Samples by Primary Research Field: " . $ins->error);
+                }
+            }
+        }
+
+        $sql = "WITH filtered_requests AS (
+                    SELECT DISTINCT r.id
+                    FROM neonrequest r
+                    WHERE r.status IN (
+                        'completed',
+                        'active use',
+                        'pending fulfillment',
+                        'pending funding',
+                        'pending sample list'
+                    )
+                    AND (
+                        r.activeDate                BETWEEN ? AND ?
+                        OR r.pendingFulfillmentDate BETWEEN ? AND ?
+                        OR r.pendingFundingDate     BETWEEN ? AND ?
+                        OR r.pendingSampleListDate  BETWEEN ? AND ?
+                    )
+                ),
+
+                samples_total AS (
+                    SELECT COUNT(DISTINCT sr.occid) AS samples
+                    FROM neonsamplerequestlink sr
+                    JOIN filtered_requests fr
+                        ON sr.requestID = fr.id
+                ),
+
+                physical_samples_total AS (
+                    SELECT COUNT(DISTINCT sr.occid) AS physicalSamples
+                    FROM neonsamplerequestlink sr
+                    JOIN filtered_requests fr
+                        ON sr.requestID = fr.id
+                    JOIN neonrequest r
+                        ON sr.requestID = r.id
+                    WHERE
+                        (
+                            sr.substanceProvided IS NULL
+                            OR sr.substanceProvided NOT IN ('image', 'data')
+                        )
+                        AND (
+                            r.outreach != 'yes'
+                            OR r.internal != 'yes'
+                        )
+                )
+
+                SELECT
+                    st.samples,
+                    pst.physicalSamples
+                FROM samples_total st
+                CROSS JOIN physical_samples_total pst
+           ";
+
+        $stmt = $this->conn->prepare($sql);
+
+
+        $periodtypes = array('Quarter','Award Year','To Date');
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2010-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', 'Total Unique', ?, ?, ?)");
+
+                $ins->bind_param('ssiis', $name, $period, $row['samples'], $row['physicalSamples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {

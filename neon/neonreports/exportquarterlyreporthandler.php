@@ -63,6 +63,10 @@ $headers = [ucwords(str_replace('_',' ',$rowLabelKey))];
 
 foreach ($periodData as $period => $rows) {
 
+    if (str_contains($quarter, 'Q1') && ($period === 'Award Year' || $period === 'Prior Award Year')) {
+		continue;
+	}
+
     if ($period == 'Quarter') {
         $title = $quarter;
     }
@@ -92,8 +96,13 @@ foreach ($periodData as $rows) {
 
 $allLabels = array_keys($allLabels);
 
-sort($allLabels);
+usort($allLabels, function($a, $b) {
 
+    if ($a === 'Total Unique') return 1;
+    if ($b === 'Total Unique') return -1;
+
+	    return strcasecmp($a, $b);
+	});
 
 $finalRows = [];
 
@@ -102,6 +111,10 @@ foreach ($allLabels as $label) {
     $rowOut = [$label];
 
     foreach ($periodData as $period => $rows) {
+
+        if (str_contains($quarter, 'Q1') && ($period === 'Award Year' || $period === 'Prior Award Year')) {
+            continue;
+        }
 
         $match = null;
 

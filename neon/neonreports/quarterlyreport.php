@@ -139,6 +139,14 @@ if ($isEditor) {
 
 			$allLabels = array_keys($allLabels);
 
+			usort($allLabels, function($a, $b) {
+
+				if ($a === 'Total Unique') return 1;
+				if ($b === 'Total Unique') return -1;
+
+				return strcasecmp($a, $b);
+			});
+
 			$headers = [ucwords(str_replace('_',' ',$rowLabelKey))];
 
 			$year = (int) substr($quarter, 2, 2);
