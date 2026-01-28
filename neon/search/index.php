@@ -186,10 +186,7 @@ $siteData = new DatasetsMetadata();
 											 target="_blank" rel="noopener noreferrer" title="View More Information">
 											<span class="material-icons" style="color:#565a5c; vertical-align:middle;">info</span>
 										  </a>
-										</label>
-										<p class="Mui">
-										  Unsure what sample type to choose? Browse our <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank">sample type profiles</a> for descriptions, collection methods and associated data or <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> for help!
-										</p>									
+										</label>								
 										<!-- Accordion content -->
 										<div class="content">
 											<ul id="neonext-collections-items">
@@ -209,6 +206,9 @@ $siteData = new DatasetsMetadata();
 									</li>
 								</ul>
 							</section>
+							<p class="Mui">
+							  Unsure what sample type to choose? Browse our <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank">sample type profiles</a> for descriptions, collection methods and associated data or <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> for help!
+							</p>	
 						</div>
 					</div>
 					<!-- NEON Biorepository Collections Modal -->
