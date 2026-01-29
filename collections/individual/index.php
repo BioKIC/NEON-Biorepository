@@ -1373,81 +1373,81 @@ $traitArr = $indManager->getTraitArr();
 					<?php
 				}
 				?>
-				<div id="commenttab">
+				<!--<div id="commenttab">-->
 					<?php
-					$commentTabIndex = 1;
-					if($displayMap) $commentTabIndex++;
-					if($genticArr) $commentTabIndex++;
-					if($dupClusterArr) $commentTabIndex++;
-					if($commentArr){
-						echo '<div><label>'.count($commentArr).' '.$LANG['COMMENTS'].'</label></div>';
-						echo '<hr style="color:gray;"/>';
-						foreach($commentArr as $comId => $comArr){
+//					$commentTabIndex = 1;
+//					if($displayMap) $commentTabIndex++;
+//					if($genticArr) $commentTabIndex++;
+//					if($dupClusterArr) $commentTabIndex++;
+//					if($commentArr){
+//						echo '<div><label>'.count($commentArr).' '.$LANG['COMMENTS'].'</label></div>';
+//						echo '<hr style="color:gray;"/>';
+//						foreach($commentArr as $comId => $comArr){
 							?>
-							<div style="margin:15px;">
+							<!--<div style="margin:15px;">-->
 								<?php
-								echo '<div>';
-								echo '<b>'.$comArr['username'].'</b> <span style="color:gray;">posted '.$comArr['initialtimestamp'].'</span>';
-								echo '</div>';
-								if($comArr['reviewstatus'] == 0 || $comArr['reviewstatus'] == 2) echo '<div style="color:red;">'.$LANG['COMMENT_NOT_PUBLIC'].'</div>';
-								echo '<div style="margin:10px;">'.$comArr['comment'].'</div>';
-								if($comArr['reviewstatus']){
-									if($SYMB_UID){
-										echo '<div><a href="index.php?formsubmit=reportcomment&repcomid=' . $comId . '&occid=' . $occid . '&tabindex=' . $commentTabIndex . '">';
-										echo $LANG['REPORT'];
-										echo '</a></div>';
-									}
-								}
-								else{
-									echo '<div><a href="index.php?formsubmit=makecommentpublic&publiccomid=' . $comId . '&occid=' . $occid . '&tabindex=' . $commentTabIndex . '">';
-									echo $LANG['MAKE_COMMENT_PUBLIC'];
-									echo '</a></div>';
-								}
-								if($isEditor || ($SYMB_UID && $comArr['username'] == $PARAMS_ARR['un'])){
-									?>
-									<div style="margin:20px;">
-										<form name="delcommentform" action="index.php" method="post" onsubmit="return confirm('<?php echo $LANG['CONFIRM_DELETE']; ?>?')">
-											<input name="occid" type="hidden" value="<?php echo $occid; ?>" />
-											<input name="comid" type="hidden" value="<?php echo $comId; ?>" />
-											<input name="tabindex" type="hidden" value="<?php echo $commentTabIndex; ?>" />
-											<button class="button-danger" name="formsubmit" type="submit" value="deleteComment"><?php echo $LANG['DELETE_COMMENT']; ?></button>
-										</form>
-									</div>
+//								echo '<div>';
+//								echo '<b>'.$comArr['username'].'</b> <span style="color:gray;">posted '.$comArr['initialtimestamp'].'</span>';
+//								echo '</div>';
+//								if($comArr['reviewstatus'] == 0 || $comArr['reviewstatus'] == 2) echo '<div style="color:red;">'.$LANG['COMMENT_NOT_PUBLIC'].'</div>';
+//								echo '<div style="margin:10px;">'.$comArr['comment'].'</div>';
+//								if($comArr['reviewstatus']){
+//									if($SYMB_UID){
+//										echo '<div><a href="index.php?formsubmit=reportcomment&repcomid=' . $comId . '&occid=' . $occid . '&tabindex=' . $commentTabIndex . '">';
+//										echo $LANG['REPORT'];
+//										echo '</a></div>';
+//									}
+//								}
+//								else{
+//									echo '<div><a href="index.php?formsubmit=makecommentpublic&publiccomid=' . $comId . '&occid=' . $occid . '&tabindex=' . $commentTabIndex . '">';
+//									echo $LANG['MAKE_COMMENT_PUBLIC'];
+//									echo '</a></div>';
+//								}
+//								if($isEditor || ($SYMB_UID && $comArr['username'] == $PARAMS_ARR['un'])){
+//									?>
+									<!--<div style="margin:20px;">-->
+									<!--	<form name="delcommentform" action="index.php" method="post" onsubmit="return confirm('<?php echo $LANG['CONFIRM_DELETE']; ?>?')">-->
+									<!--		<input name="occid" type="hidden" value="<?php echo $occid; ?>" />-->
+									<!--		<input name="comid" type="hidden" value="<?php echo $comId; ?>" />-->
+									<!--		<input name="tabindex" type="hidden" value="<?php echo $commentTabIndex; ?>" />-->
+									<!--		<button class="button-danger" name="formsubmit" type="submit" value="deleteComment"><?php echo $LANG['DELETE_COMMENT']; ?></button>-->
+									<!--	</form>-->
+									<!--</div>-->
 									<?php
-								}
+//								}
 								?>
-							</div>
-							<hr style="color:gray;"/>
+							<!--</div>-->
+							<!--<hr style="color:gray;"/>-->
 							<?php
-						}
-					}
-					else echo '<div class="title2-div left-breathing-room-rel top-breathing-room-rel bottom-breathing-room" >'.$LANG['NO_COMMENTS'].'</div>';
-					if($SYMB_UID){
+//						}
+//					}
+//					else echo '<div class="title2-div left-breathing-room-rel top-breathing-room-rel bottom-breathing-room" >'.$LANG['NO_COMMENTS'].'</div>';
+//					if($SYMB_UID){
 						?>
-						<form class="left-breathing-room-rel" name="commentform" action="index.php" method="post" onsubmit="return verifyCommentForm(this);">
-							<label for="commentstr"><?php echo $LANG['NEW_COMMENT']; ?></label>
-							<textarea name="commentstr" id="commentstr" rows="8" style="width:98%;"></textarea>
-							<div class="bottom-breathing-room">
-								<input name="occid" type="hidden" value="<?php echo $occid; ?>" />
-								<input name="tabindex" type="hidden" value="<?php echo $commentTabIndex; ?>" />
-								<button type="submit" name="formsubmit" value="submitComment"><?php echo $LANG['SUBMIT_COMMENT']; ?></button>
-							</div>
-							<div>
-								<?php echo $LANG['MESSAGE_WARNING']; ?>
-							</div>
-						</form>
+						<!--<form class="left-breathing-room-rel" name="commentform" action="index.php" method="post" onsubmit="return verifyCommentForm(this);">-->
+						<!--	<label for="commentstr"><?php echo $LANG['NEW_COMMENT']; ?></label>-->
+						<!--	<textarea name="commentstr" id="commentstr" rows="8" style="width:98%;"></textarea>-->
+						<!--	<div class="bottom-breathing-room">-->
+						<!--		<input name="occid" type="hidden" value="<?php echo $occid; ?>" />-->
+						<!--		<input name="tabindex" type="hidden" value="<?php echo $commentTabIndex; ?>" />-->
+						<!--		<button type="submit" name="formsubmit" value="submitComment"><?php echo $LANG['SUBMIT_COMMENT']; ?></button>-->
+						<!--	</div>-->
+						<!--	<div>-->
+						<!--		<?php echo $LANG['MESSAGE_WARNING']; ?>-->
+						<!--	</div>-->
+						<!--</form>-->
 						<?php
-					}
-					else{
-						echo '<div style="margin:10px;">';
-						echo '<a href="../../profile/index.php?refurl=../collections/individual/index.php?tabindex=2&occid=' . $occid . '">';
-						echo $LANG['LOGIN'];
-						echo '</a> ';
-						echo $LANG['TO_LEAVE_COMMENT'];
-						echo '</div>';
-					}
+//					}
+//					else{
+//						echo '<div style="margin:10px;">';
+//						echo '<a href="../../profile/index.php?refurl=../collections/individual/index.php?tabindex=2&occid=' . $occid . '">';
+//						echo $LANG['LOGIN'];
+//						echo '</a> ';
+//						echo $LANG['TO_LEAVE_COMMENT'];
+//						echo '</div>';
+//					}
 					?>
-				</div>
+				<!--</div>-->
 				<?php
 				if($traitArr){
 					?>
