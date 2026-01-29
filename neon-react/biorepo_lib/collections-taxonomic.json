@@ -265,7 +265,7 @@
       },
       {
         "id": 33,
-        "name": "Other Invertebrates",
+        "name": "General Invertebrates",
         "children": [
           {
             "id": 34,
@@ -281,12 +281,23 @@
             "id": 36,
             "name": "Invertebrate Bycatch (from Beetle Sampling; Unpooled Catches)",
             "collid": 16
-          },
+          }
+        ]
+      },
+      {
+        "id": 28,
+        "name": "Ticks and Other Parasites",
+        "children": [
           {
             "id": 37,
             "name": "Mammal Parasite Specimens",
             "collid": 85
           },
+          {
+            "id": 38,
+            "name": "Tick Alcohol Lots",
+            "collid": 75
+          }
           {
             "id": 38,
             "name": "Tick Pathogen Extracts",

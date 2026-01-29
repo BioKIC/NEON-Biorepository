@@ -352,6 +352,11 @@
             "id": 48,
             "name": "Reptiles and Amphibians Specimen Bycatch (from Small Mammal and Fish Sampling)",
             "collid": 70
+          },
+          {
+            "id": 48,
+            "name": "Tick Specimens",
+            "collid": 116
           }
         ]
       }

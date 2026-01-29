@@ -576,6 +576,11 @@
     "children": [
       {
         "id": 80,
+        "name": "Tick Specimens",
+        "collid": 116
+      },
+      {
+        "id": 80,
         "name": "Tick Pathogen Extracts",
         "collid": 75
       }
