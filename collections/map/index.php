@@ -153,7 +153,7 @@ $serverHost = GeneralUtil::getDomain();
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title><?php echo $DEFAULT_TITLE . ' - ' . $LANG['MAP_INTERFACE'] ?></title>
 		<?php
-		#include_once($SERVER_ROOT.'/includes/head.php');
+		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
 		<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/listdisplay.css" type="text/css" rel="stylesheet" />
 		<link href="<?= $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
@@ -2110,7 +2110,7 @@ $serverHost = GeneralUtil::getDomain();
 		<?php
 		if($shouldUseMinimalMapHeader) include_once($SERVER_ROOT . '/includes/minimalheader.php');
 		?>
-	  	<h1 class="page-heading screen-reader-only">Map Interface</h1>
+	  	<!--<h1 class="page-heading screen-reader-only">Map Interface</h1>-->
 		<div
 			id="service-container"
 			data-search-var="<?=htmlspecialchars($searchVar)?>"
