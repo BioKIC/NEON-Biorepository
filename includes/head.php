@@ -16,7 +16,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 ?>
 
 <!--neon react links-->
-<!--React last updated: 1/14/2026, 12:54:53 PM-->
+<!--React last updated: 1/30/2026, 5:13:38 PM-->
 <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-fonts" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-fonts.css"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/webpack-overrides.css"/><script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script><script>window.gtmDataLayer=[{page_category:"Core Components"}]</script><script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a),r="&l="+n;m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-K4S83R2"+r,g.parentNode.insertBefore(m,g)}(window,document,"script","gtmDataLayer")</script><script>window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script><link href="<?php echo $CLIENT_ROOT; ?>/neon-react/static/css/main.dfee6011.css" rel="stylesheet">
 <!--end of neon react links-->
 
@@ -87,7 +87,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
         //javascript code created by React
         var reactScript = document.createElement('script');
-        reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.dabddddf.js';
+        reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.5c20f5c7.js';
         reactScript.defer = true;
 
         // this code happens after header is rendered but before sidebar
