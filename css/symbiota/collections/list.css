@@ -16,7 +16,14 @@
 	/*margin-left: 10px;*/
 	/*end NEON edits*/
 }
-
+/*neon edit*/
+.ui-tabs-anchor {
+	white-space: nowrap;
+	max-width: 75%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+ }
+/*end neon edit*/
 #tabs {
 	width:95%;
 }
