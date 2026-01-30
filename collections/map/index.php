@@ -837,7 +837,9 @@ $serverHost = GeneralUtil::getDomain();
 								size: 28
 							})
 						}))
-					.bindTooltip(`<div style="font-size:1rem">${record.id}</div>`)
+					//neon edit
+					.bindTooltip(`<div style="font-size:1rem">${record.sciname} - ${record.catalogNumber || ''}</div>`)
+					//end neon edit
 
 					marker.record = record;
 
@@ -1310,8 +1312,11 @@ $serverHost = GeneralUtil::getDomain();
 					})
 
 					bounds.extend(marker.getPosition());
-
-					const infoWin = new google.maps.InfoWindow({content:`<div>${record.id}</div>`});
+					//neon edit
+					const infoWin = new google.maps.InfoWindow({
+						content: `<div>${record.sciname} - ${record.eventdate || ''}</div>`
+					});
+					//
 
 					google.maps.event.addListener(marker, 'mouseover', function() {
 						infoWin.open(map.mapLayer, marker);
