@@ -514,6 +514,7 @@ $_SESSION['citationvar'] = $searchVar;
 				<div>
 					<?php echo $LANG['MAP_DESCRIPTION']; ?>
 				</div>
+				<!--neon edit-->
 				<?php
 				$map_params = 'gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y&menuClosed';
 				
@@ -523,29 +524,24 @@ $_SESSION['citationvar'] = $searchVar;
 					$searchParams = '?' . $searchVar . '&' . $map_params;
 				}
 				
-				$mapUrl = $CLIENT_ROOT . '/collections/map/index.php' . $searchParams;
+				$mapUrl = $CLIENT_ROOT . '/collections/map/index.php' . $searchParams . '&embedded=1';
 				?>
 				
 				<div style="margin-top:10px;">
 					<iframe
 						src="<?= htmlspecialchars($mapUrl) ?>"
 						width="100%"
-						height="900"
+						height="500"
 						style="border:0;"
-						scrolling="yes">
+						scrolling="no">
 					</iframe>
 				</div>
-				<div style='margin-top:10px;'>
-					<h2><?php echo $LANG['KML_HEADER']; ?></h2>
-				</div>
 				<form name="kmlform" action="map/kmlhandler.php" method="post">
-					<div>
-						<?php echo $LANG['KML_DESCRIPTION']; ?>
-					</div>
 					<div style="margin:10px 0;">
 						<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
 						<button name="formsubmit" type="submit" value="createKML"><?php echo $LANG['CREATE_KML']; ?></button>
 					</div>
+					<!--end neon edit-->
 					<div>
 						<a href="#" onclick="toggleFieldBox('fieldBox');">
 							<?php echo $LANG['KML_EXTRA']; ?>
