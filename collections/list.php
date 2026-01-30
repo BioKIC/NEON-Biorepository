@@ -507,7 +507,7 @@ $_SESSION['citationvar'] = $searchVar;
 				</div>
 				<!--neon edit-->
 				<?php
-				$map_params = 'gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y&menuClosed';
+				$map_params = 'gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y&menuClosed&embedded=1';
 				
 				if (empty($searchVar) && !empty($_SERVER['QUERY_STRING'])) {
 					$searchParams = '?' . $_SERVER['QUERY_STRING'] . '&' . $map_params;
@@ -515,7 +515,7 @@ $_SESSION['citationvar'] = $searchVar;
 					$searchParams = '?' . $searchVar . '&' . $map_params;
 				}
 				
-				$mapUrl = $CLIENT_ROOT . '/collections/map/index.php' . $searchParams . '&embedded=1';
+				$mapUrl = $CLIENT_ROOT . '/collections/map/index.php' . $searchParams;
 				?>
 				
 				<div style="margin-top:10px;">
