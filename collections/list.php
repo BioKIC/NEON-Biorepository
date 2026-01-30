@@ -79,10 +79,10 @@ $_SESSION['citationvar'] = $searchVar;
 		event_label: 'Search Parameters',
 		...eventParams,
 	  });
+	</script>
 	  <?php
 		}
 		?>
-	</script>
 	<!-- NEON end-->
 
 	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=2" type="text/css" rel="stylesheet" />
