@@ -514,10 +514,26 @@ $_SESSION['citationvar'] = $searchVar;
 				<div>
 					<?php echo $LANG['MAP_DESCRIPTION']; ?>
 				</div>
-				<div style='margin-top:10px;'>
-						<button onclick="openMapPU('<?= $searchVar ?>');">
-						<?php echo $LANG['MAP_DISPLAY']; ?>
-					</button>
+				<?php
+				$map_params = 'gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y&menuClosed';
+				
+				if (empty($searchVar) && !empty($_SERVER['QUERY_STRING'])) {
+					$searchParams = '?' . $_SERVER['QUERY_STRING'] . '&' . $map_params;
+				} else {
+					$searchParams = '?' . $searchVar . '&' . $map_params;
+				}
+				
+				$mapUrl = $CLIENT_ROOT . '/collections/map/index.php' . $searchParams;
+				?>
+				
+				<div style="margin-top:10px;">
+					<iframe
+						src="<?= htmlspecialchars($mapUrl) ?>"
+						width="100%"
+						height="900"
+						style="border:0;"
+						scrolling="yes">
+					</iframe>
 				</div>
 				<div style='margin-top:10px;'>
 					<h2><?php echo $LANG['KML_HEADER']; ?></h2>
