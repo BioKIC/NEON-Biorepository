@@ -59,6 +59,8 @@ $_SESSION['citationvar'] = $searchVar;
 	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
 
 	// NEON start
+	if(isset($GOOGLE_ANALYTICS_TAG_ID) && $GOOGLE_ANALYTICS_TAG_ID) {
+		?>
 	parse_str($searchVar, $params);
 	$encodedSearchVar = json_encode($searchVar, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 	?>
@@ -78,6 +80,9 @@ $_SESSION['citationvar'] = $searchVar;
 		event_label: 'Search Parameters',
 		...eventParams,
 	  });
+	  <?php
+		}
+		?>
 	</script>
 	<!-- NEON end-->
 
