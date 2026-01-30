@@ -81,7 +81,7 @@ $_SESSION['citationvar'] = $searchVar;
 	</script>
 	<!-- NEON end-->
 
-	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=1" type="text/css" rel="stylesheet" />
+	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=2" type="text/css" rel="stylesheet" />
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.min.css" type="text/css" rel="stylesheet">
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
@@ -175,12 +175,12 @@ $_SESSION['citationvar'] = $searchVar;
 				</li>
 				<li>
 					<a href="#speclist">
-						<span><?php echo $LANG['TAB_OCCURRENCES']; ?></span>
+						<span>Records</span>
 					</a>
 				</li>
 				<li>
 					<a href="#maps">
-						<span><?php echo $LANG['TAB_MAP']; ?></span>
+						<span>Map</span>
 					</a>
 				</li>
 				<!-- neon edit -->
