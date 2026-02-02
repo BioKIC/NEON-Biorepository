@@ -51,7 +51,7 @@ $taxaArr = $stats->getNeonTaxa();
 		<h1 class="centered">Discover and access sample-based data</h1>
 		<section>
 			<div style="border-bottom-width:2px;border-color:#F0AB00;border-left-width:20px;border-right-width:2px;border-style:solid;border-top-width:2px;padding:10px;">
-				<p><b>Biorepository Portal Update Coming Soon!</b> The update will more seamlessly integrate the Biorepository portal into the site with a refreshed design and simplified navigation. You’ll have access to all the same data in a more unified and easy-to-use experience. For a brief summary of changes visit <a href="https://www.neonscience.org/neon-website-and-biorepository-sample-portal-updates-feb-2026">this page</a>. Explore the in-development site <a href="https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/">here</a>. Your feedback is welcome through <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJlcJCdFtnKRQrd7tkmnsue4g1wCVPXS4RLw8DKUIqihH_LQ/viewform">our webform</a> through February 20.</p>
+				<p><b>Biorepository Portal Update Coming Soon!</b> The update will more seamlessly integrate the Biorepository portal into the site with a refreshed design and simplified navigation. You’ll have access to all the same data in a more unified and easy-to-use experience. For a brief summary of changes visit <a href="https://www.neonscience.org/neon-website-and-biorepository-sample-portal-updates-feb-2026">this page</a>. Explore the in-development site <a href="https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/">here</a>. Your feedback is welcome through through February 20 (the link is available in the banner on the <a href="https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/">development site</a>).</p>
 			</div>
 		</section>
 		<section>
