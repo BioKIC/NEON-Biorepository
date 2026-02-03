@@ -74,7 +74,6 @@ $siteData = new DatasetsMetadata();
 	}
 	
 	.neon-modal-open:hover { 
-	  text-decoration: underline;
 	  cursor: pointer; 
 	}
 	.leaf-label { cursor: pointer; user-select: none; }
