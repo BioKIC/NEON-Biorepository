@@ -553,19 +553,25 @@
             "collid": 85
           },
           {
-            "id": 76,
-            "name": "Bycatch Specimens (from Beetle Sampling)",
-            "collid": 17
-          },
-          {
-            "id": 77,
-            "name": "Specimens (Incidental)",
-            "collid": 19
-          },
-          {
-            "id": 78,
-            "name": "Specimens (Standard Sampling)",
-            "collid": 28
+            "id": 75,
+            "name": "Whole Specimens",
+            "children": [
+              {
+                "id": 76,
+                "name": "Bycatch Specimens (from Beetle Sampling)",
+                "collid": 17
+              },
+              {
+                "id": 77,
+                "name": "Specimens (Incidental)",
+                "collid": 19
+              },
+              {
+                "id": 78,
+                "name": "Specimens (Standard Sampling)",
+                "collid": 28
+              }
+            ]
           }
         ]
       },
