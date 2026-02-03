@@ -958,10 +958,15 @@ document
 		}
     updateChip();
   });
-// Listen for open modal click
+// Listen for open modal click but not when checkbox is clicked
 document
-  .querySelectorAll('#neon-modal-open, .neon-modal-open').forEach(el => {
+  .querySelectorAll('#neon-modal-open, .neon-modal-open')
+  .forEach(el => {
     el.addEventListener('click', function (event) {
+      if (event.target.matches('input[type="checkbox"]')) {
+        return; // let the checkbox do its thing
+      }
+
       event.preventDefault();
       openModal('#biorepo-collections-list');
     });
