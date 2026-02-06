@@ -66,6 +66,12 @@ class OccurrenceHarvester{
 			if(isset($postArr['nullOccurrencesOnly'])){
 				$sqlWhere .= 'AND (s.occid IS NULL) ';
 			}
+			if(isset($postArr['existing'] )){
+				$sqlWhere .= 'AND (o.occid IS NOT NULL) ';
+			}
+			elseif(isset($postArr['notexisting'])){
+				$sqlWhere .= 'AND (o.occid IS NULL) ';
+			}
 			if($postArr['collid']){
 				$sqlWhere .= 'AND (o.collid = '.$postArr['collid'].') ';
 			}
