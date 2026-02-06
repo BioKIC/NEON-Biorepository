@@ -1,4 +1,6 @@
 <?php
+header("Location: https://biorepo.neonscience.org/portal/neon/search/index.php", true, 302);
+exit;
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/ImageLibraryBrowser.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/imagelib/index.'.$LANG_TAG.'.php')) include_once($SERVER_ROOT.'/content/lang/imagelib/index.'.$LANG_TAG.'.php');

@@ -1,4 +1,6 @@
 <?php
+header("Location: https://biorepo.neonscience.org/portal/neon/search/index.php", true, 302);
+exit;
 // error_reporting(E_ALL);
 // ini_set('display_errors', '1');
 include_once('../../config/symbini.php');

@@ -3,10 +3,10 @@
 // Redirect all collprofiles.php requests to neoncollprofiles.php with the same collid parameter
 if (isset($_GET['collid'])) {
     $collid = intval($_GET['collid']);
-    header("Location: neoncollprofiles.php?collid=$collid", true, 301);
+    header("Location: neoncollprofiles.php?collid=$collid", true, 302);
     exit;
 }
-header("Location: neoncollprofiles.php", true, 301);
+header("Location: https://biorepo.neonscience.org/portal/collections/misc/browsecollprofiles.php", true, 302);
 exit;
 //end neon edit
 
