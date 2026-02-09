@@ -33,7 +33,7 @@ $displayLeftMenu = false;
 include($SERVER_ROOT.'/includes/header.php');
 ?>
 <div class="navpath">
-	<a href="../../index.php">Home</a> &gt;&gt;
+	<a href="../index.php">Home</a> &gt;&gt;
 	<b>NEON Management Tools</b>
 </div>
 <?php
@@ -41,7 +41,7 @@ if($isEditor){
 	?>
 	<div id="innertext">
 		<fieldset style="padding:10px;">
-			<legend><b>Shipment Management Tools</b></legend>
+			<legend><b>Sample Management Tools</b></legend>
 			<ul>
 				<li>Quick search:
 					<form name="sampleQuickSearchFrom" action="shipment/manifestviewer.php" method="post" style="display: inline" >
@@ -59,6 +59,19 @@ if($isEditor){
 					<?php
 				}
 				?>
+			</ul>
+		</fieldset>
+		<fieldset>
+			<legend><b>Request Tools</b></legend>
+			<ul>
+				<li><a href="requests/inquiries.php">Inquiry list</a></li>
+				<li><a href="requests/requestreport.php">Request Status Report</a></li>
+				<li><a href="requests/index.php">Create New Inquiry Record</a></li>
+			</ul>
+		</fieldset>
+		<fieldset>
+			<legend><b>Reports</b></legend>
+			<ul>
 				<li><a href="#" onclick="$('.nps-report').show();return false">NPS Year End Reports</a></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=110&year=2020" onclick="$('#BLDE20-working').show();">BLDE - 2020</a><span id="BLDE20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=40&year=2020" onclick="$('#GRSM20-working').show();">GRSM - 2020</a><span id="GRSM20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
@@ -70,7 +83,10 @@ if($isEditor){
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=131&year=2019" onclick="$('#YELL19-working').show();">YELL - 2019</a><span id="YELL19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li><a href="loans.php">Loans Reports</a></li>
 				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
-				<li><a href="shipment/prepreports.php">Preparations Reports</a></li>
+				<li><a href="shipment/prepreports.php">Preparations Report</a></li>
+				<li><a href="neonreports/monthlyreportactions.php">Monthly Report</a></li>
+				<li><a href="neonreports/quarterlyreportactions.php">Quarterly Sample Use Report</a></li>
+
 			</ul>
 		</fieldset>
 	</div>
