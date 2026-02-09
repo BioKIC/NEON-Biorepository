@@ -208,7 +208,7 @@ $siteData = new DatasetsMetadata();
 								</div>
 								<div>
 									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material sample IDs" >
-									<label for="includematerialsample">Include material sample catalog numbers</label>
+									<label for="includematerialsample">Include material sample identifiers</label>
 								</div>
 								<div class="text-area-container">
 									<label for="" class="text-area--outlined">

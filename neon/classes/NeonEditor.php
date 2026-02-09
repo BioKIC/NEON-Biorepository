@@ -174,7 +174,25 @@ class NeonEditor extends UtilitiesFileImport {
 				if (empty($detArr['dateIdentified'])) {
 					$paramArr['dateIdentified'] = 's.d.';
 				}
-				if ($detManager->insertDetermination($detArr)) {
+				if (!empty($postArr['associatedoccurrences']) && $postArr['associatedoccurrences'] == 1) {
+					$results = $detManager->insertAndPropagateNEONDetermination($occid, $detArr);
+						if ($results !== false) {
+							foreach ($results as $id => $res) {
+								if ($res['success']) {
+									$this->logOrEcho('Determination added for associated occid: <a href="' . 
+										$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . 
+										$id . '" target="_blank">' . $id . '</a>', 1);
+								} else {
+									$this->logOrEcho('Error adding determination for occid ' . $id . ': ' . 
+										htmlspecialchars($res['message']), 1);
+								}
+							}
+							$status = true;
+						} else {
+							$this->logOrEcho('ERROR retrieving associated occurrences: ' . $detManager->getErrorMessage(), 1);
+						}
+				}
+				else if ($detManager->insertNEONDetermination($detArr)) {
 					 $this->logOrEcho($LANG['DETERMINATION_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
                     $status = true;
 				} else {
@@ -249,6 +267,10 @@ class NeonEditor extends UtilitiesFileImport {
 				}
 			}
 		} elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
+			if (!in_array('ms_catalognumber', array_map('strtolower', array_keys($this->fieldMap)))) {
+				$this->logOrEcho('ERROR: ms_catalogNumber is not mapped in the import field map.', 1);
+				return;
+			}
 			$importManager = new OmMaterialSample($this->conn);
 			foreach ($occidArr as $occid) {
 				$importManager->setOccid($occid);
@@ -256,18 +278,49 @@ class NeonEditor extends UtilitiesFileImport {
 				$msArr = array();
 				foreach ($fieldArr as $field) {
 					$fieldLower = strtolower($field);
-					if (isset($this->fieldMap[$fieldLower]) && !empty($recordArr[$this->fieldMap[$fieldLower]])) $msArr[$field] = $this->encodeString($recordArr[$this->fieldMap[$fieldLower]]);
+					$recordIdx = $this->fieldMap[$fieldLower] ?? $this->fieldMap['ms_' . $fieldLower] ?? null;
+					if ($recordIdx !== null && !empty($recordArr[$recordIdx])) {
+						$msArr[$field] = $this->encodeString($recordArr[$recordIdx]);
+					}
 				}
 				if (isset($msArr['ms_catalogNumber']) && $msArr['ms_catalogNumber']) {
-					$msArr['catalogNumber'] = $msArr['ms_catalogNumber'];
-					unset($msArr['ms_catalogNumber']);
+				 	$msArr['catalogNumber'] = $msArr['ms_catalogNumber'];
+				 	unset($msArr['ms_catalogNumber']);
 				}
-				if ($importManager->insertMaterialSample($msArr)) {
-					$this->logOrEcho($LANG['MAT_SAMPLE_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-                    $status = true;
-				} else {
-					$this->logOrEcho('ERROR loading Material Sample: ' . $importManager->getErrorMessage(), 1);
-				}
+
+				if ($postArr['action'] === 'add') {
+					$existingoccid = $importManager->getMatSampleIdByCatalogNumber($msArr['catalogNumber']);
+					if ($existingoccid) {
+						$this->logOrEcho('SKIPPED: Material Sample with catalogNumber "' . $msArr['catalogNumber'] .
+							'" already exists for <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $existingoccid . '" target="_blank">' . $existingoccid . '</a>', 1);
+					} elseif ($importManager->insertMaterialSample($msArr)) {
+						$this->logOrEcho($LANG['MAT_SAMPLE_ADDED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+						$status = true;
+					} else {
+						$this->logOrEcho('ERROR loading Material Sample: ' . $importManager->getErrorMessage(), 1);
+					}
+				} elseif ($postArr['action'] === 'update') {
+						$matSampleID = $importManager->getMatSampleIdByOccidAndCatalogNumber($occid, $msArr['catalogNumber']);
+
+						if (!$matSampleID) {
+							$this->logOrEcho(
+								'SKIPPED: No existing material sample found for occid ' . 
+								$occid . ' with catalogNumber "' . $msArr['catalogNumber'] . '"',
+								1
+							);
+							continue;
+						}
+
+						$importManager->setMatSampleID($matSampleID);
+
+						if ($importManager->updateMaterialSample($msArr)) {
+							$this->logOrEcho(
+								'Material sample updated: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+							$status = true;
+						} else {
+							$this->logOrEcho('ERROR updating Material Sample: ' . $importManager->getErrorMessage(), 1);
+						}
+					}
 			}
 		} elseif ($this->importType == self::IMPORT_IDENTIFIERS) {
 			$importManager = new OmIdentifiers($this->conn);
@@ -364,24 +417,74 @@ class NeonEditor extends UtilitiesFileImport {
 				$importManager->setOccid($occid);
 				$fieldArr = array_keys($importManager->getSchemaMap());
 				$genArr = array();
-					foreach ($fieldArr as $field) {
-						$fieldLower = strtolower($field);
-						if (isset($this->fieldMap[$fieldLower])) {
-							$value = $recordArr[$this->fieldMap[$fieldLower]] ?? null;
-							$genArr[$field] = $this->encodeString($value);
-						}
+
+				foreach ($fieldArr as $field) {
+					$fieldLower = strtolower($field);
+					if (isset($this->fieldMap[$fieldLower])) {
+						$value = $recordArr[$this->fieldMap[$fieldLower]] ?? null;
+						$genArr[$field] = $this->encodeString($value);
 					}
 				}
-				if($postArr['action'] == 'add'){
-					if ($importManager->insertGeneticLink($genArr) ) {
-						$this->logOrEcho('Genetic links loaded: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-						$status = true;
+
+				$propagateDerived = $postArr['propagatederived'] ?? 0;
+				$propagateOriginating = $postArr['propagateoriginating'] ?? 0;
+
+				if ($postArr['action'] == 'add') {
+					if ($propagateDerived == 1 || $propagateOriginating == 1) {
+						$type = 'both';
+						if ($propagateDerived == 1 && !$propagateOriginating) $type = 'derived';
+						if (!$propagateDerived && $propagateOriginating == 1) $type = 'originating';
+
+						$results = $importManager->insertAndPropagateGeneticLink($occid, $genArr, $type);
+						if ($results !== false) {
+							foreach ($results as $id => $res) {
+								if ($res['success']) {
+									$this->logOrEcho('Genetic link added for associated occid: <a href="' .
+										$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' .
+										$id . '" target="_blank">' . $id . '</a>', 1);
+								} else {
+									$this->logOrEcho('Error adding genetic link for occid ' . $id . ': ' .
+										htmlspecialchars($res['message']), 1);
+								}
+							}
+							$status = true;
 						} else {
+							$this->logOrEcho('ERROR retrieving associated occurrences: ' . $importManager->getErrorMessage(), 1);
+						}
+					} elseif ($importManager->insertGeneticLink($genArr)) {
+						$this->logOrEcho('Genetic links loaded: <a href="' .
+							$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid .
+							'" target="_blank">' . $occid . '</a>', 1);
+						$status = true;
+					} else {
 						$this->logOrEcho('ERROR loading Genetic Link: ' . $importManager->getErrorMessage(), 1);
 					}
-				} elseif($postArr['action'] == 'update'){
-					if ($importManager->updateGeneticLink($genArr) ) {
-						$this->logOrEcho('Genetic links updated: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+				} elseif ($postArr['action'] == 'update') {
+					if ($propagateDerived == 1 || $propagateOriginating == 1) {
+						$type = 'both';
+						if ($propagateDerived == 1 && !$propagateOriginating) $type = 'derived';
+						if (!$propagateDerived && $propagateOriginating == 1) $type = 'originating';
+
+						$results = $importManager->updateAndPropagateGeneticLink($occid, $genArr, $type);
+						if ($results !== false) {
+							foreach ($results as $id => $res) {
+								if ($res['success']) {
+									$this->logOrEcho('Genetic link updated for associated occid: <a href="' .
+										$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' .
+										$id . '" target="_blank">' . $id . '</a>', 1);
+								} else {
+									$this->logOrEcho('Error updating genetic link for occid ' . $id . ': ' .
+										htmlspecialchars($res['message']), 1);
+								}
+							}
+							$status = true;
+						} else {
+							$this->logOrEcho('ERROR retrieving associated occurrences: ' . $importManager->getErrorMessage(), 1);
+						}
+					} elseif ($importManager->updateGeneticLink($genArr)) {
+						$this->logOrEcho('Genetic links updated: <a href="' .
+							$GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid .
+							'" target="_blank">' . $occid . '</a>', 1);
 						$status = true;
 					} else {
 						$this->logOrEcho('ERROR updating Genetic Link: ' . $importManager->getErrorMessage(), 1);
@@ -389,6 +492,8 @@ class NeonEditor extends UtilitiesFileImport {
 				}
 
 			}
+		}
+
 		return $status;
 	}
 
@@ -607,4 +712,5 @@ class NeonEditor extends UtilitiesFileImport {
 		if (is_numeric($importType)) $this->importType = $importType;
 		$this->defineTranslationMap();
 	}
+
 }
