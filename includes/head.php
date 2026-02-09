@@ -247,16 +247,16 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
               p.style.fontSize = '.95rem';
 
               p.innerHTML =
-                `<strong>Welcome to the redesigned NEON website!</strong> This site features more intuitive navigation and a seamlessly integrated Biorepository portal, making it easier to explore NEON data, samples and resources. For a brief summary of changes visit
+                `<strong>Welcome to the updated NEON website!</strong> This site features more intuitive navigation and a seamlessly integrated Biorepository portal, making it easier to explore NEON data, samples and resources. For a brief summary of changes visit
                     <a href="https://www.neonscience.org/neon-website-and-biorepository-sample-portal-updates-feb-2026"
                        style="color:#0073CF; text-decoration:underline;"
                        onmouseover="this.style.color='#0092E2'"
                        onmouseout="this.style.color='#0073CF'">this page</a>.
-                    Your feedback is welcome through
+                    Your feedback is welcome through our
                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJlcJCdFtnKRQrd7tkmnsue4g1wCVPXS4RLw8DKUIqihH_LQ/viewform"
                        style="color:#0073CF; text-decoration:underline;"
                        onmouseover="this.style.color='#0092E2'"
-                       onmouseout="this.style.color='#0073CF'">our webform</a>
+                       onmouseout="this.style.color='#0073CF'">webform</a>
                     through February 20.`;
 
               banner.appendChild(p);
