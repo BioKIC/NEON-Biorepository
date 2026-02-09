@@ -61,7 +61,7 @@ if ($isEditor) {
 	?>
 	<h2>Summary:</h2>
 	<?php
-	$summary = $reports->generateQuarterlyReportSummary();
+	$summary = $reports->generateQuarterlyReportSummary($quarter,$reportDate);
 	echo '<p>' . $summary . '</p>';
 
 	if (!empty($reportsArr)) {

@@ -437,20 +437,11 @@ function getScholarProfileStats() {
     
     }
 
-    public function generateQuarterlyReportSummary() {
-        $reportDate = date('Y-m-d H:i:s');
+    public function generateQuarterlyReportSummary($quarter,$reportDate) {
 
-        $year = (int) date('y');  
-        $month = (int) date('m');
-
-        $quarterMap = [1  => 1, 4  => 2, 7  => 3, 11 => 4];
-
-        if (!isset($quarterMap[$month])) {
-            throw new Exception('Quarterly report can only be generated in the month directly following completion of a quarter.');
-        }
-
-        $quarter = $quarterMap[$month];
-        $name = "AY{$year} Q{$quarter}";
+        preg_match('/AY(\d+)\s+Q(\d+)/', $quarter, $matches);
+        $year = $matches[1];
+        $quarter = $matches[2]; 
 
         $ayYear  = 2000 + $year; 
         $startyear = ($ayYear - 1) . '-10-01';
