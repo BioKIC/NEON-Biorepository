@@ -71,7 +71,6 @@ if($isEditor){
 				f.harvestDate.value = "";
 				f.errorStr.value = "";
 				f.replaceFieldValues.checked = true;
-				f.existing.checked = false;
 				$("#extendedVariables").hide();
 			}
 			else $("#extendedVariables").show();
@@ -81,8 +80,6 @@ if($isEditor){
 			if(f.nullOccurrencesOnly.checked == false){
 				var subStatus = false;
 				if(f.collid.value != "") subStatus = true;
-				else if(f.existing.checked == true) subStatus = true;
-				else if(f.notexisting.checked == true) subStatus = true;
 				else if(f.harvestDate.value != "") subStatus = true;
 				else if(f.errorStr.value != "" && f.errorStr.value != "nullError") subStatus = true;
 				else if(f.sessionid.value != "") subStatus = true;
@@ -90,14 +87,6 @@ if($isEditor){
 					alert("Set at least one reharvest parameter");
 					return false;
 				}
-				if(f.existing.checked == true && f.notexisting.checked == true){
-					alert("Cannot target both pre-existing occurrences and new samples at the same time");
-					return false;
-				} subStatus = true;
-				if(f.notexisting.checked == true && f.errorStr.value == "nullError"){
-					alert("Samples with no occurrence or harvesting error should be targeted by selecting 'Target only samples without prior harvesting attempts' ");
-					return false;
-				} subStatus = true;
 			}
 			return true;
 		}
@@ -134,26 +123,11 @@ include($SERVER_ROOT.'/includes/header.php');
 			<form action="occurrenceharvester.php" method="post" onsubmit="return verifyHarvestForm(this)">
 				<div class="fieldGroupDiv">
 					<div class="fieldDiv">
-						<input name="nullOccurrencesOnly" type="checkbox" value="1" onchange="nullOccurrenceOnlyChanged(this)" /> Target only samples without prior harvesting attempts (NULL occid, no error message)
+						<input name="nullOccurrencesOnly" type="checkbox" value="1" onchange="nullOccurrenceOnlyChanged(this)" /> Target New Samples only (NULL occid, no error message)
 					</div>
 				</div>
-				<div class="fieldGroupDiv">
-					<div class="fieldDiv">
-						Target Session:
-						<select name="sessionid" >
-						<option value="">All Records</option>
-						<option value="">------------------------</option>
-						<?php
-						$sessionDataArr = $shipManager->getSessionDataArr();
-						foreach($sessionDataArr as $key => $sessionName){
-							echo '<option value="'.htmlspecialchars($key).'" '.(isset($searchArgumentArr['sessionData'])&&$key==$searchArgumentArr['sessionData']?'SELECTED':'').'>'.$sessionName.'</option>';
-						}
-						?>
-					</select>
-				</div>
-				</div>
 				<fieldset id="extendedVariables">
-					<legend>(Re)harvesting Parameters</legend>
+					<legend>Reharvesting Parameters</legend>
 					<div class="fieldGroupDiv">
 						<div class="fieldDiv">
 							Harvest date prior to: <input name="harvestDate" type="date" value="<?php echo $harvestDate; ?>" />
@@ -189,12 +163,18 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 					<div class="fieldGroupDiv">
 						<div class="fieldDiv">
-						<input name="existing" type="checkbox" value="1" /> Target only samples WITH existing occurrences (occid IS NOT NULL)
-					</div>
-						<div class="fieldGroupDiv">
-						<div class="fieldDiv">
-						<input name="notexisting" type="checkbox" value="1" /> Target only samples WITHOUT existing occurrences (occid IS NULL)
-					</div>
+							Target Session:
+							<select name="sessionid" >
+								<option value="">All Records</option>
+								<option value="">------------------------</option>
+								<?php
+								$sessionDataArr = $shipManager->getSessionDataArr();
+								foreach($sessionDataArr as $key => $sessionName){
+									echo '<option value="'.htmlspecialchars($key).'" '.(isset($searchArgumentArr['sessionData'])&&$key==$searchArgumentArr['sessionData']?'SELECTED':'').'>'.$sessionName.'</option>';
+								}
+								?>
+							</select>
+						</div>
 					</div>
 					<div class="fieldGroupDiv">
 						<div class="fieldDiv" title="Upon reharvesting, replaces existing field values, but only if they haven't been explicitly edited to another value">

@@ -63,9 +63,7 @@ class DwcArchiverDetermination{
 		return array_diff_key($detArr,array_flip($trimArr));
 	}
 
-	// START NEON customization
-	public static function getSql($fieldArr, $tableJoins, $conditionSql, $isSecuredReader = false){
-	// END NEON customization
+	public static function getSql($fieldArr, $tableJoins, $conditionSql){
 		$sql = '';
 		if($fieldArr && $conditionSql){
 			$sql = 'SELECT ';
@@ -76,13 +74,7 @@ class DwcArchiverDetermination{
 			}
 			$sql .= ' FROM omoccurdeterminations d INNER JOIN omoccurrences o ON d.occid = o.occid LEFT JOIN taxa t ON d.tidinterpreted = t.tid ';
 			$sql .= $tableJoins;
-			// START NEON customization
-			if ($isSecuredReader) {
-				$sql .= $conditionSql . ' AND d.appliedstatus = 1 ';
-			} else {
-				$sql .= $conditionSql . ' AND d.appliedstatus = 1 AND d.securitystatus = 0 ';
-			}
-			// END NEON customization
+			$sql .= $conditionSql.' AND d.appliedstatus = 1 ';
 			$sql .= 'ORDER BY o.collid';
 			//echo '<div>'.$sql.'</div>'; exit;
 		}

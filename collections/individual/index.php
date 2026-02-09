@@ -555,16 +555,7 @@ $traitArr = $indManager->getTraitArr();
 							</div>
 							<?php
 						}
-						if($occArr['sciname'] ){
-							// NEON customization - show correct determinations for secured reader
-							foreach ($occArr['dets'] as $key => $det) {
-								if (!$isSecuredReader) {
-									if ($det['securitystatus'] == 1) {
-										unset($occArr['dets'][$key]);
-									}
-								}
-							}
-							// End NEON customization
+						if($occArr['sciname']){
 							?>
 							<div id="sciname-div" class="sciname-div bottom-breathing-room-rel-sm">
 								<?php
@@ -716,13 +707,6 @@ $traitArr = $indManager->getTraitArr();
 								?>
 							</div>
 							<?php
-						}
-						if($occArr['recordsecurity'] == 2){
-							echo '<div style="margin-left:10px"><span class="notice-span">'.$LANG['PROTECTED'].':<span> ';
-							if($occArr['securityreason'] && substr($occArr['securityreason'],0,1) != '<') echo $occArr['securityreason'];
-							else echo $LANG['PROTECTED_REASON'];
-							if($isSecuredReader) echo '<br/>'.(isset($LANG['ACCESS_GRANTED'])?$LANG['ACCESS_GRANTED']:'Current user has been granted access');
-							echo '</div>';
 						}
 						if($occArr['eventid']){
 							?>
