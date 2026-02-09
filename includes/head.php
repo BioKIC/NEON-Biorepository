@@ -451,7 +451,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 <!--end-->
 
 <?php
-$CSS_VERSION = '4';
+$CSS_VERSION = '5';
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- UNIVERSAL CSS –––––––––––––––––––––––––––––––––––––––––––––––––– -->

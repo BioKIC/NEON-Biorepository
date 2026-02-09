@@ -54,7 +54,7 @@ $siteData = new DatasetsMetadata();
 
 	<!-- Search-specific styles -->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-	<link rel="stylesheet" href="../css/app.css?v=02">
+	<link rel="stylesheet" href="../css/app.css?v=<?php echo date('Ymd'); ?>">
 	<style>
 	.collapsed { 
 	  display: none; 
