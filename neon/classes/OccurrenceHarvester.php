@@ -1534,6 +1534,12 @@ class OccurrenceHarvester{
 						}
 					}
 
+						// mark id so that duplication is prevented 
+						if ($occid) {
+							$createdKeys[$comboKey] = true;
+						}
+					}
+
 						//Add associations between subsamples
 					if($allSubOccids) {
 						$sharedAssocArr = $this->setSharedOriginAssoc($allSubOccids);

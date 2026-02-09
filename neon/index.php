@@ -33,7 +33,7 @@ $displayLeftMenu = false;
 include($SERVER_ROOT.'/includes/header.php');
 ?>
 <div class="navpath">
-	<a href="../../index.php">Home</a> &gt;&gt;
+	<a href="../index.php">Home</a> &gt;&gt;
 	<b>NEON Management Tools</b>
 </div>
 <?php
