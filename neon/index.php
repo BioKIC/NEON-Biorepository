@@ -57,6 +57,8 @@ if($isEditor){
 			<ul>
 				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
+				<li><a href="requests/index.php">Create New Inquiry</a></li>
+				<li><a href="requests/inquiries.php">Sample Use Inquiry List</a></li>
 				<?php
 				if($IS_ADMIN){
 					?>
@@ -69,6 +71,9 @@ if($isEditor){
 			</ul>
 			<h3>Reporting</h3>
 			<ul>
+				<li><a href="neonreports/monthlyreportactions.php">Monthly Reports</a></li>
+				<li><a href="neonreports/quarterlyreportactions.php">Quarterly Sample Use Reports</a></li>
+				<li><a href="requests/requestreport.php">Request Status Report</a></li>
 				<li><a href="#" onclick="$('.nps-report').show();return false">NPS Year End Reports</a></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=110&year=2020" onclick="$('#BLDE20-working').show();">BLDE - 2020</a><span id="BLDE20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=40&year=2020" onclick="$('#GRSM20-working').show();">GRSM - 2020</a><span id="GRSM20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
