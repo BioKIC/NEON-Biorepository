@@ -1,12 +1,14 @@
 <?php
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceLoans.php');
+include_once($SERVER_ROOT.'/classes/SiteMapManager.php');
+$smManager = new SiteMapManager();
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/loans/loan_langs.en.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 if(!$SYMB_UID) header('Location: ' . $CLIENT_ROOT.'/profile/index.php?refurl=../collections/loans/index.php?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
-$collid = $_REQUEST['collid'];
+$collid = array_key_exists('collid',$_REQUEST)?$_REQUEST['collid']:0;
 $searchTerm = array_key_exists('searchterm',$_POST)?$_POST['searchterm']:'';
 $displayAll = array_key_exists('displayall',$_POST)?$_POST['displayall']:0;
 $tabIndex = array_key_exists('tabindex',$_REQUEST)?$_REQUEST['tabindex']:0;
@@ -468,10 +470,41 @@ if($isEditor){
 				</div>
 			</div>
 			<?php
-		}
-		else{
-			if(!$isEditor) echo '<h2>' . $LANG['NOT_AUTH_LOANS'] . '</h2>';
-			else echo '<h2>' . $LANG['UNKNOWN_ERROR'] . '</h2>';
+		}else{
+			?>
+			<!--neon edit-->
+			<div id="admincollection">
+				<h3>Summary Report</h3>
+				<div>
+					<ul>
+						<li>
+							<a href="<?php echo $CLIENT_ROOT; ?>/neon/loans.php">Full Loan Report</a>
+						</li>
+					</ul>
+				</div>
+				
+				<h3>List of collections you have permissions to manage</h3>
+				<ul>
+				<?php
+				if($collList = $smManager->getCollectionList()){
+					foreach($collList as $group => $groupArr){
+						foreach($groupArr as $k => $cArr){
+							echo '<li>';
+							echo '<a href="'.$CLIENT_ROOT.'/collections/loans/index.php?collid='.$k.'">';
+							echo $cArr['name'];
+							echo '</a>';
+							echo '</li>';
+						}
+					}
+				}
+				//end neon edit
+				else{
+					echo "<li>".$LANG['NOEDITCOLL']."</li>";
+				}
+				?>
+				</ul>
+			</div>
+		<?php
 		}
 		?>
 	</div>

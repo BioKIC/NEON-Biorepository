@@ -152,6 +152,65 @@ class ShipmentManager{
 		if($samplePK) return array_shift($retArr);
 		return $retArr;
 	}
+	
+	public function getSampleHeaders($samplePK = null, $filter = null) {
+		$headerArr = array(
+			'sampleID','hashedSampleID','alternativeSampleID','sampleCode','sampleClass','sampleUuid','taxonID','individualCount',
+			'filterVolume','namedLocation','domainRemarks','collectDate','quarantineStatus','sampleReceived','acceptedForAnalysis',
+			'sampleCondition','dynamicProperties','symbiotaTarget','sampleNotes','occurErr','occid','harvestTimestamp','checkinUser',
+			'checkinRemarks','checkinTimestamp'
+		);
+	
+		$targetArr = array();
+	
+		$sql = 'SELECT s.samplePK, s.sampleID, s.hashedSampleID, s.alternativeSampleID, s.sampleCode, s.sampleClass, s.sampleUuid, 
+			s.taxonID, s.individualCount, s.filterVolume, s.namedLocation, s.domainRemarks, s.collectDate, s.quarantineStatus, 
+			s.sampleReceived, s.acceptedForAnalysis, s.sampleCondition, s.dynamicProperties, s.symbiotaTarget, s.notes AS sampleNotes, 
+			s.errorMessage AS occurErr, CONCAT_WS(", ", u.lastname, u.firstname) AS checkinUser, s.checkinRemarks, 
+			s.checkinTimestamp, s.occid, s.harvestTimestamp 
+			FROM NeonSample s 
+			LEFT JOIN users u ON s.checkinuid = u.uid ';
+	
+		if ($samplePK) {
+			$sql .= 'WHERE s.samplePK = '.$samplePK.' ';
+		} else {
+			$sql .= 'WHERE s.shipmentPK = '.$this->shipmentPK.' ';
+			if ($filter) {
+				if ($filter == 'notCheckedIn') {
+					$sql .= 'AND s.checkinTimestamp IS NULL ';
+				} elseif ($filter == 'missingOccid') {
+					$sql .= 'AND s.occid IS NULL ';
+				} elseif ($filter == 'notAccepted') {
+					$sql .= 'AND s.acceptedForAnalysis = 0 ';
+				} elseif ($filter == 'altIds') {
+					$sql .= 'AND s.alternativeSampleID IS NOT NULL ';
+				} elseif ($filter == 'harvestingError') {
+					$sql .= 'AND s.errorMessage IS NOT NULL ';
+				}
+			}
+			$sql .= 'ORDER BY s.sampleID, s.sampleCode';
+		}
+	
+		$rs = $this->conn->query($sql);
+	
+		while ($r = $rs->fetch_assoc()) {
+			foreach ($headerArr as $fieldName) {
+				if ($r[$fieldName] !== '' && $r[$fieldName] !== null && !in_array($fieldName, $targetArr)) {
+					$targetArr[] = $fieldName;
+				}
+			}
+		}
+
+		if (!in_array('checkinTimestamp', $targetArr)) {
+			$targetArr[] = 'checkinUser';
+			$targetArr[] = 'checkinTimestamp';
+		}
+	
+		$rs->free();
+	
+		return $targetArr;
+	}
+
 
 	//Shipment import functions
 	public function uploadManifestFile(){

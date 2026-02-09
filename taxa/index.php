@@ -82,7 +82,7 @@ $cultivarEpithet = !empty($splitSciname['cultivarEpithet']) ? (' ' . $taxonManag
 $tradeName = !empty($splitSciname['tradeName']) ? ($taxonManager->standardizeTradeName($splitSciname['tradeName']) . ' ') : '';
 $nonItalicizedScinameComponent = $cultivarEpithet . $tradeName;
 ?>
-<div id="popup-innertext">
+<div id="innertext">
 	<h1 class="page-heading screen-reader-only"><?= $taxonManager->getTaxonName() ?></h1>
 	<?php
 	if($taxonManager->getTaxonName()){

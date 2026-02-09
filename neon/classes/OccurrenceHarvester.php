@@ -186,7 +186,7 @@ class OccurrenceHarvester{
 					if(in_array(73, $collArr)) {$collArr[] = 106;}
 					$collManager = new OccurrenceCollectionProfile();
 					foreach($collArr as $collID){
-						echo '<li style="margin-left:15px">Stat update for collection <a href="'.$GLOBALS['CLIENT_ROOT'].'/collections/misc/collprofiles.php?collid='.$collID.'" target="_blank">#'.$collID.'</a>...</li>';
+						echo '<li style="margin-left:15px">Stat update for collection <a href="'.$GLOBALS['CLIENT_ROOT'].'/collections/misc/neoncollprofiles.php?collid='.$collID.'" target="_blank">#'.$collID.'</a>...</li>';
 						$collManager->setCollid($collID);
 						$collManager->updateStatistics(false);
 						flush();
@@ -1285,7 +1285,7 @@ class OccurrenceHarvester{
 		}
 		elseif(in_array($dwcArr['collid'], array(19,28))){
 			$dwcArr['preparations'] = '-20 degrees Celsius';
-			$dwcArr['dynamicProperties'] = '{"total_length_mm":"NA", "taill_length_mm":"NA", "hind_foot_length_without_claw_mm":"NA", "hind_foot_length_with_claw_mm":"NA", "ear_length_mm":"NA", "body_mass_grams":"NA", "embryo_count_left":"NA", "embryo_count_right":"NA", "crown_rump_length_mm":"NA", "placental_scar_count_left":"NA", "placental_scar_count_right":"NA", "testis_length_mm":"NA", "testis_width_mm":"NA", "prepared_by":"NAp", "prepared_date":"NAp"}';
+			$dwcArr['dynamicProperties'] = '{"total_length_mm":"NA", "tail_length_mm":"NA", "hind_foot_length_without_claw_mm":"NA", "hind_foot_length_with_claw_mm":"NA", "ear_length_mm":"NA", "body_mass_grams":"NA", "embryo_count_left":"NA", "embryo_count_right":"NA", "crown_rump_length_mm":"NA", "placental_scar_count_left":"NA", "placental_scar_count_right":"NA", "testis_length_mm":"NA", "testis_width_mm":"NA", "prepared_by":"NAp", "prepared_date":"NAp"}';
 		}
 		elseif ($dwcArr['collid'] == 56) {
 			// bulk identified mosquitos

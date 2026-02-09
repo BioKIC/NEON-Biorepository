@@ -41,7 +41,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
         <figcaption>NEON Biorepository Data Portal homepage screenshot of top view</figcaption>
       </figure>
 
-      <p>On our homepage, you will also find contact information for the NEON Biorepository. Always feel free to email us at </span><span class="c12"><a class="c5" href="mailto:biorepo@asu.edu">biorepo@asu.edu</a></span><span class="c1">&nbsp;with any inquiries.</span></p>
+      <p>On our homepage, you will also find contact information for the NEON Biorepository. Always feel free to </span><span class="c12"><a class="c5" href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a></span><span class="c1">&nbsp;with any inquiries.</span></p>
       <figure>
         <img alt="NEON Biorepository Data Portal homepage screenshot" src="../misc/images/tutorial_24.jpg">
         <figcaption>NEON Biorepository Data Portal homepage screenshot of middle view</figcaption>

@@ -29,7 +29,6 @@ let paramNames = [
   'eventdate1',
   'eventdate2',
   'taxa',
-  'usethes',
   'taxontype',
   'availableforloan',
 ];
@@ -131,6 +130,7 @@ function addChip(element) {
   let chipBtn = document.createElement('button');
   chipBtn.setAttribute('type', 'button');
   chipBtn.classList.add('chip-remove-btn');
+  chipBtn.classList.add('Mui');
   // if element is domain or site, pass other content
   if (element.name == 'some-datasetid') {
     if (element.text != '') {
@@ -142,7 +142,7 @@ function addChip(element) {
       };
     }
   } else if (
-    (element.name == 'neonext-collections-list') |
+    (element.name == 'neonext-collections-items') |
     (element.name == 'ext-collections-list') |
     (element.name == 'taxonomic-cat') |
     (element.name == 'neon-theme') |
@@ -226,17 +226,17 @@ function updateChip(e) {
     )
   );
   if (!biorepoAllChecked && biorepoChecked.length > 0) {
-    addChip(getCollsChips(getCriterionSelected(), 'Some Biorepo Colls'));
+    addChip(getCollsChips(getCriterionSelected(), 'Some Sample Types'));
   }
   // if any additional NEON colls are selected (except for "all"), then add chip
   let addCols = document.querySelectorAll(
-    '#neonext-collections-list input[type=checkbox]'
+    '#neonext-collections-items input[type=checkbox]'
   );
   let addColsChecked = document.querySelectorAll(
-    '#neonext-collections-list input[type=checkbox]:checked'
+    '#neonext-collections-items input[type=checkbox]:checked'
   );
   if (addColsChecked.length > 0 && addColsChecked.length < addCols.length) {
-    addChip(getCollsChips('neonext-collections-list', 'Some Add NEON Colls'));
+    addChip(getCollsChips('neonext-collections-items', 'Some Sample Types at Other Repos'));
   }
   // if any external NEON colls are selected (expect for "all"), then add chip
   let extCols = document.querySelectorAll(
@@ -394,12 +394,28 @@ function getAdvancedSearchChip() {
  * Uses jQuery
  */
 function toggleAllSelector() {
+  // CASE 1: accordion-style (all-selector inside .accordion-subheader)
+  const accordionHeader = this.closest('.accordion-subheader');
+  if (accordionHeader) {
+    const li = accordionHeader.closest('li');
+    if (!li) return;
+
+    li.querySelectorAll('.content input.child:enabled').forEach(cb => {
+      cb.checked = this.checked;
+      cb.indeterminate = false;
+    });
+    return;
+  }
+
+  // CASE 2: original behavior (unchanged)
   $(this)
     .siblings()
     .find('input[type=checkbox]:enabled')
     .prop('checked', this.checked)
+    .prop('indeterminate', false)
     .attr('checked', this.checked);
 }
+
 
 /**
  * Triggers toggling of checked/unchecked boxes in nested lists
@@ -407,39 +423,93 @@ function toggleAllSelector() {
  * @param {String} e.data.element Selector for element containing
  * list, should be passed when binding function to element
  */
-function autoToggleSelector(e) {
-  if (e.type == 'click' || e.type == 'change') {
-    let isChild = e.target.classList.contains('child');
-    if (isChild) {
-      let nearParentNode = e.target.closest('ul').parentNode;
-      let nearParentOpt = e.target
-        .closest('ul')
-        .parentNode.querySelector('.all-selector');
-      let numOptions = nearParentNode.querySelectorAll(
-        'ul > li input.child:not(.all-selector):enabled'
-      ).length;
-      let numOpChecked = nearParentNode.querySelectorAll(
-        'ul > li input.child:not(.all-selector):checked'
-      ).length;
-      numOptions == numOpChecked
-        ? (nearParentOpt.checked = true)
-        : (nearParentOpt.checked = false);
 
-      if (nearParentOpt.classList.contains('child')) {
-        let parentAllNode = nearParentNode.closest('ul').parentNode;
-        let parentAllOpt = parentAllNode.querySelector('.all-selector');
-        let numOptionsAll = parentAllNode.querySelectorAll(
-          'input.child:enabled'
-        ).length;
-        let numOpCheckedAll = parentAllNode.querySelectorAll(
-          'input.child:checked'
-        ).length;
-        numOptionsAll == numOpCheckedAll
-          ? (parentAllOpt.checked = true)
-          : (parentAllOpt.checked = false);
+function updateGlobalMaster() {
+  const $allKids = $('#collections-list1 input.child:enabled, #collections-list2 input.child:enabled, #collections-list3 input.child:enabled');
+  const total = $allKids.length;
+  const checked = $allKids.filter(':checked').length;
+  const anyInd = $allKids.filter(function () { return this.indeterminate; }).length > 0;
+  const $master = $('#all-neon-colls-quick');
+  $master.prop('checked', total > 0 && checked === total && !anyInd);
+  $master.prop('indeterminate', (checked > 0 && checked < total) || anyInd);
+}
+
+function updateAncestors(fromCheckbox) {
+  // start at the LI that owns this checkbox
+  let li = fromCheckbox.closest('li');
+
+  while (li) {
+    const parentLi = li.parentElement?.closest('li');
+    if (!parentLi) break; // reached the root
+
+    // --- CASE A: original structure ---
+    // <li>
+    //   <input class="all-selector">
+    //   <ul> <li><input class="child"> ...
+    // </li>
+    let parentCb = parentLi.querySelector(':scope > input.all-selector');
+    let kids = null;
+
+    if (parentCb) {
+      kids = parentLi.querySelectorAll(':scope > ul > li > input.child:enabled');
+    } else {
+      // --- CASE B: your accordion structure ---
+      // <li>
+      //   <label class="accordion-subheader">
+      //     <input class="all-selector">
+      //   </label>
+      //   <div class="content">
+      //     <ul> ... <input class="child"> ...
+      // </li>
+      parentCb = parentLi.querySelector(':scope > label.accordion-subheader input.all-selector');
+      if (parentCb) {
+        // only count real leaf checkboxes in the content area
+        kids = parentLi.querySelectorAll(':scope > .content input.child:enabled');
       }
     }
+
+    // If this parent LI doesn't have a group checkbox in either shape, just climb
+    if (!parentCb || !kids) {
+      li = parentLi;
+      continue;
+    }
+
+    let total = 0, checkedCount = 0, anyIndeterminate = false;
+    kids.forEach(cb => {
+      total++;
+      if (cb.indeterminate) anyIndeterminate = true;
+      if (cb.checked) checkedCount++;
+    });
+
+    parentCb.checked = total > 0 && checkedCount === total && !anyIndeterminate;
+    parentCb.indeterminate = anyIndeterminate || (checkedCount > 0 && checkedCount < total);
+
+    // climb
+    li = parentLi;
   }
+}
+
+
+function autoToggleSelector(e) {
+  if (e.type !== 'click' && e.type !== 'change') return;
+
+  const t = e.target;
+  if (!t.classList.contains('child')) return;
+
+  // If a group/all-selector changed, propagate to all descendants first
+  if (t.classList.contains('all-selector')) {
+    const li = t.closest('li');
+    if (li) {
+      li.querySelectorAll(':scope ul input.child:enabled').forEach(cb => {
+        cb.checked = t.checked;
+        cb.indeterminate = false;
+      });
+    }
+  }
+
+  // Then recompute all ancestors up to the root
+  updateAncestors(t);
+  updateGlobalMaster();
 }
 
 /**
@@ -602,6 +672,12 @@ function getSearchUrl() {
   paramNames.forEach((param, i) => {
     return getParam(paramNames[i]);
   });
+  
+  // Adds useThes if box is not checked
+  const useThesCb = document.getElementById('usethes');
+  if (useThesCb && !useThesCb.checked) {
+    baseUrl.searchParams.set('usethes', '1');
+  }
 
   // Appends each key value for each param in search url
   let queryString = Object.keys(paramsArr).map((key) => {
@@ -624,7 +700,7 @@ function validateForm() {
   if (anyCollsSelected.length === 0) {
     errors.push({
       elId: 'search-form-colls',
-      errorMsg: 'Please select at least one collection.',
+      errorMsg: 'Please select at least one sample type.',
     });
   }
   // HTML5 built-in validation
@@ -882,12 +958,18 @@ document
 		}
     updateChip();
   });
-// Listen for open modal click
+// Listen for open modal click but not when checkbox is clicked
 document
-  .getElementById('neon-modal-open')
-  .addEventListener('click', function (event) {
-    event.preventDefault();
-    openModal('#biorepo-collections-list');
+  .querySelectorAll('#neon-modal-open, .neon-modal-open')
+  .forEach(el => {
+    el.addEventListener('click', function (event) {
+      if (event.target.matches('input[type="checkbox"]')) {
+        return; // let the checkbox do its thing
+      }
+
+      event.preventDefault();
+      openModal('#biorepo-collections-list');
+    });
   });
 // When checking "all neon collections" box, toggle checkboxes in modal
 $('#all-neon-colls-quick').click(function () {
@@ -923,16 +1005,108 @@ formInputs.forEach((formInput) => {
 // on default (on document load): All Neon Collections, All Domains & Sites, Include other IDs, All Domains & Sites
 window.addEventListener('load', updateChip);
 // Binds expansion function to plus and minus icons in selectors, uses jQuery
-$('.expansion-icon').click(function () {
-  if ($(this).siblings('ul').hasClass('collapsed')) {
-    $(this)
-      .html('indeterminate_check_box')
-      .siblings('ul')
-      .removeClass('collapsed');
-  } else {
-    $(this).html('add_box').siblings('ul').addClass('collapsed');
-  }
+$('#collections-list1, #collections-list2, #collections-list3').on('click', '.expansion-icon', function () {
+  const $li = $(this).closest('li');
+  const $childUl = $li.children('ul').first();
+
+  if (!$childUl.length) return; // no children here
+
+  const isCollapsed = $childUl.toggleClass('collapsed').hasClass('collapsed');
+  $(this).text(isCollapsed ? 'add_box' : 'indeterminate_check_box');
 });
+
+////////////////////////////////////////////////////////////////////////////
+// Prefill form from URL params
+function prefillFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+
+  const hasDbParam = params.has('db');
+  const hasDatasetParam = params.has('datasetid');
+
+  // Reset ONLY collections tree if db= is present
+  if (hasDbParam) {
+    document.querySelectorAll('#biorepo-collections-list input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      cb.indeterminate = false;
+    });
+  }
+
+  // Reset ONLY site tree if datasetid= is present
+  if (hasDatasetParam) {
+    document.querySelectorAll('#site-list input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      cb.indeterminate = false;
+    });
+  }
+
+  // Apply URL params
+  params.forEach((value, key) => {
+
+    // --- COLLECTIONS TREE (db) ---
+    if (key === 'db') {
+      const values = value.split(',');
+      const leafCheckboxes = document.querySelectorAll(
+        '#biorepo-collections-list input[name="db"], #neonext-collections-list input[name="db"]'
+      );
+
+      values.forEach(v => {
+        leafCheckboxes.forEach(cb => {
+          if (cb.value === v) cb.checked = true;
+        });
+      });
+      return;
+    }
+
+    // --- SITE TREE (datasetid) ---
+if (key === 'datasetid') {
+  const values = value.split(',');
+
+  values.forEach(v => {
+    document.querySelectorAll(
+      `#site-list input[name="datasetid"][value="${v}"]`
+    ).forEach(cb => {
+      cb.checked = true;
+      cb.indeterminate = false;
+
+      // If this is a domain (parent), also check all its descendant sites
+      if (cb.classList.contains('all-selector')) {
+        const li = cb.closest('li');
+        if (li) {
+          li.querySelectorAll(':scope ul input.child:enabled').forEach(child => {
+            child.checked = true;
+            child.indeterminate = false;
+          });
+        }
+      }
+    });
+  });
+  return;
+}
+
+    // (other single-value text fields, selects, etc.)
+    const el = document.querySelector(`[name="${key}"]`);
+    if (el) el.value = value;
+  });
+
+  // Recalculate ancestors & chips
+  updateGlobalMaster();
+
+  document.querySelectorAll(
+    '#biorepo-collections-list input.child, #site-list input.child, #neonext-collections-list input.child'
+  ).forEach(cb => {
+    updateAncestors(cb);
+  });
+
+  updateChip();
+}
+
+
+// Run prefill after DOM + default state loads
+window.addEventListener('load', function () {
+  prefillFromUrl();
+});
+
+
 // Hides MOSC-BU checkboxes
 hideColCheckbox(58);
 // Hides identified zoops for now

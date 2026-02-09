@@ -24,6 +24,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		$this->associationManager = new AssociationManager();
 		$this->readRequestVariables();
 		$langTag = '';
+		$LANG = array();
 		if(!empty($GLOBALS['LANG_TAG'])) $langTag = $GLOBALS['LANG_TAG'];
 		if($langTag != 'en' && file_exists($GLOBALS['SERVER_ROOT'] . '/content/lang/classes/OccurrenceManager.' . $langTag . '.php'))
 			include_once($GLOBALS['SERVER_ROOT'] . '/content/lang/classes/OccurrenceManager.' . $langTag . '.php');
@@ -108,13 +109,41 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		elseif(array_key_exists('clid',$this->searchTermArr) && preg_match('/^[0-9,]+$/', $this->searchTermArr['clid'])){
 			$clidStr = $this->getClidStrWithChildren($this->searchTermArr['clid']);
-			if(isset($this->searchTermArr['cltype']) && $this->searchTermArr['cltype'] == 'all'){
-				$sqlWhere .= 'AND (cl.clid IN(' . $clidStr . ')) ';
+			//neon edit
+			//if(isset($this->searchTermArr['cltype']) && $this->searchTermArr['cltype'] == 'all'){
+			//	$sqlWhere .= 'AND (cl.clid IN(' . $clidStr . ')) ';
+			//}
+			//else{
+			//	$sqlWhere .= 'AND (ctl.clid IN(' . $clidStr . ')) ';
+			//}
+			if(!$this->voucherManager){
+				$this->setChecklistVariables($this->searchTermArr['clid']);
 			}
-			else{
-				$sqlWhere .= 'AND (ctl.clid IN(' . $clidStr . ')) ';
+			$meta = $this->voucherManager->getClMetadata();
+			$props = json_decode($meta['dynamicProperties'], true);
+			$datasetIDs = array_map('intval', $props['datasetIDs'] ?? []);
+			$collids = array_map('intval', $props['collids'] ?? []);
+			$parentTids = array_map('intval', $props['tids'] ?? []);
+	
+			if (empty($datasetIDs)) {
+				$this->basicSql = 'SELECT NULL WHERE 1=0';
+				return;
 			}
-			$this->displaySearchArr[] = $this->LANG['CHECKLIST_ID'] . ': ' . $this->searchTermArr['clid'];
+	
+			$datasetStr = implode(',', $datasetIDs);
+			$collidFilter = !empty($collids) ? 'o.collid IN (' . implode(',', $collids) . ')' : '1=0';
+			$tidFilter = '1=0';		
+			
+			if (!empty($parentTids)) {
+				$tidStr = implode(',', $parentTids);
+				$tidFilter = "o.tidInterpreted IN (
+					SELECT tid FROM taxaenumtree
+					WHERE parenttid IN ($tidStr)
+				)";
+			}
+			$sqlWhere .= ' AND ((dl.datasetid IN (' . $datasetStr . ') AND ' . $collidFilter . ') OR (dl.datasetid IN (' . $datasetStr . ') AND ' . $tidFilter . ')) ';
+			$this->displaySearchArr[] = 'Checklist: ' . $this->voucherManager->getClName();
+			//end neon edit
 		}
 		elseif(array_key_exists('db',$this->searchTermArr)){
 			$pattern = '/[^\d,]/';
@@ -125,7 +154,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		if(array_key_exists('datasetid',$this->searchTermArr)){
 
 			$sqlWhere .= 'AND (ds.datasetid IN('.$this->searchTermArr['datasetid'].')) ';
-			$this->displaySearchArr[] = $this->LANG['DATASETS'] . ': ' . $this->getDatasetTitle($this->searchTermArr['datasetid']);
+			//neon edit
+			$this->displaySearchArr[] = 'Domain/Site(s): ' . $this->getDatasetTitle($this->searchTermArr['datasetid']);
+			//end neon edit
 		}
 		$sqlWhere .= $this->getTaxonWhereFrag();
 		$hasValidRelationship = isset($this->associationArr['relationship']) && $this->associationArr['relationship']!=='none';
@@ -690,7 +721,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 					$sqlJoin .= 'INNER JOIN fmvouchers v ON o.occid = v.occid INNER JOIN fmchklsttaxalink ctl ON v.clTaxaID = ctl.clTaxaID ';
 				}
 				else{
-					$sqlJoin .= 'INNER JOIN fmchklsttaxalink cl ON o.tidinterpreted = cl.tid ';
+					//neon edit
+					//$sqlJoin .= 'INNER JOIN fmchklsttaxalink cl ON o.tidinterpreted = cl.tid ';
+					$sqlJoin .= 'INNER JOIN omoccurdatasetlink dl ON o.occid = dl.occid ';
+					//end neon edit
 				}
 			}
 			if(strpos($sqlWhere,'e.taxauthid')){
@@ -743,7 +777,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 	public function getCollectionSearchStr(){
 		$retStr ="";
 		if(!array_key_exists('db',$this->searchTermArr) || $this->searchTermArr['db'] == 'all'){
-			$retStr = "All Collections";
+			//neon edit
+			$retStr = "All Sample Types";
+			//end neon edit
 		}
 		elseif($this->searchTermArr['db'] == 'allspec'){
 			$retStr = "All Specimen Collections";
@@ -899,7 +935,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		$rs->free();
 		return trim($retStr,', ');
 	}
-
+	
 	protected function readRequestVariables(){
 		if(array_key_exists('searchvar',$_REQUEST)){
 			$parsedArr = array();
@@ -1141,10 +1177,12 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			if($_REQUEST['hasgenetic']) $this->searchTermArr['hasgenetic'] = true;
 			else unset($this->searchTermArr['hasgenetic']);
 		}
+		// NEON customization - addition
 		if(array_key_exists('availableforloan',$_REQUEST)){
 			if($_REQUEST['availableforloan']) $this->searchTermArr['availableforloan'] = true;
 			else unset($this->searchTermArr['availableforloan']);
 		}
+		// End of NEON Customization
 		if(array_key_exists('hascoords',$_REQUEST)){
 			if($_REQUEST['hascoords']) $this->searchTermArr['hascoords'] = true;
 			else unset($this->searchTermArr['hascoords']);
@@ -1272,7 +1310,14 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		if(!$this->voucherManager) return false;
 		return $this->voucherManager->getClName();
 	}
-
+	//neon edit	
+	public function getClMetadata() {
+		if (!$this->clMetadata) {
+			return false;
+		}
+		return $this->clMetadata;
+	}
+	//end neon edit
 	public function getTaxaArr(){
 		return $this->taxaArr;
 	}

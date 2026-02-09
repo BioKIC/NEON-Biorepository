@@ -64,7 +64,11 @@ class OpenIdProfileManager extends ProfileManager
 	public function linkThirdPartySid($thirdparty_sid, $local_sid, $ip)
 	{
 		if (empty($thirdparty_sid)) return;
-		$sql = 'INSERT INTO usersthirdpartysessions(thirdparty_id, localsession_id, ipaddr) VALUES (?, ?, ?)';
+		//neon edit
+		$sql = 'INSERT INTO usersthirdpartysessions(thirdparty_id, localsession_id, ipaddr)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE thirdparty_id = thirdparty_id';
+		//end neon edit
 		if ($stmt = $this->conn->prepare($sql)) {
 			if ($stmt->bind_param('sss', $thirdparty_sid, $local_sid, $ip)) {
 				$stmt->execute();
@@ -142,20 +146,30 @@ class OpenIdProfileManager extends ProfileManager
 		return $localSessionID;
 	}
 
-	public function removeThirdPartySid($thirdparty_sid, $local_sid)
+	public function removeThirdPartySid($local_sid, $thirdparty_sid)
 	{
-		$sql = 'DELETE FROM usersthirdpartysessions WHERE thirdparty_id = ? AND localsession_id = ? LIMIT 1';
+		//$sql = 'DELETE FROM usersthirdpartysessions WHERE thirdparty_id = ? AND localsession_id = ? LIMIT 1';
+		//if ($stmt = $this->conn->prepare($sql)) {
+		//	if ($stmt->bind_param('ss', $thirdparty_sid, $local_sid)) {
+		//		$stmt->execute();
+		//		$stmt->close();
+		//	}
+		//}
+		//neon edit
+		$sql = 'DELETE FROM usersthirdpartysessions WHERE localsession_id = ? LIMIT 1';
+		$this->resetConnection();
 		if ($stmt = $this->conn->prepare($sql)) {
-			if ($stmt->bind_param('ss', $thirdparty_sid, $local_sid)) {
+			if ($stmt->bind_param('s', $local_sid)) {
 				$stmt->execute();
 				$stmt->close();
 			}
 		}
+		//end edit
 	}
 
 	public function forceLogout($targetSessionId, $thirdparty_sid)
 	{
-		if(!empty($thirdparty_sid)){
+		if(!empty($targetSessionId)){
 			$this->removeThirdPartySid($targetSessionId, $thirdparty_sid);
 		}		
 		session_write_close();

@@ -2,6 +2,9 @@
 include_once($SERVER_ROOT.'/classes/OccurrenceTaxaManager.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceSearchSupport.php');
 include_once($SERVER_ROOT . '/classes/utilities/OccurrenceUtil.php');
+//neon edit
+include_once($SERVER_ROOT . '/classes/OccurrenceManager.php');
+//end neon
 
 class ImageLibrarySearch extends OccurrenceTaxaManager{
 
@@ -22,12 +25,18 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 	private $searchSupportManager = null;
 	private $sqlWhere = '';
 	private $errorStr = '';
+	//neon
+	protected $occurrenceManager;
+	//end neon
 
 	function __construct($type = 'readonly') {
 		parent::__construct($type);
 		if(array_key_exists('TID_FOCUS', $GLOBALS) && preg_match('/^[\d,]+$/', $GLOBALS['TID_FOCUS'])){
 			$this->tidFocus = $GLOBALS['TID_FOCUS'];
 		}
+		//neon
+		$this->occurrenceManager = new OccurrenceManager();
+		//end neon
 	}
 
 	function __destruct(){
@@ -36,17 +45,20 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 
 	public function getImageArr($pageRequest, $cntPerPage, $sortBy = ''){
 		$retArr = Array();
-		$this->setSqlWhere();
+		//neon
+		//$this->setSqlWhere();
+		//end neon
 		$this->setRecordCnt();
 		// Begin NEON customization 
 		//$sql = 'SELECT m.mediaID, m.tid, IFNULL(t.sciname,o.sciname) as sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType ';
 		$sql = 'SELECT m.mediaID, m.tid, IFNULL(t.sciname,o.sciname) as sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType, m.owner ';
+		//$sqlWhere = $this->sqlWhere;
+		$sqlWhere = $this->occurrenceManager->getSqlWhere();
 		// End NEON customization
-		$sqlWhere = $this->sqlWhere;
 		if($this->imageCount == 1) $sqlWhere .= 'GROUP BY sciname ';
 		elseif($this->imageCount == 2) $sqlWhere .= 'GROUP BY m.occid ';
 		$sql .= $this->getSqlBase() . $sqlWhere;
-		if($sortBy == 'sciname') $sql .= 'ORDER BY t.sciname, o.sciname ';
+		if($this->occurrenceManager->getSqlWhere()) $sqlWhere .= 'ORDER BY o.sciname ';
 		$bottomLimit = ($pageRequest - 1) * $cntPerPage;
 		$sql .= 'LIMIT '.$bottomLimit . ',' . $cntPerPage;
 		//echo '<div>Spec sql: '.$sql.'</div>';
@@ -225,7 +237,10 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 			if($this->imageCount == 1) $sql = 'SELECT COUNT(DISTINCT m.tid) AS cnt ';
 			elseif($this->imageCount == 2) $sql = 'SELECT COUNT(DISTINCT m.occid) AS cnt ';
 		}
-		$sql .= $this->getSqlBase(true).$this->sqlWhere;
+		//neon
+		//$sql .= $this->getSqlBase().$this->sqlWhere;
+		$sql .= $this->getSqlBase().$this->occurrenceManager->getSqlWhere();
+		//end neon
 		$result = $this->conn->query($sql);
 		if($row = $result->fetch_object()){
 			$this->recordCount = $row->cnt;
@@ -241,10 +256,10 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 		elseif(!$isForCount){
 			$sql .= 'LEFT JOIN taxa t ON m.tid = t.tid ';
 		}
-		if(strpos($this->sqlWhere,'ts.taxauthid')){
+		if(strpos($this->occurrenceManager->getSqlWhere(),'ts.taxauthid')){
 			$sql .= 'INNER JOIN taxstatus ts ON m.tid = ts.tid ';
 		}
-		if(strpos($this->sqlWhere,'e.taxauthid') || $this->tidFocus){
+		if(strpos($this->occurrenceManager->getSqlWhere(),'e.taxauthid') || $this->tidFocus){
 			$sql .= 'INNER JOIN taxaenumtree e ON m.tid = e.tid ';
 		}
 		if($this->keywords){
@@ -254,7 +269,9 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 			$sql .= 'INNER JOIN omoccurrences o ON m.occid = o.occid ';
 		}
 		else{
-			$sql .= 'LEFT JOIN omoccurrences o ON m.occid = o.occid ';
+			//neon edit
+			$sql .= 'LEFT JOIN omoccurrences o ON m.occid = o.occid INNER JOIN omoccurdatasetlink ds ON o.occid = ds.occid LEFT JOIN omoccurdatasetlink dl ON o.occid = dl.occid ';
+			//end neon edit
 		}
 		return $sql;
 	}

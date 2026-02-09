@@ -10,18 +10,12 @@ if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT
 $shipmentPK = array_key_exists('shipmentPK', $_REQUEST) ? filter_var($_REQUEST['shipmentPK'], FILTER_SANITIZE_NUMBER_INT) : '';
 $sampleFilter = isset($_REQUEST['sampleFilter']) ? $_REQUEST['sampleFilter'] : '';
 $quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
-$sortableTable = isset($_REQUEST['sortabletable']) ? filter_var($_REQUEST['sortabletable'], FILTER_SANITIZE_NUMBER_INT) : false;
 $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 
 $shipManager = new ShipmentManager();
 if($shipmentPK) $shipManager->setShipmentPK($shipmentPK);
 elseif($quickSearchTerm) $shipmentPK = $shipManager->setQuickSearchTerm($quickSearchTerm);
 $sampleCntArr = $shipManager->getSampleCount();
-if($sortableTable === false){
-	//Variable has not been explicitly set by user, thus only turn on if manifest contains < 3000 samples
-	if($sampleCntArr['all'] < 3000) $sortableTable = 1;
-	else $sortableTable = 0;
-}
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEditor',$USER_RIGHTS)) $isEditor = true;
@@ -31,15 +25,16 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 	<title><?php echo $DEFAULT_TITLE; ?> Manifest Viewer</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 	<?php
+	$activateJQuery = true;
 	include_once($SERVER_ROOT.'/includes/head.php');
 
 	$activeSession = false;
 	$sessionStartTime = null;
 	$sessionName = null;
-
+	
 	if (isset($_SESSION['sampleCheckinSessionData'])) {
 		$session_data = $_SESSION['sampleCheckinSessionData'];
-
+	
 		// Check if the session is active (end_time is null)
 		if ($session_data['end_time'] === null) {
 			$activeSession = true;
@@ -50,43 +45,127 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 	?>
 	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
-	<?php
-	if($sortableTable){
-		?>
-		<link rel="stylesheet" href="../../js/datatables/datatables.css" />
-		<script src="../../js/datatables/datatables.js"></script>
-
-		<?php
-	}
-	?>
+	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+	<script src="../../js/datatables/datatables.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("#shipCheckinComment").keydown(function(evt){
 				var evt  = (evt) ? evt : ((event) ? event : null);
 				if ((evt.keyCode == 13)) { return false; }
 			});
-			<?php
-			if($sortableTable){
-				?>
-				$('#manifestTable').DataTable({
-					paging: false,
-					scrollCollapse: true,
-					fixedHeader: true,
-					columnDefs: [{ orderable: false, targets: [0, -1]}],
-					});
-				$("#manifestTable").DataTable().rows().every( function () {
-					var tr = $(this.node());
-					var childValue = tr.data('child-value');
-
+			var shipmentPK = <?php echo json_encode($shipmentPK); ?>;
+			var table = $('#manifestTable').DataTable({
+				serverSide: true, // turns on processing on the server (i.e., through SQL) vs through the browser
+				ajax: { //what is sent upon an action in the table
+					url: '../rpc/datatables_manifestview.php',
+					type: 'POST',
+					data: function (d) {
+						d.sampleFilter = $('#sampleFilter').val();
+						d.shipmentPK = shipmentPK;
+					}
+				},
+				scrollCollapse: true, //Allow the table to reduce in height when a limited number of rows are shown
+				columnDefs: [
+					{ targets: [0, 12], orderable: false }, // disables ordering for columns 0 and last
+					{ targets: 0, className: 'notoggle' }, // don't let people remove/add this column
+					{ targets: [7, 8, 9, 10], visible: false }, // make this column not visible on load
+					{ targets: [6], className: 'dt-left' }, // align date column to the left instead of the automatic right
+					{ targets: [13,14,15,16,17,18,19,20,21,22], visible: false, searchable: false, className: 'notoggle' } // child notes data
+				],
+				layout: {
+					topStart: {
+						pageLength: {
+							menu: [10, 25, 50, { label: 'All', value: -1 }] //Change the options in the page length
+						},
+						buttons: [
+							{
+								extend: 'columnsToggle',
+								columns: ':not(.notoggle)'
+							}
+						]
+					}
+				},
+				createdRow: function(row, data, dataIndex) {
+					let str = '';
+				
+					const safe = val => val !== null && val !== undefined && val !== '';
+				
+					if (safe(data[13])) str += `<div>Alternative Sample ID: ${data[13]}</div>`;
+					if (safe(data[14])) str += `<div>Hashed Sample ID: ${data[14]}</div>`;
+					if (safe(data[15])) str += `<div>Individual Count: ${data[15]}</div>`;
+					if (safe(data[16])) str += `<div>Filter Volume: ${data[16]}</div>`;
+					if (safe(data[17])) str += `<div>Domain Remarks: ${data[17]}</div>`;
+					if (safe(data[18])) str += `<div>Sample Notes: ${data[18]}</div>`;
+					if (safe(data[19])) str += `<div>Check-in Remarks: ${data[19]}</div>`;
+					if (safe(data[20])) {
+						try {
+							const parsed = JSON.parse(data[20]);
+							const propStr = Object.entries(parsed)
+								.map(([key, val]) => `${key}: ${val}`)
+								.join('; ');
+							str += `<div>${propStr}</div>`;
+						} catch (e) {
+							console.warn("Invalid JSON in dynamicProperties:", data[20]);
+							str += `<div>${data[20]}</div>`; // fallback
+						}
+					}
+				
+					if (safe(data[21])) {
+						try {
+							const parsed = JSON.parse(data[21]);
+							const symbStr = Object.entries(parsed).map(([label, val]) => `${label}: ${val}`).join('; ');
+							str += `<div>Symbiota targeted data [${symbStr}]</div>`;
+						} catch (e) {
+							console.warn("Invalid symbiotaTarget JSON:", data[21]);
+						}
+					}
+				
+					if (safe(data[22])) str += `<div>Occurrence Harvesting Error: ${data[22]}</div>`;
+				
+					if (str) {
+						$(row).attr('data-child-value', str);
+					}
+				}	
+			});
+			
+			
+			let firstDrawComplete = false;
+			table.on('draw', function() {
+				table.rows().every(function () {
+					const tr = $(this.node());
+					const childValue = tr.data('child-value');
+			
 					if (childValue !== undefined) {
 						this.child(childValue).show();
 						tr.addClass('shown');
 					}
 				});
-				<?php
-			}
-			?>
-
+				if (firstDrawComplete) return;
+			
+				table.columns().every(function () {
+					const colIdx = this.index();
+					let hasData = false;
+			
+					this.data().each(function (value) {
+						if (value !== null && value !== '' && value !== '&nbsp;') {
+							hasData = true;
+							return false; // break
+						}
+					});
+			
+					if (!hasData) {
+						table.column(colIdx).visible(false);
+					}
+				});
+			
+				firstDrawComplete = true;
+			});
+			
+			$('#sampleFilter').on('change', function() {
+				table.ajax.reload();
+			});
+			$('#manifestTable').css('width', '100%');
+			
 			['prefix', 'identifier', 'suffix'].forEach(id => {
 			  const el = document.getElementById(id);
 			  if (el) {
@@ -249,7 +328,28 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					else if(retJson.status == 1){
 						$("#checkinText").css('color', 'green');
 						$("#checkinText").text('success!!!');
-						$("#scSpan-"+retJson.samplePK).html("checked in");
+						
+						// Update table in real time
+						var table = $('#manifestTable').DataTable();
+						var row = $('#scbox-' + retJson.samplePK).closest('tr');
+				
+						if (row.length !== 0) {
+							var receivedVal = (f.sampleReceived.value === "1") ? "Y" :
+											  (f.sampleReceived.value === "0") ? "N" : "";
+							table.cell(row, 8).data(receivedVal);
+						
+							var acceptedVal = (f.acceptedForAnalysis.value === "1") ? "Y" :
+											  (f.acceptedForAnalysis.value === "0") ? "N" : "";
+							table.cell(row, 9).data(acceptedVal);
+						
+							table.cell(row, 10).data(f.sampleCondition.value);
+						
+							table.cell(row, 11).data('checked in');
+						
+							table.draw(false);
+						}
+						
+						
 						f.identifier.value = "";
 						updateFullIdentifier();
 						f.alternativeSampleID.value = "";
@@ -289,31 +389,10 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			$('[name=sampleCondition]').val( '' );
 		}
 
-		function popoutCheckinBox(){
-			$("#sampleCheckinDiv").css('position', 'fixed');
-			$("#popoutDiv").hide();
-			$("#bindDiv").show();
-		}
-
-		function bindCheckinBox(){
-			$("#sampleCheckinDiv").css('position', 'static');
-			$("#popoutDiv").show();
-			$("#bindDiv").hide();
-		}
-
-		function tableSortHandlerChanged(cbElem){
-			let sortValue = 0;
-			if(cbElem.checked){
-				sortValue = 1;
-			}
-			document.getElementById('sortableTableID').value = sortValue;
-			document.refreshForm.submit();
-		}
-
 		function selectAll(cbObj) {
 			const boxesChecked = cbObj.checked;
 			const form = cbObj.form;
-
+		
 			for (let i = 0; i < form.elements.length; i++) {
 				const el = form.elements[i];
 				if (el.name === "scbox[]") {
@@ -369,12 +448,12 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			if (newWindow.opener == null) newWindow.opener = self;
 			return false;
 		}
-
+		
 		let timerInterval;
 
 		let serverStartTime = "<?php echo $sessionStartTime; ?>";
 		let sessionName = "<?php echo $sessionName; ?>";
-
+	
 		// Check if a session is already active on page load
 		document.addEventListener('DOMContentLoaded', function() {
 			<?php if ($activeSession): ?>
@@ -387,13 +466,13 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			document.querySelectorAll('.start_session').forEach(button => {
 				button.addEventListener('click', startSession);
 			});
-
+		
 			// Attach event listeners to all stop session buttons
 			document.querySelectorAll('.stop_session').forEach(button => {
 				button.addEventListener('click', stopSession);
 			});
 		});
-
+	
 		function startSession() {
 			// Send AJAX request to start session
 			fetch('rpc/sessionManager.php', {
@@ -412,7 +491,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				  showSessionID(data.sessionName);
 			  });
 		}
-
+	
 		function stopSession() {
 			// Send AJAX request to stop session
 			fetch('rpc/sessionManager.php', {
@@ -428,10 +507,10 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				  toggleButtons(false);
 			  });
 		}
-
+				
 		function startTimer(startTime) {
 			let start = new Date(startTime);
-
+	
 			// Clear any existing timer before starting a new one
 			if (timerInterval) {
 				clearInterval(timerInterval);
@@ -443,18 +522,18 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				let hours = Math.floor(diff / 3600);
 				let minutes = Math.floor((diff % 3600) / 60);
 				let seconds = diff % 60;
-
+				
 				hours = String(hours).padStart(2, '0');
 				minutes = String(minutes).padStart(2, '0');
 				seconds = String(seconds).padStart(2, '0');
-
+				
 				let timers = document.querySelectorAll('.timer');
 				timers.forEach(timer => {
 					timer.textContent = hours + ":" + minutes + ":" + seconds;
 				});
 			}, 1000);
 		}
-
+	
 		function stopTimer() {
 			// Clear the timer interval and reset the timer display
 			clearInterval(timerInterval);
@@ -463,58 +542,56 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				timer.textContent = "00:00:00";
 			});
 		}
-
+		
 		function toggleButtons(isSessionActive) {
 			let startButtons = document.querySelectorAll('.start_session');
 			let stopButtons = document.querySelectorAll('.stop_session');
-
+		
 			startButtons.forEach(button => {
 				button.disabled = isSessionActive;
 			});
-
+		
 			stopButtons.forEach(button => {
 				button.disabled = !isSessionActive;
 			});
 		}
-
+		
 		function showSessionID(sessionName) {
 			let sessionNamedivs = document.querySelectorAll('.sessionName');
-
+			
 			sessionNamedivs.forEach(div => {
 				div.innerHTML  = '<strong>SessionID:</strong> ' + sessionName;
-			});
+			});	
 		}
-
+		
 		function updateFullIdentifier() {
 		  const prefix = document.getElementById('prefix').value.trim();
 		  const identifier = document.getElementById('identifier').value.trim();
 		  const suffix = document.getElementById('suffix').value.trim();
-
+	  
 		  let full = '';
 		  if (prefix) full += prefix;
 		  full += identifier;
 		  if (suffix) full += suffix;
-
+	  
 		  document.getElementById('fullIdentifier').textContent = full;
 		}
 	</script>
 	<style type="text/css">
-		#innertext{ max-width: 1400px; }
-		.fieldGroupDiv { clear:both; margin-top:2px; height: 25px; }
-		.fieldDiv { float:left; margin-left: 10px}
+		#innertext{margin-left: 0px; margin-right: 0px;}
 		.displayFieldDiv { margin-bottom: 3px }
 		fieldset legend { font-weight: bold; }
 		.sample-row td { white-space: break-spaces; }
 		.sorting_1 {
 		  background-color: #c0c0c0a6 !important;
 		}
-
+		
 		.input-group {
 		  display: flex;
 		  align-items: stretch;
 		  width: fit-content;
 		}
-
+	  
 		.input-addon {
 		  padding-left: 0.5em;
 		  padding-right: 0.5em;
@@ -524,36 +601,37 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		  display: flex;
 		  align-items: center;
 		}
-
+	  
 		.input-addon.suffix {
 		  border-left: none;
 		  border-right: 1px solid #ccc;
 		}
-
+		
 		#prefix {
 			width: 120px;
-		}
-
+			border: none !important;
+		}		
+		
 		#suffix {
 			width: 60px;
+			border: none !important;
 		}
-
+	  
 		.input-addon input {
-		  border: none !important;
 		  background: transparent;
 		  padding: 0;
 		  margin: 0;
 		  outline: none;
 		  font-family: inherit;
 		}
-
+	  
 		.main-input {
 		  border: 1px solid #ccc;
-		  width: 350px;
+		  width: 285px;
 		  outline: none;
 		  margin-top: 0;
 		}
-
+	  
 		.input-group input:focus {
 		  outline: 2px solid #88f;
 		}
@@ -665,7 +743,6 @@ include($SERVER_ROOT.'/includes/header.php');
 							<b>Total Sample Count:</b> <?php echo ($sampleCntArr['all']); ?>
 							<form name="refreshForm" action="manifestviewer.php" method="get" style="display:inline;" title="Refresh Counts and Sample Table">
 								<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" >
-								<input id="sortableTableID" name="sortabletable" type="hidden" value="<?= $sortableTable ?>">
 								<input type="image" src="../../images/refresh.png" style="width:15px;" >
 							</form>
 						</div>
@@ -676,7 +753,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						<?php
 						if($shipArr['checkinTimestamp'] && $sampleCntArr[0]){
 							?>
-							<div id="sampleCheckinDiv" style="margin-top:15px;background-color:white;top:50px;right:200px">
+							<div id="sampleCheckinDiv" style="margin-top:15px;background-color:white;top:200px;right:200px">
 								<fieldset style="padding:10px;width:500px">
 									<legend>Sample Check-in</legend>
 									<input type="radio" class="start_session" name="session" value="start"> Start Session
@@ -684,8 +761,6 @@ include($SERVER_ROOT.'/includes/header.php');
 									<div class="timer">00:00:00</div>
 									<div class="sessionName"></div>
 									<form name="submitform" method="post" onsubmit="checkinSample(this); return false;">
-										<div id="popoutDiv" style="float:right"><a href="#" onclick="popoutCheckinBox();return false" title="Popout Sample Check-in Box">&gt;&gt;</a></div>
-										<div id="bindDiv" style="float:right;display:none"><a href="#" onclick="bindCheckinBox();return false" title="Bind Sample Check-in Box to top of form">&lt;&lt;</a></div>
 										<div>
 										  <label for="identifier"><strong>Identifier:</strong></label>
 										  <div id="checkinText" style="display:inline"></div>
@@ -699,7 +774,7 @@ include($SERVER_ROOT.'/includes/header.php');
 											</span>
 										  </div>
 										</div>
-
+										
 										<div>
 										  <strong>Full Identifier:</strong> <span id="fullIdentifier"></span>
 										</div>
@@ -774,24 +849,22 @@ include($SERVER_ROOT.'/includes/header.php');
 				</div>
 				<?php
 				if($shipArr['checkinTimestamp'] || $sampleFilter == 'displaySamples'){
-					$sampleList = $shipManager->getSampleArr(null, $sampleFilter);
+					$headerList = $shipManager->getSampleHeaders(null, $sampleFilter);
 					?>
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
 							<legend>Sample Listing</legend>
 							<div>
-								<div style="float:left">Records displayed: <?php echo count($sampleList); ?></div>
-								<div style="float:left; margin-left: 50px;"><input name="sorthandler" type="checkbox" onchange="tableSortHandlerChanged(this)" <?= ($sortableTable ? 'checked' : '') ?> > Make table sortable</div>
 								<div style="float:right;">
-									<form name="filterSampleForm" action="manifestviewer.php#samplePanel" method="post" style="">
+									<form id="filterSampleForm" style="">
 										Filter by:
-										<select name="sampleFilter" onchange="this.form.submit()">
+										<select name="sampleFilter" id="sampleFilter">
 											<option value="">All Records</option>
-											<option value="notCheckedIn" <?php echo ($sampleFilter=='notCheckedIn'?'SELECTED':''); ?>>Not Checked In</option>
-											<option value="missingOccid" <?php echo ($sampleFilter=='missingOccid'?'SELECTED':''); ?>>Missing Occurrences</option>
-											<option value="notAccepted" <?php echo ($sampleFilter=='notAccepted'?'SELECTED':''); ?>>Not Accepted for Analysis</option>
-											<option value="altIds" <?php echo ($sampleFilter=='altIds'?'SELECTED':''); ?>>Has Alternative IDs</option>
-											<option value="harvestingError" <?php echo ($sampleFilter=='harvestingError'?'SELECTED':''); ?>>Harvesting Errors</option>
+											<option value="notCheckedIn">Not Checked In</option>
+											<option value="missingOccid">Missing Occurrences</option>
+											<option value="notAccepted">Not Accepted for Analysis</option>
+											<option value="altIds">Has Alternative IDs</option>
+											<option value="harvestingError">Harvesting Errors</option>
 										</select>
 										<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
 									</form>
@@ -799,146 +872,42 @@ include($SERVER_ROOT.'/includes/header.php');
 							</div>
 							<div style="clear:both">
 								<?php
-								if($sampleList){
+								if($headerList){
 									?>
 									<form name="sampleListingForm" action="manifestviewer.php" method="post" onsubmit="return batchCheckinFormVerify(this)">
-										<input name="sortabletable" type="hidden" value="<?= $sortableTable ?>">
-										<table id="manifestTable" class="styledtable">
+										<table id="manifestTable" class="cell-border stripe hover compact" style="width:100 !important;">
 											<thead>
 												<tr>
-													<?php
-													$headerOutArr = current($sampleList);
-													echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
-													$headerArr = array('sampleID'=>'Sample ID', 'sampleCode'=>'Sample<br/>Code', 'sampleClass'=>'Sample<br/>Class', 'taxonID'=>'Taxon ID',
-														'namedLocation'=>'Named<br/>Location', 'collectDate'=>'Collection<br/>Date', 'quarantineStatus'=>'Quarantine<br/>Status','sampleReceived'=>'Sample<br/>Received',
-														'acceptedForAnalysis'=>'Accepted<br/>for<br/>Analysis','sampleCondition'=>'Sample<br/>Condition','checkinUser'=>'Check-in','occid'=>'occid');
-														//'individualCount'=>'Individual Count', 'filterVolume'=>'Filter Volume', 'domainRemarks'=>'Domain Remarks', 'sampleNotes'=>'Sample Notes',
-													$rowCnt = 1;
-													foreach($headerArr as $fieldName => $headerTitle){
-														if(array_key_exists($fieldName, $headerOutArr) || $fieldName == 'checkinUser' || $fieldName == 'occid'){
-															echo '<th>'.$headerTitle.'</th>';
-															$rowCnt++;
-														}
-													}
-													?>
-												</tr>
-											</thead>
-											<tbody>
 												<?php
-												$tagArr = array();
-												foreach($sampleList as $samplePK => $sampleArr){
-													$classStr = '';
-													$propStr = '';
-													if(isset($sampleArr['dynamicProperties'])){
-														$dynPropArr = json_decode($sampleArr['dynamicProperties'],true);
-														foreach($dynPropArr as $category => $propValue){
-															if(strtolower($category) == 'containerid'){
-																$tagArr['containerid'][$propValue] = (isset($tagArr['containerid'][$propValue])?++$tagArr['containerid'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															elseif(strtolower($category) == 'plateid'){
-																$tagArr['plateid'][$propValue] = (isset($tagArr['plateid'][$propValue])?++$tagArr['plateid'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															elseif(strtolower($category) == 'platebarcode'){
-																$tagArr['platebarcode'][$propValue] = (isset($tagArr['platebarcode'][$propValue])?++$tagArr['platebarcode'][$propValue]:1);
-																$classStr .= str_replace(' ','_',$propValue).' ';
-															}
-															$propStr .= $category.': '.$propValue.'; ';
-														}
+												$headerArr = array(
+													'samplePK' => 'Sample PK',
+													'sampleID' => 'Sample ID',
+													'sampleCode' => 'Sample Code',
+													'sampleClass' => 'Sample Class',
+													'taxonID' => 'Taxon ID',
+													'namedLocation' => 'Named Location',
+													'collectDate' => 'Collection Date',
+													'quarantineStatus' => 'Quarantine Status',
+													'sampleReceived' => 'Sample Received',
+													'acceptedForAnalysis' => 'Accepted for Analysis',
+													'sampleCondition' => 'Sample Condition',
+													'checkinTimestamp' => 'Check-in',
+													'occid' => 'occid'
+												);
+												
+												//echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
+												$rowCnt = 1;
+												
+												foreach ($headerArr as $fieldName => $headerTitle) {
+													if ($fieldName === 'samplePK') {
+														echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
+													} else {
+														echo '<th>' . $headerTitle . '</th>';
 													}
-
-													$str = '';
-													if(!empty($sampleArr['alternativeSampleID'])) $str .= '<div>Alternative Sample ID: '.$sampleArr['alternativeSampleID'].'</div>';
-													if(!empty($sampleArr['hashedSampleID'])) $str .= '<div>Hashed Sample ID: '.$sampleArr['hashedSampleID'].'</div>';
-													if(!empty($sampleArr['individualCount'])) $str .= '<div>Individual Count: '.$sampleArr['individualCount'].'</div>';
-													if(!empty($sampleArr['filterVolume'])) $str .= '<div>Filter Volume: '.$sampleArr['filterVolume'].'</div>';
-													if(!empty($sampleArr['domainRemarks'])) $str .= '<div>Domain Remarks: '.$sampleArr['domainRemarks'].'</div>';
-													if(!empty($sampleArr['sampleNotes'])) $str .= '<div>Sample Notes: '.$sampleArr['sampleNotes'].'</div>';
-													if(!empty($sampleArr['checkinRemarks'])) $str .= '<div>Check-in Remarks: '.$sampleArr['checkinRemarks'].'</div>';
-													if(isset($sampleArr['dynamicProperties']) && $sampleArr['dynamicProperties']){
-														$str .= '<div>'.trim($propStr,'; ').'</div>';
-													}
-													if(isset($sampleArr['symbiotaTarget']) && $sampleArr['symbiotaTarget']){
-														$symbTargetArr = json_decode($sampleArr['symbiotaTarget'],true);
-														$symbStr = '';
-														foreach($symbTargetArr as $symbLabel => $symbValue){
-															$symbStr .= $symbLabel.': '.$symbValue.'; ';
-														}
-														$str .= '<div>Symbiota targeted data ['.trim($symbStr,'; ').']</div>';
-													}
-													if(!empty($sampleArr['occurErr'])) $str .= '<div>Occurrence Harvesting Error: '.$sampleArr['occurErr'].'</div>';
-
-													if($sortableTable){
-														if($str) {
-															echo '<tr class="sample-row" data-child-value="'.trim($str,'; ').'">';
-														} else {
-															echo '<tr class="sample-row">';
-														}
-													}
-
-													echo '<td>';
-													echo '<input id="scbox-'.$samplePK.'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$samplePK.'" />';
-													echo ' <a href="#" onclick="return openSampleEditor('.$samplePK.')"><img src="../../images/edit.png" style="width:12px" /></a>';
-													echo '</td>';
-													$sampleID = (array_key_exists('sampleID',$sampleArr)?$sampleArr['sampleID']:'');
-													if(array_key_exists('sampleID', $headerOutArr)){
-														if($quickSearchTerm == $sampleID) $sampleID = '<b>'.$sampleID.'</b>';
-														echo '<td>'.$sampleID.'</td>';
-													}
-													$sampleCode = (array_key_exists('sampleCode',$sampleArr)?$sampleArr['sampleCode']:'');
-													if(array_key_exists('sampleCode', $headerOutArr)){
-														if($quickSearchTerm == $sampleCode) $sampleCode = '<b>'.$sampleCode.'</b>';
-														echo '<td>'.$sampleCode.'</td>';
-													}
-													echo '<td>'.$sampleArr['sampleClass'].'</td>';
-													if(array_key_exists('taxonID',$sampleArr)) echo '<td>'.$sampleArr['taxonID'].'</td>';
-													if(array_key_exists('namedLocation', $sampleArr)){
-														$namedLocation = $sampleArr['namedLocation'];
-														if(isset($sampleArr['siteTitle']) && $sampleArr['siteTitle']) $namedLocation = '<span title="'.$sampleArr['siteTitle'].'">'.$namedLocation.'</span>';
-														echo '<td>'.$namedLocation.'</td>';
-													}
-													if(array_key_exists('collectDate', $sampleArr)) echo '<td>'.$sampleArr['collectDate'].'</td>';
-													echo '<td>'.$sampleArr['quarantineStatus'].'</td>';
-													if(array_key_exists('sampleReceived', $sampleArr)){
-														$sampleReceived = $sampleArr['sampleReceived'];
-														if($sampleArr['sampleReceived']==1) $sampleReceived = 'Y';
-														if($sampleArr['sampleReceived']==='0') $sampleReceived = 'N';
-														echo '<td>'.$sampleReceived.'</td>';
-													}
-													if(array_key_exists('acceptedForAnalysis', $sampleArr)){
-														$acceptedForAnalysis = $sampleArr['acceptedForAnalysis'];
-														if($sampleArr['acceptedForAnalysis']==1) $acceptedForAnalysis = 'Y';
-														if($sampleArr['acceptedForAnalysis']==='0') $acceptedForAnalysis = 'N';
-														echo '<td>'.$acceptedForAnalysis.'</td>';
-													}
-													if(array_key_exists('sampleCondition', $sampleArr)) echo '<td>'.$sampleArr['sampleCondition'].'</td>';
-													echo '<td title="'.$sampleArr['checkinUser'].'">';
-													echo '<span id="scSpan-'.$samplePK.'">'.$sampleArr['checkinTimestamp'].'</span> ';
-													if($sampleArr['checkinTimestamp']) echo '<a href="#" onclick="return openSampleCheckinEditor('.$samplePK.')"><img src="../../images/edit.png" style="width:13px" /></a>';
-													echo '</td>';
-													echo '<td style="text-align:center">';
-													if(array_key_exists('occid',$sampleArr) && $sampleArr['occid']){
-														echo '<span title="harvested '.(isset($sampleArr['harvestTimestamp'])?$sampleArr['harvestTimestamp']:'').'">';
-														if ($quickSearchTerm === $sampleArr['occid']) {
-															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank"><strong>' . $sampleArr['occid'] . '</strong></a>';
-														} else {
-															echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank">' . $sampleArr['occid'] . '</a>';
-														}
-														echo '</br>';
-														echo '</br>';
-														echo '<a href="../../collections/editor/occurrenceeditor.php?occid='.$sampleArr['occid'].'" target="_blank"><img src="../../images/edit.png" style="width:13px" /></a>';
-														echo '</span>';
-													}
-													echo '</td>';
-													echo '</tr>';
-													if(!$sortableTable){
-														if($str) echo '<tr><td colspan="'.$rowCnt.'"><div style="margin-left:30px;">'.trim($str,'; ').'</div></td></tr>';
-													}
-
 												}
 												?>
-											</tbody>
+												</tr>
+											</thead>
 										</table>
 										<div style="margin:15px;float:left">
 											<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
@@ -952,7 +921,7 @@ include($SERVER_ROOT.'/includes/header.php');
 														<input type="radio" class="stop_session" name="session" value="stop"> Stop Session
 														<div class="timer">00:00:00</div>
 														<div class="sessionName"></div>
-													</div>
+													</div>	
 													<div class="displayFieldDiv">
 														<b>Sample Received:</b>
 														<input name="sampleReceived" type="radio" value="1" checked /> Yes
@@ -1010,6 +979,7 @@ include($SERVER_ROOT.'/includes/header.php');
 													</div>
 												</fieldset>
 												<?php
+												$tagArr = array();
 												if($tagArr){
 													?>
 													<fieldset style="margin:5px;float:left">

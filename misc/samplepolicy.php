@@ -25,7 +25,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
         <p>Below are additional criteria related to sample use approval:</p>
         <ul>
           <li>
-            <p><a href="mailto:biorepo@asu.edu">Contact us</a> well in advance of any grant proposal deadlines in order to optimally integrate sample uses into project narratives, data management plans, and budgets. The NEON Biorepository <span style="font-weight: bold">must be consulted during preparation of any grant proposal</span> involving existing NEON samples and specimens for several reasons:</p>
+            <p><a href="https://www.neonscience.org/about/contact-neon-biorepository">Contact us</a> well in advance of any grant proposal deadlines in order to optimally integrate sample uses into project narratives, data management plans, and budgets. The NEON Biorepository <span style="font-weight: bold">must be consulted during preparation of any grant proposal</span> involving existing NEON samples and specimens for several reasons:</p>
             <ul style="font-size: initial">
               <li>We must ensure that the samples and specimens are available and suitable for the proposed work;</li>
               <li>We may need to consult with the external <a href="https://www.neonscience.org/about/advisory-groups/twgs/biorepository-twg" target="_blank" rel="noopener noreferrer">NEON Biorepository Technical Working Group</a> concerning approval of destructive or consumptive sample use;</li>
@@ -64,7 +64,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
           <li>
             <p>Researchers are responsible for proper handling of all samples, adhering to all aspects of the sample use agreement, and following all NEON and U.S. National Science Foundation data reporting and citation policies. The NEON Biorepository may elect not to approve future requests from researchers who do not adhere to these guidelines.</p>
           </li>
-      <p>Please read our <a href="https://docs.google.com/document/d/1C1vSiysUJXSwgg5q2w0y7AP6i2wmCnUQ/edit?usp=sharing&ouid=111202796006164717361&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer">General Guidelines for Sample Use</a> and the <a href="https://drive.google.com/file/d/1UwUH5LcfdN7n-CLzFvxuaAQzRxo5lZp8/view?usp=sharing" target="_blank" rel="noopener noreferrer">NEON Sample Use Policy</a> for more details and <a href="mailto:biorepo@asu.edu">contact us</a> for more information.</p>
+      <p>Please read our <a href="https://docs.google.com/document/d/1C1vSiysUJXSwgg5q2w0y7AP6i2wmCnUQ/edit?usp=sharing&ouid=111202796006164717361&rtpof=true&sd=true" target="_blank" rel="noopener noreferrer">General Guidelines for Sample Use</a> and the <a href="https://drive.google.com/file/d/1UwUH5LcfdN7n-CLzFvxuaAQzRxo5lZp8/view?usp=sharing" target="_blank" rel="noopener noreferrer">NEON Sample Use Policy</a> for more details and <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> for more information.</p>
 		</div>
 		<?php
 			include($SERVER_ROOT.'/includes/footer.php');

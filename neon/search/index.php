@@ -10,7 +10,9 @@ $siteData = new DatasetsMetadata();
 <html>
 
 <head>
-	<title><?php echo $DEFAULT_TITLE; ?> Sample Search</title>
+	<!-- neon edit -->
+	<title><?php echo $DEFAULT_TITLE; ?></title>
+	<!-- end neon edit -->
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
@@ -22,78 +24,191 @@ $siteData = new DatasetsMetadata();
 	<script>
 		const clientRoot = '<?php echo $CLIENT_ROOT; ?>';
 	</script>
+	<script>
+	document.addEventListener('DOMContentLoaded', () => {
+	  // expand/collapse groups
+		document.querySelectorAll('[data-target], .group-label, .expansion-icon').forEach(el => {
+		  el.addEventListener('click', e => {
+			e.stopPropagation();
+			const li = el.closest('li');
+			const ul = li.querySelector('ul');
+			const icon = li.querySelector('.expansion-icon');
+			if (!ul) return;
+		
+			const isCollapsed = ul.classList.toggle('collapsed');
+			if (icon) icon.textContent = isCollapsed ? 'add_box' : 'indeterminate_check_box';
+		  });
+		});
+	
+	  // toggle checkbox when clicking leaf text
+	  document.querySelectorAll('.leaf-label').forEach(label => {
+		label.addEventListener('click', e => {
+		  const checkbox = label.previousElementSibling; // the <input type="checkbox">
+		  if (checkbox && checkbox.type === 'checkbox') {
+			checkbox.checked = !checkbox.checked;
+		  }
+		});
+	  });
+	});
+	</script>
+
 	<!-- Search-specific styles -->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-	<link rel="stylesheet" href="../css/app.css?v=02">
+	<link rel="stylesheet" href="../css/app.css?v=<?php echo date('Ymd'); ?>">
+	<style>
+	.collapsed { 
+	  display: none; 
+	}
+	.group-label { 
+	  cursor: pointer; 
+	  user-select: none; 
+	}
+	.group-label:hover { 
+	  text-decoration: underline;
+	  cursor: pointer; 
+	}
+	#neon-modal-open,
+	.neon-modal-open { 
+	  cursor: pointer; 
+	  user-select: none; 
+	}
+	
+	.neon-modal-open:hover { 
+	  cursor: pointer; 
+	}
+	.leaf-label { cursor: pointer; user-select: none; }
+	.leaf-label:hover { text-decoration: underline; cursor: pointer; }
+	
+	#neonext-collections-list li > span.group-label {
+	  cursor: pointer;
+	  text-decoration: none;
+	}
+	
+	#neonext-collections-list li > span.group-label:hover {
+	  text-decoration: underline;
+	}
+	</style>
 </head>
 
 <body>
 	<?php
 	include($SERVER_ROOT . '/includes/header.php');
+
+	//function to render sample type tree
+	function renderTree($nodes, $parentId = '') {
+		$html = '';
+		foreach ($nodes as $node) {
+			$cCodeId = 'cl-' . preg_replace('/[^a-z0-9\-]/', '-', strtolower($node['name']));
+			$cCodeId = preg_replace('/-+/', '-', $cCodeId);
+	
+			$html .= "<li>";
+	
+			// leaf node (collection)
+			if (isset($node['collid'])) {
+				$collid = $node['collid'];
+				$name = htmlspecialchars($node['name']);
+	
+				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}'>";
+				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
+				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' title='View Sample Type Profile' target='_blank'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
+
+			} 
+			// group node
+			else {
+				$name = htmlspecialchars($node['name']);
+				$catAttr = $parentId !== '' ? " data-cat='{$parentId}'" : '';
+				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child'{$catAttr} data-ccode='{$name}'>";
+				// wrap label + icon so whole thing is clickable
+				$html .= "<span data-target='{$cCodeId}'>
+							<span class='material-icons expansion-icon'>add_box</span>
+							<span class='group-label'>{$name}</span>
+						  </span>";
+	
+				if (!empty($node['children'])) {
+					$html .= "<ul class='collapsed'>";
+					$html .= renderTree($node['children'], $cCodeId);
+					$html .= "</ul>";
+				}
+			}
+	
+			$html .= "</li>";
+		}
+		return $html;
+	}
 	?>
 	<!-- This is inner text! -->
 	<div id="innertext">
-		<h1>Sample Search</h1>
+		<h1 style="
+			margin-bottom: 30px;
+			font-size: 2.3rem;
+		">Explore Samples &amp; Specimens</h1>
 		<div id="error-msgs" class="errors"></div>
 		<form id="params-form">
 			<!-- Criteria forms -->
 			<div class="accordions">
-				<!-- Taxonomy -->
-				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="taxonomy" class="accordion-selector" checked=true />
-
-					<!-- Accordion header -->
-					<label for="taxonomy" class="accordion-header">Taxonomy</label>
-
-					<!-- Taxonomy -->
-					<div id="search-form-taxonomy" class="content">
-						<div id="taxa-text" class="input-text-container">
-							<label for="taxa" class="input-text--outlined">
-								<input type="text" name="taxa" id="taxa" data-chip="Taxa">
-								<span data-label="Taxon"></span></label>
-							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
-						</div>
-						<div class="select-container">
-							<select name="taxontype">
-								<option value="1">Any name</option>
-								<option value="2">Scientific name</option>
-								<option value="3">Family</option>
-								<option value="4">Taxonomic group</option>
-								<option value="5">Common name</option>
-							</select>
-							<span class="assistive-text">Taxon type.</span>
-						</div>
-						<div><input type="checkbox" name="usethes" id="usethes" data-chip="Include Synonyms" value="1" checked><span class="ml-1">Include Synonyms</span></div>
-					</div>
-				</section>
 				<!-- Collections -->
 				<section>
 					<!-- Accordion selector -->
 					<input type="checkbox" id="collections" class="accordion-selector" checked=true />
 					<!-- Accordion header -->
-					<label for="collections" class="accordion-header">Collections</label>
+					<label for="collections" class="accordion-header">Sample Types</label>
 					<!-- Accordion content -->
 					<div class="content">
+						<p class="Mui">
+						  Looking for pinned specimens, blood vials, DNA extracts, frozen microbes or other NEON samples? Choose an available sample type here. 
+						</p>
 						<div id="search-form-colls">
-							<!-- Open NEON Collections modal -->
-							<div><input id="all-neon-colls-quick" data-chip="All Biorepo Collections" class="all-selector" type="checkbox" checked="true" data-form-id="biorepo-collections-list"><span id="neon-modal-open" class="material-icons expansion-icon">add_box</span><span>All NEON Biorepository Collections</span></div>
-							<!-- External Collections -->
-							<div>
+							<section>
+								<!-- Open NEON Collections modal -->
+								<label class="accordion-subheader neon-modal-open">
+									<input id="all-neon-colls-quick" data-chip="All Sample Types at the Biorepository" type="checkbox" data-form-id="biorepo-collections-list">
+									<span>All NEON Sample Types at the Biorepository</span>
+								</label>
+							</section>
+							<section>
+								<!-- External Collections -->
 								<ul id="neonext-collections-list">
-									<li><input id="all-neon-ext" data-chip="All Add NEON Colls" type="checkbox" class="all-selector" data-form-id='neonext-collections-list'><span class="material-icons expansion-icon">add_box</span><span>All Additional NEON Collections</span>
-										<?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
-											echo '<ul class="collapsed">';
-											foreach ($collsArr as $result) {
-												echo "<li><input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'><span class='ml-1'><a href='../../collections/misc/collprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer'>{$result["collectionname"]} ({$result["institutioncode"]}  {$result["collectioncode"]})</span></a></li>";
-											}
-											echo '</ul>';
-										}; ?>
+									<li class="Mui">
+										<!-- Accordion selector -->
+										<input type="checkbox" id="other-repos" class="accordion-selector" />
+										<!-- Accordion header -->
+										<label for="other-repos" class="accordion-subheader">
+											<input
+											  id="all-neon-ext"
+											  data-chip="All Sample Types at Other Repositories"
+											  type="checkbox"
+											  class="all-selector"
+											  data-form-id="neonext-collections-list"
+											>
+										  All NEON Sample Types at Other Repositories
+										  <a href="https://www.neonscience.org/samples/sample-repositories"
+											 target="_blank" rel="noopener noreferrer" title="View More Information">
+											<span class="material-icons" style="color:#565a5c; vertical-align:middle;">info</span>
+										  </a>
+										</label>								
+										<!-- Accordion content -->
+										<div class="content">
+											<ul id="neonext-collections-items">
+											  <?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
+												echo '<ul>';
+												foreach ($collsArr as $result) {
+												  echo "<li class='Mui'>";
+												  echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
+												  echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]}</span>";
+												  echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
+												  echo "</li>";
+												}
+												echo '</ul>';
+											  } ?>
+											</ul>
+										</div>
 									</li>
 								</ul>
-							</div>
+							</section>
+							<p class="Mui">
+							  Unsure what sample type to choose? Browse our <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank">sample type profiles</a> for descriptions, collection methods and associated data or <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> for help!
+							</p>	
 						</div>
-						<p>Visit the <a href="<?php echo $CLIENT_ROOT . '/collections/misc/collprofiles.php'; ?>" target="_blank" rel="noopener noreferrer">Collections Information Page</a> for a full list of collections hosted by this portal.</p>
 					</div>
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
@@ -101,134 +216,85 @@ $siteData = new DatasetsMetadata();
 							<button id="neon-modal-close" class="btn" style="width:auto !important">Accept and close</button>
 							<div id="colls-modal">
 								<div>
-									<h3>Activate a single criterion to filter collections</h3>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
-									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> NEON Theme</label>
-									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Sample Type</label>
+									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> Protocol</label>
+									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Preservation Method</label>
 								</div>
 								<!-- By Taxonomic Group -->
 								<div id="taxonomic-cat" class="box" style="display: block;">
-									<h2>Select Collections by Taxonomic Group</h2>
-									<?php if ($groupsArr = $collData->getBiorepoGroups('highertaxon')) {
-										echo '<ul id="collections-list1"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Biorepository Collections</span>';
-										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl1-' . implode("-", explode(" ", str_replace(",", "", strtolower($result["highertaxon"]))));
-											if ($result['highertaxon']) {
-												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["highertaxon"]}' checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["highertaxon"]}</span><ul class='collapsed'>";
-												$collsArr = $collData->getBiorepoColls('highertaxon', $result['highertaxon']);
-												if ($collsArr) {
-													foreach ($collsArr as $row) {
-														echo "<li>";
-														// IF AVAILABLE
-														if ($row['available'] == 'TRUE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' data-ccode='{$row["collectioncode"]}' data-cat='{$cCodeId}' checked><a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank' class='ml-1'>{$row["collectionname"]} ({$row["collectioncode"]})</a>";
-														} elseif ($row["available"] == 'FALSE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' disabled=''><span class='ml-1' style='color: gray'>{$row["collectionname"]} ({$row["collectioncode"]}) - Samples Unavailable</span> <a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank'>More Info</a>";
-														}
-														echo "</li>";
-													}
-												}
-												echo '</ul></li></ul>';
-											}
-										}
-										echo '</li></ul>';
-									}; ?>
+									<h2>Organized by Taxonomic Group</h2>
+									<?php
+									// load the JSON
+									$jsonFile = '../../neon-react/biorepo_lib/collections-taxonomic.json';
+									$jsonData = file_get_contents($jsonFile);
+									$dataArr = json_decode($jsonData, true);
+									
+									// render the full tree
+									if ($dataArr) {
+										echo '<ul id="collections-list1">';
+										echo '  <li>';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls">';
+										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '    <span class="group-label">All Sample Types</span>';
+										
+										echo '    <ul>';
+										echo          renderTree($dataArr);
+										echo '    </ul>';
+										
+										echo '  </li>';
+										echo '</ul>';
+									}
+									?>
 								</div>
 								<div id="neon-theme" class="box">
-									<h2>Select Collections by NEON Theme</h2>
-									<?php if ($groupsArr = $collData->getBiorepoGroups('neontheme')) {
-										echo '<ul id="collections-list2"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Biorepository Collections</span>';
-										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl2-' . implode("-", explode(" ", str_replace(",", "", strtolower($result["neontheme"]))));
-											if ($result['neontheme']) {
-												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["neontheme"]}' checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["neontheme"]}</span><ul class='collapsed'>";
-												$collsArr = $collData->getBiorepoColls('neontheme', $result['neontheme']);
-												if ($collsArr) {
-													foreach ($collsArr as $row) {
-														echo "<li>";
-														// IF AVAILABLE
-														if ($row['available'] == 'TRUE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' data-ccode='{$row["collectioncode"]}' data-cat='{$cCodeId}' checked><a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank' class='ml-1'>{$row["collectionname"]} ({$row["collectioncode"]})</a>";
-														} elseif ($row["available"] == 'FALSE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' data-cat='{$result["neontheme"]}' class='child' disabled=''><span class='ml-1' style='color: gray'>{$row["collectionname"]} ({$row["collectioncode"]}) - Samples Unavailable</span> <a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank'>More Info</a>";
-														}
-														echo "</li>";
-													}
-												}
-												echo '</ul></li></ul>';
-											}
-										}
-										echo '</li></ul>';
-									}; ?>
+									<h2>Organized by Protocol</h2>
+									<?php
+									// load the JSON
+									$jsonFile = '../../neon-react/biorepo_lib/collections-protocol.json';
+									$jsonData = file_get_contents($jsonFile);
+									$dataArr = json_decode($jsonData, true);
+									
+									// render the full tree
+									if ($dataArr) {
+										echo '<ul id="collections-list2">';
+										echo '  <li>';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls">';
+										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '    <span class="group-label">All Sample Types</span>';
+										
+										echo '    <ul>';
+										echo          renderTree($dataArr);
+										echo '    </ul>';
+										
+										echo '  </li>';
+										echo '</ul>';
+									}
+									?>
 								</div>
 								<div id="sample-type" class="box">
-									<h2>Select Collections by Sample Type</h2>
-									<?php if ($groupsArr = $collData->getBiorepoGroups('sampletype')) {
-										echo '<ul id="collections-list3"><li><input type="checkbox" class="all-selector all-neon-colls" checked><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Biorepository Collections</span>';
-										foreach ($groupsArr as $result) {
-											$cCodeId = 'cl3-' . implode("-", explode(" ", str_replace(",", "", strtolower($result["sampletype"]))));
-											if ($result['sampletype']) {
-												echo "<ul><li><input type='checkbox' id='{$cCodeId}' class='all-selector child' data-ccode='{$result["sampletype"]}'checked><span class='material-icons expansion-icon'>add_box</span><span>{$result["sampletype"]}</span><ul class='collapsed'>";
-												$collsArr = $collData->getBiorepoColls('sampletype', $result['sampletype']);
-												if ($collsArr) {
-													foreach ($collsArr as $row) {
-														echo "<li>";
-														// IF AVAILABLE
-														if ($row['available'] == 'TRUE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' data-ccode='{$row["collectioncode"]}' data-cat='{$cCodeId}' checked><a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank' class='ml-1'>{$row["collectionname"]} ({$row["collectioncode"]})</a>";
-														} elseif ($row["available"] == 'FALSE') {
-															echo "<input type='checkbox' name='db' value='{$row["collid"]}' class='child' disabled=''><span class='ml-1' style='color: gray'>{$row["collectionname"]}  ({$row["collectioncode"]}) - Samples Unavailable</span> <a href='../../collections/misc/collprofiles.php?collid={$row["collid"]}' target='_blank'>More Info</a>";
-														}
-														echo "</li>";
-													}
-												}
-												echo '</ul></li></ul>';
-											}
-										}
-										echo '</li></ul>';
-									}; ?>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
-				<!-- Sample Properties -->
-				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="sample" class="accordion-selector" checked=true />
-					<!-- Accordion header -->
-					<label for="sample" class="accordion-header">Sample Properties</label>
-					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-sample">
-							<div>
-								<div>
-									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" data-chip="Include other IDs" checked>
-									<label for="includeothercatnum">Include other sample identifiers (e.g. Sample Tag (sampleID), Barcode (sampleCode), sampleUuid, occid)</label>
-								</div>
-								<div>
-									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material sample IDs" >
-									<label for="includematerialsample">Include material sample identifiers</label>
-								</div>
-								<div class="text-area-container">
-									<label for="" class="text-area--outlined">
-										<textarea name="catnum" data-chip="Catalog Number" style="width: 100%"></textarea>
-										<span data-label="Catalog Number (archiveGUID)"></span></label>
-									<span class="assistive-text">Separate multiple with commas or new lines.</span>
-								</div>
-							</div>
-							<div>
-								<div>
-									<input type="checkbox" name="hasimages" value=1 data-chip="Only with images">
-									<label for="hasimages">Limit to specimens with images</label>
-								</div>
-								<div>
-									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
-									<label for="hasgenetic">Limit to specimens with genetic data</label>
-								</div>
-								<div>
-									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
-									<label for="availableforloan">Limit to specimens available for loan</label>
+									<h2>Organized by Preservation Method</h2>
+									<?php
+									// load the JSON
+									$jsonFile = '../../neon-react/biorepo_lib/collections-sampletype.json';
+									$jsonData = file_get_contents($jsonFile);
+									$dataArr = json_decode($jsonData, true);
+									
+									// render the full tree
+									if ($dataArr) {
+										echo '<ul id="collections-list3">';
+										echo '  <li>';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls">';
+										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
+										echo '    <span class="group-label">All Sample Types</span>';
+										
+										echo '    <ul>';
+										echo          renderTree($dataArr);
+										echo '    </ul>';
+										
+										echo '  </li>';
+										echo '</ul>';
+									}
+									?>
 								</div>
 							</div>
 						</div>
@@ -237,23 +303,28 @@ $siteData = new DatasetsMetadata();
 				<!-- Locality -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="locality" class="accordion-selector" />
+					<input type="checkbox" id="locality" class="accordion-selector" checked=true />
 					<!-- Accordion header -->
-					<label for="locality" class="accordion-header">Locality</label>
+					<label for="locality" class="accordion-header">Domains & Sites</label>
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-locality">
-							<ul id="site-list"><input id="all-sites" data-chip="All Domains & Sites" type="checkbox" class="all-selector" checked="" data-form-id='search-form-locality'><span class="material-icons expansion-icon">indeterminate_check_box</span><span><a href="https://www.neonscience.org/field-sites/explore-field-sites" target="_blank" rel="noopener noreferrer">All NEON Domains and Sites</a></span>
+							<ul id="site-list"><li class='Mui'><input id="all-sites" data-chip="All Domains & Sites" type="checkbox" class="all-selector" checked="" data-form-id='search-form-locality'><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Domains and Sites</span>
 								<?php if ($domainsArr = $siteData->getNeonDomains()) {
 									echo '<ul>';
 									foreach ($domainsArr as $domain) {
-										echo "<li><input type='checkbox' id='{$domain["domainnumber"]}' class='all-selector child' name='datasetid' value='{$domain["datasetid"]}' checked=''><span class='material-icons expansion-icon'>add_box</span><span>{$domain["domainnumber"]} - {$domain["domainname"]}</span>";
+										echo "<li class='Mui'><input type='checkbox' id='{$domain["domainnumber"]}' class='all-selector child' name='datasetid' value='{$domain["datasetid"]}' checked=''><span class='material-icons expansion-icon'>add_box</span><span class='group-label'>{$domain["domainnumber"]} - {$domain["domainname"]}</span>";
 										echo "<ul class='collapsed'>";
 										// ECHO SITES PER DOMAINS
 										$sitesArr = $siteData->getNeonSitesByDom($domain["domainnumber"]);
 										if ($sitesArr) {
 											foreach ($sitesArr as $site) {
-												echo "<li><input type='checkbox' id='{$site["siteid"]}' name='datasetid' value={$site["datasetid"]} class='child' data-domain={$domain["domainnumber"]} checked=''><span class='ml-1'><a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer'>({$site["siteid"]}) {$site["sitename"]}</a></span></li>";
+												echo "<li class='Mui'>";
+												echo "<input type='checkbox' id='{$site["siteid"]}' name='datasetid' value='{$site["datasetid"]}' class='child' data-domain='{$domain["domainnumber"]}' checked>";
+												echo "<span class='leaf-label ml-1 child'>({$site["siteid"]}) {$site["sitename"]}</span>";
+												echo " <a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer' title='View Site Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
+												echo "</li>";
+
 											}
 										};
 										echo "</ul>";
@@ -261,6 +332,7 @@ $siteData = new DatasetsMetadata();
 									}
 									echo '</ul>';
 								}; ?>
+								</li>
 							</ul>
 							<div>
 								<div>
@@ -298,6 +370,100 @@ $siteData = new DatasetsMetadata();
 									</div>
 								</div>
 							</div>
+						</div>
+					</div>
+				</section>
+				<!-- Collecting Event -->
+				<section>
+					<!-- Accordion selector -->
+					<input type="checkbox" id="coll-event" class="accordion-selector" checked=true />
+					<!-- Accordion header -->
+					<label for="coll-event" class="accordion-header">Date</label>
+					<!-- Accordion content -->
+					<div class="content">
+						<div id="search-form-coll-event">
+							<div class="input-text-container">
+								<label for="eventdate1" class="input-text--outlined">
+									<input type="text" name="eventdate1" data-chip="Event Date Start">
+									<span data-label="Start Date"></span></label>
+								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+							<div class="input-text-container">
+								<label for="eventdate2" class="input-text--outlined">
+									<input type="text" name="eventdate2" data-chip="Event Date End">
+									<span data-label="End Date"></span></label>
+								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+						</div>
+					</div>
+				</section>
+				<!-- Sample Properties -->
+				<section>
+					<!-- Accordion selector -->
+					<input type="checkbox" id="sample" class="accordion-selector"/>
+					<!-- Accordion header -->
+					<label for="sample" class="accordion-header">Sample Properties</label>
+					<!-- Accordion content -->
+					<div class="content">
+						<div id="search-form-sample">
+							<div>
+								<div class="text-area-container">
+									<label for="" class="text-area--outlined">
+										<textarea name="catnum" data-chip="Identifier" style="width: 100%"></textarea>
+										<span data-label="Identifiers"></span></label>
+									<span class="assistive-text">Separate multiple with commas or new lines.</span>
+								</div>
+								<div style="display:none">
+									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>
+									<label for="includeothercatnum">Search all identifiers</label>
+								</div>
+								<div>
+									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
+									<label for="includematerialsample">Include material samples</label>
+								</div>
+							</div>
+							<div>
+								<div>
+									<input type="checkbox" name="hasimages" value=1 data-chip="Only with images">
+									<label for="hasimages">Specimens with images</label>
+								</div>
+								<div>
+									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
+									<label for="hasgenetic">Specimens with genetic data</label>
+								</div>
+								<div>
+									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
+									<label for="availableforloan">Specimens available for loan</label>
+								</div>
+							</div>
+							<div class="input-text-container">
+								<label for="collector" class="input-text--outlined">
+									<input type="text" name="collector" data-chip="Collector/ORCID">
+									<span data-label="Collector/ORCID"></span></label>
+								<span class="assistive-text">Any part of a collector's name or ORCID iD (XXXX-XXXX-XXXX-XXXX).</span>
+							</div>
+						</div>
+					</div>
+				</section>
+				<!-- Taxonomy -->
+				<section>
+					<!-- Accordion selector -->
+					<input type="checkbox" id="taxonomy" class="accordion-selector"/>
+
+					<!-- Accordion header -->
+					<label for="taxonomy" class="accordion-header">Taxonomy</label>
+
+					<!-- Taxonomy -->
+					<div id="search-form-taxonomy" class="content">
+						<div id="taxa-text" class="input-text-container">
+							<label for="taxa" class="input-text--outlined">
+								<input type="text" name="taxa" id="taxa" data-chip="Taxa" placeholder="Scientific names only (e.g., Carabidae)">
+								<span data-label="Taxon"></span></label>
+							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
+						</div>
+						<div>
+						  <input type="checkbox" name="usethes" id="usethes" data-chip="Exclude Synonyms">
+						  <span class="ml-1">Exclude Synonyms</span>
 						</div>
 					</div>
 				</section>
@@ -408,36 +574,6 @@ $siteData = new DatasetsMetadata();
 						</div>
 					</div>
 				</section>
-				<!-- Collecting Event -->
-				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="coll-event" class="accordion-selector" />
-					<!-- Accordion header -->
-					<label for="coll-event" class="accordion-header">Collecting Event</label>
-					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-coll-event">
-							<div class="input-text-container">
-								<label for="eventdate1" class="input-text--outlined">
-									<input type="text" name="eventdate1" data-chip="Event Date Start">
-									<span data-label="Collection Start Date"></span></label>
-								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
-							</div>
-							<div class="input-text-container">
-								<label for="eventdate2" class="input-text--outlined">
-									<input type="text" name="eventdate2" data-chip="Event Date End">
-									<span data-label="Collection End Date"></span></label>
-								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
-							</div>
-							<div class="input-text-container">
-								<label for="collector" class="input-text--outlined">
-									<input type="text" name="collector" data-chip="Collector/ORCID">
-									<span data-label="Collector/ORCID"></span></label>
-								<span class="assistive-text">Any part of a collector's name or ORCID iD (XXXX-XXXX-XXXX-XXXX).</span>
-							</div>
-						</div>
-					</div>
-				</section>
 				<!-- Advanced Search -->
 				<section>
 					<!-- Accordion selector -->
@@ -459,7 +595,7 @@ $siteData = new DatasetsMetadata();
 				</section>
 			</div>
 			<!-- Criteria panel -->
-			<div id="criteria-panel" style="position: sticky; top: 0; height: 100vh">
+			<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
 				<button id="search-btn">Search</button>
 				<button id="reset-btn">Reset</button>
 				<h2>Criteria</h2>
@@ -472,5 +608,6 @@ $siteData = new DatasetsMetadata();
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
 </body>
-<script src="js/searchform.js?ver=14" type="text/javascript"></script>
+<script src="js/searchform.js?ver=<?= date('Y-m-d') ?>" type="text/javascript"></script>
+<script> window.addEventListener('load', updateChip);</script>
 </html>

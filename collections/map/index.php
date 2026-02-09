@@ -14,6 +14,7 @@ header('Content-Type: text/html; charset='.$CHARSET);
 header("Accept-Encoding: gzip, deflate, br");
 ob_start('ob_gzhandler');
 ini_set('max_execution_time', 180); //180 seconds = 3 minutes
+header_remove('X-Frame-Options');
 
 $distFromMe = array_key_exists('distFromMe', $_REQUEST) ? filter_var($_REQUEST['distFromMe'], FILTER_SANITIZE_NUMBER_FLOAT) : '';
 $gridSize = !empty($_REQUEST['gridSizeSetting']) ? filter_var($_REQUEST['gridSizeSetting'], FILTER_SANITIZE_NUMBER_INT) : 60;
@@ -24,6 +25,9 @@ $recLimit = array_key_exists('recordlimit', $_REQUEST) ? filter_var($_REQUEST['r
 $catId = array_key_exists('catid',$_REQUEST) ? filter_var($_REQUEST['catid'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $tabIndex = array_key_exists('tabindex',$_REQUEST) ? filter_var($_REQUEST['tabindex'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $submitForm = array_key_exists('submitform', $_REQUEST) ? $_REQUEST['submitform'] : '';
+//neon edit
+$embedded = !empty($_REQUEST['embedded']);
+//end neon edit
 
 $shouldUseMinimalMapHeader = $SHOULD_USE_MINIMAL_MAP_HEADER ?? false;
 $topVal = $shouldUseMinimalMapHeader ? '6rem' : '0';
@@ -833,7 +837,9 @@ $serverHost = GeneralUtil::getDomain();
 								size: 28
 							})
 						}))
-					.bindTooltip(`<div style="font-size:1rem">${record.id}</div>`)
+					//neon edit
+					.bindTooltip(`<div style="font-size:1rem">${record.sciname} - ${record.catalogNumber || ''}</div>`)
+					//end neon edit
 
 					marker.record = record;
 
@@ -1306,8 +1312,11 @@ $serverHost = GeneralUtil::getDomain();
 					})
 
 					bounds.extend(marker.getPosition());
-
-					const infoWin = new google.maps.InfoWindow({content:`<div>${record.id}</div>`});
+					//neon edit
+					const infoWin = new google.maps.InfoWindow({
+						content: `<div>${record.sciname} - ${record.eventdate || ''}</div>`
+					});
+					//
 
 					google.maps.event.addListener(marker, 'mouseover', function() {
 						infoWin.open(map.mapLayer, marker);
@@ -2101,7 +2110,7 @@ $serverHost = GeneralUtil::getDomain();
 		<?php
 		if($shouldUseMinimalMapHeader) include_once($SERVER_ROOT . '/includes/minimalheader.php');
 		?>
-	  	<h1 class="page-heading screen-reader-only">Map Interface</h1>
+	  	<!--<h1 class="page-heading screen-reader-only">Map Interface</h1>-->
 		<div
 			id="service-container"
 			data-search-var="<?=htmlspecialchars($searchVar)?>"
@@ -2114,6 +2123,8 @@ $serverHost = GeneralUtil::getDomain();
 			class="service-container"
 		>
 		</div>
+		<!--neon edit-->
+		<?php if (!$embedded): ?>
 		<div>
 			<button onclick="document.getElementById('defaultpanel').style.width='29rem';  " style="position:absolute;top:0;left:0;margin:0px;z-index:10; gap: 0.2rem">
 				<span style="padding-bottom:0.2rem">
@@ -2122,6 +2133,8 @@ $serverHost = GeneralUtil::getDomain();
 				<b>Open Search Panel</b>
 			</button>
 		</div>
+		<?php endif; ?>
+		<!--end neon edit-->
 		<div id='map' style='width:100vw;height:100vh;z-index:1'></div>
 		<div id="defaultpanel" class="sidepanel"  <?= $menuClosed? 'style="width: 0"': ''?>>
 			<div class="menu" style="display:flex; align-items: center; background-color: var(--menu-top-bg-color); height: 2rem">

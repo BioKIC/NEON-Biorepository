@@ -22,6 +22,12 @@ if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
 	$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
 }
 
+//NEON edit
+include_once($SERVER_ROOT.'/classes/ImageLibrarySearch.php');
+$imgLibManager = new ImageLibrarySearch();
+$imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
+//end NEON edit
+
 $_SESSION['datasetid'] = filter_var($datasetid, FILTER_SANITIZE_NUMBER_INT);
 
 $collManager = new OccurrenceListManager();
@@ -53,6 +59,7 @@ $_SESSION['citationvar'] = $searchVar;
 	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
 
 	// NEON start
+	if(isset($GOOGLE_ANALYTICS_TAG_ID) && $GOOGLE_ANALYTICS_TAG_ID) {
 	parse_str($searchVar, $params);
 	$encodedSearchVar = json_encode($searchVar, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 	?>
@@ -73,9 +80,12 @@ $_SESSION['citationvar'] = $searchVar;
 		...eventParams,
 	  });
 	</script>
+	  <?php
+		}
+		?>
 	<!-- NEON end-->
 
-	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=1" type="text/css" rel="stylesheet" />
+	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=2" type="text/css" rel="stylesheet" />
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.min.css" type="text/css" rel="stylesheet">
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
@@ -169,14 +179,21 @@ $_SESSION['citationvar'] = $searchVar;
 				</li>
 				<li>
 					<a href="#speclist">
-						<span><?php echo $LANG['TAB_OCCURRENCES']; ?></span>
+						<span>Records</span>
 					</a>
 				</li>
 				<li>
 					<a href="#maps">
-						<span><?php echo $LANG['TAB_MAP']; ?></span>
+						<span>Map</span>
 					</a>
 				</li>
+				<!-- neon edit -->
+				<li>
+					<a href="#imagesdiv">
+						<span id="imagetab">Images</span>
+					</a>
+				</li>
+				<!-- end neon edit -->
 			</ul>
 			<div id="speclist">
 				<div id="queryrecords">
@@ -248,7 +265,9 @@ $_SESSION['citationvar'] = $searchVar;
 							}
 							if ($cnt > 11) $collSearchStr .= '</span>';
 						}
-						echo '<div><b>' . $LANG['DATASET'] . ':</b> ' . $collSearchStr . '</div>';
+						//neon edit
+						echo '<div><b>Sample Type(s):</b> ' . $collSearchStr . '</div>';
+						//end neon edit
 						if ($taxaSearchStr = $collManager->getTaxaSearchStr()) {
 							if (strlen($taxaSearchStr) > 300) $taxaSearchStr = substr($taxaSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.taxa-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="taxa-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>';
 							echo '<div><b>' . $LANG['TAXA'] . ':</b> ' . $taxaSearchStr . '</div>';
@@ -483,15 +502,6 @@ $_SESSION['citationvar'] = $searchVar;
 				</div>
 			</div>
 			<div id="maps" style="min-height:400px;margin-bottom:10px;">
-				<form action="download/index.php" method="post" style="float:right" onsubmit="targetPopup(this)">
-					<button class="icon-button" aria-label="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>" title="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>">
-						<svg style="width:1.3em" alt="<?= $LANG['IMG_DWNL_DATA']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-							<path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-						</svg>
-					</button>
-					<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
-					<input name="dltype" type="hidden" value="georef" />
-				</form>
 
 				<div style='margin-top:10px;'>
 					<h2><?php echo $LANG['MAP_HEADER']; ?></h2>
@@ -499,22 +509,34 @@ $_SESSION['citationvar'] = $searchVar;
 				<div>
 					<?php echo $LANG['MAP_DESCRIPTION']; ?>
 				</div>
-				<div style='margin-top:10px;'>
-						<button onclick="openMapPU('<?= $searchVar ?>');">
-						<?php echo $LANG['MAP_DISPLAY']; ?>
-					</button>
-				</div>
-				<div style='margin-top:10px;'>
-					<h2><?php echo $LANG['KML_HEADER']; ?></h2>
+				<!--neon edit-->
+				<?php
+				$map_params = 'gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y&menuClosed&embedded=1';
+				
+				if (empty($searchVar) && !empty($_SERVER['QUERY_STRING'])) {
+					$searchParams = '?' . $_SERVER['QUERY_STRING'] . '&' . $map_params;
+				} else {
+					$searchParams = '?' . $searchVar . '&' . $map_params;
+				}
+				
+				$mapUrl = $CLIENT_ROOT . '/collections/map/index.php' . $searchParams;
+				?>
+				
+				<div style="margin-top:10px;">
+					<iframe
+						src="<?= htmlspecialchars($mapUrl) ?>"
+						width="100%"
+						height="500"
+						style="border:0;"
+						scrolling="no">
+					</iframe>
 				</div>
 				<form name="kmlform" action="map/kmlhandler.php" method="post">
-					<div>
-						<?php echo $LANG['KML_DESCRIPTION']; ?>
-					</div>
 					<div style="margin:10px 0;">
 						<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
 						<button name="formsubmit" type="submit" value="createKML"><?php echo $LANG['CREATE_KML']; ?></button>
 					</div>
+					<!--end neon edit-->
 					<div>
 						<a href="#" onclick="toggleFieldBox('fieldBox');">
 							<?php echo $LANG['KML_EXTRA']; ?>
@@ -577,6 +599,134 @@ $_SESSION['citationvar'] = $searchVar;
 					</div>
 				</form>
 			</div>
+			<!--NEON edit-->
+			<div id="imagesdiv">
+				<div id="imagebox">
+					<?php
+					$imageArr = $imgLibManager->getImageArr($imagePageNumber,$cntPerPage);
+					$recordCnt = $imgLibManager->getRecordCnt();
+					if($imageArr){
+						?>
+<!--						<form action="download/index.php" method="post" style="float:right" onsubmit="targetPopup(this)">
+							<button class="icon-button" title="Download Images">
+								<img src="../images/dl2.png" srcset="../images/download.svg" class="svg-icon" style="width:15px; height:15px" />
+							</button>
+							<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
+							<input name="dltype" type="hidden" value="specimen" />
+						</form>-->
+						<?php
+						echo '<div style="clear:both;margin:5 0 5 0;"><hr /></div>';
+						
+						$lastPage = ceil($recordCnt / $cntPerPage);
+						$startPage = ($imagePageNumber > 4?$imagePageNumber - 4:1);
+						$endPage = ($lastPage > $startPage + 9?$startPage + 9:$lastPage);
+						$url = $CLIENT_ROOT . '/collections/list.php?'.$collManager->getQueryTermStr();
+						$pageBar = '<div style="float:left" >';
+						if($startPage > 1){
+							$pageBar .= '<span class="pagination" style="margin-right:5px;"><a href="'.$url.'&tabindex=3&imagepage=1">First</a></span>';
+							$pageBar .= '<span class="pagination" style="margin-right:5px;"><a href="'.$url.'&tabindex=3&imagepage='.(($imagePageNumber - 10) < 1 ?1:$imagePageNumber - 10).'">&lt;&lt;</a></span>';
+						}
+						for($x = $startPage; $x <= $endPage; $x++){
+							if($imagePageNumber != $x){
+								$pageBar .= '<span class="pagination" style="margin-right:3px;"><a href="'.$url.'&tabindex=3&imagepage='.$x.'">'.$x.'</a></span>';
+							}
+							else{
+								$pageBar .= "<span class='pagination' style='margin-right:3px;font-weight:bold;'>".$x."</span>";
+							}
+						}
+						if(($lastPage - $startPage) >= 10){
+							$pageBar .= '<span class="pagination" style="margin-left:5px;"><a href="'.$url.'&tabindex=3&imagepage='.(($imagePageNumber + 10) > $lastPage?$lastPage:($imagePageNumber + 10)).'">&gt;&gt;</a></span>';
+							if($recordCnt < 10000) $pageBar .= '<span class="pagination" style="margin-left:5px;"><a href="'.$url.'&tabindex=3&imagepage='.$lastPage.'">Last</a></span>';
+						}
+						$pageBar .= '</div><div style="float:right;margin-top:4px;margin-bottom:8px;">';
+						$beginNum = ($imagePageNumber - 1)*$cntPerPage + 1;
+						$endNum = $beginNum + $cntPerPage - 1;
+						if($endNum > $recordCnt) $endNum = $recordCnt;
+						$pageBar .= "Page ".$imagePageNumber.", records ".number_format($beginNum)."-".number_format($endNum)." of ".number_format($recordCnt)."</div>";
+						$paginationStr = $pageBar;
+						echo '<div style="width:100%;">'.$paginationStr.'</div>';
+						echo '<div style="clear:both;margin:5 0 5 0;"><hr /></div>';
+						echo '<div style="width:98%;margin-left:auto;margin-right:auto;">';
+						$occArr = array();
+						$collArr = array();
+						if(isset($imageArr['occ'])){
+							$occArr = $imageArr['occ'];
+							unset($imageArr['occ']);
+							$collArr = $imageArr['coll'];
+							unset($imageArr['coll']);
+						}
+						foreach($imageArr as $imgArr){
+							$imgId = $imgArr['mediaID'];
+							$imgUrl = $imgArr['url'];
+							$imgTn = $imgArr['thumbnailurl'];
+							if($imgTn){
+								$imgUrl = $imgTn;
+								if($IMAGE_DOMAIN && substr($imgTn,0,1)=='/') $imgUrl = $IMAGE_DOMAIN.$imgTn;
+							}
+							elseif($IMAGE_DOMAIN && substr($imgUrl,0,1)=='/'){
+								$imgUrl = $IMAGE_DOMAIN.$imgUrl;
+							}
+							?>
+							<div class="tndiv" style="margin-bottom:15px;margin-top:15px;">
+								<div class="tnimg">
+									<?php
+									$anchorLink = '';
+									if($imgArr['occid']){
+										$anchorLink = '<a href="#" onclick="openIndPU('.$imgArr['occid'].');return false;">';
+									}
+									else{
+										$anchorLink = '<a href="#" onclick="openImagePopup('.$imgId.');return false;">';
+									}
+									echo $anchorLink.'<img src="'.$imgUrl.'" /></a>';
+									?>
+								</div>
+								<div>
+									<?php
+									$sciname = $imgArr['sciname'];
+									if(!$sciname && $imgArr['occid'] && $occArr[$imgArr['occid']]['sciname']) $sciname = $occArr[$imgArr['occid']]['sciname'];
+									if($sciname){
+										if(strpos($imgArr['sciname'],' ')) $sciname = '<i>'.$sciname.'</i>';
+										if($imgArr['tid']) echo '<a href="'.$CLIENT_ROOT.'/taxa/index.php?tid='.$imgArr['tid'].'">';
+										echo $sciname;
+										if($imgArr['tid']) echo '</a>';
+										echo '<br />';
+									}
+									$photoAuthor = '';
+									$authorLink = '';
+									//if($imgArr['uid']){
+									//	$photoAuthor = $uidList[$imgArr['uid']];
+									//	if(strlen($photoAuthor) > 23){
+									//		$nameArr = explode(',',$photoAuthor);
+									//		$photoAuthor = array_shift($nameArr);
+									//	}
+									//}
+									if($imgArr['occid']){
+										if($occArr[$imgArr['occid']]['catnum']){
+											echo $occArr[$imgArr['occid']]['catnum'].'<br />';
+										}
+										echo '<a href="'.$CLIENT_ROOT.'/collections/individual/index.php?occid='.$imgArr['occid'].'"><b>Full Record Details</b></a>';
+									}
+									?>
+								</div>
+							</div>
+							<?php
+						}
+						echo "</div>";
+						if($lastPage > $startPage){
+							echo "<div style='clear:both;margin:5 0 5 0;'><hr /></div>";
+							echo '<div style="width:100%;">'.$paginationStr.'</div>';
+						}
+						?>
+						<div style="clear:both;"></div>
+						<?php
+					}
+					else{
+						echo '<h3>No images exist matching your search criteria. Please modify your search and try again.</h3>';
+					}
+					?>
+				</div>
+			</div>
+			<!--end NEON edit-->	
 		</div>
 	</div>
 	<?php
