@@ -29,22 +29,22 @@
     "links": [
         {
           "name": "Biorepository Sample Portal at ASU",
-          "hash": "https://biorepo.neonscience.org/prodreview/neon/search/index.php",
+          "hash": "https://biorepo.neonscience.org/portal/neon/search/index.php",
           "match": "neon/search/index.php"
         },
         {
           "name": "About Samples",
-          "hash": "https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/about-samples",
+          "hash": "https://www.neonscience.org/about-samples",
           "match": "collections/misc/browsecollprofiles.php"
         },
         {
           "name": "Finding and Accessing Sample Data",
-          "hash": "https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/finding-and-accessing-sample-data",
+          "hash": "https://www.neonscience.org/finding-and-accessing-sample-data",
           "match": "projects/browsechecklists.php"
         },
         {
           "name": "Requesting and Using Samples",
-          "hash": "https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/requesting-and-using-samples",
+          "hash": "https://www.neonscience.org/requesting-and-using-samples",
           "match": "#"
         }
     ]

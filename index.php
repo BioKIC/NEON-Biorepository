@@ -1,5 +1,5 @@
 <?php
-header("Location: https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/samples", true, 302);
+header("Location: https://www.neonscience.org/samples", true, 302);
 exit;
 //error_reporting(E_ALL);
 //ini_set('display_errors', '1');
