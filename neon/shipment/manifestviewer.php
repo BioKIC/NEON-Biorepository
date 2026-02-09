@@ -9,10 +9,12 @@ if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT
 
 $shipmentPK = array_key_exists('shipmentPK', $_REQUEST) ? filter_var($_REQUEST['shipmentPK'], FILTER_SANITIZE_NUMBER_INT) : '';
 $sampleFilter = isset($_REQUEST['sampleFilter']) ? $_REQUEST['sampleFilter'] : '';
+$quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
 $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 
 $shipManager = new ShipmentManager();
 if($shipmentPK) $shipManager->setShipmentPK($shipmentPK);
+elseif($quickSearchTerm) $shipmentPK = $shipManager->setQuickSearchTerm($quickSearchTerm);
 $sampleCntArr = $shipManager->getSampleCount();
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
