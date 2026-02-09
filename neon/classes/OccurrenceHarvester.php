@@ -66,6 +66,12 @@ class OccurrenceHarvester{
 			if(isset($postArr['nullOccurrencesOnly'])){
 				$sqlWhere .= 'AND (s.occid IS NULL) ';
 			}
+			if(isset($postArr['existing'] )){
+				$sqlWhere .= 'AND (o.occid IS NOT NULL) ';
+			}
+			elseif(isset($postArr['notexisting'])){
+				$sqlWhere .= 'AND (o.occid IS NULL) ';
+			}
 			if($postArr['collid']){
 				$sqlWhere .= 'AND (o.collid = '.$postArr['collid'].') ';
 			}
@@ -240,16 +246,45 @@ class OccurrenceHarvester{
 			return false;
 		}
 
-		foreach ($urlConfigs as $config) {
-			$url = '';
-			if (!empty($sampleArr[$config['key']])) $url = $this->buildApiurl($config, $sampleArr);
+		// first try sampleID -- required due to implementation of hashed identifiers
+		if (!empty($sampleArr['sampleID']) && !empty($sampleArr['sampleClass'])) {
 
-			if (!empty($url)){
-				//echo 'url: ' . $url . '<br/>';
-				$sampleViewArr = $this->checkApiforData($url, $sampleArr);
-				if ($sampleViewArr) {
-					return $this->checkApiDataforErrors($sampleArr, $sampleViewArr);
-				}
+			$config = [
+				'key'   => 'sampleID',
+				'param' => 'sampleTag',
+				'key2'  => 'sampleClass',
+				'param2'=> 'sampleClass'
+			];
+
+			$url = $this->buildApiurl($config, $sampleArr);
+
+			if (!$url) return false;
+
+			$sampleViewArr = $this->checkApiforData($url, $sampleArr);
+
+			if (!$sampleViewArr) {
+				$this->errorStr = 'DATA ISSUE: sampleID + sampleClass returned no views from NEON API';
+				$this->setSampleErrorMessage($sampleArr['samplePK'], $this->errorStr);
+				return false;
+			}
+
+			return $this->checkApiDataforErrors($sampleArr, $sampleViewArr);
+		}
+
+		foreach ($urlConfigs as $config) {
+
+    	// Skip sampleID here — already handled above
+			if ($config['key'] === 'sampleID') continue;
+
+			if (empty($sampleArr[$config['key']])) continue;
+
+			$url = $this->buildApiurl($config, $sampleArr);
+			if (!$url) continue;
+
+			$sampleViewArr = $this->checkApiforData($url, $sampleArr);
+
+			if ($sampleViewArr) {
+				return $this->checkApiDataforErrors($sampleArr, $sampleViewArr);
 			}
 		}
 		return false;
@@ -377,9 +412,14 @@ class OccurrenceHarvester{
 				}
 			}
 		}
+		if($sampleArr['hashedSampleID'] && isset($viewArr['sampleTag']) && $sampleArr['hashedSampleID'] != $viewArr['sampleTag']){
+			//hashed id does not match, just record within NeonSample error field and then skip harvest of this record
+			$this->errorStr .= '; DATA ISSUE: Hashed sampleID failing to match (old: '.$sampleArr['hashedSampleID'].', new: '.$viewArr['sampleTag'].')';
+			$status = false;
+		}
 		if($sampleArr['sampleID'] && isset($viewArr['sampleTag']) && $sampleArr['sampleID'] != $viewArr['sampleTag'] && $sampleArr['hashedSampleID'] != $viewArr['sampleTag']){
 			//sampleIDs (sampleTags) are not equal; report error and abort harvest
-			if(substr($viewArr['sampleTag'],-1) == '=' || !preg_match('/[_\.]+/',$viewArr['sampleTag'])){
+			if(empty($sampleArr['hashedSampleID']) && (substr($viewArr['sampleTag'],-1) == '=' || !preg_match('/[_\.]+/',$viewArr['sampleTag']))){
 				$neonSampleUpdate['hashedSampleID'] = $viewArr['sampleTag'];
 				$sampleArr['hashedSampleID'] = $viewArr['sampleTag'];
 			}
@@ -1156,7 +1196,7 @@ class OccurrenceHarvester{
 					$dwcArr['county'] = $propValue;
 				} elseif (!isset($dwcArr['geodeticDatum']) && $propName == 'Value for Geodetic datum') {
 					$dwcArr['geodeticDatum'] = $propValue;
-				} elseif (!isset($dwcArr['plotDim']) && $propName == 'Value for Plot dimensions') {
+				} elseif (!isset($dwcArr['plotDim']) && $propName == 'Value for Plot dimensions' && $propValue != '0m' ) {
 					$dwcArr['plotDim'] = ' (plot dimensions: ' . $propValue . ')';
 				} elseif (!isset($habitatArr['landcover']) && strpos($propName, 'Value for National Land Cover Database') !== false) {
 					$habitatArr['landcover'] = $propValue;
