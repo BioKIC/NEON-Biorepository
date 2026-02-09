@@ -236,10 +236,12 @@ class OccurrenceIndividual extends Manager{
 	}
 
 	private function setDeterminations(){
-		$sql = 'SELECT detid, dateidentified, identifiedby, sciname, scientificnameauthorship, identificationqualifier, identificationreferences, identificationremarks, iscurrent
+		//Start neon customization
+		$sql = 'SELECT detid, dateidentified, identifiedby, sciname, scientificnameauthorship, identificationqualifier, identificationreferences, identificationremarks, iscurrent, securitystatus
 			FROM omoccurdeterminations
 			WHERE (occid = ?) AND appliedstatus = 1
 			ORDER BY sortsequence';
+		//End neon customization
 		if($stmt = $this->conn->prepare($sql)){
 			$stmt->bind_param('i', $this->occid);
 			$stmt->execute();
@@ -254,6 +256,9 @@ class OccurrenceIndividual extends Manager{
 					$this->occArr['dets'][$detId]['ref'] = $row->identificationreferences;
 					$this->occArr['dets'][$detId]['notes'] = $row->identificationremarks;
 					$this->occArr['dets'][$detId]['iscurrent'] = $row->iscurrent;
+					//Start neon customization
+					$this->occArr['dets'][$detId]['securitystatus'] = $row->securitystatus;
+					//End neon customization
 				}
 				$rs->free();
 			}
@@ -586,9 +591,11 @@ class OccurrenceIndividual extends Manager{
 
 				$preferredKeys = [
 					'NEON sampleCode (barcode)',
+					'NEON sampleID Hash',
 					'NEON sampleID',
 					'Originating NEON barcode',
-					'Originating NEON sampleID'
+					'Originating NEON sampleID',
+					'Originating NEON sampleID Hash'
 				];
 
 				$sampleClass = '';
@@ -604,7 +611,7 @@ class OccurrenceIndividual extends Manager{
 								$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
 							}
 
-							if ($key === 'NEON sampleID') {
+							if ($key === 'NEON sampleID' || $key === 'NEON sampleID Hash') {
 								$sql = 'SELECT sampleClass FROM NeonSample WHERE occid = ?';
 								if ($stmt = $this->conn->prepare($sql)) {
 									$stmt->bind_param('i', $this->occArr['occid']);
@@ -618,7 +625,7 @@ class OccurrenceIndividual extends Manager{
 									}
 									$stmt->close();
 								}
-							} elseif ($key === 'Originating NEON sampleID') {
+							} elseif ($key === 'Originating NEON sampleID' || $key === 'Originating NEON sampleID Hash') {
 								$sql = 'SELECT s.sampleClass
 										FROM NeonSample s
 										LEFT JOIN omoccurassociations a

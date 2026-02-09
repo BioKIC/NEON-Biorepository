@@ -175,22 +175,41 @@ if ($isEditor) {
 			}
 		}
 
+		// NEON customization
+		
+		// function checkAllColl(cb) {
+		// 	var boxesChecked = true;
+		// 	if (!cb.checked) {
+		// 		boxesChecked = false;
+		// 	}
+		// 	var cName = cb.className;
+		// 	var dbElements = document.getElementsByName("coll[]");
+		// 	for (i = 0; i < dbElements.length; i++) {
+		// 		var dbElement = dbElements[i];
+		// 		if (dbElement.className == cName) {
+		// 			if (dbElement.disabled == false) dbElement.checked = boxesChecked;
+		// 		} else {
+		// 			dbElement.checked = false;
+		// 		}
+		// 	}
+		// }
 		function checkAllColl(cb) {
-			var boxesChecked = true;
-			if (!cb.checked) {
-				boxesChecked = false;
-			}
-			var cName = cb.className;
-			var dbElements = document.getElementsByName("coll[]");
-			for (i = 0; i < dbElements.length; i++) {
-				var dbElement = dbElements[i];
-				if (dbElement.className == cName) {
-					if (dbElement.disabled == false) dbElement.checked = boxesChecked;
-				} else {
-					dbElement.checked = false;
+
+    		const boxes = document.getElementsByName("coll[]");
+
+			for (let i = 0; i < boxes.length; i++) {
+
+				const box = boxes[i];
+
+				if (box.disabled) continue;
+				
+				if (box.dataset.default === "1") {
+					box.checked = cb.checked;
 				}
+
 			}
 		}
+		// END NEON customization
 	</script>
 </head>
 
@@ -516,7 +535,10 @@ if ($isEditor) {
 									}
 									$inputAttr = '';
 									if ($errMsg) $inputAttr = 'DISABLED';
-									elseif ($v['url']) $inputAttr = 'CHECKED';
+									// NEON customization
+									//elseif ($v['url']) $inputAttr = 'CHECKED';
+									elseif ($v['url']) $inputAttr = 'CHECKED data-default="1"';
+									// END NEON customization
 									echo '<div class="bottom-breathing-room">';
 									echo '<input class="margin-rt-rel" name="coll[]" type="checkbox" value="' . $k . '" ' . $inputAttr . ' />';
 									echo '<a href="../misc/collprofiles.php?collid=' . $k . '" target="_blank">' . htmlspecialchars($v['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a> ';

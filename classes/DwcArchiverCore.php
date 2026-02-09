@@ -1942,7 +1942,15 @@ class DwcArchiverCore extends Manager{
 		$this->writeOutRecord($fh, $headerArr);
 
 		//Output records
-		$sql = DwcArchiverDetermination::getSql($this->determinationFieldArr['fields'], $this->getTableJoins(), $this->conditionSql);
+		// START NEON customization
+		$isSecuredReader = false;
+		if($GLOBALS['USER_RIGHTS']){
+			if($GLOBALS['IS_ADMIN'] || array_key_exists('CollAdmin', $GLOBALS['USER_RIGHTS']) || array_key_exists('RareSppAdmin', $GLOBALS['USER_RIGHTS']) || array_key_exists('RareSppReadAll', $GLOBALS['USER_RIGHTS'])){
+				$isSecuredReader = true;
+			}
+		}
+		$sql = DwcArchiverDetermination::getSql($this->determinationFieldArr['fields'], $this->getTableJoins(), $this->conditionSql, $isSecuredReader);
+		// END NEON customization
 		if ($rs = $this->dataConn->query($sql, MYSQLI_USE_RESULT)) {
 			$previousDetID = 0;
 			while ($r = $rs->fetch_assoc()) {
