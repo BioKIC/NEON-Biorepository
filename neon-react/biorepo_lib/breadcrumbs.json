@@ -43,35 +43,35 @@
     ],
   "/misc/sampleguidelines.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/using-samples" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Sample Guidelines and Policies" }
     ],
   "/misc/cite.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/using-samples" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
     { "name": "Acknowledging and Citing" }
     ],
   "/misc/samplepolicy.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/using-samples" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
     { "name": "Sample Use Policy" }
     ],
   "/misc/datasetpublishing.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/using-samples" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
     { "name": "Dataset Publishing" }
     ],
   "/misc/samplerequest.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/using-samples" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Sample Request" }
     ],
   "/misc/samplearchiverequest.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/using-samples" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Sample Archival Request" }
     ],
   "/api/v2/documentation": [
