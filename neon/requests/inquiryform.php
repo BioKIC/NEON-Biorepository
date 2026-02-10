@@ -528,7 +528,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'For Battelle (except IRAD), Contractor, or Biorepo team?'; ?></strong>
+       								<strong><?php echo 'For internal Battelle (except IRAD), Contractor, or Biorepo team? (E.g., to backfill a data product -- no research focus)'; ?></strong>
 									</span><br />
 								<span>
 									<select name="inqinternal" style="width:400px;" aria-label="Select Battelle/Contractor">
