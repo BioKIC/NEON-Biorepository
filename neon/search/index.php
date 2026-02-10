@@ -96,6 +96,7 @@ $siteData = new DatasetsMetadata();
 
 	//function to render sample type tree
 	function renderTree($nodes, $parentId = '') {
+		global $IS_ADMIN, $USER_RIGHTS;
 		$html = '';
 		foreach ($nodes as $node) {
 			$cCodeId = 'cl-' . preg_replace('/[^a-z0-9\-]/', '-', strtolower($node['name']));
@@ -108,7 +109,15 @@ $siteData = new DatasetsMetadata();
 				$collid = $node['collid'];
 				$name = htmlspecialchars($node['name']);
 	
-				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}'>";
+				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}' "
+						. (
+							$IS_ADMIN ||
+							!empty($USER_RIGHTS["CollAdmin"]) ||
+							!empty($USER_RIGHTS["CollEditor"])
+							? "checked"
+							: ""
+						)
+						. ">";
 				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
 				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' title='View Sample Type Profile' target='_blank'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
 
@@ -117,7 +126,15 @@ $siteData = new DatasetsMetadata();
 			else {
 				$name = htmlspecialchars($node['name']);
 				$catAttr = $parentId !== '' ? " data-cat='{$parentId}'" : '';
-				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child'{$catAttr} data-ccode='{$name}'>";
+				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child'{$catAttr} data-ccode='{$name}' "
+					. (
+						$IS_ADMIN ||
+						!empty($USER_RIGHTS["CollAdmin"]) ||
+						!empty($USER_RIGHTS["CollEditor"])
+						? "checked"
+						: ""
+					)
+					. ">";
 				// wrap label + icon so whole thing is clickable
 				$html .= "<span data-target='{$cCodeId}'>
 							<span class='material-icons expansion-icon'>add_box</span>
@@ -161,7 +178,26 @@ $siteData = new DatasetsMetadata();
 							<section>
 								<!-- Open NEON Collections modal -->
 								<label class="accordion-subheader neon-modal-open">
-									<input id="all-neon-colls-quick" data-chip="All Sample Types at the Biorepository" type="checkbox" data-form-id="biorepo-collections-list">
+								<input
+								  id="all-neon-colls-quick"
+								  data-chip="All Sample Types at the Biorepository"
+								  type="checkbox"
+								  data-form-id="biorepo-collections-list"
+								<input
+								  id="all-neon-colls-quick"
+								  data-chip="All Sample Types at the Biorepository"
+								  type="checkbox"
+								  data-form-id="biorepo-collections-list"
+								  <?php
+									if (
+										$IS_ADMIN ||
+										!empty($USER_RIGHTS["CollAdmin"]) ||
+										!empty($USER_RIGHTS["CollEditor"])
+									) {
+										echo 'checked';
+									}
+								  ?>
+								>
 									<span>All NEON Sample Types at the Biorepository</span>
 								</label>
 							</section>
