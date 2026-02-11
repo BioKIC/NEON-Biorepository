@@ -79,7 +79,7 @@ class OpenIdProfileManager extends ProfileManager
 		}
 	}
 
-	public function linkLocalUserOidSub($email, $sub, $provider)
+	public function linkLocalUserOidSub($email, $sub, $provider, $user_id, $given_name, $family_name)
 	{
 		if ($email && $sub && $provider) {
 			$sql = 'SELECT u.uid, oid.subUuid, oid.provider from users u LEFT join usersthirdpartyauth oid ON u.uid = oid.uid 
@@ -90,10 +90,41 @@ class OpenIdProfileManager extends ProfileManager
 					$results = mysqli_stmt_get_result($stmt);
 					$stmt->close();
 				}
+				//neon edit
 				if ($results->num_rows < 1) {
-					//Local user does not exist
-					throw new Exception("User does not exist in symbiota database <ERR/>");
+				
+					// create local user
+					$sql = 'INSERT INTO users (email, firstname, lastname, username) VALUES (?,?,?,?)';
+					$this->resetConnection();
+				
+					if ($stmt = $this->conn->prepare($sql)) {
+						if ($family_name === null || $family_name === '') {
+								$given_name  = 'NEON';
+								$family_name = 'Account';
+							}
+						$stmt->bind_param('ssss', $email, $given_name, $family_name, $email);
+						$stmt->execute();
+						$newUid = $this->conn->insert_id;
+						$stmt->close();
+					} else {
+						throw new Exception("Failed to create local user");
+					}
+				
+					// link third party auth
+					$sql = 'INSERT INTO usersthirdpartyauth (uid, subUuid, provider) VALUES (?,?,?)';
+				
+					if ($stmt = $this->conn->prepare($sql)) {
+						$stmt->bind_param('iss', $newUid, $sub, $provider);
+						$stmt->execute();
+						$stmt->close();
+					} else {
+						throw new Exception("Failed to link third party auth");
+					}
+				
+					$this->uid = $newUid;
+					return true;
 				} else {
+					//end neon edit
 					if ($results->num_rows == 1) {
 						$row = $results->fetch_array(MYSQLI_ASSOC);
 						if (($row['provider'] == '' && $row['subUuid'] == '') || ($row['provider'] && $row['provider'] !== $provider)) {
