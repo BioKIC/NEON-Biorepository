@@ -204,6 +204,10 @@
   "/profile/usermanagement.php": [
     { "name": "User Management" }
     ],
+  "/profile/viewprofile.php": [
+    { "name": "User Management", "href": "usermanagement.php" },
+    { "name": "Profile Details" }
+    ],
   "/ident/admin/index.php": [
     { "name": "Character Management" }
     ],
