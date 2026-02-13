@@ -102,7 +102,7 @@ class OpenIdProfileManager extends ProfileManager
 								$given_name  = 'NEON';
 								$family_name = 'Account';
 							}
-						$stmt->bind_param('ssss', $email, $given_name, $family_name, $email);
+						$stmt->bind_param('ssss', $email, $given_name, $family_name, $user_id);
 						$stmt->execute();
 						$newUid = $this->conn->insert_id;
 						$stmt->close();

@@ -53,7 +53,7 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
       if ($email = $oidc->requestUserInfo('email')){
         // Authprovider returned a subscriber; however, user was not authenticated to local user account
         try{
-          $status = $profManager->linkLocalUserOidSub($email, $sub, $oidc->getProviderURL(), $oidc->requestUserInfo('user_id'), $oidc->requestUserInfo('given_name'), $oidc->requestUserInfo('family_name'));
+          $status = $profManager->linkLocalUserOidSub($email, $sub, $oidc->getProviderURL(), $oidc->requestUserInfo('nickname'), $oidc->requestUserInfoByID($sub, 'user_metadata.first_name'), $oidc->requestUserInfoByID($sub, 'user_metadata.last_name'));
         }catch (Exception $ex){
           $_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' '  . $ex->getMessage();
           header('Location:' . $CLIENT_ROOT . '/profile/index.php');
