@@ -304,11 +304,11 @@ ER  -
 									<?php echo (isset($LANG['EDIT_EXISTING']) ? $LANG['EDIT_EXISTING'] : 'Edit Existing Occurrence Records'); ?>
 								</a>
 							</li>
-							<!--<li>-->
-							<!--	<a href="../editor/batchdeterminations.php?collid=<?php echo $collid; ?>">-->
-							<!--		<?php echo (isset($LANG['ADD_BATCH_DETER']) ? $LANG['ADD_BATCH_DETER'] : 'Add Batch Determinations/Nomenclatural Adjustments'); ?>-->
-							<!--	</a>-->
-							<!--</li>-->
+							<li>
+							<a href="../editor/batchdeterminations.php?collid=<?php echo $collid; ?>">
+									<?php echo (isset($LANG['ADD_BATCH_DETER']) ? $LANG['ADD_BATCH_DETER'] : 'Add Batch Determinations/Nomenclatural Adjustments'); ?>
+								</a>
+							</li>
 							<li>
 								<a href="../reports/labelmanager.php?collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['PRINT_LABELS']) ? $LANG['PRINT_LABELS'] : 'Print Specimen Labels'); ?>
