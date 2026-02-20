@@ -606,7 +606,8 @@ class OccurrenceIndividual extends Manager{
 						$idValue = $idArr['value'] ?? '';
 
 						if ($tagName === $key && !empty($idValue)) {
-							$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $idValue, $iUrl);
+							$encodedId = rawurlencode($idValue);
+							$indUrl = str_replace('--OTHERCATALOGNUMBERS--', $encodedId, $iUrl);
 							if ($key === 'NEON sampleCode (barcode)' || $key === 'Originating NEON barcode') {
 								$indUrl = str_replace('sampleTag', 'barcode', $indUrl);
 							}
