@@ -23,7 +23,7 @@ if ($isEditor && isset($_POST['generate_report'])) {
 ?>
 <html>
 <head>
-    <title><?php echo $DEFAULT_TITLE; ?> NEON Quarterly Sample Use Report</title>
+    <title><?php echo $DEFAULT_TITLE; ?>NEON Quarterly Sample Use Report</title>
     <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
     <?php
     $activateJQuery = true;

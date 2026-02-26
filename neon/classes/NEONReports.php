@@ -106,53 +106,53 @@
 
     }
 
-function getScholarProfileStats() {
-    $url = "https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en";
+    function getScholarProfileStats() {
+        $url = "https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en";
 
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-    $html = curl_exec($ch);
-    curl_close($ch);
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+        $html = curl_exec($ch);
+        curl_close($ch);
 
-    if (!$html) return null;
+        if (!$html) return null;
 
-    $stats = [
-        'total_citations' => 0,
-        'h_index' => 0,
-        'i10_index' => 0,
-    ];
+        $stats = [
+            'total_citations' => 0,
+            'h_index' => 0,
+            'i10_index' => 0,
+        ];
 
-    $doc = new DOMDocument();
-    libxml_use_internal_errors(true);
-    $doc->loadHTML($html);
-    libxml_clear_errors();
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML($html);
+        libxml_clear_errors();
 
-    $xpath = new DOMXPath($doc);
+        $xpath = new DOMXPath($doc);
 
-    $tableRows = $xpath->query('//table[@id="gsc_rsb_st"]/tbody/tr');
-    foreach ($tableRows as $row) {
-        $cells = $xpath->query('td', $row);
-        if ($cells->length >= 2) {
-            $label = trim($cells->item(0)->textContent);
-            $value = intval(trim($cells->item(1)->textContent));
+        $tableRows = $xpath->query('//table[@id="gsc_rsb_st"]/tbody/tr');
+        foreach ($tableRows as $row) {
+            $cells = $xpath->query('td', $row);
+            if ($cells->length >= 2) {
+                $label = trim($cells->item(0)->textContent);
+                $value = intval(trim($cells->item(1)->textContent));
 
-            switch (strtolower($label)) {
-                case 'citations':
-                    $stats['total_citations'] = $value;
-                    break;
-                case 'h-index':
-                    $stats['h_index'] = $value;
-                    break;
-                case 'i10-index':
-                    $stats['i10_index'] = $value;
-                    break;
+                switch (strtolower($label)) {
+                    case 'citations':
+                        $stats['total_citations'] = $value;
+                        break;
+                    case 'h-index':
+                        $stats['h_index'] = $value;
+                        break;
+                    case 'i10-index':
+                        $stats['i10_index'] = $value;
+                        break;
+                }
             }
         }
-    }
 
-    return $stats;
-}
+        return $stats;
+    }
 
 
     // Generates data for Monthly Report 
@@ -387,7 +387,7 @@ function getScholarProfileStats() {
         $year = (int) date('y');  
         $month = (int) date('m');
 
-        $quarterMap = [1  => 1, 4  => 2, 7  => 3, 11 => 4];
+        $quarterMap = [1  => 1, 2  => 2, 7  => 3, 11 => 4];
 
         if (!isset($quarterMap[$month])) {
             throw new Exception('Quarterly report can only be generated in the month directly following completion of a quarter.');
@@ -427,6 +427,7 @@ function getScholarProfileStats() {
         $this->compareRequests($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
+        $this->samplesByUseType($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->sampleUseByInitiationAYBarChart($name,$reportDate,$endquarter);
         $this->sampleUseByStatusAYBarChart($name,$reportDate,$endquarter);
@@ -438,7 +439,8 @@ function getScholarProfileStats() {
     }
 
     public function generateQuarterlyReportSummary($quarter,$reportDate) {
-
+        
+        $name = $quarter;
         preg_match('/AY(\d+)\s+Q(\d+)/', $quarter, $matches);
         $year = $matches[1];
         $quarter = $matches[2]; 
@@ -491,7 +493,7 @@ function getScholarProfileStats() {
         of the Biorepository, with a total of <b>' . $active . '</b> active or complete loans. ';
 
         if($quarter != 1) {
-            $sql = 'SELECT COUNT(s.id) AS total FROM neonsamplerequestlink s
+            $sql = 'SELECT COUNT(DISTINCT(s.occid)) AS total FROM neonsamplerequestlink s
                 JOIN neonrequestshipment h ON s.shipmentID = h.id
                 WHERE h.shipDate >= ? AND h.shipDate <= ?';
             $stmt = $this->conn->prepare($sql);
@@ -522,11 +524,11 @@ function getScholarProfileStats() {
             $row = $result->fetch_assoc();
             $quarterresearchers = (int)$row['res'];
 
-            $summary .= 'In ' . $name . ', <b>' . $quartersamples . '</b> unique samples across <b>' . $quartercolls . '</b> sample types have been newly requested by <b>' 
+            $summary .= 'In ' . $name . ', <b>' . $quartersamples . '</b> unique samples across <b>' . $quartercolls . '</b> sample types have been newly requested for projects involving <b>' 
                 . $quarterresearchers . '</b> different researchers. ';
         }
 
-        $sql = 'SELECT COUNT(s.id) AS total FROM neonsamplerequestlink s
+        $sql = 'SELECT COUNT(DISTINCT(s.occid)) AS total FROM neonsamplerequestlink s
             JOIN neonrequestshipment h ON s.shipmentID = h.id
             WHERE h.shipDate >= ? AND h.shipDate <= ?';
         $stmt = $this->conn->prepare($sql);
@@ -557,7 +559,7 @@ function getScholarProfileStats() {
         $row = $result->fetch_assoc();
         $yearresearchers = (int)$row['res'];
 
-        $sql = 'SELECT COUNT(s.id) AS total FROM neonsamplerequestlink s
+        $sql = 'SELECT COUNT(DISTINCT(s.occid)) AS total FROM neonsamplerequestlink s
             JOIN neonrequestshipment h ON s.shipmentID = h.id
             WHERE h.shipDate <= ?';
         $stmt = $this->conn->prepare($sql);
@@ -589,9 +591,9 @@ function getScholarProfileStats() {
         $researchers = (int)$row['res'];
 
         $summary .= 'In AY' . $year . ' to date, <b>' . $yearsamples . '</b> unique samples across <b>'
-        . $yearcolls . '</b> sample types have been newly requested by <b>' . $yearresearchers . '</b> different 
+        . $yearcolls . '</b> sample types have been newly requested for projects involving <b>' . $yearresearchers . '</b> different 
         researchers. To date, <b>' . $samples . '</b> unique samples across <b>'
-        . $colls . '</b> sample types have been newly requested by <b>' . $researchers . '</b> different 
+        . $colls . '</b> sample types have been newly requested for projects involving <b>' . $researchers . '</b> different 
         researchers. </br>';  
         
         return $summary;
@@ -1224,6 +1226,130 @@ function getScholarProfileStats() {
 
                 if ($ins->error) {
                     error_log("Insert error for Samples by Primary Research Field: " . $ins->error);
+                }
+            }
+        }
+    }
+
+    public function samplesByUseType($name,$reportDate,$startquarter,$endquarter,$startyear){
+        $sql = "WITH filtered_requests AS (
+            SELECT
+                r.id
+            FROM neonrequest r
+            WHERE r.status IN (
+                'active use',
+                'completed',
+                'pending sample list',
+                'pending funding',
+                'pending fulfillment'
+            )
+            AND (
+                r.activeDate              BETWEEN ? AND ?
+                OR r.pendingFulfillmentDate  BETWEEN ? AND ?
+                OR r.pendingFundingDate      BETWEEN ? AND ?
+                OR r.pendingSampleListDate   BETWEEN ? AND ?
+            )
+        )
+
+        SELECT 
+            s.substanceProvided AS substance,
+
+            s.useType AS useType,
+
+            COUNT(s.id) AS samples
+
+        FROM neonsamplerequestlink s
+        JOIN filtered_requests r
+            ON s.requestID = r.id
+        GROUP BY s.substanceProvided,s.useType";
+
+        $stmt = $this->conn->prepare($sql);
+
+
+        $periodtypes = array('Quarter','Award Year','To Date');
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2010-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `substance`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Use Type', ?, ?, ?, ?)");
+
+                $ins->bind_param('ssssis', $name, $period, $row['substance'], $row['useType'], $row['samples'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Samples by Use Type: " . $ins->error);
+                }
+            }
+        }
+        
+        $sql = "WITH filtered_requests AS (
+                    SELECT
+                        r.id
+                    FROM neonrequest r
+                    WHERE r.status IN (
+                        'active use',
+                        'completed',
+                        'pending sample list',
+                        'pending funding',
+                        'pending fulfillment'
+                    )
+                    AND (
+                        r.activeDate              BETWEEN ? AND ?
+                        OR r.pendingFulfillmentDate  BETWEEN ? AND ?
+                        OR r.pendingFundingDate      BETWEEN ? AND ?
+                        OR r.pendingSampleListDate   BETWEEN ? AND ?
+                    )
+                )
+
+                SELECT 
+                    COUNT(DISTINCT(s.occid)) AS samples
+                FROM neonsamplerequestlink s
+                JOIN filtered_requests r
+                    ON s.requestID = r.id
+                ";
+        
+        $stmt = $this->conn->prepare($sql);
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2010-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `substance`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Use Type', 'Total Unique', '', ?, ?)");
+
+                $ins->bind_param('ssis', $name, $period, $row['samples'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Samples by Use Type: " . $ins->error);
                 }
             }
         }

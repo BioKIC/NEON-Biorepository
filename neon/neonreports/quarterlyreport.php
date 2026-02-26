@@ -126,29 +126,59 @@ if ($isEditor) {
 			if (!$sampleRow) continue;
 
 			$rowKeys = array_keys($sampleRow);
-			$rowLabelKey = $rowKeys[0];
-			$valueKeys = array_slice($rowKeys, 1);
+
+			if ($tableType === 'Samples by Use Type') {
+
+				$rowLabelKey = 'substance';
+				$secondaryLabelKey = 'useType';
+				$valueKeys = ['samples'];
+
+			} else {
+
+				$rowLabelKey = $rowKeys[0];
+				$secondaryLabelKey = null;
+				$valueKeys = array_slice($rowKeys, 1);
+			}
 
 			$allLabels = [];
 
 			foreach ($cleaned as $rows) {
 				foreach ($rows as $r) {
-					$allLabels[$r[$rowLabelKey]] = true;
-				}
+					if ($secondaryLabelKey) {
+						$combined = $r[$rowLabelKey] . '||' . $r[$secondaryLabelKey];
+						$allLabels[$combined] = true;
+					} else {
+						$allLabels[$r[$rowLabelKey]] = true;
+					}				}
 			}
 
 			$allLabels = array_keys($allLabels);
 
 			usort($allLabels, function($a, $b) {
 
-				if ($a === 'Total Unique') return 1;
-				if ($b === 'Total Unique') return -1;
+				list($aSubstance, $aUse) = array_pad(explode('||', $a), 2, '');
+				list($bSubstance, $bUse) = array_pad(explode('||', $b), 2, '');
 
-				return strcasecmp($a, $b);
+				if ($aSubstance === 'Total Unique') return 1;
+				if ($bSubstance === 'Total Unique') return -1;
+
+				$substanceCompare = strcasecmp($aSubstance, $bSubstance);
+				if ($substanceCompare !== 0) {
+					return $substanceCompare;
+				}
+
+				// Then sort by useType within substance
+				return strcasecmp($aUse, $bUse);
 			});
 
-			$headers = [ucwords(str_replace('_',' ',$rowLabelKey))];
-
+			if ($secondaryLabelKey) {
+				$headers = [
+					ucwords(str_replace('_',' ',$rowLabelKey)),
+					ucwords(str_replace('_',' ',$secondaryLabelKey))
+				];
+			} else {
+				$headers = [ucwords(str_replace('_',' ',$rowLabelKey))];
+			}
 			$year = (int) substr($quarter, 2, 2);
 
 			foreach ($cleaned as $period => $rows) {
@@ -178,16 +208,30 @@ if ($isEditor) {
 
 			foreach ($allLabels as $label) {
 
-				$rowOut = [$label];
-
+				if ($secondaryLabelKey) {
+					list($primary, $secondary) = explode('||', $label);
+					$rowOut = [$primary, $secondary];
+				} else {
+					$rowOut = [$label];
+				}
 				foreach ($cleaned as $period => $rows) {
 
 					$match = null;
 
 					foreach ($rows as $r) {
-						if ($r[$rowLabelKey] == $label) {
-							$match = $r;
-							break;
+						if ($secondaryLabelKey) {
+							if (
+								$r[$rowLabelKey] == $primary &&
+								$r[$secondaryLabelKey] == $secondary
+							) {
+								$match = $r;
+								break;
+							}
+						} else {
+							if ($r[$rowLabelKey] == $label) {
+								$match = $r;
+								break;
+							}
 						}
 					}
 
@@ -223,14 +267,14 @@ if ($isEditor) {
 			echo '<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
 				<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
 				<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
-				<button type="submit">Download table above as CSV</button>
+				<button type="submit">Download above table as CSV</button>
 				</form>';		
 		
 	}
 }
 	
 ?>
-	<h2>Samples Distributed, Consumed, and Generated</h2>
+	<h2>Samples Distributed, Consumed, and Generated This Quarter</h2>
 
 	<form method="post" action="exportquarterlydataset.php">
 		<input type="hidden" name="type" value="samples_distributed">
@@ -250,7 +294,7 @@ if ($isEditor) {
 		<button type="submit">Download Samples Generated</button>
 	</form>
 
-	<h2>Data Updates From Sample Use</h2>
+	<h2>Data Updates This Quarter</h2>
 
 	<form method="post" action="exportquarterlydataset.php">
 		<input type="hidden" name="type" value="data_edits">
