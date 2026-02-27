@@ -130,7 +130,7 @@ class OccurrenceHarvester{
 				$sampleArr['sampleClass'] = $r->sampleClass ?? '';
 				$sampleArr['taxonID'] = $r->taxonID ?? '';
 				//$sampleArr['individualCount'] = $r->individualCount ?? '';
-				$sampleArr['filterVolume'] = $r->filterVolume ?? '';
+				//$sampleArr['filterVolume'] = $r->filterVolume ?? '';
 				$sampleArr['namedLocation'] = $r->namedLocation ?? '';
 				$sampleArr['collectDate'] = $r->collectDate ?? '';
 				$sampleArr['symbiotaTarget'] = $r->symbiotaTarget ?? '';
@@ -652,10 +652,10 @@ class OccurrenceHarvester{
 						if($fArr['smsKey'] == 'remarks' && $fArr['smsValue'] && $sampleRank == 0 && !in_array($tableName,array('ptx_taxonomy_in'))) {
 							$tableArr['remarks'] = $fArr['smsValue'];
 						}
-						if (!in_array($sampleArr['sampleClass'],array('ptx_taxonomy_in.slideID','ptx_taxonomy_in.preserved'))){
+						if (!in_array($sampleArr['sampleClass'],array('ptx_taxonomy_in.slideID','ptx_taxonomy_in.preserved','alg_domainLabComp_in.compositeSampleIDtax'))){
 							if($fArr['smsKey'] == 'preservative_concentration' && $fArr['smsValue']) $tableArr['preservative_concentration'] = $fArr['smsValue'];
-							elseif($fArr['smsKey'] == 'preservative_volume' && $fArr['smsValue']) $tableArr['preservative_volume'] = $fArr['smsValue'];
-							elseif($fArr['smsKey'] == 'preservative_type' && $fArr['smsValue']) $tableArr['preservative_type'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'preservative_volume' && $fArr['smsValue']) $tableArr['preservative_volume'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'preservative_type' && $fArr['smsValue']) $tableArr['preservative_type'] = $fArr['smsValue'];
 						}
 						if($fArr['smsKey'] == 'sample_type' && $fArr['smsValue'] && !in_array($tableName,array('ptx_taxonomy_in'))) $tableArr['sample_type'] = $fArr['smsValue'];
 						if($fArr['smsKey'] == 'sample_condition' && $fArr['smsValue'] && in_array($tableName,array('mam_pertrapnight_in'))) $tableArr['sample_condition'] = $fArr['smsValue'];
@@ -692,7 +692,7 @@ class OccurrenceHarvester{
 							elseif($fArr['smsKey'] == 'identified_by' && $fArr['smsValue']) $identArr['identifiedBy'] = $this->translatePersonnel($fArr['smsValue']);
 							elseif($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $identArr['recordedBy'] = $this->translatePersonnel($fArr['smsValue']);
 							elseif($fArr['smsKey'] == 'identified_date' && $fArr['smsValue']) $identArr['dateIdentified'] = $fArr['smsValue'];
-							elseif(in_array($tableName,array('ptx_taxonomy_in'))){
+							if(in_array($tableName,array('ptx_taxonomy_in'))){
 								if($fArr['smsKey'] == 'remarks' && $fArr['smsValue']){
 									$identRemarks[] = $fArr['smsValue'];
 								}
@@ -847,6 +847,7 @@ class OccurrenceHarvester{
 								$prepArr[] = 'Pooled extract from two sterivex filters';
 							}
 						}
+						if(in_array($sampleArr['sampleClass'],array('alg_domainLabComp_in.compositeSampleIDtax'))) $prepArr[] ='preservative type: 0.5% glutaraldehyde';
 						if(!empty($sampleArr['preservative_volume'])) $prepArr[] = 'preservative volume: '.$sampleArr['preservative_volume'];
 						if(!empty($sampleArr['preservative_concentration'])) $prepArr[] = 'preservative concentration: '.$sampleArr['preservative_concentration'];
 						if(!empty($sampleArr['sample_mass']) && strpos($sampleArr['symbiotaTarget'],'sample mass') === false) $prepArr[] = 'sample mass: '.$sampleArr['sample_mass'];
