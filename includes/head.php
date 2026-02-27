@@ -223,46 +223,46 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
             }
             
             // --- Add yellow notification banner right after <header> ---
-            (function () {
-              const headerEl = document.querySelector('header');
-              if (!headerEl) return;
-            
-              // Prevent duplicate insertion
-              if (document.getElementById('neon-dev-banner')) return;
-            
-              const banner = document.createElement('div');
-              banner.id = 'neon-dev-banner';
-              banner.setAttribute('role', 'status');
-              banner.setAttribute('aria-live', 'polite');
-            
-              banner.style.background = '#FFCB4F';
-              banner.style.padding = '12px 16px';
-            
-              const p = document.createElement('p');
-              p.style.margin = '0 auto';
-              p.style.maxWidth = '1652px';
-              p.style.boxSizing = 'border-box';
-              p.style.color = '#000';
-              p.style.lineHeight = '1.5';
-              p.style.fontSize = '.95rem';
-
-              p.innerHTML =
-                `<strong>Welcome to the updated NEON website!</strong> This site features more intuitive navigation and a seamlessly integrated Biorepository portal, making it easier to explore NEON data, samples and resources. For a brief summary of changes visit
-                    <a href="https://www.neonscience.org/neon-website-and-biorepository-sample-portal-updates-feb-2026"
-                       style="color:#0073CF; text-decoration:underline;"
-                       onmouseover="this.style.color='#0092E2'"
-                       onmouseout="this.style.color='#0073CF'">this page</a>.
-                    Your feedback is welcome through our
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJlcJCdFtnKRQrd7tkmnsue4g1wCVPXS4RLw8DKUIqihH_LQ/viewform"
-                       style="color:#0073CF; text-decoration:underline;"
-                       onmouseover="this.style.color='#0092E2'"
-                       onmouseout="this.style.color='#0073CF'">webform</a>
-                    through February 20.`;
-
-              banner.appendChild(p);
-            
-              headerEl.insertAdjacentElement('afterend', banner);
-            })();
+            //(function () {
+            //  const headerEl = document.querySelector('header');
+            //  if (!headerEl) return;
+            //
+            //  // Prevent duplicate insertion
+            //  if (document.getElementById('neon-dev-banner')) return;
+            //
+            //  const banner = document.createElement('div');
+            //  banner.id = 'neon-dev-banner';
+            //  banner.setAttribute('role', 'status');
+            //  banner.setAttribute('aria-live', 'polite');
+            //
+            //  banner.style.background = '#FFCB4F';
+            //  banner.style.padding = '12px 16px';
+            //
+            //  const p = document.createElement('p');
+            //  p.style.margin = '0 auto';
+            //  p.style.maxWidth = '1652px';
+            //  p.style.boxSizing = 'border-box';
+            //  p.style.color = '#000';
+            //  p.style.lineHeight = '1.5';
+            //  p.style.fontSize = '.95rem';
+            //
+            //  p.innerHTML =
+            //    `<strong>Welcome to the updated NEON website!</strong> This site features more intuitive navigation and a seamlessly integrated Biorepository portal, making it easier to explore NEON data, samples and resources. For a brief summary of changes visit
+            //        <a href="https://www.neonscience.org/neon-website-and-biorepository-sample-portal-updates-feb-2026"
+            //           style="color:#0073CF; text-decoration:underline;"
+            //           onmouseover="this.style.color='#0092E2'"
+            //           onmouseout="this.style.color='#0073CF'">this page</a>.
+            //        Your feedback is welcome through our
+            //        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJlcJCdFtnKRQrd7tkmnsue4g1wCVPXS4RLw8DKUIqihH_LQ/viewform"
+            //           style="color:#0073CF; text-decoration:underline;"
+            //           onmouseover="this.style.color='#0092E2'"
+            //           onmouseout="this.style.color='#0073CF'">webform</a>
+            //        through February 20.`;
+            //
+            //  banner.appendChild(p);
+            //
+            //  headerEl.insertAdjacentElement('afterend', banner);
+            //})();
 
 
             //sign in and sign out
