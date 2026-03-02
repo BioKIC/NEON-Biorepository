@@ -1,0 +1,274 @@
+{
+  "/index.php": [
+    { "name": "Samples & Specimens" }
+    ],
+  "/neon/search/index.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Biorepository Sample Portal" }
+    ],
+  "/collections/list.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Biorepository Sample Portal", "href": "../neon/search/index.php" },
+    { "name": "Biorepository Sample Portal Results" }
+  ],
+  "/projects/browsechecklists.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.neonscience.org/finding-and-accessing-sample-data" },
+    { "name": "Browse Species Checklists" }
+    ],
+  "/checklists/checklist.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.neonscience.org/finding-and-accessing-sample-data" },
+    { "name": "Browse Species Checklists", "href": "../projects/browsechecklists.php" },
+    { "name": "Checklist" }
+    ],
+  "/neon/checklists/checklist.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.neonscience.org/finding-and-accessing-sample-data" },
+    { "name": "Browse Species Checklists", "href": "../../projects/browsechecklists.php" },
+    { "name": "Checklist" }
+    ],
+  "/checklists/checklistadmin.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.neonscience.org/finding-and-accessing-sample-data" },
+    { "name": "Browse Species Checklists", "href": "../projects/browsechecklists.php" },
+    { "name": "Checklist", "href": "../neon/checklists/checklist.php?clid=#"  },
+    { "name": "Checklist Admin" }
+    ],
+  "/ident/key.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.neonscience.org/finding-and-accessing-sample-data" },
+    { "name": "Species Checklists", "href": "../projects/index.php" },
+    { "name": "Identification Key" }
+    ],
+  "/misc/sampleguidelines.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Sample Guidelines and Policies" }
+    ],
+  "/misc/cite.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
+    { "name": "Acknowledging and Citing" }
+    ],
+  "/misc/samplepolicy.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
+    { "name": "Sample Use Policy" }
+    ],
+  "/misc/datasetpublishing.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
+    { "name": "Dataset Publishing" }
+    ],
+  "/misc/samplerequest.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Sample Request" }
+    ],
+  "/misc/samplearchiverequest.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Sample Archival Request" }
+    ],
+  "/api/v2/documentation": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.neonscience.org/finding-and-accessing-sample-data" },
+    { "name": "Sample API" }
+    ],
+  "https://data.neonscience.org/sample-explorer": [
+    { "name": "Samples & Specimens", "href": "https://biorepo.neonscience.org/prodreview/index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.neonscience.org/finding-and-accessing-sample-data" },
+    { "name": "Sample Explorer" }
+    ],
+  "https://www.neonscience.org/samples/sample-repositories": [
+    { "name": "Samples & Specimens", "href": "https://biorepo.neonscience.org/prodreview/index.php" },
+    { "name": "Finding and Accessing Sample Data", "href": "https://www.neonscience.org/finding-and-accessing-sample-data" },
+    { "name": "Sample Repositories" }
+    ],
+  "https://www.neonscience.org/samples/soil-archive": [
+    { "name": "Samples & Specimens", "href": "https://biorepo.neonscience.org/prodreview/index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Soil Archives" }
+    ],
+  "/collections/misc/browsecollprofiles.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types" }
+    ],
+  "/collections/misc/collprofiles.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "browsecollprofiles.php" },
+    { "name": "Sample Type Profile" }
+    ],
+  "/collections/misc/neoncollprofiles.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "browsecollprofiles.php" },
+    { "name": "Sample Type Profile" }
+    ],
+  "/neon/index.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Management Tools" }
+    ],
+  "/sitemap.php": [
+    { "name": "Samples & Specimens", "href": "index.php" },
+    { "name": "Sitemap" }
+    ],
+  "/neon/shipment/manifestloader.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Submit New Manifests" }
+    ],
+  "/neon/shipment/samplecheckin.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Sample Check-in" }
+    ],
+  "/neon/shipment/manifestsearch.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Manifest Search" }
+    ],
+  "/neon/shipment/manifestviewer.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Manifest Search", "href": "manifestsearch.php" },
+    { "name": "Manifest Viewer" }
+    ],
+  "/collections/loans/index.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../../neon/index.php" },
+    { "name": "Loan Management" }
+    ],
+  "/collections/reports/labelmanager.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../../neon/index.php" },
+    { "name": "Label Printing" }
+    ],
+  "/neon/occurrenceharvester.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Management Tools", "href": "index.php" },
+    { "name": "Batch Occurrence Harvester" }
+    ],
+  "/neon/igsncontrol.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Management Tools", "href": "index.php" },
+    { "name": "IGSN Control Panel" }
+    ],
+  "/neon/shipment/harvesterreports.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Harvester Error Reports" }
+    ],
+  "/neon/npsReportHandler.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Management Tools", "href": "index.php" },
+    { "name": "NPS Year End Reports" }
+    ],
+  "/neon/loans.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Management Tools", "href": "index.php" },
+    { "name": "Loans Reports" }
+    ],
+  "/neon/shipment/prepreports.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Preparation Reports" }
+    ],
+  "/collections/misc/collstats.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Collections Statistics" }
+    ],
+  "/collections/datasets/datapublisher.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "DwC-A Publishing" }
+    ],
+  "/imagelib/search.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Image Search" }
+    ],
+  "/imagelib/contributors.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Image Breakdown" }
+    ],
+  "/collections/datasets/publiclist.php": [
+    { "name": "Impact", "href": "https://www.neonscience.org/impact" },
+    { "name": "Papers & Publications", "href": "https://www.neonscience.org/impact/papers-publications" },
+    { "name": "Published Sample Research Datasets" }
+    ],
+  "/profile/usermanagement.php": [
+    { "name": "User Management" }
+    ],
+  "/profile/viewprofile.php": [
+    { "name": "User Management", "href": "usermanagement.php" },
+    { "name": "Profile Details" }
+    ],
+  "/ident/admin/index.php": [
+    { "name": "Character Management" }
+    ],
+  "/collections/editor/occurrencetabledisplay.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Occurrence Table View" }
+    ],
+  "/collections/editor/batchdeterminations.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Batch Determination Editor" }
+    ],
+  "/collections/misc/collmetadata.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "neoncollprofiles.php?collid=#" },
+    { "name": "Collection Metadata" }
+    ],
+  "/collections/misc/collpermissions.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "neoncollprofiles.php?collid=#" },
+    { "name": "Collection Permissions" }
+    ],
+  "/collections/admin/specupload.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Data Upload" }
+    ],
+  "/collections/specprocessor/index.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Processing Toolbox" }
+    ],
+  "/collections/editor/editreviewer.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Specimen Edit Reviewer" }
+    ],
+  "/collections/admin/restorebackup.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "About Samples", "href": "https://www.neonscience.org/about-samples" },
+    { "name": "Browse Sample Types", "href": "../misc/browsecollprofiles.php" },
+    { "name": "Sample Type Profile", "href": "../misc/neoncollprofiles.php?collid=#" },
+    { "name": "Restore Backup File" }
+    ],
+  "/taxa/index.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Taxon Page" }
+    ]  
+}

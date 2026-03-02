@@ -1,18 +1,20 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Taxonomy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class TaxonomyController extends Controller{
+class TaxonomyController extends Controller {
 
 	/**
 	 * Taxonomy controller instance.
 	 *
 	 * @return void
 	 */
-	public function __construct(){
+
+	public function __construct() {
 		parent::__construct();
 	}
 
@@ -22,69 +24,10 @@ class TaxonomyController extends Controller{
 	 *	 operationId="/api/v2/taxonomy",
 	 *	 tags={""},
 	 *	 @OA\Parameter(
-	 *		 name="limit",
-	 *		 in="query",
-	 *		 description="Controls the number of results in the page.",
-	 *		 required=false,
-	 *		 @OA\Schema(type="integer", default=100)
-	 *	 ),
-	 *	 @OA\Parameter(
-	 *		 name="offset",
-	 *		 in="query",
-	 *		 description="Determines the offset for the search results. A limit of 200 and offset of 100, will get the third page of 100 results.",
-	 *		 required=false,
-	 *		 @OA\Schema(type="integer", default=0)
-	 *	 ),
-	 *	 @OA\Response(
-	 *		 response="200",
-	 *		 description="Returns list of inventories registered within system",
-	 *		 @OA\JsonContent()
-	 *	 ),
-	 *	 @OA\Response(
-	 *		 response="400",
-	 *		 description="Error: Bad request. ",
-	 *	 ),
-	 * )
-	 */
-	public function showAllTaxa(Request $request){
-		$this->validate($request, [
-			'limit' => 'integer',
-			'offset' => 'integer'
-		]);
-		$limit = $request->input('limit',100);
-		$offset = $request->input('offset',0);
-
-		$fullCnt = Taxonomy::count();
-		$result = Taxonomy::with('taxonCodes')->skip($offset)->take($limit)->get();
-
-		$eor = false;
-		$retObj = [
-			'offset' => (int)$offset,
-			'limit' => (int)$limit,
-			'endOfRecords' => $eor,
-			'count' => $fullCnt,
-			'results' => $result
-		];
-		return response()->json($retObj);
-	}
-
-	/**
-	 * @OA\Get(
-	 *	 path="/api/v2/taxonomy/search",
-	 *	 operationId="/api/v2/taxonomy/search",
-	 *	 tags={""},
-	 *	 @OA\Parameter(
 	 *		 name="taxon",
 	 *		 in="query",
-	 *		 description="Taxon searh term",
-	 *		 required=true,
-	 *		 @OA\Schema(type="string")
-	 *	 ),
-	 *	 @OA\Parameter(
-	 *		 name="taxon",
-	 *		 in="query",
-	 *		 description="Taxon searh term",
-	 *		 required=true,
+	 *		 description="Taxon search term",
+	 *		 required=false,
 	 *		 @OA\Schema(type="string")
 	 *	 ),
 	 *	 @OA\Parameter(
@@ -99,6 +42,23 @@ class TaxonomyController extends Controller{
 	 *		)
 	 *	 ),
 	 *	 @OA\Parameter(
+	 *		 name="taxonGroup",
+	 *		 in="query",
+	 *		 description="Search term for NEON defined Taxon Group",
+	 *		 required=false,
+	 *		 @OA\Schema(
+	 *			type="string",
+	 *			enum={"ALGAE","BEETLE","BIRD","FISH","HERPETOLOGY","MACROINVERTEBRATE","MOSQUITO","MOSQUITO_PATHOGENS","PLANT","SMALL_MAMMAL","TICK"}
+	 *		)
+	 *	 ),
+	 *	 @OA\Parameter(
+	 *		 name="taxonCode",
+	 *		 in="query",
+	 *		 description="Search term for NEON defined Taxon Code",
+	 *		 required=false,
+	 *		 @OA\Schema(type="string")
+	 *	 ),
+	 *	 @OA\Parameter(
 	 *		 name="limit",
 	 *		 in="query",
 	 *		 description="Controls the number of results in the page.",
@@ -108,7 +68,7 @@ class TaxonomyController extends Controller{
 	 *	 @OA\Parameter(
 	 *		 name="offset",
 	 *		 in="query",
-	 *		 description="Determines the offset for the search results. A limit of 200 and offset of 100, will get the third page of 100 results.",
+	 *		 description="Determines the starting point for the search results. A limit of 100 and offset of 200, will display 100 records starting the 200th record.",
 	 *		 required=false,
 	 *		 @OA\Schema(type="integer", default=0)
 	 *	 ),
@@ -123,34 +83,57 @@ class TaxonomyController extends Controller{
 	 *	 ),
 	 * )
 	 */
-	public function showAllTaxaSearch(Request $request){
+	public function showAllTaxa(Request $request) {
 		$this->validate($request, [
-			'taxon' => 'required',
+			'type' => 'in:EXACT,exact,START,start,WHOLEWORD,wholeword,WILD,wild',
+			'taxonGroup' => 'in:ALGAE,BEETLE,BIRD,FISH,HERPETOLOGY,MACROINVERTEBRATE,MOSQUITO,MOSQUITO_PATHOGENS,PLANT,SMALL_MAMMAL,TICK',
 			'limit' => 'integer',
 			'offset' => 'integer'
 		]);
-		$limit = $request->input('limit',100);
-		$offset = $request->input('offset',0);
+		$limit = $request->input('limit', 100);
+		$offset = $request->input('offset', 0);
 
-		$type = $request->input('type', 'EXACT');
+		$type = strtoupper($request->input('type', 'EXACT'));
 
+		//Define model
 		$taxaModel = Taxonomy::with('taxonCodes');
-		if($type == 'START'){
-			$taxaModel->where('sciname', 'like', $request->taxon . '%');
-		}
-		elseif($type == 'WILD'){
-			$taxaModel->where('sciname', 'like', '%' . $request->taxon . '%');
-		}
-		elseif($type == 'WHOLEWORD'){
-			$taxaModel->where('unitname1', $request->taxon)
-				->orWhere('unitname2', $request->taxon)
-				->orWhere('unitname3', $request->taxon);
-		}
-		else{
-			//Exact match
-			$taxaModel->where('sciname', $request->taxon);
+
+		//Taxonomy term search
+		if($request->taxon){
+			if($type == 'START'){
+				$taxaModel->where('sciname', 'LIKE', $request->taxon . '%');
+			}
+			elseif($type == 'WILD'){
+				$taxaModel->where('sciname', 'LIKE', '%' . $request->taxon . '%');
+			}
+			elseif($type == 'WHOLEWORD'){
+				$taxaModel->where('unitname1', $request->taxon)
+					->orWhere('unitname2', $request->taxon)
+					->orWhere('unitname3', $request->taxon);
+			}
+			else{
+				//Exact match
+				$taxaModel->where('sciname', $request->taxon);
+			}
 		}
 
+		//taxonGroup search term submit
+		if($request->taxonGroup){
+			$searchTerm = $request->taxonGroup;
+			$taxaModel->whereHas('taxonCodes', function ($query) use ($searchTerm) {
+				$query->where('taxonGroup', "{$searchTerm}");
+			});
+		}
+
+		//taxonCode search term submit
+		if($request->taxonCode){
+			$searchTerm = $request->taxonCode;
+			$taxaModel->whereHas('taxonCodes', function ($query) use ($searchTerm) {
+				$query->where('taxonCode', "{$searchTerm}");
+			});
+		}
+
+		//Prepare output
 		$fullCnt = $taxaModel->count();
 		$result = $taxaModel->skip($offset)->take($limit)->get();
 
@@ -175,34 +158,34 @@ class TaxonomyController extends Controller{
 	 *		 in="path",
 	 *		 description="Identifier (PK = tid) associated with taxonomic target",
 	 *		 required=true,
-	 *		 @OA\Schema(type="string")
+	 *		 @OA\Schema(type="integer")
 	 *	 ),
 	 *	 @OA\Response(
 	 *		 response="200",
-	 *		 description="Returns metabase on inventory registered within system with matching ID",
+	 *		 description="Returns taxonomic record of matching ID",
 	 *		 @OA\JsonContent()
 	 *	 ),
 	 *	 @OA\Response(
 	 *		 response="400",
-	 *		 description="Error: Bad request. Inventory identifier is required.",
+	 *		 description="Error: Bad request. Taxonomy identifier is required.",
 	 *	 ),
 	 * )
 	 */
-	public function showOneTaxon($id, Request $request){
+	public function showOneTaxon($id, Request $request) {
 		$taxonObj = Taxonomy::find($id);
 
 		//Set status and parent (can't use Eloquent model due to table containing complex PKs)
 		$taxStatus = DB::table('taxstatus as s')
-		->select('s.parentTid', 's.taxonomicSource', 's.unacceptabilityReason', 's.notes', 'a.tid', 'a.sciname', 'a.author')
-		->join('taxa as a', 's.tidAccepted', '=', 'a.tid')
-		->where('s.tid', $id)->where('s.taxauthid', 1);
+			->select('s.parentTid', 's.taxonomicSource', 's.unacceptabilityReason', 's.notes', 'a.tid', 'a.sciname', 'a.author')
+			->join('taxa as a', 's.tidAccepted', '=', 'a.tid')
+			->where('s.tid', $id)->where('s.taxauthid', 1);
 		$taxStatusResult = $taxStatus->get();
 		$taxonObj->parentTid = $taxStatusResult[0]->parentTid;
 
 		//Set Status
-		if($id == $taxStatusResult[0]->tid){
+		if ($id == $taxStatusResult[0]->tid) {
 			$taxonObj->status = 'accepted';
-		}else{
+		} else {
 			$taxonObj->status = 'synonym';
 			$accepted = [];
 			$accepted['tid'] = $taxStatusResult[0]->tid;
@@ -228,67 +211,25 @@ class TaxonomyController extends Controller{
 		return response()->json($taxonObj);
 	}
 
-	/**
-	 * @OA\Get(
-	 *	 path="/api/v2/taxonomy/{identifier}/description",
-	 *	 operationId="/api/v2/taxonomy/identifier/description",
-	 *	 tags={""},
-	 *	 @OA\Parameter(
-	 *		 name="identifier",
-	 *		 in="path",
-	 *		 description="PK, GUID, or recordID associated with target taxonomic unit",
-	 *		 required=true,
-	 *		 @OA\Schema(type="string")
-	 *	 ),
-	 *	 @OA\Parameter(
-	 *		 name="limit",
-	 *		 in="query",
-	 *		 description="Controls the number of results in the page.",
-	 *		 required=false,
-	 *		 @OA\Schema(type="integer", default=100)
-	 *	 ),
-	 *	 @OA\Parameter(
-	 *		 name="offset",
-	 *		 in="query",
-	 *		 description="Determines the offset for the search results. A limit of 200 and offset of 100, will get the third page of 100 results.",
-	 *		 required=false,
-	 *		 @OA\Schema(type="integer", default=0)
-	 *	 ),
-	 *	 @OA\Response(
-	 *		 response="200",
-	 *		 description="Returns list of taxonomic descriptions for a given taxon",
-	 *		 @OA\JsonContent()
-	 *	 ),
-	 *	 @OA\Response(
-	 *		 response="400",
-	 *		 description="Error: Bad request. ",
-	 *	 ),
-	 * )
-	 */
-	public function showAllDescriptions($id, Request $request){
-		$this->validate($request, [
-				'limit' => 'integer',
-				'offset' => 'integer'
-		]);
-		$limit = $request->input('limit',100);
-		$offset = $request->input('offset',0);
 
-		$descriptionObj = Taxonomy::find($id)->descriptions();
-		//$descriptionObj->statement;
-		$fullCnt = $descriptionObj->count();
-		$result = $descriptionObj->skip($offset)->take($limit)->get();
-		//Add statements
-		//$result->statement = DB::table('taxadescrstmts')->where('tdbid', $id)->get();
-
-		$eor = false;
-		$retObj = [
-			'offset' => (int)$offset,
-			'limit' => (int)$limit,
-			'endOfRecords' => $eor,
-			'count' => $fullCnt,
-			'results' => $result
-		];
-		return response()->json($retObj);
+	//Support functions
+	public static function getSynonyms(Int $tid) {
+		$synonymResult = DB::table('taxstatus as ts')
+			->join('taxstatus as s', 'ts.tidaccepted', '=', 's.tidaccepted')
+			->where('ts.tid', $tid)->where('ts.taxauthid', 1)->where('s.taxauthid', 1)->pluck('s.tid');
+		return $synonymResult->toArray();
 	}
 
+	public static function getChildren(Int $tid) {
+		//Direct accepted children only
+		$childrenResult = DB::table('taxstatus as c')
+			->join('taxstatus as a', 'c.parenttid', '=', 'a.tidaccepted')
+			->where('a.tid', $tid)->where('c.taxauthid', 1)->where('a.taxauthid', 1)->whereColumn('c.tid', 'c.tidaccepted')->pluck('c.tid');
+		/*
+		SELECT c.tid
+		FROM taxstatus c INNER JOIN taxstatus a ON c.parenttid = a.tidaccepted
+		WHERE a.tid = 61943 AND c.taxauthid = 1 AND a.taxauthid = 1 AND c.tid = c.tidaccepted;
+		*/
+		return $childrenResult->toArray();
+	}
 }

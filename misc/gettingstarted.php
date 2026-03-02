@@ -7,14 +7,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 <head>
 	<title>Getting Started & FAQ</title>
 	<?php
-	$activateJQuery = false;
-	if (file_exists($SERVER_ROOT . '/includes/head.php')) {
-		include_once($SERVER_ROOT . '/includes/head.php');
-	} else {
-		echo '<link href="' . $CLIENT_ROOT . '/css/jquery-ui.css" type="text/css" rel="stylesheet" />';
-		echo '<link href="' . $CLIENT_ROOT . '/css/base.css?ver=1" type="text/css" rel="stylesheet" />';
-		echo '<link href="' . $CLIENT_ROOT . '/css/main.css?ver=1" type="text/css" rel="stylesheet" />';
-	}
+	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
 	<style>
 		article {
@@ -37,7 +30,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 	include($SERVER_ROOT . '/includes/header.php');
 	?>
 	<div class="navpath">
-		<a href="<?php echo $CLIENT_ROOT; ?>/index.php">Home</a> >>;
+		<a href="<?php echo $CLIENT_ROOT; ?>/index.php">Home</a> >>
 		<b>Getting Started</b>
 	</div>
 	<!-- This is inner text! -->
@@ -109,7 +102,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 		<article>
 			<h3 class="anchor" id="h.tuzvhhy4kbdq">Something is wrong with my search or with the portal. Where can I report bugs or ask for help?</h3>
-			<p>You can also always contact us at <a href="mailto:biorepo@asu.edu">biorepo@asu.edu</a> with any questions or concerns. We also have a public GitHub repository for the NEON Biorepository <a href="https://github.com/BioKIC/NEON-Biorepository" target="_blank" rel="noopener noreferrer">Portal Development</a> where you can submit issues and feature requests online.</p>
+			<p>You can also always <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> with any questions or concerns. We also have a public GitHub repository for the NEON Biorepository <a href="https://github.com/BioKIC/NEON-Biorepository" target="_blank" rel="noopener noreferrer">Portal Development</a> where you can submit issues and feature requests online.</p>
 		</article>
 
 		<article>
@@ -136,7 +129,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h3 class="anchor" id="h.g9ohhrjf8kao">I'd like to use your samples for research. How can I make a Sample Use Request?</h3>
 			<p>To request samples, navigate to the <a href="https://biorepo.neonscience.org/portal/misc/samplerequest.php" target="_blank" rel="noopener noreferrer">"Sample Request"</a> page found under "Sample Use" in the main menu. Make sure you read our <a href="https://biorepo.neonscience.org/portal/misc/samplepolicy.php" target="_blank" rel="noopener noreferrer">"Sample Use Policy"</a>.</p>
-			<p>Always feel free to email us at <a href="mailto:biorepo@asu.edu">biorepo@asu.edu</a> with questions about samples and potential sample use. It is generally not possible or best to develop your own sample list unless you are well familiarized with NEON data and protocols. We are more than willing to help you develop those lists based on your research project goals.</p>
+			<p>Always feel free to <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> with questions about samples and potential sample use. It is generally not possible or best to develop your own sample list unless you are well familiarized with NEON data and protocols. We are more than willing to help you develop those lists based on your research project goals.</p>
 		</article>
 
 		<article>
@@ -163,8 +156,8 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h3 class="anchor" id="h.9zbc8feqbj6m">Where can I find more information?</h3>
 			<p>Under "Additional Information" in the NEON Biorepository data portal main menu, you will find links to overviews of the <a href="https://www.neonscience.org/" target="_blank" rel="noopener noreferrer">NEON project</a>, main <a href="https://www.neonscience.org/data/about-data" target="_blank" rel="noopener noreferrer">NEON data portal</a>,
-				<a href="https://symbiota.org/" target="_blank" rel="noopener noreferrer">Symbiota</a>, and the <a href="https://biokic.asu.edu/" target="_blank" rel="noopener noreferrer">Arizona State University Biocollections</a>. For any other information, please contact us
-				at <a href="mailto:biorepo@asu.edu">biorepo@asu.edu</a>.
+				<a href="https://symbiota.org/" target="_blank" rel="noopener noreferrer">Symbiota</a>, and the <a href="https://biokic.asu.edu/" target="_blank" rel="noopener noreferrer">Arizona State University Biocollections</a>. For any other information, please 
+				<a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a>.
 		</article>
 
 	</div>

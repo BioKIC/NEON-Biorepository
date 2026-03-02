@@ -6,7 +6,6 @@ header("Content-Type: text/html; charset=".$CHARSET);
 	<head>
 		<title>Checklists</title>
 		<?php
-		$activateJQuery = false;
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
 	</head>

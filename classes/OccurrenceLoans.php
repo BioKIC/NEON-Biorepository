@@ -1,5 +1,6 @@
 <?php
 include_once($SERVER_ROOT.'/classes/Manager.php');
+include_once($SERVER_ROOT.'/classes/utilities/UploadUtil.php');
 
 class OccurrenceLoans extends Manager{
 
@@ -38,7 +39,7 @@ class OccurrenceLoans extends Manager{
 		if($extLoanArr) $sql .= 'OR l.loanid IN('.implode(',',$extLoanArr).')';
 		$sql .= ') ';
 		if(!$displayAll) $sql .= 'AND l.dateclosed IS NULL ';
-		$sql .= 'ORDER BY l.loanidentifierown + 1 DESC';
+		$sql .= 'ORDER BY l.loanidentifierown';
 		if($rs = $this->conn->query($sql)){
 			while($r = $rs->fetch_object()){
 				if(!$searchTerm || stripos($r->instcode1,$searchTerm) !== false || stripos($r->instcode2,$searchTerm) !== false || stripos($r->forwhom,$searchTerm) !== false){
@@ -158,7 +159,7 @@ class OccurrenceLoans extends Manager{
 			'LEFT JOIN omcollections c ON l.collidown = c.collid '.
 			'WHERE l.collidborr = '.$this->collid.' ';
 		if(!$displayAll) $sql .= 'AND l.dateclosed IS NULL ';
-		$sql .= 'ORDER BY l.loanidentifierborr + 1';
+		$sql .= 'ORDER BY l.loanidentifierborr';
 		if($rs = $this->conn->query($sql)){
 			while($r = $rs->fetch_object()){
 				if(!$searchTerm || stripos($r->instcode1,$searchTerm) !== false || stripos($r->instcode2,$searchTerm) !== false || stripos($r->forwhom,$searchTerm) !== false){
@@ -178,11 +179,11 @@ class OccurrenceLoans extends Manager{
 	public function getLoanInDetails($loanid){
 		$retArr = array();
 		if(is_numeric($loanid)){
-			$sql = 'SELECT loanid, loanidentifierown, loanidentifierborr, collidown, iidowner, datesentreturn, totalboxesreturned, '.
-				'shippingmethodreturn, datedue, datereceivedborr, dateclosed, forwhom, description, numspecimens, '.
-				'notes, createdbyborr, processedbyborr, processedbyreturnborr, invoicemessageborr '.
-				'FROM omoccurloans '.
-				'WHERE loanid = '.$loanid;
+			$sql = 'SELECT loanid, loanidentifierown, loanidentifierborr, collidown, iidowner, datesentreturn, totalboxesreturned,
+				shippingmethodreturn, datedue, datereceivedborr, dateclosed, forwhom, description, numspecimens,
+				notes, createdbyborr, createdbyown, processedbyborr, processedbyreturnborr, invoicemessageborr
+				FROM omoccurloans
+				WHERE loanid = '.$loanid;
 			if($rs = $this->conn->query($sql)){
 				while($r = $rs->fetch_object()){
 					$retArr['loanidentifierown'] = $r->loanidentifierown;
@@ -200,6 +201,7 @@ class OccurrenceLoans extends Manager{
 					$retArr['numspecimens'] = $r->numspecimens;
 					$retArr['notes'] = $r->notes;
 					$retArr['createdbyborr'] = $r->createdbyborr;
+					$retArr['createdbyown'] = $r->createdbyown;
 					$retArr['processedbyborr'] = $r->processedbyborr;
 					$retArr['processedbyreturnborr'] = $r->processedbyreturnborr;
 					$retArr['invoicemessageborr'] = $r->invoicemessageborr;
@@ -483,7 +485,7 @@ class OccurrenceLoans extends Manager{
 				CONCAT_WS(" ",o.recordedby,IFNULL(o.recordnumber,o.eventdate)) AS collector, CONCAT_WS(", ",stateprovince,county,locality) AS locality
 				FROM omoccurloanslink l INNER JOIN omoccurrences o ON l.occid = o.occid
 				WHERE l.loanid = '.$loanid.'
-				ORDER BY o.catalognumber+1, o.othercatalognumbers+1';
+				ORDER BY o.catalognumber, o.othercatalognumbers';
 			if($rs = $this->conn->query($sql)){
 				while($r = $rs->fetch_object()){
 					$retArr[$r->occid]['collid'] = $r->collid;
@@ -705,103 +707,118 @@ class OccurrenceLoans extends Manager{
 		return $occArr;
 	}
 
-private function addLoanSpecimen($loanid, $occid) {
-    $status = false;
-    $sql1 = 'INSERT INTO omoccurloanslink(loanid, occid) VALUES ('. $loanid.','.$occid.')';
-    $sql2 = 'UPDATE omoccurrences SET availability = 0 WHERE occid ='.$occid;
-
-    $this->conn->begin_transaction();
-    if ($this->conn->query($sql1) && $this->conn->query($sql2)) {
-        // Both queries executed successfully, commit
-        $this->conn->commit();
-        $status = true;
-    } else {
-        // If any query fails, rollback
-        $this->conn->rollback();
-        $this->errorMessage = $this->conn->error;
-    }
-    return $status;
-}
+	private function addLoanSpecimen($loanid,$occid){
+		$status = false;
+		$sql = 'INSERT INTO omoccurloanslink(loanid,occid) VALUES (?,?) ';
+		if($stmt = $this->conn->prepare($sql)){
+			$stmt->bind_param('ii', $loanid, $occid);
+			try{
+				if($stmt->execute()){
+					$status = true;
+					$this->updateAvailability(0, $occid);		//This line is a NEON customization
+				}
+			} catch (mysqli_sql_exception $e){
+				$this->errorMessage = $stmt->error;
+			} catch (Exception $e){
+				$this->errorMessage = 'unknown error';
+			}
+			$stmt->close();
+		}
+		return $status;
+	}
 
 	public function getSpecimenDetails($loanId, $occid){
 		$retArr = array();
 		if(is_numeric($loanId) && is_numeric($occid)){
-			$sql = 'SELECT DATE_FORMAT(returndate, "%Y-%m-%dT%H:%i") AS returndate, notes FROM omoccurloanslink WHERE loanid = '.$loanId.' AND occid = '.$occid;
-			if($rs = $this->conn->query($sql)){
-				while($r = $rs->fetch_object()){
-					$retArr['returnDate'] = $r->returndate;
-					$retArr['notes'] = $r->notes;
+			$sql = 'SELECT returndate, notes FROM omoccurloanslink WHERE loanid = ? AND occid = ?';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('ii', $loanId, $occid);
+        $stmt->execute();
+				if($rs = $stmt->get_result()){
+					While($r = $rs->fetch_object()){
+						$retArr['returnDate'] = $r->returndate;
+						$retArr['notes'] = $r->notes;
+					}
+					$rs->free();
 				}
-				$rs->free();
+				$stmt->close();
 			}
 		}
 		return $retArr;
 	}
 
-public function editSpecimenDetails($loanId, $occid, $returnDate, $noteStr) {
-    $status = false;
-    if (is_numeric($loanId) && is_numeric($occid)) {
-        $sql1 = 'UPDATE omoccurloanslink '.
-            'SET returnDate = '.($returnDate?'"'.$this->cleanInStr($returnDate).'"':'NULL').', notes = '.($noteStr ? '"'.$this->cleanInStr($noteStr).'"':'NULL').' '.
-            'WHERE (loanid = '.$loanId.') AND (occid = '.$occid.')';
+	public function editSpecimenDetails($loanID, $occid, $returnDate, $noteStr){
+		$status = false;
+		if(is_numeric($loanID) && is_numeric($occid)){
+			if($returnDate === '') $returnDate = null;
+			$sql = 'UPDATE omoccurloanslink  SET returnDate = ?, notes = ?  WHERE (loanid = ?) AND (occid = ?)';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('ssii', $returnDate, $noteStr, $loanID, $occid);
+				try{
+					if($stmt->execute()){
+						$status = true;
+						//Start of NEON customization
+						if($returnDate) $this->updateAvailability(1, $occid);
+						else $this->updateAvailability(0, $occid);
+						//End of NEON customization
+					}
+				} catch (mysqli_sql_exception $e){
+					$this->errorMessage = $stmt->error;
+				} catch (Exception $e){
+					$this->errorMessage = 'unknown error';
+				}
+				$stmt->close();
+			}
+		}
+		return $status;
+	}
 
-        $this->conn->begin_transaction();
-
-        if ($this->conn->query($sql1)) {
-            if ($returnDate) {
-                $sql2 = 'UPDATE omoccurrences SET availability = 1 WHERE occid =' . $occid;
-                if ($this->conn->query($sql2)) {
-                    // Both queries executed successfully, commit
-                    $this->conn->commit();
-                    $status = true;
-                } else {
-                    // If the second sql fails, rollback
-                    $this->conn->rollback();
-                    $this->errorMessage = 'ERROR updating specimen availability: ' . $this->conn->error;
-                }
-            } else {
-                $this->conn->commit();
-                $status = true;
-            }
-        } else {
-            // If the first sql fails, rollback
-            $this->conn->rollback();
-            $this->errorMessage = 'ERROR updating specimen details: ' . $this->conn->error;
-        }
-    }
-    return $status;
-}
-
-	public function batchCheckinSpecimens($occidInput, $loanID) {
+	public function batchCheckinSpecimens($occidInput, $loanID){
 		$status = false;
 		$occidStr = '';
 		if(is_numeric($occidInput)) $occidStr = $occidInput;
 		else $occidStr = implode(',',$occidInput);
-		if (is_numeric($loanID) && preg_match('/^[\d,]+$/', $occidStr)) {
-			// Update returndate for specimens where loanid matches and returndate is null
-			$sql1 = 'UPDATE omoccurloanslink SET returndate = "'.date('Y-m-d H:i:s').'" WHERE loanid = '.$loanID.' AND (occid IN('.$occidStr.')) AND (returndate IS NULL) ';
-			
-			$this->conn->begin_transaction();
-			if ($this->conn->query($sql1)) {
-				$sql2 = 'UPDATE omoccurrences SET availability = 1 WHERE occid IN('.$occidStr.')';
-				if ($this->conn->query($sql2)) {
-					// Both sqls executed successfully, commit the transaction
-					$status = $this->conn->affected_rows;
-					$this->conn->commit();
-				} else {
-					// If the second sql fails, rollback
-					$this->conn->rollback();
-					$this->errorMessage = 'ERROR updating specimen availability: '.$this->conn->error;
+		if(is_numeric($loanID) && preg_match('/^[\d,]+$/', $occidStr)){
+			$sql = 'UPDATE omoccurloanslink SET returndate = "'.date('Y-m-d H:i:s').'" WHERE loanid = ? AND (occid IN('.$occidStr.')) AND (returndate IS NULL) ';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('i', $loanID);
+				try{
+					if($stmt->execute()){
+						$status = $this->conn->affected_rows;
+						$this->updateAvailability(1, $occidStr);		//This line is a NEON customization
+					}
+				} catch (mysqli_sql_exception $e){
+					$this->errorMessage = $stmt->error;
+				} catch (Exception $e){
+					$this->errorMessage = 'unknown error';
 				}
-			} else {
-				// If the sql query fails, rollback
-				$this->conn->rollback();
-				$this->errorMessage = 'ERROR checking in specimens: '.$this->conn->error;
+				$stmt->close();
 			}
 		}
-	
 		return $status;
 	}
+
+	//Start of NEON customization
+	private function updateAvailability($value, $occidInput){
+		$status = false;
+		//$occidInput might be an int (single occurrence) or a string of multiple occurrences
+		if(preg_match('/^[\d,]+$/', $occidInput)){
+			$sql = 'UPDATE omoccurrences SET availability = ? WHERE occid IN(' . $occidInput . ')';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('i', $value);
+				try{
+					if($stmt->execute()) $status = true;
+				} catch (mysqli_sql_exception $e){
+					$this->errorMessage = $stmt->error;
+				} catch (Exception $e){
+					$this->errorMessage = 'unknown error';
+				}
+				$stmt->close();
+			}
+		}
+		return $status;
+	}
+	//End of NEON customization
 
 	public function deleteSpecimens($occidArr, $loanID){
 		$status = false;
@@ -987,7 +1004,7 @@ public function editSpecimenDetails($loanId, $occid, $returnDate, $noteStr) {
 			}
 
 			if($rs = $this->conn->query($sql)){
-				$maxnum = 1;
+				$maxnum = 0;
 				while($r = $rs->fetch_object()){
 					$num = '';
 
@@ -1040,6 +1057,14 @@ public function editSpecimenDetails($loanId, $occid, $returnDate, $noteStr) {
 		// Check the mimetype of the file, don't rely on the file extension
 		} else if (!in_array(mime_content_type($file['tmp_name']), $mimetypes)) {
 			$this->errorMessage = 'Error: File type does not match extension. File must be a PDF (.pdf), MS Word document (.doc or .docx), MS Excel file (.xls or .xlsx), image (.jpg, .jpeg, or .png). or a text file (.txt, .csv).';
+			return false;
+		}
+
+		// Ensure that the file type matches the mimetype
+		try {
+			UploadUtil::checkFileUpload($file, $mimetypes);
+		} catch(Exception $e) {
+			$this->errorMessage = 'Error: ' . $e->getMessage();
 			return false;
 		}
 

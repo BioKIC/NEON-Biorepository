@@ -1,6 +1,5 @@
 <?php
-include_once($SERVER_ROOT.'/classes/Manager.php');
-include_once($SERVER_ROOT.'/classes/UuidFactory.php');
+include_once($SERVER_ROOT . '/classes/Manager.php');
 
 class DwcArchiverBaseManager extends Manager{
 
@@ -50,6 +49,49 @@ class DwcArchiverBaseManager extends Manager{
 			}
 		}
 	}
+// NEON customization
+		public function writeOutRecordBlockIdentifier($occidArr){
+		if($occidArr){
+			$sql = $this->sqlBase.' WHERE occid IN('.implode(',', $occidArr).') ';
+			if($rs = $this->conn->query($sql)){
+				$hideSampleIdOccids = [];
+
+				if (!$GLOBALS['IS_ADMIN']) {
+					$occidList = implode(',', array_map('intval', $occidArr));
+					$sqlHide = "SELECT DISTINCT occid FROM omoccuridentifiers 
+								WHERE identifierName = 'NEON sampleID Hash' 
+								AND occid IN ($occidList)";
+					if ($res = $this->conn->query($sqlHide)) {
+						while ($row = $res->fetch_assoc()) {
+							$hideSampleIdOccids[$row['occid']] = true;
+						}
+						$res->free();
+					}
+				}
+
+				while($r = $rs->fetch_assoc()){
+					if (
+						isset($r['identifierName']) &&
+						$r['identifierName'] === 'NEON sampleID' &&
+						!$GLOBALS['IS_ADMIN'] &&
+						isset($hideSampleIdOccids[$r['occid']])
+					) {
+						continue; // Skip when there is a hashed identifier
+					}
+
+					$this->encodeArr($r);
+					$this->addcslashesArr($r);
+					$this->writeOutRecord($r);
+				}
+				$rs->free();
+			}
+			else{
+				$this->logOrEcho('ERROR writing out to extension file: '.$this->conn->error."\n");
+				$this->logOrEcho("\tSQL: ".$this->sqlBase."\n");
+			}
+		}
+	}
+// NEON customization
 
 	private function writeOutRecord($outputArr){
 		if($this->fileHandler){
@@ -88,7 +130,7 @@ class DwcArchiverBaseManager extends Manager{
 				}
 			}
 			else{
-				$retStr = mb_convert_encoding($inStr, $this->charSetOut, mb_detect_encoding($inStr));
+				$retStr = mb_convert_encoding($inStr, $this->charSetOut, mb_detect_encoding($inStr, 'UTF-8,ISO-8859-1,ISO-8859-15'));
 			}
 		}
 		return $retStr;

@@ -33,10 +33,14 @@ labels.forEach((label) => {
         if (catNum.includes('barcode')) {
           let barcode = catNum.match(/(?<=barcode\): ).*/)[0].trim();
           // bcSrc.src = 'getBarcode.php?bcheight=60&bctext=' + barcode;
+          //bcSrc.src =
+          //  'https://barcode.tec-it.com/barcode.ashx?data=' +
+          //  barcode +
+          //  '&code=Code128&hidehrt=False';
           bcSrc.src =
-            'https://barcode.tec-it.com/barcode.ashx?data=' +
+            'https://barcodeapi.org/api/128/' +
             barcode +
-            '&code=Code128&hidehrt=False';
+            '?&height=18&qz=0';
           hasBc = 'true';
           return hasBc;
         } else {
@@ -47,10 +51,14 @@ labels.forEach((label) => {
 
         if (hasBc != 'true') {
           // if there is no NEON barcode, uses the IGSN (catalogNumber instead)
+          //bcSrc.src =
+          //  'https://barcode.tec-it.com/barcode.ashx?data=' +
+          //  label.querySelector('.catalognumber').innerText +
+          //  '&code=Code128&hidehrt=False';
           bcSrc.src =
-            'https://barcode.tec-it.com/barcode.ashx?data=' +
+            'https://barcodeapi.org/api/128/' +
             label.querySelector('.catalognumber').innerText +
-            '&code=Code128&hidehrt=False';
+            '?&height=18&qz=0';
         }
       }
     }
@@ -58,7 +66,7 @@ labels.forEach((label) => {
   catNums.innerHTML = newCatNum;
   catNums.classList.add('mt-2');
   // Removes ORCID from recordedby
-  let recordedBy = label.querySelector('.recordedby');
+  let recordedBy = label.querySelector('.collector');
 
   if (recordedBy) {
     let orcid = recordedBy.innerText.indexOf(' (ORCID');
@@ -71,33 +79,16 @@ labels.forEach((label) => {
   let dynProps = label.querySelector('.dynamicproperties');
   if (dynProps) {
     let prepBy = '';
-    if (dynProps.innerText.includes('preparedBy')) {
-      let arr = dynProps.innerText.split(',');
-      // console.log(idx);
-      arr.forEach((i) => {
-        if (i.includes('preparedBy')) {
-          prepBy = i.match(/(?<=preparedBy:).*/)[0].trim();
-          return prepBy;
-        }
-      });
-
-      let prepDate = '';
-      if (dynProps.innerText.includes('preparedDate')) {
-        let dArr = dynProps.innerText.split(',');
-        dArr.forEach((j) => {
-          if (j.includes('preparedDate')) {
-            prepDate = j.match(/(?<=preparedDate:).*/)[0].trim();
-            return prepDate;
-          }
-        });
+    try {
+      const obj = JSON.parse(dynProps.innerText.trim());
+      if (obj.prepared_by) {
+        prepBy = obj.prepared_by;
       }
-      // dynProps.innerText = 'Prep. by: ' + prepBy + ' (' + prepDate + ')';
-      dynProps.innerText = 'Prep. by: ' + prepBy;
-    } else {
-      // dynProps.style = 'display:none';
-      // Leave 'Prep. by:' even if empty
-      dynProps.innerText = 'Prep. by: ';
+    } catch (e) {
+      // If invalid JSON, leave prepBy empty
     }
+
+  dynProps.innerText = 'Prep. by: ' + (prepBy || '');
   } else {
     // Create 'Prep. by:' when no dynProps are found, after collector div (only if collector exists)
     if (recordedBy) {

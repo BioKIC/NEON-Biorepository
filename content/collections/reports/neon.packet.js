@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       }
       //label.insertBefore(header, familyDiv);
       // Removes ORCID from collector
-      let recordedBy = label.querySelector('.recordedby');
+      let recordedBy = label.querySelector('.collector');
       if (recordedBy) {
         let hasOrcid = recordedBy.innerText.toLowerCase().includes('orcid');
         if (hasOrcid) {

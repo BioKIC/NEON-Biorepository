@@ -37,11 +37,10 @@ if($isEditor){
 	<title><?php echo $DEFAULT_TITLE; ?> Sample Editor</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 	<?php
-	$activateJQuery = true;
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
-	<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
-	<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
 			$("#editForm :input").change(function() {
@@ -102,35 +101,52 @@ if($isEditor){
 					data: { samplepk: f.samplePK.value ,classnew: f.sampleClass.value }
 				}).done(function( resJson ) {
 					if(resJson.code == 1){
-						$('<div></div>').appendTo('body')
-						.html('<div>This sampleClass change requires occurrence<br/>record to be transferred to '+resJson.collCode+'.<br/>Do you want it to be done automatically?</div>')
-						.dialog({
-							modal: true,
-							title: 'Delete message',
-							zIndex: 10000,
-							autoOpen: true,
-							width: 'auto',
-							resizable: false,
-							buttons: {
-								Yes: function() {
-									$.ajax({
-										type: "POST",
-										url: "rpc/transferOccurrence.php",
-										dataType: 'text',
-										data: { occid: resJson.occid, target: resJson.targetCollid }
-									}).done(function( resultCode ) {
-										if(resultCode == 0) alert("FAILED transferring occurrence record");
-									});
-									$(this).dialog("close");
-								},
-								No: function() {
-									$(this).dialog("close");
+						if (confirm(
+							"This sampleClass change requires the occurrence record to be transferred to " + resJson.collCode + ".\n\n" +
+							"Do you want it to be done automatically?"
+						)) {
+							$.ajax({
+								type: "POST",
+								url: "rpc/transferOccurrence.php",
+								data: {
+									occid: resJson.occid,
+									target: resJson.targetCollid
 								}
-							},
-							close: function(event, ui) {
-								$(this).remove();
-							}
-						});
+							}).done(function (resultCode) {
+								if (resultCode == 0) {
+									alert("FAILED transferring occurrence record");
+								}
+							});
+						}
+						// $('<div></div>').appendTo('body')
+						// .html('<div>This sampleClass change requires occurrence<br/>record to be transferred to '+resJson.collCode+'.<br/>Do you want it to be done automatically?</div>')
+						// .dialog({
+						// 	modal: true,
+						// 	title: 'Collection Transfer',
+						// 	zIndex: 10000,
+						// 	autoOpen: true,
+						// 	width: 'auto',
+						// 	resizable: false,
+						// 	buttons: {
+						// 		Yes: function() {
+						// 			$.ajax({
+						// 				type: "POST",
+						// 				url: "rpc/transferOccurrence.php",
+						// 				dataType: 'text',
+						// 				data: { occid: resJson.occid, target: resJson.targetCollid }
+						// 			}).done(function( resultCode ) {
+						// 				if(resultCode == 0) alert("FAILED transferring occurrence record");
+						// 			});
+						// 			$(this).dialog("close");
+						// 		},
+						// 		No: function() {
+						// 			$(this).dialog("close");
+						// 		}
+						// 	},
+						// 	close: function(event, ui) {
+						// 		$(this).remove();
+						// 	}
+						// });
 					}
 					else if(resJson.code == 2){
 						alert("Is this sampleClass valid? Unable to locate within collection's table");

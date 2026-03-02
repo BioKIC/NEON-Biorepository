@@ -14,37 +14,37 @@ class TaxonomyDescriptionController extends Controller{
 	}
 
 	/**
-	 * @OA\Get(
+	 * off-@OA\Get(
 	 *	 path="/api/v2/taxonomy/{identifier}/description",
 	 *	 operationId="/api/v2/taxonomy/identifier/description",
 	 *	 tags={""},
-	 *	 @OA\Parameter(
+	 *	 off-@OA\Parameter(
 	 *		 name="identifier",
 	 *		 in="path",
 	 *		 description="PK, GUID, or recordID associated with target taxonomic unit",
 	 *		 required=true,
-	 *		 @OA\Schema(type="string")
+	 *		 off-@OA\Schema(type="string")
 	 *	 ),
-	 *	 @OA\Parameter(
+	 *	 off-@OA\Parameter(
 	 *		 name="limit",
 	 *		 in="query",
 	 *		 description="Controls the number of results in the page.",
 	 *		 required=false,
-	 *		 @OA\Schema(type="integer", default=100)
+	 *		 off-@OA\Schema(type="integer", default=100)
 	 *	 ),
-	 *	 @OA\Parameter(
+	 *	 off-@OA\Parameter(
 	 *		 name="offset",
 	 *		 in="query",
-	 *		 description="Determines the offset for the search results. A limit of 200 and offset of 100, will get the third page of 100 results.",
+	 *		 description="Determines the starting point for the search results. A limit of 100 and offset of 200, will display 100 records starting the 200th record.",
 	 *		 required=false,
-	 *		 @OA\Schema(type="integer", default=0)
+	 *		 off-@OA\Schema(type="integer", default=0)
 	 *	 ),
-	 *	 @OA\Response(
+	 *	 off-@OA\Response(
 	 *		 response="200",
 	 *		 description="Returns list of taxonomic descriptions for a given taxon",
-	 *		 @OA\JsonContent()
+	 *		 off-@OA\JsonContent()
 	 *	 ),
-	 *	 @OA\Response(
+	 *	 off-@OA\Response(
 	 *		 response="400",
 	 *		 description="Error: Bad request. ",
 	 *	 ),
@@ -74,30 +74,30 @@ class TaxonomyDescriptionController extends Controller{
 	}
 
 	/**
-	 * @OA\Get(
+	 * off-@OA\Get(
 	 *	 path="/api/v2/taxonomy/{identifier}/description/{identifier}",
 	 *	 operationId="/api/v2/taxonomy/identifier/description/identifier",
 	 *	 tags={""},
-	 *	 @OA\Parameter(
+	 *	 off-@OA\Parameter(
 	 *		 name="identifier",
 	 *		 in="path",
 	 *		 description="PK, GUID, or recordID associated with target taxonomic unit",
 	 *		 required=true,
-	 *		 @OA\Schema(type="string")
+	 *		 off-@OA\Schema(type="string")
 	 *	 ),
-	 *	 @OA\Parameter(
+	 *	 off-@OA\Parameter(
 	 *		 name="identifier",
 	 *		 in="path",
 	 *		 description="Identifier (PK, tdbid) associated with taxonomic description",
 	 *		 required=true,
-	 *		 @OA\Schema(type="integer")
+	 *		 off-@OA\Schema(type="integer")
 	 *	 ),
-	 *	 @OA\Response(
+	 *	 off-@OA\Response(
 	 *		 response="200",
 	 *		 description="Returns metabase on inventory registered within system with matching ID",
-	 *		 @OA\JsonContent()
+	 *		 off-@OA\JsonContent()
 	 *	 ),
-	 *	 @OA\Response(
+	 *	 off-@OA\Response(
 	 *		 response="400",
 	 *		 description="Error: Bad request. Inventory identifier is required.",
 	 *	 ),

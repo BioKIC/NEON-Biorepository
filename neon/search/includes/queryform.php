@@ -62,7 +62,7 @@ $customFieldArr = array('associatedCollectors'=>$LANG['ASSOC_COLLECTORS'],
 						//'municipality'=>$LANG['MUNICIPALITY'],
 						'occurrenceRemarks'=>$LANG['NOTES_REMARKS'],
 						//'ocrFragment'=>$LANG['OCR_FRAGMENT'],
-						'otherCatalogNumbers'=>$LANG['OTHER_CAT_NUMS'],
+						//'otherCatalogNumbers'=>$LANG['OTHER_CAT_NUMS'],
 						'ownerInstitutionCode'=>$LANG['OWNER_CODE'],
 						'preparations'=>$LANG['PREPARATIONS'],
 						'reproductiveCondition'=>$LANG['REP_COND'],
@@ -72,14 +72,14 @@ $customFieldArr = array('associatedCollectors'=>$LANG['ASSOC_COLLECTORS'],
 						'sex'=>$LANG['SEX'],
 						'stateProvince'=>$LANG['STATE_PROVINCE'],
 						'substrate'=>$LANG['SUBSTRATE'],
-						'taxonRemarks'=>$LANG['TAXON_REMARKS'],
+						//'taxonRemarks'=>$LANG['TAXON_REMARKS'],
 						//'typeStatus'=>$LANG['TYPE_STATUS'],
 						'verbatimCoordinates'=>$LANG['VERBAT_COORDS'],
 						'verbatimEventDate'=>$LANG['VERBATIM_DATE'],
 						//'verbatimDepth'=>$LANG['VERBATIM_DEPTH'],
 						'verbatimElevation'=>$LANG['VERBATIM_ELE']);
 
-$customTermArr = array('EQUALS', 'NOT_EQUALS', 'STARTS', 'LIKE', 'NOT_LIKE', 'GREATER', 'LESS', 'NULL', 'NOTNULL');
+$customTermArr = array('EQUALS', 'NOT_EQUALS', 'STARTS_WITH', 'LIKE', 'NOT_LIKE', 'GREATER_THAN', 'LESS_THAN', 'IS_NULL', 'NOT_NULL');
 $customArr = array();
 
 // sort($customFieldArr);
@@ -88,7 +88,7 @@ $customArr = array();
 
 <input type="checkbox" id="AdvancedHasBeenChanged" style=display:none>
 
-<?php 
+<?php
 for($x=1; $x<9; $x++){
 	$cAndOr = ''; $cOpenParen = ''; $cCloseParen = ''; $cField = ''; $cTerm = ''; $cValue = '';
 	if(isset($customArr[$x]['andor'])) $cAndOr = $customArr[$x]['andor'];
@@ -99,9 +99,9 @@ for($x=1; $x<9; $x++){
 	if(isset($customArr[$x]['value'])) $cValue = $customArr[$x]['value'];
 
 	$divDisplay = 'none';
-	if($x == 1 || $cValue != '' || $cTerm == 'NULL' || $cTerm == 'NOTNULL') $divDisplay = 'block';
+	if($x == 1 || $cValue != '' || $cTerm == 'IS_NULL' || $cTerm == 'NOT_NULL') $divDisplay = 'block';
 	?>
-	
+
 	<div id="customdiv<?php echo $x; ?>" class="fieldGroupDiv" style="display:<?php echo $divDisplay; ?>;">
 		<?php
 		if($x > 1){
@@ -127,7 +127,7 @@ for($x=1; $x<9; $x++){
 			</select>
 			<!--<span class="assistive-text">Parentheses for advanced searches</span>-->
 		</div>
-		
+
 		<div class="select-container" style="width: 25%; display: inline-block;">
 			<select name="q_customfield<?php echo $x; ?>" style="height:30px;">
 				<option value=""><?php echo $LANG['SELECT_FIELD_NAME']; ?></option>
@@ -173,14 +173,14 @@ for($x=1; $x<9; $x++){
 	<div>
 		<span class="assistive-text"><?php echo $LANG['CUSTOM_FIELD'].' '.$x; ?></span>
 	</div>
-	
+
 	</div>
 	<?php
 }
 ?>
 
 <script>
-	
+
 	function toggleCustomDiv(x){
 		resetCustomElements(x);
 		$('#customdiv'+x).toggle();
@@ -199,18 +199,18 @@ for($x=1; $x<9; $x++){
 			f.querySelector["q_customfield" + x].options[0].selected = true;
 			f.querySelector["q_customtype" + x].options[0].selected = true;
 			f.querySelector["q_customvalue" + x].value = "";
-			f.querySelector["q_customcloseparen" + x].options[0].selected = true;	
+			f.querySelector["q_customcloseparen" + x].options[0].selected = true;
 		}
 	}
-	
-	
+
+
 	const advancedInputs = document.querySelectorAll('#search-form-advanced-search select, #search-form-advanced-search input[type=text]');
 	const advancedHasBeenChangedCheckbox = document.getElementById('AdvancedHasBeenChanged');
-	
+
 	advancedInputs.forEach((advancedInput) => {
 		advancedInput.addEventListener('change', function(){
 			let allDefault = true;
-			
+
 			advancedInputs.forEach((input) => {
 				if (input.tagName === 'SELECT') {
 					if (input.selectedIndex !== 0) {
@@ -222,11 +222,11 @@ for($x=1; $x<9; $x++){
 					}
 				}
 			});
-	
+
 			advancedHasBeenChangedCheckbox.checked = !allDefault;
 		});
 	});
 
-	
-	
+
+
 </script>

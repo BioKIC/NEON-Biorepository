@@ -1,4 +1,6 @@
 <?php
+header("Location: https://biorepo.neonscience.org/portal/misc/cite.php", true, 302);
+exit;
 include_once('../config/symbini.php');
 header("Content-Type: text/html; charset=" . $CHARSET);
 ?>
@@ -7,7 +9,6 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 <head>
 	<title><?php echo $DEFAULT_TITLE; ?> Data Usage Policy</title>
 	<?php
-	$activateJQuery = true;
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
 </head>

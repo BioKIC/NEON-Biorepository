@@ -152,6 +152,65 @@ class ShipmentManager{
 		if($samplePK) return array_shift($retArr);
 		return $retArr;
 	}
+	
+	public function getSampleHeaders($samplePK = null, $filter = null) {
+		$headerArr = array(
+			'sampleID','hashedSampleID','alternativeSampleID','sampleCode','sampleClass','sampleUuid','taxonID','individualCount',
+			'filterVolume','namedLocation','domainRemarks','collectDate','quarantineStatus','sampleReceived','acceptedForAnalysis',
+			'sampleCondition','dynamicProperties','symbiotaTarget','sampleNotes','occurErr','occid','harvestTimestamp','checkinUser',
+			'checkinRemarks','checkinTimestamp'
+		);
+	
+		$targetArr = array();
+	
+		$sql = 'SELECT s.samplePK, s.sampleID, s.hashedSampleID, s.alternativeSampleID, s.sampleCode, s.sampleClass, s.sampleUuid, 
+			s.taxonID, s.individualCount, s.filterVolume, s.namedLocation, s.domainRemarks, s.collectDate, s.quarantineStatus, 
+			s.sampleReceived, s.acceptedForAnalysis, s.sampleCondition, s.dynamicProperties, s.symbiotaTarget, s.notes AS sampleNotes, 
+			s.errorMessage AS occurErr, CONCAT_WS(", ", u.lastname, u.firstname) AS checkinUser, s.checkinRemarks, 
+			s.checkinTimestamp, s.occid, s.harvestTimestamp 
+			FROM NeonSample s 
+			LEFT JOIN users u ON s.checkinuid = u.uid ';
+	
+		if ($samplePK) {
+			$sql .= 'WHERE s.samplePK = '.$samplePK.' ';
+		} else {
+			$sql .= 'WHERE s.shipmentPK = '.$this->shipmentPK.' ';
+			if ($filter) {
+				if ($filter == 'notCheckedIn') {
+					$sql .= 'AND s.checkinTimestamp IS NULL ';
+				} elseif ($filter == 'missingOccid') {
+					$sql .= 'AND s.occid IS NULL ';
+				} elseif ($filter == 'notAccepted') {
+					$sql .= 'AND s.acceptedForAnalysis = 0 ';
+				} elseif ($filter == 'altIds') {
+					$sql .= 'AND s.alternativeSampleID IS NOT NULL ';
+				} elseif ($filter == 'harvestingError') {
+					$sql .= 'AND s.errorMessage IS NOT NULL ';
+				}
+			}
+			$sql .= 'ORDER BY s.sampleID, s.sampleCode';
+		}
+	
+		$rs = $this->conn->query($sql);
+	
+		while ($r = $rs->fetch_assoc()) {
+			foreach ($headerArr as $fieldName) {
+				if ($r[$fieldName] !== '' && $r[$fieldName] !== null && !in_array($fieldName, $targetArr)) {
+					$targetArr[] = $fieldName;
+				}
+			}
+		}
+
+		if (!in_array('checkinTimestamp', $targetArr)) {
+			$targetArr[] = 'checkinUser';
+			$targetArr[] = 'checkinTimestamp';
+		}
+	
+		$rs->free();
+	
+		return $targetArr;
+	}
+
 
 	//Shipment import functions
 	public function uploadManifestFile(){
@@ -360,32 +419,35 @@ class ShipmentManager{
 			($this->uploadFileName?'"'.$this->cleanInStr($this->uploadFileName).'"':'NULL').','.
 			$GLOBALS['SYMB_UID'].')';
 		//echo '<div>'.$sql.'</div>';
-		if($this->conn->query($sql)){
+		try {
+			$this->conn->query($sql);
 			$shipmentPK = $this->conn->insert_id;
 			echo '<li>New shipment created (#<a href="manifestviewer.php?shipmentPK='.$shipmentPK.'" target="_blank">'.$recArr['shipmentid'].'</a>)</li>';
-		}
-		else{
-			if($this->conn->errno == 1062){
+		} catch (mysqli_sql_exception $e) {
+			if ($e->getCode() == 1062) {
 				$existingFileName = '';
-				$sql = 'SELECT shipmentpk, filename FROM NeonShipment WHERE shipmentID = "'.$this->cleanInStr($recArr['shipmentid']).'"';
-				$rs = $this->conn->query($sql);
-				if($r = $rs->fetch_object()){
+				$sqlSel = 'SELECT shipmentpk, filename FROM NeonShipment WHERE shipmentID = "'.$this->cleanInStr($recArr['shipmentid']).'"';
+				$rs = $this->conn->query($sqlSel);
+				if ($r = $rs->fetch_object()) {
 					$shipmentPK = $r->shipmentpk;
-					$existingFileName = $r->filename;
+					$existingFileName = $r->filename ?? '';
 				}
 				$rs->free();
-				if(!in_array($this->uploadFileName,explode('|',$existingFileName))){
-					//Append new filename to existing
-					$this->conn->query('UPDATE NeonShipment SET filename = "'.trim($this->cleanInStr($existingFileName.'|'.$this->uploadFileName),' |').'" WHERE shipmentpk = '.$shipmentPK);
+		
+				if (!in_array($this->uploadFileName, explode('|', (string)$existingFileName), true)) {
+					$newName = trim($this->cleanInStr($existingFileName.'|'.$this->uploadFileName), ' |');
+					$this->conn->query('UPDATE NeonShipment SET filename = "'.$newName.'" WHERE shipmentpk = '.$shipmentPK);
 				}
+		
 				echo '<li><span style="color:orange">NOTICE:</span> Samples mapped to existing shipment: <a href="manifestviewer.php?shipmentPK='.$shipmentPK.'" target="_blank">'.$recArr['shipmentid'].'</a></li>';
-			}
-			else{
-				echo '<li style="margin-left:15px"><span style="color:red">ERROR</span> loading shipment record (errNo: '.$this->conn->errno.'): '.$this->conn->error.'</li>';
+		
+			} else {
+				echo '<li style="margin-left:15px"><span style="color:red">ERROR</span> loading shipment record (errNo: '.$e->getCode().'): '.$e->getMessage().'</li>';
 				echo '<li style="margin-left:15px">SQL: '.$sql.'</li>';
 				return 0;
 			}
 		}
+
 		return $shipmentPK;
 	}
 
@@ -525,8 +587,28 @@ class ShipmentManager{
 					$sql .= ', sessionID = ' . $_SESSION['sampleCheckinSessionData']['sessionID'] . ' ';
 				}
 				$sql .= 'WHERE (shipmentpk = '.$this->shipmentPK.') AND (samplePK IN('.implode(',', $pkArr).'))';
-				if(!$this->conn->query($sql)){
-					$this->errorStr = 'ERROR batch checking-in samples: '.$this->conn->error;
+				try {
+					$this->conn->query($sql);
+					return true;
+				} catch (mysqli_sql_exception $e) {
+					$errno  = $e->getCode();
+					$errmsg = $e->getMessage();
+
+					if ($errno == 1062) {
+						$duplicateValue = '';
+						if (preg_match("/Duplicate entry '([^']+)' for key/", $errmsg, $matches)) {
+							$duplicateValue = $matches[1];
+							$duplicateValue = preg_replace('/-\d+$/', '', $duplicateValue);
+						}
+						if ($duplicateValue) {
+							$this->errorStr = "Sample check-in failed: $duplicateValue is already checked in under another shipment.";
+						} else {
+							$this->errorStr = "Sample check-in failed: a sample is already checked in under another shipment.";
+						}
+					} else {
+						$this->errorStr = "ERROR batch checking-in samples: [{$errno}] {$errmsg}";
+					}
+
 					return false;
 				}
 				return true;
@@ -607,15 +689,15 @@ class ShipmentManager{
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				$occid = $r->occid;
-				if(strpos($r->identifierName,'sampleID')){
+				if (is_string($r->identifierName) && str_contains($r->identifierName, 'sampleID')) {
 					$identifierArr[$r->occid]['NEON sampleID']['idKey'] = $r->idomoccuridentifiers;
 					$identifierArr[$r->occid]['NEON sampleID']['idValue'] = $r->identifierValue;
 				}
-				elseif(strpos($r->identifierName,'sampleCode')){
+				elseif (is_string($r->identifierName) && str_contains($r->identifierName, 'sampleCode')) {
 					$identifierArr[$r->occid]['NEON sampleCode (barcode)']['idKey'] = $r->idomoccuridentifiers;
 					$identifierArr[$r->occid]['NEON sampleCode (barcode)']['idValue'] = $r->identifierValue;
 				}
-				elseif(strpos($r->identifierName,'sampleUUID')){
+				elseif (is_string($r->identifierName) && str_contains($r->identifierName, 'sampleUUID')) {
 					$identifierArr[$r->occid]['NEON sampleUUID']['idKey'] = $r->idomoccuridentifiers;
 					$identifierArr[$r->occid]['NEON sampleUUID']['idValue']  = $r->identifierValue;
 				}
@@ -766,7 +848,8 @@ class ShipmentManager{
 							(isset($recArr['filtervolume']) && $recArr['filtervolume']?'"'.$this->cleanInStr($recArr['filtervolume']).'"':'NULL').','.
 							(isset($recArr['domainremarks']) && $recArr['domainremarks']?'"'.$this->cleanInStr($recArr['domainremarks']).'"':'NULL').','.
 							(isset($recArr['samplenotes']) && $recArr['samplenotes']?'"'.$this->cleanInStr($recArr['samplenotes']).'"':'NULL').')';
-						if($this->conn->query($sql)){
+						try {
+							$this->conn->query($sql);
 							$status = true;
 							if(isset($recArr['checkinsample']) && $recArr['checkinsample']){
 								$sqlUpdate = 'UPDATE NeonSample SET checkinUid = '.$GLOBALS['SYMB_UID'].', checkinTimestamp = now(), sampleReceived = 1, acceptedForAnalysis = 1, sampleCondition = "ok" WHERE (samplePK = '.$this->conn->insert_id.') ';
@@ -775,20 +858,15 @@ class ShipmentManager{
 									$status = false;
 								}
 							}
-						}
-						else{
-							if($this->conn->errno == 1062){
-								$id = $sampleCode;
-								if(!$id) $id = $sampleID;
+						
+						} catch (mysqli_sql_exception $e) {
+							if ($e->getCode() == 1062) {
+								$id = $sampleCode ?: $sampleID;
 								$this->errorStr = '<span style="color:red">FAILURE:</span> record already in system with duplicate: <a href="manifestviewer.php?quicksearch='.$id.'" target="_blank">'.$id.'</a>';
-								if($verbose) echo '<li>'.$this->errorStr.'</li>';
-							}
-							else{
-								$this->errorStr = '<span style="color:red">ERROR</span> adding sample: '.$this->conn->error;
-								if($verbose){
-									echo '<li style="margin-left:15px">'.$this->errorStr.'</li>';
-									//echo '<li style="margin-left:25px">SQL: '.$sql.'</li>';
-								}
+								if ($verbose) echo '<li>'.$this->errorStr.'</li>';
+							} else {
+								$this->errorStr = '<span style="color:red">ERROR</span> adding sample: '.$e->getMessage();
+								if ($verbose) echo '<li style="margin-left:15px">'.$this->errorStr.'</li>';
 							}
 							$status = false;
 						}
@@ -818,7 +896,7 @@ class ShipmentManager{
 		$sqlCond = '';
 		if($sampleID && $sampleClass) $sqlCond .= '(sampleID = "'.$this->cleanInStr($sampleID).'" AND sampleClass = "'.$this->cleanInStr($sampleClass).'") ';
 		if($sampleCode) $sqlCond .= ($sqlCond?'OR':'').' (sampleCode = "'.$this->cleanInStr($sampleCode).'")';
-		$sql = 'SELECT shipmentPK, sampleID, sampleCode FROM NeonSample WHERE (sampleReceived IS NULL) AND ('.$sqlCond.')';
+		$sql = 'SELECT shipmentPK, sampleID, sampleCode FROM NeonSample WHERE ((sampleReceived IS NULL) OR (sampleReceived = 1)) AND ('.$sqlCond.')';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
 			if($r->sampleID) $retArr[$r->shipmentPK]['sampleID'] = $r->sampleID;
