@@ -402,26 +402,26 @@ ER  -
 										<?php echo (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
 									</a>
 								</li>
-								<!--<li>-->
-								<!--	<a href="#" onclick="$('li.importItem').show(); return false;">-->
-								<!--		<?php echo (isset($LANG['IMPORT_SPECIMEN']) ? $LANG['IMPORT_SPECIMEN'] : 'Import/Update Specimen Records'); ?>-->
-								<!--	</a>-->
-								<!--</li>-->
-								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
-								<!--	<a href="../admin/specupload.php?uploadtype=7&collid=<?php echo $collid; ?>">-->
-								<!--		<?php echo (isset($LANG['SKELETAL_FILE_IMPORT']) ? $LANG['SKELETAL_FILE_IMPORT'] : 'Skeletal File Import'); ?>-->
-								<!--	</a>-->
-								<!--</li>-->
-								<!--<li class="importItem" style="margin-left:10px;display:none">-->
-								<!--	<a href="../admin/specupload.php?uploadtype=3&collid=<?php echo $collid; ?>">-->
-								<!--		<?php echo (isset($LANG['TEXT_FILE_IMPORT']) ? $LANG['TEXT_FILE_IMPORT'] : 'Text File Import'); ?>-->
-								<!--	</a>-->
-								<!--</li>-->
-								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
-								<!--	<a href="../admin/specupload.php?uploadtype=6&collid=<?php echo $collid; ?>">-->
-								<!--		<?php echo (isset($LANG['DWCA_IMPORT']) ? $LANG['DWCA_IMPORT'] : 'DwC-Archive Import'); ?>-->
-								<!--	</a>-->
-								<!--</li>-->
+								<li>
+									<a href="#" onclick="$('li.importItem').show(); return false;">
+										<?php echo (isset($LANG['IMPORT_SPECIMEN']) ? $LANG['IMPORT_SPECIMEN'] : 'Import/Update Specimen Records'); ?>
+									</a>
+								</li>
+								<li class="importItem" style="margin-left:10px;display:none;">
+									<a href="../admin/specupload.php?uploadtype=7&collid=<?php echo $collid; ?>">
+										<?php echo (isset($LANG['SKELETAL_FILE_IMPORT']) ? $LANG['SKELETAL_FILE_IMPORT'] : 'Skeletal File Import'); ?>
+									</a>
+								</li>
+								<li class="importItem" style="margin-left:10px;display:none">
+									<a href="../admin/specupload.php?uploadtype=3&collid=<?php echo $collid; ?>">
+										<?php echo (isset($LANG['TEXT_FILE_IMPORT']) ? $LANG['TEXT_FILE_IMPORT'] : 'Text File Import'); ?>
+									</a>
+								</li>
+								<li class="importItem" style="margin-left:10px;display:none;">
+									<a href="../admin/specupload.php?uploadtype=6&collid=<?php echo $collid; ?>">
+										<?php echo (isset($LANG['DWCA_IMPORT']) ? $LANG['DWCA_IMPORT'] : 'DwC-Archive Import'); ?>
+									</a>
+								</li>
 								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
 								<!--	<a href="../admin/specupload.php?uploadtype=8&collid=<?php echo $collid; ?>">-->
 								<!--		<?php echo (isset($LANG['IPT_IMPORT']) ? $LANG['IPT_IMPORT'] : 'IPT Import'); ?>-->
@@ -446,11 +446,11 @@ ER  -
 								if ($collData['colltype'] != 'General Observations') {
 									if ($collData['managementtype'] != 'Aggregate') {
 								?>
-										<!--<li>-->
-										<!--	<a href="../specprocessor/index.php?collid=<?php echo $collid; ?>">-->
-										<!--		<?php echo (isset($LANG['PROCESSING_TOOLBOX']) ? $LANG['PROCESSING_TOOLBOX'] : 'Processing Toolbox'); ?>-->
-										<!--	</a>-->
-										<!--</li>-->
+										<li>
+											<a href="../specprocessor/index.php?collid=<?php echo $collid; ?>">
+												<?php echo (isset($LANG['PROCESSING_TOOLBOX']) ? $LANG['PROCESSING_TOOLBOX'] : 'Processing Toolbox'); ?>
+											</a>
+										</li>
 										<li>
 											<a href="../datasets/datapublisher.php?collid=<?php echo $collid; ?>">
 												<?php echo (isset($LANG['DARWIN_CORE_PUB']) ? $LANG['DARWIN_CORE_PUB'] : 'Darwin Core Archive Publishing'); ?>
@@ -459,11 +459,11 @@ ER  -
 									<?php
 									}
 									?>
-									<!--<li>-->
-									<!--	<a href="../editor/editreviewer.php?collid=<?php echo $collid; ?>">-->
-									<!--		<?php echo (isset($LANG['REVIEW_SPEC_EDITS']) ? $LANG['REVIEW_SPEC_EDITS'] : 'Review/Verify Occurrence Edits'); ?>-->
-									<!--	</a>-->
-									<!--</li>-->
+									<li>
+										<a href="../editor/editreviewer.php?collid=<?php echo $collid; ?>">
+											<?php echo (isset($LANG['REVIEW_SPEC_EDITS']) ? $LANG['REVIEW_SPEC_EDITS'] : 'Review/Verify Occurrence Edits'); ?>
+										</a>
+									</li>
 									<!--
 									<li>
 										<a href="../reports/accessreport.php?collid=<?php echo $collid; ?>">
