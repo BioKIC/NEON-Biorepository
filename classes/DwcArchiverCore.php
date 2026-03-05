@@ -2029,14 +2029,15 @@ class DwcArchiverCore extends Manager{
 								$r['usageterms'] = 'CC BY-SA (Attribution-ShareAlike)';
 							}
 							elseif (strpos($r['webstatement'], '/by-nc/')) {
-								$r['usageterms'] = 'CC BY-NC (Attribution-NonCommercial-ShareAlike)';
+								$r['usageterms'] = 'CC BY-NC (Attribution-NonCommercial)';
 							}
 							elseif (strpos($r['webstatement'], '/by-nc-sa/')) {
 								$r['usageterms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
 							}
 						}
 					}
-					if (!$r['usageterms']) $r['usageterms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
+					//if (!$r['usageterms']) $r['usageterms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
+					if (!$r['usageterms']) $r['usageterms'] = 'CC BY-SA (Attribution-ShareAlike)'; // NEON customization
 				}
 				$r['providermanagedid'] = 'urn:uuid:' . $r['providermanagedid'];
 				$r['associatedSpecimenReference'] = $urlPathPrefix . 'collections/individual/index.php?occid=' . $r['occid'];
