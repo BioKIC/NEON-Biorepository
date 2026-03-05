@@ -649,26 +649,10 @@ ER  -
 						<h2 class="text-xl font-semibold mb-2">Citation</h2>
 						<p style="padding:16px"><strong>Please use the appropriate citation in your publications. See <a href="<?php echo $CLIENT_ROOT . '/neon/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for more info.</strong></p>
 						<?php
-						if (file_exists($SERVER_ROOT . '/includes/citationcollection.php')) {
 							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;"">
 							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">';
-							// If GBIF dataset key is available, fetch GBIF format from API
-							if ($collData['publishtogbif'] && $datasetKey && file_exists($SERVER_ROOT . '/includes/citationgbif.php')) {
-								$gbifUrl = 'http://api.gbif.org/v1/dataset/' . $datasetKey;
-								$responseData = json_decode(file_get_contents($gbifUrl));
-								if ($responseData === null && json_last_error() !== JSON_ERROR_NONE) {
-									error_log('Error in JSON decoding: ' . json_last_error_msg());
-									throw new Exception('Error in JSON decoding');
-								}
-								$collData['gbiftitle'] = $responseData->title;
-								$collData['doi'] = $responseData->doi;
-								$_SESSION['colldata'] = $collData;
-								include($SERVER_ROOT . '/includes/citationgbif.php');
-							} else {
-								include($SERVER_ROOT . '/includes/citationcollection.php');
-							}
+							include($SERVER_ROOT . '/includes/citationneoncollection.php');
 							echo '</div>';
-						}
 						?>
 							<div class="flex space-x-2">
 								<button id="copyButton" data-tooltip-id="tooltip-copy" 
