@@ -1116,7 +1116,7 @@ $traitArr = $indManager->getTraitArr();
 											}
 										}
 										elseif($imgArr['owner']) echo '<div>Owner: ' . $imgArr['owner'].'</div>';
-									if($imgArr['rights']) echo '<div><b> License: </b>'.$imgArr['rigths'].'</div>';
+									if($imgArr['rights']) echo '<div><b> License: </b>'.$imgArr['rights'].'</div>';
 									else echo '<div><b> License: </b>CC BY-SA (Attribution-ShareAlike)</div>';
 									if($imgArr['url'] && substr($thumbUrl,0,7)!='process' && $imgArr['url'] != $imgArr['lgurl']) echo '<div><a href="' . $imgArr['url'] . '" target="_blank">' . $LANG['OPEN_MEDIUM'] . '</a></div>';
 									if($imgArr['lgurl']) echo '<div><a href="' . $imgArr['lgurl'] . '" target="_blank">' . $LANG['OPEN_LARGE'] . '</a></div>';
