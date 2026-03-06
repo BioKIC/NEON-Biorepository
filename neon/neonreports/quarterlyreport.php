@@ -199,7 +199,8 @@ if ($isEditor) {
 						$title = 'AY' . str_pad($newYear, 2, '0', STR_PAD_LEFT) . ' Q1-' . substr($quarter, 4);
 					}
 					elseif ($period === 'To Date') $title = 'To Date';
-					if ($valKey == 'physicalSamples') $valKey = 'Physical Samples'; 
+					if ($valKey == 'physicalSamples') $valKey = 'Samples Loaned For Research'; 
+					elseif ($valKey == 'samples') $valKey = 'All Samples Used'; 
 					$headers[] = $title . ':<br>' . ucwords($valKey);
 				}
 			}
@@ -252,9 +253,9 @@ if ($isEditor) {
 			elseif ($tableType == 'Researchers and Samples by Collection'){
 				echo '<p>The number of researchers is the total number of researchers involved in any requests that are newly active
 				or pending within the period and associated with the collection.  Researchers may be repeated across 
-				collections but are unique within a collection. "Samples" indicate the number of samples associated with the 
-				included requests. "Physical Samples" removes samples for which only images or Biorepository-collected data are explicitly involved in research, 
-				excluding requests entirely for outreach or internal purposes. In either case, samples" may be repeated if they are involved in multiple requests. 
+				collections but are unique within a collection. "All Samples Used" indicates the number of samples of all use types associated with the 
+				included requests. "Samples Loaned For Research" removes samples for from which only images or Biorepository-collected data is used, 
+				as well as samples used for outreach, education, or internal (typically, Battelle) purposes. In either case, samples may be repeated if they are involved in multiple requests. 
 				Samples values of zero indicate that the collection is involved only in pending requests for which samples have not yet been identified</p>';
 			}
 				if ($tableType == 'Samples by Primary Research Field') {
@@ -316,8 +317,9 @@ if ($isEditor) {
 
 	<h2>Cumulative Sample Use</h2>
 
-	<div style="height: 450px; max-width: 1000px;">
-		<canvas id="cumulativeSampleRequests"></canvas>
+	<div style="display:flex; gap:30px; height:450px; max-width:500px;">
+		<canvas id="allSamplesChart"></canvas>
+		<canvas id="researchSamplesChart"></canvas>
 	</div>
 
 	<h2>Requests by Initiation Award Year</h2>
@@ -589,7 +591,7 @@ foreach ($reportsArr as $row) {
                     tension: 0.2
                 },
                 {
-                    label: 'Active requests',
+                    label: 'Fulfilled requests',
                     data: activeRequests,
                     borderColor: '#0472cf',
                     backgroundColor: '#0472cf',
@@ -666,70 +668,86 @@ foreach ($reportsArr as $row) {
         }))
         .sort((a, b) => new Date(a.x) - new Date(b.x));
 
-    const ctx = document
-        .getElementById('cumulativeSampleRequests')
-        .getContext('2d');
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            datasets: [
-                {
-                    label: 'All Sample Use',
+    new Chart(
+        document.getElementById('allSamplesChart'),
+        {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'All Samples Used',
                     data: allSamps,
                     borderColor: '#000000',
                     backgroundColor: '#000000',
                     pointRadius: 0,
                     tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display:false },
+                    title: {
+                        display: true,
+                        text: 'All Samples Used'
+                    }
                 },
-                {
-                    label: 'Excluding use of only images/data and use for internal or outreach purposes',
+                scales: {
+                    x: {
+                        type:'time',
+                        time:{unit:'year'},
+                        title:{display:true,text:'Date'}
+                    },
+                    y: {
+                        beginAtZero:true,
+                        title:{display:true,text:'Cumulative Samples'}
+                    }
+                }
+            }
+        }
+    );
+
+    new Chart(
+        document.getElementById('researchSamplesChart'),
+        {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Samples Loaned For Research',
                     data: resSamps,
                     borderColor: '#0472cf',
                     backgroundColor: '#0472cf',
                     pointRadius: 0,
                     tension: 0.2
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'nearest',
-                intersect: false
+                }]
             },
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'year',
-                        tooltipFormat: 'yyyy-MM-dd'
-                    },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display:false },
                     title: {
                         display: true,
-                        text: 'Date'
+                        text: 'Samples Loaned For Research'
                     }
                 },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Cumulative Number of Samples'
+                scales: {
+                    x: {
+                        type:'time',
+                        time:{unit:'year'},
+                        title:{display:true,text:'Date'}
+                    },
+                    y: {
+                        beginAtZero:true,
+                        title:{display:true,text:'Cumulative Samples'}
                     }
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom'
                 }
             }
         }
-    });
+    );
 
 })();
 </script>
-
 
 
 </html>
