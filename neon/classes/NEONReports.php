@@ -387,7 +387,7 @@
         $year = (int) date('y');  
         $month = (int) date('m');
 
-        $quarterMap = [1  => 1, 2  => 2, 7  => 3, 11 => 4];
+        $quarterMap = [1  => 1, 3  => 2, 7  => 3, 11 => 4];
 
         if (!isset($quarterMap[$month])) {
             throw new Exception('Quarterly report can only be generated in the month directly following completion of a quarter.');
@@ -428,6 +428,7 @@
         $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->samplesByUseType($name,$reportDate,$startquarter,$endquarter,$startyear);
+        $this->collectionsByUseType($name,$reportDate,$startquarter,$endquarter,$startyear);        
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->sampleUseByInitiationAYBarChart($name,$reportDate,$endquarter);
         $this->sampleUseByStatusAYBarChart($name,$reportDate,$endquarter);
@@ -593,7 +594,7 @@
         $summary .= 'In AY' . $year . ' to date, <b>' . $yearsamples . '</b> unique samples across <b>'
         . $yearcolls . '</b> sample types have been newly requested for projects involving <b>' . $yearresearchers . '</b> different 
         researchers. To date, <b>' . $samples . '</b> unique samples across <b>'
-        . $colls . '</b> sample types have been newly requested for projects involving <b>' . $researchers . '</b> different 
+        . $colls . '</b> sample types have been requested for projects involving <b>' . $researchers . '</b> different 
         researchers. </br>';  
         
         return $summary;
@@ -1784,6 +1785,115 @@
             }
         }
     }
+
+    public function collectionsByUseType($name,$reportDate,$startquarter,$endquarter,$startyear){
+        $sql = "WITH filtered_requests AS (
+            SELECT
+                r.id
+            FROM neonrequest r
+            WHERE r.status IN (
+                'active use',
+                'completed',
+                'pending sample list',
+                'pending funding',
+                'pending fulfillment'
+            )
+            AND (
+                r.activeDate              BETWEEN ? AND ?
+                OR r.pendingFulfillmentDate  BETWEEN ? AND ?
+                OR r.pendingFundingDate      BETWEEN ? AND ?
+                OR r.pendingSampleListDate   BETWEEN ? AND ?
+            )
+        ),
+
+        colls AS (
+            SELECT c.collid, CASE
+                        WHEN c.collectionName LIKE '%Microalgae%'
+                            THEN 'Microalgae'
+                        WHEN (c.collectionName LIKE '%Sediments%'
+                            OR c.collectionName LIKE '%Deposition%'
+                            OR c.collectionName LIKE 'Particulate%'
+                            OR c.collectionName LIKE 'Soil Collection%')
+                            THEN 'Environmental'
+                        WHEN (c.collectionName LIKE '%Macroinvertebrate%'
+                            OR c.collectionName LIKE '%Zooplankton%')
+                            THEN 'Aquatic Invertebrate'
+                        WHEN c.collectionName LIKE 'Carabid%'
+                            THEN 'Carabid'
+                        WHEN c.collectionName LIKE '%Fish%'
+                            THEN 'Fish'
+                        WHEN c.collectionName LIKE '%Herptile%'
+                            THEN 'Herptile'
+                        WHEN (c.collectionName LIKE 'Invertebrate Bycatch%'
+                            OR c.collectionName LIKE 'NEON Invert%')
+                            THEN 'Invert Bycatch'
+                        WHEN c.collectionName LIKE '%Mammal%'
+                            THEN 'Mammal'
+                        WHEN c.collectionName LIKE 'Mosquito%'
+                            THEN 'Mosquito'
+                        WHEN c.collectionName LIKE '%Microbe%'
+                            THEN 'Microbe'
+                        WHEN (c.collectionName LIKE 'Terrestrial Plant%'
+                            OR c.collectionName LIKE '%Macroalgae%')
+                            THEN 'Plant/Algae'
+                        WHEN c.collectionName LIKE 'Tick%'
+                            THEN 'Tick'
+                        WHEN c.collectionName LIKE '%Legacy%'
+                            THEN 'Legacy'
+                    END AS collGroup
+            FROM omcollections c
+        )
+
+        SELECT 
+            co.collGroup AS sampleGroup,
+            s.useType AS useType,
+            COUNT(s.id) AS samples
+        FROM neonsamplerequestlink s
+        JOIN filtered_requests r
+            ON s.requestID = r.id
+        JOIN omoccurrences o
+            ON s.occid = o.occid
+        JOIN colls co
+            ON o.collid = co.collid
+        GROUP BY sampleGroup,useType";
+
+        $stmt = $this->conn->prepare($sql);
+
+
+        $periodtypes = array('Quarter','Award Year','To Date');
+
+        foreach ($periodtypes as $period) {
+
+            if ($period == 'Quarter') $start = $startquarter;
+            elseif ($period == 'Award Year') $start = $startyear;
+            elseif ($period == 'To Date') $start = '2010-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionName`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Collection and Use Type', ?, ?, ?, ?)");
+
+                $ins->bind_param('ssssis', $name, $period, $row['sampleGroup'], $row['useType'], $row['samples'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for Collections by Use Type: " . $ins->error);
+                }
+            }
+        }
+
+    }
+
+
 }
 
 ?>

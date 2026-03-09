@@ -77,7 +77,8 @@ if ($isEditor) {
 
 		$excludeTableTypes = [
 				'Sample Use By Initiation Year Bar Chart',
-				'Sample Use By Status Year Bar Chart'
+				'Sample Use By Status Year Bar Chart',
+				'Samples by Collection and Use Type'
 			];
 
 
