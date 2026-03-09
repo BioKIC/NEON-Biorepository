@@ -78,7 +78,8 @@ if ($isEditor) {
 		$excludeTableTypes = [
 				'Sample Use By Initiation Year Bar Chart',
 				'Sample Use By Status Year Bar Chart',
-				'Samples by Collection and Use Type'
+				'Samples by Collection and Use Type',
+				'Samples by Storage Type and Use Type'
 			];
 
 
@@ -259,8 +260,15 @@ if ($isEditor) {
 				as well as samples used for outreach, education, or internal (typically, Battelle) purposes. In either case, samples may be repeated if they are involved in multiple requests. 
 				Samples values of zero indicate that the collection is involved only in pending requests for which samples have not yet been identified</p>';
 			}
-				if ($tableType == 'Samples by Primary Research Field') {
-					echo '<p>Sample numbers are calculated as in the Researchers and Samples by Collection table</p>';
+			elseif ($tableType == 'Samples by Primary Research Field') {
+					echo '<p>Sample numbers are calculated as in the above tables.</p>';
+			}
+			elseif ($tableType == 'Samples by Use Type') {
+					echo '<p>Substance is defined at the level of the sample as received by the Biorepository. "Whole sample" may refer to a voucher specimen, entire bulk sample, etc.
+					Individual(s), therefore, refers to individual organisms subsampled by the Biorepository from a bulk organismal sample, not a single organism voucher specimen. Tissue/material sample 
+					refers to tissues or material samples removed from an individual by the Biorepository; a loan for an entire tissue sample received by the Biorepository
+					would be defined as a "whole sample." These categories refer to what was provided by the Biorepository, so an instance in which a researcher recieved an entire sample
+					for the purpose of removing select individuals or tissues would still be categorized as a "whole sample." The number of samples are calculated as in above tables.  </p>';
 			}
 
 			echo $utilities->htmlTable($finalRows, $headers);
@@ -333,6 +341,18 @@ if ($isEditor) {
 
 	<div style="height: 450px; max-width: 1000px;">
 		<canvas id="requestsByStatusAY"></canvas>
+	</div>
+
+	<h2>Samples Loaned for Research Use by Taxonomic Group To Date</h2>
+
+	<div style="height: 450px; max-width: 1000px;">
+		<canvas id="collectionChart"></canvas>
+	</div>
+
+	<h2>Samples Loaned for Research Use by Storage Type To Date</h2>
+
+	<div style="height: 450px; max-width: 1000px;">
+		<canvas id="storageChart"></canvas>
 	</div>
 	
 <?php
@@ -747,8 +767,239 @@ foreach ($reportsArr as $row) {
         }
     );
 
+	})();
+	</script>
+
+<?php
+
+$chartCollections = [];
+$chartUseTypes = [];
+$chartMatrix = [];
+
+foreach ($reportsArr as $row) {
+
+    if ($row['tabletype'] === 'Samples by Collection and Use Type'
+        && $row['period'] === 'To Date') {
+
+        $collection = $row['collectionName'];
+        $useType = $row['useType'];
+        $samples = (int)$row['samples'];
+
+        $chartCollections[$collection] = true;
+        $chartUseTypes[$useType] = true;
+
+        $chartMatrix[$useType][$collection] = $samples;
+    }
+}
+
+$collections = array_keys($chartCollections);
+$useTypes = array_keys($chartUseTypes);
+
+$datasets = [];
+
+foreach ($useTypes as $type) {
+
+    $values = [];
+
+    foreach ($collections as $coll) {
+        $values[] = $chartMatrix[$type][$coll] ?? 0;
+    }
+
+    $datasets[] = [
+        "label" => $type,
+        "data" => $values
+    ];
+}
+
+?>
+
+<script>
+const collectionLabels_<?= md5($reportDate) ?> = <?= json_encode($collections) ?>;
+const collectionDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
+</script>
+
+<script>
+(function () {
+
+	const labels = collectionLabels_<?= md5($reportDate) ?>;
+	const datasetsRaw = collectionDatasets_<?= md5($reportDate) ?>;
+
+	const colorPalette = {
+		'destructive': '#0472cf',
+		'consumptive': '#d18710',
+		'invasive': '#dfdfe0',
+		'non-destructive': '#4b372f'
+	};
+
+	const datasets = datasetsRaw.map(ds => ({
+		label: ds.label,
+		backgroundColor: colorPalette[ds.label] || '#999999',
+		data: ds.data
+	}));
+
+	const ctx = document
+		.getElementById('collectionChart')
+		.getContext('2d');
+
+	new Chart(ctx, {
+		type: 'bar',
+		data: {
+			labels: labels,
+			datasets: datasets
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			scales: {
+				x: {
+					stacked: true,
+					title: {
+						display: true,
+						text: 'Taxonomic Group'
+					}
+				},
+				y: {
+					stacked: true,
+					beginAtZero: true,
+					title: {
+						display: true,
+						text: 'Number of Samples'
+					}
+				}
+			},
+			plugins: {
+				legend: {
+					position: 'bottom'
+				},
+				tooltip: {
+					callbacks: {
+						label: function (ctx) {
+							return ctx.dataset.label + ': ' +
+								ctx.raw.toLocaleString();
+						}
+					}
+				}
+			}
+		}
+	});
+
 })();
 </script>
 
+<?php
+
+$chartStorage = [];
+$chartUseTypes = [];
+$chartMatrix = [];
+
+foreach ($reportsArr as $row) {
+
+    if ($row['tabletype'] === 'Samples by Storage Type and Use Type'
+        && $row['period'] === 'To Date') {
+
+        $collection = $row['collectionName'];
+        $useType = $row['useType'];
+        $samples = (int)$row['samples'];
+
+        $chartStorage[$collection] = true;
+        $chartUseTypes[$useType] = true;
+
+        $chartMatrix[$useType][$collection] = $samples;
+    }
+}
+
+$collections = array_keys($chartStorage);
+$useTypes = array_keys($chartUseTypes);
+
+$datasets = [];
+
+foreach ($useTypes as $type) {
+
+    $values = [];
+
+    foreach ($collections as $coll) {
+        $values[] = $chartMatrix[$type][$coll] ?? 0;
+    }
+
+    $datasets[] = [
+        "label" => $type,
+        "data" => $values
+    ];
+}
+
+?>
+
+<script>
+const storageLabels_<?= md5($reportDate) ?> = <?= json_encode($collections) ?>;
+const storageDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
+</script>
+
+<script>
+(function () {
+
+	const labels = storageLabels_<?= md5($reportDate) ?>;
+	const datasetsRaw = storageDatasets_<?= md5($reportDate) ?>;
+
+	const colorPalette = {
+		'destructive': '#0472cf',
+		'consumptive': '#d18710',
+		'invasive': '#dfdfe0',
+		'non-destructive': '#4b372f'
+	};
+
+	const datasets = datasetsRaw.map(ds => ({
+		label: ds.label,
+		backgroundColor: colorPalette[ds.label] || '#999999',
+		data: ds.data
+	}));
+
+	const ctx = document
+		.getElementById('storageChart')
+		.getContext('2d');
+
+	new Chart(ctx, {
+		type: 'bar',
+		data: {
+			labels: labels,
+			datasets: datasets
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			scales: {
+				x: {
+					stacked: true,
+					title: {
+						display: true,
+						text: 'Storage Type'
+					}
+				},
+				y: {
+					stacked: true,
+					beginAtZero: true,
+					title: {
+						display: true,
+						text: 'Number of Samples'
+					}
+				}
+			},
+			plugins: {
+				legend: {
+					position: 'bottom'
+				},
+				tooltip: {
+					callbacks: {
+						label: function (ctx) {
+							return ctx.dataset.label + ': ' +
+								ctx.raw.toLocaleString();
+						}
+					}
+				}
+			}
+		}
+	});
+
+})();
+</script>
 
 </html>

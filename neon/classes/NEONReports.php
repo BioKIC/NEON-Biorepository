@@ -428,7 +428,8 @@
         $this->researchersRequestsStatus($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->researchersSamplesCollection($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->samplesByUseType($name,$reportDate,$startquarter,$endquarter,$startyear);
-        $this->collectionsByUseType($name,$reportDate,$startquarter,$endquarter,$startyear);        
+        $this->collectionsByUseType($name,$reportDate,$startquarter,$endquarter,$startyear);   
+        $this->storageByUseType($name,$reportDate,$startquarter,$endquarter,$startyear);             
         $this->samplesByField($name,$reportDate,$startquarter,$endquarter,$startyear);
         $this->sampleUseByInitiationAYBarChart($name,$reportDate,$endquarter);
         $this->sampleUseByStatusAYBarChart($name,$reportDate,$endquarter);
@@ -1804,6 +1805,7 @@
                 OR r.pendingFundingDate      BETWEEN ? AND ?
                 OR r.pendingSampleListDate   BETWEEN ? AND ?
             )
+            AND r.internal = 'no' AND r.outreach = 'no'
         ),
 
         colls AS (
@@ -1855,18 +1857,18 @@
             ON s.occid = o.occid
         JOIN colls co
             ON o.collid = co.collid
+        WHERE s.substanceProvided NOT IN ('data','image')
         GROUP BY sampleGroup,useType";
 
         $stmt = $this->conn->prepare($sql);
 
 
-        $periodtypes = array('Quarter','Award Year','To Date');
+        $periodtypes = array('To Date');
 
         foreach ($periodtypes as $period) {
 
-            if ($period == 'Quarter') $start = $startquarter;
-            elseif ($period == 'Award Year') $start = $startyear;
-            elseif ($period == 'To Date') $start = '2010-01-01';
+            $period == 'To Date';
+            $start = '2010-01-01';
 
             $stmt->bind_param('ssssssss',
                 $start, $endquarter,
@@ -1887,6 +1889,111 @@
 
                 if ($ins->error) {
                     error_log("Insert error for Collections by Use Type: " . $ins->error);
+                }
+            }
+        }
+    }
+
+    public function storageByUseType($name,$reportDate,$startquarter,$endquarter,$startyear){
+        $sql = "WITH filtered_requests AS (
+            SELECT
+                r.id
+            FROM neonrequest r
+            WHERE r.status IN (
+                'active use',
+                'completed',
+                'pending sample list',
+                'pending funding',
+                'pending fulfillment'
+            )
+            AND (
+                r.activeDate              BETWEEN ? AND ?
+                OR r.pendingFulfillmentDate  BETWEEN ? AND ?
+                OR r.pendingFundingDate      BETWEEN ? AND ?
+                OR r.pendingSampleListDate   BETWEEN ? AND ?
+            )
+            AND r.internal = 'no' AND r.outreach = 'no'
+        ),
+
+        colls AS (
+            SELECT c.collid, CASE
+                        WHEN c.collectionName LIKE '%Extract%'
+                            THEN 'Extract'
+                        WHEN (c.collectionName LIKE '%Voucher%'
+                            OR c.collectionName LIKE '%Ectoparasite%'
+                            OR c.collectionName LIKE '%Reference%'
+                            OR c.collectionName LIKE '%Large%')
+                            THEN 'Voucher'
+                        WHEN c.collectionName LIKE '%Legacy%'
+                            THEN 'Legacy'
+                        WHEN (c.collectionName LIKE '%Biomass%'
+                            OR c.collectionName LIKE '%Foliage%'
+                            OR c.collectionName LIKE '%Distributed%'
+                            OR c.collectionName LIKE '%Litter%'
+                            OR c.collectionName LIKE '%Freeze%'
+                            OR c.collectionName LIKE '%Slide%')
+                            THEN 'Bulk Dry'
+                        WHEN (c.collectionName LIKE '%Filter%'
+                            OR c.collectionName LIKE '%Bulk Sub%'
+                            OR c.collectionName LIKE '%Bulk Iden%'
+                            OR c.collectionName LIKE '%Bulk Uniden%'
+                            OR c.collectionName LIKE '%Depo%'
+                            or c.collectionName LIKE '%Sedim%')
+                            THEN 'Bulk Frozen'
+                        WHEN (c.collectionName LIKE '%Tissue%'
+                            OR c.collectionName LIKE '%Blood%'
+                            or c.collectionName LIKE '%Hair%'
+                            OR c.collectionName LIKE '%Fecal%')
+                            THEN 'Tissue'
+                        ELSE 'Bulk Chemical'
+                    END AS collGroup
+            FROM omcollections c
+            WHERE institutionCode IN ('NEON','ASU')
+        )
+
+        SELECT 
+            co.collGroup AS sampleGroup,
+            s.useType AS useType,
+            COUNT(s.id) AS samples
+        FROM neonsamplerequestlink s
+        JOIN filtered_requests r
+            ON s.requestID = r.id
+        JOIN omoccurrences o
+            ON s.occid = o.occid
+        JOIN colls co
+            ON o.collid = co.collid
+        WHERE s.substanceProvided NOT IN ('data','image')
+        GROUP BY sampleGroup,useType";
+
+        $stmt = $this->conn->prepare($sql);
+
+
+        $periodtypes = array('To Date');
+
+        foreach ($periodtypes as $period) {
+
+            $period == 'To Date';
+            $start = '2010-01-01';
+
+            $stmt->bind_param('ssssssss',
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter,
+                $start, $endquarter
+            );
+
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionName`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Storage Type and Use Type', ?, ?, ?, ?)");
+
+                $ins->bind_param('ssssis', $name, $period, $row['sampleGroup'], $row['useType'], $row['samples'], $reportDate);
+                $ins->execute();
+
+                if ($ins->error) {
+                    error_log("Insert error for sample type by Use Type: " . $ins->error);
                 }
             }
         }
