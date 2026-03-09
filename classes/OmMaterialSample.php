@@ -2,6 +2,7 @@
 include_once($SERVER_ROOT . '/config/dbconnection.php');
 include_once($SERVER_ROOT . '/classes/utilities/OccurrenceUtil.php');
 include_once($SERVER_ROOT . '/classes/utilities/UuidFactory.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 
 class OmMaterialSample{
 
@@ -183,15 +184,14 @@ class OmMaterialSample{
 	}
 
 	// START NEON specific functions
-
 	public function getMatSampleIdByOccidAndCatalogNumber($occid, $catalogNumber) {
 		$occid = intval($occid);
 		$catalogNumber = $this->conn->real_escape_string($catalogNumber);
 
-		$sql = 'SELECT matSampleID 
-				FROM ommaterialsample 
-				WHERE occid = ' . $occid . ' 
-				AND catalogNumber = "' . $catalogNumber . '" 
+		$sql = 'SELECT matSampleID
+				FROM ommaterialsample
+				WHERE occid = ' . $occid . '
+				AND catalogNumber = "' . $catalogNumber . '"
 				LIMIT 1';
 
 		if ($rs = $this->conn->query($sql)) {
@@ -203,9 +203,9 @@ class OmMaterialSample{
 	}
 
 	public function getMatSampleIdByCatalogNumber($catalogNumber){
-		$sql = 'SELECT occid 
-				FROM ommaterialsample 
-				WHERE catalogNumber = ? 
+		$sql = 'SELECT occid
+				FROM ommaterialsample
+				WHERE catalogNumber = ?
 				LIMIT 1';
 
 		$stmt = $this->conn->prepare($sql);
@@ -219,9 +219,55 @@ class OmMaterialSample{
 
 		return false;
 	}
-
 	// END NEON specific Function
 
 
+	/**
+	 * Function to get key values of material sample fields and their translated
+	 * display text.
+	 *
+	 * NOTE /content/lang/collections/fieldterms/materialSampleVars.[$LANG_TAG].php
+	 * must be loaded for this work see classes/utilities/Language.php for loading it.
+	 *
+	 * @return Array Key Value array with translated field names
+	 * @throws conditon
+	 **/
+	public static function getMsLabels(): Array {
+		global $LANG;
+		Language::load('collections/fieldterms/materialSampleVars');
+		return [
+			'sampleType' => $LANG['SAMPLE_TYPE'],
+			'catalogNumber' => $LANG['CATALOG_NUMBER'],
+			'guid' => $LANG['GUID'],
+			'sampleCondition' => $LANG['SAMPLE_CONDITION'],
+			'disposition' => $LANG['DISPOSITION'],
+			'preservationType' => $LANG['PRESERVATION_TYPE'],
+			'preparationDetails' => $LANG['PREPARATION DETAILS'],
+			'preparationDate' => $LANG['PREPARATION_DATE'],
+			'preparedBy' => $LANG['PREPARED_BY'],
+			'individualCount' => $LANG['INDIVIDUAL COUNT'],
+			'sampleSize' => $LANG['SAMPLE_SIZE'],
+			'storageLocation' => $LANG['STORAGE_LOCATION'],
+			'remarks' => $LANG['REMARKS'],
+			'concentration' => $LANG['CONCENTRATION'],
+			'concentrationUnit' => $LANG['CONCENTRATION_UNIT'],
+			'ratioOfAbsorbance260/230' => $LANG['RATIO_OF_ABSORBANCE_260/230'],
+			'ratioOfAbsorbance260/230' => $LANG['RATIO_OF_ABSORBANCE_260/280'],
+			'volume' => $LANG['VOLUME'],
+			'weight' => $LANG['WEIGHT'],
+			'weightMethod' => $LANG['WEIGHT_METHOD'],
+			'purification Method' => $LANG['PURIFICATION_METHOD'],
+			'quality' => $LANG['QUALITY'],
+			'qualityRemarks' => $LANG['QUALITY_REMARKS'],
+			'qualityCheckDate' => $LANG['QUALITY_CHECK_DATE'],
+			'sampleSize' => $LANG['SAMPLE_SIZE'],
+			'sieving' => $LANG['SIEVING'],
+			'dnaHybridization' => $LANG['DNA_HYBRIDIZATION'],
+			'dnaMeltingPoint' => $LANG['DNA_MELTING_POINT'],
+			'estimatedSize' => $LANG['ESTIMATED_SIZE'],
+			'poolDnaExtracts' => $LANG['POOL_DNA_EXTRACTS'],
+			'sampleDesignation' => $LANG['SAMPLE_DESIGNATION']
+		];
+	 }
 }
 ?>
