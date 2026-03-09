@@ -379,27 +379,27 @@ if(!$schemaVersion){
 						}
 						?>
 					</ul>
+					<h2 class="subheader" >
+						<span>
+							<?= $LANG['CHECKLISTS'] ?>
+						</span>
+					</h2>
+					<p class="description">
+						<?= $LANG['TOOLSFORMANAGE'] ?>.
+					</p>
+					<ul>
+						<?php
+						if($clAdmin){
+							foreach($clAdmin as $k => $v){
+								echo '<li><a href="' . $CLIENT_ROOT . '/checklists/checklist.php?clid=' . $k . '&emode=1">'. $v . '</a></li>';
+							}
+						}
+						else{
+							echo '<li>' . $LANG['NOTEDITCHECK'] . '</li>';
+						}
+						?>
+					</ul>
 					<!--neon edit-->
-					<!--<h2 class="subheader" >-->
-					<!--	<span>-->
-					<!--		<?= $LANG['CHECKLISTS'] ?>-->
-					<!--	</span>-->
-					<!--</h2>-->
-					<!--<p class="description">-->
-					<!--	<?= $LANG['TOOLSFORMANAGE'] ?>.-->
-					<!--</p>-->
-					<!--<ul>-->
-					<!--	<?php-->
-					<!--	if($clAdmin){-->
-					<!--		foreach($clAdmin as $k => $v){-->
-					<!--			echo '<li><a href="' . $CLIENT_ROOT . '/checklists/checklist.php?clid=' . $k . '&emode=1">'. $v . '</a></li>';-->
-					<!--		}-->
-					<!--	}-->
-					<!--	else{-->
-					<!--		echo '<li>' . $LANG['NOTEDITCHECK'] . '</li>';-->
-					<!--	}-->
-					<!--	?>-->
-					<!--</ul>-->
 					<?php
 					//if(isset($ACTIVATE_EXSICCATI) && $ACTIVATE_EXSICCATI){
 						?>
