@@ -17,8 +17,8 @@ class TaxonomyDescriptionController extends Controller{
 	 * off-@OA\Get(
 	 *	 path="/api/v2/taxonomy/{identifier}/description",
 	 *	 operationId="/api/v2/taxonomy/identifier/description",
-	 *	 tags={""},
-	 *	 off-@OA\Parameter(
+	 *	 tags={"Taxonomy"},
+	 *	 @OA\Parameter(
 	 *		 name="identifier",
 	 *		 in="path",
 	 *		 description="PK, GUID, or recordID associated with target taxonomic unit",
@@ -77,8 +77,8 @@ class TaxonomyDescriptionController extends Controller{
 	 * off-@OA\Get(
 	 *	 path="/api/v2/taxonomy/{identifier}/description/{identifier}",
 	 *	 operationId="/api/v2/taxonomy/identifier/description/identifier",
-	 *	 tags={""},
-	 *	 off-@OA\Parameter(
+	 *	 tags={"Taxonomy"},
+	 *	 @OA\Parameter(
 	 *		 name="identifier",
 	 *		 in="path",
 	 *		 description="PK, GUID, or recordID associated with target taxonomic unit",

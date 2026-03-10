@@ -2,9 +2,10 @@
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT . '/classes/TaxonomyEditorManager.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceListManager.php');
-if ($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/list.' . $LANG_TAG . '.php'))
-	include_once($SERVER_ROOT . '/content/lang/collections/list.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/collections/list.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('collections/list');
+
 header("Content-Type: text/html; charset=" . $CHARSET);
 
 $taxonFilter = array_key_exists('taxonfilter', $_REQUEST) ? filter_var($_REQUEST['taxonfilter'], FILTER_SANITIZE_NUMBER_INT) : 0;
@@ -28,7 +29,7 @@ $imgLibManager = new ImageLibrarySearch();
 $imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
 //end NEON edit
 
-$_SESSION['datasetid'] = filter_var($datasetid, FILTER_SANITIZE_NUMBER_INT);
+$_SESSION['datasetid'] = $datasetid;
 
 $collManager = new OccurrenceListManager();
 $searchVar = $collManager->getQueryTermStr();
@@ -93,13 +94,7 @@ $_SESSION['citationvar'] = $searchVar;
 		let urlQueryStr = "<?php if ($searchVar) echo $searchVar . '&page=' . $pageNumber; ?>";
 
 		$(document).ready(function() {
-			<?php
-			if ($searchVar) {
-			?>
-				sessionStorage.querystr = "<?php echo $searchVar; ?>";
-			<?php
-			}
-			?>
+			setSessionQueryStr();
 
 			$('#tabs').tabs({
 				active: <?= $tabIndex; ?>,
@@ -143,6 +138,10 @@ $_SESSION['citationvar'] = $searchVar;
 	<script src="../js/symb/shared.js?ver=1" type="text/javascript"></script>
 </head>
 <body>
+	<div id="all_collections_parent_container" data-config='<?= json_encode([
+		'CURRENT_URL' => $_SERVER['REQUEST_URI'],
+	]) ?>'></div>
+	<div id="service-container" data-search-var="<?= $searchVar; ?>"></div>
 	<?php
 	$displayLeftMenu = (isset($collections_listMenu) ? $collections_listMenu : false);
 	include($SERVER_ROOT . '/includes/header.php');
@@ -242,7 +241,7 @@ $_SESSION['citationvar'] = $searchVar;
 							</form>
 						</span>
 						<span>
-							<button class="icon-button" onclick="copyUrl()" aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
+							<button class="icon-button" onclick="copyUrl('<?= htmlspecialchars($comingFrom, ENT_QUOTES, 'UTF-8'); ?>')" aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
 								<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_COPY']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
 									<path d="M440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm200 160v-80h160q50 0 85-35t35-85q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480q0 83-58.5 141.5T680-280H520Z" />
 								</svg>
@@ -252,6 +251,7 @@ $_SESSION['citationvar'] = $searchVar;
 					<div style="margin:5px;">
 						<?php
 						$collSearchStr = $collManager->getCollectionSearchStr();
+						if(!empty($LANG[$collSearchStr])) $collSearchStr = $LANG[$collSearchStr];
 						if (strlen($collSearchStr) > 100) {
 							$collSearchArr = explode('; ', $collSearchStr);
 							$collSearchStr = '';
@@ -305,6 +305,13 @@ $_SESSION['citationvar'] = $searchVar;
 												'o.county' => $LANG['COUNTY'],
 												'o.minimumElevationInMeters' => $LANG['ELEVATION']
 											);
+												if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
+													$sortFields = array_merge($sortFields, [
+														'paleo.lateInterval' => $LANG['LATE_INT'],
+														'paleo.earlyInterval' => $LANG['EARLY_INT'],
+														'paleo.formation' => $LANG['FORMATION']
+													]);
+												}
 											foreach ($sortFields as $k => $v) {
 												echo '<option value="' . $k . '" ' . ($k == $sortField1 ? 'SELECTED' : '') . '>' . $v . '</option>';
 											}
@@ -460,11 +467,27 @@ $_SESSION['citationvar'] = $searchVar;
 										if (isset($fieldArr['elev']) && $fieldArr['elev']) $localStr .= ', ' . $fieldArr['elev'] . 'm';
 									}
 									$localStr = trim($localStr, ' ,');
-									echo $localStr;
-									echo '</div><div style="margin:4px">';
+									echo $localStr . '</div>';
+									if (!empty($fieldArr['earlyInterval']) || !empty($fieldArr['lateInterval']) || !empty($fieldArr['formation'])) {
+										echo '<div style="margin:4px;">';
+										echo $LANG['GEO_CONTEXT'] . ':' . ' ';
+										$earlyInt = $fieldArr['earlyInterval'] ?? '';
+										$lateInt = $fieldArr['lateInterval'] ?? '';
+										if ($earlyInt || $lateInt) {
+											if ($lateInt === '' || $earlyInt === $lateInt)
+												echo '<span style="margin-right:20px;">' . $earlyInt . '</span>';
+											else
+												echo '<span style="margin-right:20px;">' . trim("$earlyInt to $lateInt") . '</span>';
+										}
+										if (!empty($fieldArr['formation']))
+											echo '<span>' . $fieldArr['formation'] . '</span>';
+										echo '</div>';
+									}
+									echo '<div style="margin:4px">';
 									//neon edit
 									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									//end edit
+									echo '<b><a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
 								}
 								?>
@@ -512,16 +535,16 @@ $_SESSION['citationvar'] = $searchVar;
 				<!--neon edit-->
 				<?php
 				$map_params = 'gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y&menuClosed&embedded=1';
-				
+
 				if (empty($searchVar) && !empty($_SERVER['QUERY_STRING'])) {
 					$searchParams = '?' . $_SERVER['QUERY_STRING'] . '&' . $map_params;
 				} else {
 					$searchParams = '?' . $searchVar . '&' . $map_params;
 				}
-				
+
 				$mapUrl = $CLIENT_ROOT . '/collections/map/index.php' . $searchParams;
 				?>
-				
+
 				<div style="margin-top:10px;">
 					<iframe
 						src="<?= htmlspecialchars($mapUrl) ?>"
@@ -616,7 +639,7 @@ $_SESSION['citationvar'] = $searchVar;
 						</form>-->
 						<?php
 						echo '<div style="clear:both;margin:5 0 5 0;"><hr /></div>';
-						
+
 						$lastPage = ceil($recordCnt / $cntPerPage);
 						$startPage = ($imagePageNumber > 4?$imagePageNumber - 4:1);
 						$endPage = ($lastPage > $startPage + 9?$startPage + 9:$lastPage);
@@ -726,7 +749,7 @@ $_SESSION['citationvar'] = $searchVar;
 					?>
 				</div>
 			</div>
-			<!--end NEON edit-->	
+			<!--end NEON edit-->
 		</div>
 	</div>
 	<?php

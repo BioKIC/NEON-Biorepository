@@ -9,7 +9,7 @@ require_once(__DIR__ . '/../vendor/tcpdf/tcpdf.php');
 
 class NEONChecklistPDF extends TCPDF {
 	public $checklistTitle = '';
-	
+
 	public function Header() {
 		$this->Image(__DIR__ . '/../neon/images/NEON-NSF-2023.jpg', 15, 10, 40);
 
@@ -19,18 +19,18 @@ class NEONChecklistPDF extends TCPDF {
 		$titleWidth = 100;
 		$dateWidth  = 27;
 		$baseHeight = 8;
-		
+
 		$titleText = 'Title: ' . $this->checklistTitle . ' Dynamic Taxonomic Checklist';
-		
+
 		// Measure wrapped text height
 		$this->SetFont('Calibri', '', 8);
 		$textHeight = $this->getStringHeight($titleWidth - 4, $titleText);
-		
+
 		$height = max($baseHeight, $textHeight + 3); // +3 for padding
-		
+
 		$this->Rect($startX, $startY, $titleWidth, $height);
 		$this->Rect($startX + $titleWidth, $startY, $dateWidth, $height);
-		
+
 		$this->SetXY($startX + 2, $startY + 1.5);
 		$this->MultiCell(
 			$titleWidth - 4,  // available width
@@ -44,7 +44,7 @@ class NEONChecklistPDF extends TCPDF {
 		$dateText = 'Date: ' . date('m/d/Y');
 		$dateTextHeight = $this->getStringHeight($dateWidth - 4, $dateText);
 		$dateY = $startY + ($height / 2) - ($dateTextHeight / 2);
-		
+
 		// Place date text
 		$this->SetXY($startX + $titleWidth + 2, $dateY);
 		$this->SetFont('calibrii', '', 8);
@@ -52,7 +52,7 @@ class NEONChecklistPDF extends TCPDF {
 		$this->SetFont('Calibri', '', 8);
 		$this->Write(0, date('m/d/Y'));
 
-	
+
 		$this->Ln(18); // space after header
 	}
 	public function Footer() {
@@ -268,8 +268,8 @@ class ChecklistManager extends Manager{
 	public function getTaxaList($pageNumber = 1,$retLimit = 500){
 		if(!$this->clid && !$this->dynClid) return array();
 		//Get species list
-		$speciesPrev="";
-		$taxonPrev="";
+		$speciesPrev = '';
+		$taxonPrev = '';
 		$genusCntArr = Array();
 		$familyCntArr = Array();
 		$speciesRankNeededArr = array();
@@ -292,10 +292,10 @@ class ChecklistManager extends Manager{
 			if($this->showAlphaTaxa) $taxonGroup = $row->unitname1;
 			$tid = $row->tid;
 			$sciName = $this->cleanOutStr($row->sciname);
-			$taxonTokens = explode(" ",$sciName);
-			if(in_array("x",$taxonTokens) || in_array("X",$taxonTokens)){
-				if(in_array("x",$taxonTokens)) unset($taxonTokens[array_search("x",$taxonTokens)]);
-				if(in_array("X",$taxonTokens)) unset($taxonTokens[array_search("X",$taxonTokens)]);
+			$taxonTokens = explode(' ', $sciName);
+			if(in_array('x', $taxonTokens) || in_array('X', $taxonTokens)){
+				if(in_array('x', $taxonTokens)) unset($taxonTokens[array_search('x', $taxonTokens)]);
+				if(in_array('X', $taxonTokens)) unset($taxonTokens[array_search('X', $taxonTokens)]);
 				$newArr = array();
 				foreach($taxonTokens as $v){
 					$newArr[] = $v;
@@ -309,24 +309,24 @@ class ChecklistManager extends Manager{
 				elseif($row->rankid <= 180) $sciName .= " sp.";
 				//
 				if($row->rankid > 220 && $this->clMetadata['type'] != 'rarespp' && !array_key_exists($row->parenttid, $this->taxaList)){
-					$this->taxaList[$row->parenttid]['taxongroup'] = '<i>'.$taxonGroup.'</i>';
+					$this->taxaList[$row->parenttid]['taxongroup'] = '<i>' . $taxonGroup . '</i>';
 					$this->taxaList[$row->parenttid]['family'] = $family;
 					//$this->taxaList[$row->parenttid]['clid'] = $row->clid;
 					$speciesRankNeededArr[] = $row->parenttid;
 				}
 				if($this->showVouchers){
-					$clStr = "";
-					if($row->habitat) $clStr = ", ".$row->habitat;
-					if($row->abundance) $clStr .= ", ".$row->abundance;
-					if($row->notes) $clStr .= ", ".$row->notes;
-					if($row->source) $clStr .= ", <u>source</u>: ".$row->source;
-					if($clStr) $this->taxaList[$tid]["notes"] = substr($clStr,2);
+					$clStr = '';
+					if($row->habitat) $clStr = ', ' . $row->habitat;
+					if($row->abundance) $clStr .= ', ' . $row->abundance;
+					if($row->notes) $clStr .= ', ' . $row->notes;
+					if($row->source) $clStr .= ', <u>source</u>: ' . $row->source;
+					if($clStr) $this->taxaList[$tid]['notes'] = substr($clStr,2);
 				}
 				$this->taxaList[$tid]['sciname'] = $sciName;
 				$this->taxaList[$tid]['family'] = $family;
-				$this->taxaList[$tid]['taxongroup'] = '<i>'.$taxonGroup.'</i>';
+				$this->taxaList[$tid]['taxongroup'] = '<i>' . $taxonGroup . '</i>';
 				if(isset($this->taxaList[$tid]['clid'])){
-					if($this->taxaList[$tid]['clid'] != $row->clid) $this->taxaList[$tid]['clid'] = $this->taxaList[$tid]['clid'].','.$row->clid;
+					if($this->taxaList[$tid]['clid'] != $row->clid) $this->taxaList[$tid]['clid'] = $this->taxaList[$tid]['clid'] . ',' . $row->clid;
 				}
 				else $this->taxaList[$tid]['clid'] = $row->clid;
 				if($this->showAuthors) $this->taxaList[$tid]['author'] = $this->cleanOutStr($row->author);
@@ -349,11 +349,6 @@ class ChecklistManager extends Manager{
 					$this->speciesCount += 1;
 				}
 			}
-			//$this->filterArr[$taxonTokens[0]] = "";
-			//if(count($taxonTokens) > 1 && $taxonTokens[0]." ".$taxonTokens[1] != $speciesPrev){
-			//	$this->speciesCount++;
-			//	$speciesPrev = $taxonTokens[0]." ".$taxonTokens[1];
-			//}
 			if ($row->rankid >= 230 && $taxonPrev && strpos($sciName, $taxonPrev) !== false) {
 				$this->taxaCount += 1;
 			} else {
@@ -363,12 +358,19 @@ class ChecklistManager extends Manager{
 					$this->taxaCount += 1;
 				}
 			}
-			
+
 			$taxonPrev = implode(" ", $taxonTokens);
-			//if(!$taxonPrev || strpos($sciName,$taxonPrev) === false){
-			//	$this->taxaCount++;
-			//}
-			//$taxonPrev = implode(" ",$taxonTokens);
+			/*
+			$this->filterArr[$taxonTokens[0]] = '';
+			if(count($taxonTokens) > 1 && $taxonTokens[0] . ' ' . $taxonTokens[1] != $speciesPrev){
+				$this->speciesCount++;
+				$speciesPrev = $taxonTokens[0] . ' ' . $taxonTokens[1];
+			}
+			if(!$taxonPrev || ($sciName != $taxonPrev && strpos($sciName, $taxonPrev . ' ') === false)){
+				$this->taxaCount++;
+			}
+			$taxonPrev = implode(' ', $taxonTokens);
+			*/
 			// end neon edit
 		}
 		$this->familyCount = count($familyCntArr);
@@ -430,7 +432,7 @@ class ChecklistManager extends Manager{
 			if($this->showSynonyms) $this->setSynonyms();
 			if($speciesRankNeededArr && $this->clMetadata['type'] != 'rarespp'){
 				//Get species ranked taxa that are not explicited linked into checklist
-				$sql = 'SELECT tid, sciname, author FROM taxa WHERE tid IN('.implode(',',$speciesRankNeededArr).')';
+				$sql = 'SELECT tid, sciname, author FROM taxa WHERE rankid = 220 AND tid IN('.implode(',', $speciesRankNeededArr).')';
 				$rs = $this->conn->query($sql);
 				while($r = $rs->fetch_object()){
 					$this->taxaList[$r->tid]['sciname'] = $r->sciname;
@@ -456,7 +458,7 @@ class ChecklistManager extends Manager{
 				$dp = json_decode($this->clMetadata['dynamicProperties'] ?? '{}', true);
 				$datasetIDs = !empty($dp['datasetIDs']) ? $dp['datasetIDs'] : [];
 				$datasetIdStr = $datasetIDs ? implode(',', array_map('intval', $datasetIDs)) : '0';
-				$sql = 'SELECT 
+				$sql = 'SELECT
 							o.tidInterpreted as tid,
 							MIN(m.url) AS url,
 							MIN(m.thumbnailurl) AS thumbnailurl,
@@ -572,39 +574,50 @@ class ChecklistManager extends Manager{
 		}
 	}
 
-  public function getExternalVoucherArr(){
+  /**
+   * Gets all external vouchers, currently only supports iNaturalist.
+   * If given a $tid param then only get vouchers associated to that tid.
+   * Requires $taxaList be set or a $tid to be passed in.
+   *
+   * @param int|null $tid Optional Taxonomic id that will give only vouchers of the associated id
+   * @return array with the key structure of [ (tid) => [[ (clCoordID) => [ display => string, url => string, id => int|string] ]]]
+   **/
+  public function getExternalVoucherArr($tid = null) {
 		$externalVoucherArr = array();
-		if($this->taxaList){
+
+		if(is_numeric($tid) || $this->taxaList) {
+			$taxaList = is_numeric($tid)? [ $tid ]: array_keys($this->taxaList);
 			$clidStr = $this->clid;
 			if($this->childClidArr){
 				$clidStr .= ','.implode(',',array_keys($this->childClidArr));
 			}
 			$sql = 'SELECT clCoordID, clid, tid, sourceIdentifier, referenceUrl, dynamicProperties
 				FROM fmchklstcoordinates
-				WHERE (clid IN ('.$clidStr.')) AND (tid IN('.implode(',',array_keys($this->taxaList)).')) AND sourceName = "EXTERNAL_VOUCHER"';
+				WHERE (clid IN (' . $clidStr . ')) AND (tid IN(' . implode(',', $taxaList) . ')) AND sourceName = "EXTERNAL_VOUCHER"';
+
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()){
-				$dynPropArr = json_decode($r->dynamicProperties);
-				foreach($dynPropArr as $vouch) {
-					$displayStr = '';
-					if(!empty($vouch->user)) $displayStr = $vouch->user;
-					if(strlen($displayStr) > 25){
-						//Collector string is too big, thus reduce
-						$strPos = strpos($displayStr,';');
-						if(!$strPos) $strPos = strpos($displayStr,',');
-						if(!$strPos) $strPos = strpos($displayStr,' ',10);
-						if($strPos) $displayStr = substr($displayStr,0,$strPos).'...';
-					}
-					if($vouch->date) $displayStr .= ' '.$vouch->date;
-					if(!trim($displayStr)) $displayStr = 'undefined voucher';
-					$displayStr .= ' ['.$vouch->repository.($vouch->id?'-'.$vouch->id:'').']';
-					$externalVoucherArr[$r->tid][$r->clCoordID]['display'] = trim($displayStr);
-					$url = 'https://www.inaturalist.org/observations/'.$r->sourceIdentifier;
-					$externalVoucherArr[$r->tid][$r->clCoordID]['url'] = $url;
+				$dynVoucher = json_decode($r->dynamicProperties);
+				$displayStr = '';
+				if(!empty($dynVoucher->user)) $displayStr = $dynVoucher->user;
+				if(strlen($displayStr) > 25){
+					//Collector string is too big, thus reduce
+					$strPos = strpos($displayStr,';');
+					if(!$strPos) $strPos = strpos($displayStr,',');
+					if(!$strPos) $strPos = strpos($displayStr,' ',10);
+					if($strPos) $displayStr = substr($displayStr,0,$strPos).'...';
 				}
+				if($dynVoucher->date) $displayStr .= ' '.$dynVoucher->date;
+				if(!trim($displayStr)) $displayStr = 'undefined voucher';
+				$displayStr .= ' ['.$dynVoucher->repository.($dynVoucher->id?'-'.$dynVoucher->id:'').']';
+				$externalVoucherArr[$r->tid][$r->clCoordID]['display'] = trim($displayStr);
+				$url = 'https://www.inaturalist.org/observations/'.$r->sourceIdentifier;
+				$externalVoucherArr[$r->tid][$r->clCoordID]['url'] = $url;
+				$externalVoucherArr[$r->tid][$r->clCoordID]['id'] = $dynVoucher->id;
 			}
 			$rs->free();
 		}
+
 		return $externalVoucherArr;
 	}
 
@@ -679,11 +692,11 @@ class ChecklistManager extends Manager{
 			$headerArr = array('Family','ScientificName','ScientificNameAuthorship');
 			//NEON edit
 			$headerArr = array(ucfirst($this->groupByRank), 'ScientificName');
-			
+
 			if ($this->showAuthors) {
 				$headerArr[] = 'ScientificNameAuthorship';
 			}
-			
+
 			if ($this->showSynonyms) {
 				$headerArr[] = 'Synonyms';
 			}
@@ -693,7 +706,7 @@ class ChecklistManager extends Manager{
 			$headerArr[] = 'TaxonId';
 			fputcsv($fh,$headerArr);
 			foreach($taxaArr as $tid => $tArr){
-				
+
 				//NEON edit
 				//$outArr = array($tArr['family']);
 				$outArr = array(ucfirst(strtolower(strip_tags($tArr['taxongroup']))));
@@ -702,7 +715,7 @@ class ChecklistManager extends Manager{
 				if ($this->showAuthors) $outArr[] = (array_key_exists('author', $tArr) ? html_entity_decode($tArr['author'], ENT_QUOTES | ENT_XML1) : '');
 				if ($this->showSynonyms) $outArr[] = (array_key_exists('syn', $tArr) ? strip_tags($tArr['syn']) : '');
 				//end NEON edit
-				
+
 				if($this->showCommon) $outArr[] = (array_key_exists('vern',$tArr)?html_entity_decode($tArr['vern'],ENT_QUOTES|ENT_XML1):'');
 				$outArr[] = (array_key_exists('notes',$tArr)?strip_tags(html_entity_decode($tArr['notes'],ENT_QUOTES|ENT_XML1)):'');
 				$outArr[] = $tid;
@@ -718,7 +731,7 @@ class ChecklistManager extends Manager{
 	//NEON edit
 	public function downloadChecklistPdf() {
 		if (!$this->basicSql) $this->setClSql();
-		
+
 		$pdf = new NEONChecklistPDF();
 		$pdf->checklistTitle = $this->clName;
 		$pdf->SetCreator(PDF_CREATOR);
@@ -729,7 +742,7 @@ class ChecklistManager extends Manager{
 		$pdf->AddPage();
 		$pdf->SetFont('Calibri', '', 11);
 		//TCPDF_FONTS::addTTFfont(__DIR__ . '/../vendor/tcpdf/fonts/calibri-bold-italic.ttf', 'TrueTypeUnicode', '', 32);
-	
+
 		$downloadDate = date('F j, Y');
 		$intro = <<<HTML
 	<style>
@@ -806,9 +819,9 @@ class ChecklistManager extends Manager{
 	</p>
 
 	HTML;
-	
+
 		$pdf->writeHTML($intro, true, false, true, false, '');
-	
+
 		$pdf->SetY(-35);
 		$pdf->SetFont('Calibri', '', 7);
 		$pdf->MultiCell(0, 0,
@@ -829,28 +842,28 @@ class ChecklistManager extends Manager{
 				return strcasecmp($a['sciname'], $b['sciname']);
 			});
 			$entries = array_values($taxaArr);
-		
+
 			$colWidth = ($pdf->getPageWidth() - 44) / 2; // respect left/right margins
 			$xLeft = 22;
 			$xRight = $xLeft + $colWidth + 2;
 			$topY = 32;
 			$firstPageRightStartY = $pdf->GetY();
-			
+
 			$bottomY = $pdf->getPageHeight() - 25;
-		
+
 			$currentX = $xLeft;
 			$currentY = $pdf->GetY();
 			$inLeftColumn = true;
 			$previousGroup = null;
-		
+
 			foreach ($entries as $tArr) {
 				$group = isset($tArr['taxongroup']) ? trim(str_replace(['<i>', '</i>'], '', $tArr['taxongroup'])) : null;
-			
+
 				if ($group && $group !== $previousGroup) {
 					$groupHeader = '<br><div style="text-align:center; font-weight:bold; text-transform:uppercase; margin-bottom:6pt;">' . $group . '</div></br>';
-			
+
 					$groupHeight = $pdf->getStringHeight($colWidth, $groupHeader);
-			
+
 					if ($currentY + $groupHeight > $bottomY) {
 						if ($inLeftColumn) {
 							$currentX = $xRight;
@@ -863,21 +876,21 @@ class ChecklistManager extends Manager{
 							$inLeftColumn = true;
 						}
 					}
-			
+
 					$pdf->SetXY($currentX, $currentY);
 					$pdf->writeHTMLCell($colWidth, 0, $currentX, $currentY, $groupHeader, 0, 1, false, true, 'C', true);
 					$currentY = $pdf->GetY();
 					$previousGroup = $group;
 				}
-	
+
 				$nameLine = '';
 				$name = $tArr['sciname'];
-				
+
 				if (strpos($name, ' ') !== false) {
 					$parts = explode(' ', $name, 2);
 					$genus = $parts[0];
 					$rest = $parts[1];
-				
+
 					if (stripos($rest, 'sp.') === 0) {
 						$nameLine = '<b><i>' . $genus . '</i> ' . $rest . '</b>';
 					} else {
@@ -892,12 +905,12 @@ class ChecklistManager extends Manager{
 				if (!empty($tArr['family'])) {
 					$nameLine .= ' ' . $tArr['family'];
 				}
-				
+
 				$entry = '<div style="margin-left:15pt; text-indent:-15pt;">' . $nameLine . '</div>';
-				
+
 				if (!empty($this->showSynonyms) && !empty($tArr['syn'])) {
 					preg_match_all('/<i>.*?<\/i>[^<]*/', $tArr['syn'], $matches);
-				
+
 					$first = true;
 					foreach ($matches[0] as $syn) {
 						$syn = trim($syn, " ,\t\n\r\0\x0B");
@@ -916,9 +929,9 @@ class ChecklistManager extends Manager{
 				if ($this->showCommon && !empty($tArr['vern'])) {
 					$entry .= $tArr['vern'];
 				}
-		
+
 				$entryHeight = $pdf->getStringHeight($colWidth, $entry);
-		
+
 				if ($currentY + $entryHeight > $bottomY) {
 					if ($inLeftColumn) {
 						$currentX = $xRight;
@@ -931,7 +944,7 @@ class ChecklistManager extends Manager{
 						$inLeftColumn = true;
 					}
 				}
-		
+
 				$pdf->SetXY($currentX, $currentY);
 				$pdf->writeHTMLCell($colWidth, 0, $currentX, $currentY, $entry, 0, 1, false, true, 'T', true);
 				$currentY = $pdf->GetY();
@@ -939,13 +952,13 @@ class ChecklistManager extends Manager{
 		} else {
 			$pdf->writeHTML('<p>No taxa available.</p>', true, false, true, false, '');
 		}
-	
+
 		$fileName = $this->clName . "_" . time() . ".pdf";
 		$pdf->Output($fileName, 'D');
 		exit();
 	}
     //end NEON edit
- 
+
 	private function setClSql(){
 		// NEON edit
 		if ($this->clid && $this->clMetadata['type'] == 'dynamicdataset') {
@@ -953,16 +966,16 @@ class ChecklistManager extends Manager{
 			$datasetIDs = array_map('intval', $props['datasetIDs'] ?? []);
 			$collids = array_map('intval', $props['collids'] ?? []);
 			$parentTids = array_map('intval', $props['tids'] ?? []);
-	
+
 			if (empty($datasetIDs)) {
 				$this->basicSql = 'SELECT NULL WHERE 1=0';
 				return;
 			}
-	
+
 			$datasetStr = implode(',', $datasetIDs);
 			$collidFilter = !empty($collids) ? 'o.collid IN (' . implode(',', $collids) . ')' : '1=0';
-			$tidFilter = '1=0';		
-			
+			$tidFilter = '1=0';
+
 			if (!empty($parentTids)) {
 				$tidStr = implode(',', $parentTids);
 				$tidFilter = "o.tidInterpreted IN (
@@ -970,7 +983,7 @@ class ChecklistManager extends Manager{
 					WHERE parenttid IN ($tidStr)
 				)";
 			}
-	
+
 			$this->basicSql = "
 				SELECT DISTINCT t.tid, ".$this->clid." AS clid, t.sciname, t.author,
 					   NULL AS morphospecies, t.unitname1, t.rankid,
@@ -1004,15 +1017,15 @@ class ChecklistManager extends Manager{
 			if($this->childClidArr){
 				$clidStr .= ','.implode(',',array_keys($this->childClidArr));
 			}
-			$this->basicSql = 'SELECT t.tid, ctl.clid, t.sciname, t.author, ctl.morphospecies, t.unitname1, t.rankid, ctl.habitat, ctl.abundance, ctl.notes, ctl.source, ts.parenttid, ';
+			$this->basicSql = 'SELECT t.tid, ctl.clid, t.sciname, t.author, ctl.morphospecies, t.unitname1, t.rankid, ctl.habitat, ctl.abundance, ctl.notes, ctl.source, ';
 			if($this->thesFilter){
-				$this->basicSql .= 'ts2.family FROM taxa t INNER JOIN taxstatus ts ON t.tid = ts.tidaccepted '.
-					'INNER JOIN fmchklsttaxalink ctl ON ts.tid = ctl.tid '.
-					'INNER JOIN taxstatus ts2 ON ts.tidaccepted = ts2.tid '.
-			  		'WHERE (ts.taxauthid = '.$this->thesFilter.') AND (ctl.clid IN ('.$clidStr.')) ';
+				$this->basicSql .= 'ts2.parenttid, ts2.family FROM taxa t INNER JOIN taxstatus ts ON t.tid = ts.tidaccepted
+					INNER JOIN fmchklsttaxalink ctl ON ts.tid = ctl.tid
+					INNER JOIN taxstatus ts2 ON ts.tidaccepted = ts2.tid
+			  		WHERE (ts.taxauthid = '.$this->thesFilter.') AND (ts2.taxauthid = '.$this->thesFilter.') AND (ctl.clid IN ('.$clidStr.')) ';
 			}
 			else{
-				$this->basicSql .= 'IFNULL(ctl.familyoverride,ts.family) AS family FROM taxa t INNER JOIN fmchklsttaxalink ctl ON t.tid = ctl.tid '.
+				$this->basicSql .= 'ts.parenttid, IFNULL(ctl.familyoverride,ts.family) AS family FROM taxa t INNER JOIN fmchklsttaxalink ctl ON t.tid = ctl.tid '.
 					'INNER JOIN taxstatus ts ON t.tid = ts.tid '.
 			  		'WHERE (ts.taxauthid = 1) AND (ctl.clid IN ('.$clidStr.')) ';
 			}
@@ -1234,7 +1247,7 @@ class ChecklistManager extends Manager{
 	public function setLimitImagesToVouchers($bool){
 		if($bool) $this->limitImagesToVouchers = true;
 	}
-	
+
 	//neon edit
 	public function setLimitImagesToSite($bool){
 		if($bool) $this->limitImagesToSite = true;
@@ -1260,7 +1273,7 @@ class ChecklistManager extends Manager{
 	public function setSearchSynonyms($bool){
 		if($bool) $this->searchSynonyms = true;
 	}
-	
+
 	// NEON edit
 	public function setGroupByRank($rankName) {
 		if (!empty($rankName)) {
@@ -1268,7 +1281,7 @@ class ChecklistManager extends Manager{
 		}
 	}
 	// end NEON edit
-	
+
 	public function getClid(){
 		return $this->clid;
 	}
