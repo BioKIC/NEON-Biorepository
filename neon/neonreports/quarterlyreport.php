@@ -397,14 +397,14 @@ foreach ($reportsArr as $row) {
 		const years = [...new Set(rawData.map(r => r.initiationAY))].sort();
 
 		const statuses = [
-			'active/complete',
+			'active/completed',
 			'pending funding/fulfillment',
 			'not funded',
 			'initial inquiry only'
 		];
 		const colorPalette = {
 			'initial inquiry only': '#dfdfe0',
-			'active/complete': '#0472cf',
+			'active/completed': '#0472cf',
 			'pending funding/fulfillment': '#d18710ff',
 			'not funded': '#4b372f'
 		};
@@ -495,14 +495,14 @@ foreach ($reportsArr as $row) {
 		const years = [...new Set(rawData.map(r => r.statusAY))].sort();
 
 		const statuses = [
-			'active/complete',
+			'active/completed',
 			'pending funding/fulfillment',
 			'not funded',
 			'initial inquiry only'
 		];
 		const colorPalette = {
 			'initial inquiry only': '#dfdfe0',
-			'active/complete': '#0472cf',
+			'active/completed': '#0472cf',
 			'pending funding/fulfillment': '#d18710ff',
 			'not funded': '#4b372f'
 		};

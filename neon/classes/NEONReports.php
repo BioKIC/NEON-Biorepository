@@ -606,7 +606,7 @@
         $sql = "SELECT
                     CASE
                         WHEN r.activeDate BETWEEN ? AND ? 
-                            THEN 'active/complete'
+                            THEN 'active/completed'
                         WHEN (r.pendingFulfillmentDate BETWEEN ?  AND ?) 
                             OR (r.pendingSampleListDate BETWEEN ?  AND ?) 
                             OR (r.pendingFundingDate BETWEEN ?  AND ?) 
@@ -741,7 +741,7 @@
         $sql = "SELECT
                     CASE
                         WHEN r.activeDate BETWEEN ? AND ? 
-                            THEN 'active/complete'
+                            THEN 'active/completed'
                         WHEN r.pendingFulfillmentDate BETWEEN ?  AND ? 
                             THEN 'pending fulfillment'
                         WHEN r.pendingSampleListDate BETWEEN ?  AND ? 
@@ -1571,7 +1571,7 @@
                         FROM neonrequest
 
                         UNION ALL
-                        SELECT id,inquiryDate, 'active/complete', activeDate
+                        SELECT id,inquiryDate, 'active/completed', activeDate
                         FROM neonrequest
 
                         UNION ALL
@@ -1637,7 +1637,7 @@
                         FROM neonrequest
 
                         UNION ALL
-                        SELECT id, 'active/complete', activeDate
+                        SELECT id, 'active/completed', activeDate
                         FROM neonrequest
 
                         UNION ALL
