@@ -712,7 +712,7 @@ class ShipmentManager{
 			//Update target record
 			$sql = 'UPDATE NeonSample
 				SET sampleID = ?, alternativeSampleID = ?, sampleCode = ?, sampleClass = ?, sampleUuid = ?,quarantineStatus = ?, namedLocation = ?, collectDate = ?, taxonID = ?,
-				individualCount = ?, filterVolume = ?, domainRemarks = ?, notes = ? WHERE (samplepk = ?)';
+				individualCount = ?, filterVolume = ?, domainRemarks = ?, notes = ?, checkinRemarks = ? WHERE (samplepk = ?)';
 			$stmt = $this->conn->stmt_init();
 			$stmt->prepare($sql);
 			if($stmt->error==null) {
@@ -726,8 +726,9 @@ class ShipmentManager{
 				$filterVol = isset($postArr['filtervolume'])&&$postArr['filtervolume']?$postArr['filtervolume']:NULL;
 				$domainRemarks = isset($postArr['domainremarks'])&&$postArr['domainremarks']?$postArr['domainremarks']:NULL;
 				$sampleNotes = isset($postArr['samplenotes'])&&$postArr['samplenotes']?$postArr['samplenotes']:NULL;
-				$stmt->bind_param('sssssssssiissi', $sampleID, $altID, $sampleCode, $sampleClass, $sampleUuid, $quarStatus, $namedLoc, $collDate, $taxonID,
-					$indCnt, $filterVol, $domainRemarks, $sampleNotes, $postArr['samplepk']);
+				$checkinRemarks = isset($postArr['checkinremarks'])&&$postArr['checkinremarks']?$postArr['checkinremarks']:NULL;
+				$stmt->bind_param('sssssssssiisssi', $sampleID, $altID, $sampleCode, $sampleClass, $sampleUuid, $quarStatus, $namedLoc, $collDate, $taxonID,
+					$indCnt, $filterVol, $domainRemarks, $sampleNotes, $checkinRemarks, $postArr['samplepk']);
 				$stmt->execute();
 				if($stmt->error==null) $status = true;
 				else{
