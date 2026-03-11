@@ -491,8 +491,7 @@
         $row = $result->fetch_assoc();
         $active = (int)$row['total'];
 
-        $summary = 'A total of <b>' . $inquiries . '</b> sample use inquiries has been received over the life 
-        of the Biorepository, with a total of <b>' . $active . '</b> active or complete loans. ';
+        $summary = 'A total of <b>' . $inquiries . '</b> sample use inquiries have been addressed by the Biorepository (2019 to date), with a total of <b>' . $active . '</b> active or completed loans. ';
 
         if($quarter != 1) {
             $sql = 'SELECT COUNT(DISTINCT(s.occid)) AS total FROM neonsamplerequestlink s
