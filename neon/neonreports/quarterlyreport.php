@@ -116,6 +116,10 @@ if ($isEditor) {
 
 			}
 
+			if ($tableType === 'Researchers and Samples by Collection') {
+					$cleaned = array_intersect_key($cleaned, ['To Date' => true]);
+				}
+
 			$sampleRow = null;
 
 			foreach ($cleaned as $rows) {
