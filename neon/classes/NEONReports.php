@@ -899,10 +899,10 @@
             GROUP BY oa.collID
         ),
 
-        physical_samples_per_coll AS (
+        nonimage_samples_per_coll AS (
             SELECT
                 oa.collID,
-                COUNT(DISTINCT sr.id) AS physical_samples
+                COUNT(DISTINCT sr.id) AS nonimage_samples
             FROM neonsamplerequestlink sr
             JOIN filtered_requests fr
                 ON sr.requestID = fr.id
@@ -913,32 +913,28 @@
             WHERE
                 (
                     sr.substanceProvided IS NULL
-                    OR sr.substanceProvided NOT IN ('image', 'data')
-                )
-                AND (
-                    r.outreach != 'yes'
-                    OR r.internal != 'yes'
+                    OR sr.substanceProvided != 'image'
                 )
             GROUP BY oa.collID
         )
 
         SELECT
-            o.collectionName,
+            o.collectionName as sampleType,
             COALESCE(rpc.researchers, 0)      AS researchers,
             COALESCE(spc.samples, 0)          AS samples,
-            COALESCE(psc.physical_samples, 0) AS physicalSamples
+            COALESCE(psc.nonimage_samples, 0) AS nonimageSamples
         FROM omcollections o
         LEFT JOIN researchers_per_coll rpc
             ON o.collID = rpc.collID
         LEFT JOIN samples_per_coll spc
             ON o.collID = spc.collID
-        LEFT JOIN physical_samples_per_coll psc
+        LEFT JOIN nonimage_samples_per_coll psc
             ON o.collID = psc.collID
         WHERE
             COALESCE(rpc.researchers, 0) > 0
             OR COALESCE(spc.samples, 0) > 0
-            OR COALESCE(psc.physical_samples, 0) > 0
-        ORDER BY o.collectionName";
+            OR COALESCE(psc.nonimage_samples, 0) > 0
+        ORDER BY o.sampleType";
 
 
         $stmt = $this->conn->prepare($sql);
@@ -962,13 +958,13 @@
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionname`,`researchers`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Researchers and Samples by Collection', ?, ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `sampleType`,`researchers`, `samples`,`nonimageSamples`,`date`) VALUES (?, ?, 'Researchers and Samples by Sample Type', ?, ?, ?, ?, ?)");
 
-                $ins->bind_param('sssiiis', $name, $period, $row['collectionName'],  $row['researchers'], $row['samples'],$row['physicalSamples'], $reportDate);
+                $ins->bind_param('sssiiis', $name, $period, $row['sampleType'],  $row['researchers'], $row['samples'],$row['nonimageSamples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
-                    error_log("Insert error for Researchers and Samples by Collection: " . $ins->error);
+                    error_log("Insert error for Researchers and Samples by SampleType: " . $ins->error);
                 }
             }
         }
@@ -1005,8 +1001,8 @@
                         ON sr.requestID = fr.id
                 ),
 
-                physical_samples_total AS (
-                    SELECT COUNT(DISTINCT sr.occid) AS physicalSamples
+                nonimage_samples_total AS (
+                    SELECT COUNT(DISTINCT sr.occid) AS nonimageSamples
                     FROM neonsamplerequestlink sr
                     JOIN filtered_requests fr
                         ON sr.requestID = fr.id
@@ -1015,21 +1011,17 @@
                     WHERE
                         (
                             sr.substanceProvided IS NULL
-                            OR sr.substanceProvided NOT IN ('image', 'data')
-                        )
-                        AND (
-                            r.outreach != 'yes'
-                            OR r.internal != 'yes'
+                            OR sr.substanceProvided != 'image'
                         )
                 )
 
                 SELECT
                     rt.researchers,
                     st.samples,
-                    pst.physicalSamples
+                    pst.nonimageSamples
                 FROM researchers_total rt
                 CROSS JOIN samples_total st
-                CROSS JOIN physical_samples_total pst";
+                CROSS JOIN nonimage_samples_total pst";
 
 
         $stmt = $this->conn->prepare($sql);
@@ -1053,13 +1045,13 @@
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionname`,`researchers`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Researchers and Samples by Collection', 'Total Unique', ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `sampleType`,`researchers`, `samples`,`nonimageSamples`,`date`) VALUES (?, ?, 'Researchers and Samples by Sample Type', 'Total Unique', ?, ?, ?, ?)");
 
-                $ins->bind_param('ssiiis', $name, $period,$row['researchers'], $row['samples'],$row['physicalSamples'], $reportDate);
+                $ins->bind_param('ssiiis', $name, $period,$row['researchers'], $row['samples'],$row['nonimageSamples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
-                    error_log("Insert error for Researchers and Samples by Collection: " . $ins->error);
+                    error_log("Insert error for Researchers and Samples by Sample Type: " . $ins->error);
                 }
             }
         }
@@ -1069,9 +1061,7 @@
         $sql = "WITH filtered_requests AS (
             SELECT
                 r.id,
-                r.primaryResearchField,
-                r.outreach,
-                r.internal
+                r.primaryResearchField
             FROM neonrequest r
             WHERE r.status IN (
                 'active use',
@@ -1098,15 +1088,11 @@
                     WHEN
                         (
                             s.substanceProvided IS NULL
-                            OR s.substanceProvided NOT IN ('image','data')
-                        )
-                        AND (
-                            r.outreach != 'yes'
-                            OR r.internal != 'yes'
+                            OR s.substanceProvided != 'image'
                         )
                     THEN s.id
                 END
-            ) AS physicalSamples
+            ) AS nonimageSamples
 
         FROM neonsamplerequestlink s
         JOIN filtered_requests r
@@ -1136,9 +1122,9 @@
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`nonimageSamples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', ?, ?, ?, ?)");
 
-                $ins->bind_param('sssiis', $name, $period, $row['field'], $row['samples'], $row['physicalSamples'], $reportDate);
+                $ins->bind_param('sssiis', $name, $period, $row['field'], $row['samples'], $row['nonimageSamples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
@@ -1172,8 +1158,8 @@
                         ON sr.requestID = fr.id
                 ),
 
-                physical_samples_total AS (
-                    SELECT COUNT(DISTINCT sr.occid) AS physicalSamples
+                nonimage_samples_total AS (
+                    SELECT COUNT(DISTINCT sr.occid) AS nonimageSamples
                     FROM neonsamplerequestlink sr
                     JOIN filtered_requests fr
                         ON sr.requestID = fr.id
@@ -1182,19 +1168,15 @@
                     WHERE
                         (
                             sr.substanceProvided IS NULL
-                            OR sr.substanceProvided NOT IN ('image', 'data')
-                        )
-                        AND (
-                            r.outreach != 'yes'
-                            OR r.internal != 'yes'
+                            OR sr.substanceProvided !='image'
                         )
                 )
 
                 SELECT
                     st.samples,
-                    pst.physicalSamples
+                    pst.nonimageSamples
                 FROM samples_total st
-                CROSS JOIN physical_samples_total pst
+                CROSS JOIN nonimage_samples_total pst
            ";
 
         $stmt = $this->conn->prepare($sql);
@@ -1220,9 +1202,9 @@
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`physicalSamples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', 'Total Unique', ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `field`, `samples`,`nonimageSamples`,`date`) VALUES (?, ?, 'Samples by Primary Research Field', 'Total Unique', ?, ?, ?)");
 
-                $ins->bind_param('ssiis', $name, $period, $row['samples'], $row['physicalSamples'], $reportDate);
+                $ins->bind_param('ssiis', $name, $period, $row['samples'], $row['nonimageSamples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
@@ -1754,7 +1736,7 @@
 
                 UNION ALL
 
-                SELECT h.shipDate as date, 'research use of physical samples' as type,
+                SELECT h.shipDate as date, 'non-image use samples' as type,
                     ROW_NUMBER() OVER (ORDER BY h.shipDate) AS samples
                 FROM neonsamplerequestlink s
                 LEFT JOIN neonrequestshipment h
@@ -1763,9 +1745,7 @@
                 ON s.requestID=r.id
                 WHERE h.shipDate <= ?
                 AND s.status NOT IN ('not funded','request not fulfilled')
-                AND s.substanceProvided NOT IN ('image','data')
-                AND r.internal = 'no'
-                AND r.outreach = 'no'";
+                AND s.substanceProvided != 'image'";
         
         $stmt = $this->conn->prepare($sql);
         $stmt->bind_param('ss',$endquarter,$endquarter);
@@ -1804,7 +1784,6 @@
                 OR r.pendingFundingDate      BETWEEN ? AND ?
                 OR r.pendingSampleListDate   BETWEEN ? AND ?
             )
-            AND r.internal = 'no' AND r.outreach = 'no'
         ),
 
         colls AS (
@@ -1856,7 +1835,7 @@
             ON s.occid = o.occid
         JOIN colls co
             ON o.collid = co.collid
-        WHERE s.substanceProvided NOT IN ('data','image')
+        WHERE s.substanceProvided != 'image'
         GROUP BY sampleGroup,useType";
 
         $stmt = $this->conn->prepare($sql);
@@ -1881,7 +1860,7 @@
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionName`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Collection and Use Type', ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `sampleType`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Sample Type and Use Type', ?, ?, ?, ?)");
 
                 $ins->bind_param('ssssis', $name, $period, $row['sampleGroup'], $row['useType'], $row['samples'], $reportDate);
                 $ins->execute();
@@ -1911,7 +1890,6 @@
                 OR r.pendingFundingDate      BETWEEN ? AND ?
                 OR r.pendingSampleListDate   BETWEEN ? AND ?
             )
-            AND r.internal = 'no' AND r.outreach = 'no'
         ),
 
         colls AS (
@@ -1961,7 +1939,7 @@
             ON s.occid = o.occid
         JOIN colls co
             ON o.collid = co.collid
-        WHERE s.substanceProvided NOT IN ('data','image')
+        WHERE s.substanceProvided !='image'
         GROUP BY sampleGroup,useType";
 
         $stmt = $this->conn->prepare($sql);
@@ -1986,7 +1964,7 @@
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `collectionName`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Storage Type and Use Type', ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `sampleType`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Storage Type and Use Type', ?, ?, ?, ?)");
 
                 $ins->bind_param('ssssis', $name, $period, $row['sampleGroup'], $row['useType'], $row['samples'], $reportDate);
                 $ins->execute();
