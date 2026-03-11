@@ -18,9 +18,11 @@ class DwcArchiverImage{
 		$termArr['subtype'] = 'http://rs.tdwg.org/ac/terms/subtype';		//Photograph or Recorded Organism
 		$fieldArr['subtype'] = 'CASE WHEN m.mediaType = "audio" THEN "Recorded Organism" ELSE "Photograph" END as subtype';
 		$termArr['rights'] = 'http://purl.org/dc/terms/rights';
-		$fieldArr['rights'] = 'c.rights';
+		//$fieldArr['rights'] = 'c.rights';
+		$fieldArr['rights'] = 'm.rights'; // NEON customization
 		$termArr['Owner'] = 'http://ns.adobe.com/xap/1.0/rights/Owner';	//Institution name
-		$fieldArr['Owner'] = 'IFNULL(c.rightsholder,CONCAT(c.collectionname," (",CONCAT_WS("-",c.institutioncode,c.collectioncode),")")) AS owner';
+		//$fieldArr['Owner'] = 'IFNULL(c.rightsholder,CONCAT(c.collectionname," (",CONCAT_WS("-",c.institutioncode,c.collectioncode),")")) AS owner';
+		$fieldArr['Owner'] = 'm.owner'; //NEON customization
 		$termArr['creator'] = 'http://purl.org/dc/elements/1.1/creator';
 		$fieldArr['creator'] = 'IF(m.creatorUid IS NOT NULL,CONCAT_WS(" ",u.firstname,u.lastname),m.creator) AS creator';
 		$termArr['UsageTerms'] = 'http://ns.adobe.com/xap/1.0/rights/UsageTerms';	//Creative Commons BY-SA 4.0 license

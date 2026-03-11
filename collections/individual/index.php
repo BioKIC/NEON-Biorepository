@@ -1109,20 +1109,21 @@ $traitArr = $indManager->getTraitArr();
 										// START NEON CUSTOMIZATION //
 										if($imgArr['creator']) {
 											if($imgArr['owner']){
-												echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].', '.$imgArr['owner'].'</div>';
+												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</br><b>Owner:</b> '.$imgArr['owner'].'</div>';
 											}
 											else {
-												echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].'</div>';
+												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</div>';
 											}
 										}
-										// END NEON CUSTOMIZATION //									
+										elseif($imgArr['owner']) echo '<div>Owner: ' . $imgArr['owner'].'</div>';
+									if($imgArr['rights']) echo '<div><b> License: </b>'.$imgArr['rights'].'</div>';
+									else echo '<div><b> License: </b>CC BY-SA (Attribution-ShareAlike)</div>';
 									if($imgArr['url'] && substr($thumbUrl,0,7)!='process' && $imgArr['url'] != $imgArr['lgurl']) echo '<div><a href="' . $imgArr['url'] . '" target="_blank">' . $LANG['OPEN_MEDIUM'] . '</a></div>';
 									if($imgArr['lgurl']) echo '<div><a href="' . $imgArr['lgurl'] . '" target="_blank">' . $LANG['OPEN_LARGE'] . '</a></div>';
 									if($imgArr['sourceurl']) echo '<div><a href="' . $imgArr['sourceurl'] . '" target="_blank">' . $LANG['OPEN_SOURCE'] . '</a></div>';
-									//Use image rights settings as the default for current record
-									if($imgArr['rights']) $collMetadata['rights'] = $imgArr['rights'];
 									if($imgArr['copyright']) $collMetadata['rightsholder'] = $imgArr['copyright'];
 									if($imgArr['accessrights']) $collMetadata['accessrights'] = $imgArr['accessrights'];
+										// END NEON CUSTOMIZATION //	
 									echo '</div>';
 								}
 								?>
