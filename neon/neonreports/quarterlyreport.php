@@ -337,52 +337,54 @@ if ($isEditor) {
 	</div>
 
 	<h2>Requests by Initiation Award Year</h2>
+	<h4>Bars indicate the number of requests by status summarized by the award year in which the initial inquiry was received</h4>
 
 	<div style="height: 450px; max-width: 1000px;">
 		<canvas id="requestsByInitiationAY"></canvas>
 	</div>
 
 	<h2>Requests by Award Year of Status Update</h2>
+	<h4>Bars indicate the number of requests by status summarized by the award year in which the last status update was recorded</h4>
 
 	<div style="height: 450px; max-width: 1000px;">
 		<canvas id="requestsByStatusAY"></canvas>
 	</div>
 
-<h2>Sample Use by Taxonomic Group To Date</h2>
+	<h2>Sample Use by Taxonomic Group To Date</h2>
 
-<div style="display:flex; gap:40px;">
-    <div style="flex:1">
-        <h3>All Sample Use</h3>
-        <div style="height:350px;">
-            <canvas id="collectionChart"></canvas>
-        </div>
-    </div>
+	<div style="display:flex; gap:40px;">
+		<div style="flex:1">
+			<h3>All Sample Use</h3>
+			<div style="height:350px;">
+				<canvas id="collectionChart"></canvas>
+			</div>
+		</div>
 
-    <div style="flex:1">
-        <h3>Excluding Image-Only Use</h3>
-        <div style="height:350px;">
-            <canvas id="collectionChartNoImage"></canvas>
-        </div>
-    </div>
-</div>
+		<div style="flex:1">
+			<h3>Excluding Image-Only Use</h3>
+			<div style="height:350px;">
+				<canvas id="collectionChartNoImage"></canvas>
+			</div>
+		</div>
+	</div>
 
-<h2>Sample Use by Storage Type To Date</h2>
+	<h2>Sample Use by Storage Type To Date</h2>
 
-<div style="display:flex; gap:40px;">
-    <div style="flex:1">
-        <h3>All Sample Use</h3>
-        <div style="height:350px;">
-            <canvas id="storageChart"></canvas>
-        </div>
-    </div>
+	<div style="display:flex; gap:40px;">
+		<div style="flex:1">
+			<h3>All Sample Use</h3>
+			<div style="height:350px;">
+				<canvas id="storageChart"></canvas>
+			</div>
+		</div>
 
-    <div style="flex:1">
-        <h3>Excluding Image-Only Use</h3>
-        <div style="height:350px;">
-            <canvas id="storageChartNoImage"></canvas>
-        </div>
-    </div>
-</div>
+		<div style="flex:1">
+			<h3>Excluding Image-Only Use</h3>
+			<div style="height:350px;">
+				<canvas id="storageChartNoImage"></canvas>
+			</div>
+		</div>
+	</div>
 
 	
 <?php
