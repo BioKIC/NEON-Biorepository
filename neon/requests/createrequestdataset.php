@@ -1,0 +1,254 @@
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+include_once('../../config/symbini.php');
+include_once($SERVER_ROOT.'/neon/classes/InquiriesManager.php');
+header("Content-Type: text/html; charset=".$CHARSET);
+if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl='.$CLIENT_ROOT.'/neon/requests/createrequestdataset.php');
+
+$action = array_key_exists("action",$_POST)?$_POST["action"]:"";
+$requestID = array_key_exists("requestID",$_REQUEST)?$_REQUEST["requestID"]:"";
+
+$inquiryManager = new InquiriesManager();
+
+$isEditor = false;
+if($IS_ADMIN) $isEditor = true;
+elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
+
+$status = "";
+$errStr = '';
+
+if ($isEditor && isset($_POST['action'])) {
+
+    switch ($_POST['action']) {
+
+        case 'save':
+            if ($inquiryManager->editSample($_POST)) {
+                $status = 'close';
+            } else {
+                $errStr = $inquiryManager->getErrorStr();
+            }
+            break;
+
+        default:
+            $errStr = 'Unknown action.';
+    }
+}
+
+?>
+<html>
+
+
+<?php if ($status === 'close'): ?>
+<script type="text/javascript">
+    alert('Action completed successfully.');
+    if (window.opener && !window.opener.closed) {
+        window.opener.location.reload();
+    }
+    window.close();
+</script>
+<?php endif; ?>
+
+<?php if ($errStr): ?>
+<div style="color:red;font-weight:bold;margin:10px;">
+    <?php echo htmlspecialchars($errStr); ?>
+</div>
+<?php endif; ?>
+<head>
+	<title><?php echo $DEFAULT_TITLE; ?> Dataset Creation </title>
+	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
+	<?php
+	include_once($SERVER_ROOT.'/includes/head.php');
+	?>
+	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#editForm :input").change(function() {
+				$("#editForm").data("changed",true);
+				$("#submitButton").prop("disabled",false).css('opacity',1);
+			});
+
+			$(window).on('beforeunload', function() {
+				if($("#editForm").data("changed")) {
+					return "Data changes have not been saved. Are you sure you want to leave?";
+				}
+		        return;
+		    });
+
+			<?php
+			if($status == 'close') echo 'closeWindow();';
+			?>
+		});
+
+		function validateSampleForm(f){
+			if(!f.available.value.trim() || !f.useType.value.trim() || !f.status.value.trim() || !f.substanceProvided.value.trim()){
+				alert("All required fields must be filled.");
+				return false;
+			}
+
+			const status = f.status.value.trim();
+			const shipmentAssigned = f.shipmentID.value.trim() !== "";
+			const validShipmentStatuses = ["current", "completed", "loaned, not used"];
+
+			if(!shipmentAssigned && validShipmentStatuses.includes(status)){
+				alert("A sample with this status cannot have a shipment assigned.");
+				return false;
+			}
+
+			if(shipmentAssigned && !validShipmentStatuses.includes(status)){
+				alert("If a shipment is assigned, status must be 'current', 'completed', or 'loaned, not used'.");
+				return false;
+			}
+
+			if(shipmentAssigned && !validShipmentStatuses.includes(status)){
+				alert("If a shipment is assigned, status must be 'current', 'completed', or 'loaned, not used'.");
+				return false;
+			}
+
+			if(!f.notes.value && ["individual(s)","tissue/material sample","subsample/aliquot"].includes(f.substanceProvided.value)){
+				alert("ERROR: Notes required when substance is tissue/material sample, individual(s), or subsample/aliquot");
+				return false;
+			}
+
+			$("#editForm").data("changed", false);
+			return true;
+		}
+
+		function closeWindow(){
+			window.opener.refreshForm.submit();
+			window.close();
+		}
+	</script>
+	<style type="text/css">
+		fieldset{ padding:15px }
+		.fieldGroupDiv{ clear:both; margin-top:2px; height: 25px; }
+		.fieldDiv{ float:left; margin-left: 10px}
+		button { cursor:pointer; }
+	</style>
+</head>
+<body>
+<div id="popup-innertext">
+	<?php
+	if($isEditor){
+		if($errStr) echo '<div style="color:red;margin:15px;">'.$errStr.'</div>';
+		$sampleArr = array();
+		if($id) $reqArr = $inquiryManager->getRequestData($requestID);
+		?>
+		<script>
+    		const reqArr = <?php echo json_encode($reqArr); ?>;
+		</script>
+		<fieldset style="width:800px; margin-left:auto;margin-right:auto;">
+			<legend><b><?php echo ($id?'Requested Sample Record (#'.$id.')':'New Record'); ?></b></legend>
+			<form id="editForm" method="post" action="sampleeditor.php" onsubmit="return validateSampleForm(this)">
+					<div class="displayFieldDiv"><b>occid:</b> <?php echo $sampleArr['occid']; ?></div>
+                    <div class="displayFieldDiv"><b>sampleID:</b> <?php echo $sampleArr['sampleID']; ?></div>
+                    <div class="displayFieldDiv"><b>sampleClass:</b> <?php echo $sampleArr['sampleClass']; ?></div>
+					<div class="displayFieldDiv"><b>sampleCode:</b> <?php echo $sampleArr['sampleCode']; ?></div>
+				<div class="fieldGroupDiv">
+                    <div class="fieldDiv">
+						<b>Status:</b>
+                        <?php
+                        $statValue = $sampleArr['status']
+                        ?>
+						<select name="status">
+							<option value="">-----</option>
+							<option value="pending fulfillment" <?php if($statValue=='pending fulfillment') echo 'SELECTED'; ?>>pending fulfillment</option>
+							<option value="current" <?php if($statValue=='current') echo 'SELECTED'; ?>>current</option>
+                            <option value="completed" <?php if($statValue=='completed') echo 'SELECTED'; ?>>completed</option>
+                            <option value="loaned, not used" <?php if($statValue=='loaned, not used') echo 'SELECTED'; ?>>loaned, not used</option>
+                            <option value="requested, not found" <?php if($statValue=='requested, not found') echo 'SELECTED'; ?>>requested, not found</option>
+                            <option value="not funded" <?php if($statValue=='not funded') echo 'SELECTED'; ?>>not funded</option>
+							<?php
+							if($statValue && !in_array($statValue,array('pending fulfillment','current','completed','loaned, not used','requests, not found','not funded'))){
+								echo '<option value="'.$statValue.'" SELECTED>'.$statValue.'</option>';
+							}
+							?>
+						</select>
+					</div>
+                    <div class="fieldDiv">
+						<b>Type of Use:</b>
+                        <?php
+                        $useValue = $sampleArr['useType']
+                        ?>
+						<select name="usetype">
+							<option value="">-----</option>
+							<option value="non-destructive" <?php if($useValue=='non-destructive') echo 'SELECTED'; ?>>non-destructive</option>
+							<option value="invasive" <?php if($useValue=='invasive') echo 'SELECTED'; ?>>invasive</option>
+							<option value="consumptive" <?php if($useValue=='consumptive') echo 'SELECTED'; ?>>consumptive</option>
+							<option value="destructive" <?php if($useValue=='destructive') echo 'SELECTED'; ?>>destructive</option>                            
+                            <?php
+							if($useValue && !in_array($useValue,array('non-destructive','invasive','consumptive','destructive'))){
+								echo '<option value="'.$useValue.'" SELECTED>'.$useValue.'</option>';
+							}
+							?>
+						</select>
+					</div>
+					<div class="fieldDiv">
+						<b>Available:</b>
+                        <?php
+                        $avValue = $sampleArr['available']
+                        ?>
+						<select name="available">
+							<option value="">-----</option>
+							<option value="yes" <?php if($avValue=='yes') echo 'SELECTED'; ?>>yes</option>
+							<option value="no" <?php if($avValue=='no') echo 'SELECTED'; ?>>no</option>
+							<?php
+							if($avValue && $avValue != 'yes' && $avValue != 'no'){
+								echo '<option value="'.$avValue.'" SELECTED>'.$avValue.'</option>';
+							}
+							?>
+						</select>
+					</div>
+                    <div class="fieldDiv">
+						<b>Substance Provided:</b>
+                        <?php
+                        $subValue = $sampleArr['substanceProvided']
+                        ?>
+						<select name="substanceprovided">
+							<option value="">-----</option>
+							<option value="whole sample" <?php if($subValue=='whole sample') echo 'SELECTED'; ?>>whole sample</option>
+							<option value="individual(s)" <?php if($subValue=='individual(s)') echo 'SELECTED'; ?>>individual(s) - indicate number in notes</option>
+                            <option value="tissue/material sample" <?php if($subValue=='tissue/material sample') echo 'SELECTED'; ?>>tissue/material sample - link material samples & indicate tissue type in notes</option>
+                            <option value="subsample/aliquot" <?php if($subValue=='subsample/aliquot') echo 'SELECTED'; ?>>subsample/aliquot - indicate amount in notes</option>
+                            <option value="image" <?php if($subValue=='image') echo 'SELECTED'; ?>>image</option>
+                            <option value="data" <?php if($subValue=='data') echo 'SELECTED'; ?>>data only</option>
+                            <?php
+							if($subValue && inIDarray($subValue,array("whole sample","individual(s)","tissue/material sample","subsample/aliquot","image","data"))){
+								echo '<option value="'.$subValue.'" SELECTED>'.$subValue.'</option>';
+							}
+							?>
+						</select>
+					</div>
+				</div>
+                <div style="clear:both;padding-top:6px;float:left;">
+				<div class="fieldGroupDiv">
+					<div class="fieldDiv">
+						<b>Notes:</b> <input name="notes" type="text" value="<?php echo isset($sampleArr['notes'])?$sampleArr['notes']:''; ?>" style="width:500px" />
+					</div>
+				</div>
+                <div style="clear:both;padding-top:6px;float:left;">
+					<?php
+					if($id){
+						?>
+						<input name="id" type="hidden" value="<?php echo $id; ?>" />
+						<div><button id="submitButton" type="submit" name="action" value="save">Create Dataset</button></div>
+						<?php
+					}
+					?>
+				</div>
+			</form>
+		</fieldset>
+		<?php
+	}
+	else{
+		?>
+		<div style='font-weight:bold;margin:30px;'>
+			You do not have permissions to view request records
+		</div>
+		<?php
+	}
+	?>
+</div>
+</body>
+</html>
