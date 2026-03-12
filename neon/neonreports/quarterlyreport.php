@@ -347,17 +347,42 @@ if ($isEditor) {
 		<canvas id="requestsByStatusAY"></canvas>
 	</div>
 
-	<h2>Sample Use by Taxonomic Group To Date</h2>
+<h2>Sample Use by Taxonomic Group To Date</h2>
 
-	<div style="height: 450px; max-width: 1000px;">
-		<canvas id="collectionChart"></canvas>
-	</div>
+<div style="display:flex; gap:40px;">
+    <div style="flex:1">
+        <h3>All Sample Use</h3>
+        <div style="height:350px;">
+            <canvas id="collectionChart"></canvas>
+        </div>
+    </div>
 
-	<h2>Sample Use by Storage Type To Date</h2>
+    <div style="flex:1">
+        <h3>Excluding Image-Only Use</h3>
+        <div style="height:350px;">
+            <canvas id="collectionChartNoImage"></canvas>
+        </div>
+    </div>
+</div>
 
-	<div style="height: 450px; max-width: 1000px;">
-		<canvas id="storageChart"></canvas>
-	</div>
+<h2>Sample Use by Storage Type To Date</h2>
+
+<div style="display:flex; gap:40px;">
+    <div style="flex:1">
+        <h3>All Sample Use</h3>
+        <div style="height:350px;">
+            <canvas id="storageChart"></canvas>
+        </div>
+    </div>
+
+    <div style="flex:1">
+        <h3>Excluding Image-Only Use</h3>
+        <div style="height:350px;">
+            <canvas id="storageChartNoImage"></canvas>
+        </div>
+    </div>
+</div>
+
 	
 <?php
 
@@ -780,6 +805,9 @@ $chartCollections = [];
 $chartUseTypes = [];
 $chartMatrix = [];
 
+$chartUseTypesNoImage = [];
+$chartMatrixNoImage = [];
+
 foreach ($reportsArr as $row) {
 
     if ($row['tabletype'] === 'Samples by Sample Type and Use Type'
@@ -788,23 +816,30 @@ foreach ($reportsArr as $row) {
         $collection = $row['sampleType'];
         $useType = $row['useType'];
         $samples = (int)$row['samples'];
+		$substance = $row['substance'];
 
-        $chartCollections[$collection] = true;
-        $chartUseTypes[$useType] = true;
+		$chartCollections[$collection] = true;
+		$chartUseTypes[$useType] = true;
 
-        $chartMatrix[$useType][$collection] = $samples;
+		$chartMatrix[$useType][$collection] =
+			($chartMatrix[$useType][$collection] ?? 0) + $samples;
+
+		if ($substance !== 'image') {
+			$chartUseTypesNoImage[$useType] = true;
+			$chartMatrixNoImage[$useType][$collection] =
+				($chartMatrixNoImage[$useType][$collection] ?? 0) + $samples;
+		}
     }
 }
 
 $collections = array_keys($chartCollections);
 $useTypes = array_keys($chartUseTypes);
+$useTypesNoImage = array_keys($chartUseTypesNoImage);
 
 $datasets = [];
-
 foreach ($useTypes as $type) {
 
     $values = [];
-
     foreach ($collections as $coll) {
         $values[] = $chartMatrix[$type][$coll] ?? 0;
     }
@@ -815,24 +850,41 @@ foreach ($useTypes as $type) {
     ];
 }
 
+
+$datasetsNoImage = [];
+foreach ($useTypesNoImage as $type) {
+
+    $values = [];
+    foreach ($collections as $coll) {
+        $values[] = $chartMatrixNoImage[$type][$coll] ?? 0;
+    }
+
+    $datasetsNoImage[] = [
+        "label" => $type,
+        "data" => $values
+    ];
+}
+
+
 ?>
 
 <script>
 const collectionLabels_<?= md5($reportDate) ?> = <?= json_encode($collections) ?>;
 const collectionDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
+const collectionDatasetsNoImage_<?= md5($reportDate) ?> = <?= json_encode($datasetsNoImage) ?>;
 </script>
 
 <script>
 (function () {
 
-	const labels = collectionLabels_<?= md5($reportDate) ?>;
-	const datasetsRaw = collectionDatasets_<?= md5($reportDate) ?>;
+function buildChart(canvasID, labels, datasetsRaw){
 
 	const colorPalette = {
 		'destructive': '#0472cf',
 		'consumptive': '#d18710',
 		'invasive': '#dfdfe0',
-		'non-destructive': '#4b372f'
+		'non-destructive': '#4b372f',
+		'image': '#888888'
 	};
 
 	const datasets = datasetsRaw.map(ds => ({
@@ -842,7 +894,7 @@ const collectionDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>
 	}));
 
 	const ctx = document
-		.getElementById('collectionChart')
+		.getElementById(canvasID)
 		.getContext('2d');
 
 	new Chart(ctx, {
@@ -874,18 +926,23 @@ const collectionDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>
 			plugins: {
 				legend: {
 					position: 'bottom'
-				},
-				tooltip: {
-					callbacks: {
-						label: function (ctx) {
-							return ctx.dataset.label + ': ' +
-								ctx.raw.toLocaleString();
-						}
-					}
 				}
 			}
 		}
 	});
+}
+
+buildChart(
+	'collectionChart',
+	collectionLabels_<?= md5($reportDate) ?>,
+	collectionDatasets_<?= md5($reportDate) ?>
+);
+
+buildChart(
+	'collectionChartNoImage',
+	collectionLabels_<?= md5($reportDate) ?>,
+	collectionDatasetsNoImage_<?= md5($reportDate) ?>
+);
 
 })();
 </script>
@@ -896,33 +953,45 @@ $chartStorage = [];
 $chartUseTypes = [];
 $chartMatrix = [];
 
+$chartUseTypesNoImage = [];
+$chartMatrixNoImage = [];
+
 foreach ($reportsArr as $row) {
 
     if ($row['tabletype'] === 'Samples by Storage Type and Use Type'
         && $row['period'] === 'To Date') {
 
-        $collection = $row['sampleType'];
+        $storage = $row['sampleType'];
         $useType = $row['useType'];
         $samples = (int)$row['samples'];
+        $substance = $row['substance'];
 
-        $chartStorage[$collection] = true;
+        $chartStorage[$storage] = true;
         $chartUseTypes[$useType] = true;
 
-        $chartMatrix[$useType][$collection] = $samples;
+        $chartMatrix[$useType][$storage] =
+            ($chartMatrix[$useType][$storage] ?? 0) + $samples;
+
+        if ($substance !== 'image') {
+            $chartUseTypesNoImage[$useType] = true;
+
+            $chartMatrixNoImage[$useType][$storage] =
+                ($chartMatrixNoImage[$useType][$storage] ?? 0) + $samples;
+        }
     }
 }
 
-$collections = array_keys($chartStorage);
+$storages = array_keys($chartStorage);
 $useTypes = array_keys($chartUseTypes);
+$useTypesNoImage = array_keys($chartUseTypesNoImage);
 
 $datasets = [];
 
 foreach ($useTypes as $type) {
 
     $values = [];
-
-    foreach ($collections as $coll) {
-        $values[] = $chartMatrix[$type][$coll] ?? 0;
+    foreach ($storages as $s) {
+        $values[] = $chartMatrix[$type][$s] ?? 0;
     }
 
     $datasets[] = [
@@ -931,24 +1000,39 @@ foreach ($useTypes as $type) {
     ];
 }
 
+$datasetsNoImage = [];
+foreach ($useTypesNoImage as $type) {
+
+    $values = [];
+    foreach ($storages as $s) {
+        $values[] = $chartMatrixNoImage[$type][$s] ?? 0;
+    }
+
+    $datasetsNoImage[] = [
+        "label" => $type,
+        "data" => $values
+    ];
+}
+
 ?>
 
 <script>
-const storageLabels_<?= md5($reportDate) ?> = <?= json_encode($collections) ?>;
+const storageLabels_<?= md5($reportDate) ?> = <?= json_encode($storages) ?>;
 const storageDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
+const storageDatasetsNoImage_<?= md5($reportDate) ?> = <?= json_encode($datasetsNoImage) ?>;
 </script>
 
 <script>
 (function () {
 
-	const labels = storageLabels_<?= md5($reportDate) ?>;
-	const datasetsRaw = storageDatasets_<?= md5($reportDate) ?>;
+function buildStorageChart(canvasID, labels, datasetsRaw){
 
 	const colorPalette = {
 		'destructive': '#0472cf',
 		'consumptive': '#d18710',
 		'invasive': '#dfdfe0',
-		'non-destructive': '#4b372f'
+		'non-destructive': '#4b372f',
+		'image': '#888888'
 	};
 
 	const datasets = datasetsRaw.map(ds => ({
@@ -958,7 +1042,7 @@ const storageDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
 	}));
 
 	const ctx = document
-		.getElementById('storageChart')
+		.getElementById(canvasID)
 		.getContext('2d');
 
 	new Chart(ctx, {
@@ -990,18 +1074,23 @@ const storageDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
 			plugins: {
 				legend: {
 					position: 'bottom'
-				},
-				tooltip: {
-					callbacks: {
-						label: function (ctx) {
-							return ctx.dataset.label + ': ' +
-								ctx.raw.toLocaleString();
-						}
-					}
 				}
 			}
 		}
 	});
+}
+
+buildStorageChart(
+	'storageChart',
+	storageLabels_<?= md5($reportDate) ?>,
+	storageDatasets_<?= md5($reportDate) ?>
+);
+
+buildStorageChart(
+	'storageChartNoImage',
+	storageLabels_<?= md5($reportDate) ?>,
+	storageDatasetsNoImage_<?= md5($reportDate) ?>
+);
 
 })();
 </script>

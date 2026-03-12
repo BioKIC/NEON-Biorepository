@@ -1827,6 +1827,7 @@
         SELECT 
             co.collGroup AS sampleGroup,
             s.useType AS useType,
+            s.substanceProvided AS substance,
             COUNT(s.id) AS samples
         FROM neonsamplerequestlink s
         JOIN filtered_requests r
@@ -1835,8 +1836,8 @@
             ON s.occid = o.occid
         JOIN colls co
             ON o.collid = co.collid
-        WHERE s.substanceProvided != 'image'
-        GROUP BY sampleGroup,useType";
+            WHERE co.collGroup !='Legacy'
+        GROUP BY sampleGroup,substance,useType";
 
         $stmt = $this->conn->prepare($sql);
 
@@ -1860,9 +1861,9 @@
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `sampleType`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Sample Type and Use Type', ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `sampleType`, `substance`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Sample Type and Use Type', ?, ?, ?, ?, ?)");
 
-                $ins->bind_param('ssssis', $name, $period, $row['sampleGroup'], $row['useType'], $row['samples'], $reportDate);
+                $ins->bind_param('sssssis', $name, $period, $row['sampleGroup'], $row['substance'],$row['useType'], $row['samples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
@@ -1931,6 +1932,7 @@
         SELECT 
             co.collGroup AS sampleGroup,
             s.useType AS useType,
+            s.substanceProvided AS substance,
             COUNT(s.id) AS samples
         FROM neonsamplerequestlink s
         JOIN filtered_requests r
@@ -1939,8 +1941,8 @@
             ON s.occid = o.occid
         JOIN colls co
             ON o.collid = co.collid
-        WHERE s.substanceProvided !='image'
-        GROUP BY sampleGroup,useType";
+        WHERE co.collGroup !='Legacy'
+        GROUP BY sampleGroup,substance,useType";
 
         $stmt = $this->conn->prepare($sql);
 
@@ -1964,9 +1966,9 @@
 
             while ($row = $result->fetch_assoc()) {
 
-                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `sampleType`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Storage Type and Use Type', ?, ?, ?, ?)");
+                $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `period`, `tabletype`, `sampleType`, `substance`, `useType`, `samples`,`date`) VALUES (?, ?, 'Samples by Storage Type and Use Type', ?, ?, ?, ?, ?)");
 
-                $ins->bind_param('ssssis', $name, $period, $row['sampleGroup'], $row['useType'], $row['samples'], $reportDate);
+                $ins->bind_param('sssssis', $name, $period, $row['sampleGroup'], $row['substance'],$row['useType'], $row['samples'], $reportDate);
                 $ins->execute();
 
                 if ($ins->error) {
