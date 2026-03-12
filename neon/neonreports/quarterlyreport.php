@@ -116,7 +116,7 @@ if ($isEditor) {
 
 			}
 
-			if ($tableType === 'Researchers and Samples by Collection') {
+			if ($tableType === 'Researchers and Samples by Sample Type') {
 					$cleaned = array_intersect_key($cleaned, ['To Date' => true]);
 				}
 
