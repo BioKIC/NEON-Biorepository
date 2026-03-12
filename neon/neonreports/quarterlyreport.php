@@ -79,7 +79,9 @@ if ($isEditor) {
 				'Sample Use By Initiation Year Bar Chart',
 				'Sample Use By Status Year Bar Chart',
 				'Samples by Sample Type and Use Type',
-				'Samples by Storage Type and Use Type'
+				'Samples by Storage Type and Use Type',
+				'Samples by Primary Research Field',
+				'Requests by Status Comparisons by AY'
 			];
 
 
@@ -272,8 +274,9 @@ if ($isEditor) {
 					would be defined as a "whole sample." These categories refer to what was provided by the Biorepository, so an instance in which a researcher recieved an entire sample
 					for the purpose of removing select individuals or tissues would still be categorized as a "whole sample."</p>
 					<p><b>Use Type</b> refers to the level of impact the use has on the sample. "Data" indicates use only of data that was collected by the Biorepository explicity for an external 
-					project (does not include use of data that is otherwise collected). "Image" indicates that images were taken at the Biorepository (either by staff or visitors) for the purpose of a research project.
-					"Non-destructive" is other use of the physical specimens that would have no impact on future use. "Invasive" involves no consumption of the sample, but will impact potential 
+					project (does not include use of data that is otherwise collected). "Image" indicates that images were taken at the Biorepository (either by staff or visitors) for the purpose of a research project
+					(does not include use of images, such as from GBIF, that are otherwise already taken and provided).
+					"Non-destructive" is other use of the physical specimens that would have no impact on future use. "Invasive" involves no consumption of the sample but impacts potential 
 					future uses (e.g., a difference in storage type). "Consumptive" refers to use that impedes all future use of a portion of the sample (e.g., an aliquot is used for sequencing). 
 					"Destructive" use means that no part of the sample will be available for future use. These use types are defined as per the Sample Use Agreement with the researcher, so may not 
 					be reflective of the numbers of samples that are actually available for use.</p>';
@@ -285,14 +288,13 @@ if ($isEditor) {
 			echo '<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
 				<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
 				<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
-				<button type="submit">Download above table as CSV</button>
 				</form>';		
 		
 	}
 }
 	
 ?>
-	<h2>Samples Distributed, Consumed, and Generated This Quarter</h2>
+	<!-- <h2>Samples Distributed, Consumed, and Generated This Quarter</h2>
 
 	<form method="post" action="exportquarterlydataset.php">
 		<input type="hidden" name="type" value="samples_distributed">
@@ -324,7 +326,7 @@ if ($isEditor) {
 		<input type="hidden" name="type" value="datasets_generated">
 		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
 		<button type="submit">Download Datasets Generated</button>
-	</form>
+	</form> -->
 
 	<h2>Cumulative Requests</h2>
 
@@ -345,11 +347,11 @@ if ($isEditor) {
 		<canvas id="requestsByInitiationAY"></canvas>
 	</div>
 
-	<h2>Requests by Award Year of Status Update</h2>
+	<!-- <h2>Requests by Award Year of Status Update</h2>
 
 	<div style="height: 450px; max-width: 1000px;">
 		<canvas id="requestsByStatusAY"></canvas>
-	</div>
+	</div> -->
 
 <h2>Sample Use by Taxonomic Group To Date</h2>
 
