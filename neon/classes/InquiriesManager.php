@@ -1898,7 +1898,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
                         o.occid,
                         'disposition',
                         ?,
-                        o.disposition,
+                        COALESCE(o.disposition, ''),
                         1, 
                         1, 
                         1, 
@@ -1920,8 +1920,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
                 $refs[$key] = &$params[$key];
             }
 
-            call_user_func_array([$stmt1, 'bind_param'], array_merge([$bindTypes], $refs));
-
+            $stmt1->bind_param($bindTypes, $newDisposition, $userId, ...$ids);
+            
             $stmt1->execute();
             if ($stmt1->errno) {
                 throw new Exception("Execute failed (stmt1): " . $stmt1->error);
@@ -1936,15 +1936,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
             $stmt2 = $this->conn->prepare($sql2);
             if (!$stmt2) throw new Exception("DB error (writeDisposition - stmt2): " . $this->conn->error);
 
-            $bindTypes2 = 's' . str_repeat('i', count($ids));
-            $params2 = array_merge([$newDisposition], $ids);
-
-            $refs2 = [];
-            foreach ($params2 as $key => $value) {
-                $refs2[$key] = &$params2[$key];
-            }
-
-            call_user_func_array([$stmt2, 'bind_param'], array_merge([$bindTypes2], $refs2));
+            $types = 's' . str_repeat('i', count($ids));
+            $stmt2->bind_param($types, $newDisposition, ...$ids);
 
             $stmt2->execute();
             if ($stmt2->errno) {
