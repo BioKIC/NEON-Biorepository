@@ -78,7 +78,7 @@ if ($isEditor) {
 		$excludeTableTypes = [
 				'Sample Use By Initiation Year Bar Chart',
 				'Sample Use By Status Year Bar Chart',
-				'Samples by Collection and Use Type',
+				'Samples by Sample Type and Use Type',
 				'Samples by Storage Type and Use Type'
 			];
 
@@ -173,7 +173,6 @@ if ($isEditor) {
 					return $substanceCompare;
 				}
 
-				// Then sort by useType within substance
 				return strcasecmp($aUse, $bUse);
 			});
 
@@ -205,8 +204,8 @@ if ($isEditor) {
 						$title = 'AY' . str_pad($newYear, 2, '0', STR_PAD_LEFT) . ' Q1-' . substr($quarter, 4);
 					}
 					elseif ($period === 'To Date') $title = 'To Date';
-					if ($valKey == 'physicalSamples') $valKey = 'Samples Loaned For Research'; 
-					elseif ($valKey == 'samples') $valKey = 'All Samples Used'; 
+					if ($valKey == 'nonimageSamples') $valKey = 'Excluding Image-Only Use'; 
+					elseif ($valKey == 'samples') $valKey = 'All Samples'; 
 					$headers[] = $title . ':<br>' . ucwords($valKey);
 				}
 			}
@@ -251,28 +250,33 @@ if ($isEditor) {
 			}
 
 			if ($tableType == 'Researchers and Requests by Status') {
-				echo '<p>The number of requests for a given status are those newly reaching that maximum status during the indicated period. Completed 
+				echo '<p>The number of <b>requests</b> for a given status are those newly reaching that maximum status during the indicated period. Completed 
 				requests are only included within the active request category if they were also 
-				newly active within the period. Researchers includes all researchers associated with those requests. 
+				newly active within the period. <b>Researchers</b> includes all researchers associated with those requests. 
 				Researchers may be repeated across different statuses.</p>';
 			}
-			elseif ($tableType == 'Researchers and Samples by Collection'){
-				echo '<p>The number of researchers is the total number of researchers involved in any requests that are newly active
-				or pending within the period and associated with the collection.  Researchers may be repeated across 
-				collections but are unique within a collection. "All Samples Used" indicates the number of samples of all use types associated with the 
-				included requests. "Samples Loaned For Research" removes samples for from which only images or Biorepository-collected data is used, 
-				as well as samples used for outreach, education, or internal (typically, Battelle) purposes. In either case, samples may be repeated if they are involved in multiple requests. 
-				Samples values of zero indicate that the collection is involved only in pending requests for which samples have not yet been identified</p>';
+			elseif ($tableType == 'Researchers and Samples by Sample Type'){
+				echo '<p>The number of <b>researchers</b> is the total number of researchers involved in any requests that are newly active
+				or pending within the period and associated with the sample type.  Researchers may be repeated across 
+				sample type but are unique within a sample type. <b>"All Samples"</b> indicates the number of samples of all use types associated with the 
+				included requests. <b>"Excluding Image-Only Use"</b> removes samples that were only imaged as part of the request. In either case, samples may be repeated if they are involved in multiple requests. 
+				Samples values of zero indicate that the sample type is involved only in pending requests for which samples have not yet been identified.</p>';
 			}
 			elseif ($tableType == 'Samples by Primary Research Field') {
-					echo '<p>Sample numbers are calculated as in the above tables.</p>';
+					echo '<p>Samples are calculated as in the above tables.</p>';
 			}
 			elseif ($tableType == 'Samples by Use Type') {
-					echo '<p>Substance is defined at the level of the sample as received by the Biorepository. "Whole sample" may refer to a voucher specimen, entire bulk sample, etc.
+					echo '<p><b>Substance</b> is defined at the level of the sample as received by the Biorepository. "Whole sample" may refer to a voucher specimen, entire bulk sample, etc.
 					Individual(s), therefore, refers to individual organisms subsampled by the Biorepository from a bulk organismal sample, not a single organism voucher specimen. Tissue/material sample 
 					refers to tissues or material samples removed from an individual by the Biorepository; a loan for an entire tissue sample received by the Biorepository
 					would be defined as a "whole sample." These categories refer to what was provided by the Biorepository, so an instance in which a researcher recieved an entire sample
-					for the purpose of removing select individuals or tissues would still be categorized as a "whole sample." The number of samples are calculated as in above tables.  </p>';
+					for the purpose of removing select individuals or tissues would still be categorized as a "whole sample."</p>
+					<p><b>Use Type</b> refers to the level of impact the use has on the sample. "Data" indicates use only of data that was collected by the Biorepository explicity for an external 
+					project (does not include use of data that is otherwise collected). "Image" indicates that images were taken at the Biorepository (either by staff or visitors) for the purpose of a research project.
+					"Non-destructive" is other use of the physical specimens that would have no impact on future use. "Invasive" involves no consumption of the sample, but will impact potential 
+					future uses (e.g., a difference in storage type). "Consumptive" refers to use that impedes all future use of a portion of the sample (e.g., an aliquot is used for sequencing). 
+					"Destructive" use means that no part of the sample will be available for future use. These use types are defined as per the Sample Use Agreement with the researcher, so may not 
+					be reflective of the numbers of samples that are actually available for use.</p>';
 			}
 
 			echo $utilities->htmlTable($finalRows, $headers);
@@ -347,17 +351,42 @@ if ($isEditor) {
 		<canvas id="requestsByStatusAY"></canvas>
 	</div>
 
-	<h2>Samples Loaned for Research Use by Taxonomic Group To Date</h2>
+<h2>Sample Use by Taxonomic Group To Date</h2>
 
-	<div style="height: 450px; max-width: 1000px;">
-		<canvas id="collectionChart"></canvas>
-	</div>
+<div style="display:flex; gap:40px;">
+    <div style="flex:1">
+        <h3>All Sample Use</h3>
+        <div style="height:350px;">
+            <canvas id="collectionChart"></canvas>
+        </div>
+    </div>
 
-	<h2>Samples Loaned for Research Use by Storage Type To Date</h2>
+    <div style="flex:1">
+        <h3>Excluding Image-Only Use</h3>
+        <div style="height:350px;">
+            <canvas id="collectionChartNoImage"></canvas>
+        </div>
+    </div>
+</div>
 
-	<div style="height: 450px; max-width: 1000px;">
-		<canvas id="storageChart"></canvas>
-	</div>
+<h2>Sample Use by Storage Type To Date</h2>
+
+<div style="display:flex; gap:40px;">
+    <div style="flex:1">
+        <h3>All Sample Use</h3>
+        <div style="height:350px;">
+            <canvas id="storageChart"></canvas>
+        </div>
+    </div>
+
+    <div style="flex:1">
+        <h3>Excluding Image-Only Use</h3>
+        <div style="height:350px;">
+            <canvas id="storageChartNoImage"></canvas>
+        </div>
+    </div>
+</div>
+
 	
 <?php
 
@@ -686,7 +715,7 @@ foreach ($reportsArr as $row) {
         .sort((a, b) => new Date(a.x) - new Date(b.x));
 
     const resSamps = rawData
-        .filter(r => r.type === 'research use of physical samples')
+        .filter(r => r.type === 'non-image use samples')
         .map(r => ({
             x: r.date,
             y: r.samples
@@ -738,7 +767,7 @@ foreach ($reportsArr as $row) {
             type: 'line',
             data: {
                 datasets: [{
-                    label: 'Samples Loaned For Research',
+                    label: 'Samples Excluding Image-Only Use',
                     data: resSamps,
                     borderColor: '#0472cf',
                     backgroundColor: '#0472cf',
@@ -753,7 +782,7 @@ foreach ($reportsArr as $row) {
                     legend: { display:false },
                     title: {
                         display: true,
-                        text: 'Samples Loaned For Research'
+                        text: 'Samples Excluding Image-Only Use'
                     }
                 },
                 scales: {
@@ -780,31 +809,41 @@ $chartCollections = [];
 $chartUseTypes = [];
 $chartMatrix = [];
 
+$chartUseTypesNoImage = [];
+$chartMatrixNoImage = [];
+
 foreach ($reportsArr as $row) {
 
-    if ($row['tabletype'] === 'Samples by Collection and Use Type'
+    if ($row['tabletype'] === 'Samples by Sample Type and Use Type'
         && $row['period'] === 'To Date') {
 
-        $collection = $row['collectionName'];
+        $collection = $row['sampleType'];
         $useType = $row['useType'];
         $samples = (int)$row['samples'];
+		$substance = $row['substance'];
 
-        $chartCollections[$collection] = true;
-        $chartUseTypes[$useType] = true;
+		$chartCollections[$collection] = true;
+		$chartUseTypes[$useType] = true;
 
-        $chartMatrix[$useType][$collection] = $samples;
+		$chartMatrix[$useType][$collection] =
+			($chartMatrix[$useType][$collection] ?? 0) + $samples;
+
+		if ($substance !== 'image') {
+			$chartUseTypesNoImage[$useType] = true;
+			$chartMatrixNoImage[$useType][$collection] =
+				($chartMatrixNoImage[$useType][$collection] ?? 0) + $samples;
+		}
     }
 }
 
 $collections = array_keys($chartCollections);
 $useTypes = array_keys($chartUseTypes);
+$useTypesNoImage = array_keys($chartUseTypesNoImage);
 
 $datasets = [];
-
 foreach ($useTypes as $type) {
 
     $values = [];
-
     foreach ($collections as $coll) {
         $values[] = $chartMatrix[$type][$coll] ?? 0;
     }
@@ -815,24 +854,41 @@ foreach ($useTypes as $type) {
     ];
 }
 
+
+$datasetsNoImage = [];
+foreach ($useTypesNoImage as $type) {
+
+    $values = [];
+    foreach ($collections as $coll) {
+        $values[] = $chartMatrixNoImage[$type][$coll] ?? 0;
+    }
+
+    $datasetsNoImage[] = [
+        "label" => $type,
+        "data" => $values
+    ];
+}
+
+
 ?>
 
 <script>
 const collectionLabels_<?= md5($reportDate) ?> = <?= json_encode($collections) ?>;
 const collectionDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
+const collectionDatasetsNoImage_<?= md5($reportDate) ?> = <?= json_encode($datasetsNoImage) ?>;
 </script>
 
 <script>
 (function () {
 
-	const labels = collectionLabels_<?= md5($reportDate) ?>;
-	const datasetsRaw = collectionDatasets_<?= md5($reportDate) ?>;
+function buildChart(canvasID, labels, datasetsRaw){
 
 	const colorPalette = {
 		'destructive': '#0472cf',
 		'consumptive': '#d18710',
 		'invasive': '#dfdfe0',
-		'non-destructive': '#4b372f'
+		'non-destructive': '#4b372f',
+		'image': '#888888'
 	};
 
 	const datasets = datasetsRaw.map(ds => ({
@@ -842,7 +898,7 @@ const collectionDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>
 	}));
 
 	const ctx = document
-		.getElementById('collectionChart')
+		.getElementById(canvasID)
 		.getContext('2d');
 
 	new Chart(ctx, {
@@ -874,18 +930,23 @@ const collectionDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>
 			plugins: {
 				legend: {
 					position: 'bottom'
-				},
-				tooltip: {
-					callbacks: {
-						label: function (ctx) {
-							return ctx.dataset.label + ': ' +
-								ctx.raw.toLocaleString();
-						}
-					}
 				}
 			}
 		}
 	});
+}
+
+buildChart(
+	'collectionChart',
+	collectionLabels_<?= md5($reportDate) ?>,
+	collectionDatasets_<?= md5($reportDate) ?>
+);
+
+buildChart(
+	'collectionChartNoImage',
+	collectionLabels_<?= md5($reportDate) ?>,
+	collectionDatasetsNoImage_<?= md5($reportDate) ?>
+);
 
 })();
 </script>
@@ -896,33 +957,45 @@ $chartStorage = [];
 $chartUseTypes = [];
 $chartMatrix = [];
 
+$chartUseTypesNoImage = [];
+$chartMatrixNoImage = [];
+
 foreach ($reportsArr as $row) {
 
     if ($row['tabletype'] === 'Samples by Storage Type and Use Type'
         && $row['period'] === 'To Date') {
 
-        $collection = $row['collectionName'];
+        $storage = $row['sampleType'];
         $useType = $row['useType'];
         $samples = (int)$row['samples'];
+        $substance = $row['substance'];
 
-        $chartStorage[$collection] = true;
+        $chartStorage[$storage] = true;
         $chartUseTypes[$useType] = true;
 
-        $chartMatrix[$useType][$collection] = $samples;
+        $chartMatrix[$useType][$storage] =
+            ($chartMatrix[$useType][$storage] ?? 0) + $samples;
+
+        if ($substance !== 'image') {
+            $chartUseTypesNoImage[$useType] = true;
+
+            $chartMatrixNoImage[$useType][$storage] =
+                ($chartMatrixNoImage[$useType][$storage] ?? 0) + $samples;
+        }
     }
 }
 
-$collections = array_keys($chartStorage);
+$storages = array_keys($chartStorage);
 $useTypes = array_keys($chartUseTypes);
+$useTypesNoImage = array_keys($chartUseTypesNoImage);
 
 $datasets = [];
 
 foreach ($useTypes as $type) {
 
     $values = [];
-
-    foreach ($collections as $coll) {
-        $values[] = $chartMatrix[$type][$coll] ?? 0;
+    foreach ($storages as $s) {
+        $values[] = $chartMatrix[$type][$s] ?? 0;
     }
 
     $datasets[] = [
@@ -931,24 +1004,39 @@ foreach ($useTypes as $type) {
     ];
 }
 
+$datasetsNoImage = [];
+foreach ($useTypesNoImage as $type) {
+
+    $values = [];
+    foreach ($storages as $s) {
+        $values[] = $chartMatrixNoImage[$type][$s] ?? 0;
+    }
+
+    $datasetsNoImage[] = [
+        "label" => $type,
+        "data" => $values
+    ];
+}
+
 ?>
 
 <script>
-const storageLabels_<?= md5($reportDate) ?> = <?= json_encode($collections) ?>;
+const storageLabels_<?= md5($reportDate) ?> = <?= json_encode($storages) ?>;
 const storageDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
+const storageDatasetsNoImage_<?= md5($reportDate) ?> = <?= json_encode($datasetsNoImage) ?>;
 </script>
 
 <script>
 (function () {
 
-	const labels = storageLabels_<?= md5($reportDate) ?>;
-	const datasetsRaw = storageDatasets_<?= md5($reportDate) ?>;
+function buildStorageChart(canvasID, labels, datasetsRaw){
 
 	const colorPalette = {
 		'destructive': '#0472cf',
 		'consumptive': '#d18710',
 		'invasive': '#dfdfe0',
-		'non-destructive': '#4b372f'
+		'non-destructive': '#4b372f',
+		'image': '#888888'
 	};
 
 	const datasets = datasetsRaw.map(ds => ({
@@ -958,7 +1046,7 @@ const storageDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
 	}));
 
 	const ctx = document
-		.getElementById('storageChart')
+		.getElementById(canvasID)
 		.getContext('2d');
 
 	new Chart(ctx, {
@@ -990,18 +1078,23 @@ const storageDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
 			plugins: {
 				legend: {
 					position: 'bottom'
-				},
-				tooltip: {
-					callbacks: {
-						label: function (ctx) {
-							return ctx.dataset.label + ': ' +
-								ctx.raw.toLocaleString();
-						}
-					}
 				}
 			}
 		}
 	});
+}
+
+buildStorageChart(
+	'storageChart',
+	storageLabels_<?= md5($reportDate) ?>,
+	storageDatasets_<?= md5($reportDate) ?>
+);
+
+buildStorageChart(
+	'storageChartNoImage',
+	storageLabels_<?= md5($reportDate) ?>,
+	storageDatasetsNoImage_<?= md5($reportDate) ?>
+);
 
 })();
 </script>
