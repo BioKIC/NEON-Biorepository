@@ -268,8 +268,9 @@ if ($isEditor) {
 					would be defined as a "whole sample." These categories refer to what was provided by the Biorepository, so an instance in which a researcher recieved an entire sample
 					for the purpose of removing select individuals or tissues would still be categorized as a "whole sample."</p>
 					<p><b>Use Type</b> refers to the level of impact the use has on the sample. "Data" indicates use only of data that was collected by the Biorepository explicity for an external 
-					project (does not include use of data that is otherwise collected). "Image" indicates that images were taken at the Biorepository (either by staff or visitors) for the purpose of a research project.
-					"Non-destructive" is other use of the physical specimens that would have no impact on future use. "Invasive" involves no consumption of the sample, but will impact potential 
+										project (does not include use of data that is otherwise collected). "Image" indicates that images were taken at the Biorepository (either by staff or visitors) for the purpose of a research project
+					(does not include use of images, such as from GBIF, that are otherwise already taken and provided).
+					"Non-destructive" is other use of the physical specimens that would have no impact on future use. "Invasive" involves no consumption of the sample but impacts potential 
 					future uses (e.g., a difference in storage type). "Consumptive" refers to use that impedes all future use of a portion of the sample (e.g., an aliquot is used for sequencing). 
 					"Destructive" use means that no part of the sample will be available for future use. These use types are defined as per the Sample Use Agreement with the researcher, so may not 
 					be reflective of the numbers of samples that are actually available for use.</p>';
