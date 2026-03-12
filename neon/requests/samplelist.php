@@ -290,6 +290,16 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv"><b>Number of Samples Linked:</b> <?php echo $sampleCnt; ?></div>
 				</div>
 				<?php
+								if($sampleCnt){
+				?>
+					<div style="clear:both;padding:10px 0;">
+						<div style="float:left;">
+							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/createrequestdataset.php?id=' . $requestID; ?>">
+								<button type="button">Create Dataset</button>
+							</a>
+					</div>
+				<?php
+				}
 				if(in_array($reqArr['status'],array('pending funding','pending sample list','pending fulfillment')) && !$sampleCnt){
 				?>
 					<div style="clear:both;padding:10px 0;">
