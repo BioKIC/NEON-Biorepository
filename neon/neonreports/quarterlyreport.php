@@ -36,6 +36,8 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
 	</head>
 	<body>
 		<?php
@@ -693,8 +695,6 @@ foreach ($reportsArr as $row) {
 })();
 </script>
 
-</script>
-
 	<?php
 		$chartDataCumSamp = $reports->getCumulativeSamplesRequests($reportDate);
 	?>
@@ -883,7 +883,6 @@ const collectionDatasetsNoImage_<?= md5($reportDate) ?> = <?= json_encode($datas
 (function () {
 
 function buildChart(canvasID, labels, datasetsRaw){
-
 	const colorPalette = {
 		'destructive': '#0472cf',
 		'consumptive': '#d18710',
@@ -898,9 +897,7 @@ function buildChart(canvasID, labels, datasetsRaw){
 		data: ds.data
 	}));
 
-	const ctx = document
-		.getElementById(canvasID)
-		.getContext('2d');
+	const ctx = document.getElementById(canvasID).getContext('2d');
 
 	new Chart(ctx, {
 		type: 'bar',
@@ -914,26 +911,41 @@ function buildChart(canvasID, labels, datasetsRaw){
 			scales: {
 				x: {
 					stacked: true,
-					title: {
-						display: true,
-						text: 'Taxonomic Group'
-					}
+					title: { display: true, text: 'Taxonomic Group' }
 				},
 				y: {
 					stacked: true,
 					beginAtZero: true,
-					title: {
-						display: true,
-						text: 'Number of Samples'
-					}
+					title: { display: true, text: 'Number of Samples' }
 				}
 			},
 			plugins: {
-				legend: {
-					position: 'bottom'
+				legend: { position: 'bottom' },
+				datalabels: {
+				color: '#000',
+				anchor: 'end',
+				align: 'end',
+				font: { weight: 'bold' },
+				formatter: function(value, context) {
+					const datasetIndex = context.datasetIndex;
+					const dataIndex = context.dataIndex;
+					const chart = context.chart;
+					const datasets = chart.data.datasets;
+
+					let total = 0;
+					datasets.forEach(ds => {
+						total += ds.data[dataIndex] ?? 0;
+					});
+
+					if (datasetIndex === datasets.length - 1) {
+						return total > 0 ? total : '';
+					}
+					return '';
 				}
 			}
-		}
+			}
+		},
+		plugins: [ChartDataLabels]
 	});
 }
 
@@ -1031,7 +1043,6 @@ const storageDatasetsNoImage_<?= md5($reportDate) ?> = <?= json_encode($datasets
 (function () {
 
 function buildStorageChart(canvasID, labels, datasetsRaw){
-
 	const colorPalette = {
 		'destructive': '#0472cf',
 		'consumptive': '#d18710',
@@ -1046,9 +1057,7 @@ function buildStorageChart(canvasID, labels, datasetsRaw){
 		data: ds.data
 	}));
 
-	const ctx = document
-		.getElementById(canvasID)
-		.getContext('2d');
+	const ctx = document.getElementById(canvasID).getContext('2d');
 
 	new Chart(ctx, {
 		type: 'bar',
@@ -1060,28 +1069,36 @@ function buildStorageChart(canvasID, labels, datasetsRaw){
 			responsive: true,
 			maintainAspectRatio: false,
 			scales: {
-				x: {
-					stacked: true,
-					title: {
-						display: true,
-						text: 'Storage Type'
-					}
-				},
-				y: {
-					stacked: true,
-					beginAtZero: true,
-					title: {
-						display: true,
-						text: 'Number of Samples'
-					}
-				}
+				x: { stacked: true, title: { display: true, text: 'Storage Type' } },
+				y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Number of Samples' } }
 			},
 			plugins: {
-				legend: {
-					position: 'bottom'
+				legend: { position: 'bottom' },
+				datalabels: {
+					color: '#000',
+					anchor: 'end',
+					align: 'end',
+					font: { weight: 'bold' },
+					formatter: function(value, context) {
+						const datasetIndex = context.datasetIndex;
+						const dataIndex = context.dataIndex;
+						const chart = context.chart;
+						const datasets = chart.data.datasets;
+
+						let total = 0;
+						datasets.forEach(ds => {
+							total += ds.data[dataIndex] ?? 0;
+						});
+
+						if (datasetIndex === datasets.length - 1) {
+							return total > 0 ? total : '';
+						}
+						return '';
+					}
 				}
 			}
-		}
+		},
+		plugins: [ChartDataLabels]
 	});
 }
 
