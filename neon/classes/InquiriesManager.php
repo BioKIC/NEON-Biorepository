@@ -1230,7 +1230,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
     }
 
 
-  // delete sample from request
+    // delete sample from request
 	public function deleteSample($id){
 		$status = false;
 		if(is_numeric($id)){
@@ -1379,6 +1379,75 @@ public function addCollectionInquiryLink($requestID, $collections) {
         fclose($output);
         $stmt->close();
         exit; 
+    }
+    public function exportPubTable($requestID){
+        $requestID = (int)$requestID;
+
+        $fileName = 'samplePublicationTable_' . $requestID . '_' . date('Y-m-d') . '.csv';
+
+        $sql = 'WITH domains AS (
+                            SELECT l.occid,d.name
+                            FROM omoccurdatasetlink l
+                            LEFT JOIN omoccurdatasets d
+                            ON l.datasetID=d.datasetID
+                            WHERE d.datasetID >0 AND d.datasetID <20
+                        ),
+                        sites AS (
+                                    SELECT l.occid,d.name
+                            FROM omoccurdatasetlink l
+                            LEFT JOIN omoccurdatasets d
+                            ON l.datasetID=d.datasetID
+                            WHERE d.datasetID >32 AND d.datasetID <132
+                            )
+                        
+                SELECT  e.name AS domain,
+                        o.stateProvince,
+                        t.name AS siteID, 
+                        o.catalogNumber AS IGSN, 
+                        m.sampleID AS sampleID, 
+                        m.sampleCode AS barcode, 
+                        o.sciname AS scientificName
+                        FROM  domains e 
+                        LEFT JOIN NeonSample m ON e.occid = m.occid
+                        LEFT JOIN omoccurrences o ON e.occid = o.occid 
+                        LEFT JOIN sites t ON e.occid = t.occid
+                        LEFT JOIN neonsamplerequestlink sl
+                        ON e.occid=sl.occid
+                        WHERE sl.requestID= ? 
+                        ORDER by domain,stateProvince,siteID,IGSN';
+
+                $stmt = $this->conn->prepare($sql);
+                if(!$stmt){
+                    die('SQL prepare failed: ' . $this->conn->error);
+                }
+
+                $stmt->bind_param('i', $requestID);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if(!$result){
+                    die('Query failed: ' . $stmt->error);
+                }
+
+                header('Content-Type: text/csv');
+                header('Content-Disposition: attachment; filename="' . $fileName . '"');
+                header('Pragma: no-cache');
+                header('Expires: 0');
+
+                $output = fopen('php://output', 'w');
+
+                if($row = $result->fetch_assoc()){
+                    fputcsv($output, array_keys($row)); 
+                    fputcsv($output, $row);            
+                }
+
+                while($row = $result->fetch_assoc()){
+                    fputcsv($output, $row);
+                }
+
+                fclose($output);
+                $stmt->close();
+                exit; 
     }
 
     // export material sample list

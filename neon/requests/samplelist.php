@@ -290,13 +290,22 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv"><b>Number of Samples Linked:</b> <?php echo $sampleCnt; ?></div>
 				</div>
 				<?php
-								if($sampleCnt){
+				if($sampleCnt){
 				?>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
 							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/createrequestdataset.php?id=' . $requestID; ?>">
 								<button type="button">Create Dataset</button>
 							</a>
+					</div>
+					<div style="clear:both;padding:10px 0;">
+						<form name="exportPubTable" action="exporthandler.php" method="post">
+							<input type="hidden" name="requestID" value="<?php echo $requestID; ?>" />
+							<input type="hidden" name="exportTask" value="pubtable" />
+							<button type="submit" name="action" value="exportPubTable">
+								Export Publication-Ready Table
+							</button>
+						</form>
 					</div>
 				<?php
 				}

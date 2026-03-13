@@ -24,5 +24,8 @@ if($isEditor){
     elseif($exportTask == "materialsamplestable"){
         $inquiryManager->exportMaterialSampleTable($requestID);
     }
+    elseif($exportTask == "pubtable"){
+        $inquiryManager->exportPubTable($requestID);
+    }
 }
 ?>
