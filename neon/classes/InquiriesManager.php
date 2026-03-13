@@ -1385,7 +1385,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
 
         $fileName = 'samplePublicationTable_' . $requestID . '_' . date('Y-m-d') . '.csv';
 
-        $sql = 'WITH domains AS (
+        $sql = "WITH domains AS (
                             SELECT l.occid,d.name
                             FROM omoccurdatasetlink l
                             LEFT JOIN omoccurdatasets d
@@ -1403,9 +1403,10 @@ public function addCollectionInquiryLink($requestID, $collections) {
                 SELECT  e.name AS domain,
                         o.stateProvince,
                         t.name AS siteID, 
-                        o.catalogNumber AS IGSN, 
                         m.sampleID AS sampleID, 
                         m.sampleCode AS barcode, 
+                        o.catalogNumber AS IGSN, 
+                        CONCAT('https://doi.org/10.58052/',o.catalogNumber) AS IGSN_ID,
                         o.sciname AS scientificName
                         FROM  domains e 
                         LEFT JOIN NeonSample m ON e.occid = m.occid
@@ -1414,7 +1415,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
                         LEFT JOIN neonsamplerequestlink sl
                         ON e.occid=sl.occid
                         WHERE sl.requestID= ? 
-                        ORDER by domain,stateProvince,siteID,IGSN';
+                        ORDER by domain,stateProvince,siteID,IGSN";
 
                 $stmt = $this->conn->prepare($sql);
                 if(!$stmt){
