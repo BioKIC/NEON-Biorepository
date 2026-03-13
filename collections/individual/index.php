@@ -1109,13 +1109,13 @@ $traitArr = $indManager->getTraitArr();
 										// START NEON CUSTOMIZATION //
 										if($imgArr['creator']) {
 											if($imgArr['owner']){
-												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</br><b>Owner:</b> '.$imgArr['owner'].'</div>';
+												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</br></b> '.$imgArr['owner'].'</div>';
 											}
 											else {
 												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</div>';
 											}
 										}
-										elseif($imgArr['owner']) echo '<div>Owner: ' . $imgArr['owner'].'</div>';
+										elseif($imgArr['owner']) echo '<div>' . $imgArr['owner'].'</div>';
 									if($imgArr['rights']) echo '<div><b> License: </b>'.$imgArr['rights'].'</div>';
 									else echo '<div><b> License: </b>CC BY-SA (Attribution-ShareAlike)</div>';
 									if($imgArr['url'] && substr($thumbUrl,0,7)!='process' && $imgArr['url'] != $imgArr['lgurl']) echo '<div><a href="' . $imgArr['url'] . '" target="_blank">' . $LANG['OPEN_MEDIUM'] . '</a></div>';
