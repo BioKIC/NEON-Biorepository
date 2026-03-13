@@ -44,12 +44,13 @@ class OccurrenceDataset{
 		$retArr = array();
 		if ($dsid) {
 			//Get and return individual dataset
-			$sql = 'SELECT datasetid, name, notes, description, uid, dynamicProperties, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') AND ispublic=1';
+			$sql = 'SELECT datasetid, name, notes, description, bibliographicCitation, uid, dynamicProperties, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') AND ispublic=1';
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
 				$retArr['name'] = $r->name;
 				$retArr['notes'] = $r->notes;
 				$retArr['description'] = $r->description;
+				$retArr['bibliographicCitation'] = $r->bibliographicCitation;
 				$retArr['uid'] = $r->uid;
 				$retArr['dynamicproperties'] = $r->dynamicProperties;
 				$retArr['sort'] = $r->sortsequence;
@@ -64,12 +65,13 @@ class OccurrenceDataset{
 		$retArr = array();
 		if ($GLOBALS['SYMB_UID'] && $dsid) {
 			//Get and return individual dataset
-			$sql = 'SELECT datasetid, name, notes, description, uid, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') ';
+			$sql = 'SELECT datasetid, name, notes, description, bibliographicCitation, uid, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') ';
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
 				$retArr['name'] = $r->name;
 				$retArr['notes'] = $r->notes;
 				$retArr['description'] = $r->description;
+				$retArr['bibliographicCitation'] = $r->bibliographicCitation;
 				$retArr['uid'] = $r->uid;
 				$retArr['sort'] = $r->sortsequence;
 				$retArr['ts'] = $r->initialtimestamp;

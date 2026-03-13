@@ -295,7 +295,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
 							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/createrequestdataset.php?id=' . $requestID; ?>">
-								<button type="button">Create Dataset</button>
+								<button type="button">Dataset Management</button>
 							</a>
 					</div>
 					<div style="clear:both;padding:10px 0;">

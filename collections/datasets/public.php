@@ -42,6 +42,14 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
     <ul>
       <!-- Metadata -->
       <div><?php echo $dArr['description'] ;?></div>
+	  <?php 
+	  if ($dArr['bibliographicCitation']) { 
+		?>
+		<h2> Citation </h2>
+	  	<div><?php echo $dArr['bibliographicCitation'];?></div>
+	  	<?php 
+	  }; 
+	  ?>
       <!-- Occurrences Summary -->
       <p><?php echo $LANG['INCLUDES']; ?> <?php echo count($ocArr); ?> <?php echo $LANG['RECORDS']; ?></p>
 

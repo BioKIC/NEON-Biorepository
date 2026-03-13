@@ -123,6 +123,15 @@ if ($isEditor) {
 			default_link_target: "_blank",
 			paste_as_text: true
 		});
+		tinymce.init({
+			selector: '#citation',
+			plugins: 'link lists image',
+			menubar: '',
+			toolbar: ['undo redo | bold italic underline | link '],
+			branding: false,
+			default_link_target: "_blank",
+			paste_as_text: true
+		});
 	</script>
 	<script type="text/javascript">
 		var isDownloadAction = false;
@@ -473,7 +482,7 @@ if ($isEditor) {
 							<section class="fieldset-like">
 								<h2><span><b><?php echo $LANG['EDITOR']; ?></b></span></h2>
 								<form name="editform" action="datasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
-									<div>
+									<div style="margin:25px 10px;">
 										<label for="name"><?php echo $LANG['NAME']; ?></label>
 										<input name="name" id="name" type="text" value="<?php echo $mdArr['name']; ?>" aria-label="<?php echo $LANG['NAME']; ?>" style="width:70%" />
 									</div>
@@ -484,13 +493,17 @@ if ($isEditor) {
 											<label for="ispublic"><?php echo $LANG['PUB_VISIBLE']; ?></label>
 										</p>
 									</div>
-									<div>
+									<div style="margin:25px 10px;">
 										<label for="notes"><?php echo $LANG['NOTES_INTERNAL']; ?></label>
 										<input name="notes" id="notes" type="text" value="<?php echo $mdArr['notes']; ?>" style="width:70%" aria-label="<?php echo $LANG['NOTES_INTERNAL']; ?>" />
 									</div>
-									<div>
+									<div style="margin:15px;">
 										<label for="description"><?php echo $LANG['DESCRIPTION']; ?></label>
 										<textarea name="description" id="description" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo $mdArr['description']; ?></textarea>
+									</div>
+									<div style="margin:15px;">
+										<label for="citation"><?php echo 'Citation<br>'; ?></label>
+										<textarea name="citation" id="citation" cols="100" rows="4" style="width: 70%;" aria-label="<?php echo 'Citation'; ?>"><?php echo $mdArr['bibliographicCitation']; ?></textarea>
 									</div>
 									<div style="margin:15px;">
 										<input name="tabindex" type="hidden" value="1" />
