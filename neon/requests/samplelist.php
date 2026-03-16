@@ -184,6 +184,43 @@ if($IS_ADMIN) $isEditor = true;
 			return false;
 		}
 
+		async function handleDataset(requestID) {
+			try {
+				let response = await fetch(`datasethandler.php?id=${requestID}&action=check`);
+				let data = await response.json();
+
+				if (data.exists) {
+					// dataset exists, go straight to manager
+					window.location.href = `../../collections/datasets/datasetmanager.php?datasetid=${data.datasetid}`;
+				} else {
+					// Ask user if they want to create a new dataset
+					if (!confirm("No dataset exists for this request. Do you want to create a new dataset?")) {
+						return; // user cancelled
+					}
+
+					// user confirmed, create dataset
+					response = await fetch(`datasethandler.php?id=${requestID}&action=create`);
+					const text = await response.text();
+					let createData;
+					try {
+						createData = JSON.parse(text);
+					} catch (e) {
+						console.error("Non-JSON response:", text);
+						alert("Failed to communicate with the dataset handler. See console for details.");
+						return;
+					}
+
+					if (createData.success) {
+						window.location.href = `../../collections/datasets/datasetmanager.php?datasetid=${createData.datasetid}`;
+					} else {
+						alert("Error creating dataset: " + createData.error);
+					}
+				}
+			} catch (err) {
+				console.error("Dataset handler fetch error:", err);
+				alert("Failed to communicate with the dataset handler.");
+			}
+		}
 
 	</script>
 	<style type="text/css">
@@ -294,9 +331,9 @@ include($SERVER_ROOT.'/includes/header.php');
 				?>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
-							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/createrequestdataset.php?id=' . $requestID; ?>">
-								<button type="button">Dataset Management</button>
-							</a>
+						<button type="button" onclick="handleDataset(<?= $requestID ?>)">
+							Dataset Management
+						</button>
 					</div>
 					<div style="clear:both;padding:10px 0;">
 						<form name="exportPubTable" action="exporthandler.php" method="post">

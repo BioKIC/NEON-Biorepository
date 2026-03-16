@@ -307,7 +307,7 @@ class OccurrenceDataset{
 		}
 	}
 
-	public function getOccurrences($datasetId, $pageNumber = 1, $retLimit = 500) {
+	public function getOccurrences($datasetId, $pageNumber = 1, $retLimit = 1000000000) {
 		$retArr = array();
 		if ($datasetId) {
 			$sql = 'SELECT o.occid, o.catalognumber, o.occurrenceid ,o.othercatalognumbers,

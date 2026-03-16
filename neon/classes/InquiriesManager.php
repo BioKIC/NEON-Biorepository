@@ -2025,6 +2025,150 @@ public function addCollectionInquiryLink($requestID, $collections) {
         }
     }
 
+    // find the dataset
+    public function getDatasetID($requestID) {
+        $requestID = (int)$requestID;
+        $sql = "SELECT datasetID
+                FROM neonrequest
+                WHERE id = ?";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database error: " . $this->conn->error;
+            return [];
+        }
+
+        $stmt->bind_param("i", $requestID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $row = $result->fetch_assoc();  
+
+        $stmt->close();
+
+        return $row ?: []; 
+
+    }
+
+    // create dataset from request
+    public function createDatasetFromRequest($requestID, $uid) {
+
+        $requestID = intval($requestID);
+        $uid = intval($uid);
+
+        if (!$requestID || !$uid) {
+            $this->errorMessage = "Invalid request ID or user ID.";
+            return false;
+        }
+
+        $sql = "SELECT title, description FROM neonrequest WHERE id = $requestID";
+        $row = $this->conn->query($sql);
+        if (!$row) {
+            $this->errorMessage = "Failed to fetch request: " . $this->conn->error;
+            return false;
+        }
+        $row = $row->fetch_assoc();
+        if (!$row) {
+            $this->errorMessage = "Request not found";
+            return false;
+        }
+
+        $name = substr($row['title'], 0, 100);
+        $name = $this->conn->real_escape_string($name);
+        $description = $this->conn->real_escape_string($row['description'] ?? '');
+        $notes = "Dataset created from request $requestID";
+
+        // create new dataset
+        $insertSql = "INSERT INTO omoccurdatasets (name, description, notes, isPublic, uid) 
+                      VALUES ('$name', '$description', '$notes', 0, $uid)";
+        if (!$this->conn->query($insertSql)) {
+            $this->errorMessage = "Failed to create dataset: " . $this->conn->error;
+            return false;
+        }
+
+        $datasetID = $this->conn->insert_id;
+
+        // add datasetID to requests table
+        $updateSql = "UPDATE neonrequest SET datasetID = $datasetID WHERE id = $requestID";
+        if (!$this->conn->query($updateSql)) {
+            $this->errorMessage = "Failed to update request: " . $this->conn->error;
+            return false;
+        }
+        
+        // Add occurrences to dataset
+        $sampsSql = "SELECT occid FROM neonsamplerequestlink WHERE requestID = $requestID";
+        $result = $this->conn->query($sampsSql);
+        if (!$result) {
+            $this->errorMessage = "Failed to fetch occurrences: " . $this->conn->error;
+            return false;
+        }
+
+        $values = [];
+        while ($row = $result->fetch_assoc()) {
+            $occid = intval($row['occid']);
+            $values[] = "($occid, $datasetID)";
+        }
+
+        if (!empty($values)) {
+            $insertOccsSql = "INSERT INTO omoccurdatasetlink (occid, datasetid) VALUES " . implode(", ", $values);
+            if (!$this->conn->query($insertOccsSql)) {
+                $this->errorMessage = "Failed to link occurrences to dataset: " . $this->conn->error;
+                return false;
+            }
+        }
+        
+        // add dataset citation 
+        if (!empty($values)) {
+            $occids = array_map(function($v) {
+                preg_match('/\((\d+),/', $v, $matches);
+                return intval($matches[1]);
+            }, $values);
+
+            $occidList = implode(',', $occids);
+
+            $collsSql = "SELECT DISTINCT c.collid, c.collectionName
+                        FROM omcollections c
+                        JOIN omoccurrences o ON c.collid = o.collid
+                        WHERE o.occid IN ($occidList)";
+
+            $result = $this->conn->query($collsSql);
+            if (!$result) {
+                $this->errorMessage = "Failed to fetch collections for citation: " . $this->conn->error;
+                return false;
+            }
+
+            $citations = [];
+            $SYS_TIME = date('Y-m-d');
+
+            while ($row = $result->fetch_assoc()) {
+                $collid = intval($row['collid']);
+                $collectionName = $this->conn->real_escape_string($row['collectionName']);
+
+                $citations[] = "NEON (National Ecological Observatory Network) Biorepository. "
+                            . $collectionName
+                            . " Data accessed from https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid="
+                            . $collid
+                            . " on " . $SYS_TIME . ".<br><br>";
+            }
+
+            if (!empty($citations)) {
+                $fullCitation = implode("\n\n", $citations);
+
+                $updateCitationSql = "UPDATE omoccurdatasets 
+                                    SET bibliographicCitation = '" . $this->conn->real_escape_string($fullCitation) . "' 
+                                    WHERE datasetID = $datasetID";
+
+                if (!$this->conn->query($updateCitationSql)) {
+                    $this->errorMessage = "Failed to update dataset citation: " . $this->conn->error;
+                    return false;
+                }
+            }
+        }
+
+        return $datasetID;
+    }
+
+
 
 }
 
