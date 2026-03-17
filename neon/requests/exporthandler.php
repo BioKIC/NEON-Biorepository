@@ -12,6 +12,11 @@ if($IS_ADMIN) $isEditor = true;
 elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 
 $status = '';
+
+if($type == 'dataset'){
+    $isEditor = true;
+}
+
 if($isEditor){
 	$inquiryManager = new InquiriesManager();
     if ($exportTask == "samplesrequest"){
