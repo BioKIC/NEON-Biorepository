@@ -1,8 +1,6 @@
 <?php
-header("Location: https://www.neonscience.org/samples", true, 302);
-exit;
-//error_reporting(E_ALL);
-//ini_set('display_errors', '1');
+//header("Location: https://www.neonscience.org/samples", true, 302);
+//exit;
 include_once('config/symbini.php');
 include_once('content/lang/index.' . $LANG_TAG . '.php');
 include_once($SERVER_ROOT . '/neon/classes/PortalStatistics.php');
@@ -32,10 +30,10 @@ $statsArr = json_encode($stats->getBlueNeonStats());
 <script type="module">
 	// countup animation
 	import { CountUp } from './neon/js/countUp.min.js';
-	
+
 	window.onload = function() {
 		var data = <?php echo $statsArr; ?>;
-	
+
 		// Array of target elements
 		var targets = [
 		  { id: 'speciesCount', value: data.noSpecies, suffix: ' species' },
@@ -45,7 +43,7 @@ $statsArr = json_encode($stats->getBlueNeonStats());
 		  { id: 'sampleTypeCount', value: data.noSampleTypes, suffix: ' sample types' },
 		  { id: 'siteCount', value: data.noSites, suffix: ' sites' },
 		];
-	
+
 		// Iterate over the targets array and initialize CountUp for each element
 		targets.forEach(function(target) {
 		  var countUp = new CountUp(target.id, target.value, { enableScrollSpy: true, suffix: target.suffix, duration: 3 });

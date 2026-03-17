@@ -27,9 +27,9 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
 <link rel="stylesheet" href="<?= $CLIENT_ROOT ?>/neon-react/assets/css/webpack-overrides.css"/>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-<script nonce="<?= htmlspecialchars($NONCE) ?>">window.gtmDataLayer=[{page_category:"Core Components"}]</script>
-<script nonce="<?= htmlspecialchars($NONCE) ?>">!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a),r="&l="+n;m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-K4S83R2"+r,g.parentNode.insertBefore(m,g)}(window,document,"script","gtmDataLayer")</script>
-<script nonce="<?= htmlspecialchars($NONCE) ?>">window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script>
+<script>window.gtmDataLayer=[{page_category:"Core Components"}]</script>
+<script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a),r="&l="+n;m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-K4S83R2"+r,g.parentNode.insertBefore(m,g)}(window,document,"script","gtmDataLayer")</script>
+<script>window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script>
 <link href="<?= $CLIENT_ROOT ?>/neon-react/static/css/main.dfee6011.css" rel="stylesheet">
 <!--end of neon react links-->
 

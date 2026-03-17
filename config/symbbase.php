@@ -7,9 +7,18 @@ if($GLOBALS['HTTPS_ONLY'] ?? true) {
 date_default_timezone_set('America/Phoenix');
 $CODE_VERSION = '3.4';
 
-$NONCE = base64_encode(random_bytes(16));
-$cspHeader = "default-src 'self'; script-src 'self' 'nonce-$NONCE'; style-src 'self' 'nonce-$NONCE';";
-header('Content-Security-Policy: ' . $csp_header);
+/*
+$cspHeader = "default-src 'self'; ";
+$cspHeader .= "script-src 'self' 'unsafe-inline' https://www.neonscience.org https://code.jquery.com https://www.googletagmanager.com; ";
+$cspHeader .= "script-src-elem 'self' 'unsafe-inline' https://www.neonscience.org https://code.jquery.com https://www.googletagmanager.com; ";
+$cspHeader .= "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; ";
+$cspHeader .= "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; ";
+$cspHeader .= "font-src 'self' https://fonts.gstatic.com https://www.neonscience.org; ";
+$cspHeader .= "img-src 'self' data: https://www.neonscience.org https://img.shields.io https://www.googletagmanager.com; ";
+$cspHeader .= "connect-src 'self' https://www.neonscience.org https://data.neonscience.org https://www.googletagmanager.com; ";
+$cspHeader .= "object-src 'none'; frame-ancestors 'none'; base-uri 'self'; ";
+header('Content-Security-Policy: ' . $cspHeader);
+*/
 
 set_include_path(get_include_path() . PATH_SEPARATOR . $SERVER_ROOT . PATH_SEPARATOR . $SERVER_ROOT.'/config/' . PATH_SEPARATOR . $SERVER_ROOT.'/classes/');
 
