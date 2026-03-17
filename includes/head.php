@@ -17,7 +17,20 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
 <!--neon react links-->
 <!--React last updated: 2/19/2026, 3:09:55 PM-->
-<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-fonts" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-fonts.css"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/webpack-overrides.css"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>window.gtmDataLayer=[{page_category:"Core Components"}]</script><script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a),r="&l="+n;m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-K4S83R2"+r,g.parentNode.insertBefore(m,g)}(window,document,"script","gtmDataLayer")</script><script>window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script><link href="<?php echo $CLIENT_ROOT; ?>/neon-react/static/css/main.dfee6011.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/>
+<meta name="theme-color" content="#000000"/>
+<link rel="manifest" href="<?= $CLIENT_ROOT ?>/neon-react/manifest.json"/>
+<link rel="shortcut icon" href="<?= $CLIENT_ROOT ?>/neon-react/favicon.ico?v=201912"/>
+<link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/>
+<link rel="stylesheet" data-meta="drupal-fonts" href="<?= $CLIENT_ROOT ?>/neon-react/assets/css/drupal-fonts.css"/>
+<link rel="stylesheet" data-meta="drupal-theme" href="<?= $CLIENT_ROOT ?>/neon-react/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/>
+<link rel="stylesheet" href="<?= $CLIENT_ROOT ?>/neon-react/assets/css/webpack-overrides.css"/>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script nonce="<?= htmlspecialchars($NONCE) ?>">window.gtmDataLayer=[{page_category:"Core Components"}]</script>
+<script nonce="<?= htmlspecialchars($NONCE) ?>">!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a),r="&l="+n;m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-K4S83R2"+r,g.parentNode.insertBefore(m,g)}(window,document,"script","gtmDataLayer")</script>
+<script nonce="<?= htmlspecialchars($NONCE) ?>">window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script>
+<link href="<?= $CLIENT_ROOT ?>/neon-react/static/css/main.dfee6011.css" rel="stylesheet">
 <!--end of neon react links-->
 
 <script>
@@ -55,7 +68,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         function updateBreadcrumbHash() {
             const breadcrumbLink = document.querySelector('nav a[href="../misc/neoncollprofiles.php?collid=#"]');
             if (breadcrumbLink) {
-                breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?php echo isset($collid) ? $collid : '#'; ?>');
+                breadcrumbLink.href = breadcrumbLink.href.replace('#', '<?= isset($collid) ? $collid : '#' ?>');
             }
         }
 
@@ -87,7 +100,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
         //javascript code created by React
         var reactScript = document.createElement('script');
-        reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.c7fab37c.js';
+        reactScript.src = '<?= $CLIENT_ROOT ?>/neon-react/static/js/main.c7fab37c.js';
         reactScript.defer = true;
 
         // this code happens after header is rendered but before sidebar
@@ -166,7 +179,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
             githubLink.style.alignItems = 'center';
 
             const githubLogo = document.createElement('img');
-            githubLogo.src = '<?php echo $CLIENT_ROOT; ?>/images/icons/github-mark-white.svg';
+            githubLogo.src = '<?= $CLIENT_ROOT ?>/images/icons/github-mark-white.svg';
             githubLogo.alt = 'GitHub Logo';
             githubLogo.style.width = '16px';
             githubLogo.style.height = '16px';
@@ -205,13 +218,13 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
             }
 
             const newImage1 = createClickableImage(
-                '<?php echo $CLIENT_ROOT; ?>/images/layout/logo_symbiota_white_text.png',
+                '<?= $CLIENT_ROOT ?>/images/layout/logo_symbiota_white_text.png',
                 60,
                 167,
                 'https://symbiota.org/'
             );
             const newImage2 = createClickableImage(
-                '<?php echo $CLIENT_ROOT; ?>/images/layout/logo-asu-biokic.jpg',
+                '<?= $CLIENT_ROOT ?>/images/layout/logo-asu-biokic.jpg',
                 60,
                 167,
                 'https://biokic.asu.edu/collections'
@@ -221,7 +234,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                 footerLogoDiv.appendChild(newImage1);
                 footerLogoDiv.appendChild(newImage2);
             }
-            
+
             // --- Add yellow notification banner right after <header> ---
             //(function () {
             //  const headerEl = document.querySelector('header');

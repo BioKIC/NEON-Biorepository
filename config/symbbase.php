@@ -7,6 +7,10 @@ if($GLOBALS['HTTPS_ONLY'] ?? true) {
 date_default_timezone_set('America/Phoenix');
 $CODE_VERSION = '3.4';
 
+$NONCE = base64_encode(random_bytes(16));
+$cspHeader = "default-src 'self'; script-src 'self' 'nonce-$NONCE'; style-src 'self' 'nonce-$NONCE';";
+header('Content-Security-Policy: ' . $csp_header);
+
 set_include_path(get_include_path() . PATH_SEPARATOR . $SERVER_ROOT . PATH_SEPARATOR . $SERVER_ROOT.'/config/' . PATH_SEPARATOR . $SERVER_ROOT.'/classes/');
 
 session_start(array('gc_maxlifetime'=>3600,'cookie_path'=>$CLIENT_ROOT,'cookie_secure'=>$GLOBALS['HTTPS_ONLY'] ?? true,'cookie_httponly'=>true, 'use_only_cookies' => true));
