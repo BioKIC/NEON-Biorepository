@@ -57,6 +57,28 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
       <p><a class="btn" href="<?php echo htmlspecialchars($tableUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ;?>"><?php echo $LANG['VIEW_SAMPLE']; ?></a></p>
       <p><a class="btn" href="<?php echo htmlspecialchars($taxaUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ;?>"><?php echo $LANG['VIEW_LIST']; ?></a></p>
       <!-- <p><a href="#">Download this Dataset</a></p> -->
+
+	  <!-- NEON addition: Download pub ready table -->
+
+	<?php
+	if($datasetid){
+	?>
+			<form action="<?php echo $CLIENT_ROOT; ?>/neon/requests/exporthandler.php" method="post" style="margin-top:15px;">
+				<input type="hidden" name="pubID" value="<?php echo $datasetid; ?>" />
+				<input type="hidden" name="type" value="dataset" />
+				<input type="hidden" name="exportTask" value="pubtable" />
+
+				<button type="submit" class="btn">
+					Download Publication-Ready Table
+				</button>
+			</form>
+	<?php
+	}
+	?>
+
+	  <!-- End NEON addition -->
+
+
     </ul>
 		</div>
 		<?php
