@@ -336,8 +336,13 @@ include($SERVER_ROOT.'/includes/header.php');
 						</button>
 					</div>
 					<div style="clear:both;padding:10px 0;">
+						<?php 
+							$type = 'request';
+							$pubID = $requestID; 
+						?>
 						<form name="exportPubTable" action="exporthandler.php" method="post">
-							<input type="hidden" name="requestID" value="<?php echo $requestID; ?>" />
+							<input type="hidden" name="pubID" value="<?php echo $pubID; ?>" />
+							<input type="hidden" name="type" value="<?php echo $type; ?>" />
 							<input type="hidden" name="exportTask" value="pubtable" />
 							<button type="submit" name="action" value="exportPubTable">
 								Export Publication-Ready Table

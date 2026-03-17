@@ -1380,49 +1380,88 @@ public function addCollectionInquiryLink($requestID, $collections) {
         $stmt->close();
         exit; 
     }
-    public function exportPubTable($requestID){
-        $requestID = (int)$requestID;
+    public function exportPubTable($pubID, $type){
+        $pubID = (int)$pubID;
 
-        $fileName = 'samplePublicationTable_' . $requestID . '_' . date('Y-m-d') . '.csv';
+        if ($type == 'request') {
+            $fileName = 'samplePublicationTable_request_' . $pubID . '_' . date('Y-m-d') . '.csv';
 
-        $sql = "WITH domains AS (
-                            SELECT l.occid,d.name
-                            FROM omoccurdatasetlink l
-                            LEFT JOIN omoccurdatasets d
-                            ON l.datasetID=d.datasetID
-                            WHERE d.datasetID >0 AND d.datasetID <20
-                        ),
-                        sites AS (
-                                    SELECT l.occid,d.name
-                            FROM omoccurdatasetlink l
-                            LEFT JOIN omoccurdatasets d
-                            ON l.datasetID=d.datasetID
-                            WHERE d.datasetID >32 AND d.datasetID <132
-                            )
-                        
-                SELECT  e.name AS domain,
-                        o.stateProvince,
-                        t.name AS siteID, 
-                        m.sampleID AS sampleID, 
-                        m.sampleCode AS barcode, 
-                        o.catalogNumber AS IGSN, 
-                        CONCAT('https://doi.org/10.58052/',o.catalogNumber) AS IGSN_ID,
-                        o.sciname AS scientificName
-                        FROM  domains e 
-                        LEFT JOIN NeonSample m ON e.occid = m.occid
-                        LEFT JOIN omoccurrences o ON e.occid = o.occid 
-                        LEFT JOIN sites t ON e.occid = t.occid
-                        LEFT JOIN neonsamplerequestlink sl
-                        ON e.occid=sl.occid
-                        WHERE sl.requestID= ? 
-                        ORDER by domain,stateProvince,siteID,IGSN";
+            $sql = "WITH domains AS (
+                                SELECT l.occid,d.name
+                                FROM omoccurdatasetlink l
+                                LEFT JOIN omoccurdatasets d
+                                ON l.datasetID=d.datasetID
+                                WHERE d.datasetID >0 AND d.datasetID <20
+                            ),
+                            sites AS (
+                                        SELECT l.occid,d.name
+                                FROM omoccurdatasetlink l
+                                LEFT JOIN omoccurdatasets d
+                                ON l.datasetID=d.datasetID
+                                WHERE d.datasetID >32 AND d.datasetID <132
+                                )
+                            
+                    SELECT  e.name AS domain,
+                            o.stateProvince,
+                            t.name AS siteID, 
+                            m.sampleID AS sampleID, 
+                            m.sampleCode AS barcode, 
+                            o.catalogNumber AS IGSN, 
+                            CONCAT('https://doi.org/10.58052/',o.catalogNumber) AS IGSN_ID,
+                            o.sciname AS scientificName
+                            FROM  domains e 
+                            LEFT JOIN NeonSample m ON e.occid = m.occid
+                            LEFT JOIN omoccurrences o ON e.occid = o.occid 
+                            LEFT JOIN sites t ON e.occid = t.occid
+                            LEFT JOIN neonsamplerequestlink sl
+                            ON e.occid=sl.occid
+                            WHERE sl.requestID= ? 
+                            ORDER by domain,stateProvince,siteID,IGSN";
+        }
+
+        elseif ($type == 'dataset'){
+            $fileName = 'samplePublicationTable_dataset_' . $pubID . '_' . date('Y-m-d') . '.csv';
+
+            $sql = "WITH domains AS (
+                                SELECT l.occid,d.name
+                                FROM omoccurdatasetlink l
+                                LEFT JOIN omoccurdatasets d
+                                ON l.datasetID=d.datasetID
+                                WHERE d.datasetID >0 AND d.datasetID <20
+                            ),
+                            sites AS (
+                                        SELECT l.occid,d.name
+                                FROM omoccurdatasetlink l
+                                LEFT JOIN omoccurdatasets d
+                                ON l.datasetID=d.datasetID
+                                WHERE d.datasetID >32 AND d.datasetID <132
+                                )
+                            
+                    SELECT  e.name AS domain,
+                            o.stateProvince,
+                            t.name AS siteID, 
+                            m.sampleID AS sampleID, 
+                            m.sampleCode AS barcode, 
+                            o.catalogNumber AS IGSN, 
+                            CONCAT('https://doi.org/10.58052/',o.catalogNumber) AS IGSN_ID,
+                            o.sciname AS scientificName
+                            FROM  domains e 
+                            LEFT JOIN NeonSample m ON e.occid = m.occid
+                            LEFT JOIN omoccurrences o ON e.occid = o.occid 
+                            LEFT JOIN sites t ON e.occid = t.occid
+                            JOIN omoccurdatasetlink sl
+                            ON e.occid=sl.occid
+                            WHERE sl.datasetid= ? 
+                            ORDER by domain,stateProvince,siteID,IGSN";
+
+        }
 
                 $stmt = $this->conn->prepare($sql);
                 if(!$stmt){
                     die('SQL prepare failed: ' . $this->conn->error);
                 }
 
-                $stmt->bind_param('i', $requestID);
+                $stmt->bind_param('i', $pubID);
                 $stmt->execute();
                 $result = $stmt->get_result();
 
@@ -2079,8 +2118,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
         $notes = "Dataset created from request $requestID";
 
         // create new dataset
-        $insertSql = "INSERT INTO omoccurdatasets (name, description, notes, isPublic, uid) 
-                      VALUES ('$name', '$description', '$notes', 0, $uid)";
+        $insertSql = "INSERT INTO omoccurdatasets (name, description, category, notes, isPublic, uid) 
+                      VALUES ('$name', '$description', 'Request' ,'$notes', 1, $uid)";
         if (!$this->conn->query($insertSql)) {
             $this->errorMessage = "Failed to create dataset: " . $this->conn->error;
             return false;
