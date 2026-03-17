@@ -56,6 +56,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			var shipmentPK = <?php echo json_encode($shipmentPK); ?>;
 			var table = $('#manifestTable').DataTable({
 				serverSide: true, // turns on processing on the server (i.e., through SQL) vs through the browser
+				pageLength: 500, // default page size
 				ajax: { //what is sent upon an action in the table
 					url: '../rpc/datatables_manifestview.php',
 					type: 'POST',
@@ -75,7 +76,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				layout: {
 					topStart: {
 						pageLength: {
-							menu: [10, 25, 50, { label: 'All', value: -1 }] //Change the options in the page length
+							menu: [10, 25, 50, 500, { label: 'All', value: -1 }] //Change the options in the page length
 						},
 						buttons: [
 							{

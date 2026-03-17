@@ -2662,6 +2662,10 @@ class OccurrenceEditorManager {
 			if (isset($GLOBALS['USER_RIGHTS']['CollEditor'])) {
 				$collArr = $GLOBALS['USER_RIGHTS']['CollEditor'];
 			}
+			
+			if (isset($GLOBALS['USER_RIGHTS']['CollAdmin'])) {
+				$collArr = array_merge($collArr, $GLOBALS['USER_RIGHTS']['CollAdmin']);
+			}
 		
 			$sql .= 'WHERE (collid IN(' . implode(',', $collArr) . ')) ';
 		}

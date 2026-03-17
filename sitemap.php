@@ -213,51 +213,50 @@ if(!$schemaVersion){
 						</ul>
 						<?php
 					}
-					//neon edit
-					//if($KEY_MOD_IS_ACTIVE || array_key_exists("KeyAdmin",$USER_RIGHTS)){
-					//	echo '<h2 class="subheader"><span>' . $LANG['IDKEYS'] . '<span></h2>';
-					//	if(!$KEY_MOD_IS_ACTIVE && array_key_exists("KeyAdmin",$USER_RIGHTS)){
+					if($KEY_MOD_IS_ACTIVE || array_key_exists("KeyAdmin",$USER_RIGHTS)){
+						echo '<h2 class="subheader"><span>' . $LANG['IDKEYS'] . '<span></h2>';
+						if(!$KEY_MOD_IS_ACTIVE && array_key_exists("KeyAdmin",$USER_RIGHTS)){
 							?>
-							<!--<div id="keymodule">-->
-							<!--	<?= $LANG['KEYMODULE'] ?>-->
-							<!--</div>-->
+							<div id="keymodule">
+								<?= $LANG['KEYMODULE'] ?>
+							</div>
 							<?php
-					//	}
+						}
 						?>
-						<!--<ul>-->
+						<ul>
 							<?php
-					//		if($IS_ADMIN || array_key_exists("KeyAdmin",$USER_RIGHTS)){
-					//			?>
-								<!--<li>-->
-								<!--	<?= $LANG['AUTHOKEY'] ?> <a href="<?= $CLIENT_ROOT ?>/ident/admin/index.php"><?= $LANG['CHARASTATES'] ?></a>-->
-								<!--</li>-->
-								<?php
-					//		}
-					//		if($IS_ADMIN || array_key_exists("KeyEditor",$USER_RIGHTS) || array_key_exists("KeyAdmin",$USER_RIGHTS)){
+							if($IS_ADMIN || array_key_exists("KeyAdmin",$USER_RIGHTS)){
 								?>
-								<!--<li>-->
-								<!--	<?= $LANG['AUTHIDKEY'] ?>-->
-								<!--</li>-->
+								<li>
+									<?= $LANG['AUTHOKEY'] ?> <a href="<?= $CLIENT_ROOT ?>/ident/admin/index.php"><?= $LANG['CHARASTATES'] ?></a>
+								</li>
 								<?php
-					//			//Show Checklists that user has explicit editing rights
-					//			if($clAdmin){
-					//				echo '<li>' . $LANG['CODINGCHARA'] . '</li>';
-					//				echo '<ul>';
-					//				foreach($clAdmin as $vClid => $name){
-					//					echo "<li><a href='" . $CLIENT_ROOT . "/ident/tools/matrixeditor.php?clid=" . $vClid . "'>" . htmlspecialchars($name, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . "</a></li>";
-					//				}
-					//				echo '</ul>';
-					//			}
-					//		}
-					//		else{
+							}
+							if($IS_ADMIN || array_key_exists("KeyEditor",$USER_RIGHTS) || array_key_exists("KeyAdmin",$USER_RIGHTS)){
 								?>
-								<!--<li><?= $LANG['NOTAUTHIDKEY'] ?></li>-->
+								<li>
+									<?= $LANG['AUTHIDKEY'] ?>
+								</li>
 								<?php
-					//		}
+								//Show Checklists that user has explicit editing rights
+								if($clAdmin){
+									echo '<li>' . $LANG['CODINGCHARA'] . '</li>';
+									echo '<ul>';
+									foreach($clAdmin as $vClid => $name){
+										echo "<li><a href='" . $CLIENT_ROOT . "/ident/tools/matrixeditor.php?clid=" . $vClid . "'>" . htmlspecialchars($name, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . "</a></li>";
+									}
+									echo '</ul>';
+								}
+							}
+							else{
+								?>
+								<li><?= $LANG['NOTAUTHIDKEY'] ?></li>
+								<?php
+							}
 							?>
-						<!--</ul>-->
+						</ul>
 						<?php
-					//}
+					}
 					?>
 					<!--<h2 class="subheader">-->
 					<!--	<span>-->
@@ -380,27 +379,27 @@ if(!$schemaVersion){
 						}
 						?>
 					</ul>
+					<h2 class="subheader" >
+						<span>
+							<?= $LANG['CHECKLISTS'] ?>
+						</span>
+					</h2>
+					<p class="description">
+						<?= $LANG['TOOLSFORMANAGE'] ?>.
+					</p>
+					<ul>
+						<?php
+						if($clAdmin){
+							foreach($clAdmin as $k => $v){
+								echo '<li><a href="' . $CLIENT_ROOT . '/checklists/checklist.php?clid=' . $k . '&emode=1">'. $v . '</a></li>';
+							}
+						}
+						else{
+							echo '<li>' . $LANG['NOTEDITCHECK'] . '</li>';
+						}
+						?>
+					</ul>
 					<!--neon edit-->
-					<!--<h2 class="subheader" >-->
-					<!--	<span>-->
-					<!--		<?= $LANG['CHECKLISTS'] ?>-->
-					<!--	</span>-->
-					<!--</h2>-->
-					<!--<p class="description">-->
-					<!--	<?= $LANG['TOOLSFORMANAGE'] ?>.-->
-					<!--</p>-->
-					<!--<ul>-->
-					<!--	<?php-->
-					<!--	if($clAdmin){-->
-					<!--		foreach($clAdmin as $k => $v){-->
-					<!--			echo '<li><a href="' . $CLIENT_ROOT . '/checklists/checklist.php?clid=' . $k . '&emode=1">'. $v . '</a></li>';-->
-					<!--		}-->
-					<!--	}-->
-					<!--	else{-->
-					<!--		echo '<li>' . $LANG['NOTEDITCHECK'] . '</li>';-->
-					<!--	}-->
-					<!--	?>-->
-					<!--</ul>-->
 					<?php
 					//if(isset($ACTIVATE_EXSICCATI) && $ACTIVATE_EXSICCATI){
 						?>
