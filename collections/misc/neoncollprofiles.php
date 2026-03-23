@@ -489,11 +489,9 @@ ER  -
 								<?php
 								if ($collData['colltype'] != 'General Observations') {
 								?>
-									<!--<li style="margin-left:10px;">-->
-									<!--	<a href="../cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">-->
-									<!--		<?php echo (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>-->
-									<!--	</a>-->
-									<!--</li>-->
+									<li style="margin-left:10px;">
+									<a href="../cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">
+									<?php echo (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>
 								<?php
 								}
 								?>
