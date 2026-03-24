@@ -1168,6 +1168,9 @@ class ShipmentManager{
 				if(in_array('occurNotHarvested', $statusArr, true)){
 					$sqlWhere .= 'AND (m.occid IS NULL) ';
 				}
+				if(in_array('harvestNotAttempted', $statusArr, true)){
+					$sqlWhere .= 'AND (m.occid IS NULL AND m.errorMessage IS NULL AND m.acceptedForAnalysis = 1) ';
+				}
 				$this->searchArr['manifestStatus'] = $_REQUEST['manifestStatus'];
 			}
 			if($sqlWhere) $sqlWhere = 'WHERE '.subStr($sqlWhere, 3);
