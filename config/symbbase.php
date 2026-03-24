@@ -14,7 +14,7 @@ $cspHeader .= "script-src-elem 'self' 'unsafe-inline' https://www.neonscience.or
 $cspHeader .= "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; ";
 $cspHeader .= "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; ";
 $cspHeader .= "font-src 'self' https://fonts.gstatic.com https://www.neonscience.org; ";
-$cspHeader .= "img-src 'self' data: https://www.neonscience.org https://img.shields.io https://www.googletagmanager.com; ";
+$cspHeader .= "img-src 'self' data: https://server.arcgisonline.com https://www.neonscience.org https://img.shields.io https://www.googletagmanager.com; ";
 $cspHeader .= "connect-src 'self' https://www.neonscience.org https://data.neonscience.org https://www.googletagmanager.com; ";
 $cspHeader .= "object-src 'none'; frame-ancestors 'none'; base-uri 'self'; ";
 header('Content-Security-Policy: ' . $cspHeader);
