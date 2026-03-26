@@ -227,8 +227,8 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
               const now = new Date();
             
               // Set your exact window here
-              const start = new Date('2026-03-18T00:00:00-04:00'); // start (EDT)
-              const end   = new Date('2026-03-20T04:00:00-04:00'); // end (EDT)
+              const start = new Date('2026-03-30T00:00:00-04:00'); // start of week (EDT)
+              const end   = new Date('2026-04-04T23:59:59-04:00'); // end of week (EDT)
             
               // Only show during this window
               if (now < start || now > end) return;
@@ -255,7 +255,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
               p.style.fontSize = '.95rem';
             
               p.textContent =
-                'The NEON Biorepository Sample Portal will be offline for scheduled maintenance from March 19, 10 pm EDT to March 20, 4 am EDT.';
+                'The NEON Biorepository Sample Portal will be offline for scheduled maintenance during the week of March 30, between 1 AM EDT and 3 AM EDT.';
             
               banner.appendChild(p);
               headerEl.insertAdjacentElement('afterend', banner);
