@@ -801,8 +801,8 @@ class DwcArchiverCore extends Manager{
 			if($collid == 117){
 				$this->logOrEcho("Humboldt Tick Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
 	
-				$githubUrl = 'https://media.githubusercontent.com/media/sunray1/NEONTickstoHumboldt/refs/heads/master/outputs/full/occurrence.csv';
-				$archiveFile = $this->targetPath . 'occurrence.csv';
+				$githubUrl = 'https://media.githubusercontent.com/media/sunray1/NEONTickstoHumboldt/refs/heads/master/outputs/zipped/DwC-A.zip';
+				$archiveFile = $this->targetPath . 'NEON-TICC-H_DwC-A.zip';
 	
 				$this->logOrEcho("Downloading archive from: $githubUrl\n");
 				$this->logOrEcho("Saving to: $archiveFile\n");
