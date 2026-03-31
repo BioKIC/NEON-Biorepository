@@ -794,6 +794,38 @@ class DwcArchiverCore extends Manager{
 	public function createDwcArchive(){
 		$status = false;
 		$archiveFile = '';
+		//neon edit
+		if(isset($this->collArr)){
+			$collid = key($this->collArr);
+	
+			if($collid == 117){
+				$this->logOrEcho("Humboldt Tick Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
+	
+				$githubUrl = 'https://media.githubusercontent.com/media/sunray1/NEONTickstoHumboldt/refs/heads/master/outputs/zipped/DwC-A.zip';
+				$archiveFile = $this->targetPath . 'NEON-TICC-H_DwC-A.zip';
+	
+				$this->logOrEcho("Downloading archive from: $githubUrl\n");
+				$this->logOrEcho("Saving to: $archiveFile\n");
+	
+				$data = file_get_contents($githubUrl);
+	
+				if($data === false){
+					$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
+					return '';
+				}
+	
+				if(file_put_contents($archiveFile, $data) === false){
+					$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
+					return '';
+				}
+	
+				$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
+				$this->logOrEcho("\n-----------------------------------------------------\n");
+	
+				return $archiveFile;
+			}
+		}
+		//end neon edit
 		if($fileName = $this->getFileName()){
 			$this->logOrEcho('Creating DwC-A file: ' . $fileName . "\n");
 
