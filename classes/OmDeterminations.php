@@ -263,10 +263,11 @@ class OmDeterminations extends Manager{
 			if(!isset($inputArr['createdUid'])) $inputArr['createdUid'] = $GLOBALS['SYMB_UID'];
 
 			// insert determination
-			$sql = 'INSERT INTO omoccurdeterminations(occid, recordID';
-			$sqlValues = '?, ?, ';
-			$paramArr = [$this->occid, UuidFactory::getUuidV4()];
-			$this->typeStr = 'is';
+			$sql = 'INSERT INTO omoccurdeterminations(occid, recordID, createdUid';
+			$sqlValues = '?, ?, ?, ';
+			$paramArr = [$this->occid, UuidFactory::getUuidV4(), $inputArr['createdUid']];
+			$this->typeStr = 'isi'; 
+
 			$this->setParameterArr($inputArr);
 			foreach($this->parameterArr as $fieldName => $value){
 				$sql .= ', '.$fieldName;
