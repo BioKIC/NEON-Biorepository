@@ -554,7 +554,6 @@ class OccurrenceHarvester{
 			return false;
 		}
 		$viewArr = current($viewArr['sampleViews']);
-		//if(isset($viewArr['sampleClass']) && $viewArr['sampleClass'] == 'mam_pertrapnight_in.tagID') $this->createRelationship($viewArr['childSampleIdentifiers']);
 		//parse Sample Event details
 		$eventArr = $viewArr['sampleEvents'];
 		$harvestIdentifications = true;
@@ -584,7 +583,9 @@ class OccurrenceHarvester{
 				$fateLocation = ''; $fateDate = '';
 				$readAssocTaxon = false;
 				$identRemarks = array();
-				$identArr = array(); $assocMedia = array(); $assocTaxa = array();
+				$identArr = array(); 
+				$assocMedia = array(); 
+				$assocTaxa = array();
 				$tableArr = array();
 				foreach($fieldArr as $fArr){
 					if($tableName == 'tck_pathogenresults_in'){
@@ -750,7 +751,7 @@ class OccurrenceHarvester{
 					}
 					$hash = hash('md5', str_replace(' ', '', $identArr['sciname'].$identArr['identifiedBy'].$identArr['dateIdentified']));
 					// allow for unique records for different life stages,analysis types
-					if($tableName = 'inv_pertaxon_in'){
+					if($tableName == 'inv_pertaxon_in'){
 						if(isset($identArr['subsampleIndividualCount'])){
 							$hash .= hash('md5', str_replace(' ', '', $identArr['subsampleIndividualCount']));
 						}
@@ -1956,7 +1957,7 @@ class OccurrenceHarvester{
 		}
 		$rs->free();
 		//Include identification edits
-		$sql = 'SELECT sciname, identifiedBy, dateIdentified FROM omoccurdeterminations WHERE (createdUid IS NULL OR createdUid != 50) AND occid = '.$occid;
+		$sql = 'SELECT sciname, scientificnameauthorship, identifiedBy, dateIdentified,taxonremarks,identificationqualifier,identificationremarks FROM omoccurdeterminations WHERE (createdUid IS NULL OR createdUid != 50) AND occid = '.$occid;
 		$rs = $this->conn->query($sql);
 		if($r = $rs->fetch_object()){
 			$retArr[] = 'sciname';
@@ -1964,6 +1965,7 @@ class OccurrenceHarvester{
 			$retArr[] = 'identifiedby';
 			$retArr[] = 'dateidentified';
 			$retArr[] = 'taxonremarks';
+			$retArr[] = 'identificationqualifier';
 			$retArr[] = 'identificationremarks';
 		}
 		$rs->free();
