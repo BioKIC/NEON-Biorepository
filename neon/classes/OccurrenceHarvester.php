@@ -554,7 +554,6 @@ class OccurrenceHarvester{
 			return false;
 		}
 		$viewArr = current($viewArr['sampleViews']);
-		//if(isset($viewArr['sampleClass']) && $viewArr['sampleClass'] == 'mam_pertrapnight_in.tagID') $this->createRelationship($viewArr['childSampleIdentifiers']);
 		//parse Sample Event details
 		$eventArr = $viewArr['sampleEvents'];
 		$harvestIdentifications = true;
@@ -584,7 +583,9 @@ class OccurrenceHarvester{
 				$fateLocation = ''; $fateDate = '';
 				$readAssocTaxon = false;
 				$identRemarks = array();
-				$identArr = array(); $assocMedia = array(); $assocTaxa = array();
+				$identArr = array(); 
+				$assocMedia = array(); 
+				$assocTaxa = array();
 				$tableArr = array();
 				foreach($fieldArr as $fArr){
 					if($tableName == 'tck_pathogenresults_in'){
@@ -667,7 +668,10 @@ class OccurrenceHarvester{
 							if(!strpos($fArr['smsValue'],'biorepo.neonscience.org/portal')) $assocMedia['url'] = $fArr['smsValue'];
 						}
 						if($fArr['smsKey'] == 'photographed_by') $assocMedia['creator'] = $fArr['smsValue'];
-						if($harvestIdentifications && $tableName!='bet_archivepooling_in' && !($tableName == 'inv_pervial_in' && in_array($sampleArr['sampleClass'],array('inv_fielddata_in.sampleID','inv_persample_in.mixedInvertVialID','inv_persample_in.chironomidVialID','inv_persample_in.oligochaeteVialID')))){
+						if($harvestIdentifications && 
+								$tableName!='bet_archivepooling_in' 
+								&& !($tableName == 'inv_pervial_in' && in_array($sampleArr['sampleClass'],array('inv_fielddata_in.sampleID','inv_persample_in.mixedInvertVialID','inv_persample_in.chironomidVialID','inv_persample_in.oligochaeteVialID')))){
+							if($fArr['smsKey'] == 'identification_history_id' && $fArr['smsValue']) $identArr['identificationHistoryID'] = $fArr['smsValue'];
 							if($fArr['smsKey'] == 'taxon' && $fArr['smsValue']){
 								$identArr['sciname'] = $fArr['smsValue'];
 								$identArr['taxon'] = $fArr['smsValue'];
@@ -689,9 +693,9 @@ class OccurrenceHarvester{
 							elseif($fArr['smsKey'] == 'taxon_published_raw_code' && $fArr['smsValue']){
 								if(empty($identArr['taxonPublishedCode'])) $identArr['taxonPublishedCode'] = $fArr['smsValue'];
 							}
-							elseif($fArr['smsKey'] == 'identified_by' && $fArr['smsValue']) $identArr['identifiedBy'] = $this->translatePersonnel($fArr['smsValue']);
-							elseif($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $identArr['recordedBy'] = $this->translatePersonnel($fArr['smsValue']);
-							elseif($fArr['smsKey'] == 'identified_date' && $fArr['smsValue']) $identArr['dateIdentified'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'identified_by' && $fArr['smsValue']) $identArr['identifiedBy'] = $this->translatePersonnel($fArr['smsValue']);
+							if($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $identArr['recordedBy'] = $this->translatePersonnel($fArr['smsValue']);
+							if($fArr['smsKey'] == 'identified_date' && $fArr['smsValue']) $identArr['dateIdentified'] = $fArr['smsValue'];
 							if(in_array($tableName,array('ptx_taxonomy_in'))){
 								if($fArr['smsKey'] == 'remarks' && $fArr['smsValue']){
 									$identRemarks[] = $fArr['smsValue'];
@@ -704,14 +708,14 @@ class OccurrenceHarvester{
 									$identArr['subsampleAnalysisType'] = $fArr['smsValue'];
 								}
 							}
-							elseif(!in_array($tableName,array('ptx_taxonomy_in')) && $fArr['smsKey'] == 'identification_remarks' && $fArr['smsValue']) {
+							if(!in_array($tableName,array('ptx_taxonomy_in')) && $fArr['smsKey'] == 'identification_remarks' && $fArr['smsValue']) {
 									$identArr['identificationRemarks'] = $fArr['smsValue'];
 								}
-							elseif($fArr['smsKey'] == 'identification_references' && $fArr['smsValue']) $identArr['identificationReferences'] = $fArr['smsValue'];
-							elseif($fArr['smsKey'] == 'identification_qualifier' && $fArr['smsValue']) $identArr['identificationQualifier'] = $fArr['smsValue'];
-							elseif(in_array($tableName,array('zoo_perTaxon_in','inv_pertaxon_in')) && $fArr['smsKey'] == 'specimen_count' && $fArr['smsValue']) $identArr['subsampleIndividualCount'] = $fArr['smsValue'];
-							elseif(in_array($tableName,array('inv_pertaxon_in')) && $fArr['smsKey'] == 'life_stage' && $fArr['smsValue']) $identArr['subsampleLifeStage'] = $fArr['smsValue'];
-							elseif(in_array($tableName,array('ptx_taxonomy_in')) && $fArr['smsKey'] == 'sample_type' && $fArr['smsValue']) $identArr['subsampleSampleType'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'identification_references' && $fArr['smsValue']) $identArr['identificationReferences'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'identification_qualifier' && $fArr['smsValue']) $identArr['identificationQualifier'] = $fArr['smsValue'];
+							if(in_array($tableName,array('zoo_perTaxon_in','inv_pertaxon_in')) && $fArr['smsKey'] == 'specimen_count' && $fArr['smsValue']) $identArr['subsampleIndividualCount'] = $fArr['smsValue'];
+							if(in_array($tableName,array('inv_pertaxon_in')) && $fArr['smsKey'] == 'life_stage' && $fArr['smsValue']) $identArr['subsampleLifeStage'] = $fArr['smsValue'];
+							if(in_array($tableName,array('ptx_taxonomy_in')) && $fArr['smsKey'] == 'sample_type' && $fArr['smsValue']) $identArr['subsampleSampleType'] = $fArr['smsValue'];
 						}
 					}
 				}
@@ -747,7 +751,7 @@ class OccurrenceHarvester{
 					}
 					$hash = hash('md5', str_replace(' ', '', $identArr['sciname'].$identArr['identifiedBy'].$identArr['dateIdentified']));
 					// allow for unique records for different life stages,analysis types
-					if($tableName = 'inv_pertaxon_in'){
+					if($tableName == 'inv_pertaxon_in'){
 						if(isset($identArr['subsampleIndividualCount'])){
 							$hash .= hash('md5', str_replace(' ', '', $identArr['subsampleIndividualCount']));
 						}
@@ -1953,7 +1957,7 @@ class OccurrenceHarvester{
 		}
 		$rs->free();
 		//Include identification edits
-		$sql = 'SELECT sciname, identifiedBy, dateIdentified FROM omoccurdeterminations WHERE (createdUid IS NULL OR createdUid != 50) AND occid = '.$occid;
+		$sql = 'SELECT sciname, scientificnameauthorship, identifiedBy, dateIdentified,taxonremarks,identificationqualifier,identificationremarks FROM omoccurdeterminations WHERE (createdUid IS NULL OR createdUid != 50) AND occid = '.$occid;
 		$rs = $this->conn->query($sql);
 		if($r = $rs->fetch_object()){
 			$retArr[] = 'sciname';
@@ -1961,6 +1965,7 @@ class OccurrenceHarvester{
 			$retArr[] = 'identifiedby';
 			$retArr[] = 'dateidentified';
 			$retArr[] = 'taxonremarks';
+			$retArr[] = 'identificationqualifier';
 			$retArr[] = 'identificationremarks';
 		}
 		$rs->free();
@@ -2333,7 +2338,7 @@ class OccurrenceHarvester{
 				$stmt->bind_param('i', $detid);
 				$stmt->execute();
 				if($stmt->error){
-					$this->errorStr = 'ERROR deteling determination (#'.$detid.'):'.$this->conn->error;
+					$this->errorStr = 'ERROR deleting determination (#'.$detid.'):'.$this->conn->error;
 				}
 				$stmt->close();
 			}
