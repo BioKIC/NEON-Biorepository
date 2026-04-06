@@ -1,9 +1,7 @@
 <?php
-header("Location: https://biorepo.neonscience.org/portal/neon/search/index.php", true, 302);
-exit;
-// error_reporting(E_ALL);
-// ini_set('display_errors', '1');
 include_once('../../config/symbini.php');
+header('Location: ' . $CLIENT_ROOT . '/neon/search/index.php', true, 302);
+exit;
 include_once($SERVER_ROOT . '/classes/CollectionMetadata.php');
 include_once($SERVER_ROOT . '/classes/DatasetsMetadata.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceManager.php');
@@ -98,7 +96,7 @@ $requestSuppliedCatChk = (array_key_exists('catChk', $_REQUEST) && $collectionFo
 			expandButton.removeAttribute('style', 'display: none;');
 		};
 
-		document.addEventListener('DOMContentLoaded', () => {			
+		document.addEventListener('DOMContentLoaded', () => {
 			document.querySelectorAll('.accordion-header').forEach(accordionHeader => {
 				accordionHeader.addEventListener('keydown', (e) => {
 					if (e.key === 'Enter' || e.key === ' ') {

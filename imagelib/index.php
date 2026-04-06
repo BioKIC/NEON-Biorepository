@@ -1,7 +1,7 @@
 <?php
-header("Location: https://biorepo.neonscience.org/portal/neon/search/index.php", true, 302);
-exit;
 include_once('../config/symbini.php');
+header('Location: ' . $CLIENT_ROOT . '/portal/neon/search/index.php', true, 302);
+exit;
 include_once($SERVER_ROOT.'/classes/ImageLibraryBrowser.php');
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 

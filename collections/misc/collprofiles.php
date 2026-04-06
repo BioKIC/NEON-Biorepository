@@ -1,4 +1,5 @@
 <?php
+include_once('../../config/symbini.php');
 //neon edit
 // Redirect all collprofiles.php requests to neoncollprofiles.php with the same collid parameter
 if (isset($_GET['collid'])) {
@@ -6,11 +7,10 @@ if (isset($_GET['collid'])) {
     header("Location: neoncollprofiles.php?collid=$collid", true, 302);
     exit;
 }
-header("Location: https://biorepo.neonscience.org/portal/collections/misc/browsecollprofiles.php", true, 302);
+header('Location: ' . $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php', true, 302);
 exit;
 //end neon edit
 
-include_once('../../config/symbini.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceCollectionProfile.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceEditorManager.php');
 include_once($SERVER_ROOT . '/classes/utilities/GeneralUtil.php');
@@ -123,7 +123,7 @@ if ($SYMB_UID) {
 			}
 		}
 
-		document.addEventListener('DOMContentLoaded', () => {			
+		document.addEventListener('DOMContentLoaded', () => {
 			document.querySelectorAll('.accordion-header').forEach(accordionHeader => {
 				accordionHeader.addEventListener('keydown', (e) => {
 					if (e.key === 'Enter' || e.key === ' ') {

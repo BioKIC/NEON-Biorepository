@@ -9,24 +9,6 @@ if(!empty($THIRD_PARTY_OID_AUTH_ENABLED)){
 use Jumbojett\OpenIDConnectClient;
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 
-//neon edit
-if (empty($SYMB_UID)) {
-    if (isset($_REQUEST['refurl']) && is_string($_REQUEST['refurl'])) {
-        $_SESSION['refurl'] = $_REQUEST['refurl'];
-    }
-
-    $target = $CLIENT_ROOT . '/profile/openIdAuth.php';
-
-    if (!empty($_SESSION['refurl'])) {
-        $glue = (strpos($target, '?') === false) ? '?' : '&';
-        $target .= $glue . 'refurl=' . rawurlencode($_SESSION['refurl']);
-    }
-
-    header('Location: ' . $target);
-    exit;
-}
-//end neon edit
-
 Language::load('profile/index');
 
 header('Content-Type: text/html; charset=' . $CHARSET);
@@ -79,26 +61,31 @@ if(array_key_exists('refurl',$_REQUEST)){
 	else $refUrl .= $refGetStr;
 }
 
+//neon edit
+if(empty($NEON_DEV_MODE)){
+	if (empty($SYMB_UID)) {
+		if ($refUrl) {
+			$_SESSION['refurl'] = $refUrl;
+		}
+
+		$target = $CLIENT_ROOT . '/profile/openIdAuth.php';
+
+		if (!empty($_SESSION['refurl'])) {
+			$glue = (strpos($target, '?') === false) ? '?' : '&';
+			$target .= $glue . 'refurl=' . rawurlencode($_SESSION['refurl']);
+		}
+
+		header('Location: ' . $target);
+		exit;
+	}
+}
+//end neon edit
+
 if($remMe) $pHandler->setRememberMe(true);
 if($action == 'logout'){
 	$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . '/index.php';
 	//check if using third party auth
 	if(array_key_exists('AUTH_PROVIDER', $_SESSION)){
-
-		//neon edit
-		$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
-		$baseUrl = rtrim($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], '/');
-
-		$logoutUrl = sprintf(
-			'%s/v2/logout?returnTo=%s&client_id=%s',
-			$baseUrl,
-			urlencode($redirect),
-			$CLIENT_IDS[$_SESSION['AUTH_PROVIDER']]
-		);
-		header("Location: $logoutUrl");
-		exit;
-		//end neon edit
-
 		$oidc = new OpenIDConnectClient($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], $CLIENT_IDS[$_SESSION['AUTH_PROVIDER']], $CLIENT_SECRETS[$_SESSION['AUTH_PROVIDER']], $PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']]);
 		$pHandler->reset();
 		$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
