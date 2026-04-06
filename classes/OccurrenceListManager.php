@@ -1,6 +1,7 @@
 <?php
-include_once("OccurrenceManager.php");
-include_once("OccurrenceAccessStats.php");
+include_once('OccurrenceManager.php');
+include_once('OccurrenceAccessStats.php');
+include_once('OmDeterminations.php');
 
 class OccurrenceListManager extends OccurrenceManager{
 
@@ -83,14 +84,14 @@ class OccurrenceListManager extends OccurrenceManager{
 					$retArr[$row->occid]['formation'] = $this->cleanOutStr($row->formation);
 				}
 				/*
-				if(isset($row->scinameprotected) && $row->scinameprotected && !$securityClearance){
-					$retArr[$row->occid]['taxonsecure'] = 1;
-					$retArr[$row->occid]['sciname'] = $this->cleanOutStr($row->scinameprotected);
-					$retArr[$row->occid]['author'] = '';
-					$retArr[$row->occid]['family'] = $row->familyprotected;
-					$retArr[$row->occid]['tid'] = $row->tidprotected;
-				}
-				*/
+				 if(isset($row->scinameprotected) && $row->scinameprotected && !$securityClearance){
+				 $retArr[$row->occid]['taxonsecure'] = 1;
+				 $retArr[$row->occid]['sciname'] = $this->cleanOutStr($row->scinameprotected);
+				 $retArr[$row->occid]['author'] = '';
+				 $retArr[$row->occid]['family'] = $row->familyprotected;
+				 $retArr[$row->occid]['tid'] = $row->tidprotected;
+				 }
+				 */
 				$retArr[$row->occid]['collector'] = $this->cleanOutStr($row->recordedby);
 				$retArr[$row->occid]['country'] = $this->cleanOutStr($row->country);
 				$retArr[$row->occid]['state'] = $this->cleanOutStr($row->stateprovince);

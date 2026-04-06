@@ -21,6 +21,10 @@ $LANG['EDIT_HISTORY'] = 'Historique des Modifications';
 $LANG['ON_LOAN'] = 'Le prêt à';
 $LANG['ASSOCIATIONS'] = 'Associations';
 $LANG['CATALOG_NUMBER'] = 'N° de Catalogue';
+//start NEON customization
+$LANG['ARCHIVE_GUID'] = 'N° de Catalogue (archiveGUID)';
+$LANG['ASSOCIATIONS'] = 'Associations';
+//end NEON customization
 $LANG['OCCURRENCE_ID'] = 'Identification de l\'Occurrence';
 $LANG['OTHER_CATALOG_NUMBERS'] = 'N° Catalogue Secondaire';
 $LANG['TAXON'] = 'Taxon';
@@ -31,8 +35,7 @@ $LANG['DETERMINER'] = 'Déterminant';
 $LANG['TAXON_REMARKS'] = 'Remarques sur Taxon';
 $LANG['ID_REMARKS'] = 'Remarques d\'Identification';
 $LANG['ID_REFERENCES'] = 'Références d\'Identification';
-$LANG['SHOW_DET_HISTORY'] = 'Afficher Historique des Déterminations';
-$LANG['HIDE_DET_HISTORY'] = 'Masquer Historique des Déterminations';
+$LANG['SHOW_DET_HISTORY'] = 'Afficher Historique Complet';
 $LANG['DET_HISTORY'] = 'Historique des Déterminations';
 $LANG['SPECIES_PROTECTED'] = 'Identification de l\'espèce protégée';
 $LANG['DATE'] = 'Date';

@@ -74,11 +74,11 @@ class DwcArchiverCore extends Manager{
 		$this->charSetOut = $this->charSetSource;
 
 		$this->securityArr = array(
-			'eventDate', 'eventDate2', 'month', 'day', 'startDayOfYear', 'endDayOfYear', 'verbatimEventDate',
-			'recordNumber', 'locality', 'locationRemarks', 'minimumElevationInMeters', 'maximumElevationInMeters', 'verbatimElevation',
-			'decimalLatitude', 'decimalLongitude', 'geodeticDatum', 'coordinateUncertaintyInMeters', 'footprintWKT',
-			'verbatimCoordinates', 'georeferenceRemarks', 'georeferencedBy', 'georeferenceProtocol', 'georeferenceSources',
-			'georeferenceVerificationStatus', 'habitat'
+				'eventDate', 'eventDate2', 'month', 'day', 'startDayOfYear', 'endDayOfYear', 'verbatimEventDate',
+				'recordNumber', 'locality', 'locationRemarks', 'minimumElevationInMeters', 'maximumElevationInMeters', 'verbatimElevation',
+				'decimalLatitude', 'decimalLongitude', 'geodeticDatum', 'coordinateUncertaintyInMeters', 'footprintWKT',
+				'verbatimCoordinates', 'georeferenceRemarks', 'georeferencedBy', 'georeferenceProtocol', 'georeferenceSources',
+				'georeferenceVerificationStatus', 'habitat'
 		);
 
 		if(array_key_exists('acceptedNameUsage', $_REQUEST)) {
@@ -198,9 +198,9 @@ class DwcArchiverCore extends Manager{
 			if ($this->applyConditionLimit){
 				//Downloads initiated via the dwcapubhandler.php webservice are limited to being filtered by only subset of indexed fields
 				$condAllowArr = array(
-					'catalognumber', 'othercatalognumbers', 'occurrenceid', 'family', 'sciname', 'country' ,'stateprovince', 'county', 'municipality',
-					'recordedby', 'recordnumber', 'eventdate', 'decimallatitude', 'decimallongitude', 'minimumelevationinmeters', 'maximumelevationinmeters', 'cultivationstatus',
-					'datelastmodified', 'dateentered', 'processingstatus', 'dbpk'
+						'catalognumber', 'othercatalognumbers', 'occurrenceid', 'family', 'sciname', 'country' ,'stateprovince', 'county', 'municipality',
+						'recordedby', 'recordnumber', 'eventdate', 'decimallatitude', 'decimallongitude', 'minimumelevationinmeters', 'maximumelevationinmeters', 'cultivationstatus',
+						'datelastmodified', 'dateentered', 'processingstatus', 'dbpk'
 				);
 				if(!in_array(strtolower($field), $condAllowArr)){
 					return false;
@@ -1003,31 +1003,31 @@ class DwcArchiverCore extends Manager{
 	 */
 	public function getEmlDom($emlArr = null){
 		$RIGHTS_TERMS_DEFS = array(
-			'https://creativecommons.org/publicdomain/zero/1.0/' => array(
-					'title' => 'CC0 1.0 (Public-domain)',
-					'url' => 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
-					'def' => 'Users can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.'
-			),
-			'https://creativecommons.org/licenses/by/4.0/' => array(
-					'title' => 'CC BY (Attribution)',
-					'url' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
-					'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.'
-			),
-			'https://creativecommons.org/licenses/by-nc/4.0/' => array(
-					'title' => 'CC BY-NC (Attribution-Non-Commercial)',
-					'url' => 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
-					'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material. The licensor cannot revoke these freedoms as long as you follow the license terms.'
-			),
-			'https://creativecommons.org/licenses/by/4.0/' => array(
-					'title' => 'CC BY (Attribution)',
-					'url' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
-					'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.'
-			),
-			'https://creativecommons.org/licenses/by-nc/4.0/' => array(
-					'title' => 'CC BY-NC (Attribution-Non-Commercial)',
-					'url' => 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
-					'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material. The licensor cannot revoke these freedoms as long as you follow the license terms.'
-			)
+				'https://creativecommons.org/publicdomain/zero/1.0/' => array(
+						'title' => 'CC0 1.0 (Public-domain)',
+						'url' => 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
+						'def' => 'Users can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.'
+				),
+				'https://creativecommons.org/licenses/by/4.0/' => array(
+						'title' => 'CC BY (Attribution)',
+						'url' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
+						'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.'
+				),
+				'https://creativecommons.org/licenses/by-nc/4.0/' => array(
+						'title' => 'CC BY-NC (Attribution-Non-Commercial)',
+						'url' => 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
+						'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material. The licensor cannot revoke these freedoms as long as you follow the license terms.'
+				),
+				'https://creativecommons.org/licenses/by/4.0/' => array(
+						'title' => 'CC BY (Attribution)',
+						'url' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
+						'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.'
+				),
+				'https://creativecommons.org/licenses/by-nc/4.0/' => array(
+						'title' => 'CC BY-NC (Attribution-Non-Commercial)',
+						'url' => 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
+						'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material. The licensor cannot revoke these freedoms as long as you follow the license terms.'
+				)
 		);
 
 		if (!$emlArr) $emlArr = $this->getEmlArr();
@@ -1519,187 +1519,187 @@ class DwcArchiverCore extends Manager{
 		if (!$this->conditionSql) return false;
 		if (strpos($this->conditionSql, "early.myaStart"))
 			$this->includePaleo = true;
-		if($this->primeStagingTables()){
-			$dwcOccurManager->setIncludePaleo($this->includePaleo);
-			if (!$this->occurrenceFieldArr) $this->occurrenceFieldArr = $dwcOccurManager->getOccurrenceArr();
-			$this->logOrEcho('Creating occurrence file (' . date('h:i:s A') . ')... ', 1);
-			$dwcOccurManager->setExportID($this->exportID);
-			if ($this->schemaType != 'coge') {
-				$dwcOccurManager->setOtherCatalogNumbers();
-				$dwcOccurManager->setTaxonomy();
-				$dwcOccurManager->setExsiccate();
-				$dwcOccurManager->setAssociatedSequences();
-			}
-			$sql = $dwcOccurManager->getSqlOccurrences($this->occurrenceFieldArr['fields']);
-			if ($this->paleoWithSql) $sql = $this->paleoWithSql . $sql;
-			if ($handlerType == 'fileHandler'){
-				$hearderArr = $this->getHeaderArr();
-				if($hearderArr) $this->writeOutRecord($outputHandler, $hearderArr);
-			}
-			$chunkSize = 50000;
-			$lastOccid = 0;
-			$sql .= 'AND o.occid > ? ORDER BY occid LIMIT ?';
-			$stmt = $this->conn->prepare($sql);
-			$stmt->bind_param('ii', $lastOccid, $chunkSize);
-			do {
-				$stmt->execute();
-				$rowCnt = 0;
-				if($rs = $stmt->get_result()){
-					$urlPathPrefix = $this->serverDomain . $GLOBALS['CLIENT_ROOT'] . (substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/');
-					$typeArr = null;
-					if ($this->schemaType == 'pensoft') {
-						$typeArr = array('Other material', 'Holotype', 'Paratype', 'Isotype', 'Isoparatype', 'Isolectotype', 'Isoneotype', 'Isosyntype');
-						//$typeArr = array('Other material', 'Holotype', 'Paratype', 'Hapantotype', 'Syntype', 'Isotype', 'Neotype', 'Lectotype', 'Paralectotype', 'Isoparatype', 'Isolectotype', 'Isoneotype', 'Isosyntype');
-					}
-					/*
-					 $pubID = 0;
-					 if($this->publicationGuid && $this->requestPortalGuid){
-					 $portalManager = new PortalIndex();
-					 $pubArr = array('pubTitle' => 'Symbiota Portal Index export - '.date('Y-m-d'), 'portalID' => $this->requestPortalGuid, 'direction' => 'export', 'lastDateUpdate' => date('Y-m-d h:i:s'), 'guid' => $this->publicationGuid);
-					 $pubID = $portalManager->createPortalPublication($pubArr);
-					 if ($pubID && $portalManager) $portalManager->insertPortalOccurrences($pubID);
-					 }
-					 */
-					$statsManager = new OccurrenceAccessStats();
-					$sqlFrag = substr($sql, strpos($sql, 'WHERE '));
-					if($p = strpos($sqlFrag, 'LIMIT ')) $sqlFrag = substr($sqlFrag, 0, $p);
-					$occurAccessID = $statsManager->insertAccessEvent('download', $sqlFrag);
-					//Set access statistics
-					if ($this->isPublicDownload) {
-						if ($this->schemaType == 'dwc' || $this->schemaType == 'symbiota') {
-							//Don't count if dl is backup, GeoLocate transfer, or pensoft
-							$statsManager->insertDownloadOccurrences($occurAccessID, $this->exportID);
+			if($this->primeStagingTables()){
+				$dwcOccurManager->setIncludePaleo($this->includePaleo);
+				if (!$this->occurrenceFieldArr) $this->occurrenceFieldArr = $dwcOccurManager->getOccurrenceArr();
+				$this->logOrEcho('Creating occurrence file (' . date('h:i:s A') . ')... ', 1);
+				$dwcOccurManager->setExportID($this->exportID);
+				if ($this->schemaType != 'coge') {
+					$dwcOccurManager->setOtherCatalogNumbers();
+					$dwcOccurManager->setTaxonomy();
+					$dwcOccurManager->setExsiccate();
+					$dwcOccurManager->setAssociatedSequences();
+				}
+				$sql = $dwcOccurManager->getSqlOccurrences($this->occurrenceFieldArr['fields']);
+				if ($this->paleoWithSql) $sql = $this->paleoWithSql . $sql;
+				if ($handlerType == 'fileHandler'){
+					$hearderArr = $this->getHeaderArr();
+					if($hearderArr) $this->writeOutRecord($outputHandler, $hearderArr);
+				}
+				$chunkSize = 50000;
+				$lastOccid = 0;
+				$sql .= 'AND o.occid > ? ORDER BY occid LIMIT ?';
+				$stmt = $this->conn->prepare($sql);
+				$stmt->bind_param('ii', $lastOccid, $chunkSize);
+				do {
+					$stmt->execute();
+					$rowCnt = 0;
+					if($rs = $stmt->get_result()){
+						$urlPathPrefix = $this->serverDomain . $GLOBALS['CLIENT_ROOT'] . (substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/');
+						$typeArr = null;
+						if ($this->schemaType == 'pensoft') {
+							$typeArr = array('Other material', 'Holotype', 'Paratype', 'Isotype', 'Isoparatype', 'Isolectotype', 'Isoneotype', 'Isosyntype');
+							//$typeArr = array('Other material', 'Holotype', 'Paratype', 'Hapantotype', 'Syntype', 'Isotype', 'Neotype', 'Lectotype', 'Paralectotype', 'Isoparatype', 'Isolectotype', 'Isoneotype', 'Isosyntype');
 						}
-					}
-					while ($r = $rs->fetch_assoc()) {
-						$rowCnt++;
-						$lastOccid = $r['occid'];
-						//Set occurrenceID GUID or skip records if not defined (required output)
-						if(!$r['occurrenceID']) {
-							if($guidTarget = $this->collArr[$r['collID']]['guidtarget']){
-								//Set occurrence GUID based on GUID target, but only if occurrenceID field isn't already populated
-								if($guidTarget == 'catalogNumber') $r['occurrenceID'] = $r['catalogNumber'];
-								elseif($guidTarget == 'symbiotaUUID') $r['occurrenceID'] = $r['recordID'];
+						/*
+						 $pubID = 0;
+						 if($this->publicationGuid && $this->requestPortalGuid){
+						 $portalManager = new PortalIndex();
+						 $pubArr = array('pubTitle' => 'Symbiota Portal Index export - '.date('Y-m-d'), 'portalID' => $this->requestPortalGuid, 'direction' => 'export', 'lastDateUpdate' => date('Y-m-d h:i:s'), 'guid' => $this->publicationGuid);
+						 $pubID = $portalManager->createPortalPublication($pubArr);
+						 if ($pubID && $portalManager) $portalManager->insertPortalOccurrences($pubID);
+						 }
+						 */
+						$statsManager = new OccurrenceAccessStats();
+						$sqlFrag = substr($sql, strpos($sql, 'WHERE '));
+						if($p = strpos($sqlFrag, 'LIMIT ')) $sqlFrag = substr($sqlFrag, 0, $p);
+						$occurAccessID = $statsManager->insertAccessEvent('download', $sqlFrag);
+						//Set access statistics
+						if ($this->isPublicDownload) {
+							if ($this->schemaType == 'dwc' || $this->schemaType == 'symbiota') {
+								//Don't count if dl is backup, GeoLocate transfer, or pensoft
+								$statsManager->insertDownloadOccurrences($occurAccessID, $this->exportID);
 							}
 						}
-						if($this->limitToGuids && (!$r['occurrenceID'] || !$r['basisOfRecord'])) {
-							// Skip record because there is no occurrenceID guid
-							continue;
-						}
-						//Protect sensitive records
-						if ($this->redactLocalities && $r['recordSecurity'] == 1 && !in_array($r['collID'], $this->rareReaderArr)) {
-							$protectedFields = array();
-							foreach ($this->securityArr as $v) {
-								if (array_key_exists($v, $r) && $r[$v]) {
-									$r[$v] = '';
-									$protectedFields[] = $v;
+						while ($r = $rs->fetch_assoc()) {
+							$rowCnt++;
+							$lastOccid = $r['occid'];
+							//Set occurrenceID GUID or skip records if not defined (required output)
+							if(!$r['occurrenceID']) {
+								if($guidTarget = $this->collArr[$r['collID']]['guidtarget']){
+									//Set occurrence GUID based on GUID target, but only if occurrenceID field isn't already populated
+									if($guidTarget == 'catalogNumber') $r['occurrenceID'] = $r['catalogNumber'];
+									elseif($guidTarget == 'symbiotaUUID') $r['occurrenceID'] = $r['recordID'];
 								}
 							}
-							if ($protectedFields) $r['informationWithheld'] = trim($r['informationWithheld'] . '; field values redacted: ' . implode(', ', $protectedFields), ' ;');
-						}
-
-						$r['t_references'] = $urlPathPrefix . 'collections/individual/index.php?occid=' . $r['occid'];
-						//Add collection GUID based on management type
-						$managementType = $this->collArr[$r['collID']]['managementtype'];
-						if ($managementType && $managementType == 'Live Data') {
-							if (array_key_exists('collectionID', $r) && !$r['collectionID']) {
-								$guid = $this->collArr[$r['collID']]['collectionguid'];
-								if (strlen($guid) == 36) $guid = 'urn:uuid:' . $guid;
-								$r['collectionID'] = $guid;
+							if($this->limitToGuids && (!$r['occurrenceID'] || !$r['basisOfRecord'])) {
+								// Skip record because there is no occurrenceID guid
+								continue;
 							}
-						}
-						if ($this->schemaType == 'dwc') {
-							//Apply DwC output requirements
-							unset($r['recordSecurity']);
-							unset($r['collID']);
-
-							//Format dates
-							if($r['eventDate']){
-								if($r['eventDate'] == '0000-00-00') $r['eventDate'] = '';
-								$r['eventDate'] = str_replace('-00', '', $r['eventDate']);
-							}
-							if($r['eventDate2']){
-								if($r['eventDate2'] == '0000-00-00') $r['eventDate2'] = '';
-								$r['eventDate2'] = str_replace('-00', '', $r['eventDate2']);
-								if(!$r['endDayOfYear'] && preg_match('/\d{4}-\d{2}-\d{2}/', $r['eventDate2'])){
-									if($t = strtotime($r['eventDate2'])) $r['endDayOfYear'] = date('z', $t) + 1;
-								}
-								$r['eventDate'] .= '/'.$r['eventDate2'];
-							}
-							unset($r['eventDate2']);
-						}
-						elseif ($this->schemaType == 'pensoft') {
-							unset($r['recordSecurity']);
-							unset($r['collID']);
-							if ($r['typeStatus']) {
-								$typeValue = strtolower($r['typeStatus']);
-								$typeInvalid = true;
-								$invalidText = '';
-								foreach ($typeArr as $testStr) {
-									if ($typeValue == strtolower($testStr)) {
-										$typeInvalid = false;
-										break;
-									} elseif (stripos($typeValue, $testStr)) {
-										$invalidText = $r['typeStatus'];
-										$r['typeStatus'] = $testStr;
-										$typeInvalid = false;
-										break;
+							//Protect sensitive records
+							if ($this->redactLocalities && $r['recordSecurity'] == 1 && !in_array($r['collID'], $this->rareReaderArr)) {
+								$protectedFields = array();
+								foreach ($this->securityArr as $v) {
+									if (array_key_exists($v, $r) && $r[$v]) {
+										$r[$v] = '';
+										$protectedFields[] = $v;
 									}
 								}
-								if ($typeInvalid) {
-									$invalidText = $r['typeStatus'];
-									$r['typeStatus'] = 'Other material';
-								}
-								if ($invalidText) {
-									if ($r['occurrenceRemarks']) $invalidText = $r['occurrenceRemarks'] . '; ' . $invalidText;
-									$r['occurrenceRemarks'] = $invalidText;
-								}
+								if ($protectedFields) $r['informationWithheld'] = trim($r['informationWithheld'] . '; field values redacted: ' . implode(', ', $protectedFields), ' ;');
 							}
-							else $r['typeStatus'] = 'Other material';
-						}
-						elseif ($this->schemaType == 'backup') unset($r['collID']);
-						if($this->includePaleo){
-							$dwcOccurManager->appendPaleoTerms($r);
-							if($this->schemaType == 'dwc'){
-								if(!empty($r['biota'])){
-									$r['locality'] .= ($r['locality'] ? '; ' : '') . 'Biota: ' . $r['biota'];
-								}
-								unset($r['biota']);
-								unset($r['earlyInterval']);
-								unset($r['lateInterval']);
-							}
-						}
 
-						if(isset($r['dynamicProperties'])) {
-							$r['dynamicProperties'] = json_encode($r['dynamicProperties']);
-						}
-						$this->encodeArr($r);
-						$recordOutputCnt ++;
-						if ($handlerType == 'fileHandler'){
-							//Stream data to output file
-							$this->addcslashesArr($r);
-							$this->writeOutRecord($outputHandler, $r);
-						}
-						else{
-							//Add data to array
-							foreach ($r as $rKey => $rValue) {
-								if (substr($rKey, 0, 2) == 't_') $rKey = substr($rKey, 2);
-								$outputHandler[$recordOutputCnt][$rKey] = $rValue;
+							$r['t_references'] = $urlPathPrefix . 'collections/individual/index.php?occid=' . $r['occid'];
+							//Add collection GUID based on management type
+							$managementType = $this->collArr[$r['collID']]['managementtype'];
+							if ($managementType && $managementType == 'Live Data') {
+								if (array_key_exists('collectionID', $r) && !$r['collectionID']) {
+									$guid = $this->collArr[$r['collID']]['collectionguid'];
+									if (strlen($guid) == 36) $guid = 'urn:uuid:' . $guid;
+									$r['collectionID'] = $guid;
+								}
+							}
+							if ($this->schemaType == 'dwc') {
+								//Apply DwC output requirements
+								unset($r['recordSecurity']);
+								unset($r['collID']);
+
+								//Format dates
+								if($r['eventDate']){
+									if($r['eventDate'] == '0000-00-00') $r['eventDate'] = '';
+									$r['eventDate'] = str_replace('-00', '', $r['eventDate']);
+								}
+								if($r['eventDate2']){
+									if($r['eventDate2'] == '0000-00-00') $r['eventDate2'] = '';
+									$r['eventDate2'] = str_replace('-00', '', $r['eventDate2']);
+									if(!$r['endDayOfYear'] && preg_match('/\d{4}-\d{2}-\d{2}/', $r['eventDate2'])){
+										if($t = strtotime($r['eventDate2'])) $r['endDayOfYear'] = date('z', $t) + 1;
+									}
+									$r['eventDate'] .= '/'.$r['eventDate2'];
+								}
+								unset($r['eventDate2']);
+							}
+							elseif ($this->schemaType == 'pensoft') {
+								unset($r['recordSecurity']);
+								unset($r['collID']);
+								if ($r['typeStatus']) {
+									$typeValue = strtolower($r['typeStatus']);
+									$typeInvalid = true;
+									$invalidText = '';
+									foreach ($typeArr as $testStr) {
+										if ($typeValue == strtolower($testStr)) {
+											$typeInvalid = false;
+											break;
+										} elseif (stripos($typeValue, $testStr)) {
+											$invalidText = $r['typeStatus'];
+											$r['typeStatus'] = $testStr;
+											$typeInvalid = false;
+											break;
+										}
+									}
+									if ($typeInvalid) {
+										$invalidText = $r['typeStatus'];
+										$r['typeStatus'] = 'Other material';
+									}
+									if ($invalidText) {
+										if ($r['occurrenceRemarks']) $invalidText = $r['occurrenceRemarks'] . '; ' . $invalidText;
+										$r['occurrenceRemarks'] = $invalidText;
+									}
+								}
+								else $r['typeStatus'] = 'Other material';
+							}
+							elseif ($this->schemaType == 'backup') unset($r['collID']);
+							if($this->includePaleo){
+								$dwcOccurManager->appendPaleoTerms($r);
+								if($this->schemaType == 'dwc'){
+									if(!empty($r['biota'])){
+										$r['locality'] .= ($r['locality'] ? '; ' : '') . 'Biota: ' . $r['biota'];
+									}
+									unset($r['biota']);
+									unset($r['earlyInterval']);
+									unset($r['lateInterval']);
+								}
+							}
+
+							if(isset($r['dynamicProperties'])) {
+								$r['dynamicProperties'] = json_encode($r['dynamicProperties']);
+							}
+							$this->encodeArr($r);
+							$recordOutputCnt ++;
+							if ($handlerType == 'fileHandler'){
+								//Stream data to output file
+								$this->addcslashesArr($r);
+								$this->writeOutRecord($outputHandler, $r);
+							}
+							else{
+								//Add data to array
+								foreach ($r as $rKey => $rValue) {
+									if (substr($rKey, 0, 2) == 't_') $rKey = substr($rKey, 2);
+									$outputHandler[$recordOutputCnt][$rKey] = $rValue;
+								}
+							}
+							if($recordOutputCnt % 100000 === 0){
+								$this->logOrEcho(number_format($recordOutputCnt) . ' records added (' . date('h:i:s A') . ')', 2);
 							}
 						}
-						if($recordOutputCnt % 100000 === 0){
-							$this->logOrEcho(number_format($recordOutputCnt) . ' records added (' . date('h:i:s A') . ')', 2);
-						}
+						$rs->free();
 					}
-					$rs->free();
-				}
-				else {
-					$this->errorMessage = 'ERROR creating occurrence file: ' . $this->conn->error;
-					$this->logOrEcho($this->errorMessage);
-				}
-			} while ($rowCnt === $chunkSize && $recordOutputCnt < 2000000);
-		}
-		return $recordOutputCnt;
+					else {
+						$this->errorMessage = 'ERROR creating occurrence file: ' . $this->conn->error;
+						$this->logOrEcho($this->errorMessage);
+					}
+				} while ($rowCnt === $chunkSize && $recordOutputCnt < 2000000);
+			}
+			return $recordOutputCnt;
 	}
 
 	private function getHeaderArr(): array{
@@ -1716,10 +1716,10 @@ class DwcArchiverCore extends Manager{
 		if ($this->schemaType == 'coge') {
 			//Convert to GeoLocate flavor
 			$glFields = array(
-				'specificEpithet' => 'Species', 'scientificNameAuthorship' => 'ScientificNameAuthor', 'recordedBy' => 'Collector', 'recordNumber' => 'CollectorNumber',
-				'year' => 'YearCollected', 'month' => 'MonthCollected', 'day' => 'DayCollected', 'decimalLatitude' => 'Latitude', 'decimalLongitude' => 'Longitude',
-				'minimumElevationInMeters' => 'MinimumElevation', 'maximumElevationInMeters' => 'MaximumElevation', 'maximumDepthInMeters' => 'MaximumDepth',
-				'minimumDepthInMeters' => 'MinimumDepth','occurrenceRemarks' => 'Notes', 'collID' => 'collId', 'recordID' => 'recordId'
+					'specificEpithet' => 'Species', 'scientificNameAuthorship' => 'ScientificNameAuthor', 'recordedBy' => 'Collector', 'recordNumber' => 'CollectorNumber',
+					'year' => 'YearCollected', 'month' => 'MonthCollected', 'day' => 'DayCollected', 'decimalLatitude' => 'Latitude', 'decimalLongitude' => 'Longitude',
+					'minimumElevationInMeters' => 'MinimumElevation', 'maximumElevationInMeters' => 'MaximumElevation', 'maximumDepthInMeters' => 'MaximumDepth',
+					'minimumDepthInMeters' => 'MinimumDepth','occurrenceRemarks' => 'Notes', 'collID' => 'collId', 'recordID' => 'recordId'
 			);
 			foreach ($fieldArr as $k => $v) {
 				if (array_key_exists($k, $glFields)) $headerArr[] = $glFields[$k];
@@ -1769,28 +1769,28 @@ class DwcArchiverCore extends Manager{
 		$sql = 'INSERT IGNORE INTO omexportoccurrences(omExportID, occid, collid, taxonID, recordSecurity) ';
 		if (strpos($this->conditionSql,"early.myaStart"))
 			$sql .= $this->paleoWithSql;
-		$sql .= 'SELECT ' . $this->exportID . ' AS omExportID, o.occid, o.collid, o.tidInterpreted, o.recordSecurity FROM omoccurrences o ';
-		$sql .= $this->getTableJoins() . $this->conditionSql;
-		if($stmt = $this->conn->prepare($sql)){
-			try{
-				if($stmt->execute()){
-					if($stmt->affected_rows || !$stmt->error){
-						$status = true;
+			$sql .= 'SELECT ' . $this->exportID . ' AS omExportID, o.occid, o.collid, o.tidInterpreted, o.recordSecurity FROM omoccurrences o ';
+			$sql .= $this->getTableJoins() . $this->conditionSql;
+			if($stmt = $this->conn->prepare($sql)){
+				try{
+					if($stmt->execute()){
+						if($stmt->affected_rows || !$stmt->error){
+							$status = true;
+						}
+						else $this->errorMessage = $stmt->error;
 					}
-					else $this->errorMessage = $stmt->error;
+				} catch (mysqli_sql_exception $e){
+					$this->errorMessage = $stmt->error;
+				} catch (Exception $e){
+					$this->errorMessage = 'unknown error';
 				}
-			} catch (mysqli_sql_exception $e){
-				$this->errorMessage = $stmt->error;
-			} catch (Exception $e){
-				$this->errorMessage = 'unknown error';
+				$stmt->close();
 			}
-			$stmt->close();
-		}
-		if($status){
-			$this->setCollArrViaExportID();
-			$this->setFullProtections();
-		}
-		return $status;
+			if($status){
+				$this->setCollArrViaExportID();
+				$this->setFullProtections();
+			}
+			return $status;
 	}
 
 	private function setCollArrViaExportID(){

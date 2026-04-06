@@ -10,15 +10,15 @@
   --menu-font-size: 1rem;
   --body-bg-color: #fafafa;
   --body-text-color: #000000;
-  --body-font-size: 1rem;
-  --body-font-family: "Open Sans", sans-serif;
+  --body-font-size: .95rem;
+  --body-font-family: "Inter", Helvetica, Arial, sans-serif; /** neon edit **/
   --footer-bg-color: #f2f0e9;
-  --heading-font-family: "Open Sans", sans-serif;
-  --link-color: #126c00;
-  --darkest-color: #1b3d2f;
+  --heading-font-family: "Inter", Helvetica, Arial, sans-serif; /** neon edit **/
+  --link-color: #0073cf; /** neon edit **/
+  --darkest-color: #005dab; /** neon edit **/
   --medium-color: #5a5a53;
   --light-color: #f2f0e9;
-  --bright-color: #b9d432;
+  --bright-color: #0092E2; /** neon edit **/
   --danger-color: #b31b1b;
   --max-innertext-width: 1024px;
 }

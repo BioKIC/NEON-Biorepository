@@ -1314,6 +1314,50 @@ class OpenIDConnectClient
         return null;
     }
 
+    //neon edit
+    public function requestUserInfoByID(string $sub, string $attribute = null) {
+    
+        // Build Management API endpoint
+        $domain = rtrim($this->getProviderURL(), '/');
+        $user_info_endpoint = $domain . '/api/v2/users/' . rawurlencode($sub);
+    
+        // Management API requires Bearer token
+        $headers = [
+            "Authorization: Bearer $this->accessToken",
+            "Accept: application/json"
+        ];
+    
+        $response = $this->fetchURL($user_info_endpoint, null, $headers);
+    
+        if ($this->getResponseCode() !== 200) {
+            throw new OpenIDConnectClientException(
+                'Failed retrieving user data. Status code ' . $this->getResponseCode()
+            );
+        }
+    
+        // Management API always returns JSON
+        $userInfo = json_decode($response, false);
+    
+        if ($attribute === null) {
+            return $userInfo;
+        }
+    
+        // Support nested fields like user_metadata.first_name
+        $parts = explode('.', $attribute);
+        $value = $userInfo;
+    
+        foreach ($parts as $part) {
+            if (is_object($value) && property_exists($value, $part)) {
+                $value = $value->$part;
+            } else {
+                return null;
+            }
+        }
+    
+        return $value;
+    }
+    //end neon edit
+
     /**
      *
      * @param string|null $attribute optional

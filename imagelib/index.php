@@ -1,4 +1,6 @@
 <?php
+header("Location: https://biorepo.neonscience.org/portal/neon/search/index.php", true, 302);
+exit;
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/ImageLibraryBrowser.php');
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');
@@ -76,9 +78,9 @@ $imgManager->setSearchTerm($taxon);
 				</form>
 			</div>
 			<div style="font-weight:bold;margin:15px 10px 0px 20px;">
-				<div>
-					<a href="../includes/usagepolicy.php#images"><?php echo htmlspecialchars($LANG['IMG_CP_POLICY'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></a>
-				</div>
+				<!--<div>-->
+				<!--	<a href="../includes/usagepolicy.php#images"><?php echo htmlspecialchars($LANG['IMG_CP_POLICY'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></a>-->
+				<!--</div>-->
 				<div>
 					<a href="contributors.php"><?php echo htmlspecialchars($LANG['IMG_CONTRIBUTORS'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></a>
 				</div>

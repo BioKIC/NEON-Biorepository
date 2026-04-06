@@ -7,6 +7,19 @@ if($GLOBALS['HTTPS_ONLY'] ?? true) {
 date_default_timezone_set('America/Phoenix');
 $CODE_VERSION = '3.4.4';
 
+/*
+$cspHeader = "default-src 'self'; ";
+$cspHeader .= "script-src 'self' 'unsafe-inline' https://www.neonscience.org https://code.jquery.com https://www.googletagmanager.com; ";
+$cspHeader .= "script-src-elem 'self' 'unsafe-inline' https://www.neonscience.org https://code.jquery.com https://www.googletagmanager.com; ";
+$cspHeader .= "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; ";
+$cspHeader .= "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; ";
+$cspHeader .= "font-src 'self' https://fonts.gstatic.com https://www.neonscience.org; ";
+$cspHeader .= "img-src 'self' data: https://server.arcgisonline.com https://www.neonscience.org https://img.shields.io https://www.googletagmanager.com; ";
+$cspHeader .= "connect-src 'self' https://www.neonscience.org https://data.neonscience.org https://www.googletagmanager.com; ";
+$cspHeader .= "object-src 'none'; frame-ancestors 'none'; base-uri 'self'; ";
+header('Content-Security-Policy: ' . $cspHeader);
+*/
+
 set_include_path(get_include_path() . PATH_SEPARATOR . $SERVER_ROOT . PATH_SEPARATOR . $SERVER_ROOT.'/config/' . PATH_SEPARATOR . $SERVER_ROOT.'/classes/');
 
 session_start(array('gc_maxlifetime'=>3600,'cookie_path'=>$CLIENT_ROOT,'cookie_secure'=>$GLOBALS['HTTPS_ONLY'] ?? true,'cookie_httponly'=>true, 'use_only_cookies' => true));

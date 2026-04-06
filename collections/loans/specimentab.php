@@ -252,7 +252,7 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 	.form-checkbox{ display:none; }
 	label{ font-weight: bold }
 	.field-div{ margin: 10px 0px }
-	.icon-img{ width: 1.3em }
+	.icon-img{ width: 13px; }
 </style>
 <div id="outloanspecdiv">
 	<div id="menu-div">

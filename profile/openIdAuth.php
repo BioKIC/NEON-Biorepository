@@ -22,6 +22,11 @@ $oidc->addAuthParam(array(
 
 $oidc->addScope(array('openid'));
 $oidc->addScope(array('email'));
+$oidc->addScope(array('profile'));
+$oidc->addScope(array('read:current_user'));
+$oidc->addAuthParam([
+    'audience' => $AUDIENCE
+]);
 $oidc->setResponseTypes(array('code'));
 //$oidc->setResponseTypes(array('id_token'));
 $oidc->setRedirectUrl(GeneralUtil::getDomain() . $CLIENT_ROOT . $CALLBACK_REDIRECT);
@@ -32,8 +37,13 @@ if (isset($SHOULD_UPGRADE_INSECURE_REQUESTS)) {
 if (isset($SHOULD_VERIFY_PEERS)) {
   $oidc->setVerifyPeer($SHOULD_VERIFY_PEERS);
 }
-
+//NEON edit
+if (empty($_SESSION['refurl']) && !empty($_SERVER['HTTP_REFERER'])) {
+    $_SESSION['refurl'] = $_SERVER['HTTP_REFERER'];
+}
+//end NEON edit
 // $_SESSION['oidIssuer'] = $oidc->getIssuer(); // moot for microsoft where it's the same as the providerUrl, but potentially useful for other auth providers?
+$oidc->addAuthParam(['prompt' => 'login']);
 $oidc->authenticate();
 
 ?>

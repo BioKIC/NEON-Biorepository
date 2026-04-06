@@ -19,10 +19,12 @@ $LANG['LINKED_RESOURCES'] = 'Linked Resources';
 $LANG['TRAITS'] = 'Traits';
 $LANG['EDIT_HISTORY'] = 'Edit History';
 $LANG['ON_LOAN'] = 'On Loan To';
+//start NEON customization
+$LANG['ARCHIVE_GUID'] = 'Catalog Number (archiveGUID)';
 $LANG['ASSOCIATIONS'] = 'Associations';
-$LANG['CATALOG_NUMBER'] = 'Catalog #';
+//end NEON customization
 $LANG['OCCURRENCE_ID'] = 'Occurrence ID';
-$LANG['OTHER_CATALOG_NUMBERS'] = 'Secondary Catalog #';
+$LANG['OTHER_CATALOG_NUMBERS'] = 'Secondary Catalog Number';
 $LANG['TAXON'] = 'Taxon';
 $LANG['ID_PROTECTED'] = 'identification protected';
 $LANG['ID_QUALIFIER'] = 'Identification Qualifier';
@@ -31,9 +33,9 @@ $LANG['DETERMINER'] = 'Determiner';
 $LANG['TAXON_REMARKS'] = 'Taxon Remarks';
 $LANG['ID_REMARKS'] = 'ID Remarks';
 $LANG['ID_REFERENCES'] = 'ID References';
-$LANG['SHOW_DET_HISTORY'] = 'Show Determination History';
-$LANG['HIDE_DET_HISTORY'] = 'Hide Determination History';
+$LANG['SHOW_DET_HISTORY'] = 'Show Full History';
 $LANG['DET_HISTORY'] = 'Determination History';
+$LANG['HIDE_DET_HISTORY'] = 'Hide Full History';
 $LANG['SPECIES_PROTECTED'] = 'Species identification protected';
 $LANG['DATE'] = 'Date';
 $LANG['DATE_DET'] = 'Date Determined';

@@ -83,7 +83,7 @@ $cultivarEpithet = !empty($splitSciname['cultivarEpithet']) ? (' ' . $taxonManag
 $tradeName = !empty($splitSciname['tradeName']) ? ($taxonManager->standardizeTradeName($splitSciname['tradeName']) . ' ') : '';
 $nonItalicizedScinameComponent = $cultivarEpithet . $tradeName;
 ?>
-<div id="popup-innertext">
+<div id="innertext">
 	<h1 class="page-heading screen-reader-only"><?= $taxonManager->getTaxonName() ?></h1>
 	<?php
 	if($taxonManager->getTaxonName()){
@@ -122,8 +122,9 @@ $nonItalicizedScinameComponent = $cultivarEpithet . $tradeName;
 							?>
 							<span id="author"><?php echo $taxonManager->getTaxonAuthor(); ?></span>
 							<?php
-							$parentLink = 'index.php?tid='.$taxonManager->getParentTid().'&clid=' . htmlspecialchars($clid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&pid=' . htmlspecialchars($pid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&taxauthid='.$taxAuthId;
-							echo '&nbsp;<a href="' . htmlspecialchars($parentLink, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '"><img class="navIcon" src="../images/toparent.png" title="' . $LANG['GO_TO_PARENT'] . '"></a>';
+							$parentLink = 'index.php?tid='.$taxonManager->getParentTid().'&clid='.$clid.'&pid='.$pid.'&taxauthid='.$taxAuthId;
+							echo '&nbsp;<a href="'.$parentLink.'"><img class="navIcon" src="../images/toparent.png" title="Go to Parent" /></a>';
+							echo '<p>'.$taxonManager->getSearchByTaxon(170,'neon').'</p>';
 							if($taxonManager->isForwarded()){
 						 		echo '<span id="redirectedfrom"> (' . $LANG['REDIRECT'] . ': <i>' . $taxonManager->getSubmittedValue('sciname') . '</i> ' . $taxonManager->getSubmittedValue('author') . ')</span>';
 						 	}

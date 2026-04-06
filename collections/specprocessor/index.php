@@ -149,8 +149,8 @@ if($isEditor){
 				<div id="tabs" class="taxondisplaydiv">
 				    <ul>
 				        <li><a href="imageprocessor.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&spprid=' . htmlspecialchars($spprId, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&submitaction=' . htmlspecialchars($action, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&filename=' . htmlspecialchars($fileName, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"> <?php echo (isset($LANG['IMG_LOAD']) ? $LANG['IMG_LOAD'] : 'Image Loading')?> </a></li>
-				        <li><a href="crowdsource/controlpanel.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"> <?php echo (isset($LANG['CROWDSRC']) ? $LANG['CROWDSRC'] : 'Crowdsourcing')?> </a></li>
-				        <li><a href="ocrprocessor.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&procstatus=' . htmlspecialchars($procStatus, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&spprid=' . htmlspecialchars($spprId, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"> <?php echo (isset($LANG['OCR']) ? $LANG['OCR'] : 'OCR')?> </a></li>
+<!--				        <li><a href="crowdsource/controlpanel.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"> <?php echo (isset($LANG['CROWDSRC']) ? $LANG['CROWDSRC'] : 'Crowdsourcing')?> </a></li>
+				        <li><a href="ocrprocessor.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&procstatus=' . htmlspecialchars($procStatus, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&spprid=' . htmlspecialchars($spprId, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"> <?php echo (isset($LANG['OCR']) ? $LANG['OCR'] : 'OCR')?> </a></li>-->
 				        <!--
 				        <li><a href="nlpprocessor.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&spnlpid=' . htmlspecialchars($spNlpId, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>">NLP</a></li>
 				         -->

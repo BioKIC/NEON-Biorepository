@@ -1,0 +1,626 @@
+[
+  {
+    "id": 1,
+    "name": "ALG – Periphyton And Phytoplankton Sampling",
+    "children": [
+      {
+        "id": 2,
+        "name": "Aquatic Microalgae (Chemical Preservation)",
+        "children": [
+          {
+            "id": 45,
+            "name": "Bulk Samples",
+            "collid": 47
+          },
+          {
+            "id": 46,
+            "name": "Bulk Sample Identifications",
+            "collid": 110
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Aquatic Microalgae (Freeze-dried Diatoms)",
+        "collid": 46
+      },
+      {
+        "id": 4,
+        "name": "Aquatic Microalgae (Microscope Slides - Diatoms)",
+        "children": [
+          {
+            "id": 45,
+            "name": "Slide Samples",
+            "collid": 49
+          },
+          {
+            "id": 46,
+            "name": "Slide Sample Identifications",
+            "collid": 111
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "name": "Aquatic Microalgae (Sterivex Filters)",
+        "collid": 98
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "AMC – Surface Aquatic Microbial Sampling",
+    "children": [
+      {
+        "id": 7,
+        "name": "Benthic Microbes (DNA Extracts)",
+        "collid": 67
+      },
+      {
+        "id": 8,
+        "name": "Benthic Microbes (Sterivex Filters)",
+        "collid": 5
+      },
+      {
+        "id": 9,
+        "name": "Surface Water Microbes (DNA Extracts)",
+        "collid": 68
+      },
+      {
+        "id": 10,
+        "name": "Surface Water Microbes (Sterivex Filters)",
+        "collid": 6
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "APL – Aquatic Plant, Bryophyte, Lichen And Macroalgae Clip Harvest Sampling",
+    "children": [
+      {
+        "id": 12,
+        "name": "Clip Harvest Biomass Sampling",
+        "children": [
+          {
+            "id": 13,
+            "name": "Aquatic Plant, Bryophyte, and Macroalgae Chemical Preservation",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 50            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 105           
+              }
+            ]
+          },
+          {
+            "id": 14,
+            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 9            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 107           
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "name": "Point Transects Sampling",
+        "children": [
+          {
+            "id": 16,
+            "name": "Aquatic Plant, Bryophyte, and Macroalgae Chemical Preservation",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 73            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 106           
+              }
+            ]
+          },
+          {
+            "id": 17,
+            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 7            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 108           
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "name": "Opportunistic Sampling",
+        "children": [
+          {
+            "id": 19,
+            "name": "Aquatic Plant, Bryophyte, and Macroalgae Opportunistic Specimens",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 8            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 109           
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "name": "ASC – Sediment Sampling For Chemical And Physical Properties",
+    "children": [
+      {
+        "id": 21,
+        "name": "Aquatic Sediments",
+        "collid": 92
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "name": "BET - Ground Beetle Sampling",
+    "children": [
+      {
+        "id": 23,
+        "name": "Individual Specimens",
+        "children": [
+          {
+            "id": 24,
+            "name": "Beetles (Carabids) DNA Extracts",
+            "collid": 63
+          },
+          {
+            "id": 25,
+            "name": "Beetles (Carabids) Pinned Specimens",
+            "collid": 39
+          }
+        ]
+      },
+      {
+        "id": 26,
+        "name": "Pooled Catches",
+        "children": [
+          {
+            "id": 27,
+            "name": "Beetles (Carabids)",
+            "collid": 11
+          },
+          {
+            "id": 28,
+            "name": "Invertebrate Specimen Bycatch",
+            "collid": 13
+          },
+          {
+            "id": 29,
+            "name": "Reptiles and Amphibians Specimen Bycatch",
+            "collid": 12
+          }
+        ]
+      },
+      {
+        "id": 30,
+        "name": "Unpooled Catches",
+        "children": [
+          {
+            "id": 19,
+            "name": "Beetles (Carabids)",
+            "collid": 14
+          },
+          {
+            "id": 20,
+            "name": "Invertebrate Specimen Bycatch",
+            "collid": 16
+          },
+          {
+            "id": 21,
+            "name": "Small Mammal Specimen Bycatch",
+            "collid": 17
+          },
+          {
+            "id": 29,
+            "name": "Reptiles and Amphibians Specimen Bycatch",
+            "collid": 15
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "name": "BGB – Plant Belowground Biomass Sampling",
+    "children": [
+      {
+        "id": 31,
+        "name": "Root Cores (Tower Plots)",
+        "collid": 10
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "name": "CFC – Canopy Foliage Sampling / HBP – Measurement Of Herbaceous Biomass",
+    "children": [
+      {
+        "id": 33,
+        "name": "Oven Dried Canopy Foliage",
+        "collid": 18
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "name": "DIV – Plant Diversity Sampling",
+    "children": [
+      {
+        "id": 35,
+        "name": "Herbarium Specimens",
+        "collid": 54
+      },
+      {
+        "id": 36,
+        "name": "Leaf Tissue",
+        "collid": 40
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "name": "FSL – Fish Sampling In Lakes / FSS - Fish Sampling In Wadeable Streams",
+    "children": [
+      {
+        "id": 38,
+        "name": "Fish DNA Extracts",
+        "collid": 66
+      },
+      {
+        "id": 39,
+        "name": "Fish Specimens",
+        "collid": 20
+      },
+      {
+        "id": 40,
+        "name": "Reptiles and Amphibians Specimen Bycatch",
+        "collid": 70
+      }
+    ]
+  },
+  {
+    "id": 41,
+    "name": "INV – Aquatic Macroinvertebrate Sampling",
+    "children": [
+      {
+        "id": 45,
+        "name": "Benthic Macroinvertebrate Unprocessed Samples (Bouts 1 & 3)",
+        "collid": 21
+      },
+      {
+        "id": 42,
+        "name": "Benthic Macroinvertebrate DNA Extracts (Bout 2)",
+        "collid": 61
+      },
+      {
+        "id": 17,
+        "name": "Benthic Macroinvertebrates Taxonomy Samples",
+        "children": [
+          {
+            "id": 16,
+            "name": "Bulk Taxonomy Samples",
+            "collid": 57                    
+          },
+          {
+            "id": 16,
+            "name": "Bulk Taxonomy Sample Identifications",
+            "collid": 103                    
+          },
+          {
+            "id": 32,
+            "name": "Taxonomic References",
+            "collid": 48
+          }
+        ]
+      },
+      {
+        "id": 24,
+        "name": "Chironomid and Oligochaete Taxonomy Samples",
+        "children": [
+          {
+            "id": 17,
+            "name": "Fluid Preserved Midges (Chironomids)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 22                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 100                    
+              }
+            ]
+          },
+          {
+            "id": 17,
+            "name": "Fluid Preserved Worms (Oligochaetes)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 52                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 101                    
+              }
+            ]
+          },
+          {
+            "id": 19,
+            "name": "Slide Mounted Midges and Worms (Chironomids/Oligochaetes)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 53                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 102                    
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 49,
+    "name": "LTR - Litterfall And Fine Woody Debris",
+    "children": [
+      {
+        "id": 50,
+        "name": "Litterfall",
+        "collid": 23
+      }
+    ]
+  },
+  {
+    "id": 51,
+    "name": "MAM – Small Mammal Sampling",
+    "children": [
+      {
+        "id": 52,
+        "name": "Mammal Blood Samples",
+        "collid": 24
+      },
+      {
+        "id": 53,
+        "name": "Mammal DNA Extracts (from Ear Tissue)",
+        "collid": 71
+      },
+      {
+        "id": 54,
+        "name": "Mammal Ear Tissue",
+        "collid": 25
+      },
+      {
+        "id": 55,
+        "name": "Mammal Fecal Samples",
+        "collid": 26
+      },
+      {
+        "id": 56,
+        "name": "Mammal Hair Samples",
+        "collid": 27
+      },
+      {
+        "id": 57,
+        "name": "Mammal Parasites",
+        "collid": 85
+      },
+      {
+        "id": 58,
+        "name": "Mammal Genomic Extracts for Pathogen Testing (from Blood)",
+        "collid": 91
+      },
+      {
+        "id": 59,
+        "name": "Mammal Genomic Extracts for Pathogen Testing (from Ear Tissue)",
+        "collid": 90
+      },
+      {
+        "id": 60,
+        "name": "Mammal Specimens (Standard Sampling)",
+        "collid": 28
+      },
+      {
+        "id": 61,
+        "name": "Mammal Specimens (Incidental)",
+        "collid": 19
+      },
+      {
+        "id": 62,
+        "name": "Reptiles and Amphibians Specimen Bycatch",
+        "collid": 70
+      }
+    ]
+  },
+  {
+    "id": 63,
+    "name": "MOS – Mosquito Sampling",
+    "children": [
+      {
+        "id": 63,
+        "name": "Mosquito Bulk Identified",
+        "collid": 56
+      },
+      {
+        "id": 64,
+        "name": "Mosquito DNA Extracts",
+        "collid": 65
+      },
+      {
+        "id": 65,
+        "name": "Mosquito Pathogen Extracts",
+        "collid": 59
+      },
+      {
+        "id": 66,
+        "name": "Mosquito Pinned Specimens",
+        "collid": 29
+      }
+    ]
+  },
+  {
+    "id": 67,
+    "name": "Neon Tower/Sensor Protocols",
+    "children": [
+      {
+        "id": 68,
+        "name": "Wet Deposition",
+        "children": [
+          {
+            "id": 69,
+            "name": "Wet Deposition (Precipitation)",
+            "collid": 42
+          }
+        ]
+      },
+      {
+        "id": 70,
+        "name": "Particulate Analyzer - Mass",
+        "children": [
+          {
+            "id": 71,
+            "name": "Particulate Mass Filters (Dust)",
+            "collid": 41
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 72,
+    "name": "Other",
+    "children": [
+      {
+        "id": 73,
+        "name": "Insect Taxonomic Reference Collection",
+        "collid": 4
+      },
+      {
+        "id": 74,
+        "name": "Legacy and Prototype Samples",
+        "collid": 81
+      }
+    ]
+  },
+  {
+    "id": 75,
+    "name": "SLS - Soil Biogeochemical And Microbial Sampling",
+    "children": [
+      {
+        "id": 76,
+        "name": "Soils",
+        "collid": 30
+      },
+      {
+        "id": 77,
+        "name": "Soil Microbe Bulk Subsamples",
+        "collid": 31
+      },
+      {
+        "id": 78,
+        "name": "Soil Microbe DNA Extracts",
+        "collid": 69
+      }
+    ]
+  },
+  {
+    "id": 79,
+    "name": "TCK - Tick And Tickborne Pathogen Sampling",
+    "children": [
+      {
+        "id": 80,
+        "name": "Tick Specimens",
+        "collid": 116
+      },
+      {
+        "id": 80,
+        "name": "Tick Pathogen Extracts",
+        "collid": 75
+      }
+    ]
+  },
+  {
+    "id": 81,
+    "name": "TIS Soil Pit Sampling Protocol",
+    "children": [
+      {
+        "id": 82,
+        "name": "Root Cores (Megapit)",
+        "collid": 76
+      }
+    ]
+  },
+  {
+    "id": 83,
+    "name": "ZOO – Zooplankton Sampling In Lakes",
+    "children": [
+      {
+        "id": 86,
+        "name": "Zooplankton Unprocessed Samples (Bouts 1 & 3)",
+        "collid": 60
+      },
+      {
+        "id": 84,
+        "name": "Zooplankton DNA Extracts (Bout 2)",
+        "collid": 62
+      },
+      {
+        "id": 85,
+        "name": "Zooplankton Bulk Taxonomy Samples",
+        "collid": 45
+      },
+      {
+        "id": 85,
+        "name": "Zooplankton Bulk Taxonomy Sample Identifications",
+        "collid": 45
+      }
+    ]
+  }
+]

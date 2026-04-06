@@ -50,6 +50,24 @@
                         }
                     },
                     {
+                        "name": "datasetID",
+                        "in": "query",
+                        "description": "associated NEON sampleClasses",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "productID",
+                        "in": "query",
+                        "description": "associated NEON product IDs",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "limit",
                         "in": "query",
                         "description": "Controls the number of results per page",
@@ -2538,6 +2556,37 @@
                                 "WHOLEWORD",
                                 "WILD"
                             ]
+                        }
+                    },
+                    {
+                        "name": "taxonGroup",
+                        "in": "query",
+                        "description": "Search term for NEON defined Taxon Group",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ALGAE",
+                                "BEETLE",
+                                "BIRD",
+                                "FISH",
+                                "HERPETOLOGY",
+                                "MACROINVERTEBRATE",
+                                "MOSQUITO",
+                                "MOSQUITO_PATHOGENS",
+                                "PLANT",
+                                "SMALL_MAMMAL",
+                                "TICK"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "taxonCode",
+                        "in": "query",
+                        "description": "Search term for NEON defined Taxon Code",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     {
