@@ -33,9 +33,9 @@ class OccurrenceLabel {
 			if ($postArr['taxa']) {
 				$sqlWhere .= 'AND (o.sciname LIKE "' . $this->cleanInStr($postArr['taxa']) . '%") ';
 			}
-			//if ($postArr['labelproject']) {
-			//	$sqlWhere .= 'AND (o.labelproject = "' . $this->cleanInStr($postArr['labelproject']) . '") ';
-			//}
+			if (!empty($postArr['labelproject'])) {
+				$sqlWhere .= 'AND (o.labelproject = "' . $this->cleanInStr($postArr['labelproject']) . '") ';
+			}
 			if ($postArr['recordenteredby']) {
 				$sqlWhere .= 'AND (o.recordenteredby = "' . $this->cleanInStr($postArr['recordenteredby']) . '") ';
 			}
@@ -84,11 +84,9 @@ class OccurrenceLabel {
 				$recordedBy = $this->cleanInStr($postArr['recordedby']);
 				$sqlWhere .= 'AND (MATCH(o.recordedby) AGAINST("' . $recordedBy . '" IN BOOLEAN MODE)) ';
 			}
-			if($postArr['identifier']){
-				// Start NEON customatization
-				$catNum = $this->cleanInStr(str_replace(array(',', "\n", "\r\n", "\r", ' '), ';', $postArr['identifier']));
-				$iArr = array_filter(array_map('trim', explode(';', $catNum)));
-				// End NEON customatization
+			if ($postArr['identifier']) {
+				$normalizedStr = preg_replace('/[\s,]+/', ';', $this->cleanInStr($postArr['identifier']));
+				$iArr = explode(',', $normalizedStr);
 				$iBetweenFrag = array();
 				$iInFrag = array();
 				foreach ($iArr as $v) {
@@ -113,31 +111,16 @@ class OccurrenceLabel {
 				$sqlWhere .= 'AND (' . substr($iWhere, 3) . ') ';
 				$sqlOrderBy .= ',i.identifiervalue,o.catalogNumber,o.otherCatalogNumbers';
 			}
-			//if ($this->collArr['colltype'] == 'General Observations') {
-			//	$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
-			//	if (!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= ' AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
-			//}
-			// Start NEON customization
+			//NEON customization
 			/*
-			elseif (!array_key_exists('extendedsearch', $postArr)) {
+			if ($this->collArr['colltype'] == 'General Observations') {
+				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
+				if (!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= ' AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
+			} elseif (!array_key_exists('extendedsearch', $postArr)) {
 				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
 			}
 			*/
-			else{
-				if(array_key_exists('extendedsearch', $postArr)){
-					if(array_key_exists('excludesubsamples', $postArr)){
-						$sqlWhere .= 'AND (o.collid NOT BETWEEN 100 AND 111) ';
-					}
-				} else {
-					if(array_key_exists('excludesubsamples', $postArr) && $this->collid >= 100 && $this->collid <= 111){
-						$sqlWhere .= 'AND (1=0) ';
-					} else {
-						$sqlWhere .= 'AND (o.collid = '.$this->collid.') ';
-					}
-				}
-			}
-			// End NEON customization
-
+			//End NEON customization
 			$sql = 'SELECT DISTINCT o.occid, o.collid, IFNULL(o.duplicatequantity,1) AS q, CONCAT_WS(" ",o.recordedby,IFNULL(o.recordnumber,o.eventdate)) AS collector, o.observeruid,
 				o.family, o.sciname, CONCAT_WS("; ",o.country, o.stateProvince, o.county, o.locality) AS locality, IFNULL(o.recordSecurity,0) AS recordSecurity
 				FROM omoccurrences o ';
@@ -200,6 +183,7 @@ class OccurrenceLabel {
 			$this->appendParentAuthors($retArr, $parentAuthorArr);
 			$this->appendIdentifiers($retArr);
 			$this->appendTaxonomy($retArr, $tidArr);
+			$this->appendAssociatedIdentifiers($retArr);
 		}
 		return $retArr;
 	}
@@ -284,37 +268,27 @@ class OccurrenceLabel {
 						}
 					}
 				}
-				// NEON edit
-				// get identifiers of associate occurrence records
-				$sql = 'SELECT oa.occid, oa.occidAssociate, oi.identifiername, oi.identifiervalue
-						FROM omoccurassociations oa
-						LEFT JOIN omoccuridentifiers oi ON oa.occidAssociate = oi.occid
-						WHERE oa.occid IN(' . implode(',', array_keys($retArr)) . ')
-						ORDER BY oi.sortBy';
+			}
+		}
+	}
 
-				if ($rs = $this->conn->query($sql)) {
-					$assocArr = array();
-					while ($r = $rs->fetch_object()) {
-						$assocArr[$r->occid][] = array(
-							'n' => $r->identifiername ?? '',
-							'v' => $r->identifiervalue,
-							'associd' => $r->occidAssociate
-						);
-					}
-					$rs->free();
+	private function appendAssociatedIdentifiers(&$labelArr){
+		// get identifiers of associate occurrence records
+		$sql = 'SELECT oa.occid, oi.identifierName, oi.identifierValue
+			FROM omoccurassociations oa INNER JOIN omoccuridentifiers oi ON oa.occidAssociate = oi.occid
+			WHERE oa.occid IN(' . implode(',', array_keys($labelArr)) . ')
+			ORDER BY oi.sortBy';
 
-					foreach ($assocArr as $occid => $idArrs) {
-						$assocStr = '';
-						foreach ($idArrs as $idArr) {
-							$assocStr .= '; ' . ($idArr['n'] ? $idArr['n'] . ': ' : '') . $idArr['v'];
-						}
-						$assocStr = trim($assocStr, ';,: ');
+		if ($rs = $this->conn->query($sql)) {
+			$assocArr = array();
+			while ($r = $rs->fetch_object()) {
+				$assocArr[$r->occid][] = ($r->identifierName ? $r->identifierName . ': ' : '') . $r->identifierValue;
+			}
+			$rs->free();
 
-						// store in retArr under a new key
-						$retArr[$occid]['associateidentifiers'] = $assocStr;
-					}
-				}
-				//end NEON edit
+			foreach ($assocArr as $occid => $idArrs) {
+				// store in retArr under a new key
+				$labelArr[$occid]['associateidentifiers'] = trim(implode(';', $idArrs), ';,: ');
 			}
 		}
 	}
@@ -365,84 +339,82 @@ class OccurrenceLabel {
 	private function setLabelFieldArr() {
 		if (!$this->labelFieldArr) {
 			$this->labelFieldArr = array(
-				'occid' => 'o.occid',
-				'collid' => 'o.collid',
-				'catalogNumber' => 'o.catalognumber',
-				'otherCatalogNumbers' => 'o.othercatalognumbers',
-				'scientificName' => 'o.sciname AS scientificname',
-				'scientificName_with_author' => 'CONCAT_WS(" ",o.sciname,o.scientificnameauthorship) AS scientificname_with_author',
-				'tidInterpreted' => 'o.tidInterpreted',
-				'genus'=>'t.unitName1 AS genus',
-				'speciesName' => 'TRIM(CONCAT_WS(" ",t.unitind1,t.unitname1,t.unitind2,t.unitname2)) AS speciesname',
-				'specificepithet'=>'t.unitname2 AS specificepithet',
-				'taxonRank' => 't.unitind3 AS taxonrank',
-				'infraSpecificEpithet'=>'t.unitname3 AS infraspecificepithet',
-				'scientificNameAuthorship'=>'o.scientificnameauthorship',
-				'parentAuthor'=>'"" AS parentauthor',
-				'kingdom' => 't.kingdomName as kingdom',
-				'phylum' => '"" as phylum',
-				'class' => '"" as `class`',
-				'subclass' => '"" as subclass',
-				'order' => '"" as `order`',
-				'family' => 'o.family',
-				'subfamily' => '"" as subfamily',
-				'identifiedBy'=>'o.identifiedby',
-				'dateIdentified' => 'o.dateidentified',
-				'identificationReferences' => 'o.identificationreferences',
-				'identificationRemarks' => 'o.identificationremarks',
-				'taxonRemarks' => 'o.taxonremarks',
-				'identificationQualifier' => 'o.identificationqualifier',
-				'typeStatus' => 'o.typestatus',
-				'recordedBy'=>'o.recordedby',
-				'recordNumber'=>'o.recordnumber',
-				'associatedCollectors' => 'o.associatedcollectors',
-				'eventDate' => 'DATE_FORMAT(o.eventdate,"%e %M %Y") AS eventdate',
-				//NEON edit
-				'eventDate2' => 'DATE_FORMAT(o.eventdate2,"%e %M %Y") AS eventdate2',
-				//end NEON edit
-				'year' => 'o.year',
-				'month' => 'o.month',
-				'day' => 'o.day',
-				'monthName' => 'DATE_FORMAT(o.eventdate,"%M") AS monthname',
-				'verbatimEventDate' => 'o.verbatimeventdate',
-				'fieldnumber'=>'o.fieldnumber',
-				'habitat' => 'o.habitat',
-				'substrate' => 'o.substrate',
-				'occurrenceRemarks' => 'o.occurrenceremarks',
-				'associatedTaxa' => 'o.associatedtaxa',
-				'dynamicProperties' => 'o.dynamicproperties',
-				'verbatimAttributes'=>'o.verbatimattributes',
-				'behavior' => 'behavior',
-				'reproductiveCondition' => 'o.reproductivecondition',
-				'cultivationStatus' => 'o.cultivationstatus',
-				'establishmentMeans' => 'o.establishmentmeans',
-				'lifeStage' => 'lifestage',
-				'sex' => 'sex',
-				'individualCount' => 'individualcount',
-				'samplingProtocol' => 'samplingprotocol',
-				'preparations' => 'preparations',
-				'country' => 'o.country',
-				'stateProvince' => 'o.stateprovince',
-				'county' => 'o.county',
-				'municipality' => 'o.municipality',
-				'locality' => 'o.locality',
-				'decimalLatitude' => 'o.decimallatitude',
-				'decimalLongitude' => 'o.decimallongitude',
-				'geodeticDatum' => 'o.geodeticdatum',
-				'coordinateUncertaintyInMeters' => 'o.coordinateuncertaintyinmeters',
-				'verbatimCoordinates' => 'o.verbatimcoordinates',
-				'minimumElevationInMeters' => 'o.minimumelevationinmeters',
-				'maximumElevationInMeters' => 'o.maximumelevationinmeters',
-				'elevationInMeters' => 'CONCAT_WS(" - ",o.minimumElevationInMeters,o.maximumElevationInMeters) AS elevationinmeters',
-				'verbatimElevation' => 'o.verbatimelevation',
-				'minimumDepthInMeters' => 'minimumdepthinmeters',
-				'maximumDepthInMeters' => 'maximumdepthinmeters',
-				'verbatimDepth' => 'verbatimdepth',
-				'disposition' => 'o.disposition',
-				'storageLocation' => 'storagelocation',
-				'duplicateQuantity' => 'o.duplicatequantity',
-				'dateLastModified' => 'o.datelastmodified',
-				'labelProject' => 'o.labelproject'
+					'occid' => 'o.occid',
+					'collid' => 'o.collid',
+					'catalogNumber' => 'o.catalognumber',
+					'otherCatalogNumbers' => 'o.othercatalognumbers',
+					'scientificName' => 'o.sciname AS scientificname',
+					'scientificName_with_author' => 'CONCAT_WS(" ",o.sciname,o.scientificnameauthorship) AS scientificname_with_author',
+					'tidInterpreted' => 'o.tidInterpreted',
+					'genus'=>'t.unitName1 AS genus',
+					'speciesName' => 'TRIM(CONCAT_WS(" ",t.unitind1,t.unitname1,t.unitind2,t.unitname2)) AS speciesname',
+					'specificepithet'=>'t.unitname2 AS specificepithet',
+					'taxonRank' => 't.unitind3 AS taxonrank',
+					'infraSpecificEpithet'=>'t.unitname3 AS infraspecificepithet',
+					'scientificNameAuthorship'=>'o.scientificnameauthorship',
+					'parentAuthor'=>'"" AS parentauthor',
+					'kingdom' => 't.kingdomName as kingdom',
+					'phylum' => '"" as phylum',
+					'class' => '"" as `class`',
+					'subclass' => '"" as subclass',
+					'order' => '"" as `order`',
+					'family' => 'o.family',
+					'subfamily' => '"" as subfamily',
+					'identifiedBy'=>'o.identifiedby',
+					'dateIdentified' => 'o.dateidentified',
+					'identificationReferences' => 'o.identificationreferences',
+					'identificationRemarks' => 'o.identificationremarks',
+					'taxonRemarks' => 'o.taxonremarks',
+					'identificationQualifier' => 'o.identificationqualifier',
+					'typeStatus' => 'o.typestatus',
+					'recordedBy'=>'o.recordedby',
+					'recordNumber'=>'o.recordnumber',
+					'associatedCollectors' => 'o.associatedcollectors',
+					'eventDate' => 'DATE_FORMAT(o.eventdate,"%e %M %Y") AS eventdate',
+					'eventDate2' => 'DATE_FORMAT(o.eventdate2,"%e %M %Y") AS eventdate2',
+					'year' => 'o.year',
+					'month' => 'o.month',
+					'day' => 'o.day',
+					'monthName' => 'DATE_FORMAT(o.eventdate,"%M") AS monthname',
+					'verbatimEventDate' => 'o.verbatimeventdate',
+					'fieldnumber'=>'o.fieldnumber',
+					'habitat' => 'o.habitat',
+					'substrate' => 'o.substrate',
+					'occurrenceRemarks' => 'o.occurrenceremarks',
+					'associatedTaxa' => 'o.associatedtaxa',
+					'dynamicProperties' => 'o.dynamicproperties',
+					'verbatimAttributes'=>'o.verbatimattributes',
+					'behavior' => 'behavior',
+					'reproductiveCondition' => 'o.reproductivecondition',
+					'cultivationStatus' => 'o.cultivationstatus',
+					'establishmentMeans' => 'o.establishmentmeans',
+					'lifeStage' => 'lifestage',
+					'sex' => 'sex',
+					'individualCount' => 'individualcount',
+					'samplingProtocol' => 'samplingprotocol',
+					'preparations' => 'preparations',
+					'country' => 'o.country',
+					'stateProvince' => 'o.stateprovince',
+					'county' => 'o.county',
+					'municipality' => 'o.municipality',
+					'locality' => 'o.locality',
+					'decimalLatitude' => 'o.decimallatitude',
+					'decimalLongitude' => 'o.decimallongitude',
+					'geodeticDatum' => 'o.geodeticdatum',
+					'coordinateUncertaintyInMeters' => 'o.coordinateuncertaintyinmeters',
+					'verbatimCoordinates' => 'o.verbatimcoordinates',
+					'minimumElevationInMeters' => 'o.minimumelevationinmeters',
+					'maximumElevationInMeters' => 'o.maximumelevationinmeters',
+					'elevationInMeters' => 'CONCAT_WS(" - ",o.minimumElevationInMeters,o.maximumElevationInMeters) AS elevationinmeters',
+					'verbatimElevation' => 'o.verbatimelevation',
+					'minimumDepthInMeters' => 'minimumdepthinmeters',
+					'maximumDepthInMeters' => 'maximumdepthinmeters',
+					'verbatimDepth' => 'verbatimdepth',
+					'disposition' => 'o.disposition',
+					'storageLocation' => 'storagelocation',
+					'duplicateQuantity' => 'o.duplicatequantity',
+					'dateLastModified' => 'o.datelastmodified',
+					'labelProject' => 'o.labelproject'
 			);
 		}
 	}
@@ -566,7 +538,7 @@ class OccurrenceLabel {
 				}
 			} else $retArr['g'] = array('labelFormats' => array());
 			//Add collection defined label formats
-			if ($this->collid) {
+			if (is_numeric($this->collid)) {
 				$collFormatArr = json_decode($this->collArr['dynprops'] ?? '[]', true);
 				if ($annotated) {
 					if (isset($collFormatArr['labelFormats'])) {
@@ -641,7 +613,7 @@ class OccurrenceLabel {
 				$this->setLabelFormatAttributes($globalFormatArr, $labelIndex, $postArr);
 				$status = $this->saveGlobalJson($globalFormatArr);
 			} elseif ($group == 'c') {
-				if ($this->collid) {
+				if (is_numeric($this->collid)) {
 					$collFormatArr = array();
 					if ($this->collArr['dynprops']) $collFormatArr = json_decode($this->collArr['dynprops'], true);
 					$this->setLabelFormatAttributes($collFormatArr, $labelIndex, $postArr);
@@ -712,7 +684,7 @@ class OccurrenceLabel {
 				}
 			}
 			if ($group == 'c' || $cloneTarget == 'c') {
-				if ($this->collid) {
+				if (is_numeric($this->collid)) {
 					if ($this->collArr['dynprops']) $collFormatArr = json_decode($this->collArr['dynprops'], true);
 					if ($group == 'c') $sourceLabelArr = $collFormatArr['labelFormats'][$labelIndex];
 				} else {
@@ -759,7 +731,7 @@ class OccurrenceLabel {
 					$status = $this->saveGlobalJson($globalFormatArr);
 				}
 			} elseif ($group == 'c') {
-				if ($this->collid) {
+				if (is_numeric($this->collid)) {
 					$collFormatArr = array();
 					if ($this->collArr['dynprops']) $collFormatArr = json_decode($this->collArr['dynprops'], true);
 					unset($collFormatArr['labelFormats'][$labelIndex]);
@@ -823,11 +795,13 @@ class OccurrenceLabel {
 
 	private function updateCollectionJson($formatArr) {
 		$status = true;
-		$sql = 'UPDATE omcollections SET dynamicProperties = "' . $this->conn->real_escape_string(json_encode($formatArr)) . '" WHERE collid = ' . $this->collid;
-		if ($this->conn->query($sql)) $this->setCollMetadata();
-		else {
-			$this->errorArr[] = 'ERROR saving label format to omcollections table: ' . $this->conn->error;
-			$status = false;
+		if(is_numeric($this->collid)){
+			$sql = 'UPDATE omcollections SET dynamicProperties = "' . $this->conn->real_escape_string(json_encode($formatArr)) . '" WHERE collid = ' . $this->collid;
+			if ($this->conn->query($sql)) $this->setCollMetadata();
+			else {
+				$this->errorArr[] = 'ERROR saving label format to omcollections table: ' . $this->conn->error;
+				$status = false;
+			}
 		}
 		return $status;
 	}
@@ -850,42 +824,42 @@ class OccurrenceLabel {
 			$sqlWhere = 'WHERE (d.detid IN(' . implode(',', $detidArr) . ')) ';
 			//Get species authors for infraspecific taxa
 			$sql1 = 'SELECT d.detid, t2.author ' .
-				'FROM (taxa t INNER JOIN omoccurrences o ON t.tid = o.tidinterpreted) ' .
-				'INNER JOIN omoccurdeterminations d ON o.occid = d.occid ' .
-				'INNER JOIN taxstatus ts ON t.tid = ts.tid ' .
-				'INNER JOIN taxa t2 ON ts.parenttid = t2.tid ' .
-				$sqlWhere . ' AND t.rankid > 220 AND ts.taxauthid = 1 ';
-			if (!$speciesAuthors) {
-				$sql1 .= 'AND t.unitname2 = t.unitname3 ';
-			}
-			//echo $sql1; exit;
-			if ($rs1 = $this->conn->query($sql1)) {
-				while ($row1 = $rs1->fetch_object()) {
-					$authorArr[$row1->detid] = $row1->author;
-				}
-				$rs1->free();
-			}
-
-			//Get determination records
-			$familyAdditionStr = '';
-			if($familyName){
-				$familyAdditionStr .= 'd.family as family1, o.family as family2, ';
-			}
-			$sql2 = 'SELECT ' . $familyAdditionStr . 'd.detid, d.identifiedBy, d.dateIdentified, d.sciname, d.scientificNameAuthorship, d.identificationQualifier, ' .
-				'd.identificationReferences, d.identificationRemarks, IFNULL(o.catalogNumber,o.otherCatalogNumbers) AS catalogNumber ' .
-				'FROM omoccurdeterminations d INNER JOIN omoccurrences o ON d.occid = o.occid ' . $sqlWhere;
-			//echo 'SQL: '.$sql2;
-			if ($rs2 = $this->conn->query($sql2)) {
-				while ($row2 = $rs2->fetch_assoc()) {
-					$row2 = array_change_key_case($row2);
-					if (array_key_exists($row2['detid'], $authorArr)) {
-						$row2['parentauthor'] = $authorArr[$row2['detid']];
+					'FROM (taxa t INNER JOIN omoccurrences o ON t.tid = o.tidinterpreted) ' .
+					'INNER JOIN omoccurdeterminations d ON o.occid = d.occid ' .
+					'INNER JOIN taxstatus ts ON t.tid = ts.tid ' .
+					'INNER JOIN taxa t2 ON ts.parenttid = t2.tid ' .
+					$sqlWhere . ' AND t.rankid > 220 AND ts.taxauthid = 1 ';
+					if (!$speciesAuthors) {
+						$sql1 .= 'AND t.unitname2 = t.unitname3 ';
 					}
-					$row2['family'] = $row2['family1'] ?? $row2['family2'] ?? '';
-					$retArr[$row2['detid']] = $row2;
-				}
-				$rs2->free();
-			}
+					//echo $sql1; exit;
+					if ($rs1 = $this->conn->query($sql1)) {
+						while ($row1 = $rs1->fetch_object()) {
+							$authorArr[$row1->detid] = $row1->author;
+						}
+						$rs1->free();
+					}
+
+					//Get determination records
+					$familyAdditionStr = '';
+					if($familyName){
+						$familyAdditionStr .= 'd.family as family1, o.family as family2, ';
+					}
+					$sql2 = 'SELECT ' . $familyAdditionStr . 'd.detid, d.identifiedBy, d.dateIdentified, d.sciname, d.scientificNameAuthorship, d.identificationQualifier, ' .
+							'd.identificationReferences, d.identificationRemarks, IFNULL(o.catalogNumber,o.otherCatalogNumbers) AS catalogNumber ' .
+							'FROM omoccurdeterminations d INNER JOIN omoccurrences o ON d.occid = o.occid ' . $sqlWhere;
+					//echo 'SQL: '.$sql2;
+					if ($rs2 = $this->conn->query($sql2)) {
+						while ($row2 = $rs2->fetch_assoc()) {
+							$row2 = array_change_key_case($row2);
+							if (array_key_exists($row2['detid'], $authorArr)) {
+								$row2['parentauthor'] = $authorArr[$row2['detid']];
+							}
+							$row2['family'] = $row2['family1'] ?? $row2['family2'] ?? '';
+							$retArr[$row2['detid']] = $row2;
+						}
+						$rs2->free();
+					}
 		}
 		return $retArr;
 	}
@@ -894,8 +868,8 @@ class OccurrenceLabel {
 		$statusStr = '';
 		if ($detidArr) {
 			$sql = 'UPDATE omoccurdeterminations ' .
-				'SET printqueue = NULL ' .
-				'WHERE (detid IN(' . implode(',', $detidArr) . ')) ';
+					'SET printqueue = NULL ' .
+					'WHERE (detid IN(' . implode(',', $detidArr) . ')) ';
 			//echo $sql; exit;
 			if ($this->conn->query($sql)) {
 				$statusStr = 'Success!';
@@ -906,12 +880,12 @@ class OccurrenceLabel {
 
 	public function getAnnoQueue() {
 		$retArr = array();
-		if ($this->collid) {
+		if (is_numeric($this->collid)) {
 			$sql = 'SELECT o.occid, d.detid, CONCAT_WS(" ",o.recordedby,IFNULL(o.recordnumber,o.eventdate)) AS collector, ' .
-				'CONCAT_WS(" ",d.identificationQualifier,d.sciname) AS sciname, ' .
-				'CONCAT_WS(", ",d.identifiedBy,d.dateIdentified,d.identificationRemarks,d.identificationReferences) AS determination ' .
-				'FROM omoccurrences o INNER JOIN omoccurdeterminations d ON o.occid = d.occid ' .
-				'WHERE (o.collid = ' . $this->collid . ') AND (d.printqueue = 1) ';
+					'CONCAT_WS(" ",d.identificationQualifier,d.sciname) AS sciname, ' .
+					'CONCAT_WS(", ",d.identifiedBy,d.dateIdentified,d.identificationRemarks,d.identificationReferences) AS determination ' .
+					'FROM omoccurrences o INNER JOIN omoccurdeterminations d ON o.occid = d.occid ' .
+					'WHERE (o.collid = ' . $this->collid . ') AND (d.printqueue = 1) ';
 			if ($this->collArr['colltype'] == 'General Observations') $sql .= ' AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
 			$sql .= 'LIMIT 400 ';
 			//echo $sql;
@@ -931,7 +905,7 @@ class OccurrenceLabel {
 	//General functions
 	public function getLabelProjects() {
 		$retArr = array();
-		if ($this->collid) {
+		if (is_numeric($this->collid)) {
 			$sql = 'SELECT DISTINCT labelproject FROM omoccurrences WHERE labelproject IS NOT NULL AND collid = ' . $this->collid . ' ';
 			if ($this->collArr['colltype'] == 'General Observations' && !array_key_exists('extendedsearch', $GLOBALS['_POST'])) $sql .= 'AND (observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
 			$rs = $this->conn->query($sql);
@@ -946,12 +920,12 @@ class OccurrenceLabel {
 
 	public function getDatasetProjects() {
 		$retArr = array();
-		if ($this->collid) {
+		if (is_numeric($this->collid)) {
 			$sql = 'SELECT DISTINCT ds.datasetid, IFNULL(ds.datasetName, ds.name) as datasetName ' .
-				'FROM omoccurdatasets ds INNER JOIN userroles r ON ds.datasetid = r.tablepk ' .
-				'INNER JOIN omoccurdatasetlink dl ON ds.datasetid = dl.datasetid ' .
-				'INNER JOIN omoccurrences o ON dl.occid = o.occid ' .
-				'WHERE (r.tablename = "omoccurdatasets") AND (o.collid = ' . $this->collid . ') ';
+					'FROM omoccurdatasets ds INNER JOIN userroles r ON ds.datasetid = r.tablepk ' .
+					'INNER JOIN omoccurdatasetlink dl ON ds.datasetid = dl.datasetid ' .
+					'INNER JOIN omoccurrences o ON dl.occid = o.occid ' .
+					'WHERE (r.tablename = "omoccurdatasets") AND (o.collid = ' . $this->collid . ') ';
 			if ($this->collArr['colltype'] == 'General Observations' && !array_key_exists('extendedsearch', $GLOBALS['_POST'])) $sql .= 'AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
@@ -968,9 +942,8 @@ class OccurrenceLabel {
 			$this->collid = 'all';
 			return;
 		}
-
 		if (is_numeric($collid)) {
-			$this->collid = (int)$collid;
+			$this->collid = $collid;
 			$this->setCollMetadata();
 		}
 	}
@@ -995,7 +968,7 @@ class OccurrenceLabel {
 	}
 
 	private function setCollMetadata() {
-		if ($this->collid) {
+		if (is_numeric($this->collid)) {
 			$sql = 'SELECT institutioncode, collectioncode, collectionname, colltype, dynamicProperties FROM omcollections WHERE collid = ' . $this->collid;
 			if ($rs = $this->conn->query($sql)) {
 				while ($r = $rs->fetch_object()) {

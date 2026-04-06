@@ -13,11 +13,11 @@ header("Content-Type: text/html; charset=".$CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=../collections/reports/labelmanager.php?'.htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
 //neon edit
+//$collid = Sanitize::int($_REQUEST['collid']);
 $collid = !empty($_REQUEST['collid']) ? $_REQUEST['collid'] : 'all';
-$action = array_key_exists('submitaction',$_REQUEST)?$_REQUEST['submitaction']:'';
-
-//Sanitation
 if ($collid !== 'all' && !is_numeric($collid)) $collid = 0;
+// End NEON concustomization
+$action = array_key_exists('submitaction', $_REQUEST) ? $_REQUEST['submitaction'] : '';
 
 $labelManager = new OccurrenceLabel();
 $labelManager->setCollid($collid);
@@ -27,13 +27,13 @@ if(!$limit) $limit = 400;
 elseif($limit > 1000) $limit = 1000;
 
 $isEditor = 0;
-if ($collid === 'all') {
-	$isEditor = 1;
-}
-elseif (
+if (
 	$IS_ADMIN ||
-	(array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"])) ||
-	(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"]))
+	// NEON customization
+	//(array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"])) ||
+	//(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"]))
+	(array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEditor', $USER_RIGHTS))
+	// End NEON concustomization
 ) {
 	$isEditor = 1;
 }
@@ -44,7 +44,6 @@ if($isEditor){
 		$occArr = $labelManager->queryOccurrences($_POST, $limit);
 	}
 }
-//end neon edits
 $labelFormatArr = $labelManager->getLabelFormatArr(true);
 ?>
 <!DOCTYPE html>
@@ -231,15 +230,23 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								<label for="recordnumber"><?= $LANG['REC_NUM'] ?></label>
 								<input type="text" name="recordnumber" id="recordnumber" style="width:150px;" value="<?= !empty($_REQUEST['recordnumber']) ? Sanitize::inString($_REQUEST['recordnumber']) : '' ?>" />
 							</div>
+							<?php
+							//NEON Customization
+							/*
+							?>
 							<div style="float:left;margin-left:10px;" title="<?= $LANG['SEPARATE_TERMS'] ?>">
 								<label for="identifier"><?= $LANG['CAT_NUM'] ?></label>
 								<input type="text" name="identifier" id="identifier" style="width:150px;" value="<?= !empty($_REQUEST['identifier']) ? Sanitize::inString($_REQUEST['identifier']) : '' ?>" />
 							</div>
+							<?php
+							*/
+							//End NEON Customization
+							?>
 						</div>
 						<!-- Start NEON customization -->
 						<div style="margin-top:10px;clear:both;" title="Separate multiple terms by comma, semicolon, or new line">
-								Catalog Number(s): <br>
-    							<textarea name="identifier" style="width:700px; height:80px;"><?php echo (array_key_exists('identifier',$_REQUEST) ? $_REQUEST['identifier'] : ''); ?></textarea>
+							<label for="identifier">Catalog Number(s):</label><br>
+							<textarea name="identifier" style="width:700px; height:80px;"><?= !empty($_REQUEST['identifier']) ? Sanitize::inString($_REQUEST['identifier']) : '' ?></textarea>
 						</div>
 						<!-- End NEON customization -->
 						<div style="margin:3px;clear:both;">
@@ -261,28 +268,27 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 							</div>
 						</div>
 						<div style="margin:3px;clear:both;">
-
-              
-              <label for="labelproject"> <?= $LANG['LABEL_PROJ'] ?></label>
+							<?php
+							//NEON customization
+							/*
+							?>
+							<label for="labelproject"> <?= $LANG['LABEL_PROJ'] ?></label>
 							<select name="labelproject" id="labelproject">
 								<option value=""> <?= $LANG['ALL_PROJ'] ?> </option>
 								<option value="">-------------------------</option>
-                
-							<!--<label for="labelproject"> <?php echo (isset($LANG['LABEL_PROJ']) ? $LANG['LABEL_PROJ'] : 'Label Projects:') ?></label>-->
-							<!--<select name="labelproject" id="labelproject">-->
-							<!--	<option value=""> <?php echo (isset($LANG['ALL_PROJ']) ? $LANG['ALL_PROJ'] : 'All Projects') ?> </option>-->
-							<!--	<option value="">-------------------------</option>-->
-
-                
-                <?php
-								//$lProj = '';
-								//if(array_key_exists('labelproject',$_REQUEST)) $lProj = $_REQUEST['labelproject'];
-								//$lProjArr = $labelManager->getLabelProjects();
-								//foreach($lProjArr as $projStr){
-								//	echo '<option '.($lProj==$projStr?'SELECTED':'').'>'.$projStr.'</option>'."\n";
-								//}
+								<?php
+								$lProj = '';
+								if(array_key_exists('labelproject',$_REQUEST)) $lProj = $_REQUEST['labelproject'];
+								$lProjArr = $labelManager->getLabelProjects();
+								foreach($lProjArr as $projStr){
+									echo '<option '.($lProj==$projStr?'SELECTED':'').'>'.$projStr.'</option>'."\n";
+								}
 								?>
-							<!--</select>-->
+							</select>
+							<?php
+							*/
+							//End NEON customization
+							?>
 							<!--
 							Dataset Projects:
 							<select name="datasetproject" >
@@ -300,36 +306,19 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								?>
 							</select>
 							-->
-
-                
 							<span style="margin-left:15px;"><input name="extendedsearch" id="extendedsearch" type="checkbox" value="1" <?= (array_key_exists('extendedsearch', $_POST)?'checked':'') ?> ></span>
 							<label for="extendedsearch">
 								<?php
 								if($isGeneralObservation) echo $LANG['SEARCH_OUT'];
 								else echo $LANG['SEARCH_IN'];
 								?>
-                
+							</label>
 							<?php
-							$extendedChecked =
-								(isset($_POST['extendedsearch']) && $_POST['extendedsearch']) ||
-								($collid === 'all' && !isset($_POST['submitaction']));
-							
-							echo '<span style="margin-left:15px;">
-								<input name="extendedsearch" id="extendedsearch" type="checkbox" value="1" ' .
-								($extendedChecked ? 'checked' : '') .
-								' />
-							</span> ';
-
-							if($isGeneralObservation) echo 'Search outside user profile';
-							else echo 'Search within all collections';
 							// Start NEON customization
 							echo '<span><input name="excludesubsamples" type="checkbox" value="1" ' . (isset($_POST['excludesubsamples']) || !isset($_POST['excludesubsamples']) ? 'checked' : '') . ' /></span>';
 							echo ' Exclude subsamples';
 							// End NEON customization
 							?>
-
-                
-               </label>
 						</div>
 						<div style="clear:both;">
 							<div style="float:left;">
