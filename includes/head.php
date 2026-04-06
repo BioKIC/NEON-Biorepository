@@ -306,7 +306,12 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                     myAccountButton.addEventListener('click', () => {
                 EOL;
 
-                echo "window.location.href = 'https://data.neonscience.org/myaccount';";
+                if(empty($NEON_DEV_MODE)){
+                	echo "window.location.href = 'https://data.neonscience.org/myaccount';";
+                }
+                else{
+                	echo "window.location.href = '".$CLIENT_ROOT."/profile/viewprofile.php';";
+                }
                 echo <<<EOL
                     });
                     const signInDiv = document.getElementById("header__authentication-ui");
@@ -374,7 +379,12 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                     signinButton.addEventListener('click', () => {
                 EOL;
 
-                echo "window.location.href = '".$CLIENT_ROOT."/profile/openIdAuth.php';";
+                if(empty($NEON_DEV_MODE)){
+	                echo "window.location.href = '".$CLIENT_ROOT."/profile/openIdAuth.php';";
+                }
+                else{
+                	echo "window.location.href = '".$CLIENT_ROOT."/profile/index.php';";
+                }
                 echo <<<EOL
                     });
                     const signInDiv = document.getElementById("header__authentication-ui");

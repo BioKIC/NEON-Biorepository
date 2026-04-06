@@ -1,7 +1,9 @@
 <?php
-//header("Location: https://www.neonscience.org/samples", true, 302);
-//exit;
 include_once('config/symbini.php');
+if(empty($NEON_DEV_MODE)){
+	header("Location: https://www.neonscience.org/samples", true, 302);
+	exit;
+}
 include_once('content/lang/index.' . $LANG_TAG . '.php');
 include_once($SERVER_ROOT . '/neon/classes/PortalStatistics.php');
 header('Cache-Control: no-cache');
