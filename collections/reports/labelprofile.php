@@ -109,7 +109,9 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 		<style>
 			fieldset{ width:800px; padding:15px; }
 			fieldset legend{ font-weight:bold; }
-			input[type=text]{ width: 500px; }
+			textarea{ width: 800px; height: 150px }
+			input[type=text]{ width:500px }
+			button{ display: inline; margin-top: 10px; }
 			hr{ margin:15px 0px; }
 			.custom-styles-textarea{ width: 600px; height: 50px; }
 			.json-textarea{ width: 800px; height: 150px; }
@@ -119,7 +121,7 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 			.label-inline{ font-weight: bold; }
 			.field-value{  }
 			.field-inline{  }
-			.edit-icon{ width: 15px; }
+			.edit-icon{ width:13px; }
 			#preview-label{ border: 1px solid gray; min-height: 100px; padding: 0.5em; }
 			#preview-label.field-block{ line-height: 1.1rem; }
 			#preview-label>.field-block>div{ display: inline; }

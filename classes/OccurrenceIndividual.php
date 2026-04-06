@@ -1142,12 +1142,13 @@ class OccurrenceIndividual extends Manager{
 				$stmt->close();
 			}
 		}
-		$sql2 = 'SELECT datasetid, name, uid, ispublic FROM omoccurdatasets ';
+
+		$sql2 = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, uid FROM omoccurdatasets ';
 		if(!$GLOBALS['IS_ADMIN'] && is_numeric($GLOBALS['SYMB_UID'])){
 			$sql2 .= 'WHERE (uid = '.$GLOBALS['SYMB_UID'].') ';
 			if($roleArr) $sql2 .= 'OR (datasetid IN('.implode(',',array_keys($roleArr)).')) ';
 		}
-		$sql2 .= 'ORDER BY name';
+		$sql2 .= 'ORDER BY datasetName, name';
 		$rs2 = $this->conn->query($sql2);
 		if($rs2){
 			while($r2 = $rs2->fetch_object()){
