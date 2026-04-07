@@ -537,7 +537,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		// START NEON customization
 		if(array_key_exists('availableforloan', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.availability = 1) ';
-			$this->displaySearchArr[] = $this->LANG['AVAILABLE'];
+			$this->displaySearchArr[] = "Available for loan";
 		}
 		// END NEON customization
 		if(array_key_exists('hascoords', $this->searchTermArr)){
