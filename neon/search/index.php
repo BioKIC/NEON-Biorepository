@@ -453,6 +453,10 @@ $siteData = new DatasetsMetadata();
 									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>
 									<label for="includeothercatnum">Search all identifiers</label>
 								</div>
+								<div>
+									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
+									<label for="includematerialsample">Include material samples</label>
+								</div>
 							</div>
 							<div>
 								<div>
@@ -466,10 +470,6 @@ $siteData = new DatasetsMetadata();
 								<div>
 									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
 									<label for="availableforloan">Specimens available for loan</label>
-								</div>
-								<div>
-									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
-									<label for="includematerialsample">Specimens with material samples</label>
 								</div>
 							</div>
 							<div class="input-text-container">
