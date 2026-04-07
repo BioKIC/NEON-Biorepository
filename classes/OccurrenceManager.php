@@ -522,9 +522,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$sqlWhere .= 'AND (o.typestatus IS NOT NULL) ';
 			$this->displaySearchArr[] = $this->LANG['IS_TYPE'];
 		}
+		// START NEON customization
 		if(array_key_exists('hasimages', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM media where mediaType = "image")) ';
-			$this->displaySearchArr[] = $this->LANG['HAS_IMAGES'];
+			$this->displaySearchArr[] = "Has images";
 		}
 		if(array_key_exists('hasaudio', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM media where mediaType = "audio")) ';
@@ -532,9 +533,8 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		if(array_key_exists('hasgenetic', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM omoccurgenetic)) ';
-			$this->displaySearchArr[] = $this->LANG['HAS_GENETIC_DATA'];
+			$this->displaySearchArr[] = "Has published genetic data";
 		}
-		// START NEON customization
 		if(array_key_exists('availableforloan', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.availability = 1) ';
 			$this->displaySearchArr[] = "Available for loan";
