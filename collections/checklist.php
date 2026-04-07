@@ -20,6 +20,7 @@ $searchVarEncoded = urlencode($searchVar);
 		<input name="dltype" type="hidden" value="checklist" />
 		<input name="taxonFilterCode" type="hidden" value="<?=  $taxonFilter; ?>" />
 	</form>
+<!--	NEON edit
 	<?php
 	if($KEY_MOD_IS_ACTIVE){
 		?>
@@ -62,6 +63,7 @@ $searchVarEncoded = urlencode($searchVar);
 			<input name="searchvar" type="hidden" value='<?=  $searchVar; ?>' />
 		</form>
 	</div>
+	End NEON edit-->
 	<div style="clear:both;"><hr/></div>
 		<?php
 		$checklistArr = $checklistManager->getChecklist($taxonFilter);
