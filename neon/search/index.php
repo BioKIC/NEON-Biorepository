@@ -504,131 +504,141 @@ $siteData = new DatasetsMetadata();
 					</div>
 				</section>
 				<!-- Latitude & Longitude -->
-				<section>
+				<!--<section>-->
 					<!-- Accordion selector -->
-					<input type="checkbox" id="lat-long" class="accordion-selector" />
+					<!--<input type="checkbox" id="lat-long" class="accordion-selector" />-->
 					<!-- Accordion header -->
-					<label for="lat-long" class="accordion-header">Latitude & Longitude</label>
+					<!--<label for="lat-long" class="accordion-header">Latitude & Longitude</label>-->
 					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-latlong">
-							<div id="bounding-box-form">
-								<h3>Bounding Box</h3>
-								<button onclick="openCoordAid('rectangle');return false;">Select in map</button>
-								<div class="input-text-container">
-									<label for="upperlat" class="input-text--outlined">
-										<input type="number" step="any" min="-90" max="90" id="upperlat" name="upperlat" data-chip="Upper Lat">
-										<select class="mt-1" id="upperlat_NS" name="upperlat_NS">
-											<option value="">Select N/S</option>
-											<option id="ulN" value="N">N</option>
-											<option id="ulS" value="S">S</option>
-										</select>
-										<span data-label="Northern Latitude"></span></label>
-									<span class="assistive-text">Values between -90 and 90.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="bottomlat" class="input-text--outlined">
-										<input type="number" step="any" min="-90" max="90" id="bottomlat" name="bottomlat" data-chip="Bottom Lat">
-										<select class="mt-1" id="bottomlat_NS" name="bottomlat_NS">
-											<option value="">Select N/S</option>
-											<option id="blN" value="N">N</option>
-											<option id="blS" value="S">S</option>
-										</select>
-										<span data-label="Southern Latitude"></span></label>
-									<span class="assistive-text">Values between -90 and 90.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="leftlong" class="input-text--outlined">
-										<input type="number" step="any" min="-180" max="180" id="leftlong" name="leftlong" data-chip="Left Long">
-										<select class="mt-1" id="leftlong_EW" name="leftlong_EW">
-											<option value="">Select W/E</option>
-											<option id="llW" value="W">W</option>
-											<option id="llE" value="E">E</option>
-										</select>
-										<span data-label="Western Longitude"></span></label>
-									<span class="assistive-text">Values between -180 and 180.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="rightlong" class="input-text--outlined">
-										<input type="number" step="any" min="-180" max="180" id="rightlong" name="rightlong" data-chip="Right Long">
-										<select class="mt-1" id="rightlong_EW" name="rightlong_EW">
-											<option value="">Select W/E</option>
-											<option id="rlW" value="W">W</option>
-											<option id="rlE" value="E">E</option>
-										</select>
-										<span data-label="Eastern Longitude"></span></label>
-									<span class="assistive-text">Values between -180 and 180.</span>
-								</div>
-							</div>
-							<div id="polygon-form">
-								<h3>Polygon (WKT footprint)</h3>
-								<button onclick="openCoordAid('polygon');return false;">Select in map</button>
-								<div class="text-area-container">
-									<label for="footprintwkt" class="text-area--outlined">
-										<textarea id="footprintwkt" name="footprintwkt" wrap="off" cols="30%" rows="5"></textarea>
-										<span data-label="Polygon"></span></label>
-									<span class="assistive-text">Select in map with button or paste values.</span>
-								</div>
-							</div>
-							<div id="point-radius-form">
-								<h3>Point-Radius</h3>
-								<button onclick="openCoordAid('circle');return false;">Select in map</button>
-								<div class="input-text-container">
-									<label for="pointlat" class="input-text--outlined">
-										<input type="number" step="any" min="-90" max="90" id="pointlat" name="pointlat" data-chip="Point Lat">
-										<select class="mt-1" id="pointlat_NS" name="pointlat_NS">
-											<option value="">Select N/S</option>
-											<option id="N" value="N">N</option>
-											<option id="S" value="S">S</option>
-										</select>
-										<span data-label="Latitude"></span></label>
-									<span class="assistive-text">Values between -90 and 90.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="pointlong" class="input-text--outlined">
-										<input type="number" step="any" min="-180" max="180" id="pointlong" name="pointlong" data-chip="Point Long">
-										<select class="mt-1" id="pointlong_EW" name="pointlong_EW">
-											<option value="">Select W/E</option>
-											<option id="W" value="W">W</option>
-											<option id="E" value="E">E</option>
-										</select>
-										<span data-label="Longitude"></span></label>
-									<span class="assistive-text">Values between -180 and 180.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="radius" class="input-text--outlined">
-										<input type="number" min="0" step="any" id="radius" name="radius" data-chip="Radius">
-										<select class="mt-1" id="radiusunits" name="radiusunits">
-											<option value="">Select Unit</option>
-											<option value="km">Kilometers</option>
-											<option value="mi">Miles</option>
-										</select>
-										<span data-label="Radius"></span></label>
-									<span class="assistive-text">Any positive values.</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
+					<!--<div class="content">-->
+						<!--<div id="search-form-latlong">-->
+							<!--<div id="bounding-box-form">-->
+								<!--<h3>Bounding Box</h3>-->
+								<!--<button onclick="openCoordAid('rectangle');return false;">Select in map</button>-->
+								<!--<div class="input-text-container">-->
+								<!--	<label for="upperlat" class="input-text--outlined">-->
+								<!--		<input type="number" step="any" min="-90" max="90" id="upperlat" name="upperlat" data-chip="Upper Lat">-->
+								<!--		<select class="mt-1" id="upperlat_NS" name="upperlat_NS">-->
+								<!--			<option value="">Select N/S</option>-->
+								<!--			<option id="ulN" value="N">N</option>-->
+								<!--			<option id="ulS" value="S">S</option>-->
+								<!--		</select>-->
+								<!--		<span data-label="Northern Latitude"></span></label>-->
+								<!--	<span class="assistive-text">Values between -90 and 90.</span>-->
+								<!--</div>-->
+								<!--<div class="input-text-container">-->
+								<!--	<label for="bottomlat" class="input-text--outlined">-->
+								<!--		<input type="number" step="any" min="-90" max="90" id="bottomlat" name="bottomlat" data-chip="Bottom Lat">-->
+								<!--		<select class="mt-1" id="bottomlat_NS" name="bottomlat_NS">-->
+								<!--			<option value="">Select N/S</option>-->
+								<!--			<option id="blN" value="N">N</option>-->
+								<!--			<option id="blS" value="S">S</option>-->
+								<!--		</select>-->
+								<!--		<span data-label="Southern Latitude"></span></label>-->
+								<!--	<span class="assistive-text">Values between -90 and 90.</span>-->
+								<!--</div>-->
+								<!--<div class="input-text-container">-->
+								<!--	<label for="leftlong" class="input-text--outlined">-->
+								<!--		<input type="number" step="any" min="-180" max="180" id="leftlong" name="leftlong" data-chip="Left Long">-->
+								<!--		<select class="mt-1" id="leftlong_EW" name="leftlong_EW">-->
+								<!--			<option value="">Select W/E</option>-->
+								<!--			<option id="llW" value="W">W</option>-->
+								<!--			<option id="llE" value="E">E</option>-->
+								<!--		</select>-->
+								<!--		<span data-label="Western Longitude"></span></label>-->
+								<!--	<span class="assistive-text">Values between -180 and 180.</span>-->
+								<!--</div>-->
+								<!--<div class="input-text-container">-->
+								<!--	<label for="rightlong" class="input-text--outlined">-->
+								<!--		<input type="number" step="any" min="-180" max="180" id="rightlong" name="rightlong" data-chip="Right Long">-->
+								<!--		<select class="mt-1" id="rightlong_EW" name="rightlong_EW">-->
+								<!--			<option value="">Select W/E</option>-->
+								<!--			<option id="rlW" value="W">W</option>-->
+								<!--			<option id="rlE" value="E">E</option>-->
+								<!--		</select>-->
+								<!--		<span data-label="Eastern Longitude"></span></label>-->
+								<!--	<span class="assistive-text">Values between -180 and 180.</span>-->
+								<!--</div>-->
+							<!--</div>-->
+							<!--<div id="polygon-form">-->
+							<!--	<h3>Polygon (WKT footprint)</h3>-->
+							<!--	<button onclick="openCoordAid('polygon');return false;">Select in map</button>-->
+							<!--	<div class="text-area-container">-->
+							<!--		<label for="footprintwkt" class="text-area--outlined">-->
+							<!--			<textarea id="footprintwkt" name="footprintwkt" wrap="off" cols="30%" rows="5"></textarea>-->
+							<!--			<span data-label="Polygon"></span></label>-->
+							<!--		<span class="assistive-text">Select in map with button or paste values.</span>-->
+							<!--	</div>-->
+							<!--</div>-->
+							<!--<div id="point-radius-form">-->
+							<!--	<h3>Point-Radius</h3>-->
+							<!--	<button onclick="openCoordAid('circle');return false;">Select in map</button>-->
+							<!--	<div class="input-text-container">-->
+							<!--		<label for="pointlat" class="input-text--outlined">-->
+							<!--			<input type="number" step="any" min="-90" max="90" id="pointlat" name="pointlat" data-chip="Point Lat">-->
+							<!--			<select class="mt-1" id="pointlat_NS" name="pointlat_NS">-->
+							<!--				<option value="">Select N/S</option>-->
+							<!--				<option id="N" value="N">N</option>-->
+							<!--				<option id="S" value="S">S</option>-->
+							<!--			</select>-->
+							<!--			<span data-label="Latitude"></span></label>-->
+							<!--		<span class="assistive-text">Values between -90 and 90.</span>-->
+							<!--	</div>-->
+							<!--	<div class="input-text-container">-->
+							<!--		<label for="pointlong" class="input-text--outlined">-->
+							<!--			<input type="number" step="any" min="-180" max="180" id="pointlong" name="pointlong" data-chip="Point Long">-->
+							<!--			<select class="mt-1" id="pointlong_EW" name="pointlong_EW">-->
+							<!--				<option value="">Select W/E</option>-->
+							<!--				<option id="W" value="W">W</option>-->
+							<!--				<option id="E" value="E">E</option>-->
+							<!--			</select>-->
+							<!--			<span data-label="Longitude"></span></label>-->
+							<!--		<span class="assistive-text">Values between -180 and 180.</span>-->
+							<!--	</div>-->
+							<!--	<div class="input-text-container">-->
+							<!--		<label for="radius" class="input-text--outlined">-->
+							<!--			<input type="number" min="0" step="any" id="radius" name="radius" data-chip="Radius">-->
+							<!--			<select class="mt-1" id="radiusunits" name="radiusunits">-->
+							<!--				<option value="">Select Unit</option>-->
+							<!--				<option value="km">Kilometers</option>-->
+							<!--				<option value="mi">Miles</option>-->
+							<!--			</select>-->
+							<!--			<span data-label="Radius"></span></label>-->
+							<!--		<span class="assistive-text">Any positive values.</span>-->
+							<!--	</div>-->
+				<!--			</div>-->
+				<!--		</div>-->
+				<!--	</div>-->
+				<!--</section>-->
 				<!-- Advanced Search -->
+				<?php
+				if (
+					$IS_ADMIN ||
+					!empty($USER_RIGHTS["CollAdmin"]) ||
+					!empty($USER_RIGHTS["CollEditor"])
+				) {
+				?>
+				
 				<section>
 					<!-- Accordion selector -->
 					<input type="checkbox" id="advanced-search" class="accordion-selector" />
+					
 					<!-- Accordion header -->
 					<label for="advanced-search" class="accordion-header">Advanced Search</label>
+					
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-advanced-search">
-
-						<?php
-						include($SERVER_ROOT . '/neon/search/includes/queryform.php');
-						?>
-
-
-
+							<?php
+							include($SERVER_ROOT . '/neon/search/includes/queryform.php');
+							?>
 						</div>
 					</div>
 				</section>
+				
+				<?php
+				}
+				?>
 			</div>
 			<!-- Criteria panel -->
 			<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
