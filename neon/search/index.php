@@ -339,7 +339,7 @@ $siteData = new DatasetsMetadata();
 				<!-- Locality -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="locality" class="accordion-selector" checked=true />
+					<input type="checkbox" id="locality" class="accordion-selector" />
 					<!-- Accordion header -->
 					<label for="locality" class="accordion-header">Domains & Sites</label>
 					<!-- Accordion content -->
@@ -412,7 +412,7 @@ $siteData = new DatasetsMetadata();
 				<!-- Collecting Event -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="coll-event" class="accordion-selector" checked=true />
+					<input type="checkbox" id="coll-event" class="accordion-selector" />
 					<!-- Accordion header -->
 					<label for="coll-event" class="accordion-header">Date</label>
 					<!-- Accordion content -->
