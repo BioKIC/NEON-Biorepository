@@ -250,9 +250,8 @@ function updateChip(e) {
   }
   // if there are advanced query changes
   let advCheckbox = document.getElementById('AdvancedHasBeenChanged');
-  if (advCheckbox.checked == true) {
+  if (advCheckbox && advCheckbox.checked === true) {
     addChip(getAdvancedSearchChip());
-    //getAdvancedSearchChip();
   }
   
   // then go through remaining inputs (exclude db and datasetid)
@@ -592,38 +591,38 @@ function getParam(paramName) {
       }
     });
     elementValues = datasetArr;
-  } else if (paramName === 'llbound') {
-    // Only if inputs aren't empty
-    if (
-      uLat.value != '' &&
-      bLat.value != '' &&
-      lLng.value != '' &&
-      rLng.value != ''
-    ) {
-      let uLatVal = uLatNs.value == 'S' ? uLat.value * -1 : uLat.value * 1;
-      let bLatVal = bLatNs.value == 'S' ? bLat.value * -1 : bLat.value * 1;
-      let lLngVal = lLngEw.value == 'W' ? lLng.value * -1 : lLng.value * 1;
-      let rLngVal = rLngEw.value == 'W' ? rLng.value * -1 : rLng.value * 1;
-      elementValues = `${uLatVal};${bLatVal};${lLngVal};${rLngVal}`;
-    }
-  } else if (paramName === 'llpoint') {
-    if (
-      pLat.value != '' &&
-      pLng.value != '' &&
-      pRadius.value != '' &&
-      pRadiusUn.value != ''
-    ) {
-      let pLatVal =
-        pLatNs.value == 'S'
-          ? Math.round(pLat.value * -1 * 100000) / 100000
-          : Math.round(pLat.value * 100000) / 100000;
-      let pLngVal =
-        pLngEw.value == 'W'
-          ? Math.round(pLng.value * -1 * 100000) / 100000
-          : Math.round(pLng.value * 100000) / 100000;
-      let pRadiusVal = pRadius.value + ';' + pRadiusUn.value;
-      elementValues = `${pLatVal};${pLngVal};${pRadiusVal}`;
-    }
+  //} else if (paramName === 'llbound') {
+  //  // Only if inputs aren't empty
+  //  if (
+  //    uLat.value != '' &&
+  //    bLat.value != '' &&
+  //    lLng.value != '' &&
+  //    rLng.value != ''
+  //  ) {
+  //    let uLatVal = uLatNs.value == 'S' ? uLat.value * -1 : uLat.value * 1;
+  //    let bLatVal = bLatNs.value == 'S' ? bLat.value * -1 : bLat.value * 1;
+  //    let lLngVal = lLngEw.value == 'W' ? lLng.value * -1 : lLng.value * 1;
+  //    let rLngVal = rLngEw.value == 'W' ? rLng.value * -1 : rLng.value * 1;
+  //    elementValues = `${uLatVal};${bLatVal};${lLngVal};${rLngVal}`;
+  //  }
+  //} else if (paramName === 'llpoint') {
+  //  if (
+  //    pLat.value != '' &&
+  //    pLng.value != '' &&
+  //    pRadius.value != '' &&
+  //    pRadiusUn.value != ''
+  //  ) {
+  //    let pLatVal =
+  //      pLatNs.value == 'S'
+  //        ? Math.round(pLat.value * -1 * 100000) / 100000
+  //        : Math.round(pLat.value * 100000) / 100000;
+  //    let pLngVal =
+  //      pLngEw.value == 'W'
+  //        ? Math.round(pLng.value * -1 * 100000) / 100000
+  //        : Math.round(pLng.value * 100000) / 100000;
+  //    let pRadiusVal = pRadius.value + ';' + pRadiusUn.value;
+  //    elementValues = `${pLatVal};${pLngVal};${pRadiusVal}`;
+  //  }
   } else if (elements[0] != undefined) {
     switch (firstEl.tagName) {
       case 'INPUT':
@@ -713,70 +712,70 @@ function validateForm() {
       });
     });
   }
-  // Bounding Box
-  let bBoxNums = document.querySelectorAll(
-    '#bounding-box-form input[type=number]'
-  );
-  let bBoxNumArr = [];
-  bBoxNums.forEach((el) => {
-    el.value != '' ? bBoxNumArr.push(el.value) : false;
-  });
-  let bBoxCardinals = document.querySelectorAll('#bounding-box-form select');
-  selectedCardinals = [];
-  bBoxCardinals.forEach((hItem) => {
-    hItem.value != '' ? selectedCardinals.push(hItem.id) : false;
-  });
-  if (bBoxNumArr.length > 0 && bBoxNumArr.length < bBoxNums.length) {
-    errors.push({
-      elId: 'bounding-box-form',
-      errorMsg:
-        'Please make sure either all Lat/Long bounding box values contain a value, or all are empty.',
-    });
-  } else if (bBoxNumArr.length > 0 && selectedCardinals.length == 0) {
-    errors.push({
-      elId: 'bounding-box-form',
-      errorMsg: 'Please select hemisphere values.',
-    });
-  } else if (bBoxNumArr.length > 0 && selectedCardinals.length > 0) {
-    let uLatVal = uLat.value;
-    let uLatNsVal = uLatNs.value;
-    let bLatVal = bLat.value;
-    let bLatNsVal = bLatNs.value;
-
-    if (uLatNsVal == 'S' && bLatNsVal == 'S') {
-      uLatVal = uLatVal * -1;
-      bLatVal = bLatVal * -1;
-      if (uLatVal < bLatVal) {
-        errors.push({
-          elId: 'bounding-box-form',
-          errorMsg:
-            'Your northern latitude value is less than your southern latitude value.',
-        });
-      }
-    }
-
-    let lLngVal = lLng.value;
-    let lLngEwVal = lLngEw.value;
-    let rLngVal = rLng.value;
-    let rLngEwVal = rLngEw.value;
-
-    if (lLngEwVal == 'W' && rLngEwVal == 'W') {
-      lLngVal = lLngVal * -1;
-      rLngVal = rLngVal * -1;
-      if (lLngVal > rLngVal) {
-        errors.push({
-          elId: 'bounding-box-form',
-          errorMsg:
-            'Your western longitude value is greater than your eastern longitude value. Note that western hemisphere longitudes in the decimal format are negative.',
-        });
-      }
-    }
-  }
+  //// Bounding Box
+  //let bBoxNums = document.querySelectorAll(
+  //  '#bounding-box-form input[type=number]'
+  //);
+  //let bBoxNumArr = [];
+  //bBoxNums.forEach((el) => {
+  //  el.value != '' ? bBoxNumArr.push(el.value) : false;
+  //});
+  //let bBoxCardinals = document.querySelectorAll('#bounding-box-form select');
+  //selectedCardinals = [];
+  //bBoxCardinals.forEach((hItem) => {
+  //  hItem.value != '' ? selectedCardinals.push(hItem.id) : false;
+  //});
+  //if (bBoxNumArr.length > 0 && bBoxNumArr.length < bBoxNums.length) {
+  //  errors.push({
+  //    elId: 'bounding-box-form',
+  //    errorMsg:
+  //      'Please make sure either all Lat/Long bounding box values contain a value, or all are empty.',
+  //  });
+  //} else if (bBoxNumArr.length > 0 && selectedCardinals.length == 0) {
+  //  errors.push({
+  //    elId: 'bounding-box-form',
+  //    errorMsg: 'Please select hemisphere values.',
+  //  });
+  //} else if (bBoxNumArr.length > 0 && selectedCardinals.length > 0) {
+  //  let uLatVal = uLat.value;
+  //  let uLatNsVal = uLatNs.value;
+  //  let bLatVal = bLat.value;
+  //  let bLatNsVal = bLatNs.value;
+  //
+  //  if (uLatNsVal == 'S' && bLatNsVal == 'S') {
+  //    uLatVal = uLatVal * -1;
+  //    bLatVal = bLatVal * -1;
+  //    if (uLatVal < bLatVal) {
+  //      errors.push({
+  //        elId: 'bounding-box-form',
+  //        errorMsg:
+  //          'Your northern latitude value is less than your southern latitude value.',
+  //      });
+  //    }
+  //  }
+  //
+  //  let lLngVal = lLng.value;
+  //  let lLngEwVal = lLngEw.value;
+  //  let rLngVal = rLng.value;
+  //  let rLngEwVal = rLngEw.value;
+  //
+  //  if (lLngEwVal == 'W' && rLngEwVal == 'W') {
+  //    lLngVal = lLngVal * -1;
+  //    rLngVal = rLngVal * -1;
+  //    if (lLngVal > rLngVal) {
+  //      errors.push({
+  //        elId: 'bounding-box-form',
+  //        errorMsg:
+  //          'Your western longitude value is greater than your eastern longitude value. Note that western hemisphere longitudes in the decimal format are negative.',
+  //      });
+  //    }
+  //  }
+  //}
 
   
   const advancedHasBeenChangedCheckbox = document.getElementById('AdvancedHasBeenChanged');
 
-  if (advancedHasBeenChangedCheckbox.checked == true) {
+  if (advancedHasBeenChangedCheckbox && advancedHasBeenChangedCheckbox.checked == true) {
     const advancedInputs = document.querySelectorAll('#search-form-advanced-search select, #search-form-advanced-search input[type=text]');
     let openParensCount = 0;
     let closeParensCount = 0;
