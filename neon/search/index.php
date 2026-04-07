@@ -465,11 +465,7 @@ $siteData = new DatasetsMetadata();
 								</div>
 								<div>
 									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
-									<label for="hasgenetic">Specimens with genetic data on 
-									  <a href="https://boldsystems.org/" target="_blank">
-										BOLD
-									  </a>
-									</label>
+									<label for="hasgenetic">Specimens with published genetic data</label>
 								</div>
 								<div>
 									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
