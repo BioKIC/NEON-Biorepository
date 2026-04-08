@@ -133,17 +133,85 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 	$displayLeftMenu = false;
 	include($SERVER_ROOT . '/includes/header.php');
 	?>
-    <div class="navpath">
-        <a href="../../index.php">Home</a> &gt;&gt;
-        <a href="../../neon/index.php">Management Tools</a> &gt;&gt;
-        <a href="../../neon/requests/inquiries.php">Inquiry List</a> &gt;&gt;
-        <a href="inquiryform.php?id=<?php echo $requestID; ?>">Inquiry Record</a> &gt;&gt;
-        <a href="samplelist.php?id=<?php echo $requestID; ?>">Sample List</a> &gt;&gt;
-        <b>Sample Importer</b>
-    </div>
-	<!-- This is inner text! -->
 	<div role="main" id="innertext">
 		<h1 class="page-heading">Sample Importer</h1>
+		<fieldset>
+			<legend><b>Instructions</b></legend>
+				<h4><b><u>Samples</u></b></h4>
+					<p style="margin-left:10%; margin-right:10%; font-size:15px"> Loaded samples will be added to the request indicated in the box below. 
+					<br><br>Each loaded sample must be associated with an identifier. This can include the occid (id field in download),catalogNumber, occurrenceID, or any otherCatalogNumber. However, sampleID/sampleTag or alternative sampleIDs are not recommended for use as these are not unique within the database and, thus, may correspond to multiple samples.
+					<br><br>Samples will be loaded with a "status" of <b> pending fulfillment</b>. If for any reason that is not the current status of the samples
+					with respect to the request, you should individually or batch edit that value after returning to the sample list.  
+					<br> <br>
+					
+					The sample list follows a controlled vocabularly and has the following fields: <br><br></p>
+
+					<table border="1">
+						<tr>
+							<th>Field</th>
+							<th>Allowed Values</th>
+							<th>Description</th>
+						</tr>
+						<tr>
+							<td>useType</td>
+							<td>non-destructive</td>
+							<td>No impact to future uses of the sample.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>invasive</td>
+							<td>No part of the sample is consumed, but changes to the sample impact future use.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>consumptive</td>
+							<td>A portion of the sample is consumed or destroyed.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>destructive</td>
+							<td>The entire sample is consumed or destroyed. </td>
+						</tr>
+						<tr>
+							<td>substanceProvided</td>
+							<td>whole sample</td>
+							<td>The entire sample (think at the level of a <b>manifest record</b>) was sent to the researcher.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>individual(s)</td>
+							<td>One or more individuals were removed from a sample containing many individuals.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>subsample/aliquot</td>
+							<td>A subsample or aliquot was removed from the sample and sent to a researcher.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>tissue/material sample</td>
+							<td>A tissue or material sample was removed from the sample and provided to the researcher. Use "whole sample" when a sample that the Biorepository receives is already tissue. </td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>image</td>
+							<td> An image (or other media) taken from the sample was taken and used in research.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>data</td>
+							<td>The Biorepository or the researcher took additional data on the sample for research (or recorded internal) use.</td>
+						</tr>
+						<tr>
+							<td>notes</td>
+							<td>(free text)</td>
+							<td>Any additional remarks. Use this to indicate what "tissue/material sample" was provided, the size of the aliquot, number of individuals, etc.</td>
+						</tr>
+					</table>
+
+				<br>
+				<h4><b><u>Material Samples</u></b></h4>
+		</fieldset>
 		<h2><?= $importManager->getRequestMeta('id'); ?></h2>
 		<?php
 		if (!$isEditor) {
