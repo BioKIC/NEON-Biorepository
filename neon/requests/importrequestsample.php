@@ -138,13 +138,13 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 		<fieldset>
 			<legend><b>Instructions</b></legend>
 				<h4><b><u>Samples</u></b></h4>
-					<p style="margin-left:10%; margin-right:10%; font-size:15px"> Loaded samples will be added to the request indicated in the box below. 
+					<p style="margin-left:10%; margin-right:10%; font-size:15px"> Loaded samples (think at the level of a manifest record) will be added to the request indicated in the box below. 
 					<br><br>Each loaded sample must be associated with an identifier. This can include the occid (id field in download),catalogNumber, occurrenceID, or any otherCatalogNumber. However, sampleID/sampleTag or alternative sampleIDs are not recommended for use as these are not unique within the database and, thus, may correspond to multiple samples.
 					<br><br>Samples will be loaded with a "status" of <b> pending fulfillment</b>. If for any reason that is not the current status of the samples
 					with respect to the request, you should individually or batch edit that value after returning to the sample list.  
 					<br> <br>
 					
-					The sample list follows a controlled vocabularly and has the following fields: <br><br></p>
+					The sample list follows a controlled vocabularly and has the following additional fields: <br><br></p>
 
 					<table border="1">
 						<tr>
@@ -208,9 +208,54 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 							<td>Any additional remarks. Use this to indicate what "tissue/material sample" was provided, the size of the aliquot, number of individuals, etc.</td>
 						</tr>
 					</table>
-
 				<br>
 				<h4><b><u>Material Samples</u></b></h4>
+
+					<p style="margin-left:10%; margin-right:10%; font-size:15px"> Loaded material samples will be added to the request indicated in the box below. 
+					<br><br>Each loaded material sample must be associated with an identifier. This can include the material sample catalogNumber, materialSampleID (guid), primary key of the material samples table, or material sample recordID.
+					<br><br>Material samples will be loaded with a "status" of <b> pending fulfillment</b>. If for any reason that is not the current status of the material samples
+					with respect to the request, you should individually or batch edit that value after returning to the material sample list.  
+					<br><br>Note that material samples cannot be added until the parent sample has been added to the sample list.
+					<br> <br>
+					The material sample list follows a controlled vocabularly and has the following additional fields: <br><br></p>
+
+					<table border="1">
+						<tr>
+							<th>Field</th>
+							<th>Allowed Values</th>
+							<th>Description</th>
+						</tr>
+						<tr>
+							<td>useType</td>
+							<td>non-destructive</td>
+							<td>No impact to future uses of the material sample.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>invasive</td>
+							<td>No part of the material sample is consumed, but changes to the sample impact future use.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>consumptive</td>
+							<td>A portion of the material sample is consumed or destroyed.</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>destructive</td>
+							<td>The entire material sample is consumed or destroyed. </td>
+						</tr>
+						<td>sampleType</td>
+							<td>(free text)</td>
+							<td>Use this to indicate the type of material sample that was provided to the researcher. (Think at the level of the material sample record.)</td>
+						</tr>
+						<tr>
+							<td>notes</td>
+							<td>(free text)</td>
+							<td>Any additional remarks. Use this to indicate what portion of the material sample was provided, the size of the aliquot, etc.</td>
+						</tr>
+					</table>
+				<br>
 		</fieldset>
 		<h2><?= $importManager->getRequestMeta('id'); ?></h2>
 		<?php
