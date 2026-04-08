@@ -13,13 +13,14 @@ $sortableTable = isset($_REQUEST['sortabletable']) ? filter_var($_REQUEST['sorta
 $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 
 $inquiryManager = new inquiriesManager();
-$sampleCnt = $inquiryManager->getMaterialSampleCountByID($requestID);
+$sampleCnt = $inquiryManager->getSampleCountByID($requestID);
+$matSampleCnt = $inquiryManager->getMaterialSampleCountByID($requestID);
 $researchers = $inquiryManager->getResearchersByID($requestID);
 $managers = $inquiryManager->getManagers();
 
 if($sortableTable === false){
 	//Variable has not been explicitly set by user, thus only turn on if list contains < 3000 samples
-	if($sampleCnt < 3000) $sortableTable = 1;
+	if($matSampleCnt < 3000) $sortableTable = 1;
 	else $sortableTable = 0;
 }
 $isEditor = false;
@@ -240,10 +241,10 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv"><b>Title:</b> <?php echo $reqArr['title']; ?></div>
 					<div class="displayFieldDiv"><b>Primary Contact:</b> <?php echo $reqArr['name']; ?></div>
 					<div class="displayFieldDiv"><b>Status:</b> <?php echo $reqArr['status']; ?></div>
-					<div class="displayFieldDiv"><b>Number of Material Samples Linked:</b> <?php echo $sampleCnt; ?></div>
+					<div class="displayFieldDiv"><b>Number of Material Samples Linked:</b> <?php echo $matSampleCnt; ?></div>
 				</div>
 				<?php
-				if(in_array($reqArr['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed')) && !$sampleCnt){
+				if(in_array($reqArr['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed')) && !$matSampleCnt && $sampleCnt){
 				?>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
@@ -253,7 +254,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 				<?php
 				}
-				elseif(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding','pending fulfillment')) && $sampleCnt){
+				elseif(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding','pending fulfillment')) && $matSampleCnt){
 					$materialSampleList = $inquiryManager->getMaterialSamplesByID($requestID, $sampleFilter);
 					?>
 					<div style="clear:both;padding:10px 0;">
@@ -402,10 +403,17 @@ include($SERVER_ROOT.'/includes/header.php');
 					</div>
 					<?php
 				}
-				else{
+				elseif(!in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding','pending fulfillment'))){
 					?>
 					<div style='font-weight:bold;margin:30px;color:red;'>
 						Update status by editing request before adding material samples
+					</div>
+					<?php
+				}
+				elseif(!$sampleCnt){
+				?>
+					<div style='font-weight:bold;margin:30px;color:red;'>
+						Add parent samples to request before adding material samples
 					</div>
 					<?php
 				}

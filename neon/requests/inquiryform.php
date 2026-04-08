@@ -686,6 +686,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 					</div>
 					<div id="editstatus" style="">
 						<form name="editingstatus" action="inquiryform.php?id=<?php echo $requestID; ?>" method="post" onsubmit="return verifyInquiryStatusForm(this);">
+							<h4>Note that dates must make sense chronologically in the order listed below. Only Pending Funding and Not Funded dates are not required.</h4>
 							<fieldset>
 								<legend><?php echo 'Current status' ?></legend>
 								<div style="clear:both;padding-top:4px;float:left;">
@@ -774,7 +775,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 							<legend><?php echo 'Samples'; ?></legend>									
 							<div style="clear:both;padding-top:8px;float:left;">
 								<button type="button" onclick="window.location.href='samplelist.php?id=<?php echo $requestID; ?>'">
-								Update/Export Sample List
+								View and Modify Sample List
 								</button>
 							</div>
 							<div style="clear:both;padding-top:8px;float:left;">
@@ -794,10 +795,11 @@ if($formSubmit == 'editStatus' && $isEditor){
 					</div>
 					<div id="materialsamples" style="">
 							<fieldset>
-								<legend><?php echo 'Material Samples'; ?></legend>									
+								<legend><?php echo 'Material Samples'; ?></legend>		
+								<h4>Note that material samples cannot be edited until the associated parent samples have been added.</h4>							
 								<div style="clear:both;padding-top:8px;float:left;">
 									<button type="button" onclick="window.location.href='materialsamplelist.php?id=<?php echo $requestID; ?>'">
-									Update/Export Material Sample List
+									View and Modify Material Sample List
 									</button>
 								</div>
 								<div style="clear:both;padding-top:8px;float:left;">
