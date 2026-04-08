@@ -60,7 +60,12 @@ if ($isEditor) {
 	if ($reportDate) {
 		echo '<p><strong>Report generated: </strong> ' . htmlspecialchars($reportDate) . '</p>';
 	}
+
 	if (!empty($reportsArr)) {
+		
+		echo '<h4><a href=https://www.gbif.org/publisher/e794e60e-e558-4549-99f8-cfb241cdce24>GBIF Publisher Homepage</a></h4>';
+		echo '<h4><a href=https://www.gbif.org/publisher/e794e60e-e558-4549-99f8-cfb241cdce24>Google Scholar Profile</a></h4>';
+		echo '<h4><a href=https://biorepo.neonscience.org/portal/neon/shipment/harvesterreports.php>Occurrence Harvester Error Report</a></h4>';
 
 		$general = [];
 		$request = [];
