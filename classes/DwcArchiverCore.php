@@ -1727,7 +1727,11 @@ class DwcArchiverCore extends Manager{
 		$sql = $dwcOccurManager->getSqlOccurrences($this->occurrenceFieldArr['fields']);
 		//neon edit
 		if($this->schemaType === 'symbiota'){
-			$isAdmin = $GLOBALS['IS_ADMIN'] ? 1 : 0;
+			$isAdmin = (
+				!empty($GLOBALS['IS_ADMIN']) ||
+				!empty($GLOBALS['USER_RIGHTS']['CollAdmin']) ||
+				!empty($GLOBALS['USER_RIGHTS']['CollEditor'])
+			) ? 1 : 0;
 		
 			$sql .= ' LEFT JOIN (
 				SELECT occid,

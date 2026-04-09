@@ -132,7 +132,11 @@ class OccurrenceListManager extends OccurrenceManager{
 	
 		$rs = $this->conn->query($sql);
 	
-		$isAdmin = $GLOBALS['IS_ADMIN'] ?? false;
+		$isAdmin = (
+			!empty($GLOBALS['IS_ADMIN']) ||
+			!empty($GLOBALS['USER_RIGHTS']['CollAdmin']) ||
+			!empty($GLOBALS['USER_RIGHTS']['CollEditor'])
+		);
 	
 		while($r = $rs->fetch_object()){
 			$occid = $r->occid;
