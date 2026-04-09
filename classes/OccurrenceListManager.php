@@ -103,6 +103,10 @@ class OccurrenceListManager extends OccurrenceManager{
 				else{
 					$retArr[$row->occid]['locality'] = 'PROTECTED';
 				}
+				//neon edit
+				$retArr[$row->occid]['sampleID'] = null;
+				$retArr[$row->occid]['sampleCode'] = null;
+				//end neon edit
 			}
 			$result->free();
 		}
@@ -111,8 +115,35 @@ class OccurrenceListManager extends OccurrenceManager{
 			$statsManager = new OccurrenceAccessStats();
 			$statsManager->recordAccessEventByArr($occArr,'list');
 		}
+		//NEON edit
+		if($retArr){
+			$this->setIdentifiers(array_keys($retArr), $retArr);
+		}
+		//end NEON edit
 		return $retArr;
 	}
+
+	//NEON edit
+	private function setIdentifiers($occArr, &$retArr): void {
+		$sql = 'SELECT occid, identifierName, identifierValue 
+				FROM omoccuridentifiers 
+				WHERE occid IN('.implode(',', $occArr).') 
+				AND identifierName IN("NEON sampleID", "NEON sampleCode (barcode)")';
+	
+		$rs = $this->conn->query($sql);
+	
+		while($r = $rs->fetch_object()){
+			if($r->identifierName === 'NEON sampleID'){
+				$retArr[$r->occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
+			}
+			elseif($r->identifierName === 'NEON sampleCode (barcode)'){
+				$retArr[$r->occid]['sampleCode'] = $this->cleanOutStr($r->identifierValue);
+			}
+		}
+	
+		$rs->free();
+	}
+	//end NEON edit
 
 	private function setImages($occArr, &$retArr): void {
 		$sql = 'SELECT occid, thumbnailurl, mediaType FROM media WHERE occid IN('.implode(',',$occArr).') ORDER BY occid, sortOccurrence';

@@ -445,7 +445,16 @@ $_SESSION['citationvar'] = $searchVar;
 									echo '</div>';
 									echo '<div style="margin:4px">';
 									echo '<span style="width:150px;">' . $fieldArr["catnum"] . '</span>';
-									echo '<span style="width:200px;margin-left:30px;">' . $fieldArr["collector"] . '&nbsp;&nbsp;&nbsp;' . (isset($fieldArr["collnum"]) ? $fieldArr["collnum"] : '') . '</span>';
+									//NEON edit
+									if (isset($fieldArr['sampleID'])) {
+										echo '<span style="width:150px;margin-left:30px;">' . $fieldArr["sampleID"] . '</span>';
+									}
+									if (isset($fieldArr['sampleCode'])) {
+										echo '<span style="width:150px;margin-left:30px;">' . $fieldArr["sampleCode"] . '</span>';
+									}
+									echo '</div><div style="margin:4px">';
+									echo '<span style="width:200px;">' . $fieldArr["collector"] . '&nbsp;&nbsp;&nbsp;' . (isset($fieldArr["collnum"]) ? $fieldArr["collnum"] : '') . '</span>';
+									//end NEON edit
 									if (isset($fieldArr["date"])) echo '<span style="margin-left:30px;">' . $fieldArr["date"] . '</span>';
 									echo '</div><div style="margin:4px">';
 									$localStr = '';
