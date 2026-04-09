@@ -1708,10 +1708,45 @@ class DwcArchiverCore extends Manager{
 		$dwcOccurManager->setIncludeAssociatedSequences();
 		$dwcOccurManager->setIncludePaleo($this->hasPaleo);
 		if (!$this->occurrenceFieldArr) $this->occurrenceFieldArr = $dwcOccurManager->getOccurrenceArr($this->schemaType, $this->extended);
+		//neon edit
+		if($this->schemaType === 'symbiota'){
+			$newFields = [];
+			foreach($this->occurrenceFieldArr['fields'] as $key => $val){
+				$newFields[$key] = $val;
+				if($key === 'catalogNumber'){
+					$newFields['sampleID'] = 'ids.sampleID';
+					$newFields['sampleCode'] = 'ids.sampleCode';
+				}
+			}
+			$this->occurrenceFieldArr['fields'] = $newFields;
+		}
+		//end neon edit
 		//Output records
 		$this->applyConditions();
 		if (!$this->conditionSql) return false;
 		$sql = $dwcOccurManager->getSqlOccurrences($this->occurrenceFieldArr['fields']);
+		//neon edit
+		if($this->schemaType === 'symbiota'){
+			$isAdmin = $GLOBALS['IS_ADMIN'] ? 1 : 0;
+		
+			$sql .= ' LEFT JOIN (
+				SELECT occid,
+					-- use hash if exists and not admin
+					CASE 
+						WHEN MAX(CASE WHEN identifierName = "NEON sampleID Hash" THEN identifierValue END) IS NOT NULL 
+							 AND '.$isAdmin.' = 0
+						THEN MAX(CASE WHEN identifierName = "NEON sampleID Hash" THEN identifierValue END)
+						ELSE MAX(CASE WHEN identifierName = "NEON sampleID" THEN identifierValue END)
+					END AS sampleID,
+		
+					-- sampleCode 
+					MAX(CASE WHEN identifierName = "NEON sampleCode (barcode)" THEN identifierValue END) AS sampleCode
+		
+				FROM omoccuridentifiers
+				GROUP BY occid
+			) ids ON o.occid = ids.occid ';
+		}
+		//end neon edit
 		$sql .= $this->getTableJoins() . $this->conditionSql;
 		if ($this->schemaType != 'backup') $sql .= ' LIMIT 1000000';
 		//Output header

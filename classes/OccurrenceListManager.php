@@ -128,16 +128,27 @@ class OccurrenceListManager extends OccurrenceManager{
 		$sql = 'SELECT occid, identifierName, identifierValue 
 				FROM omoccuridentifiers 
 				WHERE occid IN('.implode(',', $occArr).') 
-				AND identifierName IN("NEON sampleID", "NEON sampleCode (barcode)")';
+				AND identifierName IN("NEON sampleID", "NEON sampleID Hash", "NEON sampleCode (barcode)")';
 	
 		$rs = $this->conn->query($sql);
 	
+		$isAdmin = $GLOBALS['IS_ADMIN'] ?? false;
+	
 		while($r = $rs->fetch_object()){
+			$occid = $r->occid;
+	
 			if($r->identifierName === 'NEON sampleID'){
-				$retArr[$r->occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
+				if(!isset($retArr[$occid]['sampleID'])){
+					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
+				}
+			}
+			elseif($r->identifierName === 'NEON sampleID Hash'){
+				if(!$isAdmin){
+					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
+				}
 			}
 			elseif($r->identifierName === 'NEON sampleCode (barcode)'){
-				$retArr[$r->occid]['sampleCode'] = $this->cleanOutStr($r->identifierValue);
+				$retArr[$occid]['sampleCode'] = $this->cleanOutStr($r->identifierValue);
 			}
 		}
 	
