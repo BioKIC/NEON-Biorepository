@@ -26,9 +26,6 @@ if($spprid) $specManager->setProjVariables($spprid);
 <html lang="<?php echo $LANG_TAG ?>">
 	<head>
 		<title><?php echo $LANG['IMG_PROCESSOR']; ?></title>
-		<?php
-		include_once($SERVER_ROOT.'/includes/head.php');
-		?>
 		<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
 		<style type="text/css">.profileDiv{ clear:both; margin:2px 0px } </style>
 		<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
