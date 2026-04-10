@@ -387,7 +387,7 @@
         $year = (int) date('y');  
         $month = (int) date('m');
 
-        $quarterMap = [1  => 1, 3  => 2, 7  => 3, 11 => 4];
+        $quarterMap = [1  => 1, 4  => 2, 7  => 3, 11 => 4];
 
         if (!isset($quarterMap[$month])) {
             throw new Exception('Quarterly report can only be generated in the month directly following completion of a quarter.');
