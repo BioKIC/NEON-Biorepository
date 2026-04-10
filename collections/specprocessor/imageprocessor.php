@@ -49,6 +49,9 @@ if($spprid) $specManager->setProjVariables($spprid);
 				}
 
 				uploadTypeChanged();
+				//neon edit
+				cleaningModeChanged();
+				//end neon edit
 			});
 
 			function uploadTypeChanged(){
@@ -59,6 +62,9 @@ if($spprid) $specManager->setProjVariables($spprid);
 					$("#titleDiv").show();
 					$("#sourcePathInfoIplant").hide();
 					$("#chooseFileDiv").hide();
+					//neon edit
+					cleaningModeChanged();
+					//end neon edit
 					if(f.sourcepath.value == "-- Use Default Path --") f.sourcepath.value = "";
 					f.profileEditSubmit.value = "Save Profile";
 					$("#submitDiv").show();
@@ -115,16 +121,22 @@ if($spprid) $specManager->setProjVariables($spprid);
 					}
 				}
 				else{
-					if(f.speckeypattern.value == ""){
-						alert("<?php echo $LANG['NEED_PATTERN_MATCH']; ?>");
-						return false;
-					}
-					if(f.speckeypattern.value.substr(f.speckeypattern.value.length-3).toLowerCase() != "csv"){
-						if(f.speckeypattern.value.indexOf("(") < 0 || f.speckeypattern.value.indexOf(")") < 0){
-							alert("<?php echo $LANG['CATNUM_IN_PARENS']; ?>");
+					//neon edit
+					if(f.cleaningmode.value === 'regex') {
+					
+						if(f.speckeypattern.value == ""){
+							alert("<?php echo $LANG['NEED_PATTERN_MATCH']; ?>");
 							return false;
 						}
+					
+						if(f.speckeypattern.value.substr(f.speckeypattern.value.length-3).toLowerCase() != "csv"){
+							if(f.speckeypattern.value.indexOf("(") < 0 || f.speckeypattern.value.indexOf(")") < 0){
+								alert("<?php echo $LANG['CATNUM_IN_PARENS']; ?>");
+								return false;
+							}
+						}
 					}
+					//end neon edit
 				}
 				if(f.projecttype.value == 'local'){
 					if(!isNumeric(f.webpixwidth.value)){
@@ -202,6 +214,36 @@ if($spprid) $specManager->setProjVariables($spprid);
 				}
 				return true;
 			}
+			//neon edit
+			function cleaningModeChanged() {
+				var mode = document.getElementById('cleaningmode').value;
+				var f = document.getElementById('editproj');
+				var uploadType = f.projecttype.value;
+				
+				if(uploadType === 'local') {
+					if(mode === 'regex') {
+						$("#specKeyPatternDiv").show();
+						$("#patternReplaceDiv").show();
+						$("#replaceStrDiv").show();
+						$("#aiExampleDiv").hide();
+						$("#aiExtraDiv").hide();
+					} else {
+						$("#specKeyPatternDiv").hide();
+						$("#patternReplaceDiv").hide();
+						$("#replaceStrDiv").hide();
+						$("#aiExampleDiv").show();
+						$("#aiExtraDiv").show();
+					}
+				} else {
+					// hide everything if not local
+					$("#specKeyPatternDiv").hide();
+					$("#patternReplaceDiv").hide();
+					$("#replaceStrDiv").hide();
+					$("#aiExampleDiv").hide();
+					$("#aiExtraDiv").hide();
+				}
+			}
+			//end neon edit
 		</script>
 		<style>
 			label { width:220px; float:left; margin-right:3px }
@@ -332,6 +374,31 @@ if($spprid) $specManager->setProjVariables($spprid);
 											<input name="title" type="text" style="width:300px;" value="<?php echo $specManager->getTitle(); ?>" />
 										</div>
 									</div>
+									<!--neon edit-->
+									<div id="cleaningModeDiv" class="profileDiv" style="display:<?php echo ($projectType?'block':'none'); ?>">
+										<label>Cleaning Method:</label>
+										<div style="float:left;">
+											<select name="cleaningmode" id="cleaningmode" onchange="cleaningModeChanged()">
+												<option value="regex" <?php echo ($specManager->getCleaningMode() == 'regex' ? 'SELECTED' : ''); ?>>Regex</option>
+												<option value="ai" <?php echo ($specManager->getCleaningMode() == 'ai' ? 'SELECTED' : ''); ?>>AI</option>
+											</select>
+										</div>
+									</div>
+									<div id="aiExampleDiv" class="profileDiv">
+										<label>Example Identifiers:</label>
+										<div style="float:left;">
+											<textarea name="aiExampleIdentifiers" rows="5" style="width:400px;"
+												placeholder="Enter one example per line"><?php echo htmlspecialchars($specManager->getAiExampleIdentifiers()); ?></textarea>
+										</div>
+									</div>
+									<div id="aiExtraDiv" class="profileDiv">
+										<label>Extra Instructions:</label>
+										<div style="float:left;">
+											<textarea name="aiExtraInstructions" rows="5" style="width:400px;"
+												placeholder="Optional: Additional instructions to include in the AI prompt (e.g., enforce structure or suffix)"><?php echo htmlspecialchars($specManager->getAiExtraInstructions()); ?></textarea>
+										</div>
+									</div>
+									<!--end neon edit-->
 									<div id="specKeyPatternDiv" class="profileDiv" style="display:<?php echo ($projectType?'block':'none'); ?>">
 										<label><?php echo $LANG['PATT_MATCH_TERM']; ?>:</label>
 										<div style="float:left;">
@@ -528,6 +595,9 @@ if($spprid) $specManager->setProjVariables($spprid);
 							?>
 						</div>
 						<?php
+						//neon edit
+						$cleaningMode = $specManager->getCleaningMode() ?: 'regex';
+						//end neon edit
 						if($spprid){
 							?>
 							<div id="imgprocessdiv" style="position:relative;">
@@ -559,36 +629,81 @@ if($spprid) $specManager->setProjVariables($spprid);
 											<?php
 										}
 										?>
-										<div style="margin-top:10px;clear:left;">
-											<label><?php echo $LANG['PATT_MATCH_TERM']; ?>:</label>
-											<div style="float:left;">
-												<?php echo $specManager->getSpecKeyPattern(); ?>
-												<input type='hidden' name='speckeypattern' value='<?php echo $specManager->getSpecKeyPattern();?>' />
-											</div>
-										</div>
-										<div style="clear:both;">
-											<label>Match term on:</label>
-											<div style="float:left;">
-												<input name="matchcatalognumber" type="checkbox" value="1" checked /> <?php echo $LANG['CAT_NUM']; ?>
-												<input name="matchothercatalognumbers" type="checkbox" value="1" style="margin-left:30px;" /> <?php echo $LANG['OTHER_CAT_NUMS']; ?>
-											</div>
-										</div>
+										<!--neon edit-->
 										<div style="margin-top:10px;clear:both;">
-											<label><?php echo $LANG['REPLACEMENT_TERM']; ?>:</label>
-											<div style="float:left;">
-												<?php echo $specManager->getPatternReplace(); ?>
-												<input type='hidden' name='patternreplace' value='<?php echo $specManager->getPatternReplace();?>' />
-											</div>
-										</div>
-										<div style="margin-top:10px;clear:both;">
-											<label><?php echo $LANG['REPLACEMENT_STR']; ?>:</label>
+											<label>Cleaning Mode:</label>
 											<div style="float:left;">
 												<?php
-												echo str_replace(' ', '&lt;space&gt;', $specManager->getReplaceStr());
+													$mode = $specManager->getCleaningMode();
+										
+													if ($mode === 'ai') {
+														echo 'AI';
+													} elseif ($mode === 'regex') {
+														echo 'Regex';
+													} else {
+														echo $mode;
+													}
 												?>
-												<input type='hidden' name='replacestr' value='<?php echo $specManager->getReplaceStr(); ?>' />
 											</div>
 										</div>
+										<?php if($cleaningMode === 'regex'){ ?>
+											<div style="margin-top:10px;clear:left;">
+												<label><?php echo $LANG['PATT_MATCH_TERM']; ?>:</label>
+												<div style="float:left;">
+													<?php echo $specManager->getSpecKeyPattern(); ?>
+													<input type='hidden' name='speckeypattern' value='<?php echo $specManager->getSpecKeyPattern();?>' />
+												</div>
+											</div>
+											<div style="clear:both;">
+												<label>Match term on:</label>
+												<div style="float:left;">
+													<input name="matchcatalognumber" type="checkbox" value="1" checked /> <?php echo $LANG['CAT_NUM']; ?>
+													<input name="matchothercatalognumbers" type="checkbox" value="1" style="margin-left:30px;" /> <?php echo $LANG['OTHER_CAT_NUMS']; ?>
+												</div>
+											</div>
+											<div style="margin-top:10px;clear:both;">
+												<label><?php echo $LANG['REPLACEMENT_TERM']; ?>:</label>
+												<div style="float:left;">
+													<?php echo $specManager->getPatternReplace(); ?>
+													<input type='hidden' name='patternreplace' value='<?php echo $specManager->getPatternReplace();?>' />
+												</div>
+											</div>
+											<div style="margin-top:10px;clear:both;">
+												<label><?php echo $LANG['REPLACEMENT_STR']; ?>:</label>
+												<div style="float:left;">
+													<?php
+													echo str_replace(' ', '&lt;space&gt;', $specManager->getReplaceStr());
+													?>
+													<input type='hidden' name='replacestr' value='<?php echo $specManager->getReplaceStr(); ?>' />
+												</div>
+											</div>
+										<?php } ?>
+										<?php if($cleaningMode === 'ai'){ ?>
+											<div style="clear:both;">
+												<label>Match term on:</label>
+												<div style="float:left;">
+													<input name="matchcatalognumber" type="checkbox" value="1" checked /> <?php echo $LANG['CAT_NUM']; ?>
+													<input name="matchothercatalognumbers" type="checkbox" value="1" style="margin-left:30px;" /> <?php echo $LANG['OTHER_CAT_NUMS']; ?>
+												</div>
+											</div>
+											<div style="margin-top:10px;clear:both;">
+												<label>Example Identifiers:</label>
+												<div style="float:left;">
+													<?php echo nl2br(htmlspecialchars($specManager->getAiExampleIdentifiers())); ?>
+													<input type='hidden' name='aiExampleIdentifiers' 
+													value='<?php echo htmlspecialchars($specManager->getAiExampleIdentifiers(), ENT_QUOTES); ?>' />
+												</div>
+											</div>
+											<div style="margin-top:10px;clear:both;">
+												<label>Extra Instructions:</label>
+												<div style="float:left;">
+													<?php echo nl2br(htmlspecialchars($specManager->getAiExtraInstructions())); ?>
+													<input type='hidden' name='aiExtraInstructions' 
+													value='<?php echo htmlspecialchars($specManager->getAiExtraInstructions(), ENT_QUOTES); ?>' />
+												</div>
+											</div>
+										<?php } ?>
+										<!--end neon edit-->
 										<?php
 										if($projectType != 'idigbio'){
 											?>
