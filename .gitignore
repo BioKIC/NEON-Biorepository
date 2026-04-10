@@ -1,3 +1,5 @@
 /config/dbconnection.php
 /config/symbini.php
 /config/auth_config.php
+neon/.DS_Store
+.DS_Store

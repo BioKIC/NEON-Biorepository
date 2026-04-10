@@ -4,10 +4,12 @@ include_once($SERVER_ROOT.'/classes/utilities/TaxonomyUtil.php');
 //include_once($SERVER_ROOT.'/classes/TaxonomyHarvester.php');
 include_once($SERVER_ROOT.'/classes/GuidManager.php');
 include_once($SERVER_ROOT.'/config/symbini.php');
+include_once($SERVER_ROOT.'/neon/classes/DeterminationHarvester.php');
 
-class OccurrenceHarvester{
+class OccurrenceHarvester {
 
 	private $conn;
+	private $detManager;
 	private $activeCollid = 0;
 	private $collectionArr = array();
 	private $fateLocationArr;
@@ -24,10 +26,12 @@ class OccurrenceHarvester{
 	private $errorStr;
 	private $errorLogArr = array();
 
+
 	public function __construct(){
 		$this->conn = MySQLiConnectionFactory::getCon('write');
 		$this->neonApiBaseUrl = 'https://data.neonscience.org/api/v0';
 		if(isset($GLOBALS['NEON_API_KEY'])) $this->neonApiKey = $GLOBALS['NEON_API_KEY'];
+		$this->detManager = new DeterminationHarvester($this->conn);
 	}
 
 	public function __destruct(){
@@ -163,7 +167,7 @@ class OccurrenceHarvester{
 			}
 			$rs->free();
 			if($shipmentPK){
-				$this->adjustTaxonomy();
+				$this->detManager->adjustTaxonomy();
 				//Set recordID GUIDs
 				echo '<li>Setting recordID UUIDs for all occurrence records...</li>';
 				$uuidManager = new GuidManager();
@@ -768,7 +772,7 @@ class OccurrenceHarvester{
 					$sampleArr['identifications'][$hash] = $identArr;
 				}
 				if($assocTaxa && isset($assocTaxa['verbatimSciname'])){
-					$taxaArr = $this->getTaxonArr($assocTaxa['verbatimSciname']);
+					$taxaArr = $this->detManager->getTaxonArr($assocTaxa['verbatimSciname'],$this->activeCollid, $this->taxonArr);
 					if(isset($taxaArr['tidInterpreted'])) $assocTaxa['tid'] = $taxaArr['tidInterpreted'];
 					$hash = hash('md5', str_replace(' ', '', $assocTaxa['verbatimSciname'].$assocTaxa['relationship']));
 					$sampleArr['associations'][$hash] = $assocTaxa;
@@ -1004,12 +1008,12 @@ class OccurrenceHarvester{
 							//Translate NEON taxon codes or check/clean scientific name submitted
 							if(preg_match('/^[A-Z0-9\/-]+$/', $idArr['sciname'])){
 								//Taxon is a NEON code that needs to be translated
-								if($taxaArr = $this->translateTaxonCode($idArr['sciname'])){
+								if($taxaArr = $this->detManager->translateTaxonCode($idArr['sciname'])){
 									$idArr = array_merge($idArr, $taxaArr);
 								}
 							}
 							else{
-								if($taxaArr = $this->getTaxonArr($idArr['sciname'])){
+								if($taxaArr = $this->detManager->getTaxonArr($idArr['sciname'],$this->activeCollid,$this->taxonArr)){
 									if(!empty($idArr['scientificNameAuthorship'])) unset($taxaArr['scientificNameAuthorship']);
 									$idArr = array_merge($idArr, $taxaArr);
 								}
@@ -1038,12 +1042,12 @@ class OccurrenceHarvester{
 								unset($idArrClone['family']);
 								if(preg_match('/^[A-Z0-9\/-]+$/', $idArrClone['sciname'])){
 									//Taxon is a NEON code that needs to be translated
-									if($taxaArr = $this->translateTaxonCode($idArrClone['sciname'])){
+									if($taxaArr = $this->detManager->translateTaxonCode($idArrClone['sciname'])){
 										$idArrClone = array_merge($idArrClone, $taxaArr);
 									}
 								}
 								else{
-									if($taxaArr = $this->getTaxonArr($idArrClone['sciname'])){
+									if($taxaArr = $this->detManager->getTaxonArr($idArrClone['sciname'],$this->activeCollid,$this->taxonArr)){
 										$idArrClone = array_merge($idArrClone, $taxaArr);
 									}
 								}
@@ -1327,46 +1331,6 @@ class OccurrenceHarvester{
 		}
 	}
 
-	private function protectTaxonomyTest($idArr){
-		$protectTaxon = false;
-		if(empty($idArr['taxonPublished']) && !empty($idArr['taxonPublishedCode'])){
-			if($translatedTaxaArr = $this->translateTaxonCode($idArr['taxonPublishedCode'])){
-				$idArr['taxonPublished'] = $translatedTaxaArr['sciname'];
-			}
-		}
-		if(!empty($idArr['sciname'])){
-			$taxaPublishedArr = array();
-			if(!empty($idArr['taxonPublished'])){
-				//Run taxonPublished by taxonomic thesaurus to ensure that taxonomic author is not embedded in name
-				$taxaPublishedArr = $this->getTaxonArr($idArr['taxonPublished']);
-				if(!empty($taxaPublishedArr['sciname'])) $idArr['taxonPublished'] = $taxaPublishedArr['sciname'];
-				//Taxon published does not match base taxon, thus protect taxonomy
-				if( $idArr['sciname'] != $idArr['taxonPublished']) $protectTaxon = true;
-			}
-			if($protectTaxon){
-				if(!empty($idArr['taxonPublishedCode']) && $idArr['sciname'] == $idArr['taxonPublishedCode']){
-					//But taxon does match the taxonCode, thus abort taxon protections
-					//We should need this, but codes are not always translated successfully
-					return false;
-				}
-				if($taxaPublishedArr && !empty($idArr['taxonPublished'])){
-					//run secondary test to ensure that names are not synonyms
-					$taxaArr = $this->getTaxonArr($idArr['sciname']);
-					if(!empty($taxaArr['accepted']) && !empty($taxaPublishedArr['accepted'])){
-						if($taxaArr['sciname'] == $taxaPublishedArr['accepted'] || $taxaArr['accepted'] == $taxaPublishedArr['sciname'] || $taxaArr['accepted'] == $taxaPublishedArr['accepted']){
-							//both taxa are synonyms, thus abort protections
-							return false;
-						}
-						if($taxaArr['rankid'] <= $taxaPublishedArr['rankid']){
-							//protected taxon should always have a rankid greater than published taxon, thus abort
-							return false;
-						}
-					}
-				}
-			}
-		}
-		return $protectTaxon;
-	}
 
 	private function subSampleIdentifications(&$dwcArr, $parentOccid){
 		$collArr = array();
@@ -1621,7 +1585,7 @@ class OccurrenceHarvester{
 					$taxonCode = 'epixylon';
 				} else $taxonCode = null;
 				if ($taxonCode) {
-					if ($pseudotaxaArr = $this->translateTaxonCode($taxonCode)) {
+					if ($pseudotaxaArr = $this->detManager->translateTaxonCode($taxonCode)) {
 						$baseID['sciname'] = $pseudotaxaArr['sciname'];
 						$baseID['tidInterpreted'] = $pseudotaxaArr['tidInterpreted'];
 					}
@@ -2548,238 +2512,11 @@ class OccurrenceHarvester{
 		$retStr = '';
 		$taxaCodeArr = explode('|', $inStr);
 		foreach($taxaCodeArr as $strFrag){
-			$taxaArr = $this->translateTaxonCode($strFrag);
+			$taxaArr = $this->detManager->translateTaxonCode($strFrag);
 			if(!empty($taxaArr['sciname'])) $retStr .= ', ' . trim($taxaArr['sciname']);
 			else $retStr .= ', ' . $strFrag;
 		}
 		return trim($retStr, ', ');
-	}
-
-	private function translateTaxonCode($taxonCode){
-		$retArr = array();
-		$taxonGroup = $this->getTaxonGroup($this->activeCollid);
-		$taxonCode = trim($taxonCode);
-		if($taxonCode && $taxonGroup){
-			if(!isset($this->taxonCodeArr[$taxonGroup][$taxonCode])){
-				$tid = 0;
-				$sciname = '';
-				$sql = 'SELECT t.tid, t.sciName, t.author, s.family
-					FROM neon_taxonomy n LEFT JOIN taxa t ON n.sciname = t.sciname
-					LEFT JOIN taxstatus s ON t.tid = s.tid
-					WHERE n.taxonGroup = "'.$this->cleanInStr($taxonGroup).'" AND n.taxonCode = "'.$this->cleanInStr($taxonCode).'"';
-				if($rs = $this->conn->query($sql)){
-					while($r = $rs->fetch_object()){
-						$tid = $r->tid;
-						$sciname = $r->sciName;
-						$this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'] = $tid;
-						$this->taxonCodeArr[$taxonGroup][$taxonCode]['sciname'] = $sciname;
-						$this->taxonCodeArr[$taxonGroup][$taxonCode]['author'] = $r->author;
-						$this->taxonCodeArr[$taxonGroup][$taxonCode]['family'] = $r->family;
-					}
-					$rs->free();
-				}
-				else echo 'ERROR populating taxonomy codes: '.$sql;
-				// if(!$tid && $sciname){
-				// 	//Verify name via Catalog of Life and if valid, add to thesaurus
-				// 	$harvester = new TaxonomyHarvester();
-				// 	$harvester->setKingdomName($this->getKingdomName());
-				// 	$harvester->setTaxonomicResources(array('col'));
-				// 	if($newTid = $harvester->processSciname($sciname)){
-				// 		$this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'] = $newTid;
-				// 	}
-				// }
-			}
-			if(isset($this->taxonCodeArr[$taxonGroup][$taxonCode])){
-				$retArr['tidInterpreted'] = $this->taxonCodeArr[$taxonGroup][$taxonCode]['tid'];
-				$retArr['sciname'] = $this->taxonCodeArr[$taxonGroup][$taxonCode]['sciname'];
-				$retArr['scientificNameAuthorship'] = $this->taxonCodeArr[$taxonGroup][$taxonCode]['author'];
-				$retArr['family'] = $this->taxonCodeArr[$taxonGroup][$taxonCode]['family'];
-			}
-		}
-		return $retArr;
-	}
-
-	private function getTaxonGroup($collid){
-		$taxonGroup = array( 5 => 'ALGAE',6 => 'ALGAE',46 => 'ALGAE', 47 => 'ALGAE', 49 => 'ALGAE', 50 => 'ALGAE',  67 => 'ALGAE', 68 => 'ALGAE', 73 => 'ALGAE',  98 => 'ALGAE', 105 => 'ALGAE',  106 => 'ALGAE', 110 => 'ALGAE',  111 => 'ALGAE',
-			11 => 'BEETLE', 14 => 'BEETLE', 39 => 'BEETLE', 44 => 'BEETLE', 63 => 'BEETLE', 82 =>'BEETLE', 95 =>'BEETLE',
-			20 => 'FISH', 66 => 'FISH',
-			12 => 'HERPETOLOGY', 15 => 'HERPETOLOGY', 70 => 'HERPETOLOGY',
-			21 => 'MACROINVERTEBRATE', 22 => 'MACROINVERTEBRATE', 45 => 'MACROINVERTEBRATE', 48 => 'MACROINVERTEBRATE', 52 => 'MACROINVERTEBRATE', 53 => 'MACROINVERTEBRATE', 55 => 'MACROINVERTEBRATE', 57 => 'MACROINVERTEBRATE', 60 => 'MACROINVERTEBRATE', 61 => 'MACROINVERTEBRATE', 62 => 'MACROINVERTEBRATE', 84 => 'MACROINVERTEBRATE', 100 => 'MACROINVERTEBRATE', 101 => 'MACROINVERTEBRATE', 102 => 'MACROINVERTEBRATE', 103 => 'MACROINVERTEBRATE',
-			29 => 'MOSQUITO', 56 => 'MOSQUITO', 58 => 'MOSQUITO', 59 => 'MOSQUITO', 65 => 'MOSQUITO',
-			7 => 'PLANT', 8 => 'PLANT', 9 => 'PLANT', 18 => 'PLANT', 40 => 'PLANT', 54 => 'PLANT', 107 => 'PLANT', 108 => 'PLANT', 109 => 'PLANT', 115 => 'PLANT',
-			17 => 'SMALL_MAMMAL', 19 => 'SMALL_MAMMAL', 24 => 'SMALL_MAMMAL', 25 => 'SMALL_MAMMAL', 26 => 'SMALL_MAMMAL', 27 => 'SMALL_MAMMAL', 28 => 'SMALL_MAMMAL', 64 => 'SMALL_MAMMAL', 71 => 'SMALL_MAMMAL', 74 => 'SMALL_MAMMAL', 90 => 'SMALL_MAMMAL', 91 => 'SMALL_MAMMAL',
-			30 => 'SOIL', 79 => 'SOIL', 80 =>'SOIL',
-			75 => 'TICK', 83 => 'TICK', 116 =>'TICK'
-		);
-		if(array_key_exists($collid, $taxonGroup)) return $taxonGroup[$collid];
-		return false;
-	}
-
-	private function getKingdomName(){
-		if(in_array($this->activeCollid, array(4,11,12,13,14,15,16,17,19,20,21,22,24,25,26,27,28,29,39,44,48,52,53,56,57,58,59,61,63,64,65,66,70,71,74,75,82,83,84,85,90,91,95,97,100,102,102,101,103,116 ))) return 'Animalia';
-		elseif(in_array($this->activeCollid, array( 7,8,9,10,18,23,40,54,76,93,98,107,108,109,115 ))) return 'Plantae';
-		//Let's use Plantae for algae group, which works for now
-		elseif(in_array($this->activeCollid, array( 46,49,50,73,105,106 ))) return 'Plantae';
-		elseif(in_array($this->activeCollid, array( 30,79,80 ))) return 'Soil';
-
-		return '';
-	}
-
-	private function getTaxonArr($sciname){
-		if(substr($sciname, -4) == ' sp.') $sciname = trim(substr($sciname, 0, strlen($sciname) - 4));
-		elseif(substr($sciname, -4) == ' spp.') $sciname = trim(substr($sciname, 0, strlen($sciname) - 5));
-		$retArr = $this->getTaxon($sciname);
-		if(!$retArr){
-			//Parse name in case author is inbedded within taxon
-			$scinameArr = TaxonomyUtil::parseScientificName($sciname, $this->conn);
-			if(!empty($scinameArr['sciname'])){
-				$sciname = $scinameArr['sciname'];
-				if($retArr = $this->getTaxon($sciname)){
-					if(!empty($scinameArr['author'])) $retArr['scientificNameAuthorship'] = $scinameArr['author'];
-				}
-			}
-			// if(!$retArr){
-			// 	//Verify name via Catalog of Life and if valid, add to thesaurus
-			// 	$harvester = new TaxonomyHarvester();
-			// 	$harvester->setKingdomName($this->getKingdomName());
-			// 	$harvester->setTaxonomicResources(array('col'));
-			// 	if($harvester->processSciname($sciname)){
-			// 		$retArr = $this->getTaxon($sciname);
-			// 	}
-			// }
-		}
-
-		return $retArr;
-	}
-
-	private function getTaxon($sciname){
-		$retArr = array();
-		$targetTaxon = '';
-		$sciname2 = '';
-		if(array_key_exists($sciname, $this->taxonArr)){
-			$targetTaxon = $sciname;
-		}
-		elseif(substr($sciname,-1) == 's'){
-			//Soil taxon needs to have s removed from end of word
-			$sciname2 = substr($sciname,0,-1);
-			if(array_key_exists($sciname2, $this->taxonArr)){
-				$targetTaxon = $sciname2;
-			}
-		}
-		if(!$targetTaxon){
-			$taxonGroup = $this->getTaxonGroup($this->activeCollid);
-			$sql = 'SELECT t.tid, t.sciname, t.author, t.rankid, ts.family, a.tid as acceptedTid, t.taxonGroup as `group`, a.sciname as accepted, a.author as acceptedAuthor
-			FROM taxa t
-			INNER JOIN taxstatus ts ON t.tid = ts.tid
-			INNER JOIN taxa a ON ts.tidAccepted = a.tid
-			WHERE ts.taxauthid = 1 AND t.sciname IN("' . $this->cleanInStr($sciname) . '"' . ($this->cleanInStr($sciname2) ? ',"' . $this->cleanInStr($sciname2) . '"' : '') . ')
-			ORDER BY
-				CASE
-					WHEN t.taxonGroup = "' . $taxonGroup . '" THEN 1
-					WHEN t.taxonGroup IS NULL THEN 2
-					ELSE 3
-				END
-			LIMIT 1';
-			$matchingGroupFound = false;
-			$nullGroupFound = false;
-			if($rs = $this->conn->query($sql)){
-				while($r = $rs->fetch_object()){
-					// preferentially choose those of the correct taxon group
-					if ($r->group === $taxonGroup) {
-						$this->taxonArr[$r->sciname]['tid'] = $r->tid;
-						$this->taxonArr[$r->sciname]['author'] = $r->author;
-						$this->taxonArr[$r->sciname]['rankid'] = $r->rankid;
-						$this->taxonArr[$r->sciname]['family'] = $r->family;
-						$this->taxonArr[$r->sciname]['accepted'] = $r->accepted;
-						$this->taxonArr[$r->sciname]['acceptedAuthor'] = $r->acceptedAuthor;
-						$this->taxonArr[$r->sciname]['acceptedTid'] = $r->acceptedTid;
-						$targetTaxon = $r->sciname;
-						$matchingGroupFound = true;
-					}
-					// if no matching taxa from the taxon group, try ones with a null taxon group
-					elseif(!$matchingGroupFound && $r->group === null){
-						$this->taxonArr[$r->sciname]['tid'] = $r->tid;
-						$this->taxonArr[$r->sciname]['author'] = $r->author;
-						$this->taxonArr[$r->sciname]['rankid'] = $r->rankid;
-						$this->taxonArr[$r->sciname]['family'] = $r->family;
-						$this->taxonArr[$r->sciname]['accepted'] = $r->accepted;
-						$this->taxonArr[$r->sciname]['acceptedAuthor'] = $r->acceptedAuthor;
-						$this->taxonArr[$r->sciname]['acceptedTid'] = $r->acceptedTid;
-						$targetTaxon = $r->sciname;
-					}
-				}
-			}
-			$rs->free();
-		}
-		if($targetTaxon){
-			$retArr['sciname'] = $targetTaxon;
-			$retArr['tidInterpreted'] = $this->taxonArr[$targetTaxon]['tid'];
-			$retArr['scientificNameAuthorship'] = $this->taxonArr[$targetTaxon]['author'];
-			$retArr['rankid'] = $this->taxonArr[$targetTaxon]['rankid'];
-			$retArr['family'] = $this->taxonArr[$targetTaxon]['family'];
-			$retArr['accepted'] = $this->taxonArr[$targetTaxon]['accepted'];
-		}
-		return $retArr;
-	}
-
-	private function adjustTaxonomy(){
-		// Update tidInterpreted index
-		// These statements should no longer be needed since tids are explicitly set upon harvest, but we'll keep to ensure that nothing falls through the cracks
-		$sql = 'UPDATE omoccurrences o INNER JOIN taxa t ON o.sciname = t.sciname
-			INNER JOIN taxstatus ts ON t.tid = ts.tid
-			SET o.tidInterpreted = t.tid
-			WHERE o.tidInterpreted IS NULL AND o.family = ts.family';
-		if(!$this->conn->query($sql)){
-			echo 'ERROR updating occurrence tidInterpreted with family match: '.$sql;
-		}
-		$sql = 'UPDATE omoccurdeterminations d INNER JOIN taxa t ON d.sciname = t.sciname
-			INNER JOIN omoccurrences o ON d.occid = o.occid
-			INNER JOIN taxstatus ts ON t.tid = ts.tid
-			SET d.tidInterpreted = t.tid
-			WHERE d.tidInterpreted IS NULL AND o.family = ts.family';
-		if(!$this->conn->query($sql)){
-			echo 'ERROR updating determination tidInterpreted with family match: '.$sql;
-		}
-
-		$sql = 'UPDATE omoccurrences o INNER JOIN taxa t ON o.sciname = t.sciname SET o.tidinterpreted = t.tid WHERE (o.tidinterpreted IS NULL)';
-		if(!$this->conn->query($sql)){
-			echo 'ERROR updating tidInterpreted: '.$sql;
-		}
-		$sql = 'UPDATE omoccurdeterminations d INNER JOIN taxa t ON d.sciname = t.sciname SET d.tidinterpreted = t.tid WHERE (d.tidinterpreted IS NULL)';
-		if(!$this->conn->query($sql)){
-			echo 'ERROR updating tidInterpreted: '.$sql;
-		}
-
-		//Update Mosquito taxa details
-		$sql = 'UPDATE omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid
-			INNER JOIN taxa t ON o.sciname = t.sciname
-			INNER JOIN taxstatus ts ON t.tid = ts.tid
-			SET o.scientificNameAuthorship = t.author, o.tidinterpreted = t.tid, o.family = ts.family
-			WHERE (o.collid = 29) AND (o.scientificNameAuthorship IS NULL) AND (o.family IS NULL) AND (ts.taxauthid = 1)';
-		if(!$this->conn->query($sql)){
-			echo 'ERROR updating occurrence taxonomy codes: '.$sql;
-		}
-		$sql = 'UPDATE omoccurrences o INNER JOIN omoccurdeterminations d ON o.occid = d.occid
-			INNER JOIN NeonSample s ON d.occid = s.occid
-			INNER JOIN taxa t ON d.sciname = t.sciname
-			INNER JOIN taxstatus ts ON t.tid = ts.tid
-			SET d.scientificNameAuthorship = t.author, d.tidinterpreted = t.tid, d.family = ts.family
-			WHERE (o.collid = 29) AND (d.scientificNameAuthorship IS NULL) AND (d.family IS NULL) AND (ts.taxauthid = 1)';
-		if(!$this->conn->query($sql)){
-			echo 'ERROR updating determination taxonomy codes: '.$sql;
-		}
-
-		//Run custom stored procedure that performs some special assignment tasks
-		if(!$this->conn->query('call occurrence_harvesting_sql()')){
-			echo 'ERROR running stored procedure occurrence_harvesting_sql: '.$this->conn->error;
-		}
-
-		//Run stored procedure that protects rare and sensitive species
-		/*
-		if(!$this->conn->query('call sensitive_species_protection()')){
-			echo 'ERROR running stored procedure sensitive_species_protection: '.$this->conn->error;
-		}
-		*/
 	}
 
 	private function translatePersonnel($persStr){
