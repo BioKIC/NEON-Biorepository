@@ -570,12 +570,16 @@ function getParam(paramName) {
 
   // for db and datasetid
   if (paramName === 'db') {
-    let dbArr = [];
-    let tempArr = getCollsSelected();
-    tempArr.forEach((item) => {
-      dbArr.push(item.value);
-    });
-    elementValues = dbArr;
+    if (allNeon.checked) {
+      elementValues = 'all';
+    } else {
+      let dbArr = [];
+      let tempArr = getCollsSelected();
+      tempArr.forEach((item) => {
+        dbArr.push(item.value);
+      });
+      elementValues = dbArr;
+    }
   } else if (paramName === 'datasetid') {
     let datasetArr = [];
     elements.forEach((el) => {

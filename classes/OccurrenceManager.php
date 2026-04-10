@@ -146,8 +146,11 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			//end neon edit
 		}
 		elseif(array_key_exists('db',$this->searchTermArr)){
-			$pattern = '/[^\d,]/';
-			if (preg_match($pattern, $this->searchTermArr['db'])==0) {
+			//neon edit
+			$pattern = '/^(\d+(,\d+)*|all)$/';
+			
+			if (preg_match($pattern, $this->searchTermArr['db'])) {
+				//end neon edit
 				$sqlWhere .= OccurrenceSearchSupport::getDbWhereFrag($this->cleanInStr($this->searchTermArr['db']));
 			}
 		}
@@ -981,7 +984,11 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		elseif(array_key_exists('db',$_REQUEST) && $_REQUEST['db']){
 			$dbStr = $this->cleanInputStr(OccurrenceSearchSupport::getDbRequestVariable());
-			if(preg_match('/^[0-9,;]+$/', $dbStr)) $this->searchTermArr['db'] = $dbStr;
+			//neon edit
+			if ($dbStr === 'all' || preg_match('/^[0-9,;]+$/', $dbStr)) {
+				$this->searchTermArr['db'] = $dbStr;
+			}
+			//end neon edit
 		}
 		if(array_key_exists('datasetid',$_REQUEST) && $_REQUEST['datasetid']){
 			if(is_array($_REQUEST['datasetid'])){
