@@ -61,29 +61,28 @@ $_SESSION['citationvar'] = $searchVar;
 
 	// NEON start
 	if(isset($GOOGLE_ANALYTICS_TAG_ID) && $GOOGLE_ANALYTICS_TAG_ID) {
-	parse_str($searchVar, $params);
-	$encodedSearchVar = json_encode($searchVar, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
-	?>
-
-	<script>
-	  const params = <?php echo json_encode($params, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
-	  const rawSearchVar = <?php echo $encodedSearchVar; ?>;
-
-	  const eventParams = {};
-	  Object.keys(params).forEach(key => {
-		eventParams[key] = Array.isArray(params[key]) ? params[key].join(',') : params[key];
-	  });
-	  eventParams.rawSearchVar = rawSearchVar;
-
-	  gtag('event', 'search_query', {
-		event_category: 'Search',
-		event_label: 'Search Parameters',
-		...eventParams,
-	  });
-	</script>
-	  <?php
-		}
+		parse_str($searchVar, $params);
+		$encodedSearchVar = json_encode($searchVar, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 		?>
+		<script>
+			const params = <?php echo json_encode($params, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+			const rawSearchVar = <?php echo $encodedSearchVar; ?>;
+
+			const eventParams = {};
+			Object.keys(params).forEach(key => {
+				eventParams[key] = Array.isArray(params[key]) ? params[key].join(',') : params[key];
+			});
+			eventParams.rawSearchVar = rawSearchVar;
+
+			gtag('event', 'search_query', {
+				event_category: 'Search',
+				event_label: 'Search Parameters',
+				...eventParams,
+			});
+		</script>
+		<?php
+	}
+	?>
 	<!-- NEON end-->
 
 	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=2" type="text/css" rel="stylesheet" />
@@ -199,7 +198,7 @@ $_SESSION['citationvar'] = $searchVar;
 					<div style="float:right;">
 						<?php
 						if ($SYMB_UID) {
-						?>
+							?>
 							<span>
 								<button class="icon-button" onclick="displayDatasetTools()" aria-label="<?= $LANG['DATASET_MANAGEMENT'] ?>" title="<?= $LANG['DATASET_MANAGEMENT'] ?>">
 									<svg style="width:1.3em;height:1.3em;" alt="<?php echo $LANG['IMG_DATASET_MANAGEMENT']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
@@ -207,7 +206,7 @@ $_SESSION['citationvar'] = $searchVar;
 									</svg>
 								</button>
 							</span>
-						<?php
+							<?php
 						}
 						?>
 						<span>
@@ -305,13 +304,13 @@ $_SESSION['citationvar'] = $searchVar;
 												'o.county' => $LANG['COUNTY'],
 												'o.minimumElevationInMeters' => $LANG['ELEVATION']
 											);
-												if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
-													$sortFields = array_merge($sortFields, [
-														'paleo.lateInterval' => $LANG['LATE_INT'],
-														'paleo.earlyInterval' => $LANG['EARLY_INT'],
-														'paleo.formation' => $LANG['FORMATION']
-													]);
-												}
+											if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
+												$sortFields = array_merge($sortFields, [
+													'paleo.lateInterval' => $LANG['LATE_INT'],
+													'paleo.earlyInterval' => $LANG['EARLY_INT'],
+													'paleo.formation' => $LANG['FORMATION']
+												]);
+											}
 											foreach ($sortFields as $k => $v) {
 												echo '<option value="' . $k . '" ' . ($k == $sortField1 ? 'SELECTED' : '') . '>' . $v . '</option>';
 											}
@@ -432,9 +431,7 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									if (isset($fieldArr['media']) && isset($fieldArr['media']['thumbnailurl'])) {
 										echo '<div style="float:right;margin:5px 25px;">';
-										// neon edit
-										echo '<a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
-										// end edit
+										echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
 										echo '<img src="' . $fieldArr['media']['thumbnailurl'] . '" style="height:70px" alt="' . $LANG['IMG_OCC'] . '"/></a></div>';
 									}
 									echo '<div style="margin:4px;">';
@@ -484,16 +481,13 @@ $_SESSION['citationvar'] = $searchVar;
 										echo '</div>';
 									}
 									echo '<div style="margin:4px">';
-									//neon edit
-									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
-									//end edit
 									echo '<b><a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
 								}
 								?>
 							</table>
 						</form>
-					<?php
+						<?php
 						echo $paginationStr;
 						echo '<hr/>';
 					} else {
@@ -532,7 +526,7 @@ $_SESSION['citationvar'] = $searchVar;
 				<div>
 					<?php echo $LANG['MAP_DESCRIPTION']; ?>
 				</div>
-				<!--neon edit-->
+				<!--neon edit start-->
 				<?php
 				$map_params = 'gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y&menuClosed&embedded=1';
 
@@ -544,7 +538,6 @@ $_SESSION['citationvar'] = $searchVar;
 
 				$mapUrl = $CLIENT_ROOT . '/collections/map/index.php' . $searchParams;
 				?>
-
 				<div style="margin-top:10px;">
 					<iframe
 						src="<?= htmlspecialchars($mapUrl) ?>"
@@ -554,12 +547,15 @@ $_SESSION['citationvar'] = $searchVar;
 						scrolling="no">
 					</iframe>
 				</div>
+				<!--end neon edit-->
 				<form name="kmlform" action="map/kmlhandler.php" method="post">
+					<div>
+						<?php //NEON Customization: echo $LANG['KML_DESCRIPTION']; ?>
+					</div>
 					<div style="margin:10px 0;">
 						<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
 						<button name="formsubmit" type="submit" value="createKML"><?php echo $LANG['CREATE_KML']; ?></button>
 					</div>
-					<!--end neon edit-->
 					<div>
 						<a href="#" onclick="toggleFieldBox('fieldBox');">
 							<?php echo $LANG['KML_EXTRA']; ?>
