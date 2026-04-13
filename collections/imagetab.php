@@ -1,4 +1,5 @@
 <?php
+//Custom NEON page
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceImageManager.php');
 
@@ -47,7 +48,7 @@ $searchVar .= '&tabindex=3';
 			echo '<div style="clear:both;margin:5 0 5 0;"><hr /></div>';
 			echo '<div style="width:98%;margin-left:auto;margin-right:auto;">';
 			foreach($imageArr as $imgArr){
-				$imgId = $imgArr['imgid'];
+				$imgId = $imgArr['mediaID'];
 				$imgUrl = $imgArr['url'];
 				$imgTn = $imgArr['thumbnailurl'];
 				if($imgTn){
@@ -60,29 +61,19 @@ $searchVar .= '&tabindex=3';
 				?>
 				<div class="tndiv" style="margin-bottom:15px;margin-top:15px;">
 					<div class="tnimg">
-						<?php
-						$anchorLink = '';
-						if($imgArr['occid']){
-							$anchorLink = '<a href="#" onclick="openIndPU('.$imgArr['occid'].');return false;">';
-						}
-						else{
-							$anchorLink = '<a href="#" onclick="openImagePopup('.$imgId.');return false;">';
-						}
-						echo $anchorLink.'<img src="'.$imgUrl.'" /></a>';
-						?>
+						<a href="<?= $CLIENT_ROOT ?>/collections/individual/index.php?occid=<?= $imgArr['occid'] ?>" target="_blank"><img src="<?= $imgUrl ?>" /></a>
 					</div>
 					<div>
 						<?php
 						if($sciname = $imgArr['sciname']){
 							if(strpos($imgArr['sciname'],' ')) $sciname = '<i>'.$sciname.'</i>';
-							if($imgArr['tid']) echo '<a href="'.$CLIENT_ROOT.'/taxa/index.php?tid='.$imgArr['tid'].'">';
+							if($imgArr['tid']) echo '<a href="'.$CLIENT_ROOT.'/taxa/index.php?tid='.$imgArr['tid'].'" target="_blank">';
 							echo $sciname;
 							if($imgArr['tid']) echo '</a>';
 							echo '<br />';
 						}
-						if($imgArr['occid']){
-							echo '<a href="'.$CLIENT_ROOT.'/collections/individual/index.php?occid='.$imgArr['occid'].'"><b>Full Record Details</b></a>';
-						}
+						if($imgArr['catnum']) echo $imgArr['catnum'].'<br />';
+						echo '<a href="'.$CLIENT_ROOT.'/collections/individual/index.php?occid='.$imgArr['occid'].'" target="_blank"><b>Full Record Details</b></a>';
 						?>
 					</div>
 				</div>
