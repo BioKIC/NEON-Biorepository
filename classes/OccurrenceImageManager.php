@@ -15,8 +15,8 @@ class OccurrenceImageManager extends OccurrenceManager{
 
 	public function getImageArr($pageRequest, $cntPerPage){
 		$retArr = Array();
-		$sql = 'SELECT i.imgid, o.tidInterpreted, o.sciname, i.url, i.thumbnailurl, i.originalurl, i.photographeruid, i.caption, i.occid
-			FROM omoccurrences o INNER JOIN images i ON o.occid = i.occid ';
+		$sql = 'SELECT m.mediaID, m.tid, o.catalogNumber, o.sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType
+			FROM omoccurrences o INNER JOIN media m ON o.occid = m.occid ';
 		$sqlWhere = $this->getSqlWhere();
 		if(!$this->recordCount || $this->reset) $this->setRecordCnt($sqlWhere);
 		$sql .= $this->getTableJoins($sqlWhere);
@@ -25,28 +25,30 @@ class OccurrenceImageManager extends OccurrenceManager{
 		$bottomLimit = ($pageRequest - 1)*$cntPerPage;
 		$sql .= 'LIMIT '.$bottomLimit.','.$cntPerPage;
 		//echo '<div>Spec sql: '.$sql.'</div>';
-		$rs = $this->conn->query($sql);
-		$imgId = 0;
-		while($r = $rs->fetch_object()){
-			if($imgId == $r->imgid) continue;
-			$imgId = $r->imgid;
-			$retArr[$imgId]['imgid'] = $r->imgid;
-			$retArr[$imgId]['tid'] = $r->tidInterpreted;
-			$retArr[$imgId]['sciname'] = $r->sciname;
-			$retArr[$imgId]['url'] = $r->url;
-			$retArr[$imgId]['thumbnailurl'] = $r->thumbnailurl;
-			$retArr[$imgId]['originalurl'] = $r->originalurl;
-			$retArr[$imgId]['uid'] = $r->photographeruid;
-			$retArr[$imgId]['caption'] = $r->caption;
-			$retArr[$imgId]['occid'] = $r->occid;
+		if($rs = $this->conn->query($sql)){
+			$mediaID = 0;
+			while($r = $rs->fetch_object()){
+				if($mediaID == $r->mediaID) continue;
+				$mediaID = $r->mediaID;
+				$retArr[$mediaID]['mediaID'] = $mediaID;
+				$retArr[$mediaID]['tid'] = $r->tid;
+				$retArr[$mediaID]['catnum'] = $r->catalogNumber;
+				$retArr[$mediaID]['sciname'] = $r->sciname;
+				$retArr[$mediaID]['url'] = $r->url;
+				$retArr[$mediaID]['thumbnailurl'] = $r->thumbnailurl;
+				$retArr[$mediaID]['originalurl'] = $r->originalurl;
+				$retArr[$mediaID]['uid'] = $r->creatorUid;
+				$retArr[$mediaID]['caption'] = $r->caption;
+				$retArr[$mediaID]['occid'] = $r->occid;
 
+			}
+			$rs->free();
 		}
-		$rs->free();
 		return $retArr;
 	}
 
 	private function setRecordCnt($sqlWhere){
-		$sql = 'SELECT COUNT(i.imgid) AS cnt FROM omoccurrences o INNER JOIN images i ON o.occid = i.occid ';
+		$sql = 'SELECT COUNT(m.mediaID) AS cnt FROM omoccurrences o INNER JOIN media m ON o.occid = m.occid ';
 		$sql .= $this->getTableJoins($sqlWhere);
 		$sql .= $sqlWhere;
 		$rs = $this->conn->query($sql);
