@@ -165,8 +165,8 @@ if($formSubmit == 'editReference' && $isEditor){
 					<li><a href="#samples"><span><?php echo 'Samples'; ?></span></a></li>
 
 				</ul>
-					<div id="editrefdiv" style="display:<?php echo ($List ); ?>;">
-						<form name="editrefform" action="referenceform.php?id=<?php echo $refID; ?>" method="post" onsubmit="return verifyReferenceAddForm(this);">
+					<div id="editrefdiv" style="display">
+						<form name="editrefform" action="referenceform.php?id=<?php echo $refID; ?>" method="post" onsubmit="return verifyReferenceEditForm(this);">
 							<fieldset>
 								<legend><?php echo 'Reference record' ?></legend>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -249,41 +249,130 @@ if($formSubmit == 'editReference' && $isEditor){
 							</fieldset>
 						</form>
 					</div>
-					<div id="samples" style="">
-						<fieldset>
-							<legend><?php echo 'Samples'; ?></legend>									
-							<div style="clear:both;padding-top:8px;float:left;">
-								<button type="button" onclick="window.location.href='samplelist.php?id=<?php echo $refID; ?>'">
-								View and Modify Sample List
-								</button>
+					<div id= 'samples' style="clear:both;padding-top:30px;">
+						<fieldset id="samplePanel">
+							<legend>Sample Listing</legend>
+							<div>
+								<div style="float:left">Records displayed: <?php echo count($sampledata); ?></div>
+								<div style="float:left; margin-left: 50px;"><input name="sorthandler" type="checkbox" onchange="tableSortHandlerChanged(this)" <?= ($sortableTable ? 'checked' : '') ?> > Make table sortable</div>
+								<div style="float:right;">
+									<form name="filterSampleForm" action="samplelist.php#samplePanel" method="post" style="">
+										Filter by:
+										<select name="sampleFilter" onchange="this.form.submit()">
+											<option value="">All Records</option>
+											<option value="available" <?php echo ($sampleFilter=='available'?'SELECTED':''); ?>>Available</option>
+											<option value="notavailable" <?php echo ($sampleFilter=='notavailable'?'SELECTED':''); ?>>Not Available</option>
+											<option value="pending" <?php echo ($sampleFilter=='pending'?'SELECTED':''); ?>>Pending Fulflillment</option>
+											<option value="current" <?php echo ($sampleFilter=='current'?'SELECTED':''); ?>>Current</option>
+											<option value="completed" <?php echo ($sampleFilter=='completed'?'SELECTED':''); ?>>Completed</option>
+										</select>
+											<input name="id" type="hidden" value="<?php echo $requestID; ?>" />
+									</form>
+								</div>
 							</div>
-							
+							<div style="clear:both">
+								<?php
+								if($sampledata){
+									?>
+									<form name="sampleListingForm" action="samplelist.php" method="post" onsubmit="return sampleFormVerify(this)">
+										<input name="sortabletable" type="hidden" value="<?= $sortableTable ?>">
+										<table id="sampletable" class="styledtable">
+											<thead>
+												<tr>
+													<?php
+													$headerOutArr = current($sampledata);
+													echo '<th><input name="selectall" type="checkbox" onclick="selectAll(this)" /></th>';
+													$headerArr = array('catalogNumber' => 'catalogNumber','sampleID' => 'sampleID',
+																'sampleCode' =>'sampleCode','status'=>'Status', 'useType'=>'Use Type', 
+																'substanceProvided'=>'Substance Provided', 'available'=>'Available',
+																'notes'=> 'Notes','shipmentID' => 'Shipment ID','occid'=> 'occid');
+													$rowCnt = 1;
+													foreach($headerArr as $fieldName => $headerTitle){
+														if(array_key_exists($fieldName, $headerOutArr) || $fieldName == 'occid'){
+															echo '<th>'.$headerTitle.'</th>';
+															$rowCnt++;
+														}
+													}
+													?>
+												</tr>
+											</thead>
+											<tbody>
+												<?php
+												$tagArr = array();
+												foreach($sampledata as $id => $sampleArr){
+													$classStr = '';
+													$propStr = '';
+													$str = '';
+													if($sortableTable){
+														if($str) {
+															echo '<tr class="sample-row" data-child-value="'.trim($str,'; ').'">';
+														} else {
+															echo '<tr class="sample-row">';
+														}
+													}
+													echo '<td>';
+													echo '<input id="scbox-'.$sampleArr['id'].'" class="'.trim($classStr).'" name="scbox[]" type="checkbox" value="'.$sampleArr['id'].'" />';
+													echo '<a href="#" onclick="return openSampleEditor('.$sampleArr['id'].', '.$requestID.')"><img src="../../images/edit.png" style="width:12px" /></a>';
+													echo '</td>';
+
+													echo '<td>'.$sampleArr['sampleID'].'</td>';
+													echo '<td>'.$sampleArr['sampleClass'].'</td>';
+													echo '<td>'.$sampleArr['sampleCode'].'</td>';
+													echo '<td>'.$sampleArr['status'].'</td>';
+													echo '<td>'.$sampleArr['useType'].'</td>';
+													echo '<td>'.$sampleArr['substanceProvided'].'</td>';
+													echo '<td>'.$sampleArr['available'].'</td>';
+													echo '<td>'.$sampleArr['notes'].'</td>';
+													echo '<td>'.$sampleArr['shipmentID'].'</td>';
+													
+													echo '</td>';
+													echo '<td style="text-align:center">';
+													echo '<a href="../../collections/individual/index.php?occid=' . $sampleArr['occid'] . '" target="_blank">' . $sampleArr['occid'] . '</a>';
+													echo '</br>';
+													echo '</br>';
+													echo '<a href="../../collections/editor/occurrenceeditor.php?occid='.$sampleArr['occid'].'" target="_blank"><img src="../../images/edit.png" style="width:13px" /></a>';
+													echo '</span>';
+													echo '</td>';
+													echo '</tr>';
+
+													if(!$sortableTable){
+														if($str) echo '<tr><td colspan="'.$rowCnt.'"><div style="margin-left:30px;">'.trim($str,'; ').'</div></td></tr>';
+													}
+
+												}
+												?>
+											</tbody>
+										</table>
+
+									</form>
+									<?php
+								}
+								else{
+									echo '<div style="margin: 20px">No samples exist matching filter criteria</div>';
+								}
+								?>
 							</div>
 						</fieldset>
 					</div>
-					
-			</div>
-			</div>
-
-					<div style="clear:both;">&nbsp;</div>
-			</div>
-			<?php
-		}
-		else{
-			if(!$isEditor) echo '<h2>' . $LANG['NOT_AUTH_LOANS'] . '</h2>';
-			else echo '<h2>' . $LANG['UNKNOWN_ERROR'] . '</h2>';
-		}
+		<?php
+				} else {
+		?>
+			<h2>
+				<?php 
+				if(!$isEditor) echo $LANG['NOT_AUTH_LOANS'];
+				else echo $LANG['UNKNOWN_ERROR'];
+				?>
+			</h2>
+		<?php
+				}
 		?>
 	</div>
 
 	</div>
 
-
-
 	<?php
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
-
 
 	</script>
 </body>
