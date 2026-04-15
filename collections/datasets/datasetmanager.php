@@ -511,6 +511,7 @@ if ($isEditor) {
 										<button name="submitaction" type="submit" value="Save Edits"><?php echo $LANG['SAVE_EDITS']; ?></button>
 									</div>
 								</form>
+								<!--- NEON Addition -->
 									<?php if ($mdArr['category'] == "Request") { 
 										?>
 										<div style="margin:15px;">
@@ -528,6 +529,7 @@ if ($isEditor) {
 									<?php
 									};
 									?>
+								<!--- END NEON Addition -->
 							</section>
 							<section class="fieldset-like">
 								<h2><span><b><?php echo $LANG['DEL_DS']; ?></b></span></h2>
