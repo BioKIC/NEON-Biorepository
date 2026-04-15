@@ -57,13 +57,11 @@ if($isEditor){
 			<ul>
 				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
+				<li><a href="requests/index.php">Create New Inquiry</a></li>
 				<li><a href="requests/inquiries.php">Sample Use Inquiry List</a></li>
-				<li><a href="requests/referenceslist.php">References List</a></li>
 				<?php
 				if($IS_ADMIN){
 					?>
-					<li><a href="requests/index.php">Create New Inquiry</a></li>
-					<li><a href="requests/reference.php">Create New Reference</a></li>
 					<li><a href="igsncontrol.php">NEON IGSN Control Panel</a></li>
 					<li><a href="editor/neoneditor.php">NEON Occurrence and Extended Data Editor</a></li>
 					<?php

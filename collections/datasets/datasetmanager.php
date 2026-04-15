@@ -510,7 +510,6 @@ if ($isEditor) {
 										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
 										<button name="submitaction" type="submit" value="Save Edits"><?php echo $LANG['SAVE_EDITS']; ?></button>
 									</div>
-									<!-- NEON ADDITION -->
 								</form>
 									<?php if ($mdArr['category'] == "Request") { 
 										?>
@@ -529,8 +528,6 @@ if ($isEditor) {
 									<?php
 									};
 									?>
-									<!-- END NEON ADDITION -->
-
 							</section>
 							<section class="fieldset-like">
 								<h2><span><b><?php echo $LANG['DEL_DS']; ?></b></span></h2>

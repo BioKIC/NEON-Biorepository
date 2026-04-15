@@ -60,47 +60,6 @@ class InquiriesManager extends Manager{
     return $totalInq;
   }
 
-        // Gets all references
-    public function getReferencesOut(){
-        $dataArr = array();
-        $sql = 'SELECT r.refid AS id, r.cheatauthors AS authors, pubdate AS year, r.title, COUNT(s.occid) AS samples 
-            FROM referenceobject AS r LEFT JOIN referenceoccurlink AS s ON r.refid = s.refid GROUP BY r.refid;';
-        if($result = $this->conn->query($sql)){
-        while($row = $result->fetch_assoc()){
-            $dataArr[] = array(
-            'id' => '<a href="../requests/referenceform.php?id='.$row['id'].'">'.$row['id'].'</a>',
-            'authors' => is_null($row['authors'])?'<span style="color:lightgray;">NULL</span>':$row['authors'],
-            'year' => is_null($row['year'])?'<span style="color:lightgray;">NULL</span>':$row['year'],
-            'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
-            'samples' => is_null($row['samples'])?'<span style="color:lightgray;">NULL</span>':$row['samples'],
-            );
-        }
-        $result->free();
-        }
-        else {
-        $this->errorMessage = 'References query was not successfull';
-        $dataArr = false;
-        }
-        return $dataArr;
-    }
-
-    // Gets count of all samples in inquiry
-    public function getRefSamplesCnt(){
-        $retArr = array();
-        $sql = 'SELECT COUNT(occid) AS totalOut FROM referenceoccurlink';
-        if($result = $this->conn->query($sql)){
-        while($row = $result->fetch_assoc()){
-            $totalInq = $row['totalOut'];
-        }
-        $result->free();
-        }
-        else {
-        $this->errorMessage = 'References query was not successfull';
-        $totalInq = false;
-        }
-        return $totalInq;
-    }
-
   // Get managers list
   public function getManagers(){
       $retArr = array();
@@ -121,24 +80,6 @@ class InquiriesManager extends Manager{
           $display = trim($r->firstName . ' ' . $r->lastName);
 
           $retArr[$r->uid] = $display;
-      }
-
-      $rs->free();
-      return $retArr;
-  }
-
-    // Get reference type list
-  public function getReferenceType(){
-      $retArr = array();
-
-      $sql = 'SELECT ReferenceTypeId,ReferenceType
-              FROM referencetype';
-
-      $rs = $this->conn->query($sql);
-
-      while($r = $rs->fetch_object()){
-          $display = trim($r->ReferenceType);
-          $retArr[$r->ReferenceTypeId] = $display;
       }
 
       $rs->free();
@@ -328,60 +269,6 @@ public function getHowFoundUs(){
         $this->addCollectionInquiryLink($requestID, $collections);
 
         return $requestID; 
-    } else {
-        $this->errorMessage = "Database Error: " . $this->conn->error;
-        return false;
-    }
-}
-
-// add reference
-   public function addReference($referencetype,$authors,$pubdate,$title,$secondarytitle,$volume,$number,$pages,$url) {
-
-    $referencetype = (int) $referencetype;
-    $authors = $this->conn->real_escape_string($authors);
-    $pubdate = $this->conn->real_escape_string($pubdate);
-    $title = $this->conn->real_escape_string($title);
-    $secondarytitle = $this->conn->real_escape_string($secondarytitle);
-    $volume = $this->conn->real_escape_string($volume);
-    $number = $this->conn->real_escape_string($number);
-    $pages = $this->conn->real_escape_string($pages);
-    $url = $this->conn->real_escape_string($url);
-
-    $cheatcitation = '';
-
-    if($authors) $cheatcitation .= $authors . '. ';
-    if($pubdate) $cheatcitation .= '(' . $pubdate . ') ';
-    if($title) $cheatcitation .= $title . '. ';
-    if($secondarytitle) $cheatcitation .= $secondarytitle . '. ';
-    if($volume){
-        $cheatcitation .= $volume;
-
-        if($number){
-            $cheatcitation .= '(' . $number . ')';
-        }
-
-        if($pages){
-            $cheatcitation .= ': ' . $pages;
-        }
-
-        $cheatcitation .= '. ';
-    }
-    elseif($pages){
-        $cheatcitation .= $pages . '. ';
-    }
-    if($url) $cheatcitation .= $url;
-
-    $cheatcitation = $this->conn->real_escape_string($cheatcitation);
-
-    $sql = "INSERT INTO referenceobject 
-        (referenceTypeId, cheatauthors, title, secondarytitle, pubdate, volume, number, pages, url, cheatcitation) 
-        VALUES 
-        ($referencetype, '$authors','$title', '$secondarytitle', '$pubdate', '$volume', '$number', '$pages', '$url', '$cheatcitation')";
-
-    if ($this->conn->query($sql)) {
-        $referenceID = $this->conn->insert_id;
-
-        return $referenceID; 
     } else {
         $this->errorMessage = "Database Error: " . $this->conn->error;
         return false;
@@ -614,7 +501,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
   }
 
 
-    // edit inquiry record
+
   public function editInquiry(
       $requestID,
       $collectionManager,
@@ -789,97 +676,6 @@ public function addCollectionInquiryLink($requestID, $collections) {
 
 
       return $requestID;
-
-  }
-
-
-    // edit reference record
-    public function editReference(
-			$refID,
-			$referencetype,
-			$authors,
-			$pubdate,
-			$title,
-			$secondarytitle,
-			$volume,
-			$number,
-			$pages,
-			$url,
-			$uid) {
-            $refID = (int)$refID;
-
-        $referencetype = (int)$referencetype;
-        $uid = (int)$uid;
-            $cheatcitation = '';
-
-        if($authors) $cheatcitation .= $authors . '. ';
-        if($pubdate) $cheatcitation .= '(' . $pubdate . ') ';
-        if($title) $cheatcitation .= $title . '. ';
-        if($secondarytitle) $cheatcitation .= $secondarytitle . '. ';
-        if($volume){
-            $cheatcitation .= $volume;
-
-            if($number){
-                $cheatcitation .= '(' . $number . ')';
-            }
-
-            if($pages){
-                $cheatcitation .= ': ' . $pages;
-            }
-
-            $cheatcitation .= '. ';
-        }
-        elseif($pages){
-            $cheatcitation .= $pages . '. ';
-        }
-        if($url) $cheatcitation .= $url;
-
-        $cheatcitation = $this->conn->real_escape_string($cheatcitation);
-
-      $sql = "UPDATE referenceobject 
-              SET ReferenceTypeID = ?, 
-                  cheatauthors = ?,
-                  pubdate = ?, 
-                  title = ?, 
-                  secondarytitle = ?,
-                  volume = ?,
-                  number = ?,
-                  pages = ?,
-                  url = ?,
-                  cheatcitation = ?,
-                  modifieduid = ?,
-                  modifiedtimestamp = NOW() 
-              WHERE refid = ?";
-
-      $stmt = $this->conn->prepare($sql);
-      if (!$stmt) {
-          $this->errorMessage = "Prepare failed: " . $this->conn->error;
-          return false;
-      }
-
-      $stmt->bind_param(
-          "isssssssssii",
-			$referencetype,
-			$authors,
-			$pubdate,
-			$title,
-			$secondarytitle,
-			$volume,
-			$number,
-			$pages,
-			$url,
-            $cheatcitation,
-			$uid,
-            $refID
-      );
-
-      if (!$stmt->execute()) {
-          $this->errorMessage = "Execute failed: " . $stmt->error;
-          return false;
-      }
-      $stmt->close();
-
-      return $refID;
 
   }
 
@@ -1095,38 +891,6 @@ public function addCollectionInquiryLink($requestID, $collections) {
       return $retArr;
   }
 
-      // Get samples associated with a request for inquiry form table
-    public function getReferenceSampleTableByID($refID){
-        $retArr = [];
-
-        $refID = (int)$refID;
-
-        $sql = "SELECT o.occid,o.catalogNumber,s.sampleID,s.sampleCode
-                FROM referenceoccurlink r
-                LEFT JOIN omoccurrences o
-                ON r.occid=o.occid
-                LEFT JOIN NeonSample s
-                ON o.occid=s.occid
-                WHERE r.refid = ?";
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            $this->errorMessage = "Dababase error: " . $this->conn->error;
-            return $retArr;
-        }
-
-        $stmt->bind_param("i", $refID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        while ($row = $result->fetch_assoc()) {
-            $retArr[] = $row;
-        }
-
-        $stmt->close();
-
-        return $retArr;
-    }
-
       // Get material samples associated with a request for inquiry form table
   public function getMaterialSampleTableByID($requestID){
       $retArr = [];
@@ -1236,30 +1000,6 @@ public function addCollectionInquiryLink($requestID, $collections) {
         return $row ?: []; 
     }
 
-          // Get reference data
-    public function getReferenceDataByID($refID){
-        $refID = (int)$refID;
-        $sql = "SELECT r.ReferenceTypeId,r.cheatauthors,r.pubdate,r.title, r.secondarytitle, r.volume, r.number, r.pages, r.url
-                FROM referenceobject r
-                WHERE r.refid = ?";
-
-        $stmt = $this->conn->prepare($sql);
-        if (!$stmt) {
-            $this->errorMessage = "Database error: " . $this->conn->error;
-            return [];
-        }
-
-        $stmt->bind_param("i", $refID);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $row = $result->fetch_assoc();  
-
-        $stmt->close();
-
-        return $row ?: []; 
-    }
-
         // Get detailed samples associated with a request 
     public function getSamplesByID($requestID,$filter = ''){
       $retArr = [];
@@ -1310,7 +1050,6 @@ public function addCollectionInquiryLink($requestID, $collections) {
 
       return $retArr;
     }
-
 
           // Get detailed material samples associated with a request 
   public function getMaterialSamplesByID($requestID, $filter = ''){
