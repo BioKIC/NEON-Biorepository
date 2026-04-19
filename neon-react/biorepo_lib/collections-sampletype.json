@@ -57,7 +57,7 @@
       },
       {
         "id": 12,
-        "name": "Individual Prepared Specimens",
+        "name": "Individually Prepared Specimens",
         "children": [
           {
             "id": 13,
@@ -65,12 +65,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 9            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 107           
               }
             ]
@@ -81,12 +81,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 7            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 108           
               }
             ]
@@ -97,12 +97,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 8            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 109           
               }
             ]
@@ -155,12 +155,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Taxonomy Samples",
+                "name": "Bulk Samples",
                 "collid": 50            
               },
               {
                 "id": 1,
-                "name": "Bulk Taxonomy Sample Identifications",
+                "name": "Bulk Sample Identifications",
                 "collid": 105           
               }
             ]
@@ -171,12 +171,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Taxonomy Samples",
+                "name": "Bulk Samples",
                 "collid": 73            
               },
               {
                 "id": 1,
-                "name": "Bulk Taxonomy Sample Identifications",
+                "name": "Bulk Sample Identifications",
                 "collid": 106           
               }
             ]

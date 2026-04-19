@@ -103,12 +103,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 9            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 107           
               }
             ]
@@ -141,12 +141,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 7            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 108           
               }
             ]
@@ -163,12 +163,12 @@
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 8            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 109           
               }
             ]
