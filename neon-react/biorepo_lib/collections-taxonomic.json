@@ -4,66 +4,78 @@
     "name": "Aquatic Plants, Bryophytes, Lichens, and Macroalgae",
     "children": [
       {
-        "id": 2,
-        "name": "Chemically-Preserved Specimens (from Clip Harvest Biomass Sampling)",
+        "id": 10,
+        "name": "Macroalgae",
         "children": [
           {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 50            
+            "id": 2,
+            "name": "Chemically-Preserved Specimens (from Clip Harvest Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 50
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 105
+              }
+            ]
           },
           {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 105           
+            "id": 3,
+            "name": "Chemically-Preserved Specimens (from Point Transects Surveys)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 73
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 106
+              }
+            ]
           }
         ]
       },
       {
-        "id": 3,
-        "name": "Chemically-Preserved Specimens (from Point Transects Sampling)",
+        "id": 20,
+        "name": "Vascular Plants, Bryophytes & Lichens",
         "children": [
           {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 73            
+            "id": 4,
+            "name": "Herbarium Specimens (from Clip Harvest Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 9
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 107
+              }
+            ]
           },
           {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 106           
-          }
-        ]
-      },
-      {
-        "id": 4,
-        "name": "Herbarium Specimens (from Clip Harvest Biomass Sampling)",
-        "children": [
-          {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 9            
-          },
-          {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 107           
-          }
-        ]
-      },
-      {
-        "id": 5,
-        "name": "Herbarium Specimens (from Point Transect Sampling)",
-        "children": [
-          {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 7            
-          },
-          {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 108           
+            "id": 5,
+            "name": "Herbarium Specimens (from Point Transect Surveys)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 7
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 108
+              }
+            ]
           }
         ]
       },
@@ -74,12 +86,12 @@
           {
             "id": 1,
             "name": "Bulk Samples",
-            "collid": 8            
+            "collid": 8
           },
           {
             "id": 1,
             "name": "Bulk Sample Identifications",
-            "collid": 109           
+            "collid": 109
           }
         ]
       }
