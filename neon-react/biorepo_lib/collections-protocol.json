@@ -79,11 +79,11 @@
     "children": [
       {
         "id": 12,
-        "name": "Clip Harvest Biomass Sampling",
+        "name": "Clip Harvest Sampling",
         "children": [
           {
             "id": 13,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Chemical Preservation",
+            "name": "Aquatic Macroalgae Chemical Preservation",
             "children": [
               {
                 "id": 1,
@@ -99,7 +99,7 @@
           },
           {
             "id": 14,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Herbarium Specimens",
             "children": [
               {
                 "id": 1,
@@ -117,11 +117,11 @@
       },
       {
         "id": 15,
-        "name": "Point Transects Sampling",
+        "name": "Point Transect Surveys",
         "children": [
           {
             "id": 16,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Chemical Preservation",
+            "name": "Aquatic Macroalgae Chemical Preservation",
             "children": [
               {
                 "id": 1,
@@ -137,7 +137,7 @@
           },
           {
             "id": 17,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Herbarium Specimens",
             "children": [
               {
                 "id": 1,
@@ -159,7 +159,7 @@
         "children": [
           {
             "id": 19,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Opportunistic Specimens",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Opportunistic Specimens",
             "children": [
               {
                 "id": 1,
