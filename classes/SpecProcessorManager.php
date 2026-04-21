@@ -32,6 +32,11 @@ class SpecProcessorManager {
 	protected $createLgImg = 2;
 	protected $customStoredProcedure;
 	protected $lastRunDate = '';
+	//neon edit
+	protected $cleaningMode = 'regex';
+	protected $aiExampleIdentifiers = '';
+	protected $aiExtraInstructions = '';
+	//end neon edit
 
 	protected $dbMetadata = 1;			//Only used when run as a standalone script
 	protected $processUsingImageMagick = 0;
@@ -79,7 +84,10 @@ class SpecProcessorManager {
 		if(is_numeric($editArr['spprid'])){
 			$sqlFrag = '';
 			$targetFields = array('title','projecttype','speckeypattern','patternreplace','replacestr','sourcepath','targetpath','imgurl',
-				'webpixwidth','tnpixwidth','lgpixwidth','jpgcompression','createtnimg','createlgimg','source');
+								  //neon edit
+								  'cleaningmode', 'aiExampleIdentifiers', 'aiExtraInstructions',
+								  //end neon edit
+								  'webpixwidth','tnpixwidth','lgpixwidth','jpgcompression','createtnimg','createlgimg','source');
 			if(!isset($editArr['createtnimg'])) $editArr['createtnimg'] = 0;
 			if(!isset($editArr['createlgimg'])) $editArr['createlgimg'] = 0;
 			foreach($editArr as $k => $v){
@@ -122,8 +130,9 @@ class SpecProcessorManager {
 					($sourcePath?'"'.$this->cleanInStr($sourcePath).'"':'NULL').')';
 			}
 			elseif($addArr['projecttype'] == 'local'){
+				//neon edit
 				$sql = 'INSERT INTO specprocessorprojects(collid,title,speckeypattern,patternreplace,replacestr,projecttype,sourcepath,targetpath,'.
-					'imgurl,webpixwidth,tnpixwidth,lgpixwidth,jpgcompression,createtnimg,createlgimg) '.
+					'imgurl,webpixwidth,tnpixwidth,lgpixwidth,jpgcompression,createtnimg,createlgimg,cleaningmode,aiExampleIdentifiers,aiExtraInstructions) '.
 					'VALUES('.$this->collid.',"'.$this->cleanInStr($addArr['title']).'","'.
 					$this->cleanInStr($addArr['speckeypattern']).'",'.
 					($addArr['patternreplace']?'"'.$this->cleanInStr($addArr['patternreplace']).'"':'NULL').','.
@@ -137,7 +146,12 @@ class SpecProcessorManager {
 					(isset($addArr['lgpixwidth'])&&$addArr['lgpixwidth']?$addArr['lgpixwidth']:'NULL').','.
 					(isset($addArr['jpgcompression'])&&$addArr['jpgcompression']?$addArr['jpgcompression']:'NULL').','.
 					(isset($addArr['createtnimg'])&&$addArr['createtnimg']?$addArr['createtnimg']:'NULL').','.
-					(isset($addArr['createlgimg'])&&$addArr['createlgimg']?$addArr['createlgimg']:'NULL').')';
+					//neon edit
+					(isset($addArr['createlgimg'])&&$addArr['createlgimg']?$addArr['createlgimg']:'NULL').','.
+					(isset($addArr['cleaningmode']) && $addArr['cleaningmode'] ? '"'.$this->cleanInStr($addArr['cleaningmode']).'"' : '"regex"').','.
+					(isset($addArr['aiExampleIdentifiers']) && $addArr['aiExampleIdentifiers'] ? '"'.$this->conn->real_escape_string($addArr['aiExampleIdentifiers']).'"' : 'NULL').','.
+					(isset($addArr['aiExtraInstructions']) && $addArr['aiExtraInstructions'] ? '"'.$this->conn->real_escape_string($addArr['aiExtraInstructions']).'"' : 'NULL').')';
+					//end neon edit
 			}
 		}
 		elseif($addArr['title'] == 'OCR Harvest' && $addArr['newprofile']){
@@ -168,6 +182,9 @@ class SpecProcessorManager {
 		}
 		if($sqlWhere){
 			$sql = 'SELECT collid, title, speckeypattern, patternreplace, replacestr, projecttype, coordx1, coordx2, coordy1, coordy2, sourcepath, targetpath, '.
+				//neon edit
+				'cleaningmode, aiExampleIdentifiers, aiExtraInstructions, '.
+				//end neon edit
 				'imgurl, webpixwidth, tnpixwidth, lgpixwidth, jpgcompression, createtnimg, createlgimg, source, lastrundate '.
 				'FROM specprocessorprojects '.$sqlWhere;
 			//echo $sql;
@@ -193,6 +210,11 @@ class SpecProcessorManager {
 				$this->createTnImg = $row->createtnimg;
 				$this->createLgImg = $row->createlgimg;
 				$this->lastRunDate = $row->lastrundate;
+				//neon edit
+				$this->cleaningMode = $row->cleaningmode;
+				$this->aiExampleIdentifiers = $row->aiExampleIdentifiers;
+				$this->aiExtraInstructions = $row->aiExtraInstructions;
+				//end neon edit
 				if(!$this->lastRunDate && $row->source && preg_match('/\d{4}-\d{2}-\d{2}/', $row->source)) $this->lastRunDate = $row->source;
 				if(!$this->projectType){
 					if($this->title == 'iDigBio CSV upload'){
@@ -825,6 +847,34 @@ class SpecProcessorManager {
  	public function getUseImageMagick(){
  		return $this->processUsingImageMagick;
  	}
+	
+	//neon edit
+	public function setCleaningMode($m){
+		if(in_array($m, ['regex','ai'])){
+			$this->cleaningMode = $m;
+		}
+	}
+	
+	public function getCleaningMode(){
+		return $this->cleaningMode ?: 'regex';
+	}
+	
+	public function setAiExampleIdentifiers($str){
+		$this->aiExampleIdentifiers = $str;
+	}
+	
+	public function getAiExampleIdentifiers(){
+		return $this->aiExampleIdentifiers;
+	}
+	
+	public function setAiExtraInstructions($str){
+		$this->aiExtraInstructions = $str;
+	}
+	
+	public function getAiExtraInstructions(){
+		return $this->aiExtraInstructions;
+	}
+	//end neon edit	
 
  	public function getConn(){
  		return $this->conn;
