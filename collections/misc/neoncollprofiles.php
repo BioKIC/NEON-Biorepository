@@ -402,7 +402,7 @@ ER  -
 										<?php echo (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
 									</a>
 								</li>
-								<li>
+								<!-- <li>
 									<a href="#" onclick="$('li.importItem').show(); return false;">
 										<?php echo (isset($LANG['IMPORT_SPECIMEN']) ? $LANG['IMPORT_SPECIMEN'] : 'Import/Update Specimen Records'); ?>
 									</a>
@@ -421,7 +421,7 @@ ER  -
 									<a href="../admin/specupload.php?uploadtype=6&collid=<?php echo $collid; ?>">
 										<?php echo (isset($LANG['DWCA_IMPORT']) ? $LANG['DWCA_IMPORT'] : 'DwC-Archive Import'); ?>
 									</a>
-								</li>
+								</li> -->
 								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
 								<!--	<a href="../admin/specupload.php?uploadtype=8&collid=<?php echo $collid; ?>">-->
 								<!--		<?php echo (isset($LANG['IPT_IMPORT']) ? $LANG['IPT_IMPORT'] : 'IPT Import'); ?>-->
