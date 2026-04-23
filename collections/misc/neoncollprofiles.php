@@ -645,7 +645,7 @@ ER  -
 					</div>
 					<div class="border-t-2 border-gray-200 mt-6 pt-4">
 						<h2 class="text-xl font-semibold mb-2">Citation</h2>
-						<p style="padding:16px"><strong>Please use the appropriate citation in your publications. See <a href="<?php echo $CLIENT_ROOT . '/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for more info.</strong></p>
+						<p style="padding:16px"><strong>Please use the citation below when referencing this sample type. This citation is required for both data-only and physical sample use. Publications involving physical samples must also include the additional specimen citation requirements. See <a href="<?php echo $CLIENT_ROOT . '/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for full guidance.</strong></p>
 						<?php
 							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;"">
 							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">';
