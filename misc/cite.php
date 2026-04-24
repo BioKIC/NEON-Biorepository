@@ -50,10 +50,6 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 </head>
 
 <body>
-	<?php
-	$displayLeftMenu = true;
-	include($SERVER_ROOT . '/includes/header.php');
-	?>
 	<div class="navpath">
 		<a href="<?php echo $CLIENT_ROOT; ?>/index.php">Home</a> >>
 		<b>How to Cite</b>
@@ -257,9 +253,6 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 	
 	</div>
 
-	<?php
-	include($SERVER_ROOT . '/includes/footer.php');
-	?>
 </body>
 
 </html>
