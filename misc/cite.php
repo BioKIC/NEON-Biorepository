@@ -50,10 +50,6 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 </head>
 
 <body>
-	<div class="navpath">
-		<a href="<?php echo $CLIENT_ROOT; ?>/index.php">Home</a> >>
-		<b>How to Cite</b>
-	</div>
 
 	<div id="innertext">
 		<h1>Acknowledging and Citing the NEON Biorepository</h1>
