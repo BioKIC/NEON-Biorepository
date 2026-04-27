@@ -84,14 +84,14 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
 				<a href="https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25" target="_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
-				on January 25, 2021. Data archived at [your DOI].
+				on [DATE ACCESSED]. Data archived at [your DOI].
 			</blockquote>
 
 			<p><b>For sample data which have not been saved to a repository (not recommended):</b></p>
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
 				<a href="https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25" target="_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
-				on January 25, 2021.
+				on [DATE ACCESSED].
 			</blockquote>
 
 			<p>If additional data are obtained directly from the <a href="https://data.neonscience.org/data-products/explore" target="_blank" rel="noopener noreferrer">NEON Data Portal</a> (e.g., via download, API access, or programmatic tools), the relevant NEON Data Product(s) must also be cited in accordance with NEON data citation guidance, including the appropriate release DOI or provisional data citation.</p>
