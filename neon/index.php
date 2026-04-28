@@ -63,6 +63,7 @@ if($isEditor){
 					<li><a href="igsncontrol.php">NEON IGSN Control Panel</a></li>
 					<li><a href="editor/neoneditor.php">NEON Occurrence and Extended Data Editor</a></li>
 					<li><a href="editor/neonnomenclaturaladjustments.php">NEON Nomenclatural Adjustment</a></li>
+					<li><a href="editor/neonnomenclaturaladjustments.php">Annotation Label Dashboard</a></li>
 					<?php
 				}
 				?>
@@ -89,7 +90,7 @@ if($isEditor){
 else{
 	?>
 	<div style='font-weight:bold;margin:30px;'>
-		You do not have permissions to access shipment managment tools
+		You do not have permissions to access NEON management tools
 	</div>
 	<?php
 }

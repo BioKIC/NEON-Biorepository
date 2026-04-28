@@ -473,7 +473,9 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 					if($statusStr){
 						echo '<div style="margin:30px 20px;">';
 						echo '<div style="color:orange;font-weight:bold;">'.$statusStr.'</div>';
-						echo '<div style="margin-top:10px;"><a href="neon/reports/annotationmanager.php?collid=' . htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank">' . htmlspecialchars($LANG['DISPLAY_QUEUE'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a></div>';
+						echo '<div style="margin-top:10px;">';
+						echo '<a href="annotationdashboard.php">Open Annotation Dashboard</a>';
+						echo '</div>';
 						echo '</div>';
 					}
 					?>
@@ -548,7 +550,7 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 								</div>
 								<div style='margin:3px;'>
 									<input type="checkbox" name="printqueue" value="1" checked /> <?php echo $LANG['ADD_PRINT_QUEUE']; ?>
-									<a href="neon/reports/annotationmanager.php">
+									<a href="annotationdashboard.php">Annotation Dashboard</a>
 								</div>
 								<div style='margin:15px;'>
 									<div style="float:left;">
