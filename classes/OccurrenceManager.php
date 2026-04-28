@@ -146,8 +146,11 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			//end neon edit
 		}
 		elseif(array_key_exists('db',$this->searchTermArr)){
-			$pattern = '/[^\d,]/';
-			if (preg_match($pattern, $this->searchTermArr['db'])==0) {
+			//neon edit
+			$pattern = '/^(\d+(,\d+)*|all)$/';
+			
+			if (preg_match($pattern, $this->searchTermArr['db'])) {
+				//end neon edit
 				$sqlWhere .= OccurrenceSearchSupport::getDbWhereFrag($this->cleanInStr($this->searchTermArr['db']));
 			}
 		}
@@ -409,7 +412,6 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		if(array_key_exists('catnum',$this->searchTermArr)){
 			$catStr = $this->cleanInStr($this->searchTermArr['catnum']);
 			$includeOtherCatNum = array_key_exists('includeothercatnum',$this->searchTermArr)?true:false;
-			$includeMaterialSample = array_key_exists('includematerialsample',$this->searchTermArr)?true:false;		//NEON customization
 
 			$catArr = explode(',',str_replace(';',',',$catStr));
 			$betweenFrag = array();
@@ -487,9 +489,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				}
 
 				// NEON customization - addition
-				if($includeMaterialSample){
-					$matSampleFrag[] = '(catalogNumber IN("'.implode('","',$inFrag).'") OR guid IN("'.implode('","',$inFrag).'") OR matSampleID IN("'.implode('","',$inFrag).'") OR recordID IN("'.implode('","',$inFrag).'") )';
-				}
+				$matSampleFrag[] = '(catalogNumber IN("'.implode('","',$inFrag).'") OR
+									 guid IN("'.implode('","',$inFrag).'") OR
+									 matSampleID IN("'.implode('","',$inFrag).'") OR
+									 recordID IN("'.implode('","',$inFrag).'") )';
 				// End of NEON customization
 
 			}
@@ -981,7 +984,11 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		elseif(array_key_exists('db',$_REQUEST) && $_REQUEST['db']){
 			$dbStr = $this->cleanInputStr(OccurrenceSearchSupport::getDbRequestVariable());
-			if(preg_match('/^[0-9,;]+$/', $dbStr)) $this->searchTermArr['db'] = $dbStr;
+			//neon edit
+			if ($dbStr === 'all' || preg_match('/^[0-9,;]+$/', $dbStr)) {
+				$this->searchTermArr['db'] = $dbStr;
+			}
+			//end neon edit
 		}
 		if(array_key_exists('datasetid',$_REQUEST) && $_REQUEST['datasetid']){
 			if(is_array($_REQUEST['datasetid'])){
@@ -1140,12 +1147,6 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				if(array_key_exists('includeothercatnum', $_REQUEST)) {
 					$this->searchTermArr['includeothercatnum'] = '1';
 				}
-
-				// NEON customization - addition
-				if(array_key_exists('includematerialsample', $_REQUEST)) {
-					$this->searchTermArr['includematerialsample'] = '1';
-				}
-				// End of NEON Customization
 
 			}
 			else{

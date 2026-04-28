@@ -445,17 +445,13 @@ $siteData = new DatasetsMetadata();
 							<div>
 								<div class="text-area-container">
 									<label for="" class="text-area--outlined">
-										<textarea name="catnum" data-chip="Identifier" style="width: 100%"></textarea>
+										<textarea name="catnum" data-chip="Identifier" style="width: 100%" placeholder="e.g., Catalog Number, SampleID, Barcode, MaterialSampleID"></textarea>
 										<span data-label="Identifiers"></span></label>
 									<span class="assistive-text">Separate multiple with commas or new lines.</span>
 								</div>
 								<div style="display:none">
 									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>
 									<label for="includeothercatnum">Search all identifiers</label>
-								</div>
-								<div>
-									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
-									<label for="includematerialsample">Include material samples</label>
 								</div>
 							</div>
 							<div>

@@ -402,7 +402,7 @@ ER  -
 										<?php echo (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
 									</a>
 								</li>
-								<li>
+								<!-- <li>
 									<a href="#" onclick="$('li.importItem').show(); return false;">
 										<?php echo (isset($LANG['IMPORT_SPECIMEN']) ? $LANG['IMPORT_SPECIMEN'] : 'Import/Update Specimen Records'); ?>
 									</a>
@@ -421,7 +421,7 @@ ER  -
 									<a href="../admin/specupload.php?uploadtype=6&collid=<?php echo $collid; ?>">
 										<?php echo (isset($LANG['DWCA_IMPORT']) ? $LANG['DWCA_IMPORT'] : 'DwC-Archive Import'); ?>
 									</a>
-								</li>
+								</li> -->
 								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
 								<!--	<a href="../admin/specupload.php?uploadtype=8&collid=<?php echo $collid; ?>">-->
 								<!--		<?php echo (isset($LANG['IPT_IMPORT']) ? $LANG['IPT_IMPORT'] : 'IPT Import'); ?>-->
@@ -645,7 +645,7 @@ ER  -
 					</div>
 					<div class="border-t-2 border-gray-200 mt-6 pt-4">
 						<h2 class="text-xl font-semibold mb-2">Citation</h2>
-						<p style="padding:16px"><strong>Please use the appropriate citation in your publications. See <a href="<?php echo $CLIENT_ROOT . '/neon/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for more info.</strong></p>
+						<p style="padding:16px"><strong>Please use the appropriate citation in your publications. See <a href="<?php echo $CLIENT_ROOT . '/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for more info.</strong></p>
 						<?php
 							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;"">
 							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">';
