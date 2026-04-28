@@ -76,7 +76,9 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h3 class="anchor" id="h.3">Citation Requirements for Data-Only Use</h3>
 
-			<p>NEON sample data is offered under the Creative Commons Attribution (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>) license. Attribution is required when you use NEON data, including a link to the license and an indication of any changes. Records in the <a href="../neon/search/index.php" target="_blank" rel="noopener noreferrer">NEON Biorepository Sample Portal</a> are periodically updated based on ingestion of the most up-to-date NEON data and are, in many cases, supplemented with value-added data obtained from further analysis. Because these records are updated on a rolling basis and are not tied to a specific NEON data release, NEON Biorepository sample data should be considered subject to change and <strong>treated as provisional</strong>. Citations of these data should therefore follow <a href="https://www.neonscience.org/data-samples/guidelines-policies/citing#citing-data" target="_blank" rel="noopener noreferrer">NEON guidance for provisional data</a>, applied to the relevant Biorepository sample types.</p>
+			<p>NEON sample data is offered under the Creative Commons Attribution (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>) license. Attribution is required when you use NEON data, including a link to the license and an indication of any changes.</p>
+			
+			<p>Records in the <a href="../neon/search/index.php" target="_blank" rel="noopener noreferrer">NEON Biorepository Sample Portal</a> are periodically updated based on ingestion of the most up-to-date NEON data and are, in many cases, supplemented with value-added data obtained from further analysis. Because these records are updated on a rolling basis and are not tied to a specific NEON data release, NEON Biorepository sample data should be considered subject to change and <strong>treated as provisional</strong>. Citations of these data should therefore follow <a href="https://www.neonscience.org/data-samples/guidelines-policies/citing#citing-data" target="_blank" rel="noopener noreferrer">NEON guidance for provisional data</a>, applied to the relevant Biorepository sample types.</p>
 
 			<p>For each sample type used:</p>
 
@@ -84,14 +86,14 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
 				<a href="https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25" target="_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
-				on [DATE ACCESSED]. Data archived at [your DOI].
+				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). Data were filtered and reformatted for analysis. Data archived at [your DOI].
 			</blockquote>
 
 			<p><b>For sample data which have not been saved to a repository (not recommended):</b></p>
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
-				<a href="https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25" target="_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
-				on [DATE ACCESSED].
+				<a href="https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25" target="_blank">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
+				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). No changes were made.
 			</blockquote>
 
 			<p>If additional data are obtained directly from the <a href="https://data.neonscience.org/data-products/explore" target="_blank" rel="noopener noreferrer">NEON Data Portal</a> (e.g., via download, API access, or programmatic tools), the relevant NEON Data Product(s) must also be cited in accordance with NEON data citation guidance, including the appropriate release DOI or provisional data citation.</p>

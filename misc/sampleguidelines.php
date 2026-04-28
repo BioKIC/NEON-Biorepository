@@ -35,7 +35,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 	<h1 style="text-align:center;">Sample Use Procedures and Requirements</h1>
 
 	<article>
-		<p>NEON Biorepository samples and specimens and their associated data are available for a wide variety of research and educational purposes. Anyone interested in requesting samples may do so. Most requests are fulfilled at no cost; however, unusually large requests or those requiring substantial additional processing may incur fees. You can browse NEON samples via the <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank" rel="noopener noreferrer">NEON Sample Portal</a> and initiate inquiries about using samples in your work by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">contacting us</a>.</p>
+		<p>NEON Biorepository samples and specimens and their associated data are available for a wide variety of research and educational purposes. Anyone interested in requesting samples may do so. Most requests are fulfilled at no cost; however, unusually large requests or those requiring substantial additional processing may incur fees. You can browse NEON samples via the <a href="https://biorepo.neonscience.org/portal/collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">NEON Sample Portal</a> and initiate inquiries about using samples in your work by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly.</p>
 	</article>
 		
 	<ol>
@@ -54,7 +54,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			
 			<img src="images/loan_process.png" alt="Sample loan process" style="max-width: 100%; height: auto; margin: 1rem 0;">
 
-			<p>To request samples or learn more about what samples are available for use, <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">contact us</a>. We will follow up to obtain additional information required for approval within five business days.</p>
+			<p>To request samples or learn more about what samples are available for use, you may either browse the <a href="https://biorepo.neonscience.org/portal/collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">NEON Biorepository Sample Portal</a> and initiate inquiries by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly. We will follow up within five business days to assist you in identifying appropriate samples and submitting a <a href="https://asu.co1.qualtrics.com/jfe/form/SV_bfPgKtTfHTyzffg" target="_blank">Sample Loan Request</a>.</p>
 
 			<p>All requests are evaluated via the <a href="#sample-use-approval-process">Sample Use Approval Process</a>, subject to the <a href="#sample-use-policy">Sample Use Policy</a>. <b><i>All requests require a mutually developed and signed Sample Use Agreement prior to sample processing and shipment or access.</i></b> Researchers should allow approximately two weeks for development and finalization of the Sample Use Agreement. Significantly more time may be required if the request may involve hiring additional personnel.</p>
 
@@ -66,7 +66,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h2 class="anchor" id="funding-proposals-and-letters-of-collaboration-or-support">Funding Proposals and Letters of Collaboration or Support</h2>
 
-			<p>Although funding is not required to use NEON samples, please <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">contact us</a> at least two weeks in advance of internal deadlines for submitting any grant proposals involving NEON samples. Note that significantly more time may be required for  proposed work that would involve hiring additional personnel. The NEON Biorepository requires this time in order to:</p>
+			<p>Although funding is not required to use NEON samples, please <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">contact us</a> at least two weeks in advance of internal deadlines for submitting any grant proposals involving NEON samples. Note that significantly more time may be required for proposed work that would involve hiring additional personnel. The NEON Biorepository requires this time in order to:</p>
 
 			<ul>
 				<li>Evaluate whether available samples are suitable for the proposed work</li>
@@ -75,7 +75,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 				<li>Provide quotes for service fees, if applicable</li>
 			</ul>
 
-			<p>For programs that allow the submission of letters of support or collaboration, researchers should obtain these from the NEON Biorepository directly if NEON samples will be used in the proposed research. Letters regarding samples are considered separate from those provided by <a href="https://www.neonscience.org/resources/research-support" target="_blank" rel="noopener noreferrer">NEON Research Support Services</a>.</p>
+			<p>For programs that allow the submission of letters of support or collaboration, researchers should obtain these from the NEON Biorepository directly if NEON samples will be used in the proposed research. Letters regarding samples are considered separate from those provided by <a href="https://www.neonscience.org/resources/research-support" target="_blank">NEON Research Support Services</a>.</p>
 		</article>
 
 		<article>
@@ -117,9 +117,9 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h2 class="anchor" id="sample-use-approval-process">Sample Use Approval Process</h2>
 
-			<p>After submitting an initial inquiry, we will reach out within 5 business days to begin co-developing a sample list and Sample Use Agreement. Please allow at least two weeks to complete the approval process. More time will be required if it is necessary to hire additional personnel</p>
+			<p>After submitting an initial inquiry, we will reach out within 5 business days to begin co-developing a sample list and Sample Use Agreement. Please allow at least two weeks to complete the approval process. More time will be required if it is necessary to hire additional personnel.</p>
 
-			<p>Sample uses can be non-invasive, invasive, consumptive, or destructive. Non-invasive use means does not materially affect the condition or future availability of a sample; invasive alters a sample in a manner that may affect subsequent applications; consumptive use depletes a portion of a sample; and destructive use renders a sample unavailable for further use.</p>
+			<p>Sample uses can be non-invasive, invasive, consumptive, or destructive. Non-invasive use does not materially affect the condition or future availability of a sample; invasive alters a sample in a manner that may affect subsequent applications; consumptive use depletes a portion of a sample; and destructive use renders a sample unavailable for further use.</p>
 
 			<p>While any type of use is permissible, requests involving substantial destructive or consumptive use require additional review as a part of the approval process. All requests are evaluated on a case-by-case basis; however, each sample type has guidelines regarding the amount of destructive and consumptive use that can be supported for a single project and the minimum number of samples that must be retained for long term archive. Requests that involve destructive or significant consumptive use exceeding those guidelines require strong justification and may be subject to external review.</p>
 
@@ -127,7 +127,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<p>In cases where overlapping requests require destructive, consumptive, or invasive use of samples, priority will be research sponsored by the NSF Biological Sciences Directorate, followed by other NSF-sponsored research and finally non-NSF funded research, outreach, or education uses.</p>
 
-			<p>Loans are typically approved for 6-12 months. Extensions requested before the current loan period expires will generally be approved except when the samples have been requested by other researchers.</p>
+			<p>Loans are typically approved for 6-12 months. Extensions requested before the current loan period expires will generally be approved except when the samples have been requested by other researchers. Failure to return samples within the approved loan period or to maintain communication regarding their status may affect eligibility for future sample requests.</p>
 		</article>
 		
 		<article>
