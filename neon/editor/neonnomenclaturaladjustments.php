@@ -20,22 +20,53 @@ if($IS_ADMIN ){
 	$isEditor = 1;
 }
 
-$statusStr = '';
 $occidArr = $_REQUEST['occid'] ?? [];
+
+$successCount = 0;
+$failCount = 0;
+$errors = [];
+
+$statusStr = '';
 
 if($isEditor && !empty($occidArr) && is_array($occidArr)){
 	foreach($occidArr as $occid){
-		$cleanOccid = filter_var($occid, FILTER_SANITIZE_NUMBER_INT);
 
+		$cleanOccid = filter_var($occid, FILTER_SANITIZE_NUMBER_INT);
 		$occManager->setOccId($cleanOccid);
 
 		$input = $_REQUEST;
 		$input['occid'] = $cleanOccid;
 		unset($input['formsubmit']);
 
-		$editManager->addNEONNomAdjustment($input);
+		try {
+			$result = $editManager->addNEONNomAdjustment($input);
+
+			if(!empty($result['success'])){
+				$successCount++;
+			} else {
+				$failCount++;
+
+				$msg = $result['error'] ?? 'Unknown error';
+				$errors[] = "occid $cleanOccid failed: $msg";
+			}
+
+		} catch(Exception $e){
+			$failCount++;
+			$errors[] = "occid $cleanOccid exception: ".$e->getMessage();
+		}
+	}
+	$statusStr = "Processed $successCount record(s).";
+
+	if($failCount > 0){
+		$statusStr .= " Failed: $failCount.";
+	}
+
+	if(!empty($errors)){
+		$statusStr .= " Details: ".implode("; ", $errors);
 	}
 }
+
+
 
 ?>
 <!DOCTYPE html>
@@ -517,7 +548,7 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 								</div>
 								<div style='margin:3px;'>
 									<input type="checkbox" name="printqueue" value="1" checked /> <?php echo $LANG['ADD_PRINT_QUEUE']; ?>
-									<a href="../reports/annotationmanager.php?collid=<?php echo htmlspecialchars($collid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" target="_blank"><img src="../../images/list.png" style="width:1.2em" title="<?php echo htmlspecialchars($LANG['DISPLAY_QUEUE'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" /></a>
+									<a href="neon/reports/annotationmanager.php">
 								</div>
 								<div style='margin:15px;'>
 									<div style="float:left;">

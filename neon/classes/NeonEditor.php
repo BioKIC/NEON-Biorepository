@@ -821,7 +821,13 @@ class NeonEditor extends UtilitiesFileImport {
 			$stmt->close();
 		}
 
-		return $detManager->insertNEONDetermination($detArr);
+		$success = $detManager->insertNEONDetermination($detArr);
+
+		return [
+			'success' => $success,
+			'error' => $detManager->errorMessage ?? '',
+			'detID' => $detManager->detID ?? null
+		];
 	}
 
 	//Data set functions
