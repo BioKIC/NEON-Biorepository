@@ -4,7 +4,7 @@ if(isset($SERVER_ROOT) && $SERVER_ROOT){
 	include_once($SERVER_ROOT.'/classes/OccurrenceMaintenance.php');
 	include_once($SERVER_ROOT.'/classes/ImageShared.php');
 	include_once($SERVER_ROOT . '/classes/GuidManager.php');
-	include_once($SERVER_ROOT . '/classes/utilities_neon/ImageProcessorAI.php');
+	include_once($SERVER_ROOT . '/classes/utilities_neon/ImageProcessorAI.php');	//NEON modification
 }
 
 class ImageLocalProcessor {
@@ -345,6 +345,8 @@ class ImageLocalProcessor {
 		$fileExt = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
 		if($fileExt == 'jpg' || $fileExt == 'jpeg'){
 			$mode = $this->collArr[$this->activeCollid]['cleaningmode'] ?? 'regex';
+			//Begin of NEON modification
+			//$catalogNumber = $this->getPrimaryKey($fileName);
 			if($mode === 'ai'){
 				$example = $this->collArr[$this->activeCollid]['aiexampleidentifiers'] ?? '';
 				$extra = $this->collArr[$this->activeCollid]['aiextrainstructions'] ?? '';
@@ -354,6 +356,7 @@ class ImageLocalProcessor {
 			else{
 				$catalogNumber = $this->getPrimaryKey($fileName);
 			}
+			//End of NEON modification
 			if(!$catalogNumber){
 				$this->logOrEcho('File skipped ('.$fileName.'), unable to extract specimen identifier',1);
 				return false;
