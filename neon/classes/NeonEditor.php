@@ -679,81 +679,149 @@ class NeonEditor extends UtilitiesFileImport {
 
 	//  nomenclatural adjustments 
 
-	public function getNewDetItem($catNum, $sciName, $allCatNum, $fieldSite){
-		$retArr = array();
-		if($catNum || $sciName || $fieldSite){
-			$sql = 'SELECT o.occid, o.catalogNumber, o.otherCatalogNumbers, o.sciname, CONCAT_WS(" ", o.recordedby, IFNULL(o.recordnumber, o.eventdate)) AS collector, '.
-				'CONCAT_WS(", ", o.country, o.stateprovince, o.county, o.locality) AS locality ';
-			$catNumArr = explode(',',$catNum);
-			if($catNum){
-				$catNumArr = explode(',', $catNum);
-
-				foreach($catNumArr as $k => $u){
-					$u = trim($u);
-					if($u) $catNumArr[$k] = $this->cleanInStr($u);
-					else unset($catNumArr[$k]);
-				}
-
-				$catNumStr = implode('","', $catNumArr);
-
-				if($allCatNum){
-					$sql .= ', i.identifierValue 
-							FROM omoccurrences o 
-							LEFT JOIN omoccuridentifiers i ON o.occid = i.occid 
-							WHERE (
-								o.catalogNumber IN("'.$catNumStr.'")
-								OR o.otherCatalogNumbers IN("'.$catNumStr.'")
-								OR i.identifierValue IN("'.$catNumStr.'")
-							) ';
-				}
-				else{
-					$sql .= 'FROM omoccurrences o 
-							WHERE o.catalogNumber IN("'.$catNumStr.'") ';
-				}
-			}
-			elseif($sciName){
-				if($fieldSite){
-					$sql .= 'FROM omoccurrences o INNER JOIN omoccurdatasetlink ds ON o.occid = ds.occid WHERE ds.datasetid = '.$fieldSite.' AND o.sciname = "'.$this->cleanInStr($sciName).'" ';
-				} else {
-					$sql .= 'FROM omoccurrences o WHERE o.sciname = "'.$this->cleanInStr($sciName).'" ';
-				}
-			}
-
-			$rs = $this->conn->query($sql);
-			while($r = $rs->fetch_object()){
-				if(!array_key_exists($r->occid, $retArr)){
-					$retArr[$r->occid]['sn'] = $r->sciname;
-					$retArr[$r->occid]['coll'] = $r->collector;
-					$loc = $r->locality;
-					if(strlen($loc) > 500) $loc = substr($loc,400);
-					$retArr[$r->occid]['loc'] = $loc;
-					$cn = $r->catalogNumber;
-					if($r->otherCatalogNumbers){
-						if(!$cn || in_array($r->otherCatalogNumbers, $catNumArr)) $cn = $r->otherCatalogNumbers;
-					}
-					$retArr[$r->occid]['cn'] = $cn;
-				}
-				if(!empty($r->identifierValue)){
-					if(!$retArr[$r->occid]['cn'] || in_array($r->identifierValue, $catNumArr)) $retArr[$r->occid]['cn'] = $r->identifierValue;
-				}
-			}
-			$rs->free();
+	public function getNewNEONDetItem($catNum, $sciName, $allCatNum, $fieldSite){
+		$retArr = [];
+		if(empty($catNum) && empty($sciName)){
+			return $retArr;
 		}
+		$joins = [];
+		$where = [];
+		$params = [];
+		$types = '';
+		$catNumArr = [];
+		$needsIdentifierValue = (!empty($catNum) && $allCatNum);
+
+		$sql = 'SELECT DISTINCT o.occid,
+					o.catalogNumber,
+					o.otherCatalogNumbers,
+					o.sciname,
+					CONCAT_WS(" ", o.recordedby, IFNULL(o.recordnumber, o.eventdate)) AS collector,
+					CONCAT_WS(", ", o.country, o.stateprovince, o.county, o.locality) AS locality';
+		if($needsIdentifierValue){
+			$sql .= ', i.identifierValue';
+		}
+		$sql .= ' FROM omoccurrences o ';
+
+		if(!empty($fieldSite) && !empty($sciName)){
+			$joins[] = 'INNER JOIN omoccurdatasetlink ds ON o.occid = ds.occid';
+			$where[] = 'ds.datasetid = ?';
+			$params[] = (int)$fieldSite;
+			$types .= 'i';
+		}
+
+		if(!empty($sciName)){
+			$where[] = 'o.sciname = ?';
+			$params[] = $this->cleanInStr($sciName);
+			$types .= 's';
+		}
+
+		if(!empty($catNum)){
+			$catNumArr = array_filter(array_map('trim', explode(',', $catNum)));
+			if(!empty($catNumArr)){
+				$placeholders = implode(',', array_fill(0, count($catNumArr), '?'));
+				if($allCatNum){
+					$joins[] = 'LEFT JOIN omoccuridentifiers i ON o.occid = i.occid';
+					$where[] = "(o.catalogNumber IN ($placeholders)
+								OR o.otherCatalogNumbers IN ($placeholders)
+								OR i.identifierValue IN ($placeholders))";
+					foreach($catNumArr as $v){
+						$params[] = $v;
+						$types .= 's';
+					}
+					foreach($catNumArr as $v){
+						$params[] = $v;
+						$types .= 's';
+					}
+					foreach($catNumArr as $v){
+						$params[] = $v;
+						$types .= 's';
+					}
+				} else {
+					$where[] = "o.catalogNumber IN ($placeholders)";
+					foreach($catNumArr as $v){
+						$params[] = $v;
+						$types .= 's';
+					}
+				}
+			}
+		}
+
+		if(!empty($joins)){
+			$sql .= ' ' . implode(' ', $joins);
+		}
+
+		if(!empty($where)){
+			$sql .= ' WHERE ' . implode(' AND ', $where);
+		} else {
+			return []; 
+		}
+
+		$stmt = $this->conn->prepare($sql);
+
+		if(!$stmt){
+			throw new Exception("Prepare failed: " . $this->conn->error);
+		}
+
+		if(!empty($params)){
+			$stmt->bind_param($types, ...$params);
+		}
+
+		$stmt->execute();
+		$rs = $stmt->get_result();
+
+		while($r = $rs->fetch_object()){
+
+			if(!isset($retArr[$r->occid])){
+
+				$retArr[$r->occid] = [
+					'sn'   => $r->sciname,
+					'coll' => $r->collector,
+					'loc'  => (strlen($r->locality) > 500)
+								? substr($r->locality, 0, 500)
+								: $r->locality,
+					'cn'   => $r->catalogNumber
+				];
+
+				if(!empty($r->otherCatalogNumbers)){
+					if(!$retArr[$r->occid]['cn'] || in_array($r->otherCatalogNumbers, $catNumArr)){
+						$retArr[$r->occid]['cn'] = $r->otherCatalogNumbers;
+					}
+				}
+			}
+
+			if($needsIdentifierValue && !empty($r->identifierValue)){
+				if(!$retArr[$r->occid]['cn'] || in_array($r->identifierValue, $catNumArr)){
+					$retArr[$r->occid]['cn'] = $r->identifierValue;
+				}
+			}
+		}
+
+		$stmt->close();
+
 		return $retArr;
 	}
 
-	public function addNomAdjustment($detArr,$isEditor){
-		$sql = 'SELECT identificationQualifier FROM omoccurrences WHERE occid = '.$this->occid;
-		$rs = $this->conn->query($sql);
-		if($r = $rs->fetch_object()){
-			$detArr['identificationqualifier'] = $r->identificationQualifier;
+	// add nomenclatural adjustment
+
+	public function addNEONNomAdjustment($detArr){
+		$detManager = new OmDeterminations($this->conn);
+		$detManager->setOccid($detArr['occid']);
+		$sql = 'SELECT identificationQualifier,securityStatus,securityStatusReason FROM omoccurdeterminations WHERE occid = ? AND isCurrent = 1';
+		if($stmt = $this->conn->prepare($sql)){
+			$stmt->bind_param('i', $detArr['occid']);
+			$stmt->execute();
+			$rs = $stmt->get_result();
+
+			if($r = $rs->fetch_object()){
+				$detArr['identificationQualifier'] = $r->identificationQualifier;
+				$detArr['securityStatus'] = $r->securityStatus;
+				$detArr['securityStatusReason'] = $r->securityStatusReason;
+			}
+
+			$stmt->close();
 		}
-		$rs->free();
-		$detArr['identifiedby'] = 'Nomenclatural Adjustment';
-		// NEON Adjustment
-		$detArr['dateidentified'] = date('Y-m-d');
-		//END NEON Adjustment
-		$this->addDetermination($detArr, $isEditor);
+
+		return $detManager->insertNEONDetermination($detArr);
 	}
 
 	//Data set functions

@@ -24,10 +24,17 @@ $statusStr = '';
 $occidArr = $_REQUEST['occid'] ?? [];
 
 if($isEditor && !empty($occidArr) && is_array($occidArr)){
-    foreach($occidArr as $k){
-        $occManager->setOccId(filter_var($k, FILTER_SANITIZE_NUMBER_INT));
-        $editManager->addNomAdjustment($_REQUEST,$isEditor);
-    }
+	foreach($occidArr as $occid){
+		$cleanOccid = filter_var($occid, FILTER_SANITIZE_NUMBER_INT);
+
+		$occManager->setOccId($cleanOccid);
+
+		$input = $_REQUEST;
+		$input['occid'] = $cleanOccid;
+		unset($input['formsubmit']);
+
+		$editManager->addNEONNomAdjustment($input);
+	}
 }
 
 ?>
@@ -64,7 +71,7 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 						else{
 							f.scientificnameauthorship.value = "";
 							f.family.value = "";
-							f.tidtoadd.value = "";
+							f.tidinterpreted.value = "";
 						}
 					}
 				});
@@ -201,6 +208,11 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 					alert("<?php echo $LANG['DET_DATE_NEEDS_VALUE']; ?>");
 					return false;
 				}
+
+				const formData = new FormData(f);
+				for (let [key, value] of formData.entries()) {
+					console.log(key, value);
+				}
 				return true;
 			}
 
@@ -226,13 +238,13 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 					if(data){
 						f.scientificnameauthorship.value = data.author;
 						f.family.value = data.family;
-						f.tidtoadd.value = data.tid;
+						f.tidinterpreted.value = data.tid;
 					}
 					else{
 						alert("<?php echo $LANG['WARNING_TAXON_NOT_FOUND']; ?>");
 						f.scientificnameauthorship.value = "";
 						f.family.value = "";
-						f.tidtoadd.value = "";
+						f.tidinterpreted.value = "";
 					}
 				});
 			}
@@ -438,13 +450,13 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 				<div id="accrecordlistdviv" style="display:none;">
 					<form name="accselectform" id="accselectform" action="neonnomenclaturaladjustments.php" method="post" onsubmit="return validateSelectForm(this);">
 						<div style="margin-top: 15px; margin-left: 10px;">
-							<input name="accselectall" value="" type="checkbox" onclick="selectAll(this);" checked />
-							<?php echo $LANG['SELECT_DESELECT']; ?>
 						</div>
 						<table class="styledtable">
 							<thead>
 								<tr>
-									<th style="width:25px;text-align:center;">&nbsp;</th>
+									<th style="width:25px;text-align:center;">
+										<input type="checkbox" onclick="selectAll(this)">
+									</th>
 									<th style="width:125px;text-align:center;"><?php echo $LANG['CATNUM']; ?></th>
 									<th style="width:300px;text-align:center;"><?php echo $LANG['SCINAME']; ?></th>
 									<th style="text-align:center;"><?php echo $LANG['COLLECTOR_LOCALITY']; ?></th>
@@ -458,12 +470,12 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['SCINAME']; ?>:</b>
 									<input type="text" id="dafsciname" name="sciname" style="background-color:lightyellow;width:350px;" onfocus="initDetAutocomplete(this.form)" />
-									<input type="hidden" id="daftidtoadd" name="tidtoadd" value="" />
+									<input type="hidden" id="daftidinterpreted" name="tidinterpreted" value="" />
 								</div>
-								<div id="idQualifierDiv" style='margin:3px;clear:both'>
+								<!-- <div id="idQualifierDiv" style='margin:3px;clear:both'>
 									<b><?php echo $LANG['ID_QUALIFIER']; ?>:</b>
 									<input type="text" name="identificationqualifier" title="e.g. cf, aff, etc" />
-								</div>
+								</div> -->
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['FAMILY']; ?>:</b>
 									<input type="text" name="family" style="width:200px;" />
@@ -501,7 +513,7 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 									<input type="text" name="taxonremarks" style="width:350px;" />
 								</div>
 								<div id="makeCurrentDiv" style='margin:3px;'>
-									<input type="checkbox" name="makecurrent" value="1" checked /> <?php echo $LANG['MAKE_CURRENT']; ?>
+									<input type="checkbox" name="isCurrent" value="1" checked /> <?php echo $LANG['MAKE_CURRENT']; ?>
 								</div>
 								<div style='margin:3px;'>
 									<input type="checkbox" name="printqueue" value="1" checked /> <?php echo $LANG['ADD_PRINT_QUEUE']; ?>
@@ -509,8 +521,7 @@ if($isEditor && !empty($occidArr) && is_array($occidArr)){
 								</div>
 								<div style='margin:15px;'>
 									<div style="float:left;">
-										<input name="collid" type="hidden" value="<?php echo $collid; ?>" />
-										<input name="tabtarget" type="hidden" value="0" />
+										<input name="createduid" type="hidden" value="<?php echo $SYMB_UID; ?>" />
 										<button type="submit" name="formsubmit" value="Add New Determinations"><?php echo $LANG['ADD_DETERS']; ?></button>
 									</div>
 								</div>
