@@ -4,6 +4,7 @@ if(isset($SERVER_ROOT) && $SERVER_ROOT){
 	include_once($SERVER_ROOT.'/classes/OccurrenceMaintenance.php');
 	include_once($SERVER_ROOT.'/classes/ImageShared.php');
 	include_once($SERVER_ROOT . '/classes/GuidManager.php');
+	include_once($SERVER_ROOT . '/classes/utilities_neon/ImageProcessorAI.php');
 }
 
 class ImageLocalProcessor {
@@ -124,7 +125,7 @@ class ImageLocalProcessor {
 		if($this->logMode == 1) echo '<ul>';
 		foreach($this->collArr as $collid => $cArr){
 			$this->activeCollid = $collid;
-			if(substr($this->collArr[$this->activeCollid]['pmterm'],-4) == '.csv'){
+			if(substr($this->collArr[$this->activeCollid]['pmterm']??'',-4) == '.csv'){
 				if(!file_exists($this->sourcePathBase.$this->collArr[$this->activeCollid]['pmterm'])){
 					$this->logOrEcho('ERROR accessing image mapping file: '.$this->sourcePathBase.$this->collArr[$this->activeCollid]['pmterm']);
 					continue;
@@ -191,7 +192,7 @@ class ImageLocalProcessor {
 			}
 
 			$this->logOrEcho('Starting image processing: '.$sourcePathFrag);
-			if(strtolower(substr($this->collArr[$this->activeCollid]['pmterm'],-4)) == '.csv'){
+			if(strtolower(substr($this->collArr[$this->activeCollid]['pmterm']??'',-4)) == '.csv'){
 				$this->processImageMap($sourcePathFrag);
 			}
 			elseif(substr($this->sourcePathBase,0,4) == 'http'){
@@ -343,7 +344,16 @@ class ImageLocalProcessor {
 		$this->logOrEcho('Processing File ('.date('Y-m-d h:i:s A').'): '.$fileName);
 		$fileExt = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
 		if($fileExt == 'jpg' || $fileExt == 'jpeg'){
-			$catalogNumber = $this->getPrimaryKey($fileName);
+			$mode = $this->collArr[$this->activeCollid]['cleaningmode'] ?? 'regex';
+			if($mode === 'ai'){
+				$example = $this->collArr[$this->activeCollid]['aiexampleidentifiers'] ?? '';
+				$extra = $this->collArr[$this->activeCollid]['aiextrainstructions'] ?? '';
+				$catalogNumber = ImageProcessorAI::getPrimaryKey($fileName, $example, $extra);
+				if(ImageProcessorAI::$statusStr) $this->logOrEcho(ImageProcessorAI::$statusStr, 1);
+			}
+			else{
+				$catalogNumber = $this->getPrimaryKey($fileName);
+			}
 			if(!$catalogNumber){
 				$this->logOrEcho('File skipped ('.$fileName.'), unable to extract specimen identifier',1);
 				return false;
@@ -884,86 +894,47 @@ class ImageLocalProcessor {
 		imagedestroy($tmpImg);
 		return $status;
 	}
-	
-	//neon edit
+
 	/**
-	 * Extract a primary key (catalog number) from a string (e.g. file name, catalogNumber field).
-	 *
-	 * Behavior depends on the configured cleaning mode:
-	 *
-	 * - Regex mode:
-	 *   Applies patternMatchingTerm to extract the identifier. If a capture group
-	 *   is present and matches, that value is used. If patternReplacingTerm and
-	 *   replacement are defined, they are applied to the extracted value before
-	 *   returning.
-	 *
-	 * - AI mode:
-	 *   Sends the input string to an AI-based cleaner, optionally guided by an
-	 *   example identifier. The AI returns a cleaned identifier, which is used
-	 *   directly.
+	 * Extract a primary key (catalog number) from a string (e.g file name, catalogNumber field),
+	 * applying patternMatchingTerm, and, if they apply, patternReplacingTerm, and
+	 * replacement.  If patternMatchingTerm contains a backreference,
+	 * and there is a match, the return value is the backreference.  If
+	 * patternReplacingTerm and replacement are modified, they are applied
+	 * before the result is returned.
 	 *
 	 * param: str  String from which to extract the catalogNumber
-	 * return: the extracted/cleaned identifier, or an empty string if extraction fails
+	 * return: an empty string if there is no match of patternMatchingTerm on
+	 *		str, otherwise the match as described above.
 	 */
 	private function getPrimaryKey($str){
 		$specPk = '';
-	
-		$mode = $this->collArr[$this->activeCollid]['cleaningmode'] ?? 'regex';
-	
-		if($mode === 'ai'){
-			$example = $this->collArr[$this->activeCollid]['aiexampleidentifiers'] ?? '';
-			$extra = $this->collArr[$this->activeCollid]['aiextrainstructions'] ?? '';
-			
-			$specPk = $this->cleanWithAI($str, $example, $extra);
-	
-			if(!$specPk){
-				$this->logOrEcho('AI failed to extract identifier from: '.$str, 1);
-				return '';
+		if(isset($this->collArr[$this->activeCollid]['pmterm'])){
+			$pmTerm = $this->collArr[$this->activeCollid]['pmterm'];
+			if(substr($pmTerm,0,1) != '/' || stripos(substr($pmTerm,-3),'/') === false){
+				$this->errorMessage = 'Regular Expression term illegal due to missing forward slashes delimiting the term: '.$pmTerm;
+				$this->logOrEcho('PROCESS ABORTED: '.$this->errorMessage,1);
+				exit('ABORT: '.$this->errorMessage);
 			}
-			
-			$this->logOrEcho('AI cleaned identifier: "'.$str.'" => "'.$specPk.'"', 1);
-	
-			return $specPk;
-		} elseif($mode === 'regex') {
-	
-			if(isset($this->collArr[$this->activeCollid]['pmterm'])){
-				$pmTerm = $this->collArr[$this->activeCollid]['pmterm'];
-		
-				if(substr($pmTerm,0,1) != '/' || stripos(substr($pmTerm,-3),'/') === false){
-					$this->errorMessage = 'Regular Expression term illegal due to missing forward slashes delimiting the term: '.$pmTerm;
-					$this->logOrEcho('PROCESS ABORTED: '.$this->errorMessage,1);
-					exit('ABORT: '.$this->errorMessage);
+			if(!strpos($pmTerm,'(') || !strpos($pmTerm,')')){
+				$this->errorMessage = 'Regular Expression term illegal due to missing capture term: '.$pmTerm;
+				$this->logOrEcho('PROCESS ABORTED: '.$this->errorMessage,1);
+				exit('ABORT: '.$this->errorMessage);
+			}
+			if(preg_match($pmTerm,$str,$matchArr)){
+				if(array_key_exists(1,$matchArr) && $matchArr[1]){
+					$specPk = $matchArr[1];
 				}
-		
-				if(!strpos($pmTerm,'(') || !strpos($pmTerm,')')){
-					$this->errorMessage = 'Regular Expression term illegal due to missing capture term: '.$pmTerm;
-					$this->logOrEcho('PROCESS ABORTED: '.$this->errorMessage,1);
-					exit('ABORT: '.$this->errorMessage);
+				if(isset($this->collArr[$this->activeCollid]['prpatt'])) {
+					$specPk = preg_replace($this->collArr[$this->activeCollid]['prpatt'],$this->collArr[$this->activeCollid]['prrepl'],$specPk);
 				}
-		
-				if(preg_match($pmTerm,$str,$matchArr)){
-					if(array_key_exists(1,$matchArr) && $matchArr[1]){
-						$specPk = $matchArr[1];
-					}
-		
-					if(isset($this->collArr[$this->activeCollid]['prpatt'])) {
-						$specPk = preg_replace(
-							$this->collArr[$this->activeCollid]['prpatt'],
-							$this->collArr[$this->activeCollid]['prrepl'],
-							$specPk
-						);
-					}
-		
-					if(isset($matchArr[2])){
-						$this->medSourceSuffix = $matchArr[2];
-					}
+				if(isset($matchArr[2])){
+					$this->medSourceSuffix = $matchArr[2];
 				}
 			}
 		}
-	
 		return $specPk;
 	}
-	//end neon edit
 
 	private function getOccid($catalogNumber){
 		$occid = 0;
@@ -1724,75 +1695,6 @@ class ImageLocalProcessor {
 			}
 		}
 	}
-	
-	//neon edit
-	private function cleanWithAI($value, $examplesRaw = '', $extraInstructions = '') {
-	
-		$exampleArr = array_filter(array_map('trim', explode("\n", $examplesRaw)));
-		$exampleList = '"' . implode('", "', $exampleArr) . '"';
-	
-		$prompt = "Extract a cleaned identifier from this filename: \"$value\". Match the structure of these examples: $exampleList.";
-
-		if($extraInstructions){
-			$prompt .= ' ' . trim($extraInstructions);
-		}
-	
-		$prompt .= " Return ONLY the identifier.";
-	
-		$response = $this->callAI($prompt);
-		return trim($response);
-	}
-	
-	private function callAI($prompt) {
-		$apiKey = $GLOBALS['OPENAI_API_KEY'] ?? '';
-		$model = $GLOBALS['OPENAI_MODEL'] ?? 'gpt-4.1-mini';
-
-		if(!$apiKey){
-			$this->logOrEcho('ERROR: OpenAI API key not configured', 1);
-			return '';
-		}
-	
-		$data = [
-			"model" => $model,
-			"messages" => [
-				["role" => "user", "content" => $prompt]
-			]
-		];
-	
-		$ch = curl_init("https://api.openai.com/v1/chat/completions");
-		curl_setopt_array($ch, [
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_HTTPHEADER => [
-				"Authorization: Bearer $apiKey",
-				"Content-Type: application/json"
-			],
-			CURLOPT_POST => true,
-			CURLOPT_POSTFIELDS => json_encode($data)
-		]);
-	
-		$result = curl_exec($ch);
-		curl_close($ch);
-	
-		$json = json_decode($result, true);
-		
-		if(isset($json['error'])){
-			$this->logOrEcho('AI ERROR: '.$json['error']['message'], 1);
-			return '';
-		}
-		
-		if(isset($json['usage'])){
-			$usage = $json['usage'];
-			$this->logOrEcho(
-				'AI TOKENS | prompt: '.$usage['prompt_tokens'].
-				' | completion: '.$usage['completion_tokens'].
-				' | total: '.$usage['total_tokens'],
-				1
-			);
-		}
-
-		return $json['choices'][0]['message']['content'] ?? '';
-	}
-	//end neon edit
 
 	//Misc data functions
 	private function setImageTableMap(){
