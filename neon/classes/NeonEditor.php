@@ -830,6 +830,40 @@ class NeonEditor extends UtilitiesFileImport {
 		];
 	}
 
+	// Get annotation queue list
+
+	public function getAnnotationColls() {
+		$retArr = array();
+
+		$sql = 'SELECT 
+					o.collid,
+					c.collectionName,
+					COUNT(*) AS cnt
+				FROM omoccurrences o
+				INNER JOIN omoccurdeterminations d
+					ON o.occid = d.occid
+				INNER JOIN omcollections c
+					ON o.collid = c.collid
+				WHERE d.printQueue = 1
+				GROUP BY o.collid, c.collectionName
+				ORDER BY c.collectionName';
+
+		$stmt = $this->conn->prepare($sql);
+		$stmt->execute();
+
+		$result = $stmt->get_result();
+
+		while($row = $result->fetch_assoc()){
+			$retArr[$row['collid']] = array(
+				'collid' => $row['collid'],
+				'collectionName' => $row['collectionName'],
+				'count' => $row['cnt']
+			);
+		}
+
+		return $retArr;
+	}
+
 	//Data set functions
 
 
