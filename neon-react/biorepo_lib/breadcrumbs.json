@@ -44,24 +44,24 @@
   "/misc/sampleguidelines.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
-    { "name": "Sample Guidelines and Policies" }
+    { "name": "Sample Use Procedures and Requirements" }
     ],
   "/misc/cite.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
-    { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
-    { "name": "Acknowledging and Citing" }
+    { "name": "Sample Use Procedures and Requirements", "href": "sampleguidelines.php" },
+    { "name": "Acknowledging and Citing the NEON Biorepository" }
     ],
   "/misc/samplepolicy.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
-    { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
+    { "name": "Sample Use Procedures and Requirements", "href": "sampleguidelines.php" },
     { "name": "Sample Use Policy" }
     ],
   "/misc/datasetpublishing.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
-    { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
+    { "name": "Sample Use Procedures and Requirements", "href": "sampleguidelines.php" },
     { "name": "Dataset Publishing" }
     ],
   "/misc/samplerequest.php": [
