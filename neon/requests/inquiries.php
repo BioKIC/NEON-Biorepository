@@ -2,15 +2,15 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/neon/classes/InquiriesManager.php');
+include_once($SERVER_ROOT.'/neon/classes/RequestReport.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 
-$reports = new InquiriesManager();
+$reportManager = new RequestReportManager();
 $utilities = new Utilities();
-$inquiriesArr = $reports->getInquiriesOut();
+$inquiriesArr = $reportManager->getInquiriesOut($_GET);
 $headerArr = ['id','researcher','date','title','status','samples'];
-$total = $reports->getInqSamplesCnt();
+$total = $reportManager->getInqSamplesCnt();
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
@@ -78,11 +78,6 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
 		$displayLeftMenu = false;
 		include($SERVER_ROOT.'/includes/header.php');
 		?>
-		<div class="navpath">
-			<a href="../../../index.php">Home</a> &gt;&gt;
-			<a href="../index.php">Management Tools</a> &gt;&gt;
-			<b>Sample Use Inquiries</b>
-		</div>
 		<div id="innertext">
 			<?php
 			if($isEditor){

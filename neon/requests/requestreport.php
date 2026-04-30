@@ -6,7 +6,7 @@ include_once($SERVER_ROOT.'/neon/classes/RequestReport.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
 header("Content-Type: text/html; charset=".$CHARSET);
 
-$reports = new RequestReport();
+$reports = new RequestReportManager();
 $reportsArr = $reports->getRequestsByStatus();
 $headerArr = ['Status', 'Count'];
 $utilities = new Utilities();

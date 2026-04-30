@@ -59,6 +59,7 @@ if($isEditor){
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
 				<li><a href="requests/index.php">Create New Inquiry</a></li>
 				<li><a href="requests/inquiries.php">Sample Use Inquiry List</a></li>
+				<li><a href="requests/requestdashboard.php">Sample Use Inquiry Dashboard</a></li>
 				<?php
 				if($IS_ADMIN){
 					?>
