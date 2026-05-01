@@ -28,38 +28,45 @@ $reportManager = new RequestReportManager();
 		const clientRoot = '<?php echo $CLIENT_ROOT; ?>';
 	</script>
 	<script>
-	document.addEventListener('DOMContentLoaded', () => {
-	  // expand/collapse groups
-		document.querySelectorAll('[data-target], .group-label, .expansion-icon').forEach(el => {
-		  el.addEventListener('click', e => {
-			e.stopPropagation();
-			const li = el.closest('li');
-			const ul = li.querySelector('ul');
-			const icon = li.querySelector('.expansion-icon');
-			if (!ul) return;
-		
-			const isCollapsed = ul.classList.toggle('collapsed');
-			if (icon) icon.textContent = isCollapsed ? 'add_box' : 'indeterminate_check_box';
-		  });
-		});
-	
-	  // toggle checkbox when clicking leaf text
-	  document.querySelectorAll('.leaf-label').forEach(label => {
-		label.addEventListener('click', e => {
-		  const checkbox = label.previousElementSibling; // the <input type="checkbox">
-		  if (checkbox && checkbox.type === 'checkbox') {
-			checkbox.checked = !checkbox.checked;
-		  }
-		});
-	  });
+document.addEventListener('DOMContentLoaded', () => {
 
-	  function toggleAllStatuses(master) {
-		const children = document.querySelectorAll('.status-checkbox');
-		children.forEach(cb => {
-			cb.checked = master.checked;
-		});
-		}
-	});
+  // Expand / collapse groups
+	const toggleElements = document.querySelectorAll('[data-target], .group-label, .expansion-icon');
+
+  toggleElements.forEach(element => {
+    element.addEventListener('click', (event) => {
+      event.stopPropagation();
+
+      const parentItem = element.closest('li');
+      const childList = parentItem?.querySelector('ul');
+      const icon = parentItem?.querySelector('.expansion-icon');
+
+      if (!childList) return;
+
+      const collapsed = childList.classList.toggle('collapsed');
+
+      if (icon) {
+        icon.textContent = collapsed ? 'add_box' : 'indeterminate_check_box';
+      }
+    });
+  });
+
+
+  // Toggle checkbox when clicking leaf label
+  const leafLabels = document.querySelectorAll('.leaf-label');
+
+  leafLabels.forEach(label => {
+    label.addEventListener('click', () => {
+      const checkbox = label.previousElementSibling;
+
+      if (checkbox?.type === 'checkbox') {
+        checkbox.checked = !checkbox.checked;
+      }
+    });
+  });
+
+});
+
 	</script>
 
 	<!-- Search-specific styles -->
@@ -174,43 +181,32 @@ $reportManager = new RequestReportManager();
 				<!-- Status -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="status" class="accordion-selector" checked=true />
+					<input type="checkbox" id="status" class="accordion-selector" />
 					<!-- Accordion header -->
 					<label for="status" class="accordion-header">Status</label>
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-status">
 							<ul id="status-list">
+							<?php 
+							if ($statuses = $reportManager->getStatuses()) {
+								foreach ($statuses as $status) {
+								$val = htmlspecialchars($status["status"]);
+								echo "
 								<li class='Mui'>
-									<!-- Parent (controls expand + select all) -->
-									<div style="display:flex; align-items:center; gap:5px;">
-									<input id="all-statuses" type="checkbox" checked onclick="toggleAllStatuses(this)">
-
-									<span class="material-icons expansion-icon" onclick="toggleStatusList(event)">
-										indeterminate_check_box
-									</span>
-
-									<label for="all-statuses">All Statuses</label>
-									</div>
-
-									<!-- Child list (expandable) -->
-									<ul id="status-children" class="collapsed">
-										<?php 
-										if ($statuses = $reportManager->getStatuses()) {
-											foreach ($statuses as $status) {
-												$val = htmlspecialchars($status["status"]);
-												echo "
-												<li class='Mui'>
-													<label style='display:flex; align-items:center; gap:5px;'>
-														<input type='checkbox' name='status[]' value='{$val}' class='status-checkbox' checked>
-														<span>{$val}</span>
-													</label>
-												</li>";
-											}
-										}
-										?>
-									</ul>
-								</li>
+									<label style='display:flex; align-items:center; gap:5px;'>
+									<input type='checkbox'
+											name='status[]'
+											value='{$val}'
+											class='child status-checkbox'
+											data-chip='Status: {$val}'
+											checked>
+									<span>{$val}</span>
+									</label>
+								</li>";
+								}
+							}
+							?>
 							</ul>
 						</div>
 					</div>
@@ -218,7 +214,7 @@ $reportManager = new RequestReportManager();
 				<!-- Collections -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="collections" class="accordion-selector" checked=true />
+					<input type="checkbox" id="collections" class="accordion-selector"/>
 					<!-- Accordion header -->
 					<label for="collections" class="accordion-header">Sample Types</label>
 					<!-- Accordion content -->
@@ -366,7 +362,7 @@ $reportManager = new RequestReportManager();
 				<!-- Locality -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="locality" class="accordion-selector" checked=true />
+					<input type="checkbox" id="locality" class="accordion-selector"/>
 					<!-- Accordion header -->
 					<label for="locality" class="accordion-header">Domains & Sites</label>
 					<!-- Accordion content -->
@@ -418,20 +414,6 @@ $reportManager = new RequestReportManager();
 										<span class="assistive-text" style="line-height:1.7em">Separate multiple with commas. Accepts NEON Domain and/or Site names and codes.</span>
 									</div>
 								</div>
-								<div class="grid grid--half">
-									<div class="input-text-container">
-										<label for="elevlow" class="input-text--outlined">
-											<input type="number" step="any" name="elevlow" id="elevlow" data-chip="Min Elevation">
-											<span data-label="Minimum Elevation"></span></label>
-										<span class="assistive-text">Meters</span>
-									</div>
-									<div class="input-text-container">
-										<label for="elevhigh" class="input-text--outlined">
-											<input type="number" step="any" name="elevhigh" id="elevhigh" data-chip="Max Elevation">
-											<span data-label="Maximum Elevation"></span></label>
-										<span class="assistive-text">Meters</span>
-									</div>
-								</div>
 							</div>
 						</div>
 					</div>
@@ -439,22 +421,46 @@ $reportManager = new RequestReportManager();
 				<!-- Collecting Event -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="coll-event" class="accordion-selector" checked=true />
+					<input type="checkbox" id="coll-event" class="accordion-selector"/>
 					<!-- Accordion header -->
 					<label for="coll-event" class="accordion-header">Status Date</label>
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-coll-event">
 							<div class="input-text-container">
-								<label for="eventdate1" class="input-text--outlined">
-									<input type="text" name="eventdate1" data-chip="Event Date Start">
-									<span data-label="Date"></span></label>
+								<label for="inquiry-eventdate1" class="input-text--outlined">
+									<input type="text" name="inquiry-eventdate1" data-chip="Initial Inquiry Date Start">
+									<span data-label="Inquiry Date"></span></label>
 								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
 							</div>
 							<div class="input-text-container">
-								<label for="eventdate2" class="input-text--outlined">
-									<input type="text" name="eventdate2" data-chip="Event Date End">
-									<span data-label="End Date"></span></label>
+								<label for="inquiry-eventdate2" class="input-text--outlined">
+									<input type="text" name="inquiry-eventdate2" data-chip="Initial Inquiry Date End">
+									<span data-label="Inquiry End Date"></span></label>
+								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+							<div class="input-text-container">
+								<label for="active-eventdate1" class="input-text--outlined">
+									<input type="text" name="active-eventdate1" data-chip="Active Date Start">
+									<span data-label="Active Date"></span></label>
+								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+							<div class="input-text-container">
+								<label for="active-eventdate2" class="input-text--outlined">
+									<input type="text" name="active-eventdate2" data-chip="Active Date End">
+									<span data-label="Active End Date"></span></label>
+								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+							<div class="input-text-container">
+								<label for="status-eventdate1" class="input-text--outlined">
+									<input type="text" name="status-eventdate1" data-chip="Latest Status Date Start">
+									<span data-label="Latest Status Date"></span></label>
+								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							</div>
+							<div class="input-text-container">
+								<label for="status-eventdate2" class="input-text--outlined">
+									<input type="text" name="status-eventdate2" data-chip="Latest Status Date End">
+									<span data-label="Latest Status End Date"></span></label>
 								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
 							</div>
 						</div>
@@ -510,25 +516,6 @@ $reportManager = new RequestReportManager();
 						</div>
 					</div>
 				</section>
-				<!-- Advanced Search -->
-				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="advanced-search" class="accordion-selector" />
-					<!-- Accordion header -->
-					<label for="advanced-search" class="accordion-header">Advanced Search</label>
-					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-advanced-search">
-
-						<?php
-						include($SERVER_ROOT . '/neon/search/includes/queryform.php');
-						?>
-
-
-
-						</div>
-					</div>
-				</section>
 			</div>
 			<!-- Criteria panel -->
 			<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
@@ -544,6 +531,6 @@ $reportManager = new RequestReportManager();
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
 </body>
-<script src="<?= $CLIENT_ROOT ?>/neon/search/js/searchform.js"></script>
-<script> window.addEventListener('load', updateChip);</script>
+
+<script src="<?= $CLIENT_ROOT ?>/neon/requests/js/requestsearchform.js"></script>
 </html>
