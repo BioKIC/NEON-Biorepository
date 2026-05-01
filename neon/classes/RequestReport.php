@@ -24,9 +24,9 @@
     $dataArr = array();
 
     $sql = 'SELECT 
-    status, COUNT(*) AS count
-    FROM neonrequest
-    GROUP BY status;';
+            status, COUNT(*) AS count
+            FROM neonrequest
+            GROUP BY status;';
     $result = $this->conn->query($sql);
 
     if ($result) {
@@ -101,6 +101,85 @@
     $result->free(); 
     return $dataArr;
   }
+
+  // Search inquiries
+  public function getSearchInquiries($params){
+
+    $sql = "SELECT 
+                i.id,
+                i.researcherID,
+                i.inquiryDate,
+                i.title,
+                i.status,
+                COUNT(s.id) as samples
+            FROM neonrequest i
+            LEFT JOIN neonsamplerequestlink s ON s.requestID = i.id";
+
+    $where = [];
+    $binds = [];
+
+    // -------------------------
+    // REQUEST-LEVEL FILTERS
+    // -------------------------
+    if(!empty($params['status'])){
+        $statusArr = explode(',', $params['status']);
+        $where[] = "i.status IN (" . $this->placeholders($statusArr) . ")";
+        $binds = array_merge($binds, $statusArr);
+    }
+
+    // -------------------------
+    // SAMPLE-LEVEL FILTERS
+    // -------------------------
+    if(!empty($params['state'])){
+        $where[] = "s.state IN (" . $this->placeholders(explode(',', $params['state'])) . ")";
+        $binds = array_merge($binds, explode(',', $params['state']));
+    }
+
+    if(!empty($params['datasetid'])){
+        $ids = explode(',', $params['datasetid']);
+        $where[] = "s.datasetid IN (" . $this->placeholders($ids) . ")";
+        $binds = array_merge($binds, $ids);
+    }
+
+    if(!empty($params['scientificName'])){
+        $where[] = "s.scientificName LIKE ?";
+        $binds[] = "%" . $params['scientificName'] . "%";
+    }
+
+    // -------------------------
+    // FINALIZE QUERY
+    // -------------------------
+    if(count($where)){
+        $sql .= " WHERE " . implode(" AND ", $where);
+    }
+
+    $sql .= " GROUP BY i.id ORDER BY i.id";
+
+    $stmt = $this->conn->prepare($sql);
+
+    if (!$stmt) {
+        $this->errorMessage = $this->conn->error;
+        return false;
+    }
+
+    if (!empty($binds)) {
+        $types = str_repeat('s', count($binds));
+        $stmt->bind_param($types, ...$binds);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $dataArr = [];
+
+    while ($row = $result->fetch_assoc()) {
+        $dataArr[] = $row;
+    }
+
+    $stmt->close();
+
+    return $dataArr;
+    }
 
 }
 ?>

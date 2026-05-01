@@ -13,35 +13,13 @@ let isInitializing = true;
 let suppressChipRender = true;
 
 window.addEventListener('load', () => {
-  prefillFromUrl();   
   suppressChipRender = false;
   isInitializing = false;
   updateChip();       
 });
 
-// list of parameters to be passed to url, modified by getSearchUrl method
-let paramNames = [
-  'db',
-  'datasetid',
-  'status',
-  'catnum',
-  'includeothercatnum',
-  'includematerialsample',
-  'state',
-  'county',
-  'local',
-  'initialeventdate1',
-  'initialeventdate2',
-  'activeeventdate1',
-  'activeeventdate2',
-  'latesteventdate1',
-  'latesteventdate2',
-  'taxa',
-  'taxontype'
-];
 
 let criterionSelected = getCriterionSelected();
-let paramsArr = [];
 //////////////////////////////////////////////////////////////////////////
 
 /**
@@ -117,28 +95,7 @@ function addChip(element) {
       uncheckAll(document.getElementById(element.name));
       removeChip(inputChip);
     };
-  } else if (element.name == 'advancedsearchstr') {
-    if (element.text != '') {
-      inputChip.id = 'chip-advancedsearchstr';
-      inputChip.textContent = element.text;
-      chipBtn.onclick = function () {
-        const formElements = document.querySelectorAll('#search-form-advanced-search input, #search-form-advanced-search select');
-        formElements.forEach(element => {
-            if (element.type === 'checkbox') {
-                element.checked = false;
-            } else if (element.type === 'select'){
-                element.selectedIndex = 0;
-            } else {
-                element.value = '';
-            }
-        for(let x = 1; x < 9; x++){
-          if(x > 1) document.getElementById("customdiv"+x).style.display = "none";
-        }
-        removeChip(inputChip);
-        });
-      }
-    }
-  }
+  } 
     else if (element.name === 'status') {
     inputChip.id = 'chip-status';
     inputChip.textContent = element.text;
@@ -508,132 +465,19 @@ function getCollsSelected() {
 }
 
 /**
- * Searches specified fields and capture values
- * @param {String} paramName Name of parameter to be looked for in form
- * Passes objects to `paramsArr`
- * Passes default objects
- */
-function getParam(paramName) {
-  //Default country
-  // paramsArr['country'] = 'USA';
-  const elements = document.getElementsByName(paramName);
-  const firstEl = elements[0];
-
-  let elementValues = '';
-
-  // for db and datasetid
-  if (paramName === 'db') {
-    let dbArr = [];
-    let tempArr = getCollsSelected();
-    tempArr.forEach((item) => {
-      dbArr.push(item.value);
-    });
-    elementValues = dbArr;
-  } else if (paramName === 'datasetid') {
-    let datasetArr = [];
-    elements.forEach((el) => {
-      if (el.checked) {
-        let isSite = el.dataset.domain != undefined;
-        if (isSite) {
-          let isDomainSel = document.getElementById(el.dataset.domain).checked;
-          isDomainSel ? '' : datasetArr.push(el.value);
-        } else {
-          datasetArr.push(el.value);
-        }
-      }
-    });
-    elementValues = datasetArr;
-  } else if (elements[0] != undefined) {
-    switch (firstEl.tagName) {
-      case 'INPUT':
-        (firstEl.type === 'checkbox' && firstEl.checked) ||
-        ((firstEl.type === 'text' || firstEl.type === 'number' || firstEl.type === 'textarea') && firstEl != '')
-          ? (elementValues = firstEl.value)
-          : '';
-        break;
-      case 'SELECT':
-        elementValues = firstEl.options[firstEl.selectedIndex].value;
-        break;
-      case 'TEXTAREA':
-        elementValues = firstEl.value;
-        break;
-    }
-  }
-  elementValues != '' ? (paramsArr[paramName] = elementValues) : '';
-  return paramsArr;
-}
-
-/**
- * Creates search URL with parameters
- * Define parameters to be looked for in `paramNames` array
- */
-function getSearchUrl() {
-  const harvestUrl = location.href.slice(0, location.href.indexOf('/neon/search'));
-  const baseUrl = new URL(harvestUrl + '/collections/list.php');
-
-  // Clears array temporarily to avoid redundancy
-  paramsArr = [];
-
-  // Only adds 'datasetid' to list of params if there is at least one selected
-  // and if 'all' is not checked
-  if (allSites.checked) {
-    paramNames = paramNames.filter((value, index, arr) => {
-      return value != 'datasetid';
-    });
-  } else {
-    document.querySelectorAll('#site-list input[type=checkbox]:checked')
-      .length > 1
-      ? paramNames.push('datasetid')
-      : false;
-  }
-
-  // Grabs params from form for each param name
-  paramNames.forEach((param, i) => {
-    return getParam(paramNames[i]);
-  });
-  
-  // Adds useThes if box is not checked
-  const useThesCb = document.getElementById('usethes');
-  if (useThesCb && !useThesCb.checked) {
-    baseUrl.searchParams.set('usethes', '1');
-  }
-
-  // Appends each key value for each param in search url
-  let queryString = Object.keys(paramsArr).map((key) => {
-    //   return encodeURIComponent(key) + '=' + encodeURIComponent(paramsArr[key])
-    // }).join('&');
-    // console.log(baseURL + queryString);
-    baseUrl.searchParams.append(key, paramsArr[key]);
-  });
-  return baseUrl.href;
-}
-
-/**
  * Form validation functions
  * @returns {Array} errors Array of errors objects with form element it refers to (elId), for highlighting, and errorMsg
  */
-function validateForm() {
-  errors = [];
-  // DB
-  let anyCollsSelected = getCollsSelected();
-  if (anyCollsSelected.length === 0) {
-    errors.push({
-      elId: 'search-form-colls',
-      errorMsg: 'Please select at least one sample type.',
-    });
+
+form.addEventListener('submit', function (e) {
+  const errors = validateForm?.() || [];
+
+  if (errors.length) {
+    e.preventDefault();
+    handleValErrors(errors);
+    return;
   }
-  // HTML5 built-in validation
-  let invalidInputs = document.querySelectorAll('input:invalid');
-  if (invalidInputs.length > 0) {
-    invalidInputs.forEach((inp) => {
-      errors.push({
-        elId: inp.id,
-        errorMsg: `Please check values in field ${inp.dataset.chip}.`,
-      });
-    });
-  }
-  return errors;
-}
+});
 
 /**
  * Gets validation errors, outputs alerts with error messages and highlights form element with error
@@ -657,22 +501,6 @@ function handleValErrors(errors) {
   });
 }
 
-/**
- * Calls methods to validate form and build URL that will redirect search
- */
-function simpleSearch() {
-  let alerts = document.getElementById('alert-msgs');
-  alerts != null ? (alerts.innerHTML = '') : '';
-  let errors = [];
-  errors = validateForm();
-  let isValid = errors.length == 0;
-  if (isValid) {
-    let searchUrl = getSearchUrl();
-    window.location = searchUrl;
-  } else {
-    handleValErrors(errors);
-  }
-}
 
 /**
  * Hides selected collections checkboxes (for whatever reason)
@@ -696,14 +524,6 @@ function hideColCheckbox(collid) {
 /**
  * EVENT LISTENERS/INITIALIZERS
  */
-
-// Search button
-document
-  .getElementById('search-btn')
-  .addEventListener('click', function (event) {
-    event.preventDefault();
-    simpleSearch();
-  });
 // Reset button
 document
   .getElementById('reset-btn')
@@ -768,97 +588,6 @@ $('#collections-list1, #collections-list2, #collections-list3').on('click', '.ex
   const isCollapsed = $childUl.toggleClass('collapsed').hasClass('collapsed');
   $(this).text(isCollapsed ? 'add_box' : 'indeterminate_check_box');
 });
-
-////////////////////////////////////////////////////////////////////////////
-// Prefill form from URL params
-function prefillFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-
-  const hasDbParam = params.has('db');
-  const hasDatasetParam = params.has('datasetid');
-
-  // Reset ONLY collections tree if db= is present
-  if (hasDbParam) {
-    document.querySelectorAll('#biorepo-collections-list input[type="checkbox"]').forEach(cb => {
-      cb.checked = false;
-      cb.indeterminate = false;
-    });
-  }
-
-  // Reset ONLY site tree if datasetid= is present
-  if (hasDatasetParam) {
-    document.querySelectorAll('#site-list input[type="checkbox"]').forEach(cb => {
-      cb.checked = false;
-      cb.indeterminate = false;
-    });
-  }
-
-  // Apply URL params
-  params.forEach((value, key) => {
-
-    // --- COLLECTIONS TREE (db) ---
-    if (key === 'db') {
-      const values = value.split(',');
-      const leafCheckboxes = document.querySelectorAll(
-        '#biorepo-collections-list input[name="db"], #neonext-collections-list input[name="db"]'
-      );
-
-      values.forEach(v => {
-        leafCheckboxes.forEach(cb => {
-          if (cb.value === v) cb.checked = true;
-        });
-      });
-      return;
-    }
-
-    // --- SITE TREE (datasetid) ---
-if (key === 'datasetid') {
-  const values = value.split(',');
-
-  values.forEach(v => {
-    document.querySelectorAll(
-      `#site-list input[name="datasetid"][value="${v}"]`
-    ).forEach(cb => {
-      cb.checked = true;
-      cb.indeterminate = false;
-
-      // If this is a domain (parent), also check all its descendant sites
-      if (cb.classList.contains('all-selector')) {
-        const li = cb.closest('li');
-        if (li) {
-          li.querySelectorAll(':scope ul input.child:enabled').forEach(child => {
-            child.checked = true;
-            child.indeterminate = false;
-          });
-        }
-      }
-    });
-  });
-  return;
-}
-
-    // (other single-value text fields, selects, etc.)
-    const el = document.querySelector(`[name="${key}"]`);
-    if (el) el.value = value;
-  });
-
-  // Recalculate ancestors & chips
-  updateGlobalMaster();
-
-  document.querySelectorAll(
-    '#biorepo-collections-list input.child, #site-list input.child, #neonext-collections-list input.child'
-  ).forEach(cb => {
-    updateAncestors(cb);
-  });
-
-}
-
-
-// Run prefill after DOM + default state loads
-window.addEventListener('load', function () {
-  prefillFromUrl();
-});
-
 
 // Hides MOSC-BU checkboxes
 hideColCheckbox(58);

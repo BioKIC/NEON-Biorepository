@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			font-size: 2.3rem;
 		">Search Sample Use Inquiries</h1>
 		<div id="error-msgs" class="errors"></div>
-		<form id="params-form">
+		<form id="params-form" method="POST" action="inquiryresults.php">
 			<!-- Criteria forms -->
 			<div class="accordions">
 				<!-- Status -->
@@ -519,8 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
 			</div>
 			<!-- Criteria panel -->
 			<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
-				<button id="search-btn">Search</button>
-				<button id="reset-btn">Reset</button>
+					<button type="submit" id="search-btn">Search</button>
+					<button id="reset-btn">Reset</button>
 				<h2>Criteria</h2>
 				<div id="chips"></div>
 			</div>
