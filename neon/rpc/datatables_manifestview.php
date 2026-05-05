@@ -117,6 +117,21 @@ if ($shipmentPK !== null) {
     } elseif ($filter === 'harvestingError') {
         $conditionParts[] = 'errorMessage IS NOT NULL';
     }
+    
+    if (strpos($filter, 'dyn:') === 0) {
+        $parts = explode(':', $filter, 3);
+    
+        if (count($parts) === 3) {
+            $key = $parts[1];   // e.g. containerID
+            $value = $parts[2]; // e.g. Box 1
+    
+            $conditionParts[] = "JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.$key')) = ?";
+            $bindings[] = [
+                'val' => $value,
+                'type' => 's'
+            ];
+        }
+    }
 
     $whereAll = [
         'condition' => implode(' AND ', $conditionParts),

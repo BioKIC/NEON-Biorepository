@@ -405,21 +405,6 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			}
 		}
 
-		function batchSelectSamples(selectObj){
-			if(selectObj.value != ""){
-				var f = selectObj.form;
-				var selectCnt = 0;
-				for(var i=0;i<f.length;i++){
-					if(f.elements[i].name == "scbox[]") f.elements[i].checked = false;
-				}
-				$("."+selectObj.value).prop('checked', true);
-				$("#selectedMsgDiv").text($("."+selectObj.value).length+' samples have been selected');
-				if(f.batchContainerID && selectObj.name != "batchContainerID") f.batchContainerID.value = "";
-				if(f.batchPlateID && selectObj.name != "batchPlateID") f.batchPlateID.value = "";
-				if(f.batchPlateBarcode && selectObj.name != "batchPlateBarcode") f.batchPlateBarcode.value = "";
-			}
-		}
-
 		function openShipmentEditor(){
 			var url = "shipmenteditor.php?shipmentPK=<?php echo $shipmentPK; ?>";
 			openPopup(url,"shipwindow");
@@ -849,6 +834,8 @@ include($SERVER_ROOT.'/includes/header.php');
 					?>
 				</div>
 				<?php
+				$tagArr = $shipManager->getDynamicPropertyTags();
+				
 				if($shipArr['checkinTimestamp'] || $sampleFilter == 'displaySamples'){
 					$headerList = $shipManager->getSampleHeaders(null, $sampleFilter);
 					?>
@@ -866,6 +853,26 @@ include($SERVER_ROOT.'/includes/header.php');
 											<option value="notAccepted">Not Accepted for Analysis</option>
 											<option value="altIds">Has Alternative IDs</option>
 											<option value="harvestingError">Harvesting Errors</option>
+							
+											<?php
+											// dynamic options
+											if (!empty($tagArr)) {
+												echo '<option value="">----------------------</option>';
+											
+												foreach ($tagArr as $key => $values) {
+													uksort($values, 'strnatcmp');
+											
+													foreach ($values as $val => $cnt) {
+														$safeVal = htmlspecialchars($val);
+														$label = ucfirst($key) . ': ' . $safeVal . ' (' . $cnt . ')';
+											
+														echo '<option value="dyn:' . $key . ':' . $safeVal . '">'
+															. $label .
+															'</option>';
+													}
+												}
+											}
+											?>
 										</select>
 										<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
 									</form>
@@ -979,74 +986,6 @@ include($SERVER_ROOT.'/includes/header.php');
 														</div>
 													</div>
 												</fieldset>
-												<?php
-												$tagArr = array();
-												if($tagArr){
-													?>
-													<fieldset style="margin:5px;float:left">
-														<legend>Batch select based on plate or container IDs</legend>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('containerid',$tagArr)){
-																?>
-																<select name="batchContainerID" onchange="batchSelectSamples(this);">
-																	<option value="">Select Container ID</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$containerArr = $tagArr['containerid'];
-																	ksort($containerArr);
-																	foreach($containerArr as $containerTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$containerTag).'">'.$containerTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('plateid',$tagArr)){
-																?>
-																<select name="batchPlateID" onchange="batchSelectSamples(this);">
-																	<option value="">Select Plate ID</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$plateArr = $tagArr['plateid'];
-																	ksort($plateArr);
-																	foreach($plateArr as $plateTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$plateTag).'">'.$plateTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('platebarcode',$tagArr)){
-																?>
-																<select name="batchPlateBarcode" onchange="batchSelectSamples(this);">
-																	<option value="">Select Plate Barcode</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$plateBarcodeArr = $tagArr['platebarcode'];
-																	ksort($plateBarcodeArr);
-																	foreach($plateBarcodeArr as $barcodeTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$barcodeTag).'">'.$barcodeTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div id="selectedMsgDiv" style="margin:10px;color:orange"></div>
-													</fieldset>
-													<?php
-												}
-												?>
 											</div>
 											<?php
 										}
