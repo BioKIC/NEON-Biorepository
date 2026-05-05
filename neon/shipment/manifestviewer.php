@@ -855,21 +855,24 @@ include($SERVER_ROOT.'/includes/header.php');
 											<option value="harvestingError">Harvesting Errors</option>
 							
 											<?php
-											// dynamic options
 											if (!empty($tagArr)) {
 												echo '<option value="">----------------------</option>';
 											
 												foreach ($tagArr as $key => $values) {
+											
 													uksort($values, 'strnatcmp');
+											
+													echo '<optgroup label="' . htmlspecialchars($key) . '">';
 											
 													foreach ($values as $val => $cnt) {
 														$safeVal = htmlspecialchars($val);
-														$label = ucfirst($key) . ': ' . $safeVal . ' (' . $cnt . ')';
 											
 														echo '<option value="dyn:' . $key . ':' . $safeVal . '">'
-															. $label .
-															'</option>';
+															. $safeVal . ' (' . $cnt . ')'
+															. '</option>';
 													}
+											
+													echo '</optgroup>';
 												}
 											}
 											?>
