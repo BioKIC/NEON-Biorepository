@@ -77,10 +77,10 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
 		$displayLeftMenu = false;
 		include($SERVER_ROOT.'/includes/header.php');
 		?>
-		<div id="innertext">
-			<?php
-			if($isEditor){
-				?>
+	<div id="innertext">
+	<?php
+	if($isEditor){
+	?>
         <?php
         echo '<h1>Sample Use Inquiries</h1>';
 
@@ -92,12 +92,11 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
             echo $inquiriesTable;
             echo '</div>';
         };
-        ?>
-				<?php
-			} else {
-        echo '<h3>Please login to get access to this page.</h3>';
-      }
-			?>
+
+	} else {
+        echo '<h3>You do not have permissions to view this page.</h3>';
+    }
+		?>
 		</div>
 		<?php
 		include($SERVER_ROOT.'/includes/footer.php');
