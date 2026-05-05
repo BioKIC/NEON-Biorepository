@@ -127,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	include($SERVER_ROOT . '/includes/header.php');
 
 	//function to render sample type tree
+	
 	function renderTree($nodes, $parentId = '') {
 		$html = '';
 		foreach ($nodes as $node) {
@@ -402,12 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
 										<span class="assistive-text">Separate multiple with commas.</span>
 									</div>
 									<div class="input-text-container">
-										<label for="county" class="input-text--outlined">
-											<input type="text" name="county" id="county" data-chip="County">
-											<span data-label="County"></span></label>
-										<span class="assistive-text">Separate multiple with commas.</span>
-									</div>
-									<div class="input-text-container">
 										<label for="local" class="input-text--outlined">
 											<input type="text" name="local" id="local" data-chip="Locality">
 											<span data-label="Locality"></span></label>
@@ -415,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
 									</div>
 								</div>
 							</div>
+							
 						</div>
 					</div>
 				</section>
@@ -428,40 +424,91 @@ document.addEventListener('DOMContentLoaded', () => {
 					<div class="content">
 						<div id="search-form-coll-event">
 							<div class="input-text-container">
-								<label for="inquiry-eventdate1" class="input-text--outlined">
-									<input type="text" name="inquiry-eventdate1" data-chip="Initial Inquiry Date Start">
-									<span data-label="Inquiry Date"></span></label>
-								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							<label class="input-text--outlined">
+								<span style="font-weight: 500;">Inquiry Date Range</span>
+								
+								<div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
+								<input 
+									type="text" 
+									name="inquiry-eventdate1" 
+									placeholder="2000-01-01"
+									data-chip="Inquiry Date Start"
+									style="flex:1;"
+								>
+
+								<span style="font-weight:bold;">–</span>
+
+								<input 
+									type="text" 
+									name="inquiry-eventdate2" 
+									placeholder="2100-12-31"
+									data-chip="Inquiry Date End"
+									style="flex:1;"
+								>
+								</div>
+							</label>
+
+							<span class="assistive-text">
+								Enter BOTH dates in format <b>YYYY-MM-DD</b> (e.g. 2020-01-01 – 2020-12-31).
+							</span>
 							</div>
 							<div class="input-text-container">
-								<label for="inquiry-eventdate2" class="input-text--outlined">
-									<input type="text" name="inquiry-eventdate2" data-chip="Initial Inquiry Date End">
-									<span data-label="Inquiry End Date"></span></label>
-								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							<label class="input-text--outlined">
+								<span style="font-weight: 500;">Active Date Range</span>
+								
+								<div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
+								<input 
+									type="text" 
+									name="active-eventdate1" 
+									placeholder="2000-01-01"
+									data-chip="Active Date Start"
+									style="flex:1;"
+								>
+
+								<span style="font-weight:bold;">–</span>
+
+								<input 
+									type="text" 
+									name="active-eventdate2" 
+									placeholder="2100-12-31"
+									data-chip="Active Date End"
+									style="flex:1;"
+								>
+								</div>
+							</label>
+
+							<span class="assistive-text">
+								Enter BOTH dates in format <b>YYYY-MM-DD</b> (e.g. 2020-01-01 – 2020-12-31).
+							</span>
 							</div>
 							<div class="input-text-container">
-								<label for="active-eventdate1" class="input-text--outlined">
-									<input type="text" name="active-eventdate1" data-chip="Active Date Start">
-									<span data-label="Active Date"></span></label>
-								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
-							</div>
-							<div class="input-text-container">
-								<label for="active-eventdate2" class="input-text--outlined">
-									<input type="text" name="active-eventdate2" data-chip="Active Date End">
-									<span data-label="Active End Date"></span></label>
-								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
-							</div>
-							<div class="input-text-container">
-								<label for="status-eventdate1" class="input-text--outlined">
-									<input type="text" name="status-eventdate1" data-chip="Latest Status Date Start">
-									<span data-label="Latest Status Date"></span></label>
-								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
-							</div>
-							<div class="input-text-container">
-								<label for="status-eventdate2" class="input-text--outlined">
-									<input type="text" name="status-eventdate2" data-chip="Latest Status Date End">
-									<span data-label="Latest Status End Date"></span></label>
-								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+							<label class="input-text--outlined">
+								<span style="font-weight: 500;">Latest Status Date Range</span>
+								
+								<div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
+								<input 
+									type="text" 
+									name="status-eventdate1" 
+									placeholder="2000-01-01"
+									data-chip="Latest Status Date Start"
+									style="flex:1;"
+								>
+
+								<span style="font-weight:bold;">–</span>
+
+								<input 
+									type="text" 
+									name="status-eventdate2" 
+									placeholder="2100-12-31"
+									data-chip="Latest Status Date End"
+									style="flex:1;"
+								>
+								</div>
+							</label>
+
+							<span class="assistive-text">
+								Enter BOTH dates in format <b>YYYY-MM-DD</b> (e.g. 2020-01-01 – 2020-12-31).
+							</span>
 							</div>
 						</div>
 					</div>
@@ -513,6 +560,51 @@ document.addEventListener('DOMContentLoaded', () => {
 						<div>
 						  <input type="checkbox" name="usethes" id="usethes" data-chip="Exclude Synonyms">
 						  <span class="ml-1">Exclude Synonyms</span>
+						</div>
+					</div>
+				</section>
+				<!-- Researchers -->
+				<section>
+					<!-- Accordion selector -->
+					<input type="checkbox" id="researcher" class="accordion-selector"/>
+
+					<!-- Accordion header -->
+					<label for="researcher" class="accordion-header">Researchers</label>
+
+					<!-- Taxonomy -->
+					<div id="search-form-researcher" class="content">
+						<div class="input-text-container">
+						<label for="researcher" style="display:block; font-weight:500; margin-bottom:6px;">
+							Researcher
+						</label>
+
+						<select 
+							name="researcher" 
+							id="researcher" 
+							data-chip="Researcher"
+							style="
+							width:100%;
+							padding:10px;
+							border:1px solid #ccc;
+							border-radius:6px;
+							font-size:14px;
+							background:white;
+							"
+						>
+							<option value="">-- Select Researcher --</option>
+							<?php
+							if ($researchers = $reportManager->getResearchers()) {
+								foreach ($researchers as $id => $label) {
+									$safeLabel = htmlspecialchars($label);
+									echo "<option value=\"{$id}\">{$safeLabel}</option>";
+								}
+							}
+							?>
+						</select>
+
+						<span class="assistive-text">
+							Choose a researcher.
+						</span>
 						</div>
 					</div>
 				</section>

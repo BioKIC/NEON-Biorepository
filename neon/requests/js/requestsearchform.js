@@ -501,6 +501,60 @@ function handleValErrors(errors) {
   });
 }
 
+function validateDateRange(startName, endName, label) {
+  const errors = [];
+
+  const start = document.querySelector(`[name="${startName}"]`)?.value;
+  const end = document.querySelector(`[name="${endName}"]`)?.value;
+
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+
+  if ((start && !end) || (!start && end)) {
+    errors.push({
+      elId: startName,
+      errorMsg: `Please provide BOTH a start and end date for ${label}.`
+    });
+    errors.push({
+      elId: endName,
+      errorMsg: `Please provide BOTH a start and end date for ${label}.`
+    });
+  }
+
+  if (
+    start &&
+    end &&
+    !isNaN(startDate) &&
+    !isNaN(endDate) &&
+    startDate > endDate
+  ) {
+    errors.push({
+      elId: startName,
+      errorMsg: `${label}: Start date must be before end date.`
+    });
+  }
+
+  return errors;
+}
+
+function validateForm() {
+  let errors = [];
+
+  errors = errors.concat(
+    validateDateRange('inquiry-eventdate1', 'inquiry-eventdate2', 'Inquiry Date')
+  );
+
+    errors = errors.concat(
+    validateDateRange('status-eventdate1', 'status-eventdate2', 'Latest Status Date')
+  );
+
+  errors = errors.concat(
+    validateDateRange('active-eventdate1', 'active-eventdate2', 'Active Date')
+  );
+
+  return errors;
+}
+
 
 /**
  * Hides selected collections checkboxes (for whatever reason)

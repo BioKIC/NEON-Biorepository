@@ -8,9 +8,8 @@ header("Content-Type: text/html; charset=".$CHARSET);
 
 $reportManager = new RequestReportManager();
 $utilities = new Utilities();
-$inquiriesArr = $reportManager->getSearchInquiries($_GET);
+$inquiriesArr = $reportManager->filterSearchInquiries($_POST);
 $headerArr = ['id','researcher','date','title','status','samples'];
-$total = $reportManager->getInqSamplesCnt();
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
@@ -84,7 +83,6 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
 				?>
         <?php
         echo '<h1>Sample Use Inquiries</h1>';
-        echo '<p>Total number of samples in active or completed requests: '.$total.'</p>';
 
         echo '<input type="text" id="filterInput" placeholder="Search inquiries...">';
 

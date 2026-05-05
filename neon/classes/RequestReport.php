@@ -102,60 +102,137 @@
     return $dataArr;
   }
 
-  // Search inquiries
-  public function getSearchInquiries($params){
+  public function getResearchers(){
+      $retArr = array();
 
-    $sql = "SELECT 
+      $sql = 'SELECT researcherID, name, institution
+              FROM neonresearcher 
+              ORDER BY name';
+
+      $rs = $this->conn->query($sql);
+
+      while($r = $rs->fetch_object()){
+          $name = $this->cleanOutStr($r->name);
+          $institution = $this->cleanOutStr($r->institution);
+
+          $display = $institution ? "$name ($institution)" : $name;
+
+          $retArr[$r->researcherID] = $display;
+      }
+
+      $rs->free();
+      return $retArr;
+  }
+
+
+  // normalize search parameters
+
+  public function normalizeParams($input){
+
+      return [
+          'status' => isset($input['status']) && is_array($input['status'])
+              ? array_filter($input['status'])
+              : [],
+
+          'datasetid' => isset($input['datasetid'])
+              ? (is_array($input['datasetid']) 
+                  ? array_filter($input['datasetid']) 
+                  : array_filter(explode(',', $input['datasetid'])))
+              : [],
+
+          'state' => isset($input['state']) ? trim($input['state']) : '',
+          'local' => isset($input['local']) ? trim($input['local']) : '',
+          'taxa' => isset($input['taxa']) ? trim($input['taxa']) : '',
+
+          'inquiryDateStart' => $input['inquiry-eventdate1'] ?? '',
+          'inquiryDateEnd'   => $input['inquiry-eventdate2'] ?? '',
+          'activeDateStart' => $input['active-eventdate1'] ?? '',
+          'activeDateEnd'   => $input['active-eventdate2'] ?? '',
+          'statusDateStart' => $input['status-eventdate1'] ?? '',
+          'statusDateEnd'   => $input['status-eventdate2'] ?? '',
+
+          'researcher' => $input['researcher'] ?? ''
+      ];
+  }
+
+  // filter inquiries based on search
+  public function filterSearchInquiries($rawParams){
+
+    $params = $this->normalizeParams($rawParams);
+
+    $sql = "SELECT DISTINCT
                 i.id,
-                i.researcherID,
+                r.name,
                 i.inquiryDate,
                 i.title,
                 i.status,
-                COUNT(s.id) as samples
+                COUNT(s.occid) as samples
             FROM neonrequest i
-            LEFT JOIN neonsamplerequestlink s ON s.requestID = i.id";
+            LEFT JOIN neonsamplerequestlink s 
+            ON s.requestID = i.id
+            LEFT JOIN neonresearcher r 
+            ON i.researcherID = r.researcherID";
 
     $where = [];
     $binds = [];
+    $types = '';
 
-    // -------------------------
-    // REQUEST-LEVEL FILTERS
-    // -------------------------
-    if(!empty($params['status'])){
-        $statusArr = explode(',', $params['status']);
-        $where[] = "i.status IN (" . $this->placeholders($statusArr) . ")";
-        $binds = array_merge($binds, $statusArr);
+    // status filter
+    if (!empty($params['status'])) {
+        $placeholders = implode(',', array_fill(0, count($params['status']), '?'));
+        $where[] = "i.status IN ($placeholders)";
+        $binds = array_merge($binds, $params['status']);
+        $types .= str_repeat('s', count($params['status']));
     }
 
-    // -------------------------
-    // SAMPLE-LEVEL FILTERS
-    // -------------------------
-    if(!empty($params['state'])){
-        $where[] = "s.state IN (" . $this->placeholders(explode(',', $params['state'])) . ")";
-        $binds = array_merge($binds, explode(',', $params['state']));
+    // date filters
+    if (!empty($params['inquiryDateStart']) && !empty($params['inquiryDateEnd'])) {
+        $where[] = "DATE(i.inquiryDate) BETWEEN ? AND ?";
+        $binds[] = $params['inquiryDateStart'];
+        $binds[] = $params['inquiryDateEnd'];
+        $types .= 'ss';
     }
 
-    if(!empty($params['datasetid'])){
-        $ids = explode(',', $params['datasetid']);
-        $where[] = "s.datasetid IN (" . $this->placeholders($ids) . ")";
-        $binds = array_merge($binds, $ids);
+    if (!empty($params['activeDateStart']) && !empty($params['activeDateEnd'])) {
+        $where[] = "DATE(i.activeDate) BETWEEN ? AND ?";
+        $binds[] = $params['activeDateStart'];
+        $binds[] = $params['activeDateEnd'];
+        $types .= 'ss';
     }
 
-    if(!empty($params['scientificName'])){
-        $where[] = "s.scientificName LIKE ?";
-        $binds[] = "%" . $params['scientificName'] . "%";
+    if (!empty($params['statusDateStart']) && !empty($params['statusDateEnd'])) {
+        $where[] = "DATE(i.statusDate) BETWEEN ? AND ?";
+        $binds[] = $params['statusDateStart'];
+        $binds[] = $params['statusDateEnd'];
+        $types .= 'ss';
     }
 
-    // -------------------------
-    // FINALIZE QUERY
-    // -------------------------
-    if(count($where)){
-        $sql .= " WHERE " . implode(" AND ", $where);
+    // researcher filter
+
+    if (!empty($params['researcher'])) {
+
+        $sql .= " 
+            INNER JOIN neonresearcherrequestlink rr 
+                ON rr.requestID = i.id
+            INNER JOIN neonresearcher r2 
+                ON r2.researcherID = rr.researcherID
+        ";
+
+        $where[] = "r2.researcherID = ?";
+        $binds[] = $params['researcher'];
+        $types .= 'i';
+    }
+
+    // build final query
+
+    if (!empty($where)) {
+          $sql .= " WHERE " . implode(" AND ", $where);
     }
 
     $sql .= " GROUP BY i.id ORDER BY i.id";
-
     $stmt = $this->conn->prepare($sql);
+
+    print_r($sql);
 
     if (!$stmt) {
         $this->errorMessage = $this->conn->error;
@@ -163,7 +240,6 @@
     }
 
     if (!empty($binds)) {
-        $types = str_repeat('s', count($binds));
         $stmt->bind_param($types, ...$binds);
     }
 
@@ -173,13 +249,19 @@
     $dataArr = [];
 
     while ($row = $result->fetch_assoc()) {
-        $dataArr[] = $row;
+        $dataArr[] = array(
+            'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'">'.$row['id'].'</a>',
+            'researcher' => is_null($row['name'])?'<span style="color:lightgray;">NULL</span>':$row['name'],
+            'date' => is_null($row['inquiryDate'])?'<span style="color:lightgray;">NULL</span>':$row['inquiryDate'],
+            'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
+            'status' => is_null($row['status'])?'<span style="color:lightgray;">NULL</span>':$row['status'],
+            'samples' => is_null($row['samples'])?'<span style="color:lightgray;">NULL</span>':$row['samples'],
+        );
     }
 
     $stmt->close();
-
     return $dataArr;
-    }
+  }
 
 }
 ?>
