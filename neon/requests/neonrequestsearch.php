@@ -72,6 +72,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+	// researcher suggest
+function split(val) {
+  return val.split(/,\s*/);
+}
+
+function extractLast(term) {
+  return split(term).pop();
+}
+
+$(function () {
+  $("#researchers")
+    .on("keydown", function (event) {
+      if (event.key === "Tab" &&
+          $(this).autocomplete("instance").menu.active) {
+        event.preventDefault();
+      }
+    })
+    .autocomplete({
+      source: function (request, response) {
+        $.getJSON("researcher_suggest.php", {
+          term: extractLast(request.term)
+        }, response);
+      },
+      minLength: 3,
+      focus: function () {
+        return false;
+      },
+	
+		select: function (event, ui) {
+		let terms = split(this.value);
+
+		terms.pop();
+		terms.push(ui.item.label);
+
+		this.value = terms.join(", ");
+
+		$(this).trigger("change");
+
+		let ids = $("#researcher-ids").val()
+			? $("#researcher-ids").val().split(",")
+			: [];
+
+		ids.push(ui.item.resid);
+		$("#researcher-ids").val(ids.join(","));
+
+		return false;
+		}
+    });
+});
+
 	</script>
 
 	<!-- Search-specific styles -->
@@ -578,42 +628,21 @@ document.addEventListener('DOMContentLoaded', () => {
 						<!-- Accordion header -->
 						<label for="researcher" class="accordion-header">Researchers</label>
 
-						<!-- Taxonomy -->
-						<div id="search-form-researcher" class="content">
-							<div class="input-text-container">
-							<label for="researcher" style="display:block; font-weight:500; margin-bottom:6px;">
-								Researcher
-							</label>
-
-							<select 
-								name="researcher" 
-								id="researcher" 
-								data-chip="Researcher"
-								style="
-								width:100%;
-								padding:10px;
-								border:1px solid #ccc;
-								border-radius:6px;
-								font-size:14px;
-								background:white;
-								"
-							>
-								<option value="">-- Select Researcher --</option>
-								<?php
-								if ($researchers = $reportManager->getResearchers()) {
-									foreach ($researchers as $id => $label) {
-										$safeLabel = htmlspecialchars($label);
-										echo "<option value=\"{$id}\">{$safeLabel}</option>";
-									}
-								}
-								?>
-							</select>
-
-							<span class="assistive-text">
-								Choose a researcher.
-							</span>
-							</div>
+						<!-- Researcher -->
+						<div class="input-text-container">
+						<label for="researchers" class="input-text--outlined">
+							<input 
+							type="text" 
+							id="researchers"
+							data-chip="Researchers"
+							placeholder="Select researchers... ">
+							<span data-label="Researchers"></span>
+						</label>
+						<span class="assistive-text">
+							Type at least 3 characters for suggestions. Separate multiple with commas.
+						</span>
 						</div>
+						<input type="hidden" name="researcher" id="researcher-ids">
 					</section>
 				</div>
 				<!-- Criteria panel -->

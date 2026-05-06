@@ -12,10 +12,10 @@ const collsModal = document.getElementById('colls-modal');
 let isInitializing = true;
 let suppressChipRender = true;
 
-window.addEventListener('load', () => {
+document.addEventListener('DOMContentLoaded', () => {
   suppressChipRender = false;
   isInitializing = false;
-  updateChip();       
+  updateChip();
 });
 
 
@@ -628,7 +628,7 @@ document
     updateChip();
   });
 //////// Binds Update chip on event change
-const formInputs = document.querySelectorAll('.content input, .content textarea, #search-form-advanced-search select');
+const formInputs = document.querySelectorAll('#params-form input, #params-form textarea, #params-form select');
 formInputs.forEach((formInput) => {
   formInput.addEventListener('change', updateChip);
 });

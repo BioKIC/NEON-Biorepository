@@ -151,8 +151,12 @@
           'statusDateStart' => $input['status-eventdate1'] ?? '',
           'statusDateEnd'   => $input['status-eventdate2'] ?? '',
 
-          'researcher' => $input['researcher'] ?? ''
-      ];
+          'researcher' => isset($input['researcher']) 
+              ? (is_array($input['researcher'])
+                  ? $input['researcher']
+                  : explode(',', $input['researcher']))
+              : [],      
+       ];
   }
 
   // filter inquiries based on search
@@ -210,17 +214,16 @@
     // researcher filter
 
     if (!empty($params['researcher'])) {
-
+        $placeholders = implode(',', array_fill(0, count($params['researcher']), '?'));
+        
         $sql .= " 
             INNER JOIN neonresearcherrequestlink rr 
                 ON rr.requestID = i.id
-            INNER JOIN neonresearcher r2 
-                ON r2.researcherID = rr.researcherID
         ";
 
-        $where[] = "r2.researcherID = ?";
-        $binds[] = $params['researcher'];
-        $types .= 'i';
+        $where[] = "rr.researcherID IN ($placeholders)";
+        $binds = array_merge($binds, $params['researcher']);
+        $types .= str_repeat('i', count($params['researcher']));
     }
 
     // build final query
