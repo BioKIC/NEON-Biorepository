@@ -629,6 +629,8 @@ $(function () {
 						<label for="researcher" class="accordion-header">Researchers</label>
 
 						<!-- Researcher -->
+						<div id="search-form-researchers" class="content">
+
 						<div class="input-text-container">
 						<label for="researchers" class="input-text--outlined">
 							<input 
@@ -638,11 +640,10 @@ $(function () {
 							placeholder="Select researchers... ">
 							<span data-label="Researchers"></span>
 						</label>
-						<span class="assistive-text">
-							Type at least 3 characters for suggestions. Separate multiple with commas.
-						</span>
+						<span class="assistive-text">Type at least 3 characters for suggestions. Separate multiple with commas.</span>
 						</div>
 						<input type="hidden" name="researcher" id="researcher-ids">
+						</div>
 					</section>
 				</div>
 				<!-- Criteria panel -->
