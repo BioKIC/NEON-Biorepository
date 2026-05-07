@@ -11,6 +11,11 @@ $utilities = new Utilities();
 $inquiriesArr = $reportManager->filterSearchInquiries($_POST);
 $headerArr = ['id','researcher','date','title','status','samples'];
 
+// echo '<pre>';
+// print_r($_POST);
+// echo '</pre>';
+// exit;
+
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;

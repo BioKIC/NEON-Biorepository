@@ -196,7 +196,7 @@ $(function () {
 				$collid = $node['collid'];
 				$name = htmlspecialchars($node['name']);
 	
-				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}'>";
+				$html .= "<input type='checkbox' name='collid[]' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}'>";
 				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
 				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' title='View Sample Type Profile' target='_blank'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
 
@@ -313,7 +313,7 @@ $(function () {
 													echo '<ul>';
 													foreach ($collsArr as $result) {
 													echo "<li class='Mui'>";
-													echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
+													echo "<input type='checkbox' name='collid[]' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
 													echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]}</span>";
 													echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
 													echo "</li>";
@@ -570,12 +570,12 @@ $(function () {
 							</div>
 						</div>
 					</section>
-					<!-- Sample Properties -->
+					<!-- Samples -->
 					<section>
 						<!-- Accordion selector -->
 						<input type="checkbox" id="sample" class="accordion-selector"/>
 						<!-- Accordion header -->
-						<label for="sample" class="accordion-header">Sample Properties</label>
+						<label for="sample" class="accordion-header">Samples</label>
 						<!-- Accordion content -->
 						<div class="content">
 							<div id="search-form-sample">
@@ -586,14 +586,36 @@ $(function () {
 											<span data-label="Identifiers"></span></label>
 										<span class="assistive-text">Separate multiple with commas or new lines.</span>
 									</div>
-									<div style="display:none">
-										<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>
+										<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" data-chip="Include all sample identifiers" checked>
 										<label for="includeothercatnum">Search all identifiers</label>
-									</div>
 									<div>
 										<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
 										<label for="includematerialsample">Include material samples</label>
 									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+					<!-- Properties -->
+					<section>
+						<!-- Accordion selector -->
+						<input type="checkbox" id="properties" class="accordion-selector"/>
+						<!-- Accordion header -->
+						<label for="properties" class="accordion-header">Properties</label>
+						<!-- Accordion content -->
+						<div class="content">
+							<div id="search-form-properties">
+								<div>
+									<input type="checkbox" name="internal" value=1 data-chip="Internal request">
+									<label for="internal">Internal request</label>
+								</div>
+								<div>
+									<input type="checkbox" name="outreach" value=1 data-chip="Outreach/Education">
+									<label for="outreach">Primarily for outreach/education</label>
+								</div>
+								<div>
+									<input type="checkbox" name="aiml" value=1 data-chip="Involves AI/ML">
+									<label for="aiml">Involves AI/ML</label>
 								</div>
 							</div>
 						</div>

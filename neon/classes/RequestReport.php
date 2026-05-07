@@ -151,11 +151,35 @@
           'statusDateStart' => $input['status-eventdate1'] ?? '',
           'statusDateEnd'   => $input['status-eventdate2'] ?? '',
 
-          'researcher' => isset($input['researcher']) 
-              ? (is_array($input['researcher'])
-                  ? $input['researcher']
-                  : explode(',', $input['researcher']))
-              : [],      
+          'researcher' => isset($input['researcher'])
+              ? array_filter(
+                  is_array($input['researcher'])
+                      ? $input['researcher']
+                      : explode(',', $input['researcher'])
+                )
+              : [],
+              
+          'aiml' => $input['aiml'] ?? '',
+          'internal' => $input['internal'] ?? '',
+          'outreach' => $input['outreach'] ?? '',
+
+          'catnum' => isset($input['catnum'])
+              ? array_filter(
+                  preg_split('/[\s,]+/', trim($input['catnum']))
+                )
+              : [],
+
+          'includeothercatnum' => $input['includeothercatnum'] ?? 0,
+          'includematerialsample' => $input['includematerialsample'] ?? 0,
+
+          'collid' => isset($input['collid'])
+              ? array_filter(
+                  is_array($input['collid'])
+                      ? $input['collid']
+                      : explode(',', $input['collid'])
+                )
+              : [],
+
        ];
   }
 
@@ -211,6 +235,26 @@
         $types .= 'ss';
     }
 
+    // properties filters
+
+    if (!empty($params['aiml'])) {
+        if ($params['aiml'] == 1) {
+          $where[] = "i.usesAIML = 'yes' ";
+        }
+    }
+
+    if (!empty($params['outreach'])) {
+        if ($params['outreach'] == 1) {
+          $where[] = "i.outreach = 'yes' ";
+        }
+    }
+
+    if (!empty($params['internal'])) {
+        if ($params['internal'] == 1) {
+          $where[] = "i.internal = 'yes' ";
+        }
+    }
+
     // researcher filter
 
     if (!empty($params['researcher'])) {
@@ -226,6 +270,59 @@
         $types .= str_repeat('i', count($params['researcher']));
     }
 
+    // sample type filter
+
+    if (!empty($params['collid'])) {
+        $placeholders = implode(',', array_fill(0, count($params['collid']), '?'));
+        
+        $sql .= " 
+            INNER JOIN neoncollectionrequestlink cr 
+                ON cr.requestID = i.id
+        ";
+
+        $where[] = "cr.collID IN ($placeholders)";
+        $binds = array_merge($binds, $params['collid']);
+        $types .= str_repeat('i', count($params['collid']));
+    }
+
+    // catalog number filter
+
+    if (!empty($params['catnum'])) {
+
+        $allOccids = [];
+
+        foreach ($params['catnum'] as $catnum) {
+
+            $catnum = trim($catnum);
+
+            if (!$catnum) continue;
+
+            $occids = $this->getOccid(
+                $catnum,
+                $params['includeothercatnum'],
+                $params['includematerialsample']
+            );
+
+            if (!empty($occids)) {
+                $allOccids = array_merge($allOccids, $occids);
+            }
+        }
+
+        $allOccids = array_unique($allOccids);
+
+        if (empty($allOccids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($allOccids), '?'));
+
+        $where[] = "s.occid IN ($placeholders)";
+
+        $binds = array_merge($binds, $allOccids);
+
+        $types .= str_repeat('i', count($allOccids));
+    }
+
     // build final query
 
     if (!empty($where)) {
@@ -235,8 +332,6 @@
     $sql .= " GROUP BY i.id ORDER BY i.id";
     $stmt = $this->conn->prepare($sql);
 
-    print_r($sql);
-
     if (!$stmt) {
         $this->errorMessage = $this->conn->error;
         return false;
@@ -245,6 +340,10 @@
     if (!empty($binds)) {
         $stmt->bind_param($types, ...$binds);
     }
+
+    var_dump($binds);
+    var_dump($types);
+    print_r($sql);
 
     $stmt->execute();
     $result = $stmt->get_result();
@@ -264,6 +363,52 @@
 
     $stmt->close();
     return $dataArr;
+  }
+
+  private function getOccid($catNum, $othercat, $matsamp){
+
+      $occArr = array();
+      $catNum = $this->cleanInStr($catNum);
+
+      $sql = 'SELECT DISTINCT o.occid
+              FROM omoccurrences o ';
+
+      $where = [];
+
+      if($othercat == 1){
+          $sql .= 'LEFT JOIN omoccuridentifiers i 
+                  ON o.occid = i.occid ';
+
+          $where[] = 'o.othercatalognumbers = "'.$catNum.'"';
+          $where[] = 'i.identifierValue = "'.$catNum.'"';
+      }
+
+      if($matsamp == 1){
+          $sql .= 'LEFT JOIN ommaterialsample m 
+                  ON o.occid = m.occid ';
+
+          $where[] = 'm.catalogNumber = "'.$catNum.'"';
+          $where[] = 'm.recordID = "'.$catNum.'"';
+      }
+
+      $where[] = 'o.catalognumber = "'.$catNum.'"';
+      $where[] = 'o.occid = "'.$catNum.'"';
+
+      if(!empty($where)){
+
+          $sql .= ' WHERE (' . implode(' OR ', $where) . ')';
+
+          $rs = $this->conn->query($sql);
+
+          if($rs){
+              while($r = $rs->fetch_object()) {
+                  $occArr[] = $r->occid;
+              }
+              $rs->free();
+          }
+      }
+
+      return $occArr;
   }
 
 }
