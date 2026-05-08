@@ -16,14 +16,13 @@ $datasetid = array_key_exists('datasetid', $_REQUEST) ? filter_var($_REQUEST['da
 $sortField1 = array_key_exists('sortfield1', $_REQUEST) ? $_REQUEST['sortfield1'] : '';
 $sortField2 = array_key_exists('sortfield2', $_REQUEST) ? $_REQUEST['sortfield2'] : '';
 $sortOrder = !empty($_REQUEST['sortorder']) ? 'desc' : '';
-//NEON edit
-$comingFrom = '';
-//$comingFrom =  (array_key_exists('comingFrom', $_REQUEST) ? $_REQUEST['comingFrom'] : '');
-//if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
-//	//If not set via a valid input variable, use setting set within symbini
-//	$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
-//}
+$comingFrom =  (array_key_exists('comingFrom', $_REQUEST) ? $_REQUEST['comingFrom'] : '');
+if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
+	//If not set via a valid input variable, use setting set within symbini
+	$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
+}
 
+//NEON edit
 include_once($SERVER_ROOT.'/classes/ImageLibrarySearch.php');
 $imgLibManager = new ImageLibrarySearch();
 $imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
@@ -34,7 +33,9 @@ $_SESSION['datasetid'] = filter_var($datasetid, FILTER_SANITIZE_NUMBER_INT);
 $collManager = new OccurrenceListManager();
 $searchVar = $collManager->getQueryTermStr();
 if ($targetTid && array_key_exists('mode', $_REQUEST)) $searchVar .= '&mode=voucher&targettid=' . $targetTid;
-$searchVar .= '&comingFrom=' . $comingFrom;
+//NEON edit
+//$searchVar .= '&comingFrom=' . $comingFrom;
+//end NEON edit
 if ($sortField1) {
 	$searchVar .= '&sortfield1=' . htmlspecialchars($sortField1, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&sortorder=' . $sortOrder;
 	if ($sortField2) {
