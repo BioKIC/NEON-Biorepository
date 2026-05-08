@@ -168,12 +168,22 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			});
 			$('#containerFilter').on('change', function() {
 			
+				const val = $(this).val();
+				const selectAllBox = document.querySelector('input[name="selectall"]');
+			
+				if (val) {
+					table.page.len(-1);
+				} else {
+					table.page.len(100);
+					selectAllBox.checked = false;
+				}
+			
 				table.ajax.reload(function() {
 			
-					const selectAllBox = document.querySelector('input[name="selectall"]');
-			
-					selectAllBox.checked = true;
-					selectAll(selectAllBox);
+					if (val) {
+						selectAllBox.checked = true;
+						selectAll(selectAllBox);
+					}
 			
 				});
 			
@@ -879,7 +889,7 @@ include($SERVER_ROOT.'/includes/header.php');
 										<form id="containerIDForm">
 											Select by:
 											<select name="containerFilter" id="containerFilter">
-												<option value="">Select Container</option>
+												<option value="">No Selection</option>
 							
 												<?php
 												foreach ($tagArr as $key => $values) {
