@@ -62,6 +62,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					type: 'POST',
 					data: function (d) {
 						d.sampleFilter = $('#sampleFilter').val();
+						d.containerFilter = $('#containerFilter').val();
 						d.shipmentPK = shipmentPK;
 					}
 				},
@@ -164,6 +165,18 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			
 			$('#sampleFilter').on('change', function() {
 				table.ajax.reload();
+			});
+			$('#containerFilter').on('change', function() {
+			
+				table.ajax.reload(function() {
+			
+					const selectAllBox = document.querySelector('input[name="selectall"]');
+			
+					selectAllBox.checked = true;
+					selectAll(selectAllBox);
+			
+				});
+			
 			});
 			$('#manifestTable').css('width', '100%');
 			
@@ -847,40 +860,54 @@ include($SERVER_ROOT.'/includes/header.php');
 									<form id="filterSampleForm" style="">
 										Filter by:
 										<select name="sampleFilter" id="sampleFilter">
-											<option value="">All Records</option>
+											<option value="">All Samples</option>
 											<option value="notCheckedIn">Not Checked In</option>
 											<option value="missingOccid">Missing Occurrences</option>
 											<option value="notAccepted">Not Accepted for Analysis</option>
 											<option value="altIds">Has Alternative IDs</option>
 											<option value="harvestingError">Harvesting Errors</option>
-							
-											<?php
-											if (!empty($tagArr)) {
-												echo '<option value="">----------------------</option>';
-											
-												foreach ($tagArr as $key => $values) {
-											
-													uksort($values, 'strnatcmp');
-											
-													echo '<optgroup label="' . htmlspecialchars($key) . '">';
-											
-													foreach ($values as $val => $cnt) {
-														$safeVal = htmlspecialchars($val);
-											
-														echo '<option value="dyn:' . $key . ':' . $safeVal . '">'
-															. $safeVal . ' (' . $cnt . ')'
-															. '</option>';
-													}
-											
-													echo '</optgroup>';
-												}
-											}
-											?>
 										</select>
 										<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
 									</form>
 								</div>
 							</div>
+							<?php
+							if (!empty($tagArr)) {
+							?>
+								<div>
+									<div style="float:right;margin-right: 20px;">
+										<form id="containerIDForm">
+											Select by:
+											<select name="containerFilter" id="containerFilter">
+												<option value="">Select Container</option>
+							
+												<?php
+												foreach ($tagArr as $key => $values) {
+							
+													uksort($values, 'strnatcmp');
+							
+													echo '<optgroup label="' . htmlspecialchars($key) . '">';
+							
+													foreach ($values as $val => $cnt) {
+														$safeVal = htmlspecialchars($val);
+							
+														echo '<option value="dyn:' . $key . ':' . $safeVal . '">'
+															. $safeVal . ' (' . $cnt . ')'
+															. '</option>';
+													}
+							
+													echo '</optgroup>';
+												}
+												?>
+											</select>
+							
+											<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
+										</form>
+									</div>
+								</div>
+							<?php
+							}
+							?>
 							<div style="clear:both">
 								<?php
 								if($headerList){

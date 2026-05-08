@@ -105,6 +105,7 @@ if ($shipmentPK !== null) {
     ];
 
     $filter = $_POST['sampleFilter'] ?? '';
+    $containerFilter = $_POST['containerFilter'] ?? '';
 
     if ($filter === 'notCheckedIn') {
         $conditionParts[] = 'checkinTimestamp IS NULL';
@@ -118,8 +119,8 @@ if ($shipmentPK !== null) {
         $conditionParts[] = 'errorMessage IS NOT NULL';
     }
     
-    if (strpos($filter, 'dyn:') === 0) {
-        $parts = explode(':', $filter, 3);
+    if (strpos($containerFilter, 'dyn:') === 0) {
+        $parts = explode(':', $containerFilter, 3);
     
         if (count($parts) === 3) {
             $key = $parts[1];   // e.g. containerID
