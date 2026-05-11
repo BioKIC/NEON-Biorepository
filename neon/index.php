@@ -31,12 +31,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 <?php
 $displayLeftMenu = false;
 include($SERVER_ROOT.'/includes/header.php');
-?>
-<div class="navpath">
-	<a href="../index.php">Home</a> &gt;&gt;
-	<b>NEON Management Tools</b>
-</div>
-<?php
+
 if($isEditor){
 	?>
 	<div id="innertext">
@@ -57,8 +52,8 @@ if($isEditor){
 			<ul>
 				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
-				<li><a href="requests/index.php">Create New Inquiry</a></li>
-				<li><a href="requests/inquiries.php">Sample Use Inquiry List</a></li>
+				<li><a href="requests/newinquiry.php">Create New Inquiry</a></li>
+				<li><a href="requests/index.php">Sample Use Inquiry List</a></li>
 				<li><a href="requests/neonrequestsearch.php">Sample Use Search</a></li>
 				<?php
 				if($IS_ADMIN){

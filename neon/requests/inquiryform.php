@@ -356,12 +356,6 @@ if($formSubmit == 'editStatus' && $isEditor){
 	$displayLeftMenu = false;
 	include($SERVER_ROOT . '/includes/header.php');
 	?>
-		<div class="navpath">
-			<a href="../../index.php">Home</a> &gt;&gt;
-			<a href="../../neon/index.php">Management Tools</a> &gt;&gt;
-			<a href="../../neon/requests/inquiries.php">Inquiry List</a> &gt;&gt;
-			<b>Inquiry Record</b>
-		</div>
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
 		<h1 class="page-heading"><?= 'View and Edit Inquiry Record' ?></h1>

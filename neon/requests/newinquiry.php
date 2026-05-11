@@ -178,7 +178,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			?>
 			
 					<div id="newinqdiv" style="display:block;">
-						<form name="newinqform" action="index.php" method="post" onsubmit="return verifyInquiryAddForm(this);">
+						<form name="newinqform" action="inquiries.php" method="post" onsubmit="return verifyInquiryAddForm(this);">
 							<fieldset>
 								<legend><?php echo 'Create New Record' ?></legend>
 								<div style="padding-top:4px;float:left;">
