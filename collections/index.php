@@ -1,12 +1,14 @@
 <?php
 include_once('../config/symbini.php');
+header('Location: ' . $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php', true, 302);
+exit;
 include_once($SERVER_ROOT.'/classes/OccurrenceManager.php');
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 include_once($SERVER_ROOT . '/classes/CollectionFormManager.php');
 
 Language::load([
 	'collections/sharedterms',
-	'collections/index', 
+	'collections/index',
 	'collections/search/index',
 ]);
 
@@ -128,7 +130,7 @@ $requestSuppliedCatChk = (array_key_exists('catChk', $_REQUEST) && $collectionFo
 			event.preventDefault();
 			simpleSearch();
 		});
-		
+
 	});
 </script>
 </html>

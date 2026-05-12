@@ -23,6 +23,12 @@ if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
 	$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
 }
 
+//NEON edit
+include_once($SERVER_ROOT.'/classes/ImageLibrarySearch.php');
+$imgLibManager = new ImageLibrarySearch();
+$imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
+//end NEON edit
+
 $_SESSION['datasetid'] = $datasetid;
 
 $collManager = new OccurrenceListManager();
@@ -52,8 +58,34 @@ $_SESSION['citationvar'] = $searchVar;
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
+
+	// NEON start
+	if(isset($GOOGLE_ANALYTICS_TAG_ID) && $GOOGLE_ANALYTICS_TAG_ID) {
+		parse_str($searchVar, $params);
+		$encodedSearchVar = json_encode($searchVar, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+		?>
+		<script>
+			const params = <?php echo json_encode($params, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+			const rawSearchVar = <?php echo $encodedSearchVar; ?>;
+
+			const eventParams = {};
+			Object.keys(params).forEach(key => {
+				eventParams[key] = Array.isArray(params[key]) ? params[key].join(',') : params[key];
+			});
+			eventParams.rawSearchVar = rawSearchVar;
+
+			gtag('event', 'search_query', {
+				event_category: 'Search',
+				event_label: 'Search Parameters',
+				...eventParams,
+			});
+		</script>
+		<?php
+	}
 	?>
-	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=1" type="text/css" rel="stylesheet" />
+	<!-- NEON end-->
+
+	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=2" type="text/css" rel="stylesheet" />
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.min.css" type="text/css" rel="stylesheet">
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
@@ -104,7 +136,6 @@ $_SESSION['citationvar'] = $searchVar;
 	<script src="../js/symb/collections.list.js?ver=5" type="text/javascript"></script>
 	<script src="../js/symb/shared.js?ver=1" type="text/javascript"></script>
 </head>
-
 <body>
 	<div id="all_collections_parent_container" data-config='<?= json_encode([
 		'CURRENT_URL' => $_SERVER['REQUEST_URI'],
@@ -128,7 +159,7 @@ $_SESSION['citationvar'] = $searchVar;
 			echo '<a href="index.php">' . $LANG['NAV_COLLECTIONS'] . '</a> &gt;&gt; ';
 			echo '<a href="' . $CLIENT_ROOT . '/collections/harvestparams.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
 		} else {
-			echo '<a href="' . $CLIENT_ROOT . '/collections/search/index.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
+			echo '<a href="' . $CLIENT_ROOT . '/neon/search/index.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
 		}
 		echo '<b>' . $LANG['NAV_SPECIMEN_LIST'] . '</b>';
 		echo '</div>';
@@ -146,21 +177,30 @@ $_SESSION['citationvar'] = $searchVar;
 				</li>
 				<li>
 					<a href="#speclist">
-						<span><?php echo $LANG['TAB_OCCURRENCES']; ?></span>
+						<span>Records</span>
 					</a>
 				</li>
 				<li>
-					<a href="#maps">
-						<span><?php echo $LANG['TAB_MAP']; ?></span>
+					<!-- neon edit: convert map to JSON tab thus reducing load on this page -->
+					<a id="maptablink" href="maptab.php?<?= $searchVar ?>">
+						<span>Map</span>
+					</a>
+					<!-- end neon edit -->
+				</li>
+				<!-- neon edit: Add new Image tab -->
+				<li>
+					<a id="imagesdiv" href="imagetab.php?<?= $searchVar . '&imagepage=' . $imagePageNumber ?>">
+						<span>Images</span>
 					</a>
 				</li>
+				<!-- end neon edit -->
 			</ul>
 			<div id="speclist">
 				<div id="queryrecords">
 					<div style="float:right;">
 						<?php
 						if ($SYMB_UID) {
-						?>
+							?>
 							<span>
 								<button class="icon-button" onclick="displayDatasetTools()" aria-label="<?= $LANG['DATASET_MANAGEMENT'] ?>" title="<?= $LANG['DATASET_MANAGEMENT'] ?>">
 									<svg style="width:1.3em;height:1.3em;" alt="<?php echo $LANG['IMG_DATASET_MANAGEMENT']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
@@ -168,7 +208,7 @@ $_SESSION['citationvar'] = $searchVar;
 									</svg>
 								</button>
 							</span>
-						<?php
+							<?php
 						}
 						?>
 						<span>
@@ -226,7 +266,9 @@ $_SESSION['citationvar'] = $searchVar;
 							}
 							if ($cnt > 11) $collSearchStr .= '</span>';
 						}
-						echo '<div><b>' . $LANG['DATASET'] . ':</b> ' . $collSearchStr . '</div>';
+						//neon edit
+						echo '<div><b>Sample Type(s):</b> ' . $collSearchStr . '</div>';
+						//end neon edit
 						if ($taxaSearchStr = $collManager->getTaxaSearchStr()) {
 							if (strlen($taxaSearchStr) > 300) $taxaSearchStr = substr($taxaSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.taxa-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="taxa-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>';
 							echo '<div><b>' . $LANG['TAXA'] . ':</b> ' . $taxaSearchStr . '</div>';
@@ -264,13 +306,13 @@ $_SESSION['citationvar'] = $searchVar;
 												'o.county' => $LANG['COUNTY'],
 												'o.minimumElevationInMeters' => $LANG['ELEVATION']
 											);
-												if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
-													$sortFields = array_merge($sortFields, [
-														'paleo.lateInterval' => $LANG['LATE_INT'],
-														'paleo.earlyInterval' => $LANG['EARLY_INT'],
-														'paleo.formation' => $LANG['FORMATION']
-													]);
-												}
+											if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
+												$sortFields = array_merge($sortFields, [
+													'paleo.lateInterval' => $LANG['LATE_INT'],
+													'paleo.earlyInterval' => $LANG['EARLY_INT'],
+													'paleo.formation' => $LANG['FORMATION']
+												]);
+											}
 											foreach ($sortFields as $k => $v) {
 												echo '<option value="' . $k . '" ' . ($k == $sortField1 ? 'SELECTED' : '') . '>' . $v . '</option>';
 											}
@@ -396,7 +438,6 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									echo '<div style="margin:4px;">';
 
-
 									if (isset($fieldArr['sciname'])) {
 										$sciStr = '<span style="font-style:italic;">' . $fieldArr['sciname'] . '</span>';
 										if (isset($fieldArr['author']) && $fieldArr['author']) $sciStr .= ' ' . $fieldArr['author'];
@@ -418,7 +459,7 @@ $_SESSION['citationvar'] = $searchVar;
 									if ($fieldArr["state"]) $localStr .= ', ' . $fieldArr["state"];
 									if ($fieldArr["county"]) $localStr .= ', ' . $fieldArr["county"];
 									if ($fieldArr['locality'] == 'PROTECTED') {
-										$localStr .= ', <span style="color:red;">' . $LANG['PROTECTED'] . '</span>';
+										$localStr .= ', <span class="protected-span">' . $LANG['PROTECTED'] . '</span>';
 									} else {
 										if ($fieldArr['locality']) $localStr .= ', ' . $fieldArr['locality'];
 										if ($fieldArr['declat']) $localStr .= ', ' . $fieldArr['declat'] . ' ' . $fieldArr['declong'];
@@ -448,7 +489,7 @@ $_SESSION['citationvar'] = $searchVar;
 								?>
 							</table>
 						</form>
-					<?php
+						<?php
 						echo $paginationStr;
 						echo '<hr/>';
 					} else {
@@ -478,101 +519,6 @@ $_SESSION['citationvar'] = $searchVar;
 					}
 					?>
 				</div>
-			</div>
-			<div id="maps" style="min-height:400px;margin-bottom:10px;">
-				<form action="download/index.php" method="post" style="float:right" onsubmit="targetPopup(this)">
-					<button class="icon-button" aria-label="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>" title="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>">
-						<svg style="width:1.3em" alt="<?= $LANG['IMG_DWNL_DATA']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-							<path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-						</svg>
-					</button>
-					<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
-					<input name="dltype" type="hidden" value="georef" />
-				</form>
-
-				<div style='margin-top:10px;'>
-					<h2><?php echo $LANG['MAP_HEADER']; ?></h2>
-				</div>
-				<div>
-					<?php echo $LANG['MAP_DESCRIPTION']; ?>
-				</div>
-				<div style='margin-top:10px;'>
-						<button onclick="openMapPU('<?= $searchVar ?>');">
-						<?php echo $LANG['MAP_DISPLAY']; ?>
-					</button>
-				</div>
-				<div style='margin-top:10px;'>
-					<h2><?php echo $LANG['KML_HEADER']; ?></h2>
-				</div>
-				<form name="kmlform" action="map/kmlhandler.php" method="post">
-					<div>
-						<?php echo $LANG['KML_DESCRIPTION']; ?>
-					</div>
-					<div style="margin:10px 0;">
-						<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
-						<button name="formsubmit" type="submit" value="createKML"><?php echo $LANG['CREATE_KML']; ?></button>
-					</div>
-					<div>
-						<a href="#" onclick="toggleFieldBox('fieldBox');">
-							<?php echo $LANG['KML_EXTRA']; ?>
-						</a>
-					</div>
-					<div id="fieldBox" style="display:none;">
-						<fieldset>
-							<?php
-							$occFieldArr = array(
-								'occurrenceid',
-								'identifiedby',
-								'dateidentified',
-								'identificationreferences',
-								'identificationremarks',
-								'taxonremarks',
-								'recordedby',
-								'recordnumber',
-								'associatedcollectors',
-								'eventdate',
-								'year',
-								'month',
-								'day',
-								'verbatimeventdate',
-								'habitat',
-								'substrate',
-								'occurrenceremarks',
-								'associatedtaxa',
-								'verbatimattributes',
-								'reproductivecondition',
-								'cultivationstatus',
-								'establishmentmeans',
-								'lifestage',
-								'sex',
-								'individualcount',
-								'samplingprotocol',
-								'preparations',
-								'country',
-								'stateprovince',
-								'county',
-								'municipality',
-								'locality',
-								'locationremarks',
-								'coordinateuncertaintyinmeters',
-								'verbatimcoordinates',
-								'georeferencedby',
-								'georeferenceprotocol',
-								'georeferencesources',
-								'georeferenceverificationstatus',
-								'georeferenceremarks',
-								'minimumelevationinmeters',
-								'maximumelevationinmeters',
-								'verbatimelevation'
-							);
-							foreach ($occFieldArr as $k => $v) {
-								echo '<div style="float:left;margin-right:5px;">';
-								echo '<input type="checkbox" name="kmlFields[]" value="' . $v . '" />' . $v . '</div>';
-							}
-							?>
-						</fieldset>
-					</div>
-				</form>
 			</div>
 		</div>
 	</div>

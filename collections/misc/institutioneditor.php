@@ -209,7 +209,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						<legend><b><?php echo $LANG['ADDRESS_DETAILS']; ?></b></legend>
 						<div style="position:relative;">
 							<div style="float:left;width:155px;font-weight:bold;">
-								<?php echo $LANG['INSTITUTION_CODE']; ?>:
+								<?php echo $LANG['INSTITUTION_CODE']. '*'; ?>:
 							</div>
 							<div class="editdiv" style="display:<?php echo $eMode?'none':'block'; ?>;">
 								<?php echo $instArr['institutioncode']; ?>
@@ -221,7 +221,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						</div>
 						<div style="position:relative;clear:both;">
 							<div style="float:left;width:155px;font-weight:bold;">
-								<?php echo $LANG['INSTITUTION_NAME']; ?>:
+								<?php echo $LANG['INSTITUTION_NAME']. '*'; ?>:
 							</div>
 							<div class="editdiv" style="display:<?php echo $eMode?'none':'block'; ?>;">
 								<?php echo $instArr['institutionname']; ?>
@@ -456,7 +456,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						<legend><b><?php echo $LANG['ADD_NEW_INSTITUTION']; ?></b></legend>
 						<div style="position:relative;">
 							<div style="float:left;width:155px;font-weight:bold;">
-								<?php echo $LANG['INSTITUTION_CODE']; ?>:
+								<?php echo $LANG['INSTITUTION_CODE']. '*'; ?>:
 							</div>
 							<div>
 								<input name="institutioncode" type="text" value="<?= htmlspecialchars($instCodeDefault, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>" />
@@ -465,7 +465,7 @@ include($SERVER_ROOT.'/includes/header.php');
 						</div>
 						<div style="position:relative;clear:both;">
 							<div style="float:left;width:155px;font-weight:bold;">
-								<?php echo $LANG['INSTITUTION_NAME']; ?>:
+								<?php echo $LANG['INSTITUTION_NAME']. '*'; ?>:
 							</div>
 							<div>
 								<input name="institutionname" type="text" value="" style="width:400px;" />

@@ -6,11 +6,8 @@ header('Content-Type: text/html; charset='.$CHARSET);
 
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=../collections/reports/labelprofile.php?'.htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
-$collid = array_key_exists('collid',$_REQUEST)?$_REQUEST['collid']:0;
+$collid = array_key_exists('collid', $_REQUEST) ? filter_var($_REQUEST['collid'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $action = array_key_exists('submitaction',$_REQUEST)?$_REQUEST['submitaction']:'';
-
-//Sanitation
-if(!is_numeric($collid)) $collid = 0;
 
 $labelManager = new OccurrenceLabel();
 $labelManager->setCollid($collid);
@@ -51,9 +48,9 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 <!DOCTYPE HTML>
 <html lang="<?php echo $LANG_TAG ?>">
 	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>">
-		<title><?php echo $DEFAULT_TITLE; ?> Specimen Label Manager</title>
-		<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
+		<meta http-equiv="Content-Type" content="text/html; charset=<?= $CHARSET ?>">
+		<title><?= $DEFAULT_TITLE ?> Specimen Label Manager</title>
+		<link href="<?= $CSS_BASE_PATH ?>/jquery-ui.css" type="text/css" rel="stylesheet">
 		<?php
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
@@ -116,6 +113,8 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 			input[type=text]{ width:500px }
 			button{ display: inline; margin-top: 10px; }
 			hr{ margin:15px 0px; }
+			.custom-styles-textarea{ width: 600px; height: 50px; }
+			.json-textarea{ width: 800px; height: 150px; }
 			.fieldset-block{ width:700px }
 			.field-block{ margin:3px 0px }
 			.label{ font-weight: bold; }
@@ -153,7 +152,7 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 			?>
 			<hr/>
 			<div style="margin:15px;color:red;">
-				<?php echo $statusStr; ?>
+				<?= $statusStr; ?>
 			</div>
 			<?php
 		}
@@ -166,7 +165,7 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 			$fieldsetTitle .= '('.count($groupArr).' formats)';
 			?>
 			<fieldset>
-				<legend><?php echo $fieldsetTitle; ?></legend>
+				<legend><?= $fieldsetTitle; ?></legend>
 				<?php
 				if($isEditor == 3 || $group == 'u' || ($group == 'c' && $isEditor > 1))
 					echo '<div style="float:right" title="Create a new label profile"><img class="edit-icon" src="../../images/add.png" style="width:1.5em" onclick="$(\'#edit-'.$group.'\').toggle()" /></div>';
@@ -179,10 +178,10 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 					if($formatArr){
 						if($index) echo '<hr/>';
 						?>
-						<div id="display-<?php echo $group.'-'.$index; ?>">
+						<div id="display-<?= $group.'-'.$index; ?>">
 							<div class="field-block">
 								<span class="label">Title:</span>
-								<span class="field-value"><?php echo htmlspecialchars($formatArr['title']); ?></span>
+								<span class="field-value"><?= htmlspecialchars($formatArr['title']); ?></span>
 								<?php
 								if($isEditor == 3 || $group == 'u' || ($group == 'c' && $isEditor > 1))
 									echo '<span title="Edit label profile"> <a href="#" onclick="toggleEditDiv(\''.$group.'-'.$index.'\');return false;"><img class="edit-icon" src="../../images/edit.png" style="width:1.3em" /></a></span>';
@@ -200,7 +199,7 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 								?>
 								<div class="field-block">
 									<span class="label">Header: </span>
-									<span class="field-value"><?php echo htmlspecialchars(trim($headerStr)); ?></span>
+									<span class="field-value"><?= htmlspecialchars(trim($headerStr)); ?></span>
 								</div>
 								<?php
 							}
@@ -208,7 +207,7 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 								?>
 								<div class="field-block">
 									<span class="label">Footer: </span>
-									<span class="field-value"><?php echo htmlspecialchars($formatArr['labelFooter']['textValue']); ?></span>
+									<span class="field-value"><?= htmlspecialchars($formatArr['labelFooter']['textValue']); ?></span>
 								</div>
 								<?php
 							}
@@ -217,7 +216,7 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 								?>
 								<div class="field-block">
 									<span class="label">Type: </span>
-									<span class="field-value"><?php echo $labelType.(is_numeric($labelType)?' column per page':''); ?></span>
+									<span class="field-value"><?= $labelType.(is_numeric($labelType)?' column per page':''); ?></span>
 								</div>
 								<?php
 							}
@@ -226,7 +225,7 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 								?>
 								<div class="field-block">
 									<span class="label">Page size: </span>
-									<span class="field-value"><?php echo $pageSize; ?></span>
+									<span class="field-value"><?= $pageSize; ?></span>
 								</div>
 								<?php
 							}
@@ -235,11 +234,11 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 						<?php
 					}
 					?>
-					<form name="labelprofileeditor-<?php echo $group.(is_numeric($index)?'-'.$index:''); ?>" action="labelprofile.php" method="post" onsubmit="return validateJsonForm(this)">
-						<div id="edit-<?php echo $group.(is_numeric($index)?'-'.$index:''); ?>" style="display:none">
+					<form name="labelprofileeditor-<?= $group.(is_numeric($index)?'-'.$index:''); ?>" action="labelprofile.php" method="post" onsubmit="return validateJsonForm(this)">
+						<div id="edit-<?= $group.(is_numeric($index)?'-'.$index:''); ?>" style="display:none">
 							<div class="field-block">
 								<span class="label">Title:</span>
-								<span class="field-elem"><input name="title" type="text" value="<?php echo ($formatArr?htmlspecialchars($formatArr['title']):''); ?>" required /> </span>
+								<span class="field-elem"><input name="title" type="text" value="<?= ($formatArr?htmlspecialchars($formatArr['title']):''); ?>" required /> </span>
 								<?php
 								if($formatArr) echo '<span title="Edit label profile"> <img class="edit-icon" src="../../images/edit.png" style="width:1.3em" onclick="toggleEditDiv(\''.$group.'-'.$index.'\')" /></span>';
 								?>
@@ -249,77 +248,77 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 								<div class="field-block">
 									<span class="label">Prefix:</span>
 									<span class="field-elem">
-										<input name="hPrefix" type="text" value="<?php echo (isset($formatArr['labelHeader']['prefix'])?htmlspecialchars($formatArr['labelHeader']['prefix']):''); ?>" />
+										<input name="hPrefix" type="text" value="<?= (isset($formatArr['labelHeader']['prefix'])?htmlspecialchars($formatArr['labelHeader']['prefix']):''); ?>" />
 									</span>
 								</div>
 								<div class="field-block">
 									<div class="field-elem">
 										<span class="field-inline">
-											<input name="hMidText" type="radio" value="1" <?php echo ($midText==1?'checked':''); ?> />
+											<input name="hMidText" type="radio" value="1" <?= ($midText==1?'checked':''); ?> />
 											<span class="label-inline">Country</span>
 										</span>
 										<span class="field-inline">
-											<input name="hMidText" type="radio" value="2" <?php echo ($midText==2?'checked':''); ?> />
+											<input name="hMidText" type="radio" value="2" <?= ($midText==2?'checked':''); ?> />
 											<span class="label-inline">State</span>
 										</span>
 										<span class="field-inline">
-											<input name="hMidText" type="radio" value="3" <?php echo ($midText==3?'checked':''); ?> />
+											<input name="hMidText" type="radio" value="3" <?= ($midText==3?'checked':''); ?> />
 											<span class="label-inline">County</span>
 										</span>
 										<span class="field-inline">
-											<input name="hMidText" type="radio" value="4" <?php echo ($midText==4?'checked':''); ?> />
+											<input name="hMidText" type="radio" value="4" <?= ($midText==4?'checked':''); ?> />
 											<span class="label-inline">Family</span>
 										</span>
 										<span class="field-inline">
-											<input name="hMidText" type="radio" value="0" <?php echo (!$midText?'checked':''); ?> />
+											<input name="hMidText" type="radio" value="0" <?= (!$midText?'checked':''); ?> />
 											<span class="label-inline">Blank</span>
 										</span>
 									</div>
 								</div>
 								<div class="field-block">
 									<span class="label">Suffix:</span>
-									<span class="field-elem"><input name="hSuffix" type="text" value="<?php echo ($formatArr?htmlspecialchars($formatArr['labelHeader']['suffix']):''); ?>" /></span>
+									<span class="field-elem"><input name="hSuffix" type="text" value="<?= ($formatArr?htmlspecialchars($formatArr['labelHeader']['suffix']):''); ?>" /></span>
 								</div>
 								<div class="field-block">
 									<span class="label">Class names:</span>
-									<span class="field-elem"><input name="hClassName" type="text" value="<?php echo ($formatArr?htmlspecialchars($formatArr['labelHeader']['className']):''); ?>" /></span>
+									<span class="field-elem"><input name="hClassName" type="text" value="<?= ($formatArr?htmlspecialchars($formatArr['labelHeader']['className']):''); ?>" /></span>
 								</div>
 								<div class="field-block">
 									<span class="label">Style:</span>
-									<span class="field-elem"><input name="hStyle" type="text" value="<?php echo ($formatArr?htmlspecialchars($formatArr['labelHeader']['style']):''); ?>" /></span>
+									<span class="field-elem"><input name="hStyle" type="text" value="<?= ($formatArr?htmlspecialchars($formatArr['labelHeader']['style']):''); ?>" /></span>
 								</div>
 							</fieldset>
 							<fieldset  class="fieldset-block">
 								<legend>Label Footer</legend>
 								<div class="field-block">
 									<span class="label-inline">Footer text:</span>
-									<input name="fTextValue" type="text" value="<?php echo (isset($formatArr['labelFooter']['textValue'])?htmlspecialchars($formatArr['labelFooter']['textValue']):''); ?>" />
+									<input name="fTextValue" type="text" value="<?= (isset($formatArr['labelFooter']['textValue'])?htmlspecialchars($formatArr['labelFooter']['textValue']):''); ?>" />
 								</div>
 								<div class="field-block">
 									<span class="label-inline">Class names:</span>
-									<input name="fClassName" type="text" value="<?php echo (isset($formatArr['labelFooter']['className'])?$formatArr['labelFooter']['className']:''); ?>" />
+									<input name="fClassName" type="text" value="<?= (isset($formatArr['labelFooter']['className'])?$formatArr['labelFooter']['className']:''); ?>" />
 								</div>
 								<div class="field-block">
 									<span class="label-inline">Style:</span>
-									<input name="fStyle" type="text" value="<?php echo (isset($formatArr['labelFooter']['style'])?$formatArr['labelFooter']['style']:''); ?>" />
+									<input name="fStyle" type="text" value="<?= (isset($formatArr['labelFooter']['style'])?$formatArr['labelFooter']['style']:''); ?>" />
 								</div>
 							</fieldset>
 							<div class="field-block">
 								<div class="label">Custom Styles:</div>
 								<div class="field-block">
-									<input name="customStyles" type="text" value="<?php echo (isset($formatArr['customStyles'])?$formatArr['customStyles']:''); ?>" />
+									<textarea name="customStyles" class="custom-styles-textarea"><?= (isset($formatArr['customStyles'])?$formatArr['customStyles']:''); ?></textarea>
 								</div>
 							</div>
 							<div class="field-block">
 								<div class="label">Custom CSS:</div>
 								<div class="field-block">
-									<input name="customCss" type="text" value="<?php echo (isset($formatArr['customCss'])?$formatArr['customCss']:''); ?>" />
+									<input name="customCss" type="text" value="<?= (isset($formatArr['customCss'])?$formatArr['customCss']:''); ?>" />
 								</div>
 							</div>
 							<div class="field-block">
 								<div class="label">Custom JS:</div>
 								<div class="field-block">
-									<input name="customJS" type="text" value="<?php echo (isset($formatArr['customJS'])?$formatArr['customJS']:''); ?>" />
+									<input name="customJS" type="text" value="<?= (isset($formatArr['customJS'])?$formatArr['customJS']:''); ?>" />
 								</div>
 							</div>
 							<fieldset class="fieldset-block">
@@ -327,31 +326,31 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 								<div class="field-block">
 									<span class="label-inline">Label type:</span>
 									<select name="labelType">
-										<option value="1" <?php echo ($labelType==1?'selected':''); ?>>1 columns per page</option>
-										<option value="2" <?php echo ($labelType==2?'selected':''); ?>>2 columns per page</option>
-										<option value="3" <?php echo ($labelType==3?'selected':''); ?>>3 columns per page</option>
-										<option value="4" <?php echo ($labelType==4?'selected':''); ?>>4 columns per page</option>
-										<option value="5" <?php echo ($labelType==5?'selected':''); ?>>5 columns per page</option>
-										<option value="6" <?php echo ($labelType==6?'selected':''); ?>>6 columns per page</option>
-										<option value="7" <?php echo ($labelType==7?'selected':''); ?>>7 columns per page</option>
-										<option value="packet" <?php echo ($labelType=='packet'?'selected':''); ?>>Packet labels</option>
+										<option value="1" <?= ($labelType==1?'selected':''); ?>>1 columns per page</option>
+										<option value="2" <?= ($labelType==2?'selected':''); ?>>2 columns per page</option>
+										<option value="3" <?= ($labelType==3?'selected':''); ?>>3 columns per page</option>
+										<option value="4" <?= ($labelType==4?'selected':''); ?>>4 columns per page</option>
+										<option value="5" <?= ($labelType==5?'selected':''); ?>>5 columns per page</option>
+										<option value="6" <?= ($labelType==6?'selected':''); ?>>6 columns per page</option>
+										<option value="7" <?= ($labelType==7?'selected':''); ?>>7 columns per page</option>
+										<option value="packet" <?= ($labelType=='packet'?'selected':''); ?>>Packet labels</option>
 									</select>
 								</div>
 								<div class="field-block">
 									<span class="label-inline">Page size:</span>
 									<select name="pageSize">
 										<option value="letter">Letter</option>
-										<option value="a4" <?php echo ($pageSize=='a4'?'SELECTED':''); ?>>A4</option>
-										<option value="legal" <?php echo ($pageSize=='legal'?'SELECTED':''); ?>>Legal</option>
-										<option value="tabloid" <?php echo ($pageSize=='tabloid'?'SELECTED':''); ?>>Ledger/Tabloid</option>
+										<option value="a4" <?= ($pageSize=='a4'?'SELECTED':''); ?>>A4</option>
+										<option value="legal" <?= ($pageSize=='legal'?'SELECTED':''); ?>>Legal</option>
+										<option value="tabloid" <?= ($pageSize=='tabloid'?'SELECTED':''); ?>>Ledger/Tabloid</option>
 									</select>
 								</div>
 								<div class="field-block">
-									<input name="displaySpeciesAuthor" type="checkbox" value="1" <?php echo (isset($formatArr['displaySpeciesAuthor'])&&$formatArr['displaySpeciesAuthor']?'checked':''); ?> />
+									<input name="displaySpeciesAuthor" type="checkbox" value="1" <?= (isset($formatArr['displaySpeciesAuthor'])&&$formatArr['displaySpeciesAuthor']?'checked':''); ?> />
 									<span class="label-inline">Display species for infraspecific taxa</span>
 								</div>
 								<div class="field-block">
-									<input name="displayBarcode" type="checkbox" value=1" <?php echo (isset($formatArr['displayBarcode'])&&$formatArr['displayBarcode']?'checked':''); ?> />
+									<input name="displayBarcode" type="checkbox" value=1" <?= (isset($formatArr['displayBarcode'])&&$formatArr['displayBarcode']?'checked':''); ?> />
 									<span class="label-inline">Display barcode</span>
 								</div>
 							</fieldset>
@@ -359,13 +358,13 @@ $isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General
 								<div class="label">JSON: <span title="Edit JSON label definition"><a href="#" onclick="makeJsonEditable('<?php echo $group.(is_numeric($index)?'-'.$index:''); ?>');return false"><img  class="edit-icon" src="../../images/edit.png" style="width:1.2em" /></a><a href="#" onclick="makeJsonEditable('<?php echo $group.(is_numeric($index)?'-'.$index:''); ?>');return false">(edit via text interface)</a>  </span><span title="Edit JSON label definition (Visual Interface)"><a href="#" onclick="openJsonEditorPopup('<?php echo $group.(is_numeric($index)?'-'.$index:''); ?>');return false"><img  class="edit-icon" src="../../images/editsquare.png" style="1.3em" />(edit via visual interface)</a></span>
 								</div>
 								<div class="field-block">
-									<textarea id="json-<?php echo $group.(is_numeric($index)?'-'.$index:''); ?>" name="json" readonly><?php echo (isset($formatArr['labelBlocks'])?json_encode($formatArr['labelBlocks'],JSON_PRETTY_PRINT):''); ?></textarea>
+									<textarea id="json-<?= $group.(is_numeric($index)?'-'.$index:''); ?>" name="json" class="json-textarea" readonly><?= (isset($formatArr['labelBlocks'])?json_encode($formatArr['labelBlocks'],JSON_PRETTY_PRINT):''); ?></textarea>
 								</div>
 							</div>
 							<div style="margin-left:20px;">
-								<input type="hidden" name="collid" value="<?php echo $collid; ?>" />
-								<input type="hidden" name="group" value="<?php echo $group; ?>" />
-								<input type="hidden" name="index" value="<?php echo $index; ?>" />
+								<input type="hidden" name="collid" value="<?= $collid; ?>" />
+								<input type="hidden" name="group" value="<?= $group; ?>" />
+								<input type="hidden" name="index" value="<?= $index; ?>" />
 								<?php
 								if($isEditor == 3 || $group == 'u' || ($group == 'c' && $isEditor > 1))
 									echo '<span><button name="submitaction" type="submit" value="saveProfile">'.(is_numeric($index)?'Save Label Profile':'Create New Label Profile').'</button></span>';

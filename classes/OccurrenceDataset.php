@@ -3,7 +3,7 @@ include_once($SERVER_ROOT . '/config/dbconnection.php');
 include_once($SERVER_ROOT . '/classes/DwcArchiverCore.php');
 include_once($SERVER_ROOT . '/classes/utilities/OccurrenceUtil.php');
 
-class OccurrenceDataset {
+class OccurrenceDataset{
 
 	private $conn;
 	private $collArr = array();
@@ -41,6 +41,7 @@ class OccurrenceDataset {
 				$retArr['notes'] = $r->notes;
 				$retArr['description'] = $r->description;
 				$retArr['uid'] = $r->uid;
+				$retArr['dynamicproperties'] = $r->dynamicProperties;
 				$retArr['sort'] = $r->sortsequence;
 				$retArr['ts'] = $r->initialtimestamp;
 			}
@@ -262,6 +263,7 @@ class OccurrenceDataset {
 		return $status;
 	}
 
+
 	public function setOccurrenceCount($datasetId) {
 		$returnVal = 0;
 		if ($datasetId) {
@@ -340,6 +342,7 @@ class OccurrenceDataset {
 		}
 		return $status;
 	}
+
 
 	public function addSelectedOccurrences($datasetId, $occArr) {
 		$status = false;

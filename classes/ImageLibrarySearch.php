@@ -131,8 +131,8 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 						if(array_key_exists("tid",$searchArr)){
 							$tidArr = array_keys($searchArr['tid']);
 							$sql = 'SELECT DISTINCT t.sciname '.
-								'FROM taxa t INNER JOIN taxaenumtree e ON t.tid = e.tid '.
-								'WHERE (t.rankid = 140) AND (e.taxauthid = '.$this->taxAuthId.') AND (e.parenttid IN('.implode(',',$tidArr).'))';
+									'FROM taxa t INNER JOIN taxaenumtree e ON t.tid = e.tid '.
+									'WHERE (t.rankid = 140) AND (e.taxauthid = '.$this->taxAuthId.') AND (e.parenttid IN('.implode(',',$tidArr).'))';
 							$rs = $this->conn->query($sql);
 							while($r = $rs->fetch_object()){
 								$famArr[] = $r->sciname;
@@ -144,12 +144,12 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 							$sqlWhereTaxa .= 'OR (ts.family IN("'.implode('","',$famArr).'")) ';
 						}
 						/*
-						if(array_key_exists("scinames",$searchArr)){
-							foreach($searchArr["scinames"] as $sciName){
-								$sqlWhereTaxa .= "OR (o.sciname Like '".$sciName."%') ";
-							}
-						}
-						*/
+						 if(array_key_exists("scinames",$searchArr)){
+						 foreach($searchArr["scinames"] as $sciName){
+						 $sqlWhereTaxa .= "OR (o.sciname Like '".$sciName."%') ";
+						 }
+						 }
+						 */
 					}
 					else{
 						if(array_key_exists("tid",$searchArr)){
@@ -190,15 +190,15 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 			$sqlWhere .= 'IN(SELECT mediaid FROM imagetag '.$tagFrag.')';
 		}
 		/*
-		if($this->keywords){
-			$keywordArr = explode(";",$this->keywords);
-			$tempArr = Array();
-			foreach($keywordArr as $value){
-				$tempArr[] = "(ik.keyword LIKE '%".$this->cleanInStr($value)."%')";
-			}
-			$sqlWhere .= "AND (".implode(" OR ",$tempArr).") ";
-		}
-		*/
+		 if($this->keywords){
+		 $keywordArr = explode(";",$this->keywords);
+		 $tempArr = Array();
+		 foreach($keywordArr as $value){
+		 $tempArr[] = "(ik.keyword LIKE '%".$this->cleanInStr($value)."%')";
+		 }
+		 $sqlWhere .= "AND (".implode(" OR ",$tempArr).") ";
+		 }
+		 */
 		if($this->imageType){
 			//0 = display all images, do not add a collection related condition to SQL
 			if($this->imageType == 1){

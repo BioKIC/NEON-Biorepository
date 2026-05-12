@@ -10,18 +10,24 @@ $taxonFilter = array_key_exists('taxonfilter',$_REQUEST) ? filter_var($_REQUEST[
 $checklistManager = new OccurrenceChecklistManager();
 $searchVar = $checklistManager->getQueryTermStr();
 $searchVarEncoded = urlencode($searchVar);
-
+//NEON edit start: default output to filter through taxonomic thesaurus
+//$taxonFilter = 1;
+//NEON edit end
 ?>
 <div>
 	<form action="download/index.php" method="post" style="float:right" onsubmit="targetPopup(this)">
-		<button class="ui-button ui-widget ui-corner-all" style="margin:5px;padding:5px;cursor: pointer" title="<?= $LANG['DOWNLOAD_TITLE']; ?>">
-			<img src="../images/dl2.png" style="width:15px" />
+		<button class="icon-button" title="<?= $LANG['DOWNLOAD_TITLE']; ?>">
+			<svg style="width:1.3em;height:1.3em" alt="Download checklist data" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+				<path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
+			</svg>
 		</button>
 		<input name="searchvar" type="hidden" value="<?=  $searchVar; ?>" />
 		<input name="dltype" type="hidden" value="checklist" />
 		<input name="taxonFilterCode" type="hidden" value="<?=  $taxonFilter; ?>" />
 	</form>
 	<?php
+	//NEON edit start: comment out following action buttons
+	/*
 	if($KEY_MOD_IS_ACTIVE){
 		?>
 		<form action="checklistsymbiota.php" method="post" style="float:right">
@@ -63,6 +69,10 @@ $searchVarEncoded = urlencode($searchVar);
 			<input name="searchvar" type="hidden" value='<?=  $searchVar; ?>' />
 		</form>
 	</div>
+	<?php
+	*/
+	//NEON edit end
+	?>
 	<div style="clear:both;"><hr/></div>
 		<?php
 		$checklistArr = $checklistManager->getChecklist($taxonFilter);

@@ -382,7 +382,9 @@ class OccurrenceUtil {
 	public static function occurrenceArrayCleaning($recMap){
 		//Trim all field values
 		foreach($recMap as $k => $v){
-			$recMap[$k] = trim($v);
+			//START NEON CUSTOMIZATION
+			if ($v != null) $recMap[$k] = trim($v);
+			//END NEON CUSTOMIZATION
 		}
 		//Date cleaning
 		if(isset($recMap['recordsecurity']) && !is_numeric($recMap['recordsecurity'])){

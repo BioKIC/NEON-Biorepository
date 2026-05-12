@@ -12,7 +12,11 @@ header("Content-Type: text/html; charset=".$CHARSET);
 
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=../collections/reports/labelmanager.php?'.htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
-$collid = Sanitize::int($_REQUEST['collid']);
+//neon edit
+//$collid = Sanitize::int($_REQUEST['collid']);
+$collid = !empty($_REQUEST['collid']) ? $_REQUEST['collid'] : 'all';
+if ($collid !== 'all' && !is_numeric($collid)) $collid = 0;
+// End NEON concustomization
 $action = array_key_exists('submitaction', $_REQUEST) ? $_REQUEST['submitaction'] : '';
 
 $labelManager = new OccurrenceLabel();
@@ -23,13 +27,18 @@ if(!$limit) $limit = 400;
 elseif($limit > 1000) $limit = 1000;
 
 $isEditor = 0;
+if (
+	$IS_ADMIN ||
+	// NEON customization
+	//(array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"])) ||
+	//(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"]))
+	(array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEditor', $USER_RIGHTS))
+	// End NEON concustomization
+) {
+	$isEditor = 1;
+}
+
 $occArr = array();
-if($IS_ADMIN || (array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"]))){
-	$isEditor = 1;
-}
-elseif(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"])){
-	$isEditor = 1;
-}
 if($isEditor){
 	if($action == 'filterRecords'){
 		$occArr = $labelManager->queryOccurrences($_POST, $limit);
@@ -195,7 +204,12 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 		<?php
 		if($isEditor){
 			$isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General Observations')?true:false);
-			echo '<h2>'.$labelManager->getCollName().'</h2>';
+			if ($collid === 'all') {
+				echo '<h2>All Collections</h2>';
+			}
+			elseif ($collid) {
+				echo '<h2>' . $labelManager->getCollName() . '</h2>';
+			}
 			?>
 			<div>
 				<form name="datasetqueryform" action="labelmanager.php" method="post" onsubmit="return validateQueryForm(this)">
@@ -216,11 +230,25 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								<label for="recordnumber"><?= $LANG['REC_NUM'] ?></label>
 								<input type="text" name="recordnumber" id="recordnumber" style="width:150px;" value="<?= !empty($_REQUEST['recordnumber']) ? Sanitize::inString($_REQUEST['recordnumber']) : '' ?>" />
 							</div>
+							<?php
+							//NEON Customization
+							/*
+							?>
 							<div style="float:left;margin-left:10px;" title="<?= $LANG['SEPARATE_TERMS'] ?>">
 								<label for="identifier"><?= $LANG['CAT_NUM'] ?></label>
 								<input type="text" name="identifier" id="identifier" style="width:150px;" value="<?= !empty($_REQUEST['identifier']) ? Sanitize::inString($_REQUEST['identifier']) : '' ?>" />
 							</div>
+							<?php
+							*/
+							//End NEON Customization
+							?>
 						</div>
+						<!-- Start NEON customization -->
+						<div style="margin-top:10px;clear:both;" title="Separate multiple terms by comma, semicolon, or new line">
+							<label for="identifier">Catalog Number(s):</label><br>
+							<textarea name="identifier" style="width:700px; height:80px;"><?= !empty($_REQUEST['identifier']) ? Sanitize::inString($_REQUEST['identifier']) : '' ?></textarea>
+						</div>
+						<!-- End NEON customization -->
 						<div style="margin:3px;clear:both;">
 							<div style="float:left;">
 								<label for="recordenteredby"> <?= $LANG['ENTER_BY'] ?> </label>
@@ -240,6 +268,10 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 							</div>
 						</div>
 						<div style="margin:3px;clear:both;">
+							<?php
+							//NEON customization
+							/*
+							?>
 							<label for="labelproject"> <?= $LANG['LABEL_PROJ'] ?></label>
 							<select name="labelproject" id="labelproject">
 								<option value=""> <?= $LANG['ALL_PROJ'] ?> </option>
@@ -253,6 +285,10 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								}
 								?>
 							</select>
+							<?php
+							*/
+							//End NEON customization
+							?>
 							<!--
 							Dataset Projects:
 							<select name="datasetproject" >
@@ -277,6 +313,12 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								else echo $LANG['SEARCH_IN'];
 								?>
 							</label>
+							<?php
+							// Start NEON customization
+							echo '<span><input name="excludesubsamples" type="checkbox" value="1" ' . (isset($_POST['excludesubsamples']) || !isset($_POST['excludesubsamples']) ? 'checked' : '') . ' /></span>';
+							echo ' Exclude subsamples';
+							// End NEON customization
+							?>
 						</div>
 						<div style="clear:both;">
 							<div style="float:left;">

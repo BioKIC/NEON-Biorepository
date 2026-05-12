@@ -58,12 +58,45 @@ else{
 
 $targetLabelFormatArr = $labelManager->getLabelFormatByID($labelCat,$labelIndex);
 
+//neon edit
 $isEditor = 0;
 if($SYMB_UID){
-	if($IS_ADMIN) $isEditor = 1;
+	if($IS_ADMIN){
+		$isEditor = 1;
+	}
+	elseif($labelManager->getCollid() === 'all'){
+		$missing = [];
+
+		foreach($labelManager->getLabelArray($_POST['occid']) as $row){
+			if(!isset($row['collid'])) continue;
+
+			$cid = $row['collid'];
+
+			if(
+				!(isset($USER_RIGHTS['CollAdmin'])  && in_array($cid,$USER_RIGHTS['CollAdmin'])) &&
+				!(isset($USER_RIGHTS['CollEditor']) && in_array($cid,$USER_RIGHTS['CollEditor']))
+			){
+				$missing[$cid] = $cid; // de-dupe
+			}
+		}
+
+		if(empty($missing)){
+			$isEditor = 1;
+		}
+		else{
+			$isEditor = 0;
+			$links = array_map(function($cid){
+				return '<a href="../misc/neoncollprofiles.php?collid='.$cid.'" target="_blank">'.$cid.'</a>';
+			}, $missing);
+			
+			echo 'Missing permissions for collid(s): '.implode(', ', $links);
+
+		}
+	}
 	elseif(array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($labelManager->getCollid(),$USER_RIGHTS["CollAdmin"])) $isEditor = 1;
 	elseif(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($labelManager->getCollid(),$USER_RIGHTS["CollEditor"])) $isEditor = 1;
 }
+//end neon edit
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">

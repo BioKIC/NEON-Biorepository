@@ -1,5 +1,0 @@
-# Ignore everything in this directory
-*
-# Except this file and labeldefault.json
-!.gitignore
-!labeldefault.json

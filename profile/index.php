@@ -61,6 +61,26 @@ if(array_key_exists('refurl',$_REQUEST)){
 	else $refUrl .= $refGetStr;
 }
 
+//neon edit
+if(empty($NEON_DEV_MODE)){
+	if (empty($SYMB_UID)) {
+		if ($refUrl) {
+			$_SESSION['refurl'] = $refUrl;
+		}
+
+		$target = $CLIENT_ROOT . '/profile/openIdAuth.php';
+
+		if (!empty($_SESSION['refurl'])) {
+			$glue = (strpos($target, '?') === false) ? '?' : '&';
+			$target .= $glue . 'refurl=' . rawurlencode($_SESSION['refurl']);
+		}
+
+		header('Location: ' . $target);
+		exit;
+	}
+}
+//end neon edit
+
 if($remMe) $pHandler->setRememberMe(true);
 if($action == 'logout'){
 	$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . '/index.php';

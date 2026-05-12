@@ -1,0 +1,553 @@
+[
+  {
+    "id": 1,
+    "name": "Dry Samples",
+    "children": [
+      {
+        "id": 2,
+        "name": "Biological Derivatives",
+        "children": [
+          {
+            "id": 3,
+            "name": "Aquatic Microalgae (Freeze-dried Diatoms)",
+            "collid": 46
+          },
+          {
+            "id": 4,
+            "name": "Small Mammal Hair Samples",
+            "collid": 27
+          },
+          {
+            "id": 5,
+            "name": "Oven Dried Canopy Foliage",
+            "collid": 18
+          },
+          {
+            "id": 6,
+            "name": "Litterfall",
+            "collid": 23
+          },
+          {
+            "id": 8,
+            "name": "Root Cores (Megapit)",
+            "collid": 76
+          },
+          {
+            "id": 9,
+            "name": "Root Cores (Tower Plots)",
+            "collid": 10
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "name": "Geochemical",
+        "children": [
+          {
+            "id": 10,
+            "name": "Particulate Mass Filters (Dust)",
+            "collid": 41
+          },
+          {
+            "id": 11,
+            "name": "Soils",
+            "collid": 30
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "name": "Individual Prepared Specimens",
+        "children": [
+          {
+            "id": 13,
+            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens (from Clip Harvest Biomass Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 9            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 107           
+              }
+            ]
+          },
+          {
+            "id": 14,
+            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens (from Point Transect Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 7            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 108           
+              }
+            ]
+          },
+          {
+            "id": 15,
+            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens (from Opportunistic Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 8            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 109           
+              }
+            ]
+          },
+          {
+            "id": 16,
+            "name": "Beetles (Carabids) Pinned Specimens",
+            "collid": 39
+          },
+          {
+            "id": 17,
+            "name": "Mosquito Pinned Specimens",
+            "collid": 29
+          },
+          {
+            "id": 18,
+            "name": "Insect Taxonomic Reference Collection",
+            "collid": 4
+          },
+          {
+            "id": 19,
+            "name": "Herbarium Specimens",
+            "collid": 54
+          },
+          {
+            "id": 20,
+            "name": "Small Mammal Specimens (Standard Sampling)",
+            "collid": 28
+          },
+          {
+            "id": 21,
+            "name": "Small Mammal Specimens (Incidental)",
+            "collid": 19
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Fluid-Preserved Samples",
+    "children": [
+      {
+        "id": 23,
+        "name": "Bulk/Pooled Specimens",
+        "children": [
+          {
+            "id": 24,
+            "name": "Aquatic Macroalgae (from Clip Harvest Biomass Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 50            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 105           
+              }
+            ]
+          },
+          {
+            "id": 25,
+            "name": "Aquatic Macroalgae (from Point Transects Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 73            
+              },
+              {
+                "id": 1,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 106           
+              }
+            ]
+          },
+          {
+            "id": 26,
+            "name": "Aquatic Microalgae",
+            "children": [
+              {
+                "id": 45,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 47
+              },
+              {
+                "id": 46,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 110
+              }
+            ]
+          },
+          {
+            "id": 29,
+            "name": "Beetles (Carabids) Samples (from Beetle Sampling; Pooled Catches)",
+            "collid": 11
+          },
+          {
+            "id": 30,
+            "name": "Beetles (Carabids) Samples (from Beetle Sampling; Unpooled Catches)",
+            "collid": 14
+          },
+          {
+            "id": 17,
+            "name": "Benthic Macroinvertebrates",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 57                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 103                    
+              },
+              {
+                "id": 32,
+                "name": "Unprocessed Samples (Bouts 1 & 3)",
+                "collid": 21
+              }
+            ]
+          },
+          {
+            "id": 33,
+            "name": "Invertebrate Specimen Bycatch (from Beetle Sampling; Pooled Catches)",
+            "collid": 13
+          },
+          {
+            "id": 34,
+            "name": "Invertebrate Specimen Bycatch (from Beetle Sampling; Unpooled Catches)",
+            "collid": 16
+          },
+          {
+            "id": 17,
+            "name": "Midges (Chironomids)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 22                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 100                    
+              }
+            ]
+          },
+          {
+            "id": 17,
+            "name": "Worms (Oligochaetes)",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 52                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 101                    
+              }
+            ]
+          },
+          {
+            "id": 17,
+            "name": "Zooplankton",
+            "children": [
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Samples",
+                "collid": 45                    
+              },
+              {
+                "id": 16,
+                "name": "Bulk Taxonomy Sample Identifications",
+                "collid": 104                    
+              },
+              {
+                "id": 32,
+                "name": "Unprocessed Samples (Bouts 1 & 3)",
+                "collid": 60
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 37,
+        "name": "Geochemical",
+        "children": [
+          {
+            "id": 38,
+            "name": "Wet Deposition (Precipitation)",
+            "collid": 42
+          }
+        ]
+      },
+      {
+        "id": 39,
+        "name": "Individual Prepared Specimens",
+        "children": [
+          {
+            "id": 40,
+            "name": "Benthic Macroinvertebrate Taxonomic References",
+            "collid": 48
+          },
+          {
+            "id": 41,
+            "name": "Fish Specimens",
+            "collid": 20
+          },
+          {
+            "id": 42,
+            "name": "Small Mammal Specimens (Standard Sampling)",
+            "collid": 28
+          },
+          {
+            "id": 43,
+            "name": "Small Mammal Specimens (Opportunistic)",
+            "collid": 19
+          },
+          {
+            "id": 44,
+            "name": "Small Mammal Specimen Bycatch (from Beetle Sampling; Unpooled Catches)",
+            "collid": 17
+          },
+          {
+            "id": 45,
+            "name": "Small Mammal Parasites",
+            "collid": 85
+          },
+          {
+            "id": 46,
+            "name": "Reptiles and Amphibians Specimen Bycatch (from Beetle Sampling; Pooled Catches)",
+            "collid": 12
+          },
+          {
+            "id": 47,
+            "name": "Reptiles and Amphibians Specimen Bycatch (from Beetle Sampling; Unpooled Catches)",
+            "collid": 15
+          },
+          {
+            "id": 48,
+            "name": "Reptiles and Amphibians Specimen Bycatch (from Small Mammal and Fish Sampling)",
+            "collid": 70
+          },
+          {
+            "id": 48,
+            "name": "Tick Specimens",
+            "collid": 116
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 49,
+    "name": "Frozen Samples",
+    "children": [
+      {
+        "id": 50,
+        "name": "Aquatic Microalgae Sterivex Filters",
+        "collid": 98
+      },
+      {
+        "id": 51,
+        "name": "Aquatic Sediments",
+        "collid": 92
+      },
+      {
+        "id": 52,
+        "name": "Benthic Microbe Sterivex Filters",
+        "collid": 5
+      },
+      {
+        "id": 53,
+        "name": "Small Mammal Blood Samples",
+        "collid": 24
+      },
+      {
+        "id": 54,
+        "name": "Small Mammal Ear Tissue",
+        "collid": 25
+      },
+      {
+        "id": 55,
+        "name": "Small Mammal Fecal Samples",
+        "collid": 26
+      },
+      {
+        "id": 56,
+        "name": "Mosquito Bulk Identified",
+        "collid": 56
+      },
+      {
+        "id": 57,
+        "name": "Soil Microbe Bulk Subsamples",
+        "collid": 31
+      },
+      {
+        "id": 58,
+        "name": "Surface Water Microbe Sterivex Filters",
+        "collid": 6
+      },
+      {
+        "id": 59,
+        "name": "Leaf Tissue",
+        "collid": 40
+      }
+    ]
+  },
+  {
+    "id": 60,
+    "name": "Genomic Samples",
+    "children": [
+      {
+        "id": 61,
+        "name": "Barcoding Extracts",
+        "children": [
+          {
+            "id": 62,
+            "name": "Beetle (Carabid)",
+            "collid": 63
+          },
+          {
+            "id": 63,
+            "name": "Benthic Macroinvertebrate",
+            "collid": 61
+          },
+          {
+            "id": 64,
+            "name": "Benthic Microbe",
+            "collid": 67
+          },
+          {
+            "id": 65,
+            "name": "Fish",
+            "collid": 66
+          },
+          {
+            "id": 66,
+            "name": "Small Mammal",
+            "collid": 71
+          },
+          {
+            "id": 67,
+            "name": "Mosquito",
+            "collid": 65
+          },
+          {
+            "id": 68,
+            "name": "Soil Microbe",
+            "collid": 69
+          },
+          {
+            "id": 69,
+            "name": "Surface Water Microbe",
+            "collid": 68
+          },
+          {
+            "id": 70,
+            "name": "Zooplankton",
+            "collid": 62
+          }
+        ]
+      },
+      {
+        "id": 71,
+        "name": "Total Nucleic Acid Extracts",
+        "children": [
+          {
+            "id": 72,
+            "name": "Small Mammal (from Blood)",
+            "collid": 91
+          },
+          {
+            "id": 73,
+            "name": "Small Mammal (from Ear Tissue)",
+            "collid": 90
+          },
+          {
+            "id": 74,
+            "name": "Mosquito",
+            "collid": 59
+          },
+          {
+            "id": 75,
+            "name": "Tick",
+            "collid": 75
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 76,
+    "name": "Other",
+    "children": [
+      {
+        "id": 77,
+        "name": "Legacy and Prototype Samples",
+        "collid": 81
+      }
+    ]
+  },
+  {
+    "id": 78,
+    "name": "Slide-Mounted Samples",
+    "children": [
+      {
+        "id": 79,
+        "name": "Aquatic Microalgae (Diatoms)",
+        "children": [
+          {
+            "id": 45,
+            "name": "Bulk Taxonomy Samples",
+            "collid": 49
+          },
+          {
+            "id": 46,
+            "name": "Bulk Taxonomy Sample Identifications",
+            "collid": 111
+          }
+        ]
+      },
+      {
+        "id": 24,
+        "name": "Chironomids and Oligochaetes",
+        "children": [
+          {
+            "id": 16,
+            "name": "Bulk Taxonomy Samples",
+            "collid": 53                    
+          },
+          {
+            "id": 16,
+            "name": "Bulk Taxonomy Sample Identifications",
+            "collid": 102                    
+          }
+        ]
+      }
+    ]
+  }
+]

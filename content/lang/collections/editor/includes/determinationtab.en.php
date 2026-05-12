@@ -30,9 +30,10 @@ $LANG['ID_QUALIFIER'] = 'Identification Qualifier';
 $LANG['SCI_NAME'] = 'Scientific Name';
 $LANG['AUTHOR'] = 'Author';
 $LANG['CONFIDENCE_IN_DET'] = 'Confidence in Determination';
-$LANG['DETERMINER'] = 'Determiner';
-$LANG['DATE'] = 'Date';
+$LANG['DETERMINER'] = 'Identified By';
+$LANG['DATE'] = 'Date Identified';
 $LANG['REFERENCE'] = 'Reference';
+$LANG['TAXON_REMARKS'] = 'Taxon Remarks';
 $LANG['MAKE_THIS_CURRENT'] = 'Make this the current determination';
 $LANG['ADD_TO_PRINT'] = 'Add to Annotation Print Queue';
 $LANG['SUBMIT_DET'] = 'Submit Determination';
@@ -46,5 +47,10 @@ $LANG['MAKE_DET_CURRENT'] = 'Make Determination Current';
 $LANG['MAKE_CURRENT'] = 'Make Current';
 $LANG['SURE_DELETE'] = 'Are you sure you want to delete this specimen determination?';
 $LANG['DELETE_DET'] = 'Delete Determination';
+
+// START NEON Customization
+$LANG['ID_REFERENCES'] = 'Identification Reference';
+$LANG['ID_REMARKS'] = 'Identification Remarks';
+// END NEON customization
 
 ?>
