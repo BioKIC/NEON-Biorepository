@@ -311,7 +311,7 @@ class DwcArchiverCore extends Manager{
 				} elseif ($cond == 'LIKE') {
 					$sqlFrag .= 'OR (' . $field . ' LIKE "%' . $value . '%") ';
 				} elseif ($cond == 'NOT_LIKE') {
-					$sqlFrag .= 'OR (' . $field . ' NOT LIKE "%' . $value . '%" OR ' . $field . ' IS NULL) ';
+					$sqlFrag .= 'AND (' . $field . ' NOT LIKE "%' . $value . '%" OR ' . $field . ' IS NULL) ';
 				} elseif ($cond == 'LESS_THAN') {
 					$sqlFrag .= 'OR (' . $field . ' < "' . $value . '") ';
 				} elseif ($cond == 'GREATER_THAN') {
@@ -1769,15 +1769,14 @@ class DwcArchiverCore extends Manager{
 		$sql = 'INSERT IGNORE INTO omexportoccurrences(omExportID, occid, collid, taxonID, recordSecurity) ';
 		if (strpos($this->conditionSql,"early.myaStart"))
 			$sql .= $this->paleoWithSql;
-			$sql .= 'SELECT ' . $this->exportID . ' AS omExportID, o.occid, o.collid, o.tidInterpreted, o.recordSecurity FROM omoccurrences o ';
-			$sql .= $this->getTableJoins() . $this->conditionSql;
-			if($stmt = $this->conn->prepare($sql)){
-				try{
-					if($stmt->execute()){
-						if($stmt->affected_rows || !$stmt->error){
-							$status = true;
-						}
-						else $this->errorMessage = $stmt->error;
+		$sql .= 'SELECT ' . $this->exportID . ' AS omExportID, o.occid, o.collid, o.tidInterpreted, o.recordSecurity FROM omoccurrences o ';
+		$sql .= $this->getTableJoins() . $this->conditionSql;
+		$sql .= 'LIMIT 1000000';
+		if($stmt = $this->conn->prepare($sql)){
+			try{
+				if($stmt->execute()){
+					if($stmt->affected_rows || !$stmt->error){
+						$status = true;
 					}
 				} catch (mysqli_sql_exception $e){
 					$this->errorMessage = $stmt->error;
