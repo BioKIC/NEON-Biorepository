@@ -369,17 +369,26 @@ class OccurrenceSearchSupport {
 	public static function getDbWhereFrag($dbSearchTerm){
 		$sqlRet = "";
 		//neon edit
-		if($dbSearchTerm == 'all'){
+		if(strpos($dbSearchTerm, 'all') !== false){
+		
 			// load JSON file
 			$jsonPath = '../neon-react/biorepo_lib/collections-taxonomic.json';
 			$json = file_get_contents($jsonPath);
 			$data = json_decode($json, true);
-	
+		
 			$collids = [];
 			self::extractCollids($data, $collids);
-	
+		
+			$dbParts = explode(',', $dbSearchTerm);
+		
+			foreach($dbParts as $part){
+				if(is_numeric($part)){
+					$collids[] = (int)$part;
+				}
+			}
+		
 			$collids = array_unique($collids);
-	
+		
 			if($collids){
 				$sqlRet .= 'AND (o.collid IN('.implode(',', $collids).')) ';
 			}

@@ -571,13 +571,24 @@ function getParam(paramName) {
   // for db and datasetid
   if (paramName === 'db') {
     if (allNeon.checked) {
-      elementValues = 'all';
+      let dbArr = ['all'];
+  
+      // only get checked external collection checkboxes
+      document
+        .querySelectorAll('#neonext-collections-items input[name="db"]:checked')
+        .forEach((item) => {
+          dbArr.push(item.value);
+        });
+  
+      elementValues = dbArr;
     } else {
       let dbArr = [];
       let tempArr = getCollsSelected();
+  
       tempArr.forEach((item) => {
         dbArr.push(item.value);
       });
+  
       elementValues = dbArr;
     }
   } else if (paramName === 'datasetid') {
