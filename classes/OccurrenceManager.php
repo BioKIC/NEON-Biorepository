@@ -430,8 +430,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 					
 						$wildcardFrag[] = 'o.catalogNumber LIKE "' . $likeStr . '"';
 						$wildcardFrag[] = 'o.occid IN(
-							SELECT occid FROM omoccuridentifiers
+							SELECT DISTINCT occid 
+							FROM omoccuridentifiers
 							WHERE identifiervalue LIKE "' . $likeStr . '"
+							AND identifierName NOT IN ("NEON sampleUUID", "NEON sampleID Hash")
 						)';
 					}
 					else{
