@@ -32,9 +32,9 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 			
 			{ width: '5%', targets: 0 },
 			{ width: '5%', targets: 1 },
-			{ width: '25%', targets: 2 },
+			{ width: '30%', targets: 2 },
 			{ width: '50%', targets: 3 },
-			{ width: '15%', targets: 4 },
+			{ width: '10%', targets: 4 },
 			
 		]
 	});
