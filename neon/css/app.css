@@ -723,7 +723,7 @@ span.accent-color-darker {
           box-sizing: border-box;
   resize: none;
   border: 0;
-  height: 100px;
+  height: 117px;
   padding: var(--padding);
   font-size: 1em;
 }
@@ -751,8 +751,8 @@ span.accent-color-darker {
 }
 
 .text-area-container .text-area--outlined > textarea:focus ~ span::before, .text-area-container .text-area--outlined > textarea:valid ~ span::before {
-  -webkit-transform: translateY(-22px);
-          transform: translateY(-22px);
+  -webkit-transform: translateY(-29px);
+          transform: translateY(-29px);
   background-color: white;
   padding: 2px 4px;
 }
