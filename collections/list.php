@@ -233,7 +233,9 @@ $_SESSION['citationvar'] = $searchVar;
 							</form>
 						</span>
 						<span>
-							<form class="button-form" action="download/index.php" method="post" onsubmit="targetPopup(this)">
+							<!--neon edit-->
+							<form class="button-form" action="download/neonindex.php" method="post" onsubmit="targetPopup(this)">
+							<!--end neon edit-->
 								<button class="icon-button" aria-label="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>" title="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>">
 									<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_DWNL_DATA'] ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
 										<path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
