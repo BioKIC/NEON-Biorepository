@@ -444,9 +444,14 @@ $siteData = new DatasetsMetadata();
 							<div>
 								<div class="text-area-container">
 									<label for="" class="text-area--outlined">
-										<textarea name="catnum" data-chip="Identifier" style="width: 100%" placeholder="e.g., Catalog Number, SampleID, Barcode, MaterialSampleID"></textarea>
+										<textarea name="catnum" data-chip="Identifier" style="width: 100%"
+												  placeholder="Examples:&#10; Catalog Number: NEON007VA&#10; SampleID: NEON.BET.D06.002579&#10;           STEI.20250925.R11242.E&#10; Barcode: A00000020232&#10;"
+												  ></textarea>
 										<span data-label="Identifiers"></span></label>
-									<span class="assistive-text">Separate multiple with commas or new lines.</span>
+									<span class="assistive-text">
+										Separate multiple values with commas or new lines. 
+										Use * as a wildcard (e.g., MOS.D05* or *20150910.SURBER.3*).
+									</span>
 								</div>
 								<div style="display:none">
 									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>

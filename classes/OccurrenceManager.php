@@ -418,16 +418,32 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$inFrag = array();
 			$identFrag = array();
 			$matSampleFrag = array();
+			$wildcardFrag = array();
 			foreach($catArr as $v){
-				// Begin NEON customization, remove all range searching
+				// Begin NEON customization
 				$vStr = trim($v);
+				
 				if($vStr !== ''){
-					$inFrag[] = $vStr;
-					if(is_numeric($vStr) && substr($vStr,0,1) == '0'){
-						$inFrag[] = ltrim($vStr, '0');
+					// Wildcard search support
+					if(strpos($vStr, '*') !== false){
+						$likeStr = str_replace('*', '%', $vStr);
+					
+						$wildcardFrag[] = 'o.catalogNumber LIKE "' . $likeStr . '"';
+						$wildcardFrag[] = 'o.occid IN(
+							SELECT occid FROM omoccuridentifiers
+							WHERE identifiervalue LIKE "' . $likeStr . '"
+						)';
+					}
+					else{
+						$inFrag[] = $vStr;
+				
+						if(is_numeric($vStr) && substr($vStr,0,1) == '0'){
+							$inFrag[] = ltrim($vStr, '0');
+						}
 					}
 				}
 			}
+			// remove range searching
 				/*
 				if($p = strpos($v,' - ')){
 					$term1 = trim(substr($v,0,$p));
@@ -502,6 +518,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			}
 
 			// NEON customization - addition
+			if($wildcardFrag){
+				$catWhere .= 'AND ('.implode(' OR ', $wildcardFrag).') ';
+			}
+			
 			if($matSampleFrag){
 				$occidList = $this->getMaterialSampleIdentifiers($matSampleFrag);
 				if($occidList) $catWhere .= 'OR (o.occid IN('.implode(',',$occidList).')) ';
