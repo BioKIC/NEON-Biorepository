@@ -36,7 +36,11 @@ if($formSubmit == 'createInquiry' && $isEditor){
 	$future = $_POST['inqfuture'] ?? '';
 	$new = $_POST['inqnew'] ?? '';
 	$processing = $_POST['inqprocess'] ?? '';
-	$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
+	$additionalresearchers = [];
+
+	if(!empty($_POST['inqadditionalresearcher'])){
+		$additionalresearchers = explode(',', $_POST['inqadditionalresearcher']);
+	}
 	$drivefolder = $_POST['inqdrive'] ?? '';
 	$internal = $_POST['inqinternal'] ?? '';
 	$outreach = $_POST['inqoutreach'] ?? '';
@@ -115,7 +119,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			alert("Insert data produced");
 			return false;
 		}
-		if (!f.inqadditionalresearcher.value || f.inqadditionalresearcher.value.length === 0) {
+		if (f.inqadditionalresearcher.value.trim() === "") {
 			alert("Select additional researchers");
 			return false;
 		}
@@ -178,7 +182,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			?>
 			
 					<div id="newinqdiv" style="display:block;">
-						<form name="newinqform" action="inquiries.php" method="post" onsubmit="return verifyInquiryAddForm(this);">
+						<form name="newinqform" action="newinquiry.php" method="post" onsubmit="return verifyInquiryAddForm(this);">
 							<fieldset>
 								<legend><?php echo 'Create New Record' ?></legend>
 								<div style="padding-top:4px;float:left;">
@@ -203,16 +207,12 @@ if($formSubmit == 'createInquiry' && $isEditor){
        								<strong><?php echo 'Primary Contact'; ?>:</strong>
 									</span><br />
 									<span>
-										<select name="inqresearcher" style="width:400px;" aria-label="<?php echo 'Researcher' ?>" >
-											<option value=""><?php echo 'Select Researcher'; ?></option>
-											<option value="">------------------------------------------</option>
-											<?php
-											$researcherArr = $inquiryManager->getResearchers();
-											foreach($researcherArr as $k => $v){
-												echo '<option value="' . $k . '">' . $v . '</option>';
-											}
-											?>
-										</select>
+										<input type="text"
+											id="researcherSearch"
+											placeholder="Search researcher..."
+											style="width:400px;">
+
+										<input type="hidden" name="inqresearcher" id="inqresearcher">
 									</span>
 									<span>
 											<button type="button" class="addResearcherBtn" data-target="primary">Create new researcher</button>
@@ -223,18 +223,14 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									<span>
        								<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong>
 									</span><br />
-										<select name="inqadditionalresearcher[]" style="width:800px;" multiple aria-label="<?php echo 'Researchers' ?>">
-											<option value=""><?php echo 'Select Researchers'; ?></option>
-											<option value="">------------------------------------------</option>
-											<?php
-											$selectedResearchers = $inquiryManager->getAdditionalResearchersByID($requestID);
-											$researcherArr = $inquiryManager->getResearchers();
-											foreach ($researcherArr as $k => $v) {
-												$selected = (in_array($k, $selectedResearchers)) ? 'selected' : '';
-												echo '<option value="' . htmlspecialchars($k) . '" ' . $selected . '>' . htmlspecialchars($v) . '</option>';
-											}
-											?>
-										</select>
+										<input type="text"
+											id="additionalResearcherSearch"
+											placeholder="Search and add researchers..."
+											style="width:400px;">
+
+										<input type="hidden" name="inqadditionalresearcher" id="inqadditionalresearcher">
+
+										<div id="additionalResearcherList" style="margin-top:10px;"></div>
 									</span>
 
 									<span>
@@ -500,62 +496,160 @@ if($formSubmit == 'createInquiry' && $isEditor){
 // Open modal when either "Add researcher" button is clicked
 document.querySelectorAll('.addResearcherBtn').forEach(btn => {
     btn.addEventListener('click', function() {
-        // Save which button opened the modal
-        document.getElementById('researcherModal').dataset.source = btn.dataset.target;
-        document.getElementById('researcherModal').style.display = 'block';
-    });
-});
+			// Save which button opened the modal
+			document.getElementById('researcherModal').dataset.source = btn.dataset.target;
+			document.getElementById('researcherModal').style.display = 'block';
+		});
+	});
 
-// Close modal
-document.getElementById('closeModal').addEventListener('click', function(){
-    document.getElementById('researcherModal').style.display = 'none';
-});
+	// Close modal
+	document.getElementById('closeModal').addEventListener('click', function(){
+		document.getElementById('researcherModal').style.display = 'none';
+	});
 
-document.getElementById('researcherForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    let formData = new FormData(this);
+	document.getElementById('researcherForm').addEventListener('submit', function(e){
+		e.preventDefault();
+		let formData = new FormData(this);
 
-    fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success){
-            let primaryDropdown = document.querySelector('select[name="inqresearcher"]');
-            let additionalDropdown = document.querySelector('select[name="inqadditionalresearcher[]"]');
+		fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
+		.then(res => res.json())
+		.then(data => {
+			if(data.success){
+	const label = data.name + ' (' + data.institution + ')';
 
-            // Save currently selected values in multi-select
-            let selectedAdditional = Array.from(additionalDropdown.selectedOptions).map(opt => opt.value);
+	// PRIMARY CONTACT BUTTON
+	if(document.getElementById('researcherModal').dataset.source === 'primary') {
 
-            // Create new option
-            let optionPrimary = document.createElement('option');
-            optionPrimary.value = data.researcherID;
-            optionPrimary.text = data.name + ' (' + data.institution + ')';
+		$("#researcherSearch").val(label);
+		$("#inqresearcher").val(data.researcherID);
+	}
 
-            let optionAdditional = optionPrimary.cloneNode(true);
+	// ADDITIONAL RESEARCHER BUTTON
+	if(document.getElementById('researcherModal').dataset.source === 'additional') {
 
-            // Add to both dropdowns
-            primaryDropdown.appendChild(optionPrimary);
-            additionalDropdown.appendChild(optionAdditional);
+		// prevent duplicates
+		if(!selectedResearchers.find(r => r.id == data.researcherID)) {
 
-            // Restore previous selections in additional dropdown
-            selectedAdditional.forEach(val => {
-                let option = additionalDropdown.querySelector(`option[value="${val}"]`);
-                if(option) option.selected = true;
-            });
+			selectedResearchers.push({
+				id: data.researcherID,
+				label: label
+			});
 
-            // Only auto-select in primary if added via primary button
-            if(document.getElementById('researcherModal').dataset.source === 'primary') {
-                primaryDropdown.value = data.researcherID;
-            }
+			renderAdditionalResearchers();
+		}
+	}
 
-            document.getElementById('researcherModal').style.display = 'none';
-            document.getElementById('researcherForm').reset();
+	document.getElementById('researcherModal').style.display = 'none';
+	document.getElementById('researcherForm').reset();
 
-            alert('Researcher added successfully and can be found at the bottom of the dropdown list!');
+	alert('Researcher added successfully!');
         } else {
             alert('Error: ' + data.message);
         }
     })
     .catch(err => alert('Request failed'));
+});
+
+
+window.selectedResearchers = [];
+
+function renderAdditionalResearchers(){
+
+    let html = '';
+
+    window.selectedResearchers.forEach((r, index) => {
+
+        html += `
+            <div style="padding:4px 0;">
+                ${r.label}
+                <button type="button"
+                        onclick="removeResearcher(${index})">
+                    Remove
+                </button>
+            </div>
+        `;
+    });
+
+    $("#additionalResearcherList").html(html);
+
+    $("#inqadditionalresearcher").val(
+        window.selectedResearchers.map(r => r.id).join(',')
+    );
+}
+
+function removeResearcher(index){
+    window.selectedResearchers.splice(index,1);
+    renderAdditionalResearchers();
+}
+
+$(document).ready(function(){
+
+    // PRIMARY CONTACT
+    $("#researcherSearch").autocomplete({
+        source: function(request, response){
+
+            $.ajax({
+                url: "../../neon/requests/researcher_suggest.php",
+                dataType: "json",
+                data: {
+                    term: request.term
+                },
+                success: function(data){
+                    response(data);
+                }
+            });
+
+        },
+        minLength: 2,
+        select: function(event, ui){
+
+            $("#researcherSearch").val(ui.item.label);
+            $("#inqresearcher").val(ui.item.resid);
+
+            return false;
+        }
+    });
+
+    // ADDITIONAL RESEARCHERS
+    $("#additionalResearcherSearch").autocomplete({
+
+        source: function(request, response){
+
+            $.ajax({
+                url: "../../neon/requests/researcher_suggest.php",
+                dataType: "json",
+                data: {
+                    term: request.term
+                },
+                success: function(data){
+                    response(data);
+                }
+            });
+
+        },
+
+        minLength: 2,
+
+        select: function(event, ui){
+
+            if(window.selectedResearchers.find(r => r.id == ui.item.resid)){
+                $("#additionalResearcherSearch").val('');
+                return false;
+            }
+
+            window.selectedResearchers.push({
+                id: ui.item.resid,
+                label: ui.item.label
+            });
+
+            renderAdditionalResearchers();
+
+            $("#additionalResearcherSearch").val('');
+
+            return false;
+        }
+    });
+
 });
 
 	</script>

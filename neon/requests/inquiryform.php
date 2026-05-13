@@ -383,7 +383,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 
 				</ul>
 					<div id="editinqdiv" style="display:<?php echo ($List ); ?>;">
-						<form name="editinqform" action="inquiryform.php?id=<?php echo $requestID; ?>" method="post" onsubmit="return verifyInquiryAddForm(this);">
+						<form name="editinqform" action="inquiryform.php?id=<?php echo $requestID; ?>" method="post" onsubmit="return verifyInquiryEditForm(this);">
 							<fieldset>
 								<legend><?php echo 'Basic sample use inquiry record' ?></legend>
 								<div style="padding-top:4px;float:left;">
@@ -415,18 +415,16 @@ if($formSubmit == 'editStatus' && $isEditor){
 										<strong><?php echo 'Primary Contact'; ?>:</strong>
 									</span><br />
 									<span>
-										<select name="inqresearcher" style="width:400px;" aria-label="Researcher">
-											<option disabled>-- Select Primary Contact --</option>
-											<option disabled>----------------------------</option>
+										<input type="text"
+											id="researcherSearch"
+											placeholder="Search researcher..."
+											style="width:400px;"
+											value="<?php echo htmlspecialchars($pc['name'] . ' (' . $pc['institution'] . ')'); ?>">
 
-											<?php
-											$researcherArr = $inquiryManager->getResearchers();
-											foreach($researcherArr as $id => $name){
-												$selected = ($id == $pc['researcherID']) ? 'selected' : '';
-												echo '<option value="' . $id . '" ' . $selected . '>' . htmlspecialchars($name) . '</option>';
-											}
-											?>
-										</select>
+										<input type="hidden"
+											name="inqresearcher"
+											id="inqresearcher"
+											value="<?php echo $pc['researcherID']; ?>">
 									</span>
 									<span>
 											<button type="button" class="addResearcherBtn" data-target="primary">Create New Researcher</button>
@@ -436,18 +434,16 @@ if($formSubmit == 'editStatus' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 								<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong><br />
 								<span>
-									<select name="inqadditionalresearcher[]" style="width:800px;" multiple aria-label="<?php echo 'Researchers' ?>">
-										<option disabled><?php echo 'Select Researchers'; ?></option>
-										<option disabled>------------------------------------------</option>
-										<?php
-											$selectedResearchers = $inquiryManager->getAdditionalResearchersByID($requestID);
-											$researcherArr = $inquiryManager->getResearchers();
-											foreach ($researcherArr as $id => $name) {
-												$selected = array_key_exists($id, $selectedResearchers) ? 'selected' : '';
-												echo '<option value="' . $id . '" ' . $selected . '>' . $name . '</option>';
-											}
-										?>
-									</select>
+									<input type="text"
+										id="additionalResearcherSearch"
+										placeholder="Search and add researchers..."
+										style="width:400px;">
+
+									<input type="hidden"
+										name="inqadditionalresearcher"
+										id="inqadditionalresearcher">
+
+									<div id="additionalResearcherList" style="margin-top:10px;"></div>
 								</span>
 									<span>
 											<button type="button" class="addResearcherBtn" data-target="additional">Create New Researcher</button>
@@ -951,33 +947,31 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
     .then(res => res.json())
     .then(data => {
         if(data.success){
-            let primaryDropdown = document.querySelector('select[name="inqresearcher"]');
-            let additionalDropdown = document.querySelector('select[name="inqadditionalresearcher[]"]');
+			const label = data.name + ' (' + data.institution + ')';
 
-            let selectedAdditional = Array.from(additionalDropdown.selectedOptions).map(opt => opt.value);
+			if(document.getElementById('researcherModal').dataset.source === 'primary') {
 
-            let optionPrimary = document.createElement('option');
-            optionPrimary.value = data.researcherID;
-            optionPrimary.text = data.name + ' (' + data.institution + ')';
+				$("#researcherSearch").val(label);
+				$("#inqresearcher").val(data.researcherID);
+			}
 
-            let optionAdditional = optionPrimary.cloneNode(true);
+			if(document.getElementById('researcherModal').dataset.source === 'additional') {
 
-            primaryDropdown.appendChild(optionPrimary);
-            additionalDropdown.appendChild(optionAdditional);
+				if(!window.selectedResearchers.find(r => r.id == data.researcherID)) {
 
-            selectedAdditional.forEach(val => {
-                let option = additionalDropdown.querySelector(`option[value="${val}"]`);
-                if(option) option.selected = true;
-            });
+					window.selectedResearchers.push({
+						id: data.researcherID,
+						label: label
+					});
 
-            if(document.getElementById('researcherModal').dataset.source === 'primary') {
-                primaryDropdown.value = data.researcherID;
-            }
+					renderAdditionalResearchers();
+				}
+			}
 
             document.getElementById('researcherModal').style.display = 'none';
             document.getElementById('researcherForm').reset();
 
-            alert('Researcher added successfully and can be found at the bottom of the dropdown list!');
+            alert('Researcher added successfully.');
         } else {
             alert('Error: ' + data.message);
         }
@@ -1045,6 +1039,121 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 			});
 		});
 	});
+
+	window.selectedResearchers = [];
+
+<?php
+$selectedResearchers = $inquiryManager->getAdditionalResearchersByID($requestID);
+
+foreach($selectedResearchers as $id => $label){
+?>
+window.selectedResearchers.push({
+    id: "<?php echo $id; ?>",
+    label: "<?php echo addslashes($label); ?>"
+});
+<?php
+}
+?>
+
+function renderAdditionalResearchers(){
+
+    let html = '';
+
+    window.selectedResearchers.forEach((r, index) => {
+
+        html += `
+            <div style="padding:4px 0;">
+                ${r.label}
+                <button type="button"
+                        onclick="removeResearcher(${index})">
+                    Remove
+                </button>
+            </div>
+        `;
+    });
+
+    $("#additionalResearcherList").html(html);
+
+    $("#inqadditionalresearcher").val(
+        window.selectedResearchers.map(r => r.id).join(',')
+    );
+}
+
+function removeResearcher(index){
+    window.selectedResearchers.splice(index,1);
+    renderAdditionalResearchers();
+}
+
+$(document).ready(function(){
+
+    renderAdditionalResearchers();
+
+    // PRIMARY CONTACT
+    $("#researcherSearch").autocomplete({
+        source: function(request, response){
+
+            $.ajax({
+                url: "../../neon/requests/researcher_suggest.php",
+                dataType: "json",
+                data: {
+                    term: request.term
+                },
+                success: function(data){
+                    response(data);
+                }
+            });
+
+        },
+        minLength: 2,
+        select: function(event, ui){
+
+            $("#researcherSearch").val(ui.item.label);
+            $("#inqresearcher").val(ui.item.resid);
+
+            return false;
+        }
+    });
+
+    $("#additionalResearcherSearch").autocomplete({
+
+        source: function(request, response){
+
+            $.ajax({
+                url: "../../neon/requests/researcher_suggest.php",
+                dataType: "json",
+                data: {
+                    term: request.term
+                },
+                success: function(data){
+                    response(data);
+                }
+            });
+
+        },
+
+        minLength: 2,
+
+        select: function(event, ui){
+
+            if(window.selectedResearchers.find(r => r.id == ui.item.resid)){
+                $("#additionalResearcherSearch").val('');
+                return false;
+            }
+
+            window.selectedResearchers.push({
+                id: ui.item.resid,
+                label: ui.item.label
+            });
+
+            renderAdditionalResearchers();
+
+            $("#additionalResearcherSearch").val('');
+
+            return false;
+        }
+    });
+
+});
 
 	</script>
 </body>
