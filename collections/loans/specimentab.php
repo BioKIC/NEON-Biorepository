@@ -21,7 +21,24 @@ $loanId = $loanManager->sanitizeInt($loanId);
 if($collid) $loanManager->setCollId($collid);
 $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 ?>
+<!--neon edit-->
+<script src="../../js/datatables/datatables.js"></script>
+<link rel="stylesheet" href="../../js/datatables/datatables.css" />
 <script type="text/javascript">
+	const table = new DataTable('#loanSpecimenTable', {
+	
+		columnDefs: [
+			{ orderable: false, targets: [0, 1, 2] },
+			
+			{ width: '5%', targets: 0 },
+			{ width: '5%', targets: 1 },
+			{ width: '25%', targets: 2 },
+			{ width: '50%', targets: 3 },
+			{ width: '15%', targets: 4 },
+			
+		]
+	});
+//end neon edit
 	var skipFormVerification = false;
 
 	function initLoanDetAutocomplete(f){
@@ -215,10 +232,12 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 			hideAll();
 			$(".form-checkbox").css("display", "revert");
 			$('#newdet-div').show();
+			table.columns.adjust(); // neon edit
 		}
 		else{
 			$(".form-checkbox").hide();
 			$('#newdet-div').hide();
+			table.columns.adjust(); // neon edit
 		}
 	}
 
@@ -401,69 +420,73 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 					<input name="tabindex" type="hidden" value="1" />
 				</fieldset>
 			</div>
-			<table class="styledtable" style="font-size:12px;">
-				<tr>
-					<th class="form-checkbox"><input type="checkbox" onclick="selectAll(this);" title="<?php echo $LANG['SEC_DESEL_ALL']; ?>" /></th>
-					<th>&nbsp;</th>
-					<th><?php echo $LANG['CATNO']; ?>
-					<?php
-					$tagArr = $loanManager->getIdentifierTagArr();
-					ksort($tagArr);
-					if(count($tagArr) > 1){
-						echo '<div style="font-weight:normal">' . $LANG['SORT_BY'] . ': <select name="sortTag" onchange="this.form.submit()">';
-						foreach($tagArr as $tagKey => $tagValue){
-							$tagKey = substr($tagKey,2);
-							echo '<option value="' . $tagKey . '" ' . ($sortTag==$tagKey?'selected':'') . '>' . $tagValue . '</option>';
-						}
-						echo '</select></div>';
-					}
-					?>
-					</th>
-					<th><?php echo $LANG['DETAILS']; ?></th>
-					<th><?php echo $LANG['DATE_RETURNED']; ?></th>
-				</tr>
-				<?php
-				$specSortArr = $loanManager->getSpecimenSortArr();
-				foreach($specSortArr as $occid => $identifier){
-					$specArr = $specList[$occid];
-					?>
+			<table id="loanSpecimenTable" class="display" style="font-size:12px;"> <!--neon edit-->
+				<thead> <!--neon edit-->
 					<tr>
-						<td class="form-checkbox">
-							<input name="occid[]" type="checkbox" value="<?php echo $occid; ?>" />
-						</td>
-						<td>
-							<div>
-								<a href="#" onclick="openIndPopup(<?php echo $occid; ?>); return false;"><img class="icon-img" src="../../images/list.png" title="<?php echo $LANG['OPEN_SPECIMEN_DETAILS']; ?>" /></a><br/>
-							</div>
-							<div>
-								<a href="#" onclick="openEditorPopup(<?php echo $occid; ?>); return false;"><img class="icon-img" src="../../images/edit.png" title="<?php echo $LANG['OPEN_OCC_EDITOR']; ?>" /></a>
-							</div>
-						</td>
-						<td>
-							<?php
-							if($specArr['catalognumber']) echo '<div>' . $specArr['catalognumber'] . '</div>';
-							if(isset($specArr['othercatalognumbers'])) echo '<div>' . implode('<br/>',$specArr['othercatalognumbers']) . '</div>';
-							if($specArr['collid'] != $collid) echo '<div style="color:orange">external</div>';
-							?>
-						</td>
-						<td>
-							<?php
-							if($specArr['sciname']) echo '<i>' . $specArr['sciname'] . '</i>; ';
-							$loc = $specArr['locality'];
-							if(strlen($loc) > 500) $loc = substr($loc,400);
-							if($specArr['collector']) echo $specArr['collector'] . '; ';
-							echo $loc;
-							if($specArr['notes']) echo '<div class="notesDiv"><b>Notes:</b> ' . $specArr['notes'],'</div>';
-							?>
-						</td>
-						<td><?php
-						echo '<div style="float:right"><a href="#" onclick="openCheckinPopup(' . $loanId . ',' . $occid . ',' . $collid . ');return false"><img class="icon-img" src="../../images/edit.png" title="' . $LANG['EDIT_NOTES'] . '" /></a></div>';
-						echo $specArr['returndate'];
-						?></td>
+						<th class="form-checkbox"><input type="checkbox" onclick="selectAll(this);" title="<?php echo $LANG['SEC_DESEL_ALL']; ?>" /></th>
+						<th>&nbsp;</th>
+						<th><?php echo $LANG['CATNO']; ?>
+						<?php
+						$tagArr = $loanManager->getIdentifierTagArr();
+						ksort($tagArr);
+						if(count($tagArr) > 1){
+							echo '<div style="font-weight:normal">' . $LANG['SORT_BY'] . ': <select name="sortTag" onchange="this.form.submit()">';
+							foreach($tagArr as $tagKey => $tagValue){
+								$tagKey = substr($tagKey,2);
+								echo '<option value="' . $tagKey . '" ' . ($sortTag==$tagKey?'selected':'') . '>' . $tagValue . '</option>';
+							}
+							echo '</select></div>';
+						}
+						?>
+						</th>
+						<th><?php echo $LANG['DETAILS']; ?></th>
+						<th><?php echo $LANG['DATE_RETURNED']; ?></th>
 					</tr>
+				</thead> <!--neon edit-->
+				<tbody> <!--neon edit-->
 					<?php
-				}
-			?>
+					$specSortArr = $loanManager->getSpecimenSortArr();
+					foreach($specSortArr as $occid => $identifier){
+						$specArr = $specList[$occid];
+						?>
+						<tr>
+							<td class="form-checkbox">
+								<input name="occid[]" type="checkbox" value="<?php echo $occid; ?>" />
+							</td>
+							<td>
+								<div>
+									<a href="#" onclick="openIndPopup(<?php echo $occid; ?>); return false;"><img class="icon-img" src="../../images/list.png" title="<?php echo $LANG['OPEN_SPECIMEN_DETAILS']; ?>" /></a><br/>
+								</div>
+								<div>
+									<a href="#" onclick="openEditorPopup(<?php echo $occid; ?>); return false;"><img class="icon-img" src="../../images/edit.png" title="<?php echo $LANG['OPEN_OCC_EDITOR']; ?>" /></a>
+								</div>
+							</td>
+							<td>
+								<?php
+								if($specArr['catalognumber']) echo '<div>' . $specArr['catalognumber'] . '</div>';
+								if(isset($specArr['othercatalognumbers'])) echo '<div>' . implode('<br/>',$specArr['othercatalognumbers']) . '</div>';
+								if($specArr['collid'] != $collid) echo '<div style="color:orange">external</div>';
+								?>
+							</td>
+							<td>
+								<?php
+								if($specArr['sciname']) echo '<i>' . $specArr['sciname'] . '</i>; ';
+								$loc = $specArr['locality'];
+								if(strlen($loc) > 500) $loc = substr($loc,400);
+								if($specArr['collector']) echo $specArr['collector'] . '; ';
+								echo $loc;
+								if($specArr['notes']) echo '<div class="notesDiv"><b>Notes:</b> ' . $specArr['notes'],'</div>';
+								?>
+							</td>
+							<td><?php
+							echo '<div style="float:right"><a href="#" onclick="openCheckinPopup(' . $loanId . ',' . $occid . ',' . $collid . ');return false"><img class="icon-img" src="../../images/edit.png" title="' . $LANG['EDIT_NOTES'] . '" /></a></div>';
+							echo $specArr['returndate'];
+							?></td>
+						</tr>
+						<?php
+					}
+						?>
+				</tbody> <!--neon edit-->
 			</table>
 		</form>
 	</div>
