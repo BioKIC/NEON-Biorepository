@@ -89,46 +89,43 @@ $dwcManager = new DwcArchiverCore();
 		}
 		function setPackageType(packageType){
 		
-			// Basic = no extensions, no zip
+			const extensionFields = [
+				'identifications',
+				'images',
+				'attributes',
+				'materialsample',
+				'identifiers'
+			];
+		
+			// zip always enabled
+			document.getElementById('zip').value = '1';
+		
+			// BASIC = no extensions
 			if(packageType === 'basic'){
 		
-				document.getElementById('zip').value = '';
+				extensionFields.forEach(function(id){
 		
-				document.getElementById('identifications').value = '';
-				document.getElementById('images').value = '';
+					const el = document.getElementById(id);
 		
-				if(document.getElementById('attributes')){
-					document.getElementById('attributes').value = '';
-				}
-		
-				if(document.getElementById('materialsample')){
-					document.getElementById('materialsample').value = '';
-				}
-		
-				if(document.getElementById('identifiers')){
-					document.getElementById('identifiers').value = '';
-				}
+					if(el){
+						el.disabled = true;
+						el.value = '';
+					}
+				});
 			}
 		
-			// Expanded = all extensions + zip
+			// EXPANDED = all extensions
 			if(packageType === 'expanded'){
 		
-				document.getElementById('zip').value = '1';
+				extensionFields.forEach(function(id){
 		
-				document.getElementById('identifications').value = '1';
-				document.getElementById('images').value = '1';
+					const el = document.getElementById(id);
 		
-				if(document.getElementById('attributes')){
-					document.getElementById('attributes').value = '1';
-				}
-		
-				if(document.getElementById('materialsample')){
-					document.getElementById('materialsample').value = '1';
-				}
-		
-				if(document.getElementById('identifiers')){
-					document.getElementById('identifiers').value = '1';
-				}
+					if(el){
+						el.disabled = false;
+						el.value = '1';
+					}
+				});
 			}
 		}
 		function toggleDownloadButton(){
@@ -220,7 +217,7 @@ $dwcManager = new DwcArchiverCore();
 							</label>
 					
 							<div style="margin:5px 0 15px 25px;">
-								Includes the basic package information plus image links, identifications, attributes, material samples, and additional identifiers.
+								Includes the basic package information plus image links, identifications, measurements, material samples, and additional identifiers.
 							</div>
 					
 						</div>
