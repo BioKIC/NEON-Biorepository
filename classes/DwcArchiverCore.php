@@ -57,14 +57,6 @@ class DwcArchiverCore extends Manager{
 	private $attributeHandler = null;
 	private $materialSampleHandler = null;
 	private $identierHandler = null;
-	
-	//neon edit
-	private $hasDetData = false;
-	private $hasImageData = false;
-	private $hasAttributeData = false;
-	private $hasMaterialSampleData = false;
-	private $hasIdentifierData = false;
-	//end neon edit
 
 	private $geolocateVariables = array();
 
@@ -798,17 +790,6 @@ class DwcArchiverCore extends Manager{
 		$rs->free();
 		return trim($retStr, ';');
 	}
-	
-	//neon function
-	private function fileHasData($filePath){
-		if(!file_exists($filePath)) return false;
-	
-		$lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-	
-		// More than header row
-		return count($lines) > 1;
-	}
-	//end neon function
 
 	public function createDwcArchive(){
 		$status = false;
@@ -866,57 +847,28 @@ class DwcArchiverCore extends Manager{
 
 				$zipArchive->addFile($this->targetPath . $this->ts . '-occur' . $this->fileExt);
 				$zipArchive->renameName($this->targetPath . $this->ts . '-occur' . $this->fileExt, 'occurrences' . $this->fileExt);
-				
-				//neon edit
-				$detFile = $this->targetPath . $this->ts . '-det' . $this->fileExt;
-				$imgFile = $this->targetPath . $this->ts . '-multimedia' . $this->fileExt;
-				$attrFile = $this->targetPath . $this->ts . '-attr' . $this->fileExt;
-				$matFile = $this->targetPath . $this->ts . '-matSample' . $this->fileExt;
-				$identFile = $this->targetPath . $this->ts . '-ident' . $this->fileExt;
-				
-				// Determinations
 				if ($this->includeDets) {
 					$this->writeDeterminationFile();
-					$this->hasDetData = $this->fileHasData($detFile);
-					if ($this->hasDetData) {
-						$zipArchive->addFile($detFile);
-						$zipArchive->renameName($detFile, 'identifications' . $this->fileExt);
-					}
+					$zipArchive->addFile($this->targetPath . $this->ts . '-det' . $this->fileExt);
+					$zipArchive->renameName($this->targetPath . $this->ts . '-det' . $this->fileExt, 'identifications' . $this->fileExt);
 				}
-				// Images
 				if ($this->includeImgs) {
 					$this->writeImageFile();
-					$this->hasImageData = $this->fileHasData($imgFile);
-					if ($this->hasImageData) {
-						$zipArchive->addFile($imgFile);
-						$zipArchive->renameName($imgFile, 'multimedia' . $this->fileExt);
-					}
+					$zipArchive->addFile($this->targetPath . $this->ts . '-multimedia' . $this->fileExt);
+					$zipArchive->renameName($this->targetPath . $this->ts . '-multimedia' . $this->fileExt, 'multimedia' . $this->fileExt);
 				}
-				// Attributes
-				if ($this->includeAttributes) {
-					$this->hasAttributeData = $this->fileHasData($attrFile);
-					if ($this->hasAttributeData) {
-						$zipArchive->addFile($attrFile);
-						$zipArchive->renameName($attrFile, 'measurementOrFact' . $this->fileExt);
-					}
+				if ($this->includeAttributes && file_exists($this->targetPath . $this->ts . '-attr' . $this->fileExt)) {
+					$zipArchive->addFile($this->targetPath . $this->ts . '-attr' . $this->fileExt);
+					$zipArchive->renameName($this->targetPath . $this->ts . '-attr' . $this->fileExt, 'measurementOrFact' . $this->fileExt);
 				}
-				// Material Sample
-				if ($this->includeMaterialSample) {
-					$this->hasMaterialSampleData = $this->fileHasData($matFile);
-					if ($this->hasMaterialSampleData) {
-						$zipArchive->addFile($matFile);
-						$zipArchive->renameName($matFile, 'materialSample' . $this->fileExt);
-					}
+				if ($this->includeMaterialSample && file_exists($this->targetPath . $this->ts . '-matSample' . $this->fileExt)) {
+					$zipArchive->addFile($this->targetPath . $this->ts . '-matSample' . $this->fileExt);
+					$zipArchive->renameName($this->targetPath . $this->ts . '-matSample' . $this->fileExt, 'materialSample' . $this->fileExt);
 				}
-				// Identifiers
-				if ($this->includeIdentifiers) {
-					$this->hasIdentifierData = $this->fileHasData($identFile);
-					if ($this->hasIdentifierData) {
-						$zipArchive->addFile($identFile);
-						$zipArchive->renameName($identFile, 'identifiers' . $this->fileExt);
-					}
+				if ($this->includeIdentifiers && file_exists($this->targetPath . $this->ts . '-ident' . $this->fileExt)) {
+					$zipArchive->addFile($this->targetPath . $this->ts . '-ident' . $this->fileExt);
+					$zipArchive->renameName($this->targetPath . $this->ts . '-ident' . $this->fileExt, 'identifiers' . $this->fileExt);
 				}
-				//end neon edit
 				//Meta file
 				$this->writeMetaFile();
 				$zipArchive->addFile($this->targetPath . $this->ts . '-meta.xml');
@@ -1082,9 +1034,7 @@ class DwcArchiverCore extends Manager{
 		$rootElem->appendChild($coreElem);
 
 		//Identification extension
-		//neon edit
-		if ($this->hasDetData) {
-		//end neon edit
+		if ($this->includeDets) {
 			$extElem1 = $newDoc->createElement('extension');
 			$extElem1->setAttribute('encoding', $this->charSetOut);
 			$extElem1->setAttribute('fieldsTerminatedBy', $this->delimiter);
@@ -1117,9 +1067,7 @@ class DwcArchiverCore extends Manager{
 		}
 
 		//Image extension
-		//neon edit
-		if ($this->hasImageData) {
-		//end neon edit
+		if ($this->includeImgs) {
 			$extElem2 = $newDoc->createElement('extension');
 			$extElem2->setAttribute('encoding', $this->charSetOut);
 			$extElem2->setAttribute('fieldsTerminatedBy', $this->delimiter);
@@ -1151,9 +1099,7 @@ class DwcArchiverCore extends Manager{
 		}
 
 		//MeasurementOrFact extension
-		//neon edit
-		if ($this->hasAttributeData && isset($this->fieldArrMap['attribute'])) {
-		//end neon edit
+		if ($this->includeAttributes && isset($this->fieldArrMap['attribute'])) {
 			$extElem3 = $newDoc->createElement('extension');
 			$extElem3->setAttribute('encoding', $this->charSetOut);
 			$extElem3->setAttribute('fieldsTerminatedBy', $this->delimiter);
@@ -1182,9 +1128,7 @@ class DwcArchiverCore extends Manager{
 		}
 
 		//MaterialSample extension
-		//neon edit
-		if ($this->hasMaterialSampleData && isset($this->fieldArrMap['materialSample'])) {
-		//end neon edit
+		if ($this->includeMaterialSample && isset($this->fieldArrMap['materialSample'])) {
 			$extElem3 = $newDoc->createElement('extension');
 			$extElem3->setAttribute('encoding', $this->charSetOut);
 			$extElem3->setAttribute('fieldsTerminatedBy', $this->delimiter);
@@ -1213,9 +1157,7 @@ class DwcArchiverCore extends Manager{
 		}
 
 		//Identifier extension  https://rs.gbif.org/extension/gbif/1.0/identifier.xml
-		//neon edit
-		if ($this->hasIdentifierData && isset($this->fieldArrMap['identifier'])) {
-		//end neon edit
+		if ($this->includeIdentifiers && isset($this->fieldArrMap['identifier'])) {
 			$extElem3 = $newDoc->createElement('extension');
 			$extElem3->setAttribute('encoding', $this->charSetOut);
 			$extElem3->setAttribute('fieldsTerminatedBy', $this->delimiter);
@@ -2303,52 +2245,18 @@ class DwcArchiverCore extends Manager{
 				$datasetid = $_SESSION['datasetid'];
 				break;
 		}
-		//neon edit
-		$output = "This data package was downloaded from the " . $GLOBALS['DEFAULT_TITLE'] . " on " . date('Y-m-d H:i:s') . ".\n\nPlease use the following to cite this dataset:\n";
-		
+
+		$output = "This data package was downloaded from a " . $GLOBALS['DEFAULT_TITLE'] . " " . $citationPrefix . " on " . date('Y-m-d H:i:s') . ".\n\nPlease use the following format to cite this dataset:\n";
+
 		ob_start();
-		
-		include $GLOBALS['SERVER_ROOT'] . '/includes/citationneondownloadcollection.php';
-		
+		if (file_exists($GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '.php')) {
+			include $GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '.php';
+		} else {
+			include $GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '_template.php';
+		}
 		$output .= ob_get_clean();
-		
-		$output .= "\n\n";
-		$output .= "------------------------------------------------------------------\n";
-		$output .= "NEON BIOREPOSITORY CITATION GUIDANCE\n";
-		$output .= "------------------------------------------------------------------\n\n";
-		
-		$output .= "NEON sample data are offered under the Creative Commons Attribution ";
-		$output .= "(CC BY 4.0) license. Attribution is required when using NEON data, ";
-		$output .= "including a link to the license and an indication of any changes made.\n\n";
-		
-		$output .= "License: https://creativecommons.org/licenses/by/4.0/\n\n";
-		
-		$output .= "Records in the NEON Biorepository Sample Portal are periodically ";
-		$output .= "updated and may include value-added data derived from additional ";
-		$output .= "analysis. Because these records are updated on a rolling basis and ";
-		$output .= "are not tied to a specific NEON data release, these data should be ";
-		$output .= "considered provisional and subject to change.\n\n";
-		
-		$output .= "Recommended citation format:\n\n";
-		
-		$output .= "NEON (National Ecological Observatory Network) Biorepository. ";
-		$output .= "[Collection Name]. Data accessed from ";
-		$output .= GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'];
-		$output .= "/collections/misc/neoncollprofiles.php?collid=[collid] ";
-		$output .= "on [date]. ";
-		$output .= "Licensed under CC BY 4.0 ";
-		$output .= "(https://creativecommons.org/licenses/by/4.0/).\n\n";
-		
-		$output .= "If data were modified, filtered, or reformatted for analysis, ";
-		$output .= "please indicate those changes in your citation.\n\n";
-		
-		$output .= "If additional data were obtained directly from the NEON Data Portal, ";
-		$output .= "the relevant NEON Data Product(s) should also be cited according to ";
-		$output .= "NEON data citation guidance.\n\n";
-		
-		$output .= "For more information on citation requirements, please see:\n";
-		$output .= GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/misc/cite.php";
-		//end neon edit
+		$output .= "\n\nFor more information on citation formats, please see the following page: " . GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/includes/usagepolicy.php";
+
 		fwrite($fh, $output);
 
 		fclose($fh);
