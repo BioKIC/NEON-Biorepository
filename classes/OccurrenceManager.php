@@ -147,7 +147,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		elseif(array_key_exists('db',$this->searchTermArr)){
 			//neon edit
-			$pattern = '/^(\d+(,\d+)*|all)$/';
+			$pattern = '/^(all(,\d+)*|\d+(,\d+)*)$/';
 			
 			if (preg_match($pattern, $this->searchTermArr['db'])) {
 				//end neon edit
@@ -779,11 +779,37 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 
 	public function getCollectionSearchStr(){
 		$retStr ="";
-		if(!array_key_exists('db',$this->searchTermArr) || $this->searchTermArr['db'] == 'all'){
-			//neon edit
+		///neon edit
+		if(!array_key_exists('db',$this->searchTermArr)){
 			$retStr = "All Sample Types";
-			//end neon edit
 		}
+		elseif(strpos($this->searchTermArr['db'], 'all') !== false){
+		
+			$retStr = "All Sample Types";
+			$dbParts = explode(',', $this->cleanInStr($this->searchTermArr['db']));
+			$extraIds = [];
+		
+			foreach($dbParts as $part){
+				if(is_numeric($part)){
+					$extraIds[] = (int)$part;
+				}
+			}
+		
+			if($extraIds){
+				$sql = 'SELECT collid, collectionName as instcode '.
+					'FROM omcollections WHERE collid IN('.implode(',', $extraIds).') '.
+					'ORDER BY institutioncode,collectioncode';
+		
+				$rs = $this->conn->query($sql);
+		
+				while($r = $rs->fetch_object()){
+					$retStr .= '; '.$r->instcode;
+				}
+		
+				$rs->free();
+			}
+		}
+		//end neon edit
 		elseif($this->searchTermArr['db'] == 'allspec'){
 			$retStr = "All Specimen Collections";
 		}
@@ -793,7 +819,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		else{
 			$cArr = explode(';',$this->cleanInStr($this->searchTermArr['db']));
 			if($cArr[0]){
-				$sql = 'SELECT collid, CONCAT_WS("-",institutioncode,collectioncode) as instcode '.
+				$sql = 'SELECT collid, collectionName as instcode '.
 					'FROM omcollections WHERE collid IN('.$cArr[0].') ORDER BY institutioncode,collectioncode';
 				$rs = $this->conn->query($sql);
 				while($r = $rs->fetch_object()){
@@ -985,7 +1011,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		elseif(array_key_exists('db',$_REQUEST) && $_REQUEST['db']){
 			$dbStr = $this->cleanInputStr(OccurrenceSearchSupport::getDbRequestVariable());
 			//neon edit
-			if ($dbStr === 'all' || preg_match('/^[0-9,;]+$/', $dbStr)) {
+			if (preg_match('/^(all(,\d+)*)|([0-9,;]+)$/', $dbStr)) {
 				$this->searchTermArr['db'] = $dbStr;
 			}
 			//end neon edit
