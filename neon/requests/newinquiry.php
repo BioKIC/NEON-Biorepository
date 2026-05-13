@@ -205,7 +205,6 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
        								<strong><?php echo 'Primary Contact'; ?>:</strong>
-									</span><br />
 									<span>
 										<input type="text"
 											id="researcherSearch"
@@ -213,11 +212,13 @@ if($formSubmit == 'createInquiry' && $isEditor){
 											style="width:400px;">
 
 										<input type="hidden" name="inqresearcher" id="inqresearcher">
+										<button type="button"
+											class="addResearcherBtn"
+											data-target="primary">
+											Create New Researcher
+										</button>
 									</span>
-									<span>
-											<button type="button" class="addResearcherBtn" data-target="primary">Create new researcher</button>
-											</button>									
-									</span>
+
 								</div>
 									<div style="clear:both;padding-top:6px;float:left;">
 									<span>
@@ -584,7 +585,6 @@ function removeResearcher(index){
 
 $(document).ready(function(){
 
-    // PRIMARY CONTACT
     $("#researcherSearch").autocomplete({
         source: function(request, response){
 
@@ -610,7 +610,50 @@ $(document).ready(function(){
         }
     });
 
-    // ADDITIONAL RESEARCHERS
+	$("#researcherSearch").autocomplete({
+    source: function(request, response){
+
+        $.ajax({
+            url: "../../neon/requests/researcher_suggest.php",
+            dataType: "json",
+            data: {
+                term: request.term
+            },
+            success: function(data){
+                response(data);
+            }
+        });
+
+    },
+
+    minLength: 2,
+
+    select: function(event, ui){
+
+			$("#researcherSearch").val(ui.item.label);
+
+			$("#inqresearcher").val(ui.item.resid);
+
+			return false;
+		}
+	});
+
+	$("#researcherSearch").on('input', function(){
+
+		$("#inqresearcher").val('');
+	});
+
+	$("#researcherSearch").on('blur', function(){
+
+		if($("#inqresearcher").val() === ''){
+			$(this).val('');
+		}
+	});
+
+	$("#researcherSearch").on('input', function(){
+		$("#inqresearcher").val('');
+	});
+
     $("#additionalResearcherSearch").autocomplete({
 
         source: function(request, response){
@@ -651,6 +694,8 @@ $(document).ready(function(){
     });
 
 });
+
+
 
 	</script>
 </body>

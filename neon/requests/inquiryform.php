@@ -413,8 +413,6 @@ if($formSubmit == 'editStatus' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
 										<strong><?php echo 'Primary Contact'; ?>:</strong>
-									</span><br />
-									<span>
 										<input type="text"
 											id="researcherSearch"
 											placeholder="Search researcher..."
@@ -425,10 +423,11 @@ if($formSubmit == 'editStatus' && $isEditor){
 											name="inqresearcher"
 											id="inqresearcher"
 											value="<?php echo $pc['researcherID']; ?>">
-									</span>
-									<span>
-											<button type="button" class="addResearcherBtn" data-target="primary">Create New Researcher</button>
-											</button>									
+										<button type="button"
+											class="addResearcherBtn"
+											data-target="primary">
+											Create New Researcher
+										</button>
 									</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -1114,44 +1113,94 @@ $(document).ready(function(){
         }
     });
 
-    $("#additionalResearcherSearch").autocomplete({
+	$("#researcherSearch").on('input', function(){
+		$("#inqresearcher").val('');
+	});
 
-        source: function(request, response){
+	$(document).ready(function(){
 
-            $.ajax({
-                url: "../../neon/requests/researcher_suggest.php",
-                dataType: "json",
-                data: {
-                    term: request.term
-                },
-                success: function(data){
-                    response(data);
-                }
-            });
+		renderAdditionalResearchers();
 
-        },
+		$("#researcherSearch").autocomplete({
+			source: function(request, response){
 
-        minLength: 2,
+				$.ajax({
+					url: "../../neon/requests/researcher_suggest.php",
+					dataType: "json",
+					data: {
+						term: request.term
+					},
+					success: function(data){
+						response(data);
+					}
+				});
 
-        select: function(event, ui){
+			},
 
-            if(window.selectedResearchers.find(r => r.id == ui.item.resid)){
-                $("#additionalResearcherSearch").val('');
-                return false;
-            }
+			minLength: 2,
 
-            window.selectedResearchers.push({
-                id: ui.item.resid,
-                label: ui.item.label
-            });
+			select: function(event, ui){
 
-            renderAdditionalResearchers();
+				$("#researcherSearch").val(ui.item.label);
+				$("#inqresearcher").val(ui.item.resid);
 
-            $("#additionalResearcherSearch").val('');
+				return false;
+			}
+		});
 
-            return false;
-        }
-    });
+		// Clear hidden ID if user types manually
+		$("#researcherSearch").on('input', function(){
+			$("#inqresearcher").val('');
+		});
+
+		// Prevent invalid manual text
+		$("#researcherSearch").on('blur', function(){
+
+			if($("#inqresearcher").val() === ''){
+				$(this).val('');
+			}
+		});
+
+		$("#additionalResearcherSearch").autocomplete({
+
+			source: function(request, response){
+
+				$.ajax({
+					url: "../../neon/requests/researcher_suggest.php",
+					dataType: "json",
+					data: {
+						term: request.term
+					},
+					success: function(data){
+						response(data);
+					}
+				});
+
+			},
+
+			minLength: 2,
+
+			select: function(event, ui){
+
+				if(window.selectedResearchers.find(r => r.id == ui.item.resid)){
+					$("#additionalResearcherSearch").val('');
+					return false;
+				}
+
+				window.selectedResearchers.push({
+					id: ui.item.resid,
+					label: ui.item.label
+				});
+
+				renderAdditionalResearchers();
+
+				$("#additionalResearcherSearch").val('');
+
+				return false;
+			}
+		});
+
+	});
 
 });
 
