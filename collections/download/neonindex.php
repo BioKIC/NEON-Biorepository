@@ -187,6 +187,7 @@ $dwcManager = new DwcArchiverCore();
 					<legend>
 						<?php
 						echo $LANG['DOWNLOAD_SPEC_REC'];
+						?>
 					</legend>
 					<fieldset class="sectionDiv">
 						<legend>Which package type do you want?</legend>
