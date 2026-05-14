@@ -153,6 +153,20 @@ if($formSubmit == 'createInquiry' && $isEditor){
 		fieldset{ padding:10px; }
 		fieldset legend{ font-weight:bold }
 		.important{ color: red; }
+
+		#researcherModal {
+				display: flex;
+				position: fixed;
+				top: 0; left: 0; width: 100%; height: 100%;
+				background: rgba(0,0,0,0.6);
+				z-index: 9999;
+				justify-content: center;
+				align-items: center;
+			}
+		
+		#researcherModal.show {
+				display: flex;
+			}
 	</style>
 </head>
 <body>
@@ -500,7 +514,7 @@ document.querySelectorAll('.addResearcherBtn').forEach(btn => {
     btn.addEventListener('click', function() {
 			// Save which button opened the modal
 			document.getElementById('researcherModal').dataset.source = btn.dataset.target;
-			document.getElementById('researcherModal').style.display = 'block';
+			document.getElementById('researcherModal').style.display = 'flex';
 		});
 	});
 

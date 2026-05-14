@@ -986,7 +986,7 @@ function clearPendingChanges() {
 document.querySelectorAll('.addResearcherBtn').forEach(btn => {
     btn.addEventListener('click', function() {
         document.getElementById('researcherModal').dataset.source = btn.dataset.target;
-        document.getElementById('researcherModal').style.display = 'block';
+        document.getElementById('researcherModal').style.display = 'flex';
     });
 });
 
@@ -1538,6 +1538,20 @@ $(document).ready(function(){
 		}
 	
 	#shipmentModal.show {
+			display: flex;
+		}
+
+	#researcherModal {
+			display: flex;
+			position: fixed;
+			top: 0; left: 0; width: 100%; height: 100%;
+			background: rgba(0,0,0,0.6);
+			z-index: 9999;
+			justify-content: center;
+			align-items: center;
+		}
+	
+	#researcherModal.show {
 			display: flex;
 		}
 
