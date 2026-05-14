@@ -49,7 +49,10 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		$collectionManager = $_POST['inqmanager'] ?? '';
 		$researcherID = $_POST['inqresearcher'] ?? '';
 		$title = $_POST['inqtitle'] ?? '';
-		$collections = $_POST['inqcolls'] ?? '';
+		$collections = [];
+		if(!empty($_POST['inqcolls'])){
+			$collections = explode(',', $_POST['inqcolls']);
+		}
 		$field = $_POST['inqfield'] ?? '';
 		$aiml = $_POST['inqaiml'] ?? '';
 		$secondaryfields = $_POST['inqsecondaryfields'] ?? '';
@@ -61,7 +64,10 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		$existing = $_POST['inqexist'] ?? '';
 		$future = $_POST['inqfuture'] ?? '';
 		$new = $_POST['inqnew'] ?? '';
-		$additionalresearchers = $_POST['inqadditionalresearcher'] ?? '';
+		$additionalresearchers = [];
+		if(!empty($_POST['inqadditionalresearcher'])){
+			$additionalresearchers = explode(',', $_POST['inqadditionalresearcher']);
+		}
 		$drivefolder = $_POST['inqdrive'] ?? '';
 		$internal = $_POST['inqinternal'] ?? '';
 		$outreach = $_POST['inqoutreach'] ?? '';
@@ -215,7 +221,11 @@ if($formSubmit == 'editStatus' && $isEditor){
 
 	if($formSubmit == 'editShipment' && $isEditor){
 
-		$shipmentIDs = isset($_POST['inqshipmentids']) && is_array($_POST['inqshipmentids']) ? $_POST['inqshipmentids'] : [];
+		$shipmentIDs = [];
+
+		if(!empty($_POST['inqshipmentids'])){
+			$shipmentIDs = explode(',', $_POST['inqshipmentids']);
+		}
 
 		$updatedRequestID = $inquiryManager->editShipment(
 			$shipmentIDs,
@@ -296,18 +306,6 @@ if($formSubmit == 'editStatus' && $isEditor){
 			alert("Insert data produced");
 			return false;
 		}
-		if (f.inqexist.value === "") {
-			alert("Select whether the request would use existing samples");
-			return false;
-		}
-		if (f.inqfuture.value === "") {
-			alert("Select whether the request would use future samples");
-			return false;
-		}
-		if (f.inqnew.value === "") {
-			alert("Select whether new samples will be generated");
-			return false;
-		}
 		if (!f.inqadditionalresearcher.value || f.inqadditionalresearcher.value.length === 0) {
 			alert("Select additional researchers");
 			return false;
@@ -373,6 +371,18 @@ if($formSubmit == 'editStatus' && $isEditor){
 				<?php
 			}
 			?>
+			<div id="saveNotice"
+					style="display:none;
+							background:#fff3cd;
+							color:#856404;
+							border:1px solid #ffeeba;
+							padding:10px;
+							margin-bottom:10px;
+							border-radius:4px;">
+
+					You have unsaved changes. Click the Update button on the relevant tab to save them.
+
+				</div>
 			<div id="tabs" style="margin:0px;">
 			    <ul>
 					<li><a href="#editinqdiv"><span><?php echo 'Inquiry Info'; ?></span></a></li>
@@ -458,25 +468,26 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'Collections of Interest (select all)'; ?>:</strong>
-									</span><br />
-									<span>
-										<select name="inqcolls[]" style="width:800px; height:120px;" multiple aria-label="Collections">
-											<option disabled>Select all Collections of Interest</option>
-											<option disabled>------------------------------------------</option>
-											<?php
-												// Get existing collections for this request
-												$selectedCollections = array_keys($inquiryManager->getCollectionsByID($requestID));
-												// Get all possible collections
-												$allCollections = $inquiryManager->getCollections();
+										<?php
+										$selectedCollections = $inquiryManager->getCollectionsByID($requestID);
+										?>
 
-												foreach ($allCollections as $id => $name) {
-													// Mark as selected if this collection is part of the existing ones
-													$selected = in_array($id, $selectedCollections) ? 'selected' : '';
-													echo '<option value="' . htmlspecialchars($id) . '" ' . $selected . '>' . htmlspecialchars($name) . '</option>';
-												}
-											?>
-										</select>
+										<div style="clear:both;padding-top:6px;float:left;">
+											<span>
+												<strong>Collections of Interest (select all):</strong>
+											</span><br />
+
+											<input type="text"
+												id="collectionSearch"
+												placeholder="Search and add collections..."
+												style="width:400px;">
+
+											<input type="hidden"
+												name="inqcolls"
+												id="inqcolls">
+
+											<div id="collectionList" style="margin-top:10px;"></div>
+										</div>
 									</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -805,41 +816,73 @@ if($formSubmit == 'editStatus' && $isEditor){
 									?>
 								</div>
 							</fieldset>
-					</div>
-			
-			<div id="shipments" style="">
-			<fieldset>
-				<legend><?php echo 'Shipments'; ?></legend>                                    
-				<div style="clear:both;padding:10px 0;">
-					<div style="float:left;">
-						<button type="button" class="addShipmentButton" data-target="primary">Create New Shipment</button>
-					</div>
 				</div>
-				<div style="clear:both;padding-top:6px;float:left;">
-					<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
-					<span>
-						<form method="post" action="inquiryform.php?id=<?php echo $requestID; ?>">
-						<select name="inqshipmentids[]" style="width:800px;" multiple aria-label="<?php echo 'Shipments' ?>">
-							<option disabled><?php echo 'Select Shipments'; ?></option>
-							<option disabled>------------------------------------------</option>
-							<?php
-								$selectedShipments = $inquiryManager->getShipmentByID($requestID); // array [id => display]
-								$allShipments = $inquiryManager->getShipments(); // array [id => display]
+				<div id="saveNotice"
+					style="display:none;
+							background:#fff3cd;
+							color:#856404;
+							border:1px solid #ffeeba;
+							padding:10px;
+							margin-bottom:10px;
+							border-radius:4px;">
 
-								foreach ($allShipments as $id => $name) {
-									$selected = array_key_exists($id, $selectedShipments) ? 'selected' : '';
-									echo '<option value="' . $id . '" ' . $selected . '>' . $name . '</option>';
-								}
-							?>
-						</select>
-					</span>
-					<div style="clear:both;padding-top:8px;float:left;">
-						<input name="formsubmit" type="hidden" value="editShipment" />
-						<button name="submitButton" type="submit"><?php echo 'Update Shipments' ?></button>
-					</form>
-					</div>
+					You have unsaved changes. Click the Update on the relevant tab to save them.
+
 				</div>
-			</fieldset>
+			<div id="shipments" style="">
+				<fieldset>
+					<legend><?php echo 'Shipments'; ?></legend>
+
+					<div style="clear:both;padding:10px 0;">
+						<div style="float:left;">
+							<button type="button"
+									class="addShipmentButton"
+									data-target="primary">
+								Create New Shipment
+							</button>
+						</div>
+					</div>
+
+					<?php
+					$selectedShipments = $inquiryManager->getShipmentByID($requestID);
+					?>
+
+					<form method="post"
+						action="inquiryform.php?id=<?php echo $requestID; ?>">
+
+						<div style="clear:both;padding-top:6px;float:left;">
+
+							<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
+
+							<input type="text"
+								id="shipmentSearch"
+								placeholder="Search and add shipments..."
+								style="width:400px;">
+
+							<input type="hidden"
+								name="inqshipmentids"
+								id="inqshipmentids">
+							<br>
+							<fieldset>
+								<div id="shipmentList"
+									style="margin-top:10px;"></div>
+							</fieldset>
+						</div>
+
+						<div style="clear:both;padding-top:8px;float:left;">
+							<input name="formsubmit"
+								type="hidden"
+								value="editShipment" />
+
+							<button name="submitButton"
+									type="submit">
+								<?php echo 'Update Shipments' ?>
+							</button>
+						</div>
+
+					</form>
+
+				</fieldset>
 			</div>
 			</div>
 
@@ -923,6 +966,23 @@ if($formSubmit == 'editStatus' && $isEditor){
 	?>
 
 	<script>
+
+let hasPendingChanges = false;
+
+function markPendingChanges() {
+
+    hasPendingChanges = true;
+
+    $("#saveNotice").show();
+}
+
+function clearPendingChanges() {
+
+    hasPendingChanges = false;
+
+    $("#saveNotice").hide();
+}
+
 document.querySelectorAll('.addResearcherBtn').forEach(btn => {
     btn.addEventListener('click', function() {
         document.getElementById('researcherModal').dataset.source = btn.dataset.target;
@@ -964,6 +1024,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 					});
 
 					renderAdditionalResearchers();
+					markPendingChanges();
 				}
 			}
 
@@ -1027,7 +1088,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 				if (data.success) {
 					modal.style.display = 'none';
 					shipmentForm.reset();
-					alert('Shipment added successfully. Refresh page to find new shipment at the bottom of the list');
+					alert('Shipment added successfully.');
 				} else {
 					alert('Error: ' + data.message);
 				}
@@ -1065,7 +1126,7 @@ function renderAdditionalResearchers(){
                 ${r.label}
                 <button type="button"
                         onclick="removeResearcher(${index})">
-                    Remove
+                    Remove (not saved until Update)
                 </button>
             </div>
         `;
@@ -1082,6 +1143,46 @@ function removeResearcher(index){
     window.selectedResearchers.splice(index,1);
     renderAdditionalResearchers();
 }
+
+window.selectedCollections = [
+<?php
+$first = true;
+
+foreach($selectedCollections as $id => $name){
+
+    if(!$first) echo ",";
+
+    echo "{";
+    echo "id:" . (int)$id . ",";
+    echo "label:" . json_encode($name);
+    echo "}";
+
+    $first = false;
+}
+?>
+];
+
+window.selectedShipments = [
+
+<?php
+
+$first = true;
+
+foreach($selectedShipments as $id => $label){
+
+    if(!$first) echo ",";
+
+    echo "{";
+    echo "id:" . (int)$id . ",";
+    echo "label:" . json_encode($label);
+    echo "}";
+
+    $first = false;
+}
+
+?>
+
+];
 
 $(document).ready(function(){
 
@@ -1202,7 +1303,183 @@ $(document).ready(function(){
 
 	});
 
+	function renderCollections(){
+
+		let html = '';
+
+		window.selectedCollections.forEach((c, index) => {
+
+			html += `
+				<div style="padding:4px 0;">
+					${c.label}
+					<button type="button"
+							onclick="removeCollection(${index})">
+						Remove (not saved until Update)
+					</button>
+				</div>
+			`;
+		});
+
+		$("#collectionList").html(html);
+
+    $("#inqcolls").val(
+			window.selectedCollections.map(c => c.id).join(',')
+		);
+	}
+
+	window.removeCollection = function(index){
+
+		window.selectedCollections.splice(index, 1);
+
+		renderCollections();
+		markPendingChanges()
+	};
+
+	renderCollections();
+
+	$("#collectionSearch").autocomplete({
+
+			source: function(request, response){
+
+				$.ajax({
+					url: "../../neon/requests/collection_suggest.php",
+					dataType: "json",
+					data: {
+						term: request.term
+					},
+					success: function(data){
+						response(data);
+					}
+				});
+
+			},
+
+			minLength: 2,
+
+			select: function(event, ui){
+
+				// prevent duplicates
+				if(window.selectedCollections.find(c => c.id == ui.item.collid)){
+
+					$("#collectionSearch").val('');
+
+					return false;
+				}
+
+				window.selectedCollections.push({
+					id: ui.item.collid,
+					label: ui.item.label
+				});
+
+				renderCollections();
+
+				$("#collectionSearch").val('');
+
+				return false;
+			}
+		});
+
+		function renderShipments(){
+
+		let html = '';
+
+		window.selectedShipments.forEach((s, index) => {
+
+			html += `
+				<div style="padding:4px 0;">
+					${s.label}
+
+					<button type="button"
+							onclick="removeShipment(${index})">
+						     Remove (not saved until Update)
+					</button>
+				</div>
+			`;
+		});
+
+		$("#shipmentList").html(html);
+
+		$("#inqshipmentids").val(
+			window.selectedShipments.map(s => s.id).join(',')
+		);
+	}
+
+	window.removeShipment = function(index){
+
+		window.selectedShipments.splice(index, 1);
+
+		renderShipments();
+		markPendingChanges();
+
+	};
+
+	renderShipments();
+
+
+	$("#shipmentSearch").autocomplete({
+
+		source: function(request, response){
+
+			$.ajax({
+
+				url: "../../neon/requests/shipment_suggest.php",
+
+				dataType: "json",
+
+				data: {
+					term: request.term
+				},
+
+				success: function(data){
+
+					response(data);
+				}
+			});
+		},
+
+		minLength: 2,
+
+		select: function(event, ui){
+
+			// prevent duplicates
+			if(window.selectedShipments.find(s => s.id == ui.item.id)){
+
+				$("#shipmentSearch").val('');
+
+				return false;
+			}
+
+			window.selectedShipments.push({
+
+				id: ui.item.id,
+				label: ui.item.label
+			});
+
+			renderShipments();
+
+			$("#shipmentSearch").val('');
+
+			return false;
+		}
+	});
+
+	$("form").on("submit", function(){
+
+		clearPendingChanges();
+	});
+
+
 });
+
+	window.addEventListener("beforeunload", function (e) {
+
+		if (hasPendingChanges) {
+
+			e.preventDefault();
+
+			e.returnValue = '';
+		}
+	});
 
 	</script>
 </body>

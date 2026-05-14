@@ -23,7 +23,10 @@ if($formSubmit == 'createInquiry' && $isEditor){
     $researcherID = $_POST['inqresearcher'] ?? '';
     $inquiryDate = $_POST['inqdate'] ?? '';
 	$title = $_POST['inqtitle'] ?? '';
-	$collections = $_POST['inqcolls'] ?? '';
+	$collections = [];
+	if(!empty($_POST['inqcolls'])){
+		$collections = explode(',', $_POST['inqcolls']);
+	}
 	$field = $_POST['inqfield'] ?? '';
 	$aiml = $_POST['inqaiml'] ?? '';
 	$secondaryfields = $_POST['inqsecondaryfields'] ?? '';
@@ -37,7 +40,6 @@ if($formSubmit == 'createInquiry' && $isEditor){
 	$new = $_POST['inqnew'] ?? '';
 	$processing = $_POST['inqprocess'] ?? '';
 	$additionalresearchers = [];
-
 	if(!empty($_POST['inqadditionalresearcher'])){
 		$additionalresearchers = explode(',', $_POST['inqadditionalresearcher']);
 	}
@@ -46,7 +48,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 	$outreach = $_POST['inqoutreach'] ?? '';
 
 
-    if(!$collectionManager || !$researcherID || !$inquiryDate || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || !$existing || !$future || !$new || !$additionalresearchers || !$drivefolder || !$aiml || !$internal || !$outreach || !$processing){
+    if(!$collectionManager || !$researcherID || !$inquiryDate || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || empty($additionalresearchers) || !$drivefolder || !$aiml || !$internal || !$outreach || !$processing){
         $statusStr = '<span style="color:red;">Missing required fields.</span>';
     } else {
         $insertId = $inquiryManager->addInquiry($collectionManager, $researcherID, $inquiryDate, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder, $aiml, $internal, $outreach, $processing);
@@ -205,7 +207,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
        								<strong><?php echo 'Primary Contact'; ?>:</strong>
-									<span>
+									</span>
 										<input type="text"
 											id="researcherSearch"
 											placeholder="Search researcher..."
@@ -236,7 +238,6 @@ if($formSubmit == 'createInquiry' && $isEditor){
 
 									<span>
 											<button type="button" class="addResearcherBtn" data-target="additional">Create new researcher</button>
-											</button>									
 									</span>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
@@ -256,16 +257,16 @@ if($formSubmit == 'createInquiry' && $isEditor){
        								<strong><?php echo 'Collections of Interest (select all)'; ?>:</strong>
 									</span><br />
 									<span>
-										<select name="inqcolls[]" style="width:800px; height:120px;" multiple aria-label="<?php echo 'Collections' ?>">
-											<option value="">Select all Collections of Interest</option>
-											<option value="">------------------------------------------</option>
-											<?php
-											$collectionArr = $inquiryManager->getCollections();
-											foreach($collectionArr as $k => $v){
-												echo '<option value="' . $k . '">' . $v . '</option>';
-											}
-											?>
-										</select>
+										<input type="text"
+											id="collectionSearch"
+											placeholder="Search and add collections..."
+											style="width:400px;">
+
+										<input type="hidden"
+											name="inqcolls"
+											id="inqcolls">
+
+										<div id="collectionList" style="margin-top:10px;"></div>
 									</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
@@ -410,7 +411,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<label for="inqexist"><strong><?php echo 'May use existing samples?' ?></strong></label>
 									<input type="hidden" name="inqexist" value="no" />
-									<input type="checkbox" id="inqexist" name="inqexist" value="yes" <?php echo (!empty($exist) && $exist === 'yes') ? 'checked' : ''; ?> />
+									<input type="checkbox" id="inqexist" name="inqexist" value="yes" <?php echo (!empty($existing) && $existing === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<label for="inqfuture"><strong><?php echo 'May use future samples not yet at the Biorepository?' ?></strong></label>
@@ -610,49 +611,17 @@ $(document).ready(function(){
         }
     });
 
-	$("#researcherSearch").autocomplete({
-    source: function(request, response){
+    $("#researcherSearch").on('input', function(){
+        $("#inqresearcher").val('');
+    });
 
-        $.ajax({
-            url: "../../neon/requests/researcher_suggest.php",
-            dataType: "json",
-            data: {
-                term: request.term
-            },
-            success: function(data){
-                response(data);
-            }
-        });
+    $("#researcherSearch").on('blur', function(){
 
-    },
+        if($("#inqresearcher").val() === ''){
+            $(this).val('');
+        }
+    });
 
-    minLength: 2,
-
-    select: function(event, ui){
-
-			$("#researcherSearch").val(ui.item.label);
-
-			$("#inqresearcher").val(ui.item.resid);
-
-			return false;
-		}
-	});
-
-	$("#researcherSearch").on('input', function(){
-
-		$("#inqresearcher").val('');
-	});
-
-	$("#researcherSearch").on('blur', function(){
-
-		if($("#inqresearcher").val() === ''){
-			$(this).val('');
-		}
-	});
-
-	$("#researcherSearch").on('input', function(){
-		$("#inqresearcher").val('');
-	});
 
     $("#additionalResearcherSearch").autocomplete({
 
@@ -693,10 +662,80 @@ $(document).ready(function(){
         }
     });
 
+    window.selectedCollections = [];
+
+    function renderCollections(){
+
+        let html = '';
+
+        window.selectedCollections.forEach((c, index) => {
+
+            html += `
+                <div style="padding:4px 0;">
+                    ${c.label}
+                    <button type="button"
+                            onclick="removeCollection(${index})">
+                        Remove
+                    </button>
+                </div>
+            `;
+        });
+
+        $("#collectionList").html(html);
+
+        $("#inqcolls").val(
+            window.selectedCollections.map(c => c.id).join(',')
+        );
+    }
+
+    window.removeCollection = function(index){
+        window.selectedCollections.splice(index, 1);
+        renderCollections();
+    };
+
+    $("#collectionSearch").autocomplete({
+
+        source: function(request, response){
+
+            $.ajax({
+                url: "../../neon/requests/collection_suggest.php",
+                dataType: "json",
+                data: {
+                    term: request.term
+                },
+                success: function(data){
+
+                    response(data);
+                }
+            });
+        },
+
+        minLength: 2,
+
+        select: function(event, ui){
+
+            // prevent duplicates
+            if(window.selectedCollections.find(c => c.id == ui.item.collid)){
+
+                $("#collectionSearch").val('');
+
+                return false;
+            }
+
+            window.selectedCollections.push({
+                id: ui.item.collid,
+                label: ui.item.label
+            });
+
+            renderCollections();
+
+            $("#collectionSearch").val('');
+
+            return false;
+        }
+    });
+
 });
-
-
-
 	</script>
 </body>
 </html>
