@@ -49,6 +49,19 @@ $siteData = new DatasetsMetadata();
 		});
 	  });
 	});
+
+	$(function () {
+		$("#eventdate1, #eventdate2").datepicker({
+			dateFormat: "yy-mm-dd",
+			changeMonth: true,
+			changeYear: true,
+			yearRange: "2008:<?= date('Y') ?>",
+	
+			onSelect: function () {
+				updateChip();
+			}
+		});
+	});
 	</script>
 
 	<!-- Search-specific styles -->
@@ -419,15 +432,22 @@ $siteData = new DatasetsMetadata();
 						<div id="search-form-coll-event">
 							<div class="input-text-container">
 								<label for="eventdate1" class="input-text--outlined">
-									<input type="text" name="eventdate1" data-chip="Event Date Start">
-									<span data-label="Start Date"></span></label>
-								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+									<input type="text" id="eventdate1" name="eventdate1" data-chip="Event Date Start">
+									<span data-label="Start Date"></span>
+								</label>
+								<span class="assistive-text">
+									Single date or start date of range.
+								</span>
 							</div>
+					
 							<div class="input-text-container">
 								<label for="eventdate2" class="input-text--outlined">
-									<input type="text" name="eventdate2" data-chip="Event Date End">
-									<span data-label="End Date"></span></label>
-								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+									<input type="text" id="eventdate2" name="eventdate2" data-chip="Event Date End">
+									<span data-label="End Date"></span>
+								</label>
+								<span class="assistive-text">
+									End date of range.
+								</span>
 							</div>
 						</div>
 					</div>
