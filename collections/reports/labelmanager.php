@@ -7,7 +7,7 @@ include_once($SERVER_ROOT.'/content/lang/collections/reports/labelmanager.'.$LAN
 header("Content-Type: text/html; charset=".$CHARSET);
 
 // Log visitor IPs
-$logDir = $SERVER_ROOT . '/temp/logs';
+$logDir = $SERVER_ROOT . '/content/logs';
 
 if (!is_dir($logDir)) {
     mkdir($logDir, 0775, true);
