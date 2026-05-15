@@ -20,6 +20,7 @@ $datasetKey = $collManager->getDatasetKey();
 $resourceJson = isset($collData[$collid]['resourcejson']) ? json_decode($collData[$collid]['resourcejson'], true) : [];
 $dataProductIds = array_map(fn($item) => basename($item['url']), $resourceJson);
 $encodedJson = json_encode(array_values($dataProductIds), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+$biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 
 $editCode = 0;		//0 = no permissions; 1 = CollEditor; 2 = CollAdmin; 3 = SuperAdmin
 if ($SYMB_UID) {
@@ -34,6 +35,10 @@ if ($SYMB_UID) {
 
 <script>
   window.BiorepoCollectionData = '<?php echo $encodedJson; ?>';
+	window.biorepoAvailabilitySiteCodes = <?php echo json_encode(
+		$biorepoAvailabilitySiteCodes ?? [],
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
 </script>
 
 <?php
