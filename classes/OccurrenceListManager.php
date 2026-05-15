@@ -123,7 +123,70 @@ class OccurrenceListManager extends OccurrenceManager{
 		return $retArr;
 	}
 
-	//NEON edit
+	//NEON edit add functions
+	public function getNeonAvailabilitySiteCodes(): array {
+		$retArr = array();
+		$sqlWhere = $this->getSqlWhere();
+	
+		if(!$sqlWhere) {
+			return $retArr;
+		}
+	
+		$sql = '
+			SELECT DISTINCT
+				d.name AS siteCode,
+				DATE_FORMAT(o.eventdate, "%Y-%m") AS eventMonth
+			FROM omoccurrences o
+			' . $this->getTableJoins($sqlWhere) . '
+			INNER JOIN omoccurdatasetlink l ON o.occid = l.occid
+			INNER JOIN omoccurdatasets d ON l.datasetid = d.datasetid
+			' . $sqlWhere . '
+			AND d.notes = "NEON Site"
+			AND o.eventdate IS NOT NULL
+		';
+	
+		$rs = $this->conn->query($sql);
+	
+		$availabilityMap = array();
+	
+		if($rs){
+			while($r = $rs->fetch_object()){
+	
+				$siteCode = $this->cleanOutStr($r->siteCode);
+				$eventMonth = $r->eventMonth;
+	
+				if(!$siteCode || !$eventMonth){
+					continue;
+				}
+	
+				if(!isset($availabilityMap[$siteCode])){
+					$availabilityMap[$siteCode] = array();
+				}
+	
+				$availabilityMap[$siteCode][$eventMonth] = true;
+			}
+	
+			$rs->free();
+		}
+	
+		foreach($availabilityMap as $siteCode => $monthsMap){
+	
+			$months = array_keys($monthsMap);
+			sort($months);
+	
+			$retArr[] = array(
+				'siteCode' => $siteCode,
+				'availableMonths' => $months
+			);
+		}
+	
+		usort($retArr, function($a, $b){
+			return strcmp($a['siteCode'], $b['siteCode']);
+		});
+	
+		return $retArr;
+	}
+	
 	private function setIdentifiers($occArr, &$retArr): void {
 		$sql = 'SELECT occid, identifierName, identifierValue 
 				FROM omoccuridentifiers 

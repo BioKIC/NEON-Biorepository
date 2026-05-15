@@ -46,7 +46,9 @@ if ($sortField1) {
 }
 
 $occurArr = $collManager->getSpecimenMap($pageNumber, $cntPerPage);
-
+//NEON edit
+$biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
+//end NEON edit
 $_SESSION['citationvar'] = $searchVar;
 
 ?>
@@ -66,6 +68,11 @@ $_SESSION['citationvar'] = $searchVar;
 	?>
 
 	<script>
+	window.biorepoAvailabilitySiteCodes = <?php echo json_encode(
+		$biorepoAvailabilitySiteCodes ?? [],
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
+
 	const params = <?php echo json_encode($params, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
 	const rawSearchVar = <?php echo $encodedSearchVar; ?>;
 	
@@ -180,7 +187,7 @@ $_SESSION['citationvar'] = $searchVar;
 			<ul>
 				<li>
 					<a id="taxatablink" href="<?= 'checklist.php?' . $searchVar . '&taxonfilter=' . $taxonFilter ?>">
-						<span><?php echo $LANG['TAB_CHECKLIST']; ?></span>
+						<span>Taxa</span>
 					</a>
 				</li>
 				<li>
@@ -196,7 +203,12 @@ $_SESSION['citationvar'] = $searchVar;
 				<!-- neon edit -->
 				<li>
 					<a href="#imagesdiv">
-						<span id="imagetab">Images</span>
+						<span id="imagetab">Gallery</span>
+					</a>
+				</li>
+				<li>
+					<a href="#metricsdiv">
+						<span id="metricstab">Metrics</span>
 					</a>
 				</li>
 				<!-- end neon edit -->
@@ -742,6 +754,9 @@ $_SESSION['citationvar'] = $searchVar;
 					}
 					?>
 				</div>
+			</div>
+			<div id="metricsdiv">
+				<div id="biorepo-search-metrics"></div>
 			</div>
 			<!--end NEON edit-->	
 		</div>
