@@ -1277,11 +1277,11 @@ class OccurrenceHarvester{
 			$dwcArr['sex'] = '';
 		}
 		elseif($dwcArr['collid'] == 116){
-			if($dwcArr['sex'] = 'Nymph') {
+			if($dwcArr['sex'] == 'Nymph') {
 				$dwcArr['sex'] = 'Unknown';
 				$dwcArr['lifeStage'] = 'Nymph';
 			}
-			elseif($dwcArr['sex'] = 'Larva') {
+			elseif($dwcArr['sex'] == 'Larva') {
 				$dwcArr['sex'] = 'Unknown';
 				$dwcArr['lifeStage'] = 'Larva';
 			}
