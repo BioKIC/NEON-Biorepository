@@ -54,13 +54,13 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			
 			<img src="images/loan_process.png" alt="Sample loan process" style="max-width: 100%; height: auto; margin: 1rem 0;">
 
-			<p>To request samples or learn more about what samples are available for use, you may either browse the <a href="https://biorepo.neonscience.org/portal/collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">NEON Biorepository Sample Portal</a> and initiate inquiries by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly. We will follow up within five business days to assist you in identifying appropriate samples and submitting a <a href="https://asu.co1.qualtrics.com/jfe/form/SV_bfPgKtTfHTyzffg" target="_blank">Sample Loan Request</a>.</p>
+			<p>To request samples or learn more about what samples are available for use, you may either browse the <a href="https://biorepo.neonscience.org/portal/collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">NEON Biorepository Sample Portal</a> and initiate inquiries by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly. We will follow up within five business days to assist you in identifying appropriate samples and submitting a Sample Use Request.</p>
 
 			<p>All requests are evaluated via the <a href="#sample-use-approval-process">Sample Use Approval Process</a>, subject to the <a href="#sample-use-policy">Sample Use Policy</a>. <b><i>All requests require a mutually developed and signed Sample Use Agreement prior to sample processing and shipment or access.</i></b> Researchers should allow approximately two weeks for development and finalization of the Sample Use Agreement. Significantly more time may be required if the request may involve hiring additional personnel.</p>
 
 			<p>The NEON Biorepository aims to fulfill requests of fewer than 100 samples that require no subsampling or additional processing within four weeks of signing a Sample Use Agreement and without any charge. Note that processing times can be much longer when hiring additional personnel is required.</p>
 
-			<p>Funding is not required to request or access samples. However, requests requiring substantial effort to fulfill may require funding or service fees. These costs will be estimated by the NEON Biorepository based on the type of request, complexity, and amount of support required. Researchers may visit the NEON Biorepository to access samples, and we will provide working space, sample access, and our expertise free of charge.</p>
+			<p>Funding is not required to request or access samples. However, requests requiring substantial effort to fulfill may require funding or service fees. These costs will be estimated by the NEON Biorepository based on the type of request, complexity, and amount of support required. Researchers are encouraged to visit the NEON Biorepository to access samples, and we will provide working space, sample access, and our expertise free of charge.</p>
 		</article>
 
 		<article>
@@ -71,7 +71,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<ul>
 				<li>Evaluate whether available samples are suitable for the proposed work</li>
 				<li>Ensure that levels of destructive and consumptive sample use can be supported (See <a href="#sample-use-approval-process">Sample Use Approval Process</a>)</li>
-				<li>Prevent scenarios in which multiple researchers are funded to use the same samples (Note: The NEON Biorepository can only guarantee the availability of samples for a six month period.)</li>
+				<li>Prevent scenarios in which multiple researchers are funded to use the same samples (Note: Due to the potential for overlapping projects, the NEON Biorepository can only guarantee the availability of samples involved in pending proposals for a six month period. Extensions to this limit can be granted when the researcher maintains timely communication about proposal status.)</li>
 				<li>Provide quotes for service fees, if applicable</li>
 			</ul>
 
