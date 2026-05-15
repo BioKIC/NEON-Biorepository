@@ -8,7 +8,6 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT . '/neon/shipment/manifestviewer.php?' . $_SERVER['QUERY_STRING']);
 
 // Log visitor IPs
-// Log visitor IPs to CSV
 $logDir = $SERVER_ROOT . '/temp/logs';
 
 if (!is_dir($logDir)) {
