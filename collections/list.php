@@ -534,6 +534,9 @@ $_SESSION['citationvar'] = $searchVar;
 					?>
 				</div>
 			</div>
+			<div id="metricsdiv">
+				<div id="biorepo-search-metrics"></div>
+			</div>
 		</div>
 	</div>
 	<?php
