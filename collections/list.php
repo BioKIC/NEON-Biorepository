@@ -48,6 +48,25 @@ if ($sortField1) {
 $occurArr = $collManager->getSpecimenMap($pageNumber, $cntPerPage);
 //NEON edit
 $biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
+$collectionTypeSummary = $collManager->getCollectionTypeSummary();
+$additionalCollectionTypeSummary = $collManager->getAdditionalCollectionTypeSummary();
+
+$combinedCollectionFamilies = array_merge(
+	$collectionTypeSummary['families'] ?? [],
+	$additionalCollectionTypeSummary['families'] ?? []
+);
+
+$combinedCollectionTotal = (
+	($collectionTypeSummary['totalRecords'] ?? 0)
+	+ ($additionalCollectionTypeSummary['totalRecords'] ?? 0)
+);
+foreach($combinedCollectionFamilies as &$family){
+	$family['percent'] = round(
+		($family['total'] / $combinedCollectionTotal) * 100,
+		1
+	);
+}
+unset($family);
 //end NEON edit
 $_SESSION['citationvar'] = $searchVar;
 
@@ -70,6 +89,16 @@ $_SESSION['citationvar'] = $searchVar;
 	<script>
 	window.biorepoAvailabilitySiteCodes = <?php echo json_encode(
 		$biorepoAvailabilitySiteCodes ?? [],
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
+
+	window.biorepoCollectionTypeSummary = <?php echo json_encode(
+		$combinedCollectionFamilies,
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
+	
+	window.biorepoCollectionTypeSummaryTotal = <?php echo json_encode(
+		$combinedCollectionTotal,
 		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
 	); ?>;
 
@@ -219,7 +248,7 @@ $_SESSION['citationvar'] = $searchVar;
 			</ul>
 			<div id="speclist">
 				<div id="queryrecords">
-					<div style="float:right;">
+					<div style="float:right;"> <!--buttons div-->
 						<?php
 						if ($SYMB_UID) {
 						?>
@@ -273,39 +302,7 @@ $_SESSION['citationvar'] = $searchVar;
 							</button>
 						</span>
 					</div>
-					<div style="margin:5px;">
-						<?php
-						$collSearchStr = $collManager->getCollectionSearchStr();
-						if (strlen($collSearchStr) > 100) {
-							$collSearchArr = explode('; ', $collSearchStr);
-							$collSearchStr = '';
-							$cnt = 0;
-							while ($collElem = array_shift($collSearchArr)) {
-								$collSearchStr .= $collElem . '; ';
-								if ($cnt == 10 && $collSearchArr) {
-									$collSearchStr = trim($collSearchStr, '; ') . '<span class="inst-span">... (<a href="#" onclick="$(\'.inst-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="inst-span" style="display:none">; ';
-								}
-								$cnt++;
-							}
-							if ($cnt > 11) $collSearchStr .= '</span>';
-						}
-						//neon edit
-						echo '<div><b>Sample Type(s):</b> ' . $collSearchStr . '</div>';
-						//end neon edit
-						if ($taxaSearchStr = $collManager->getTaxaSearchStr()) {
-							if (strlen($taxaSearchStr) > 300) $taxaSearchStr = substr($taxaSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.taxa-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="taxa-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>';
-							echo '<div><b>' . $LANG['TAXA'] . ':</b> ' . $taxaSearchStr . '</div>';
-						}
-						if ($associationSearchStr = $collManager->getAssociationSearchStr()) {
-							if (strlen($associationSearchStr) > 300) $associationSearchStr = substr($associationSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.association-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="association-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>'; // @TODO wouldn't this truncate in either case?
-							echo '<div><b>' . $LANG['ASSOCIATIONS'] . ':</b> ' . $associationSearchStr . '</div>';
-						}
-						if ($localSearchStr = $collManager->getLocalSearchStr()) {
-							echo '<div><b>' . $LANG['SEARCH_CRITERIA'] . ':</b> ' . $localSearchStr . '</div>';
-							$_SESSION['datasetName'] = $localSearchStr;
-						}
-						?>
-					</div>
+					<div id="biorepo-coll-type"></div>
 					<div id="sort-div" style="display:<?= ($sortField1 ? 'block' : 'none') ?>">
 						<section class="fieldset-like">
 							<h3><span><?= $LANG['SORT'] ?></span></h3>
@@ -387,7 +384,9 @@ $_SESSION['citationvar'] = $searchVar;
 					$beginNum = ($pageNumber - 1) * $cntPerPage + 1;
 					$endNum = $beginNum + $cntPerPage - 1;
 					if ($endNum > $collManager->getRecordCnt()) $endNum = $collManager->getRecordCnt();
-					$pageBar .= $LANG['PAGINATION_PAGE'] . ' ' . $pageNumber . ', ' . $LANG['PAGINATION_RECORDS'] . ' ' . $beginNum . '-' . $endNum . ' ' . $LANG['PAGINATION_OF'] . ' ' . $collManager->getRecordCnt();
+					//neon edit; add text
+					$pageBar .= $LANG['PAGINATION_PAGE'] . ' ' . $pageNumber . ', ' . $beginNum . '-' . $endNum . ' ' . $LANG['PAGINATION_OF'] . ' ' . $collManager->getRecordCnt() . ' records';
+					//end neon edit
 					$paginationStr .= $pageBar;
 					$paginationStr .= '</div><div style="clear:both;"><hr/></div></div>';
 					echo $paginationStr;
