@@ -2,6 +2,13 @@
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT . '/classes/TaxonomyEditorManager.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceListManager.php');
+//neon edit; add custom functions
+include_once($SERVER_ROOT . '/neon/classes/OccurrenceListFunctions.php');
+$occurrenceListFunctions = new OccurrenceListFunctions();
+include_once($SERVER_ROOT.'/classes/ImageLibrarySearch.php');
+$imgLibManager = new ImageLibrarySearch();
+$imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
+//end neon edit
 if ($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/list.' . $LANG_TAG . '.php'))
 	include_once($SERVER_ROOT . '/content/lang/collections/list.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/list.en.php');
@@ -22,12 +29,6 @@ if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
 	$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
 }
 
-//NEON edit
-include_once($SERVER_ROOT.'/classes/ImageLibrarySearch.php');
-$imgLibManager = new ImageLibrarySearch();
-$imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
-//end NEON edit
-
 $_SESSION['datasetid'] = filter_var($datasetid, FILTER_SANITIZE_NUMBER_INT);
 
 $collManager = new OccurrenceListManager();
@@ -47,9 +48,9 @@ if ($sortField1) {
 
 $occurArr = $collManager->getSpecimenMap($pageNumber, $cntPerPage);
 //NEON edit
-$biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
-$collectionTypeSummary = $collManager->getCollectionTypeSummary();
-$additionalCollectionTypeSummary = $collManager->getAdditionalCollectionTypeSummary();
+$biorepoAvailabilitySiteCodes = $occurrenceListFunctions->getNeonAvailabilitySiteCodes();
+$collectionTypeSummary = $occurrenceListFunctions->getCollectionTypeSummary();
+$additionalCollectionTypeSummary = $occurrenceListFunctions->getAdditionalCollectionTypeSummary();
 
 $combinedCollectionFamilies = array_merge(
 	$collectionTypeSummary['families'] ?? [],
