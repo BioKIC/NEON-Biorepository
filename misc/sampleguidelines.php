@@ -96,7 +96,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 				<li>the approved research scope and permitted sample uses (e.g., non-invasive, invasive, consumptive, or destructive)</li>
 				<li>the loan period and return requirements for samples or derived materials</li>
 				<li>requirements for receiving, handling, storing, and returning samples during the loan period</li>
-				<li>requirements for submission of specimen-derived data (digital and physical) and sharing of publications</li>
+				<li>requirements for submission of specimen-derived data and media (digital and physical) and sharing of publications</li>
 				<li>instructions for citation of samples and associated data</li>
 				<li>a download link for retrieving the most current sample-associated data for the approved sample list</li>
 				<li>any special provisions regarding licensing, embargo periods, or data sharing</li>
@@ -109,7 +109,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<h2 class="anchor" id="sample-use-policy">Sample Use Policy</h2>
 		
 			<p>
-			The NEON Biorepository Sample Use Policy outlines requirements for use, handling, return, and reporting of samples. 
+			The NEON Biorepository Sample Use Policy outlines requirements for use, handling, return, and reporting of samples. The policy also indicates that all derived data and media must be shared with the NEON Biorepository and that the ownership of images and media resulting from samples will be retained by NEON.
 			<a href="samplepolicy.php">Read the full Sample Use Policy</a>.
 			</p>
 		</article>

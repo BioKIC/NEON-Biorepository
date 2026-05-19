@@ -87,7 +87,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). Data were filtered and reformatted for analysis. Data archived at [your DOI].
 			</blockquote>
 
-			<p><b>For data not saved in an external repository (not recommened), cite each sample type as follows:</b></p>
+			<p><b>For data not saved in an external repository (not recommended), cite each sample type as follows:</b></p>
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
 				<a href="https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25" target="_blank">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
