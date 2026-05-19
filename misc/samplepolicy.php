@@ -57,7 +57,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		</article>
 		
 		<div style="margin-top: 70px;">
-			<p><em>Last updated April 23, 2026</em></p>	
+			<p><em>Last updated May 19, 2026</em></p>	
 		</div>
 	</div>
 
