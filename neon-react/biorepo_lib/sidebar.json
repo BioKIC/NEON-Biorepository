@@ -54,7 +54,11 @@
         {
           "name": "Requesting and Using Samples",
           "hash": "https://www.neonscience.org/requesting-and-using-samples",
-          "match": "#"
+          "match": [
+            "misc/sampleguidelines.php",
+            "misc/cite.php",
+            "misc/samplepolicy.php"
+            ]
         }
     ]
   }
