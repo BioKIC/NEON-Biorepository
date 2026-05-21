@@ -6,7 +6,6 @@ const allNeon = document.getElementById('all-neon-colls-quick');
 const allSites = document.getElementById('all-sites');
 const form = document.getElementById('params-form');
 const formColls = document.getElementById('search-form-colls');
-const formSites = document.getElementById('site-list');
 const collsModal = document.getElementById('colls-modal');
 // list of parameters to be passed to url, modified by getSearchUrl method
 let paramNames = [
@@ -207,13 +206,17 @@ function removeChip(chip) {
 function updateChip(e) {
   document.getElementById('chips').innerHTML = '';
   // first go through collections and sites
-  // if any domains (except for "all") is selected, then add chip
-  let dSList = document.querySelectorAll('#site-list input[type=checkbox]');
-  let dSChecked = document.querySelectorAll(
-    '#site-list input[type=checkbox]:checked'
+  let selectedSites = document.querySelectorAll(
+    'input[name="datasetid"]:checked'
   );
-  if (dSChecked.length > 0 && dSChecked.length < dSList.length) {
-    addChip(getDomainsSitesChips());
+  
+  if (selectedSites.length > 0) {
+    addChip({
+      text: `Sites: ${Array.from(selectedSites)
+        .map((input) => input.id)
+        .join(', ')}`,
+      name: 'some-datasetid',
+    });
   }
   // if any biorepo colls are selected (except for "all"), then add chip
   let biorepoAllChecked = document.getElementById(
@@ -668,17 +671,15 @@ function getSearchUrl() {
   // Clears array temporarily to avoid redundancy
   paramsArr = [];
 
-  // Only adds 'datasetid' to list of params if there is at least one selected
-  // and if 'all' is not checked
-  if (allSites.checked) {
-    paramNames = paramNames.filter((value, index, arr) => {
-      return value != 'datasetid';
-    });
-  } else {
-    document.querySelectorAll('#site-list input[type=checkbox]:checked')
-      .length > 1
-      ? paramNames.push('datasetid')
-      : false;
+  //db sites
+  const selectedDatasetIds = document.querySelectorAll(
+    'input[name="datasetid"]:checked'
+  );
+  
+  paramNames = paramNames.filter((value) => value !== 'datasetid');
+  
+  if (selectedDatasetIds.length > 0) {
+    paramNames.push('datasetid');
   }
 
   // Grabs params from form for each param name
@@ -994,7 +995,6 @@ $('#all-neon-colls-quick').click(function () {
 $('.all-selector').click(toggleAllSelector);
 formColls.addEventListener('click', autoToggleSelector, false);
 formColls.addEventListener('change', autoToggleSelector, false);
-formSites.addEventListener('click', autoToggleSelector, false);
 collsModal.addEventListener('click', autoToggleSelector, false);
 collsModal.addEventListener('change', autoToggleSelector, false);
 // Listen for close modal click and passes value of selected colls to main form
@@ -1014,6 +1014,12 @@ document
 const formInputs = document.querySelectorAll('.content input, .content textarea, #search-form-advanced-search select');
 formInputs.forEach((formInput) => {
   formInput.addEventListener('change', updateChip);
+});
+
+document.addEventListener('change', function (e) {
+  if (e.target.name === 'datasetid') {
+    updateChip();
+  }
 });
 // on default (on document load): All Neon Collections, All Domains & Sites, Include other IDs, All Domains & Sites
 window.addEventListener('load', updateChip);
