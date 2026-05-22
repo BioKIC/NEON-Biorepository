@@ -356,69 +356,7 @@ $siteData = new DatasetsMetadata();
 					<label for="locality" class="accordion-header">Domains & Sites</label>
 					<!-- Accordion content -->
 					<div class="content">
-						<div id="search-form-locality">
-							<ul id="site-list"><li class='Mui'><input id="all-sites" data-chip="All Domains & Sites" type="checkbox" class="all-selector" checked="" data-form-id='search-form-locality'><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Domains and Sites</span>
-								<?php if ($domainsArr = $siteData->getNeonDomains()) {
-									echo '<ul>';
-									foreach ($domainsArr as $domain) {
-										echo "<li class='Mui'><input type='checkbox' id='{$domain["domainnumber"]}' class='all-selector child' name='datasetid' value='{$domain["datasetid"]}' checked=''><span class='material-icons expansion-icon'>add_box</span><span class='group-label'>{$domain["domainnumber"]} - {$domain["domainname"]}</span>";
-										echo "<ul class='collapsed'>";
-										// ECHO SITES PER DOMAINS
-										$sitesArr = $siteData->getNeonSitesByDom($domain["domainnumber"]);
-										if ($sitesArr) {
-											foreach ($sitesArr as $site) {
-												echo "<li class='Mui'>";
-												echo "<input type='checkbox' id='{$site["siteid"]}' name='datasetid' value='{$site["datasetid"]}' class='child' data-domain='{$domain["domainnumber"]}' checked>";
-												echo "<span class='leaf-label ml-1 child'>({$site["siteid"]}) {$site["sitename"]}</span>";
-												echo " <a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer' title='View Site Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
-												echo "</li>";
-
-											}
-										};
-										echo "</ul>";
-										echo "</li>";
-									}
-									echo '</ul>';
-								}; ?>
-								</li>
-							</ul>
-							<div>
-								<div>
-									<div class="input-text-container">
-										<label for="state" class="input-text--outlined">
-											<input type="text" name="state" id="state" data-chip="State">
-											<span data-label="State"></span></label>
-										<span class="assistive-text">Separate multiple with commas.</span>
-									</div>
-									<div class="input-text-container">
-										<label for="county" class="input-text--outlined">
-											<input type="text" name="county" id="county" data-chip="County">
-											<span data-label="County"></span></label>
-										<span class="assistive-text">Separate multiple with commas.</span>
-									</div>
-									<div class="input-text-container">
-										<label for="local" class="input-text--outlined">
-											<input type="text" name="local" id="local" data-chip="Locality">
-											<span data-label="Locality"></span></label>
-										<span class="assistive-text" style="line-height:1.7em">Separate multiple with commas. Accepts NEON Domain and/or Site names and codes.</span>
-									</div>
-								</div>
-								<div class="grid grid--half">
-									<div class="input-text-container">
-										<label for="elevlow" class="input-text--outlined">
-											<input type="number" step="any" name="elevlow" id="elevlow" data-chip="Min Elevation">
-											<span data-label="Minimum Elevation"></span></label>
-										<span class="assistive-text">Meters</span>
-									</div>
-									<div class="input-text-container">
-										<label for="elevhigh" class="input-text--outlined">
-											<input type="number" step="any" name="elevhigh" id="elevhigh" data-chip="Max Elevation">
-											<span data-label="Maximum Elevation"></span></label>
-										<span class="assistive-text">Meters</span>
-									</div>
-								</div>
-							</div>
-						</div>
+						<div id="collection-search-map"></div>
 					</div>
 				</section>
 				<!-- Collecting Event -->

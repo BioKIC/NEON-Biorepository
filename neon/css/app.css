@@ -103,16 +103,16 @@ input:invalid {
   border: 1px solid red !important;
 }
 
-input[type='checkbox'] {
+input[type='checkbox']:not([class*='jss']) {
   width: 16px;
   height: 16px;
   vertical-align: baseline !important;
 }
 
-input[type='text'],
-input[type='number'],
-textarea,
-select {
+input[type='text']:not([class*='Mui']),
+input[type='number']:not([class*='Mui']),
+textarea:not([class*='Mui']),
+select:not([class*='Mui']) {
   border: 1px solid #d0d0d0 !important;
   border-radius: 0;
   color: #333333;

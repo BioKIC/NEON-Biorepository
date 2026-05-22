@@ -367,12 +367,13 @@ class OccurrenceSearchSupport {
 	}
 
 	public static function getDbWhereFrag($dbSearchTerm){
+		global $SERVER_ROOT;
 		$sqlRet = "";
 		//neon edit
 		if(strpos($dbSearchTerm, 'all') !== false){
 		
 			// load JSON file
-			$jsonPath = '../neon-react/biorepo_lib/collections-taxonomic.json';
+			$jsonPath = $SERVER_ROOT.'/neon-react/biorepo_lib/collections-taxonomic.json';
 			$json = file_get_contents($jsonPath);
 			$data = json_decode($json, true);
 		
