@@ -127,7 +127,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<p>In cases where overlapping requests require destructive, consumptive, or invasive use of samples, priority will be research sponsored by the NSF Biological Sciences Directorate, followed by other NSF-sponsored research and finally non-NSF funded research, outreach, or education uses.</p>
 
-			<p>Loans are typically approved for 6-12 months. Extensions requested before the current loan period expires will generally be approved except when the samples have been requested by other researchers. Failure to return samples within the approved loan period or to maintain communication regarding their status may affect eligibility for future sample requests.</p>
+			<p>Loans are typically approved for 6-12 months. Extensions requested before the current loan period expires will generally be approved except when the samples have been requested by other researchers. Failure to return samples within the approved loan period or to maintain communication regarding their status may affect eligibility for future sample requests. Ordinarily, not more than one-half of the samples from a given sample type, NEON site, year, and taxon may be borrowed at any one time. The remainder may be requested upon the return of the first loan.</p>
 		</article>
 		
 		<article>
