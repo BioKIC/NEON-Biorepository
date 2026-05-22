@@ -26,7 +26,8 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 <link rel="stylesheet" href="../../js/datatables/datatables.css" />
 <script type="text/javascript">
 	const table = new DataTable('#loanSpecimenTable', {
-	
+  	pageLength: 50,
+  lengthMenu: [10, 25, 50, 100],
 		columnDefs: [
 			{ orderable: false, targets: [0, 1, 2] },
 			
