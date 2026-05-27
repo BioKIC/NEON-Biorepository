@@ -88,7 +88,7 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			SELECT
 				o.collid,
 				c.collectionName,
-				COUNT(*) AS recordCnt
+				COUNT(DISTINCT o.occid) AS recordCnt
 			FROM omoccurrences o
 			INNER JOIN omcollections c ON o.collid = c.collid
 			' . $this->getTableJoins($sqlWhere) . '
