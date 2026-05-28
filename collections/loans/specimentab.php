@@ -25,20 +25,21 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 <script src="../../js/datatables/datatables.js"></script>
 <link rel="stylesheet" href="../../js/datatables/datatables.css" />
 <script type="text/javascript">
-	const table = new DataTable('#loanSpecimenTable', {
-  	pageLength: 50,
-  lengthMenu: [10, 25, 50, 100],
-		columnDefs: [
-			{ orderable: false, targets: [0, 1, 2] },
-			
-			{ width: '5%', targets: 0 },
-			{ width: '5%', targets: 1 },
-			{ width: '30%', targets: 2 },
-			{ width: '50%', targets: 3 },
-			{ width: '10%', targets: 4 },
-			
-		]
-	});
+	if (!$.fn.DataTable.isDataTable('#loanSpecimenTable')) {
+		const table = new DataTable('#loanSpecimenTable', {
+			pageLength: 50,
+			lengthMenu: [10, 25, 50, 100],
+			columnDefs: [
+				{ orderable: false, targets: [0, 1, 2] },
+	
+				{ width: '5%', targets: 0 },
+				{ width: '5%', targets: 1 },
+				{ width: '30%', targets: 2 },
+				{ width: '50%', targets: 3 },
+				{ width: '10%', targets: 4 },
+			]
+		});
+	}
 //end neon edit
 	var skipFormVerification = false;
 
