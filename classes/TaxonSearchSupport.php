@@ -55,9 +55,7 @@ class TaxonSearchSupport{
 
 			}
 			elseif($this->taxonType == TaxaSearchType::SCIENTIFIC_NAME){
-				//neon edit, only suggest taxa that have occurrences
-				$sql = 'SELECT t.tid, t.sciname FROM taxa t WHERE t.sciname LIKE "'.$this->queryString.'%" AND EXISTS (SELECT 1 FROM omoccurrences o WHERE o.tidInterpreted = t.tid) LIMIT 30';
-				//end neon edit
+				$sql = 'SELECT tid, sciname FROM taxa WHERE sciname LIKE "'.$this->queryString.'%" LIMIT 30';
 			}
 			elseif($this->taxonType == TaxaSearchType::FAMILY_ONLY){
 				$sql = 'SELECT tid, sciname FROM taxa WHERE rankid = 140 AND sciname LIKE "'.$this->queryString.'%" LIMIT 30';
