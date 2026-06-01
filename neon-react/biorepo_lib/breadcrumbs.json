@@ -58,6 +58,11 @@
     { "name": "Sample Guidelines and Policies", "href": "sampleguidelines.php" },
     { "name": "Sample Use Policy" }
     ],
+  "/misc/samplerequests.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Requesting Samples" }
+    ],
   "/misc/datasetpublishing.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
