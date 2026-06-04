@@ -15,7 +15,6 @@ $siteData = new DatasetsMetadata();
 	<!-- end neon edit -->
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
-	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
 	?>
 	<link href="<?= $CLIENT_ROOT; ?>/css/jquery-ui.min.css" type="text/css" rel="stylesheet">
 	<script src="<?= $CLIENT_ROOT ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
@@ -49,6 +48,19 @@ $siteData = new DatasetsMetadata();
 		  }
 		});
 	  });
+	});
+
+	$(function () {
+		$("#eventdate1, #eventdate2").datepicker({
+			dateFormat: "yy-mm-dd",
+			changeMonth: true,
+			changeYear: true,
+			yearRange: "2008:<?= date('Y') ?>",
+	
+			onSelect: function () {
+				updateChip();
+			}
+		});
 	});
 	</script>
 
@@ -96,6 +108,7 @@ $siteData = new DatasetsMetadata();
 
 	//function to render sample type tree
 	function renderTree($nodes, $parentId = '') {
+		global $IS_ADMIN, $USER_RIGHTS;
 		$html = '';
 		foreach ($nodes as $node) {
 			$cCodeId = 'cl-' . preg_replace('/[^a-z0-9\-]/', '-', strtolower($node['name']));
@@ -108,7 +121,15 @@ $siteData = new DatasetsMetadata();
 				$collid = $node['collid'];
 				$name = htmlspecialchars($node['name']);
 	
-				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}'>";
+				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}' "
+						. (
+							$IS_ADMIN ||
+							!empty($USER_RIGHTS["CollAdmin"]) ||
+							!empty($USER_RIGHTS["CollEditor"])
+							? "checked"
+							: ""
+						)
+						. ">";
 				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
 				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' title='View Sample Type Profile' target='_blank'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
 
@@ -117,7 +138,15 @@ $siteData = new DatasetsMetadata();
 			else {
 				$name = htmlspecialchars($node['name']);
 				$catAttr = $parentId !== '' ? " data-cat='{$parentId}'" : '';
-				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child'{$catAttr} data-ccode='{$name}'>";
+				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child'{$catAttr} data-ccode='{$name}' "
+					. (
+						$IS_ADMIN ||
+						!empty($USER_RIGHTS["CollAdmin"]) ||
+						!empty($USER_RIGHTS["CollEditor"])
+						? "checked"
+						: ""
+					)
+					. ">";
 				// wrap label + icon so whole thing is clickable
 				$html .= "<span data-target='{$cCodeId}'>
 							<span class='material-icons expansion-icon'>add_box</span>
@@ -160,8 +189,27 @@ $siteData = new DatasetsMetadata();
 						<div id="search-form-colls">
 							<section>
 								<!-- Open NEON Collections modal -->
-								<label class="accordion-subheader neon-modal-open">
-									<input id="all-neon-colls-quick" data-chip="All Sample Types at the Biorepository" type="checkbox" data-form-id="biorepo-collections-list">
+								<label class="accordion-subheader neon-modal-open" data-modal-id="biorepo-collections-list">
+								<input
+								  id="all-neon-colls-quick"
+								  data-chip="All Sample Types at the Biorepository"
+								  type="checkbox"
+								  data-form-id="biorepo-collections-list"
+								<input
+								  id="all-neon-colls-quick"
+								  data-chip="All Sample Types at the Biorepository"
+								  type="checkbox"
+								  data-form-id="biorepo-collections-list"
+								  <?php
+									if (
+										$IS_ADMIN ||
+										!empty($USER_RIGHTS["CollAdmin"]) ||
+										!empty($USER_RIGHTS["CollEditor"])
+									) {
+										echo 'checked';
+									}
+								  ?>
+								>
 									<span>All NEON Sample Types at the Biorepository</span>
 								</label>
 							</section>
@@ -213,7 +261,7 @@ $siteData = new DatasetsMetadata();
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
 						<div class="modal-content">
-							<button id="neon-modal-close" class="btn" style="width:auto !important">Accept and close</button>
+							<button id="neon-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
 							<div id="colls-modal">
 								<div>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
@@ -303,80 +351,22 @@ $siteData = new DatasetsMetadata();
 				<!-- Locality -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="locality" class="accordion-selector" checked=true />
+					<input type="checkbox" id="locality" class="accordion-selector" />
 					<!-- Accordion header -->
-					<label for="locality" class="accordion-header">Domains & Sites</label>
+					<label for="locality" class="accordion-header neon-modal-open" data-modal-id="domains-sites-modal">Domains & Sites</label>
 					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-locality">
-							<ul id="site-list"><li class='Mui'><input id="all-sites" data-chip="All Domains & Sites" type="checkbox" class="all-selector" checked="" data-form-id='search-form-locality'><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Domains and Sites</span>
-								<?php if ($domainsArr = $siteData->getNeonDomains()) {
-									echo '<ul>';
-									foreach ($domainsArr as $domain) {
-										echo "<li class='Mui'><input type='checkbox' id='{$domain["domainnumber"]}' class='all-selector child' name='datasetid' value='{$domain["datasetid"]}' checked=''><span class='material-icons expansion-icon'>add_box</span><span class='group-label'>{$domain["domainnumber"]} - {$domain["domainname"]}</span>";
-										echo "<ul class='collapsed'>";
-										// ECHO SITES PER DOMAINS
-										$sitesArr = $siteData->getNeonSitesByDom($domain["domainnumber"]);
-										if ($sitesArr) {
-											foreach ($sitesArr as $site) {
-												echo "<li class='Mui'>";
-												echo "<input type='checkbox' id='{$site["siteid"]}' name='datasetid' value='{$site["datasetid"]}' class='child' data-domain='{$domain["domainnumber"]}' checked>";
-												echo "<span class='leaf-label ml-1 child'>({$site["siteid"]}) {$site["sitename"]}</span>";
-												echo " <a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer' title='View Site Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
-												echo "</li>";
-
-											}
-										};
-										echo "</ul>";
-										echo "</li>";
-									}
-									echo '</ul>';
-								}; ?>
-								</li>
-							</ul>
-							<div>
-								<div>
-									<div class="input-text-container">
-										<label for="state" class="input-text--outlined">
-											<input type="text" name="state" id="state" data-chip="State">
-											<span data-label="State"></span></label>
-										<span class="assistive-text">Separate multiple with commas.</span>
-									</div>
-									<div class="input-text-container">
-										<label for="county" class="input-text--outlined">
-											<input type="text" name="county" id="county" data-chip="County">
-											<span data-label="County"></span></label>
-										<span class="assistive-text">Separate multiple with commas.</span>
-									</div>
-									<div class="input-text-container">
-										<label for="local" class="input-text--outlined">
-											<input type="text" name="local" id="local" data-chip="Locality">
-											<span data-label="Locality"></span></label>
-										<span class="assistive-text" style="line-height:1.7em">Separate multiple with commas. Accepts NEON Domain and/or Site names and codes.</span>
-									</div>
-								</div>
-								<div class="grid grid--half">
-									<div class="input-text-container">
-										<label for="elevlow" class="input-text--outlined">
-											<input type="number" step="any" name="elevlow" id="elevlow" data-chip="Min Elevation">
-											<span data-label="Minimum Elevation"></span></label>
-										<span class="assistive-text">Meters</span>
-									</div>
-									<div class="input-text-container">
-										<label for="elevhigh" class="input-text--outlined">
-											<input type="number" step="any" name="elevhigh" id="elevhigh" data-chip="Max Elevation">
-											<span data-label="Maximum Elevation"></span></label>
-										<span class="assistive-text">Meters</span>
-									</div>
-								</div>
-							</div>
+					<div class="modal" id="domains-sites-modal">
+						<div class="modal-content">
+							<button id="domains-sites-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
+				
+							<div id="collection-search-map"></div>
 						</div>
 					</div>
 				</section>
 				<!-- Collecting Event -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="coll-event" class="accordion-selector" checked=true />
+					<input type="checkbox" id="coll-event" class="accordion-selector" />
 					<!-- Accordion header -->
 					<label for="coll-event" class="accordion-header">Date</label>
 					<!-- Accordion content -->
@@ -384,15 +374,22 @@ $siteData = new DatasetsMetadata();
 						<div id="search-form-coll-event">
 							<div class="input-text-container">
 								<label for="eventdate1" class="input-text--outlined">
-									<input type="text" name="eventdate1" data-chip="Event Date Start">
-									<span data-label="Start Date"></span></label>
-								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+									<input type="text" id="eventdate1" name="eventdate1" data-chip="Event Date Start">
+									<span data-label="Start Date"></span>
+								</label>
+								<span class="assistive-text">
+									Single date or start date of range.
+								</span>
 							</div>
+					
 							<div class="input-text-container">
 								<label for="eventdate2" class="input-text--outlined">
-									<input type="text" name="eventdate2" data-chip="Event Date End">
-									<span data-label="End Date"></span></label>
-								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+									<input type="text" id="eventdate2" name="eventdate2" data-chip="Event Date End">
+									<span data-label="End Date"></span>
+								</label>
+								<span class="assistive-text">
+									End date of range.
+								</span>
 							</div>
 						</div>
 					</div>
@@ -409,17 +406,18 @@ $siteData = new DatasetsMetadata();
 							<div>
 								<div class="text-area-container">
 									<label for="" class="text-area--outlined">
-										<textarea name="catnum" data-chip="Identifier" style="width: 100%"></textarea>
+										<textarea name="catnum" data-chip="Identifier" style="width: 100%"
+												  placeholder="Examples:&#10; Catalog Number: NEON007VA&#10; SampleID: NEON.BET.D06.002579&#10;           STEI.20250925.R11242.E&#10; Barcode: A00000020232&#10;"
+												  ></textarea>
 										<span data-label="Identifiers"></span></label>
-									<span class="assistive-text">Separate multiple with commas or new lines.</span>
+									<span class="assistive-text">
+										Separate multiple values with commas or new lines. 
+										Use * as a wildcard (e.g., MOS.D05* or *20150910.SURBER.3*).
+									</span>
 								</div>
 								<div style="display:none">
 									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>
 									<label for="includeothercatnum">Search all identifiers</label>
-								</div>
-								<div>
-									<input type="checkbox" name="includematerialsample" id="includematerialsample" value=1 data-chip="Include material samples" >
-									<label for="includematerialsample">Include material samples</label>
 								</div>
 							</div>
 							<div>
@@ -429,7 +427,7 @@ $siteData = new DatasetsMetadata();
 								</div>
 								<div>
 									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
-									<label for="hasgenetic">Specimens with genetic data</label>
+									<label for="hasgenetic">Specimens with published genetic data</label>
 								</div>
 								<div>
 									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
@@ -468,131 +466,141 @@ $siteData = new DatasetsMetadata();
 					</div>
 				</section>
 				<!-- Latitude & Longitude -->
-				<section>
+				<!--<section>-->
 					<!-- Accordion selector -->
-					<input type="checkbox" id="lat-long" class="accordion-selector" />
+					<!--<input type="checkbox" id="lat-long" class="accordion-selector" />-->
 					<!-- Accordion header -->
-					<label for="lat-long" class="accordion-header">Latitude & Longitude</label>
+					<!--<label for="lat-long" class="accordion-header">Latitude & Longitude</label>-->
 					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-latlong">
-							<div id="bounding-box-form">
-								<h3>Bounding Box</h3>
-								<button onclick="openCoordAid('rectangle');return false;">Select in map</button>
-								<div class="input-text-container">
-									<label for="upperlat" class="input-text--outlined">
-										<input type="number" step="any" min="-90" max="90" id="upperlat" name="upperlat" data-chip="Upper Lat">
-										<select class="mt-1" id="upperlat_NS" name="upperlat_NS">
-											<option value="">Select N/S</option>
-											<option id="ulN" value="N">N</option>
-											<option id="ulS" value="S">S</option>
-										</select>
-										<span data-label="Northern Latitude"></span></label>
-									<span class="assistive-text">Values between -90 and 90.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="bottomlat" class="input-text--outlined">
-										<input type="number" step="any" min="-90" max="90" id="bottomlat" name="bottomlat" data-chip="Bottom Lat">
-										<select class="mt-1" id="bottomlat_NS" name="bottomlat_NS">
-											<option value="">Select N/S</option>
-											<option id="blN" value="N">N</option>
-											<option id="blS" value="S">S</option>
-										</select>
-										<span data-label="Southern Latitude"></span></label>
-									<span class="assistive-text">Values between -90 and 90.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="leftlong" class="input-text--outlined">
-										<input type="number" step="any" min="-180" max="180" id="leftlong" name="leftlong" data-chip="Left Long">
-										<select class="mt-1" id="leftlong_EW" name="leftlong_EW">
-											<option value="">Select W/E</option>
-											<option id="llW" value="W">W</option>
-											<option id="llE" value="E">E</option>
-										</select>
-										<span data-label="Western Longitude"></span></label>
-									<span class="assistive-text">Values between -180 and 180.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="rightlong" class="input-text--outlined">
-										<input type="number" step="any" min="-180" max="180" id="rightlong" name="rightlong" data-chip="Right Long">
-										<select class="mt-1" id="rightlong_EW" name="rightlong_EW">
-											<option value="">Select W/E</option>
-											<option id="rlW" value="W">W</option>
-											<option id="rlE" value="E">E</option>
-										</select>
-										<span data-label="Eastern Longitude"></span></label>
-									<span class="assistive-text">Values between -180 and 180.</span>
-								</div>
-							</div>
-							<div id="polygon-form">
-								<h3>Polygon (WKT footprint)</h3>
-								<button onclick="openCoordAid('polygon');return false;">Select in map</button>
-								<div class="text-area-container">
-									<label for="footprintwkt" class="text-area--outlined">
-										<textarea id="footprintwkt" name="footprintwkt" wrap="off" cols="30%" rows="5"></textarea>
-										<span data-label="Polygon"></span></label>
-									<span class="assistive-text">Select in map with button or paste values.</span>
-								</div>
-							</div>
-							<div id="point-radius-form">
-								<h3>Point-Radius</h3>
-								<button onclick="openCoordAid('circle');return false;">Select in map</button>
-								<div class="input-text-container">
-									<label for="pointlat" class="input-text--outlined">
-										<input type="number" step="any" min="-90" max="90" id="pointlat" name="pointlat" data-chip="Point Lat">
-										<select class="mt-1" id="pointlat_NS" name="pointlat_NS">
-											<option value="">Select N/S</option>
-											<option id="N" value="N">N</option>
-											<option id="S" value="S">S</option>
-										</select>
-										<span data-label="Latitude"></span></label>
-									<span class="assistive-text">Values between -90 and 90.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="pointlong" class="input-text--outlined">
-										<input type="number" step="any" min="-180" max="180" id="pointlong" name="pointlong" data-chip="Point Long">
-										<select class="mt-1" id="pointlong_EW" name="pointlong_EW">
-											<option value="">Select W/E</option>
-											<option id="W" value="W">W</option>
-											<option id="E" value="E">E</option>
-										</select>
-										<span data-label="Longitude"></span></label>
-									<span class="assistive-text">Values between -180 and 180.</span>
-								</div>
-								<div class="input-text-container">
-									<label for="radius" class="input-text--outlined">
-										<input type="number" min="0" step="any" id="radius" name="radius" data-chip="Radius">
-										<select class="mt-1" id="radiusunits" name="radiusunits">
-											<option value="">Select Unit</option>
-											<option value="km">Kilometers</option>
-											<option value="mi">Miles</option>
-										</select>
-										<span data-label="Radius"></span></label>
-									<span class="assistive-text">Any positive values.</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
+					<!--<div class="content">-->
+						<!--<div id="search-form-latlong">-->
+							<!--<div id="bounding-box-form">-->
+								<!--<h3>Bounding Box</h3>-->
+								<!--<button onclick="openCoordAid('rectangle');return false;">Select in map</button>-->
+								<!--<div class="input-text-container">-->
+								<!--	<label for="upperlat" class="input-text--outlined">-->
+								<!--		<input type="number" step="any" min="-90" max="90" id="upperlat" name="upperlat" data-chip="Upper Lat">-->
+								<!--		<select class="mt-1" id="upperlat_NS" name="upperlat_NS">-->
+								<!--			<option value="">Select N/S</option>-->
+								<!--			<option id="ulN" value="N">N</option>-->
+								<!--			<option id="ulS" value="S">S</option>-->
+								<!--		</select>-->
+								<!--		<span data-label="Northern Latitude"></span></label>-->
+								<!--	<span class="assistive-text">Values between -90 and 90.</span>-->
+								<!--</div>-->
+								<!--<div class="input-text-container">-->
+								<!--	<label for="bottomlat" class="input-text--outlined">-->
+								<!--		<input type="number" step="any" min="-90" max="90" id="bottomlat" name="bottomlat" data-chip="Bottom Lat">-->
+								<!--		<select class="mt-1" id="bottomlat_NS" name="bottomlat_NS">-->
+								<!--			<option value="">Select N/S</option>-->
+								<!--			<option id="blN" value="N">N</option>-->
+								<!--			<option id="blS" value="S">S</option>-->
+								<!--		</select>-->
+								<!--		<span data-label="Southern Latitude"></span></label>-->
+								<!--	<span class="assistive-text">Values between -90 and 90.</span>-->
+								<!--</div>-->
+								<!--<div class="input-text-container">-->
+								<!--	<label for="leftlong" class="input-text--outlined">-->
+								<!--		<input type="number" step="any" min="-180" max="180" id="leftlong" name="leftlong" data-chip="Left Long">-->
+								<!--		<select class="mt-1" id="leftlong_EW" name="leftlong_EW">-->
+								<!--			<option value="">Select W/E</option>-->
+								<!--			<option id="llW" value="W">W</option>-->
+								<!--			<option id="llE" value="E">E</option>-->
+								<!--		</select>-->
+								<!--		<span data-label="Western Longitude"></span></label>-->
+								<!--	<span class="assistive-text">Values between -180 and 180.</span>-->
+								<!--</div>-->
+								<!--<div class="input-text-container">-->
+								<!--	<label for="rightlong" class="input-text--outlined">-->
+								<!--		<input type="number" step="any" min="-180" max="180" id="rightlong" name="rightlong" data-chip="Right Long">-->
+								<!--		<select class="mt-1" id="rightlong_EW" name="rightlong_EW">-->
+								<!--			<option value="">Select W/E</option>-->
+								<!--			<option id="rlW" value="W">W</option>-->
+								<!--			<option id="rlE" value="E">E</option>-->
+								<!--		</select>-->
+								<!--		<span data-label="Eastern Longitude"></span></label>-->
+								<!--	<span class="assistive-text">Values between -180 and 180.</span>-->
+								<!--</div>-->
+							<!--</div>-->
+							<!--<div id="polygon-form">-->
+							<!--	<h3>Polygon (WKT footprint)</h3>-->
+							<!--	<button onclick="openCoordAid('polygon');return false;">Select in map</button>-->
+							<!--	<div class="text-area-container">-->
+							<!--		<label for="footprintwkt" class="text-area--outlined">-->
+							<!--			<textarea id="footprintwkt" name="footprintwkt" wrap="off" cols="30%" rows="5"></textarea>-->
+							<!--			<span data-label="Polygon"></span></label>-->
+							<!--		<span class="assistive-text">Select in map with button or paste values.</span>-->
+							<!--	</div>-->
+							<!--</div>-->
+							<!--<div id="point-radius-form">-->
+							<!--	<h3>Point-Radius</h3>-->
+							<!--	<button onclick="openCoordAid('circle');return false;">Select in map</button>-->
+							<!--	<div class="input-text-container">-->
+							<!--		<label for="pointlat" class="input-text--outlined">-->
+							<!--			<input type="number" step="any" min="-90" max="90" id="pointlat" name="pointlat" data-chip="Point Lat">-->
+							<!--			<select class="mt-1" id="pointlat_NS" name="pointlat_NS">-->
+							<!--				<option value="">Select N/S</option>-->
+							<!--				<option id="N" value="N">N</option>-->
+							<!--				<option id="S" value="S">S</option>-->
+							<!--			</select>-->
+							<!--			<span data-label="Latitude"></span></label>-->
+							<!--		<span class="assistive-text">Values between -90 and 90.</span>-->
+							<!--	</div>-->
+							<!--	<div class="input-text-container">-->
+							<!--		<label for="pointlong" class="input-text--outlined">-->
+							<!--			<input type="number" step="any" min="-180" max="180" id="pointlong" name="pointlong" data-chip="Point Long">-->
+							<!--			<select class="mt-1" id="pointlong_EW" name="pointlong_EW">-->
+							<!--				<option value="">Select W/E</option>-->
+							<!--				<option id="W" value="W">W</option>-->
+							<!--				<option id="E" value="E">E</option>-->
+							<!--			</select>-->
+							<!--			<span data-label="Longitude"></span></label>-->
+							<!--		<span class="assistive-text">Values between -180 and 180.</span>-->
+							<!--	</div>-->
+							<!--	<div class="input-text-container">-->
+							<!--		<label for="radius" class="input-text--outlined">-->
+							<!--			<input type="number" min="0" step="any" id="radius" name="radius" data-chip="Radius">-->
+							<!--			<select class="mt-1" id="radiusunits" name="radiusunits">-->
+							<!--				<option value="">Select Unit</option>-->
+							<!--				<option value="km">Kilometers</option>-->
+							<!--				<option value="mi">Miles</option>-->
+							<!--			</select>-->
+							<!--			<span data-label="Radius"></span></label>-->
+							<!--		<span class="assistive-text">Any positive values.</span>-->
+							<!--	</div>-->
+				<!--			</div>-->
+				<!--		</div>-->
+				<!--	</div>-->
+				<!--</section>-->
 				<!-- Advanced Search -->
+				<?php
+				if (
+					$IS_ADMIN ||
+					!empty($USER_RIGHTS["CollAdmin"]) ||
+					!empty($USER_RIGHTS["CollEditor"])
+				) {
+				?>
+				
 				<section>
 					<!-- Accordion selector -->
 					<input type="checkbox" id="advanced-search" class="accordion-selector" />
+					
 					<!-- Accordion header -->
 					<label for="advanced-search" class="accordion-header">Advanced Search</label>
+					
 					<!-- Accordion content -->
 					<div class="content">
 						<div id="search-form-advanced-search">
-
-						<?php
-						include($SERVER_ROOT . '/neon/search/includes/queryform.php');
-						?>
-
-
-
+							<?php
+							include($SERVER_ROOT . '/neon/search/includes/queryform.php');
+							?>
 						</div>
 					</div>
 				</section>
+				
+				<?php
+				}
+				?>
 			</div>
 			<!-- Criteria panel -->
 			<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
@@ -608,6 +616,6 @@ $siteData = new DatasetsMetadata();
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
 </body>
-<script src="js/searchform.js?ver=<?= date('Y-m-d') ?>" type="text/javascript"></script>
+<script src="js/searchform.js?ver=<?= date('Y-m-d H:i:s') ?>" type="text/javascript"></script>
 <script> window.addEventListener('load', updateChip);</script>
 </html>

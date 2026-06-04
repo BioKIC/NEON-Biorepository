@@ -791,6 +791,61 @@ class OccurrenceCollectionProfile extends OmCollections
 		return $statsArr;
 	}
 
+	//neon function
+	public function getNeonAvailabilitySiteCodes(): array {
+		$retArr = array();
+		if(!$this->collid){
+			return $retArr;
+		}
+		$sql = '
+			SELECT DISTINCT
+				d.name AS siteCode,
+				DATE_FORMAT(o.eventdate, "%Y-%m") AS eventMonth
+			FROM omoccurrences o
+			INNER JOIN omoccurdatasetlink l
+				ON o.occid = l.occid
+			INNER JOIN omoccurdatasets d
+				ON l.datasetid = d.datasetid
+			WHERE o.collid = ' . (int)$this->collid . '
+			AND d.notes = "NEON Site"
+			AND o.eventdate IS NOT NULL
+		';
+	
+		$rs = $this->conn->query($sql);
+		$availabilityMap = array();
+		if($rs){
+			while($r = $rs->fetch_object()){
+	
+				$siteCode = $this->cleanOutStr($r->siteCode);
+				$eventMonth = $r->eventMonth;
+	
+				if(!$siteCode || !$eventMonth){
+					continue;
+				}
+	
+				if(!isset($availabilityMap[$siteCode])){
+					$availabilityMap[$siteCode] = array();
+				}
+	
+				$availabilityMap[$siteCode][$eventMonth] = true;
+			}
+			$rs->free();
+		}
+		foreach($availabilityMap as $siteCode => $monthsMap){
+			$months = array_keys($monthsMap);
+			sort($months);
+			$retArr[] = array(
+				'siteCode' => $siteCode,
+				'availableMonths' => $months
+			);
+		}
+		usort($retArr, function($a, $b){
+			return strcmp($a['siteCode'], $b['siteCode']);
+		});
+		return $retArr;
+	}
+	//end neon function
+	
 	//Misc functions
 	public function unreviewedCommentsExist(){
 		$retCnt = 0;

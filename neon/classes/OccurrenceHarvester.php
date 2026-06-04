@@ -130,7 +130,7 @@ class OccurrenceHarvester{
 				$sampleArr['sampleClass'] = $r->sampleClass ?? '';
 				$sampleArr['taxonID'] = $r->taxonID ?? '';
 				//$sampleArr['individualCount'] = $r->individualCount ?? '';
-				$sampleArr['filterVolume'] = $r->filterVolume ?? '';
+				//$sampleArr['filterVolume'] = $r->filterVolume ?? '';
 				$sampleArr['namedLocation'] = $r->namedLocation ?? '';
 				$sampleArr['collectDate'] = $r->collectDate ?? '';
 				$sampleArr['symbiotaTarget'] = $r->symbiotaTarget ?? '';
@@ -554,7 +554,6 @@ class OccurrenceHarvester{
 			return false;
 		}
 		$viewArr = current($viewArr['sampleViews']);
-		//if(isset($viewArr['sampleClass']) && $viewArr['sampleClass'] == 'mam_pertrapnight_in.tagID') $this->createRelationship($viewArr['childSampleIdentifiers']);
 		//parse Sample Event details
 		$eventArr = $viewArr['sampleEvents'];
 		$harvestIdentifications = true;
@@ -584,7 +583,9 @@ class OccurrenceHarvester{
 				$fateLocation = ''; $fateDate = '';
 				$readAssocTaxon = false;
 				$identRemarks = array();
-				$identArr = array(); $assocMedia = array(); $assocTaxa = array();
+				$identArr = array(); 
+				$assocMedia = array(); 
+				$assocTaxa = array();
 				$tableArr = array();
 				foreach($fieldArr as $fArr){
 					if($tableName == 'tck_pathogenresults_in'){
@@ -598,14 +599,14 @@ class OccurrenceHarvester{
 					}
 					else{
 						if($fArr['smsKey'] == 'fate_location') $fateLocation = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'collection_location' && $fArr['smsValue']) $tableArr['collection_location'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'fate_date' && $fArr['smsValue']) $fateDate = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'event_id' && $fArr['smsValue']) $tableArr['event_id'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'collected_by' && $fArr['smsValue'] && $fArr['smsValue']!='National Ecological Observatory Network, United States') $tableArr['collected_by'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $tableArr['recorded_by'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'collect_start_date' && $fArr['smsValue']) $tableArr['collect_start_date'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'collect_end_date' && $fArr['smsValue']) $tableArr['collect_end_date'] = $fArr['smsValue'];
-						elseif (
+						if($fArr['smsKey'] == 'collection_location' && $fArr['smsValue']) $tableArr['collection_location'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'fate_date' && $fArr['smsValue']) $fateDate = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'event_id' && $fArr['smsValue']) $tableArr['event_id'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'collected_by' && $fArr['smsValue'] && $fArr['smsValue']!='National Ecological Observatory Network, United States') $tableArr['collected_by'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $tableArr['recorded_by'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'collect_start_date' && $fArr['smsValue']) $tableArr['collect_start_date'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'collect_end_date' && $fArr['smsValue']) $tableArr['collect_end_date'] = $fArr['smsValue'];
+						if (
 							$fArr['smsKey'] == 'specimen_count' &&
 							$fArr['smsValue'] &&
 							!(
@@ -621,19 +622,19 @@ class OccurrenceHarvester{
 						) {
 							$tableArr['specimen_count'] = $fArr['smsValue'];
 						}
-						elseif($fArr['smsKey'] == 'temperature' && $fArr['smsValue']) $tableArr['temperature'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'decimal_latitude' && $fArr['smsValue']) $tableArr['decimal_latitude'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'decimal_longitude' && $fArr['smsValue']) $tableArr['decimal_longitude'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'coordinate_uncertainty' && $fArr['smsValue']) $tableArr['coordinate_uncertainty'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'elevation' && $fArr['smsValue']) $tableArr['elevation'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'elevation_uncertainty' && $fArr['smsValue']) $tableArr['elevation_uncertainty'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'verbatim_depth' && $fArr['smsValue']) $tableArr['verbatim_depth'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'minimum_depth_in_meters' && $fArr['smsValue']) $tableArr['minimum_depth_in_meters'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'maximum_depth_in_meters' && $fArr['smsValue']) $tableArr['maximum_depth_in_meters'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'reproductive_condition' && $fArr['smsValue']) $tableArr['reproductive_condition'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'sampling_protocol' && $fArr['smsValue']) $tableArr['sampling_protocol'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'sex' && $fArr['smsValue']) $tableArr['sex'] = $fArr['smsValue'];
-						elseif (
+						if($fArr['smsKey'] == 'temperature' && $fArr['smsValue']) $tableArr['temperature'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'decimal_latitude' && $fArr['smsValue']) $tableArr['decimal_latitude'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'decimal_longitude' && $fArr['smsValue']) $tableArr['decimal_longitude'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'coordinate_uncertainty' && $fArr['smsValue']) $tableArr['coordinate_uncertainty'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'elevation' && $fArr['smsValue']) $tableArr['elevation'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'elevation_uncertainty' && $fArr['smsValue']) $tableArr['elevation_uncertainty'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'verbatim_depth' && $fArr['smsValue']) $tableArr['verbatim_depth'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'minimum_depth_in_meters' && $fArr['smsValue']) $tableArr['minimum_depth_in_meters'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'maximum_depth_in_meters' && $fArr['smsValue']) $tableArr['maximum_depth_in_meters'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'reproductive_condition' && $fArr['smsValue']) $tableArr['reproductive_condition'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'sampling_protocol' && $fArr['smsValue']) $tableArr['sampling_protocol'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'sex' && $fArr['smsValue']) $tableArr['sex'] = $fArr['smsValue'];
+						if (
 							$fArr['smsKey'] == 'life_stage' &&
 							$fArr['smsValue'] &&
 							!(
@@ -648,24 +649,29 @@ class OccurrenceHarvester{
 						) {
 							$tableArr['life_stage'] = $fArr['smsValue'];
 						}
-						elseif($fArr['smsKey'] == 'associated_taxa' && $fArr['smsValue']) $tableArr['associated_taxa'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'remarks' && $fArr['smsValue'] && $sampleRank == 0 && !in_array($tableName,array('ptx_taxonomy_in'))) {
+						if($fArr['smsKey'] == 'associated_taxa' && $fArr['smsValue']) $tableArr['associated_taxa'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'remarks' && $fArr['smsValue'] && $sampleRank == 0 && !in_array($tableName,array('ptx_taxonomy_in'))) {
 							$tableArr['remarks'] = $fArr['smsValue'];
 						}
-						elseif (!in_array($sampleArr['sampleClass'],array('ptx_taxonomy_in.slideID','ptx_taxonomy_in.preserved'))){
+						if (!in_array($sampleArr['sampleClass'],array('ptx_taxonomy_in.slideID','ptx_taxonomy_in.preserved','alg_domainLabComp_in.compositeSampleIDtax'))){
 							if($fArr['smsKey'] == 'preservative_concentration' && $fArr['smsValue']) $tableArr['preservative_concentration'] = $fArr['smsValue'];
-							elseif($fArr['smsKey'] == 'preservative_volume' && $fArr['smsValue']) $tableArr['preservative_volume'] = $fArr['smsValue'];
-							elseif($fArr['smsKey'] == 'preservative_type' && $fArr['smsValue']) $tableArr['preservative_type'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'preservative_volume' && $fArr['smsValue']) $tableArr['preservative_volume'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'preservative_type' && $fArr['smsValue']) $tableArr['preservative_type'] = $fArr['smsValue'];
 						}
-						elseif($fArr['smsKey'] == 'sample_type' && $fArr['smsValue'] && !in_array($tableName,array('ptx_taxonomy_in'))) $tableArr['sample_type'] = $fArr['smsValue'];
-						//elseif($fArr['smsKey'] == 'sample_condition' && $fArr['smsValue']) $tableArr['sample_condition'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'sample_mass' && $fArr['smsValue']) $tableArr['sample_mass'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'sample_volume' && $fArr['smsValue']) $tableArr['sample_volume'] = $fArr['smsValue'];
-						elseif($fArr['smsKey'] == 'associated_media'){
+						if($fArr['smsKey'] == 'sample_type' && $fArr['smsValue'] && !in_array($tableName,array('ptx_taxonomy_in'))) $tableArr['sample_type'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'sample_condition' && $fArr['smsValue'] && in_array($tableName,array('mam_pertrapnight_in'))) $tableArr['sample_condition'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'measurement_method' && $fArr['smsValue'] && in_array($tableName,array('mam_pertrapnight_in'))) $tableArr['measurement_method'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'voucher_update' && $fArr['smsValue'] && in_array($tableName,array('mam_pertrapnight_in'))) $tableArr['voucher_update'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'sample_mass' && $fArr['smsValue']) $tableArr['sample_mass'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'sample_volume' && $fArr['smsValue']) $tableArr['sample_volume'] = $fArr['smsValue'];
+						if($fArr['smsKey'] == 'associated_media'){
 							if(!strpos($fArr['smsValue'],'biorepo.neonscience.org/portal')) $assocMedia['url'] = $fArr['smsValue'];
 						}
-						elseif($fArr['smsKey'] == 'photographed_by') $assocMedia['creator'] = $fArr['smsValue'];
-						if($harvestIdentifications && $tableName!='bet_archivepooling_in' && !($tableName == 'inv_pervial_in' && in_array($sampleArr['sampleClass'],array('inv_fielddata_in.sampleID','inv_persample_in.mixedInvertVialID','inv_persample_in.chironomidVialID','inv_persample_in.oligochaeteVialID')))){
+						if($fArr['smsKey'] == 'photographed_by') $assocMedia['creator'] = $fArr['smsValue'];
+						if($harvestIdentifications && 
+								$tableName!='bet_archivepooling_in' 
+								&& !($tableName == 'inv_pervial_in' && in_array($sampleArr['sampleClass'],array('inv_fielddata_in.sampleID','inv_persample_in.mixedInvertVialID','inv_persample_in.chironomidVialID','inv_persample_in.oligochaeteVialID')))){
+							if($fArr['smsKey'] == 'identification_history_id' && $fArr['smsValue']) $identArr['identificationHistoryID'] = $fArr['smsValue'];
 							if($fArr['smsKey'] == 'taxon' && $fArr['smsValue']){
 								$identArr['sciname'] = $fArr['smsValue'];
 								$identArr['taxon'] = $fArr['smsValue'];
@@ -687,10 +693,10 @@ class OccurrenceHarvester{
 							elseif($fArr['smsKey'] == 'taxon_published_raw_code' && $fArr['smsValue']){
 								if(empty($identArr['taxonPublishedCode'])) $identArr['taxonPublishedCode'] = $fArr['smsValue'];
 							}
-							elseif($fArr['smsKey'] == 'identified_by' && $fArr['smsValue']) $identArr['identifiedBy'] = $this->translatePersonnel($fArr['smsValue']);
-							elseif($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $identArr['recordedBy'] = $this->translatePersonnel($fArr['smsValue']);
-							elseif($fArr['smsKey'] == 'identified_date' && $fArr['smsValue']) $identArr['dateIdentified'] = $fArr['smsValue'];
-							elseif(in_array($tableName,array('ptx_taxonomy_in'))){
+							if($fArr['smsKey'] == 'identified_by' && $fArr['smsValue']) $identArr['identifiedBy'] = $this->translatePersonnel($fArr['smsValue']);
+							if($fArr['smsKey'] == 'recorded_by' && $fArr['smsValue']) $identArr['recordedBy'] = $this->translatePersonnel($fArr['smsValue']);
+							if($fArr['smsKey'] == 'identified_date' && $fArr['smsValue']) $identArr['dateIdentified'] = $fArr['smsValue'];
+							if(in_array($tableName,array('ptx_taxonomy_in'))){
 								if($fArr['smsKey'] == 'remarks' && $fArr['smsValue']){
 									$identRemarks[] = $fArr['smsValue'];
 								}
@@ -702,14 +708,14 @@ class OccurrenceHarvester{
 									$identArr['subsampleAnalysisType'] = $fArr['smsValue'];
 								}
 							}
-							elseif(!in_array($tableName,array('ptx_taxonomy_in')) && $fArr['smsKey'] == 'identification_remarks' && $fArr['smsValue']) {
+							if(!in_array($tableName,array('ptx_taxonomy_in')) && $fArr['smsKey'] == 'identification_remarks' && $fArr['smsValue']) {
 									$identArr['identificationRemarks'] = $fArr['smsValue'];
 								}
-							elseif($fArr['smsKey'] == 'identification_references' && $fArr['smsValue']) $identArr['identificationReferences'] = $fArr['smsValue'];
-							elseif($fArr['smsKey'] == 'identification_qualifier' && $fArr['smsValue']) $identArr['identificationQualifier'] = $fArr['smsValue'];
-							elseif(in_array($tableName,array('zoo_perTaxon_in','inv_pertaxon_in')) && $fArr['smsKey'] == 'specimen_count' && $fArr['smsValue']) $identArr['subsampleIndividualCount'] = $fArr['smsValue'];
-							elseif(in_array($tableName,array('inv_pertaxon_in')) && $fArr['smsKey'] == 'life_stage' && $fArr['smsValue']) $identArr['subsampleLifeStage'] = $fArr['smsValue'];
-							elseif(in_array($tableName,array('ptx_taxonomy_in')) && $fArr['smsKey'] == 'sample_type' && $fArr['smsValue']) $identArr['subsampleSampleType'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'identification_references' && $fArr['smsValue']) $identArr['identificationReferences'] = $fArr['smsValue'];
+							if($fArr['smsKey'] == 'identification_qualifier' && $fArr['smsValue']) $identArr['identificationQualifier'] = $fArr['smsValue'];
+							if(in_array($tableName,array('zoo_perTaxon_in','inv_pertaxon_in')) && $fArr['smsKey'] == 'specimen_count' && $fArr['smsValue']) $identArr['subsampleIndividualCount'] = $fArr['smsValue'];
+							if(in_array($tableName,array('inv_pertaxon_in')) && $fArr['smsKey'] == 'life_stage' && $fArr['smsValue']) $identArr['subsampleLifeStage'] = $fArr['smsValue'];
+							if(in_array($tableName,array('ptx_taxonomy_in')) && $fArr['smsKey'] == 'sample_type' && $fArr['smsValue']) $identArr['subsampleSampleType'] = $fArr['smsValue'];
 						}
 					}
 				}
@@ -745,7 +751,7 @@ class OccurrenceHarvester{
 					}
 					$hash = hash('md5', str_replace(' ', '', $identArr['sciname'].$identArr['identifiedBy'].$identArr['dateIdentified']));
 					// allow for unique records for different life stages,analysis types
-					if($tableName = 'inv_pertaxon_in'){
+					if($tableName == 'inv_pertaxon_in'){
 						if(isset($identArr['subsampleIndividualCount'])){
 							$hash .= hash('md5', str_replace(' ', '', $identArr['subsampleIndividualCount']));
 						}
@@ -800,7 +806,10 @@ class OccurrenceHarvester{
 				if(isset($sampleArr['associated_taxa'])) $dwcArr['associatedTaxa'] = $this->translateAssociatedTaxa($sampleArr['associated_taxa']);
 				$occurRemarks = array();
 				if(!in_array($dwcArr['collid'],array(46,47,49,73))){
-					if(isset($sampleArr['remarks'])) $occurRemarks[] = $sampleArr['remarks'];
+					if(isset($sampleArr['sample_condition'])) $occurRemarks[] = 'sample condition: '. $sampleArr['sample_condition'];
+					if(isset($sampleArr['measurement_method'])) $occurRemarks[] = 'method: '. $sampleArr['measurement_method'];
+					if(isset($sampleArr['voucher_update'])) $occurRemarks[] = 'voucher review: ' . rtrim($sampleArr['voucher_update'], ". \t\n\r\0\x0B");
+					if(isset($sampleArr['remarks'])) $occurRemarks[] = rtrim($sampleArr['remarks'], ". \t\n\r\0\x0B");
 					if(isset($sampleArr['sample_type'])){
 						$sampleType = $sampleArr['sample_type'];
 						if($sampleType == 'M') $sampleType = 'mineral';
@@ -842,6 +851,7 @@ class OccurrenceHarvester{
 								$prepArr[] = 'Pooled extract from two sterivex filters';
 							}
 						}
+						if(in_array($sampleArr['sampleClass'],array('alg_domainLabComp_in.compositeSampleIDtax'))) $prepArr[] ='preservative type: 0.5% glutaraldehyde';
 						if(!empty($sampleArr['preservative_volume'])) $prepArr[] = 'preservative volume: '.$sampleArr['preservative_volume'];
 						if(!empty($sampleArr['preservative_concentration'])) $prepArr[] = 'preservative concentration: '.$sampleArr['preservative_concentration'];
 						if(!empty($sampleArr['sample_mass']) && strpos($sampleArr['symbiotaTarget'],'sample mass') === false) $prepArr[] = 'sample mass: '.$sampleArr['sample_mass'];
@@ -865,7 +875,6 @@ class OccurrenceHarvester{
 				if(!empty($sampleArr['minimum_depth_in_meters'])) $dynProp[] = 'minimum depth: '.$sampleArr['minimum_depth_in_meters'].'m ';
 				if(!empty($sampleArr['maximum_depth_in_meters'])) $dynProp[] = 'maximum depth: '.$sampleArr['maximum_depth_in_meters'].'m ';
 				if(!empty($sampleArr['verbatim_depth'])) $dynProp[] = 'verbatim depth: '.$sampleArr['verbatim_depth'];
-				//if(isset($sampleArr['sample_condition'])) $dynProp[] = 'sample condition: '.$sampleArr['sample_condition'];
 				if($dynProp) $dwcArr['dynamicProperties'] = implode(', ',$dynProp);
 
 				if(!empty($sampleArr['collected_by'])) $dwcArr['recordedBy'] = $this->translatePersonnel($sampleArr['collected_by']);
@@ -1268,11 +1277,11 @@ class OccurrenceHarvester{
 			$dwcArr['sex'] = '';
 		}
 		elseif($dwcArr['collid'] == 116){
-			if($dwcArr['sex'] = 'Nymph') {
+			if($dwcArr['sex'] == 'Nymph') {
 				$dwcArr['sex'] = 'Unknown';
 				$dwcArr['lifeStage'] = 'Nymph';
 			}
-			elseif($dwcArr['sex'] = 'Larva') {
+			elseif($dwcArr['sex'] == 'Larva') {
 				$dwcArr['sex'] = 'Unknown';
 				$dwcArr['lifeStage'] = 'Larva';
 			}
@@ -1948,7 +1957,7 @@ class OccurrenceHarvester{
 		}
 		$rs->free();
 		//Include identification edits
-		$sql = 'SELECT sciname, identifiedBy, dateIdentified FROM omoccurdeterminations WHERE (createdUid IS NULL OR createdUid != 50) AND occid = '.$occid;
+		$sql = 'SELECT sciname, scientificnameauthorship, identifiedBy, dateIdentified,taxonremarks,identificationqualifier,identificationremarks FROM omoccurdeterminations WHERE (createdUid IS NULL OR createdUid != 50) AND occid = '.$occid;
 		$rs = $this->conn->query($sql);
 		if($r = $rs->fetch_object()){
 			$retArr[] = 'sciname';
@@ -1956,6 +1965,7 @@ class OccurrenceHarvester{
 			$retArr[] = 'identifiedby';
 			$retArr[] = 'dateidentified';
 			$retArr[] = 'taxonremarks';
+			$retArr[] = 'identificationqualifier';
 			$retArr[] = 'identificationremarks';
 		}
 		$rs->free();
@@ -2328,7 +2338,7 @@ class OccurrenceHarvester{
 				$stmt->bind_param('i', $detid);
 				$stmt->execute();
 				if($stmt->error){
-					$this->errorStr = 'ERROR deteling determination (#'.$detid.'):'.$this->conn->error;
+					$this->errorStr = 'ERROR deleting determination (#'.$detid.'):'.$this->conn->error;
 				}
 				$stmt->close();
 			}

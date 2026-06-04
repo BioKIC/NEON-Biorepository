@@ -20,6 +20,7 @@ $datasetKey = $collManager->getDatasetKey();
 $resourceJson = isset($collData[$collid]['resourcejson']) ? json_decode($collData[$collid]['resourcejson'], true) : [];
 $dataProductIds = array_map(fn($item) => basename($item['url']), $resourceJson);
 $encodedJson = json_encode(array_values($dataProductIds), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+$biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 
 $editCode = 0;		//0 = no permissions; 1 = CollEditor; 2 = CollAdmin; 3 = SuperAdmin
 if ($SYMB_UID) {
@@ -34,6 +35,10 @@ if ($SYMB_UID) {
 
 <script>
   window.BiorepoCollectionData = '<?php echo $encodedJson; ?>';
+	window.biorepoAvailabilitySiteCodes = <?php echo json_encode(
+		$biorepoAvailabilitySiteCodes ?? [],
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
 </script>
 
 <?php
@@ -304,11 +309,11 @@ ER  -
 									<?php echo (isset($LANG['EDIT_EXISTING']) ? $LANG['EDIT_EXISTING'] : 'Edit Existing Occurrence Records'); ?>
 								</a>
 							</li>
-							<!--<li>-->
-							<!--	<a href="../editor/batchdeterminations.php?collid=<?php echo $collid; ?>">-->
-							<!--		<?php echo (isset($LANG['ADD_BATCH_DETER']) ? $LANG['ADD_BATCH_DETER'] : 'Add Batch Determinations/Nomenclatural Adjustments'); ?>-->
-							<!--	</a>-->
-							<!--</li>-->
+							<!-- <li>
+							<a href="../editor/batchdeterminations.php?collid=<?php echo $collid; ?>">
+									<?php echo (isset($LANG['ADD_BATCH_DETER']) ? $LANG['ADD_BATCH_DETER'] : 'Add Batch Determinations/Nomenclatural Adjustments'); ?>
+								</a>
+							</li> -->
 							<li>
 								<a href="../reports/labelmanager.php?collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['PRINT_LABELS']) ? $LANG['PRINT_LABELS'] : 'Print Specimen Labels'); ?>
@@ -402,26 +407,26 @@ ER  -
 										<?php echo (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
 									</a>
 								</li>
-								<!--<li>-->
-								<!--	<a href="#" onclick="$('li.importItem').show(); return false;">-->
-								<!--		<?php echo (isset($LANG['IMPORT_SPECIMEN']) ? $LANG['IMPORT_SPECIMEN'] : 'Import/Update Specimen Records'); ?>-->
-								<!--	</a>-->
-								<!--</li>-->
-								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
-								<!--	<a href="../admin/specupload.php?uploadtype=7&collid=<?php echo $collid; ?>">-->
-								<!--		<?php echo (isset($LANG['SKELETAL_FILE_IMPORT']) ? $LANG['SKELETAL_FILE_IMPORT'] : 'Skeletal File Import'); ?>-->
-								<!--	</a>-->
-								<!--</li>-->
-								<!--<li class="importItem" style="margin-left:10px;display:none">-->
-								<!--	<a href="../admin/specupload.php?uploadtype=3&collid=<?php echo $collid; ?>">-->
-								<!--		<?php echo (isset($LANG['TEXT_FILE_IMPORT']) ? $LANG['TEXT_FILE_IMPORT'] : 'Text File Import'); ?>-->
-								<!--	</a>-->
-								<!--</li>-->
-								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
-								<!--	<a href="../admin/specupload.php?uploadtype=6&collid=<?php echo $collid; ?>">-->
-								<!--		<?php echo (isset($LANG['DWCA_IMPORT']) ? $LANG['DWCA_IMPORT'] : 'DwC-Archive Import'); ?>-->
-								<!--	</a>-->
-								<!--</li>-->
+								<!-- <li>
+									<a href="#" onclick="$('li.importItem').show(); return false;">
+										<?php echo (isset($LANG['IMPORT_SPECIMEN']) ? $LANG['IMPORT_SPECIMEN'] : 'Import/Update Specimen Records'); ?>
+									</a>
+								</li>
+								<li class="importItem" style="margin-left:10px;display:none;">
+									<a href="../admin/specupload.php?uploadtype=7&collid=<?php echo $collid; ?>">
+										<?php echo (isset($LANG['SKELETAL_FILE_IMPORT']) ? $LANG['SKELETAL_FILE_IMPORT'] : 'Skeletal File Import'); ?>
+									</a>
+								</li>
+								<li class="importItem" style="margin-left:10px;display:none">
+									<a href="../admin/specupload.php?uploadtype=3&collid=<?php echo $collid; ?>">
+										<?php echo (isset($LANG['TEXT_FILE_IMPORT']) ? $LANG['TEXT_FILE_IMPORT'] : 'Text File Import'); ?>
+									</a>
+								</li>
+								<li class="importItem" style="margin-left:10px;display:none;">
+									<a href="../admin/specupload.php?uploadtype=6&collid=<?php echo $collid; ?>">
+										<?php echo (isset($LANG['DWCA_IMPORT']) ? $LANG['DWCA_IMPORT'] : 'DwC-Archive Import'); ?>
+									</a>
+								</li> -->
 								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
 								<!--	<a href="../admin/specupload.php?uploadtype=8&collid=<?php echo $collid; ?>">-->
 								<!--		<?php echo (isset($LANG['IPT_IMPORT']) ? $LANG['IPT_IMPORT'] : 'IPT Import'); ?>-->
@@ -446,11 +451,11 @@ ER  -
 								if ($collData['colltype'] != 'General Observations') {
 									if ($collData['managementtype'] != 'Aggregate') {
 								?>
-										<!--<li>-->
-										<!--	<a href="../specprocessor/index.php?collid=<?php echo $collid; ?>">-->
-										<!--		<?php echo (isset($LANG['PROCESSING_TOOLBOX']) ? $LANG['PROCESSING_TOOLBOX'] : 'Processing Toolbox'); ?>-->
-										<!--	</a>-->
-										<!--</li>-->
+										<li>
+											<a href="../specprocessor/index.php?collid=<?php echo $collid; ?>">
+												<?php echo (isset($LANG['PROCESSING_TOOLBOX']) ? $LANG['PROCESSING_TOOLBOX'] : 'Processing Toolbox'); ?>
+											</a>
+										</li>
 										<li>
 											<a href="../datasets/datapublisher.php?collid=<?php echo $collid; ?>">
 												<?php echo (isset($LANG['DARWIN_CORE_PUB']) ? $LANG['DARWIN_CORE_PUB'] : 'Darwin Core Archive Publishing'); ?>
@@ -459,11 +464,11 @@ ER  -
 									<?php
 									}
 									?>
-									<!--<li>-->
-									<!--	<a href="../editor/editreviewer.php?collid=<?php echo $collid; ?>">-->
-									<!--		<?php echo (isset($LANG['REVIEW_SPEC_EDITS']) ? $LANG['REVIEW_SPEC_EDITS'] : 'Review/Verify Occurrence Edits'); ?>-->
-									<!--	</a>-->
-									<!--</li>-->
+									<li>
+										<a href="../editor/editreviewer.php?collid=<?php echo $collid; ?>">
+											<?php echo (isset($LANG['REVIEW_SPEC_EDITS']) ? $LANG['REVIEW_SPEC_EDITS'] : 'Review/Verify Occurrence Edits'); ?>
+										</a>
+									</li>
 									<!--
 									<li>
 										<a href="../reports/accessreport.php?collid=<?php echo $collid; ?>">
@@ -489,11 +494,9 @@ ER  -
 								<?php
 								if ($collData['colltype'] != 'General Observations') {
 								?>
-									<!--<li style="margin-left:10px;">-->
-									<!--	<a href="../cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">-->
-									<!--		<?php echo (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>-->
-									<!--	</a>-->
-									<!--</li>-->
+									<li style="margin-left:10px;">
+									<a href="../cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">
+									<?php echo (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>
 								<?php
 								}
 								?>
@@ -647,28 +650,12 @@ ER  -
 					</div>
 					<div class="border-t-2 border-gray-200 mt-6 pt-4">
 						<h2 class="text-xl font-semibold mb-2">Citation</h2>
-						<p style="padding:16px"><strong>Please use the appropriate citation in your publications. See <a href="<?php echo $CLIENT_ROOT . '/neon/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for more info.</strong></p>
+						<p style="padding:16px"><strong>Please use the appropriate citation in your publications. See <a href="<?php echo $CLIENT_ROOT . '/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for more info.</strong></p>
 						<?php
-						if (file_exists($SERVER_ROOT . '/includes/citationcollection.php')) {
 							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;"">
 							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">';
-							// If GBIF dataset key is available, fetch GBIF format from API
-							if ($collData['publishtogbif'] && $datasetKey && file_exists($SERVER_ROOT . '/includes/citationgbif.php')) {
-								$gbifUrl = 'http://api.gbif.org/v1/dataset/' . $datasetKey;
-								$responseData = json_decode(file_get_contents($gbifUrl));
-								if ($responseData === null && json_last_error() !== JSON_ERROR_NONE) {
-									error_log('Error in JSON decoding: ' . json_last_error_msg());
-									throw new Exception('Error in JSON decoding');
-								}
-								$collData['gbiftitle'] = $responseData->title;
-								$collData['doi'] = $responseData->doi;
-								$_SESSION['colldata'] = $collData;
-								include($SERVER_ROOT . '/includes/citationgbif.php');
-							} else {
-								include($SERVER_ROOT . '/includes/citationcollection.php');
-							}
+							include($SERVER_ROOT . '/includes/citationneoncollection.php');
 							echo '</div>';
-						}
 						?>
 							<div class="flex space-x-2">
 								<button id="copyButton" data-tooltip-id="tooltip-copy" 

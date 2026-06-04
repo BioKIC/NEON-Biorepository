@@ -21,6 +21,11 @@ $oidc->addAuthParam(array(
 
 $oidc->addScope(array('openid'));
 $oidc->addScope(array('email'));
+$oidc->addScope(array('profile'));
+$oidc->addScope(array('read:current_user'));
+$oidc->addAuthParam([
+    'audience' => $AUDIENCE
+]);
 $oidc->setResponseTypes(array('code'));
 //$oidc->setResponseTypes(array('id_token'));
 $oidc->setRedirectUrl(GeneralUtil::getDomain() . $CLIENT_ROOT . $CALLBACK_REDIRECT);

@@ -192,6 +192,10 @@ $searchVar .= '&comingFrom=' . $comingFrom;
 							<th><?= $LANG['SYMB_ID'] ?></th>
 							<th><?= $LANG['COLLECTION'] ?></th>
 							<th><?= $LANG['CATALOG_NUMBER'] ?></th>
+							<!--neon edit-->
+							<th><?= 'NEON Sample Tag' ?></th>
+							<th><?= 'NEON Barcode' ?></th>
+							<!--end neon edit-->
 							<th><?= $LANG['FAMILY'] ?></th>
 							<th><?= $LANG['SCINAME'] ?></th>
 							<th><?= $LANG['COLLECTOR'] ?></th>
@@ -240,6 +244,10 @@ $searchVar .= '&comingFrom=' . $comingFrom;
 								</td>
 								<td><?= $collection; ?></td>
 								<td><?= $occArr['catnum']; ?></td>
+								<!--neon edit-->
+								<td><?= $occArr['sampleID']; ?></td>
+								<td><?= $occArr['sampleCode']; ?></td>
+								<!--end neon edit-->
 								<td><?= $occArr['family']; ?></td>
 								<td><?= $occArr['sciname'].($occArr['author']?' '.$occArr['author'] : ''); ?></td>
 								<td><?= $occArr['collector']; ?></td>

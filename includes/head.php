@@ -16,8 +16,8 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 ?>
 
 <!--neon react links-->
-<!--React last updated: 2/9/2026, 11:49:12 AM-->
-<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-fonts" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-fonts.css"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/webpack-overrides.css"/><script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script><script>window.gtmDataLayer=[{page_category:"Core Components"}]</script><script>!function(e,t,a,n){e[n]=e[n]||[],e[n].push({"gtm.start":(new Date).getTime(),event:"gtm.js"});var g=t.getElementsByTagName(a)[0],m=t.createElement(a),r="&l="+n;m.async=!0,m.src="https://www.googletagmanager.com/gtm.js?id=GTM-K4S83R2"+r,g.parentNode.insertBefore(m,g)}(window,document,"script","gtmDataLayer")</script><script>window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script><link href="<?php echo $CLIENT_ROOT; ?>/neon-react/static/css/main.dfee6011.css" rel="stylesheet">
+<!--React last updated: 6/2/2026, 2:12:48 PM-->
+<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/><meta name="theme-color" content="#000000"/><link rel="manifest" href="/portal/neon-react/manifest.json"/><link rel="shortcut icon" href="/portal/neon-react/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-fonts" href="/portal/neon-react/assets/css/drupal-fonts.css"/><link rel="stylesheet" data-meta="drupal-theme" href="/portal/neon-react/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><link rel="stylesheet" href="/portal/neon-react/assets/css/webpack-overrides.css"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>let gaInitialized=!1,interactionTracked=!1;function loadGAScript(){return new Promise((t=>{if(document.querySelector("script[data-ga-loader]"))return void t();const e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-6M1F2QCBWJ",e.setAttribute("data-ga-loader","true"),e.onload=t,document.head.appendChild(e)}))}async function initGA(){gaInitialized||(gaInitialized=!0,await loadGAScript(),window.dataLayer=window.dataLayer||[],window.gtag=function(){window.dataLayer.push(arguments)},gtag("js",new Date),gtag("config","G-6M1F2QCBWJ",{send_page_view:!1}),gtag("event","page_view",{page_path:window.location.pathname,page_location:window.location.href,page_title:document.title}),window.pendingGAEvents.forEach((t=>{gtag(...t)})),window.pendingGAEvents=[],document.addEventListener("click",(t=>{const e=t.target;gtag("event","ui_click",{tag:e.tagName||"",text:(e.innerText||"").trim().substring(0,100),id:e.id||"",page_path:window.location.pathname})})))}async function trackInteraction(t){interactionTracked||(interactionTracked=!0,await initGA(),gtag("event","interaction",{interaction_type:t}))}window.pendingGAEvents=[],window.addEventListener("click",(()=>{trackInteraction("click")}),{once:!0}),window.addEventListener("keydown",(()=>{trackInteraction("keydown")}),{once:!0}),window.addEventListener("touchstart",(()=>{trackInteraction("touchstart")}),{once:!0}),window.addEventListener("mousemove",(()=>{trackInteraction("mousemove")}),{once:!0})</script><script>window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script><link href="/portal/neon-react/static/css/main.dfee6011.css" rel="stylesheet">
 <!--end of neon react links-->
 
 <script>
@@ -87,7 +87,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
         //javascript code created by React
         var reactScript = document.createElement('script');
-        reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.e2993545.js';
+        reactScript.src = '/portal/neon-react/static/js/main.9f2e5e7e.js';
         reactScript.defer = true;
 
         // this code happens after header is rendered but before sidebar
@@ -224,10 +224,18 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
             
             // --- Add yellow notification banner right after <header> ---
             (function () {
+              const now = new Date();
+            
+              // Set your exact window here
+              const start = new Date('2026-03-30T00:00:00-04:00');
+              const end   = new Date('2026-04-02T02:00:00-04:00');
+            
+              // Only show during this window
+              if (now < start || now > end) return;
+            
               const headerEl = document.querySelector('header');
               if (!headerEl) return;
             
-              // Prevent duplicate insertion
               if (document.getElementById('neon-dev-banner')) return;
             
               const banner = document.createElement('div');
@@ -245,22 +253,11 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
               p.style.color = '#000';
               p.style.lineHeight = '1.5';
               p.style.fontSize = '.95rem';
-
-              p.innerHTML =
-                `<strong>Welcome to the updated NEON website!</strong> This site features more intuitive navigation and a seamlessly integrated Biorepository portal, making it easier to explore NEON data, samples and resources. For a brief summary of changes visit
-                    <a href="https://www.neonscience.org/neon-website-and-biorepository-sample-portal-updates-feb-2026"
-                       style="color:#0073CF; text-decoration:underline;"
-                       onmouseover="this.style.color='#0092E2'"
-                       onmouseout="this.style.color='#0073CF'">this page</a>.
-                    Your feedback is welcome through our
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdJlcJCdFtnKRQrd7tkmnsue4g1wCVPXS4RLw8DKUIqihH_LQ/viewform"
-                       style="color:#0073CF; text-decoration:underline;"
-                       onmouseover="this.style.color='#0092E2'"
-                       onmouseout="this.style.color='#0073CF'">webform</a>
-                    through February 20.`;
-
-              banner.appendChild(p);
             
+              p.textContent =
+                'Due to planned maintenance which is scheduled to occur between Wednesday, April 1st at 8:30pm MT, and Thursday, April 2nd at 2:00am MT, the NEON Biorepository Sample Portal will be unavailable.';
+            
+              banner.appendChild(p);
               headerEl.insertAdjacentElement('afterend', banner);
             })();
 

@@ -93,7 +93,7 @@ h3:not([class^="Mui"]):not([class*=" Mui"]) {
 }
 
 p:not([class^="Mui"]):not([class*=" Mui"]) {
-  font-size: 1rem;
+  font-size: .9rem;
   line-height: 1.6;
   margin: 1em 0;
   color: #565a5c;
@@ -109,7 +109,7 @@ p:not([class^="Mui"]):not([class*=" Mui"]) a:not([class^="Mui"]):not([class*=" M
 }
 
 li:not([class^="Mui"]):not([class*=" Mui"]):not([class^="ui-"]) {
-  font-size: 1rem;
+  font-size: .9rem;
   line-height: 1.6;
   color: #565a5c;
 }
