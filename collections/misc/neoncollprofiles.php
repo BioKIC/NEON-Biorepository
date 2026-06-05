@@ -43,6 +43,8 @@ if ($SYMB_UID) {
 
 <?php
 $collData = $collManager->getCollectionMetadata();
+
+$linkedCollections = $collManager->getLinkedCollections();
 ?>
 
 <html>
@@ -544,7 +546,7 @@ ER  -
 			?>
 			<div class="mb-6">
 				<?php
-				echo '<h1 class="text-3xl font-bold text-left mb-4">' . $collData['collectionname'] . '</h1>';
+				echo '<h1 class="font-bold text-left mb-4" style="font-size: 2.1rem;">' . $collData['collectionname'] . '</h1>';
 				?>
 				<div class="flex justify-between items-center">
 					<div class="flex justify-left space-x-3 mt-4">
@@ -585,7 +587,7 @@ ER  -
 			
 			<div class="grid grid-cols-1 gap-4 mb-6">
 				<div id="fulldescription-container">
-					<h2 class="text-xl font-semibold mb-2">About</h2>
+					<h2 class="font-semibold mb-2" style="font-size: 1.7rem;">About</h2>
 					<?php
 					echo $collData["fulldescription"];
 					?>
@@ -688,6 +690,49 @@ ER  -
 				</div>
 			</div>
 			
+			<?php if (!empty($linkedCollections)): ?>
+		
+			<div class="border-t-2 border-gray-200 mt-6 pt-4">
+					<h2 class="text-xl mb-2">Related Sample Types</h2>
+			
+					<?php foreach ($linkedCollections as $collid => $collectionName):
+							$collid = (int)$collid;
+							$collectionName = htmlspecialchars($collectionName);
+					
+							$url = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid;
+							?>
+			
+							<div class="MuiListItem-container">
+									<div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">
+			
+											<div class="MuiListItemIcon-root" style="min-width: 40px">
+													<i class="fas fa-flask fa-lg"></i>
+											</div>
+			
+											<div class="MuiListItemText-root MuiListItemText-multiline">
+													<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
+															<?= $collectionName ?>
+													</span>
+											</div>
+			
+									</div>
+			
+									<div class="MuiListItemSecondaryAction-root">
+											<a href="<?= htmlspecialchars($url) ?>"
+												 target="_blank"
+												 rel="noopener noreferrer"
+												 class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">
+			
+													<span class="MuiButton-label">Explore</span>
+											</a>
+									</div>
+							</div>
+			
+					<?php endforeach; ?>
+			
+			</div>
+			<?php endif; ?>
+
 			<div class="border-t-2 border-gray-200 mt-6 pt-4">
 			  <h2 class="text-xl mb-2">Linked Data Products and Protocols</h2>
 			  <div class="mb-4">

@@ -29,6 +29,9 @@ class OccurrenceCollectionProfile extends OmCollections
 		$sql = 'SELECT c.collid, c.institutioncode, c.CollectionCode, c.CollectionName, c.collectionid, c.FullDescription, c.resourceJson, c.contactJson, c.individualurl, ' .
 			'c.latitudedecimal, c.longitudedecimal, c.icon, c.colltype, c.managementtype, c.publicedits, c.guidtarget, c.rights, c.rightsholder, c.accessrights, ' .
 			'c.dwcaurl, c.sortseq, c.securitykey, c.collectionguid AS recordid, c.publishtogbif, c.publishtoidigbio, c.aggkeysstr, c.dynamicProperties, s.uploaddate ' .
+			//neon edit
+			', c.linkedCollIDs ' .
+			//end neon edit
 			'FROM omcollections c INNER JOIN omcollectionstats s ON c.collid = s.collid ';
 		if ($this->collid) $sql .= 'WHERE (c.collid = ' . $this->collid . ') ';
 		else $sql .= 'WHERE s.recordcnt > 0 ORDER BY c.SortSeq, c.CollectionName';
@@ -791,7 +794,7 @@ class OccurrenceCollectionProfile extends OmCollections
 		return $statsArr;
 	}
 
-	//neon function
+	//neon functions
 	public function getNeonAvailabilitySiteCodes(): array {
 		$retArr = array();
 		if(!$this->collid){
@@ -844,7 +847,30 @@ class OccurrenceCollectionProfile extends OmCollections
 		});
 		return $retArr;
 	}
-	//end neon function
+	
+	public function getLinkedCollections(): array
+	{
+		$retArr = [];
+		if(!$this->collid || empty($this->collMeta[$this->collid]['linkedcollids'])) return $retArr;
+	
+		$collIds = array_filter(array_map('intval', explode(',', $this->collMeta[$this->collid]['linkedcollids'])));
+		if(!$collIds) return $retArr;
+	
+		$placeholders = implode(',', array_fill(0, count($collIds), '?'));
+		$sql = "SELECT collid, collectionname FROM omcollections WHERE collid IN ($placeholders) ORDER BY collectionname";
+		$stmt = $this->conn->prepare($sql);
+	
+		$types = str_repeat('i', count($collIds));
+		$stmt->bind_param($types, ...$collIds);
+		$stmt->execute();
+	
+		$result = $stmt->get_result();
+		while($row = $result->fetch_assoc()) $retArr[$row['collid']] = $row['collectionname'];
+	
+		$stmt->close();
+		return $retArr;
+	}
+	//end neon functions
 	
 	//Misc functions
 	public function unreviewedCommentsExist(){
