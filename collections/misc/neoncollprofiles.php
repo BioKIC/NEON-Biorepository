@@ -551,13 +551,13 @@ ER  -
 				<div class="flex justify-between items-center">
 					<div class="flex justify-left space-x-3 mt-4">
 						<a href="<?php echo $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>">
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+								<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
 										<span class="MuiButton-label">Browse Records</span>
 										<span class="MuiTouchRipple-root"></span>
 								</button>
 						</a>
 						<a href="<?php echo $CLIENT_ROOT . '/neon/search/index.php?db=' . $collid; ?>">
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+								<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
 										<span class="MuiButton-label">Search this Sample Type</span>
 										<span class="MuiTouchRipple-root"></span>
 								</button>
@@ -721,7 +721,7 @@ ER  -
 											<a href="<?= htmlspecialchars($url) ?>"
 												 target="_blank"
 												 rel="noopener noreferrer"
-												 class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">
+												 class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">
 			
 													<span class="MuiButton-label">Explore</span>
 											</a>
@@ -783,7 +783,7 @@ ER  -
 							echo '    </div>';
 							echo '    <div class="MuiListItemSecondaryAction-root">';
 							echo '        <a href="' . $url . '" target="_blank" rel="noopener noreferrer">';
-							echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
+							echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
 							echo '                <span class="MuiButton-label">Explore</span>';
 							echo '                <span class="MuiTouchRipple-root"></span>';
 							echo '            </button>';
@@ -824,7 +824,7 @@ ER  -
 						echo '    </div>';
 						echo '    <div class="MuiListItemSecondaryAction-root">';
 						echo '        <a href="' . $dwcaUrl . '" target="_blank" rel="noopener noreferrer">';
-						echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
+						echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
 						echo '                <span class="MuiButton-label">';
 						echo '                    <span class="MuiButton-startIcon MuiButton-iconSizeMedium">';
 						echo '                        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true">';
@@ -875,7 +875,7 @@ ER  -
 					echo '    </div>';
 					echo '    <div class="MuiListItemSecondaryAction-root">';
 					echo '        <a href="' . $emlUrl . '" target="_blank" rel="noopener noreferrer">';
-					echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+					echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
 					echo '                <span class="MuiButton-label">View</span>';
 					echo '            </button>';
 					echo '        </a>';
@@ -918,7 +918,7 @@ ER  -
 						echo '    </div>';
 						echo '    <div class="MuiListItemSecondaryAction-root">';
 						echo '        <a href="' . $gbifUrl . '" target="_blank" rel="noopener noreferrer">';
-						echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+						echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
 						echo '                <span class="MuiButton-label">Access</span>';
 						echo '            </button>';
 						echo '        </a>';
@@ -966,7 +966,7 @@ ER  -
 							echo '    </div>';
 							echo '    <div class="MuiListItemSecondaryAction-root">';
 							echo '        <a href="' . $ediUrl . '" target="_blank" rel="noopener noreferrer">';
-							echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+							echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
 							echo '                <span class="MuiButton-label">Access</span>';
 							echo '            </button>';
 							echo '        </a>';
@@ -1016,7 +1016,7 @@ ER  -
 							echo '    </div>';
 							echo '    <div class="MuiListItemSecondaryAction-root">';
 							echo '        <a href="' . $idigbioUrl . '" target="_blank" rel="noopener noreferrer">';
-							echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+							echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
 							echo '                <span class="MuiButton-label">Open</span>';
 							echo '            </button>';
 							echo '        </a>';
@@ -1049,7 +1049,7 @@ ER  -
 					}
 					?>
 					<a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">
-							<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+							<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
 									<span class="MuiButton-label">Contact the Biorepository</span>
 									<span class="MuiTouchRipple-root"></span>
 							</button>
