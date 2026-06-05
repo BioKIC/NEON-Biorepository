@@ -812,6 +812,7 @@ class OccurrenceCollectionProfile extends OmCollections
 			WHERE o.collid = ' . (int)$this->collid . '
 			AND d.notes = "NEON Site"
 			AND o.eventdate IS NOT NULL
+			AND o.availability = 1
 		';
 	
 		$rs = $this->conn->query($sql);
