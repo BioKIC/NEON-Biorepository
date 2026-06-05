@@ -17,9 +17,7 @@ if($IS_ADMIN){
 		$pHandler = new ProfileManager();
 		$pHandler->setUserName($loginAs);
 		$pHandler->authenticate();
-		//neon edit
-		header("Location: ../neon/index.php");
-		//end neon edit
+		header("Location: ../index.php");
 	}
 	elseif($delRole){
 		$userManager->deletePermission($userId,$delRole,$tablePk);

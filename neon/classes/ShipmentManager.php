@@ -463,63 +463,6 @@ class ShipmentManager{
 		return $retArr;
 	}
 
-	public function getDynamicPropertyTags() {
-		$tagArr = [];
-	
-		if (!$this->shipmentPK) return $tagArr;
-	
-		$sql = "
-		SELECT 'containerID' AS propKey,
-			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.containerID')) AS propValue,
-			   COUNT(*) as cnt
-		FROM NeonSample
-		WHERE shipmentPK = ?
-		  AND JSON_EXTRACT(dynamicProperties, '$.containerID') IS NOT NULL
-		GROUP BY propValue
-	
-		UNION ALL
-	
-		SELECT 'plateID' AS propKey,
-			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.plateID')) AS propValue,
-			   COUNT(*) as cnt
-		FROM NeonSample
-		WHERE shipmentPK = ?
-		  AND JSON_EXTRACT(dynamicProperties, '$.plateID') IS NOT NULL
-		GROUP BY propValue
-		
-		UNION ALL
-	
-		SELECT 'plateBarcode' AS propKey,
-			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.plateBarcode')) AS propValue,
-			   COUNT(*) as cnt
-		FROM NeonSample
-		WHERE shipmentPK = ?
-		  AND JSON_EXTRACT(dynamicProperties, '$.plateID') IS NOT NULL
-		GROUP BY propValue
-		";
-	
-		$stmt = $this->conn->prepare($sql);
-		$stmt->bind_param("iii", $this->shipmentPK, $this->shipmentPK, $this->shipmentPK);
-		$stmt->execute();
-		$result = $stmt->get_result();
-	
-		while ($row = $result->fetch_assoc()) {
-			if (!$row['propValue']) continue;
-	
-			$key = $row['propKey'];
-			$val = $row['propValue'];
-			$cnt = $row['cnt'];
-	
-			if (!isset($tagArr[$key])) {
-				$tagArr[$key] = [];
-			}
-	
-			$tagArr[$key][$val] = $cnt;
-		}
-	
-		return $tagArr;
-	}
-	
 	//Check-in functions
 	public function checkinShipment($postArr){
 		$sql = 'UPDATE NeonShipment '.
@@ -769,7 +712,7 @@ class ShipmentManager{
 			//Update target record
 			$sql = 'UPDATE NeonSample
 				SET sampleID = ?, alternativeSampleID = ?, sampleCode = ?, sampleClass = ?, sampleUuid = ?,quarantineStatus = ?, namedLocation = ?, collectDate = ?, taxonID = ?,
-				individualCount = ?, filterVolume = ?, domainRemarks = ?, notes = ?, checkinRemarks = ? WHERE (samplepk = ?)';
+				individualCount = ?, filterVolume = ?, domainRemarks = ?, notes = ? WHERE (samplepk = ?)';
 			$stmt = $this->conn->stmt_init();
 			$stmt->prepare($sql);
 			if($stmt->error==null) {
@@ -783,9 +726,8 @@ class ShipmentManager{
 				$filterVol = isset($postArr['filtervolume'])&&$postArr['filtervolume']?$postArr['filtervolume']:NULL;
 				$domainRemarks = isset($postArr['domainremarks'])&&$postArr['domainremarks']?$postArr['domainremarks']:NULL;
 				$sampleNotes = isset($postArr['samplenotes'])&&$postArr['samplenotes']?$postArr['samplenotes']:NULL;
-				$checkinRemarks = isset($postArr['checkinremarks'])&&$postArr['checkinremarks']?$postArr['checkinremarks']:NULL;
-				$stmt->bind_param('sssssssssiisssi', $sampleID, $altID, $sampleCode, $sampleClass, $sampleUuid, $quarStatus, $namedLoc, $collDate, $taxonID,
-					$indCnt, $filterVol, $domainRemarks, $sampleNotes, $checkinRemarks, $postArr['samplepk']);
+				$stmt->bind_param('sssssssssiissi', $sampleID, $altID, $sampleCode, $sampleClass, $sampleUuid, $quarStatus, $namedLoc, $collDate, $taxonID,
+					$indCnt, $filterVol, $domainRemarks, $sampleNotes, $postArr['samplepk']);
 				$stmt->execute();
 				if($stmt->error==null) $status = true;
 				else{
@@ -1224,9 +1166,6 @@ class ShipmentManager{
 				}
 				if(in_array('occurNotHarvested', $statusArr, true)){
 					$sqlWhere .= 'AND (m.occid IS NULL) ';
-				}
-				if(in_array('harvestNotAttempted', $statusArr, true)){
-					$sqlWhere .= 'AND (m.occid IS NULL AND m.errorMessage IS NULL AND m.acceptedForAnalysis = 1) ';
 				}
 				$this->searchArr['manifestStatus'] = $_REQUEST['manifestStatus'];
 			}

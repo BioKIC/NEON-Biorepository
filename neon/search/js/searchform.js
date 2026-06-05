@@ -6,6 +6,7 @@ const allNeon = document.getElementById('all-neon-colls-quick');
 const allSites = document.getElementById('all-sites');
 const form = document.getElementById('params-form');
 const formColls = document.getElementById('search-form-colls');
+const formSites = document.getElementById('site-list');
 const collsModal = document.getElementById('colls-modal');
 // list of parameters to be passed to url, modified by getSearchUrl method
 let paramNames = [
@@ -14,6 +15,7 @@ let paramNames = [
   'catnum',
   'collector',
   'includeothercatnum',
+  'includematerialsample',
   'hasimages',
   'hasgenetic',
   'state',
@@ -206,17 +208,13 @@ function removeChip(chip) {
 function updateChip(e) {
   document.getElementById('chips').innerHTML = '';
   // first go through collections and sites
-  let selectedSites = document.querySelectorAll(
-    'input[name="datasetid"]:checked'
+  // if any domains (except for "all") is selected, then add chip
+  let dSList = document.querySelectorAll('#site-list input[type=checkbox]');
+  let dSChecked = document.querySelectorAll(
+    '#site-list input[type=checkbox]:checked'
   );
-  
-  if (selectedSites.length > 0) {
-    addChip({
-      text: `Sites: ${Array.from(selectedSites)
-        .map((input) => input.id)
-        .join(', ')}`,
-      name: 'some-datasetid',
-    });
+  if (dSChecked.length > 0 && dSChecked.length < dSList.length) {
+    addChip(getDomainsSitesChips());
   }
   // if any biorepo colls are selected (except for "all"), then add chip
   let biorepoAllChecked = document.getElementById(
@@ -252,8 +250,9 @@ function updateChip(e) {
   }
   // if there are advanced query changes
   let advCheckbox = document.getElementById('AdvancedHasBeenChanged');
-  if (advCheckbox && advCheckbox.checked === true) {
+  if (advCheckbox.checked == true) {
     addChip(getAdvancedSearchChip());
+    //getAdvancedSearchChip();
   }
   
   // then go through remaining inputs (exclude db and datasetid)
@@ -573,27 +572,12 @@ function getParam(paramName) {
 
   // for db and datasetid
   if (paramName === 'db') {
-    if (allNeon.checked) {
-      let dbArr = ['all'];
-  
-      // only get checked external collection checkboxes
-      document
-        .querySelectorAll('#neonext-collections-items input[name="db"]:checked')
-        .forEach((item) => {
-          dbArr.push(item.value);
-        });
-  
-      elementValues = dbArr;
-    } else {
-      let dbArr = [];
-      let tempArr = getCollsSelected();
-  
-      tempArr.forEach((item) => {
-        dbArr.push(item.value);
-      });
-  
-      elementValues = dbArr;
-    }
+    let dbArr = [];
+    let tempArr = getCollsSelected();
+    tempArr.forEach((item) => {
+      dbArr.push(item.value);
+    });
+    elementValues = dbArr;
   } else if (paramName === 'datasetid') {
     let datasetArr = [];
     elements.forEach((el) => {
@@ -608,38 +592,38 @@ function getParam(paramName) {
       }
     });
     elementValues = datasetArr;
-  //} else if (paramName === 'llbound') {
-  //  // Only if inputs aren't empty
-  //  if (
-  //    uLat.value != '' &&
-  //    bLat.value != '' &&
-  //    lLng.value != '' &&
-  //    rLng.value != ''
-  //  ) {
-  //    let uLatVal = uLatNs.value == 'S' ? uLat.value * -1 : uLat.value * 1;
-  //    let bLatVal = bLatNs.value == 'S' ? bLat.value * -1 : bLat.value * 1;
-  //    let lLngVal = lLngEw.value == 'W' ? lLng.value * -1 : lLng.value * 1;
-  //    let rLngVal = rLngEw.value == 'W' ? rLng.value * -1 : rLng.value * 1;
-  //    elementValues = `${uLatVal};${bLatVal};${lLngVal};${rLngVal}`;
-  //  }
-  //} else if (paramName === 'llpoint') {
-  //  if (
-  //    pLat.value != '' &&
-  //    pLng.value != '' &&
-  //    pRadius.value != '' &&
-  //    pRadiusUn.value != ''
-  //  ) {
-  //    let pLatVal =
-  //      pLatNs.value == 'S'
-  //        ? Math.round(pLat.value * -1 * 100000) / 100000
-  //        : Math.round(pLat.value * 100000) / 100000;
-  //    let pLngVal =
-  //      pLngEw.value == 'W'
-  //        ? Math.round(pLng.value * -1 * 100000) / 100000
-  //        : Math.round(pLng.value * 100000) / 100000;
-  //    let pRadiusVal = pRadius.value + ';' + pRadiusUn.value;
-  //    elementValues = `${pLatVal};${pLngVal};${pRadiusVal}`;
-  //  }
+  } else if (paramName === 'llbound') {
+    // Only if inputs aren't empty
+    if (
+      uLat.value != '' &&
+      bLat.value != '' &&
+      lLng.value != '' &&
+      rLng.value != ''
+    ) {
+      let uLatVal = uLatNs.value == 'S' ? uLat.value * -1 : uLat.value * 1;
+      let bLatVal = bLatNs.value == 'S' ? bLat.value * -1 : bLat.value * 1;
+      let lLngVal = lLngEw.value == 'W' ? lLng.value * -1 : lLng.value * 1;
+      let rLngVal = rLngEw.value == 'W' ? rLng.value * -1 : rLng.value * 1;
+      elementValues = `${uLatVal};${bLatVal};${lLngVal};${rLngVal}`;
+    }
+  } else if (paramName === 'llpoint') {
+    if (
+      pLat.value != '' &&
+      pLng.value != '' &&
+      pRadius.value != '' &&
+      pRadiusUn.value != ''
+    ) {
+      let pLatVal =
+        pLatNs.value == 'S'
+          ? Math.round(pLat.value * -1 * 100000) / 100000
+          : Math.round(pLat.value * 100000) / 100000;
+      let pLngVal =
+        pLngEw.value == 'W'
+          ? Math.round(pLng.value * -1 * 100000) / 100000
+          : Math.round(pLng.value * 100000) / 100000;
+      let pRadiusVal = pRadius.value + ';' + pRadiusUn.value;
+      elementValues = `${pLatVal};${pLngVal};${pRadiusVal}`;
+    }
   } else if (elements[0] != undefined) {
     switch (firstEl.tagName) {
       case 'INPUT':
@@ -671,15 +655,17 @@ function getSearchUrl() {
   // Clears array temporarily to avoid redundancy
   paramsArr = [];
 
-  //db sites
-  const selectedDatasetIds = document.querySelectorAll(
-    'input[name="datasetid"]:checked'
-  );
-  
-  paramNames = paramNames.filter((value) => value !== 'datasetid');
-  
-  if (selectedDatasetIds.length > 0) {
-    paramNames.push('datasetid');
+  // Only adds 'datasetid' to list of params if there is at least one selected
+  // and if 'all' is not checked
+  if (allSites.checked) {
+    paramNames = paramNames.filter((value, index, arr) => {
+      return value != 'datasetid';
+    });
+  } else {
+    document.querySelectorAll('#site-list input[type=checkbox]:checked')
+      .length > 1
+      ? paramNames.push('datasetid')
+      : false;
   }
 
   // Grabs params from form for each param name
@@ -727,70 +713,70 @@ function validateForm() {
       });
     });
   }
-  //// Bounding Box
-  //let bBoxNums = document.querySelectorAll(
-  //  '#bounding-box-form input[type=number]'
-  //);
-  //let bBoxNumArr = [];
-  //bBoxNums.forEach((el) => {
-  //  el.value != '' ? bBoxNumArr.push(el.value) : false;
-  //});
-  //let bBoxCardinals = document.querySelectorAll('#bounding-box-form select');
-  //selectedCardinals = [];
-  //bBoxCardinals.forEach((hItem) => {
-  //  hItem.value != '' ? selectedCardinals.push(hItem.id) : false;
-  //});
-  //if (bBoxNumArr.length > 0 && bBoxNumArr.length < bBoxNums.length) {
-  //  errors.push({
-  //    elId: 'bounding-box-form',
-  //    errorMsg:
-  //      'Please make sure either all Lat/Long bounding box values contain a value, or all are empty.',
-  //  });
-  //} else if (bBoxNumArr.length > 0 && selectedCardinals.length == 0) {
-  //  errors.push({
-  //    elId: 'bounding-box-form',
-  //    errorMsg: 'Please select hemisphere values.',
-  //  });
-  //} else if (bBoxNumArr.length > 0 && selectedCardinals.length > 0) {
-  //  let uLatVal = uLat.value;
-  //  let uLatNsVal = uLatNs.value;
-  //  let bLatVal = bLat.value;
-  //  let bLatNsVal = bLatNs.value;
-  //
-  //  if (uLatNsVal == 'S' && bLatNsVal == 'S') {
-  //    uLatVal = uLatVal * -1;
-  //    bLatVal = bLatVal * -1;
-  //    if (uLatVal < bLatVal) {
-  //      errors.push({
-  //        elId: 'bounding-box-form',
-  //        errorMsg:
-  //          'Your northern latitude value is less than your southern latitude value.',
-  //      });
-  //    }
-  //  }
-  //
-  //  let lLngVal = lLng.value;
-  //  let lLngEwVal = lLngEw.value;
-  //  let rLngVal = rLng.value;
-  //  let rLngEwVal = rLngEw.value;
-  //
-  //  if (lLngEwVal == 'W' && rLngEwVal == 'W') {
-  //    lLngVal = lLngVal * -1;
-  //    rLngVal = rLngVal * -1;
-  //    if (lLngVal > rLngVal) {
-  //      errors.push({
-  //        elId: 'bounding-box-form',
-  //        errorMsg:
-  //          'Your western longitude value is greater than your eastern longitude value. Note that western hemisphere longitudes in the decimal format are negative.',
-  //      });
-  //    }
-  //  }
-  //}
+  // Bounding Box
+  let bBoxNums = document.querySelectorAll(
+    '#bounding-box-form input[type=number]'
+  );
+  let bBoxNumArr = [];
+  bBoxNums.forEach((el) => {
+    el.value != '' ? bBoxNumArr.push(el.value) : false;
+  });
+  let bBoxCardinals = document.querySelectorAll('#bounding-box-form select');
+  selectedCardinals = [];
+  bBoxCardinals.forEach((hItem) => {
+    hItem.value != '' ? selectedCardinals.push(hItem.id) : false;
+  });
+  if (bBoxNumArr.length > 0 && bBoxNumArr.length < bBoxNums.length) {
+    errors.push({
+      elId: 'bounding-box-form',
+      errorMsg:
+        'Please make sure either all Lat/Long bounding box values contain a value, or all are empty.',
+    });
+  } else if (bBoxNumArr.length > 0 && selectedCardinals.length == 0) {
+    errors.push({
+      elId: 'bounding-box-form',
+      errorMsg: 'Please select hemisphere values.',
+    });
+  } else if (bBoxNumArr.length > 0 && selectedCardinals.length > 0) {
+    let uLatVal = uLat.value;
+    let uLatNsVal = uLatNs.value;
+    let bLatVal = bLat.value;
+    let bLatNsVal = bLatNs.value;
+
+    if (uLatNsVal == 'S' && bLatNsVal == 'S') {
+      uLatVal = uLatVal * -1;
+      bLatVal = bLatVal * -1;
+      if (uLatVal < bLatVal) {
+        errors.push({
+          elId: 'bounding-box-form',
+          errorMsg:
+            'Your northern latitude value is less than your southern latitude value.',
+        });
+      }
+    }
+
+    let lLngVal = lLng.value;
+    let lLngEwVal = lLngEw.value;
+    let rLngVal = rLng.value;
+    let rLngEwVal = rLngEw.value;
+
+    if (lLngEwVal == 'W' && rLngEwVal == 'W') {
+      lLngVal = lLngVal * -1;
+      rLngVal = rLngVal * -1;
+      if (lLngVal > rLngVal) {
+        errors.push({
+          elId: 'bounding-box-form',
+          errorMsg:
+            'Your western longitude value is greater than your eastern longitude value. Note that western hemisphere longitudes in the decimal format are negative.',
+        });
+      }
+    }
+  }
 
   
   const advancedHasBeenChangedCheckbox = document.getElementById('AdvancedHasBeenChanged');
 
-  if (advancedHasBeenChangedCheckbox && advancedHasBeenChangedCheckbox.checked == true) {
+  if (advancedHasBeenChangedCheckbox.checked == true) {
     const advancedInputs = document.querySelectorAll('#search-form-advanced-search select, #search-form-advanced-search input[type=text]');
     let openParensCount = 0;
     let closeParensCount = 0;
@@ -982,11 +968,7 @@ document
       }
 
       event.preventDefault();
-      const modalId = this.dataset.modalId;
-
-      if (modalId) {
-        openModal(`#${modalId}`);
-      }
+      openModal('#biorepo-collections-list');
     });
   });
 // When checking "all neon collections" box, toggle checkboxes in modal
@@ -999,6 +981,7 @@ $('#all-neon-colls-quick').click(function () {
 $('.all-selector').click(toggleAllSelector);
 formColls.addEventListener('click', autoToggleSelector, false);
 formColls.addEventListener('change', autoToggleSelector, false);
+formSites.addEventListener('click', autoToggleSelector, false);
 collsModal.addEventListener('click', autoToggleSelector, false);
 collsModal.addEventListener('change', autoToggleSelector, false);
 // Listen for close modal click and passes value of selected colls to main form
@@ -1014,22 +997,10 @@ document
     allNeon.checked = isAllSelected;
     updateChip();
   });
-document
-  .getElementById('domains-sites-modal-close')
-  .addEventListener('click', function (event) {
-    event.preventDefault();
-    closeModal('#domains-sites-modal');
-  });
 //////// Binds Update chip on event change
 const formInputs = document.querySelectorAll('.content input, .content textarea, #search-form-advanced-search select');
 formInputs.forEach((formInput) => {
   formInput.addEventListener('change', updateChip);
-});
-
-document.addEventListener('change', function (e) {
-  if (e.target.name === 'datasetid') {
-    updateChip();
-  }
 });
 // on default (on document load): All Neon Collections, All Domains & Sites, Include other IDs, All Domains & Sites
 window.addEventListener('load', updateChip);

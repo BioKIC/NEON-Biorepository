@@ -4,7 +4,6 @@ if(isset($SERVER_ROOT) && $SERVER_ROOT){
 	include_once($SERVER_ROOT.'/classes/OccurrenceMaintenance.php');
 	include_once($SERVER_ROOT.'/classes/ImageShared.php');
 	include_once($SERVER_ROOT . '/classes/GuidManager.php');
-	include_once($SERVER_ROOT . '/classes/utilities_neon/ImageProcessorAI.php');	//NEON modification
 }
 
 class ImageLocalProcessor {
@@ -125,7 +124,7 @@ class ImageLocalProcessor {
 		if($this->logMode == 1) echo '<ul>';
 		foreach($this->collArr as $collid => $cArr){
 			$this->activeCollid = $collid;
-			if(substr($this->collArr[$this->activeCollid]['pmterm']??'',-4) == '.csv'){
+			if(substr($this->collArr[$this->activeCollid]['pmterm'],-4) == '.csv'){
 				if(!file_exists($this->sourcePathBase.$this->collArr[$this->activeCollid]['pmterm'])){
 					$this->logOrEcho('ERROR accessing image mapping file: '.$this->sourcePathBase.$this->collArr[$this->activeCollid]['pmterm']);
 					continue;
@@ -192,7 +191,7 @@ class ImageLocalProcessor {
 			}
 
 			$this->logOrEcho('Starting image processing: '.$sourcePathFrag);
-			if(strtolower(substr($this->collArr[$this->activeCollid]['pmterm']??'',-4)) == '.csv'){
+			if(strtolower(substr($this->collArr[$this->activeCollid]['pmterm'],-4)) == '.csv'){
 				$this->processImageMap($sourcePathFrag);
 			}
 			elseif(substr($this->sourcePathBase,0,4) == 'http'){
@@ -344,19 +343,7 @@ class ImageLocalProcessor {
 		$this->logOrEcho('Processing File ('.date('Y-m-d h:i:s A').'): '.$fileName);
 		$fileExt = strtolower(substr($fileName, strrpos($fileName, '.') + 1));
 		if($fileExt == 'jpg' || $fileExt == 'jpeg'){
-			$mode = $this->collArr[$this->activeCollid]['cleaningmode'] ?? 'regex';
-			//Begin of NEON modification
-			//$catalogNumber = $this->getPrimaryKey($fileName);
-			if($mode === 'ai'){
-				$example = $this->collArr[$this->activeCollid]['aiexampleidentifiers'] ?? '';
-				$extra = $this->collArr[$this->activeCollid]['aiextrainstructions'] ?? '';
-				$catalogNumber = ImageProcessorAI::getPrimaryKey($fileName, $example, $extra);
-				if(ImageProcessorAI::$statusStr) $this->logOrEcho(ImageProcessorAI::$statusStr, 1);
-			}
-			else{
-				$catalogNumber = $this->getPrimaryKey($fileName);
-			}
-			//End of NEON modification
+			$catalogNumber = $this->getPrimaryKey($fileName);
 			if(!$catalogNumber){
 				$this->logOrEcho('File skipped ('.$fileName.'), unable to extract specimen identifier',1);
 				return false;

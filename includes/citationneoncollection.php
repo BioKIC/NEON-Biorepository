@@ -1,1 +1,0 @@
-NEON (National Ecological Observatory Network) Biorepository. <?php echo $collData['collectionname']; ?>. Data accessed from https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=<?php echo $collData['collid']; ?> on <?php echo date('Y-m-d'); ?>. Data archived at [your DOI].

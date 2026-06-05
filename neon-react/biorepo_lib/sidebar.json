@@ -28,7 +28,7 @@
     "sidebarTitle": "Samples & Specimens",
     "links": [
         {
-          "name": "NEON Biorepository Sample Portal at ASU",
+          "name": "Biorepository Sample Portal at ASU",
           "hash": "https://biorepo.neonscience.org/portal/neon/search/index.php",
           "match": [
                     "neon/search/index.php",
@@ -54,11 +54,7 @@
         {
           "name": "Requesting and Using Samples",
           "hash": "https://www.neonscience.org/requesting-and-using-samples",
-          "match": [
-            "misc/sampleguidelines.php",
-            "misc/cite.php",
-            "misc/samplepolicy.php"
-            ]
+          "match": "#"
         }
     ]
   }

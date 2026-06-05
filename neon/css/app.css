@@ -103,16 +103,16 @@ input:invalid {
   border: 1px solid red !important;
 }
 
-input[type='checkbox']:not([class*='jss']) {
+input[type='checkbox'] {
   width: 16px;
   height: 16px;
   vertical-align: baseline !important;
 }
 
-input[type='text']:not([class*='Mui']),
-input[type='number']:not([class*='Mui']),
-textarea:not([class*='Mui']),
-select:not([class*='Mui']) {
+input[type='text'],
+input[type='number'],
+textarea,
+select {
   border: 1px solid #d0d0d0 !important;
   border-radius: 0;
   color: #333333;
@@ -723,7 +723,7 @@ span.accent-color-darker {
           box-sizing: border-box;
   resize: none;
   border: 0;
-  height: 117px;
+  height: 100px;
   padding: var(--padding);
   font-size: 1em;
 }
@@ -751,8 +751,8 @@ span.accent-color-darker {
 }
 
 .text-area-container .text-area--outlined > textarea:focus ~ span::before, .text-area-container .text-area--outlined > textarea:valid ~ span::before {
-  -webkit-transform: translateY(-29px);
-          transform: translateY(-29px);
+  -webkit-transform: translateY(-22px);
+          transform: translateY(-22px);
   background-color: white;
   padding: 2px 4px;
 }
@@ -778,9 +778,7 @@ span.accent-color-darker {
           box-shadow: 0 5px 8px 0;
 }
 
-.modal-close {
-  position: relative;
-  z-index: 10000;
+.modal button {
   float: right;
 }
 

@@ -496,7 +496,7 @@ else{
     }
     else{
 		?>
-		<link href="<?= $CSS_BASE_PATH ?>/symbiota/collections/editor/occurrenceeditor.css?ver=20260212" type="text/css" rel="stylesheet" id="editorCssLink" >
+		<link href="<?= $CSS_BASE_PATH ?>/symbiota/collections/editor/occurrenceeditor.css?ver=9" type="text/css" rel="stylesheet" id="editorCssLink" >
 		<?php
 		if(isset($CSSARR)){
 			foreach($CSSARR as $cssVal){
@@ -1711,7 +1711,7 @@ else{
 														<?php
 														$targetArr = $occManager->getCollectionList(true);
 														unset($targetArr[$collId]);
-														if(count($targetArr) > 0){
+														if(count($targetArr) > 1){
 															?>
 															<div class="fieldGroup-div">
 																<label><?php echo $LANG['TARGET_COLL']; ?>:</label>

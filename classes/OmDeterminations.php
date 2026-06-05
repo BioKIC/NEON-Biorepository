@@ -157,10 +157,7 @@ class OmDeterminations extends Manager{
 			elseif(isset($inputArr[strtolower($field)])) $postField = strtolower($field);
 			if($postField){
 				$value = trim($inputArr[$postField]);
-				// NEON custom adjustment
-				//if($value){
-				if($value !== null && $value !== ''){
-				// END NEON custom adjustment
+				if($value){
 					$postField = strtolower($postField);
 					if($postField == 'establisheddate') $value = OccurrenceUtil::formatDate($value);
 					if($postField == 'modifieduid') $value = OccurrenceUtil::verifyUser($value, $this->conn);
@@ -266,11 +263,10 @@ class OmDeterminations extends Manager{
 			if(!isset($inputArr['createdUid'])) $inputArr['createdUid'] = $GLOBALS['SYMB_UID'];
 
 			// insert determination
-			$sql = 'INSERT INTO omoccurdeterminations(occid, recordID, createdUid';
-			$sqlValues = '?, ?, ?, ';
-			$paramArr = [$this->occid, UuidFactory::getUuidV4(), $inputArr['createdUid']];
-			$this->typeStr = 'isi'; 
-
+			$sql = 'INSERT INTO omoccurdeterminations(occid, recordID';
+			$sqlValues = '?, ?, ';
+			$paramArr = [$this->occid, UuidFactory::getUuidV4()];
+			$this->typeStr = 'is';
 			$this->setParameterArr($inputArr);
 			foreach($this->parameterArr as $fieldName => $value){
 				$sql .= ', '.$fieldName;

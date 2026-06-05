@@ -69,20 +69,13 @@ $dwcManager = new DwcArchiverCore();
 				if(obj.form.identifiers) obj.form.identifiers.checked = false;
 			}
 		}
-		<!--NEON edit - GA event-->
+
 		function validateDownloadForm(f){
-		
-			gtag('event', 'data_download', {
-				search_var: f.searchvar.value,
-				source_page: f.sourcepage.value,
-				taxon_filter_code: f.taxonFilterCode.value
-			});
-		
+			workingcircle
 			document.getElementById("workingcircle").style.display = "inline";
-		
 			return true;
 		}
-		<!--end NEON edit-->
+
 		function closePage(timeToClose){
 			setTimeout(function () {
 				window.close();

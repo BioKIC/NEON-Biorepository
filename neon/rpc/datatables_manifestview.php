@@ -105,7 +105,6 @@ if ($shipmentPK !== null) {
     ];
 
     $filter = $_POST['sampleFilter'] ?? '';
-    $containerFilter = $_POST['containerFilter'] ?? '';
 
     if ($filter === 'notCheckedIn') {
         $conditionParts[] = 'checkinTimestamp IS NULL';
@@ -117,21 +116,6 @@ if ($shipmentPK !== null) {
         $conditionParts[] = 'alternativeSampleID IS NOT NULL';
     } elseif ($filter === 'harvestingError') {
         $conditionParts[] = 'errorMessage IS NOT NULL';
-    }
-    
-    if (strpos($containerFilter, 'dyn:') === 0) {
-        $parts = explode(':', $containerFilter, 3);
-    
-        if (count($parts) === 3) {
-            $key = $parts[1];   // e.g. containerID
-            $value = $parts[2]; // e.g. Box 1
-    
-            $conditionParts[] = "JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.$key')) = ?";
-            $bindings[] = [
-                'val' => $value,
-                'type' => 's'
-            ];
-        }
     }
 
     $whereAll = [

@@ -1,6 +1,4 @@
 <?php
-/*
-NEON edit
 include_once ($SERVER_ROOT . '/classes/utilities/GeneralUtil.php');
 
 if(isset($GOOGLE_ANALYTICS_KEY) && $GOOGLE_ANALYTICS_KEY) {
@@ -29,5 +27,4 @@ if(isset($GOOGLE_ANALYTICS_TAG_ID) && $GOOGLE_ANALYTICS_TAG_ID) {
 	</script>
 	<?php
 }
-*/
 ?>

@@ -374,14 +374,12 @@ $traitArr = $indManager->getTraitArr();
 					if($genticArr) echo '<li><a href="#genetictab"><span>' . (isset($LANG['GENETIC']) ? $LANG['GENETIC'] : 'Genetic') . '</span></a></li>';
 					if($dupClusterArr) echo '<li><a href="#dupestab-div"><span>' . (isset($LANG['DUPLICATES']) ? $LANG['DUPLICATES'] : 'Duplicates') . '</span></a></li>';
 					?>
-					<!-- NEON edit -->
 					<!--<li><a href="#commenttab"><span><?php echo ($commentArr?count($commentArr).' ':''); echo (isset($LANG['COMMENTS']) ? $LANG['COMMENTS'] : 'Comments'); ?></span></a></li>-->
-					<!--<li>
+					<li>
 						<a href="linkedresources.php?occid=<?php echo $occid . '&tid=' . $occArr['tidinterpreted'] . '&clid=' . $clid . '&collid=' . $collid ?>">
 							<span><?php echo $LANG['LINKED_RESOURCES']; ?></span>
 						</a>
-					</li>-->
-					<!-- end NEON edit -->
+					</li>
 					<?php
 					if($traitArr) echo '<li><a href="#traittab"><span>' . (isset($LANG['TRAITS'])?$LANG['TRAITS']:'Traits') . '</span></a></li>';
 					if($isEditor) echo '<li><a href="#edittab"><span>' . $LANG['EDIT_HISTORY'] . '</span></a></li>';
@@ -1111,21 +1109,20 @@ $traitArr = $indManager->getTraitArr();
 										// START NEON CUSTOMIZATION //
 										if($imgArr['creator']) {
 											if($imgArr['owner']){
-												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</br></b> '.$imgArr['owner'].'</div>';
+												echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].', '.$imgArr['owner'].'</div>';
 											}
 											else {
-												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</div>';
+												echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].'</div>';
 											}
 										}
-										elseif($imgArr['owner']) echo '<div>' . $imgArr['owner'].'</div>';
-									if($imgArr['rights']) echo '<div><b> License: </b>'.$imgArr['rights'].'</div>';
-									else echo '<div><b> License: </b>CC BY-SA (Attribution-ShareAlike)</div>';
+										// END NEON CUSTOMIZATION //									
 									if($imgArr['url'] && substr($thumbUrl,0,7)!='process' && $imgArr['url'] != $imgArr['lgurl']) echo '<div><a href="' . $imgArr['url'] . '" target="_blank">' . $LANG['OPEN_MEDIUM'] . '</a></div>';
 									if($imgArr['lgurl']) echo '<div><a href="' . $imgArr['lgurl'] . '" target="_blank">' . $LANG['OPEN_LARGE'] . '</a></div>';
 									if($imgArr['sourceurl']) echo '<div><a href="' . $imgArr['sourceurl'] . '" target="_blank">' . $LANG['OPEN_SOURCE'] . '</a></div>';
+									//Use image rights settings as the default for current record
+									if($imgArr['rights']) $collMetadata['rights'] = $imgArr['rights'];
 									if($imgArr['copyright']) $collMetadata['rightsholder'] = $imgArr['copyright'];
 									if($imgArr['accessrights']) $collMetadata['accessrights'] = $imgArr['accessrights'];
-										// END NEON CUSTOMIZATION //	
 									echo '</div>';
 								}
 								?>

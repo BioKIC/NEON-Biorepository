@@ -84,18 +84,7 @@ $statusStr = "";
 						$logFile = $collid.'_'.$specManager->getInstitutionCode();
 						if($specManager->getCollectionCode()) $logFile .= '-'.$specManager->getCollectionCode();
 						$imageProcessor->initProcessor($logFile);
-						//neon edit
-						$imageProcessor->setCollArr(array(
-							$collid => array(
-								'pmterm' => $specManager->getSpecKeyPattern(),
-								'prpatt' => $specManager->getPatternReplace(),
-								'prrepl' => $specManager->getReplaceStr(),
-								'cleaningmode' => $specManager->getCleaningMode(),
-								'aiexampleidentifiers' => $specManager->getAiExampleIdentifiers(),
-								'aiextrainstructions' => $specManager->getAiExtraInstructions()
-							)
-						));
-						//end neon edit
+						$imageProcessor->setCollArr(array($collid => array('pmterm' => $specManager->getSpecKeyPattern(),'prpatt' => $specManager->getPatternReplace(),'prrepl' => $specManager->getReplaceStr())));
 						$imageProcessor->setMatchCatalogNumber((array_key_exists('matchcatalognumber', $_POST)?1:0));
 						$imageProcessor->setMatchOtherCatalogNumbers((array_key_exists('matchothercatalognumbers', $_POST)?1:0));
 						$imageProcessor->setDbMetadata(1);

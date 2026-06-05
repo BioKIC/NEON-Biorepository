@@ -66,7 +66,7 @@ labels.forEach((label) => {
   catNums.innerHTML = newCatNum;
   catNums.classList.add('mt-2');
   // Removes ORCID from recordedby
-  let recordedBy = label.querySelector('.recordedby');
+  let recordedBy = label.querySelector('.collector');
 
   if (recordedBy) {
     let orcid = recordedBy.innerText.indexOf(' (ORCID');
@@ -85,7 +85,7 @@ labels.forEach((label) => {
         prepBy = obj.prepared_by;
       }
     } catch (e) {
-      console.error('Invalid JSON:', e);
+      // If invalid JSON, leave prepBy empty
     }
 
   dynProps.innerText = 'Prep. by: ' + (prepBy || '');
