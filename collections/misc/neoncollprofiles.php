@@ -585,31 +585,6 @@ ER  -
 				</div>
 			</div>
 			
-			<?php if (!empty($collData['identificationcollids'])): ?>
-			
-			<div class="mb-6 border-l-4 border-[#0073cf] bg-[#f4f9ff] p-4">
-				<div class="flex items-start">
-						<i class="fas fa-info-circle text-[#0073cf] text-lg mt-1 mr-3"></i>
-				
-						<div>
-								<div class="font-semibold text-gray-900">
-										Looking for a specific taxon?
-								</div>
-				
-								<div class="text-gray-700">
-										Taxonomic identifications derived from these samples are available through a related sample type.
-								</div>
-				
-								<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/neoncollprofiles.php?collid=<?php echo $collData['identificationcollids']; ?>"
-									 class="inline-block mt-2 text-[#0073cf] font-semibold hover:underline">
-										Browse Identifications →
-								</a>
-						</div>
-				</div>
-			</div>
-			
-			<?php endif; ?>
-			
 			<div class="grid grid-cols-1 gap-4 mb-6">
 				<div id="fulldescription-container">
 					<h2 class="font-semibold mb-2" style="font-size: 1.7rem;">About</h2>

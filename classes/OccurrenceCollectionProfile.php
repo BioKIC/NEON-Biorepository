@@ -30,7 +30,7 @@ class OccurrenceCollectionProfile extends OmCollections
 			'c.latitudedecimal, c.longitudedecimal, c.icon, c.colltype, c.managementtype, c.publicedits, c.guidtarget, c.rights, c.rightsholder, c.accessrights, ' .
 			'c.dwcaurl, c.sortseq, c.securitykey, c.collectionguid AS recordid, c.publishtogbif, c.publishtoidigbio, c.aggkeysstr, c.dynamicProperties, s.uploaddate ' .
 			//neon edit
-			', c.linkedCollIDs, identificationCollIDs ' .
+			', c.linkedCollIDs ' .
 			//end neon edit
 			'FROM omcollections c INNER JOIN omcollectionstats s ON c.collid = s.collid ';
 		if ($this->collid) $sql .= 'WHERE (c.collid = ' . $this->collid . ') ';
