@@ -2246,16 +2246,49 @@ class DwcArchiverCore extends Manager{
 				break;
 		}
 
-		$output = "This data package was downloaded from a " . $GLOBALS['DEFAULT_TITLE'] . " " . $citationPrefix . " on " . date('Y-m-d H:i:s') . ".\n\nPlease use the following format to cite this dataset:\n";
+		//neon edit
+		$output = "This data package was downloaded from the " . $GLOBALS['DEFAULT_TITLE'] . " on " . date('Y-m-d H:i:s') . ".\n\nPlease use the following to cite this dataset:\n";
 
 		ob_start();
-		if (file_exists($GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '.php')) {
-			include $GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '.php';
-		} else {
-			include $GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '_template.php';
-		}
+		include $GLOBALS['SERVER_ROOT'] . '/includes/citationneondownloadcollection.php';
 		$output .= ob_get_clean();
-		$output .= "\n\nFor more information on citation formats, please see the following page: " . GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/includes/usagepolicy.php";
+		$output .= "\n\n";
+		$output .= "------------------------------------------------------------------\n";
+		$output .= "NEON BIOREPOSITORY CITATION GUIDANCE\n";
+		$output .= "------------------------------------------------------------------\n\n";
+		
+		$output .= "NEON sample data are offered under the Creative Commons Attribution ";
+		$output .= "(CC BY 4.0) license. Attribution is required when using NEON data, ";
+		$output .= "including a link to the license and an indication of any changes made.\n\n";
+		
+		$output .= "License: https://creativecommons.org/licenses/by/4.0/\n\n";
+		
+		$output .= "Records in the NEON Biorepository Sample Portal are periodically ";
+		$output .= "updated and may include value-added data derived from additional ";
+		$output .= "analysis. Because these records are updated on a rolling basis and ";
+		$output .= "are not tied to a specific NEON data release, these data should be ";
+		$output .= "considered provisional and subject to change.\n\n";
+		
+		$output .= "Recommended citation format:\n\n";
+		
+		$output .= "NEON (National Ecological Observatory Network) Biorepository. ";
+		$output .= "[Collection Name]. Data accessed from ";
+		$output .= GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'];
+		$output .= "/collections/misc/neoncollprofiles.php?collid=[collid] ";
+		$output .= "on [date]. ";
+		$output .= "Licensed under CC BY 4.0 ";
+		$output .= "(https://creativecommons.org/licenses/by/4.0/).\n\n";
+		
+		$output .= "If data were modified, filtered, or reformatted for analysis, ";
+		$output .= "please indicate those changes in your citation.\n\n";
+		
+		$output .= "If additional data were obtained directly from the NEON Data Portal, ";
+		$output .= "the relevant NEON Data Product(s) should also be cited according to ";
+		$output .= "NEON data citation guidance.\n\n";
+		
+		$output .= "For more information on citation requirements, please see:\n";
+		$output .= GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/misc/cite.php";
+		//end neon edit
 
 		fwrite($fh, $output);
 

@@ -157,7 +157,10 @@ class OmDeterminations extends Manager{
 			elseif(isset($inputArr[strtolower($field)])) $postField = strtolower($field);
 			if($postField){
 				$value = trim($inputArr[$postField]);
-				if($value){
+				// NEON custom adjustment
+				//if($value){
+				if($value !== null && $value !== ''){
+				// END NEON custom adjustment
 					$postField = strtolower($postField);
 					if($postField == 'establisheddate') $value = OccurrenceUtil::formatDate($value);
 					if($postField == 'modifieduid') $value = OccurrenceUtil::verifyUser($value, $this->conn);

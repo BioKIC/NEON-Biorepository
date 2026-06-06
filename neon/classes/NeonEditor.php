@@ -677,6 +677,193 @@ class NeonEditor extends UtilitiesFileImport {
 		}
 	}
 
+	//  nomenclatural adjustments 
+
+	public function getNewNEONDetItem($catNum, $sciName, $allCatNum, $fieldSite){
+		$retArr = [];
+		if(empty($catNum) && empty($sciName)){
+			return $retArr;
+		}
+		$joins = [];
+		$where = [];
+		$params = [];
+		$types = '';
+		$catNumArr = [];
+		$needsIdentifierValue = (!empty($catNum) && $allCatNum);
+
+		$sql = 'SELECT DISTINCT o.occid,
+					o.catalogNumber,
+					o.otherCatalogNumbers,
+					o.sciname,
+					CONCAT_WS(" ", o.recordedby, IFNULL(o.recordnumber, o.eventdate)) AS collector,
+					CONCAT_WS(", ", o.country, o.stateprovince, o.county, o.locality) AS locality';
+		if($needsIdentifierValue){
+			$sql .= ', i.identifierValue';
+		}
+		$sql .= ' FROM omoccurrences o ';
+
+		if(!empty($fieldSite) && !empty($sciName)){
+			$joins[] = 'INNER JOIN omoccurdatasetlink ds ON o.occid = ds.occid';
+			$where[] = 'ds.datasetid = ?';
+			$params[] = (int)$fieldSite;
+			$types .= 'i';
+		}
+
+		if(!empty($sciName)){
+			$where[] = 'o.sciname = ?';
+			$params[] = $this->cleanInStr($sciName);
+			$types .= 's';
+		}
+
+		if(!empty($catNum)){
+			$catNumArr = array_filter(array_map('trim', explode(',', $catNum)));
+			if(!empty($catNumArr)){
+				$placeholders = implode(',', array_fill(0, count($catNumArr), '?'));
+				if($allCatNum){
+					$joins[] = 'LEFT JOIN omoccuridentifiers i ON o.occid = i.occid';
+					$where[] = "(o.catalogNumber IN ($placeholders)
+								OR o.otherCatalogNumbers IN ($placeholders)
+								OR i.identifierValue IN ($placeholders))";
+					foreach($catNumArr as $v){
+						$params[] = $v;
+						$types .= 's';
+					}
+					foreach($catNumArr as $v){
+						$params[] = $v;
+						$types .= 's';
+					}
+					foreach($catNumArr as $v){
+						$params[] = $v;
+						$types .= 's';
+					}
+				} else {
+					$where[] = "o.catalogNumber IN ($placeholders)";
+					foreach($catNumArr as $v){
+						$params[] = $v;
+						$types .= 's';
+					}
+				}
+			}
+		}
+
+		if(!empty($joins)){
+			$sql .= ' ' . implode(' ', $joins);
+		}
+
+		if(!empty($where)){
+			$sql .= ' WHERE ' . implode(' AND ', $where);
+		} else {
+			return []; 
+		}
+
+		$stmt = $this->conn->prepare($sql);
+
+		if(!$stmt){
+			throw new Exception("Prepare failed: " . $this->conn->error);
+		}
+
+		if(!empty($params)){
+			$stmt->bind_param($types, ...$params);
+		}
+
+		$stmt->execute();
+		$rs = $stmt->get_result();
+
+		while($r = $rs->fetch_object()){
+
+			if(!isset($retArr[$r->occid])){
+
+				$retArr[$r->occid] = [
+					'sn'   => $r->sciname,
+					'coll' => $r->collector,
+					'loc'  => (strlen($r->locality) > 500)
+								? substr($r->locality, 0, 500)
+								: $r->locality,
+					'cn'   => $r->catalogNumber
+				];
+
+				if(!empty($r->otherCatalogNumbers)){
+					if(!$retArr[$r->occid]['cn'] || in_array($r->otherCatalogNumbers, $catNumArr)){
+						$retArr[$r->occid]['cn'] = $r->otherCatalogNumbers;
+					}
+				}
+			}
+
+			if($needsIdentifierValue && !empty($r->identifierValue)){
+				if(!$retArr[$r->occid]['cn'] || in_array($r->identifierValue, $catNumArr)){
+					$retArr[$r->occid]['cn'] = $r->identifierValue;
+				}
+			}
+		}
+
+		$stmt->close();
+
+		return $retArr;
+	}
+
+	// add nomenclatural adjustment
+
+	public function addNEONNomAdjustment($detArr){
+		$detManager = new OmDeterminations($this->conn);
+		$detManager->setOccid($detArr['occid']);
+		$sql = 'SELECT identificationQualifier,securityStatus,securityStatusReason FROM omoccurdeterminations WHERE occid = ? AND isCurrent = 1';
+		if($stmt = $this->conn->prepare($sql)){
+			$stmt->bind_param('i', $detArr['occid']);
+			$stmt->execute();
+			$rs = $stmt->get_result();
+
+			if($r = $rs->fetch_object()){
+				$detArr['identificationQualifier'] = $r->identificationQualifier;
+				$detArr['securityStatus'] = $r->securityStatus;
+				$detArr['securityStatusReason'] = $r->securityStatusReason;
+			}
+
+			$stmt->close();
+		}
+
+		$success = $detManager->insertNEONDetermination($detArr);
+
+		return [
+			'success' => $success,
+			'error' => $detManager->errorMessage ?? '',
+			'detID' => $detManager->detID ?? null
+		];
+	}
+
+	// Get annotation queue list
+
+	public function getAnnotationColls() {
+		$retArr = array();
+
+		$sql = 'SELECT 
+					o.collid,
+					c.collectionName,
+					COUNT(*) AS cnt
+				FROM omoccurrences o
+				INNER JOIN omoccurdeterminations d
+					ON o.occid = d.occid
+				INNER JOIN omcollections c
+					ON o.collid = c.collid
+				WHERE d.printQueue = 1
+				GROUP BY o.collid, c.collectionName
+				ORDER BY c.collectionName';
+
+		$stmt = $this->conn->prepare($sql);
+		$stmt->execute();
+
+		$result = $stmt->get_result();
+
+		while($row = $result->fetch_assoc()){
+			$retArr[$row['collid']] = array(
+				'collid' => $row['collid'],
+				'collectionName' => $row['collectionName'],
+				'count' => $row['cnt']
+			);
+		}
+
+		return $retArr;
+	}
+
 	//Data set functions
 
 

@@ -4,12 +4,12 @@
     ],
   "/neon/search/index.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
-    { "name": "Biorepository Sample Portal" }
+    { "name": "NEON Biorepository Sample Portal" }
     ],
   "/collections/list.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
-    { "name": "Biorepository Sample Portal", "href": "../neon/search/index.php" },
-    { "name": "Biorepository Sample Portal Results" }
+    { "name": "NEON Biorepository Sample Portal", "href": "../neon/search/index.php" },
+    { "name": "NEON Biorepository Sample Portal Results" }
   ],
   "/projects/browsechecklists.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
@@ -57,6 +57,11 @@
     { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Sample Use Procedures and Requirements", "href": "sampleguidelines.php" },
     { "name": "Sample Use Policy" }
+    ],
+  "/misc/samplerequests.php": [
+    { "name": "Samples & Specimens", "href": "../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Requesting Samples" }
     ],
   "/misc/datasetpublishing.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },

@@ -7,6 +7,49 @@ include_once($SERVER_ROOT.'/neon/classes/OccurrenceHarvester.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT . '/neon/shipment/manifestviewer.php?' . $_SERVER['QUERY_STRING']);
 
+// Log visitor IPs
+$logDir = $SERVER_ROOT . '/content/logs';
+
+if (!is_dir($logDir)) {
+    mkdir($logDir, 0775, true);
+}
+
+$logFile = $logDir . '/manifestviewer_ips.csv';
+
+$ip = $_SERVER['HTTP_X_FORWARDED_FOR']
+    ?? $_SERVER['REMOTE_ADDR']
+    ?? 'UNKNOWN';
+
+$user = $SYMB_UID ?? 'guest';
+
+$row = [
+    date('Y-m-d H:i:s'),
+    $ip,
+    $user
+];
+
+// Create file with header if it doesn't exist
+$fileExists = file_exists($logFile);
+
+$fp = fopen($logFile, 'a');
+
+if ($fp) {
+    flock($fp, LOCK_EX);
+
+    if (!$fileExists) {
+        fputcsv($fp, [
+            'timestamp',
+            'ip',
+            'user'
+        ]);
+    }
+
+    fputcsv($fp, $row);
+
+    flock($fp, LOCK_UN);
+    fclose($fp);
+}
+
 $shipmentPK = array_key_exists('shipmentPK', $_REQUEST) ? filter_var($_REQUEST['shipmentPK'], FILTER_SANITIZE_NUMBER_INT) : '';
 $sampleFilter = isset($_REQUEST['sampleFilter']) ? $_REQUEST['sampleFilter'] : '';
 $quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
@@ -56,12 +99,13 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			var shipmentPK = <?php echo json_encode($shipmentPK); ?>;
 			var table = $('#manifestTable').DataTable({
 				serverSide: true, // turns on processing on the server (i.e., through SQL) vs through the browser
-				pageLength: 500, // default page size
+				pageLength: 300, // default page size
 				ajax: { //what is sent upon an action in the table
 					url: '../rpc/datatables_manifestview.php',
 					type: 'POST',
 					data: function (d) {
 						d.sampleFilter = $('#sampleFilter').val();
+						d.containerFilter = $('#containerFilter').val();
 						d.shipmentPK = shipmentPK;
 					}
 				},
@@ -76,7 +120,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				layout: {
 					topStart: {
 						pageLength: {
-							menu: [10, 25, 50, 500, { label: 'All', value: -1 }] //Change the options in the page length
+							menu: [10, 25, 50, 100, 300, 500, { label: 'All', value: -1 }] //Change the options in the page length
 						},
 						buttons: [
 							{
@@ -164,6 +208,28 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			
 			$('#sampleFilter').on('change', function() {
 				table.ajax.reload();
+			});
+			$('#containerFilter').on('change', function() {
+			
+				const val = $(this).val();
+				const selectAllBox = document.querySelector('input[name="selectall"]');
+			
+				if (val) {
+					table.page.len(-1);
+				} else {
+					table.page.len(100);
+					selectAllBox.checked = false;
+				}
+			
+				table.ajax.reload(function() {
+			
+					if (val) {
+						selectAllBox.checked = true;
+						selectAll(selectAllBox);
+					}
+			
+				});
+			
 			});
 			$('#manifestTable').css('width', '100%');
 			
@@ -402,21 +468,6 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				if (el.name === "selectall") {
 					el.checked = boxesChecked;
 				}
-			}
-		}
-
-		function batchSelectSamples(selectObj){
-			if(selectObj.value != ""){
-				var f = selectObj.form;
-				var selectCnt = 0;
-				for(var i=0;i<f.length;i++){
-					if(f.elements[i].name == "scbox[]") f.elements[i].checked = false;
-				}
-				$("."+selectObj.value).prop('checked', true);
-				$("#selectedMsgDiv").text($("."+selectObj.value).length+' samples have been selected');
-				if(f.batchContainerID && selectObj.name != "batchContainerID") f.batchContainerID.value = "";
-				if(f.batchPlateID && selectObj.name != "batchPlateID") f.batchPlateID.value = "";
-				if(f.batchPlateBarcode && selectObj.name != "batchPlateBarcode") f.batchPlateBarcode.value = "";
 			}
 		}
 
@@ -849,6 +900,8 @@ include($SERVER_ROOT.'/includes/header.php');
 					?>
 				</div>
 				<?php
+				$tagArr = $shipManager->getDynamicPropertyTags();
+				
 				if($shipArr['checkinTimestamp'] || $sampleFilter == 'displaySamples'){
 					$headerList = $shipManager->getSampleHeaders(null, $sampleFilter);
 					?>
@@ -860,7 +913,7 @@ include($SERVER_ROOT.'/includes/header.php');
 									<form id="filterSampleForm" style="">
 										Filter by:
 										<select name="sampleFilter" id="sampleFilter">
-											<option value="">All Records</option>
+											<option value="">All Samples</option>
 											<option value="notCheckedIn">Not Checked In</option>
 											<option value="missingOccid">Missing Occurrences</option>
 											<option value="notAccepted">Not Accepted for Analysis</option>
@@ -871,6 +924,43 @@ include($SERVER_ROOT.'/includes/header.php');
 									</form>
 								</div>
 							</div>
+							<?php
+							if (!empty($tagArr)) {
+							?>
+								<div>
+									<div style="float:right;margin-right: 20px;">
+										<form id="containerIDForm">
+											Select by:
+											<select name="containerFilter" id="containerFilter">
+												<option value="">No Selection</option>
+							
+												<?php
+												foreach ($tagArr as $key => $values) {
+							
+													uksort($values, 'strnatcmp');
+							
+													echo '<optgroup label="' . htmlspecialchars($key) . '">';
+							
+													foreach ($values as $val => $cnt) {
+														$safeVal = htmlspecialchars($val);
+							
+														echo '<option value="dyn:' . $key . ':' . $safeVal . '">'
+															. $safeVal . ' (' . $cnt . ')'
+															. '</option>';
+													}
+							
+													echo '</optgroup>';
+												}
+												?>
+											</select>
+							
+											<input name="shipmentPK" type="hidden" value="<?php echo $shipmentPK; ?>" />
+										</form>
+									</div>
+								</div>
+							<?php
+							}
+							?>
 							<div style="clear:both">
 								<?php
 								if($headerList){
@@ -979,74 +1069,6 @@ include($SERVER_ROOT.'/includes/header.php');
 														</div>
 													</div>
 												</fieldset>
-												<?php
-												$tagArr = array();
-												if($tagArr){
-													?>
-													<fieldset style="margin:5px;float:left">
-														<legend>Batch select based on plate or container IDs</legend>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('containerid',$tagArr)){
-																?>
-																<select name="batchContainerID" onchange="batchSelectSamples(this);">
-																	<option value="">Select Container ID</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$containerArr = $tagArr['containerid'];
-																	ksort($containerArr);
-																	foreach($containerArr as $containerTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$containerTag).'">'.$containerTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('plateid',$tagArr)){
-																?>
-																<select name="batchPlateID" onchange="batchSelectSamples(this);">
-																	<option value="">Select Plate ID</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$plateArr = $tagArr['plateid'];
-																	ksort($plateArr);
-																	foreach($plateArr as $plateTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$plateTag).'">'.$plateTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div style="margin:10px">
-															<?php
-															if(array_key_exists('platebarcode',$tagArr)){
-																?>
-																<select name="batchPlateBarcode" onchange="batchSelectSamples(this);">
-																	<option value="">Select Plate Barcode</option>
-																	<option value="">----------------------</option>
-																	<?php
-																	$plateBarcodeArr = $tagArr['platebarcode'];
-																	ksort($plateBarcodeArr);
-																	foreach($plateBarcodeArr as $barcodeTag => $cnt){
-																		echo '<option value="'.str_replace(' ','_',$barcodeTag).'">'.$barcodeTag.' ('.$cnt.')'.'</option>';
-																	}
-																	?>
-																</select>
-																<?php
-															}
-															?>
-														</div>
-														<div id="selectedMsgDiv" style="margin:10px;color:orange"></div>
-													</fieldset>
-													<?php
-												}
-												?>
 											</div>
 											<?php
 										}

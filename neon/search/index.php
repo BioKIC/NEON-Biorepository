@@ -15,7 +15,6 @@ $siteData = new DatasetsMetadata();
 	<!-- end neon edit -->
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
-	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
 	?>
 	<link href="<?= $CLIENT_ROOT; ?>/css/jquery-ui.min.css" type="text/css" rel="stylesheet">
 	<script src="<?= $CLIENT_ROOT ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
@@ -49,6 +48,19 @@ $siteData = new DatasetsMetadata();
 		  }
 		});
 	  });
+	});
+
+	$(function () {
+		$("#eventdate1, #eventdate2").datepicker({
+			dateFormat: "yy-mm-dd",
+			changeMonth: true,
+			changeYear: true,
+			yearRange: "2008:<?= date('Y') ?>",
+	
+			onSelect: function () {
+				updateChip();
+			}
+		});
 	});
 	</script>
 
@@ -177,7 +189,7 @@ $siteData = new DatasetsMetadata();
 						<div id="search-form-colls">
 							<section>
 								<!-- Open NEON Collections modal -->
-								<label class="accordion-subheader neon-modal-open">
+								<label class="accordion-subheader neon-modal-open" data-modal-id="biorepo-collections-list">
 								<input
 								  id="all-neon-colls-quick"
 								  data-chip="All Sample Types at the Biorepository"
@@ -249,7 +261,7 @@ $siteData = new DatasetsMetadata();
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
 						<div class="modal-content">
-							<button id="neon-modal-close" class="btn" style="width:auto !important">Accept and close</button>
+							<button id="neon-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
 							<div id="colls-modal">
 								<div>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
@@ -341,71 +353,13 @@ $siteData = new DatasetsMetadata();
 					<!-- Accordion selector -->
 					<input type="checkbox" id="locality" class="accordion-selector" />
 					<!-- Accordion header -->
-					<label for="locality" class="accordion-header">Domains & Sites</label>
+					<label for="locality" class="accordion-header neon-modal-open" data-modal-id="domains-sites-modal">Domains & Sites</label>
 					<!-- Accordion content -->
-					<div class="content">
-						<div id="search-form-locality">
-							<ul id="site-list"><li class='Mui'><input id="all-sites" data-chip="All Domains & Sites" type="checkbox" class="all-selector" checked="" data-form-id='search-form-locality'><span class="material-icons expansion-icon">indeterminate_check_box</span><span>All NEON Domains and Sites</span>
-								<?php if ($domainsArr = $siteData->getNeonDomains()) {
-									echo '<ul>';
-									foreach ($domainsArr as $domain) {
-										echo "<li class='Mui'><input type='checkbox' id='{$domain["domainnumber"]}' class='all-selector child' name='datasetid' value='{$domain["datasetid"]}' checked=''><span class='material-icons expansion-icon'>add_box</span><span class='group-label'>{$domain["domainnumber"]} - {$domain["domainname"]}</span>";
-										echo "<ul class='collapsed'>";
-										// ECHO SITES PER DOMAINS
-										$sitesArr = $siteData->getNeonSitesByDom($domain["domainnumber"]);
-										if ($sitesArr) {
-											foreach ($sitesArr as $site) {
-												echo "<li class='Mui'>";
-												echo "<input type='checkbox' id='{$site["siteid"]}' name='datasetid' value='{$site["datasetid"]}' class='child' data-domain='{$domain["domainnumber"]}' checked>";
-												echo "<span class='leaf-label ml-1 child'>({$site["siteid"]}) {$site["sitename"]}</span>";
-												echo " <a href='https://www.neonscience.org/field-sites/{$site["siteid"]}' target='_blank' rel='noopener noreferrer' title='View Site Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
-												echo "</li>";
-
-											}
-										};
-										echo "</ul>";
-										echo "</li>";
-									}
-									echo '</ul>';
-								}; ?>
-								</li>
-							</ul>
-							<div>
-								<div>
-									<div class="input-text-container">
-										<label for="state" class="input-text--outlined">
-											<input type="text" name="state" id="state" data-chip="State">
-											<span data-label="State"></span></label>
-										<span class="assistive-text">Separate multiple with commas.</span>
-									</div>
-									<div class="input-text-container">
-										<label for="county" class="input-text--outlined">
-											<input type="text" name="county" id="county" data-chip="County">
-											<span data-label="County"></span></label>
-										<span class="assistive-text">Separate multiple with commas.</span>
-									</div>
-									<div class="input-text-container">
-										<label for="local" class="input-text--outlined">
-											<input type="text" name="local" id="local" data-chip="Locality">
-											<span data-label="Locality"></span></label>
-										<span class="assistive-text" style="line-height:1.7em">Separate multiple with commas. Accepts NEON Domain and/or Site names and codes.</span>
-									</div>
-								</div>
-								<div class="grid grid--half">
-									<div class="input-text-container">
-										<label for="elevlow" class="input-text--outlined">
-											<input type="number" step="any" name="elevlow" id="elevlow" data-chip="Min Elevation">
-											<span data-label="Minimum Elevation"></span></label>
-										<span class="assistive-text">Meters</span>
-									</div>
-									<div class="input-text-container">
-										<label for="elevhigh" class="input-text--outlined">
-											<input type="number" step="any" name="elevhigh" id="elevhigh" data-chip="Max Elevation">
-											<span data-label="Maximum Elevation"></span></label>
-										<span class="assistive-text">Meters</span>
-									</div>
-								</div>
-							</div>
+					<div class="modal" id="domains-sites-modal">
+						<div class="modal-content">
+							<button id="domains-sites-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
+				
+							<div id="collection-search-map"></div>
 						</div>
 					</div>
 				</section>
@@ -420,15 +374,22 @@ $siteData = new DatasetsMetadata();
 						<div id="search-form-coll-event">
 							<div class="input-text-container">
 								<label for="eventdate1" class="input-text--outlined">
-									<input type="text" name="eventdate1" data-chip="Event Date Start">
-									<span data-label="Start Date"></span></label>
-								<span class="assistive-text">Single date or start date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+									<input type="text" id="eventdate1" name="eventdate1" data-chip="Event Date Start">
+									<span data-label="Start Date"></span>
+								</label>
+								<span class="assistive-text">
+									Single date or start date of range.
+								</span>
 							</div>
+					
 							<div class="input-text-container">
 								<label for="eventdate2" class="input-text--outlined">
-									<input type="text" name="eventdate2" data-chip="Event Date End">
-									<span data-label="End Date"></span></label>
-								<span class="assistive-text">End date of range (e.g. YYYY, YYYY-MM-DD, or similar).</span>
+									<input type="text" id="eventdate2" name="eventdate2" data-chip="Event Date End">
+									<span data-label="End Date"></span>
+								</label>
+								<span class="assistive-text">
+									End date of range.
+								</span>
 							</div>
 						</div>
 					</div>
@@ -445,9 +406,14 @@ $siteData = new DatasetsMetadata();
 							<div>
 								<div class="text-area-container">
 									<label for="" class="text-area--outlined">
-										<textarea name="catnum" data-chip="Identifier" style="width: 100%" placeholder="e.g., Catalog Number, SampleID, Barcode, MaterialSampleID"></textarea>
+										<textarea name="catnum" data-chip="Identifier" style="width: 100%"
+												  placeholder="Examples:&#10; Catalog Number: NEON007VA&#10; SampleID: NEON.BET.D06.002579&#10;           STEI.20250925.R11242.E&#10; Barcode: A00000020232&#10;"
+												  ></textarea>
 										<span data-label="Identifiers"></span></label>
-									<span class="assistive-text">Separate multiple with commas or new lines.</span>
+									<span class="assistive-text">
+										Separate multiple values with commas or new lines. 
+										Use * as a wildcard (e.g., MOS.D05* or *20150910.SURBER.3*).
+									</span>
 								</div>
 								<div style="display:none">
 									<input type="checkbox" name="includeothercatnum" id="includeothercatnum" value="1" checked>

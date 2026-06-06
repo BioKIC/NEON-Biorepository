@@ -463,6 +463,63 @@ class ShipmentManager{
 		return $retArr;
 	}
 
+	public function getDynamicPropertyTags() {
+		$tagArr = [];
+	
+		if (!$this->shipmentPK) return $tagArr;
+	
+		$sql = "
+		SELECT 'containerID' AS propKey,
+			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.containerID')) AS propValue,
+			   COUNT(*) as cnt
+		FROM NeonSample
+		WHERE shipmentPK = ?
+		  AND JSON_EXTRACT(dynamicProperties, '$.containerID') IS NOT NULL
+		GROUP BY propValue
+	
+		UNION ALL
+	
+		SELECT 'plateID' AS propKey,
+			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.plateID')) AS propValue,
+			   COUNT(*) as cnt
+		FROM NeonSample
+		WHERE shipmentPK = ?
+		  AND JSON_EXTRACT(dynamicProperties, '$.plateID') IS NOT NULL
+		GROUP BY propValue
+		
+		UNION ALL
+	
+		SELECT 'plateBarcode' AS propKey,
+			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.plateBarcode')) AS propValue,
+			   COUNT(*) as cnt
+		FROM NeonSample
+		WHERE shipmentPK = ?
+		  AND JSON_EXTRACT(dynamicProperties, '$.plateID') IS NOT NULL
+		GROUP BY propValue
+		";
+	
+		$stmt = $this->conn->prepare($sql);
+		$stmt->bind_param("iii", $this->shipmentPK, $this->shipmentPK, $this->shipmentPK);
+		$stmt->execute();
+		$result = $stmt->get_result();
+	
+		while ($row = $result->fetch_assoc()) {
+			if (!$row['propValue']) continue;
+	
+			$key = $row['propKey'];
+			$val = $row['propValue'];
+			$cnt = $row['cnt'];
+	
+			if (!isset($tagArr[$key])) {
+				$tagArr[$key] = [];
+			}
+	
+			$tagArr[$key][$val] = $cnt;
+		}
+	
+		return $tagArr;
+	}
+	
 	//Check-in functions
 	public function checkinShipment($postArr){
 		$sql = 'UPDATE NeonShipment '.

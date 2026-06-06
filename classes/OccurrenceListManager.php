@@ -123,43 +123,6 @@ class OccurrenceListManager extends OccurrenceManager{
 		return $retArr;
 	}
 
-	//NEON edit
-	private function setIdentifiers($occArr, &$retArr): void {
-		$sql = 'SELECT occid, identifierName, identifierValue 
-				FROM omoccuridentifiers 
-				WHERE occid IN('.implode(',', $occArr).') 
-				AND identifierName IN("NEON sampleID", "NEON sampleID Hash", "NEON sampleCode (barcode)")';
-	
-		$rs = $this->conn->query($sql);
-	
-		$isAdmin = (
-			!empty($GLOBALS['IS_ADMIN']) ||
-			!empty($GLOBALS['USER_RIGHTS']['CollAdmin']) ||
-			!empty($GLOBALS['USER_RIGHTS']['CollEditor'])
-		);
-	
-		while($r = $rs->fetch_object()){
-			$occid = $r->occid;
-	
-			if($r->identifierName === 'NEON sampleID'){
-				if(!isset($retArr[$occid]['sampleID'])){
-					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
-				}
-			}
-			elseif($r->identifierName === 'NEON sampleID Hash'){
-				if(!$isAdmin){
-					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
-				}
-			}
-			elseif($r->identifierName === 'NEON sampleCode (barcode)'){
-				$retArr[$occid]['sampleCode'] = $this->cleanOutStr($r->identifierValue);
-			}
-		}
-	
-		$rs->free();
-	}
-	//end NEON edit
-
 	private function setImages($occArr, &$retArr): void {
 		$sql = 'SELECT occid, thumbnailurl, mediaType FROM media WHERE occid IN('.implode(',',$occArr).') ORDER BY occid, sortOccurrence';
 		$rs = $this->conn->query($sql);
@@ -211,6 +174,43 @@ class OccurrenceListManager extends OccurrenceManager{
 		}
 	}
 
+	//neon edit; add function
+	private function setIdentifiers($occArr, &$retArr): void {
+		$sql = 'SELECT occid, identifierName, identifierValue 
+				FROM omoccuridentifiers 
+				WHERE occid IN('.implode(',', $occArr).') 
+				AND identifierName IN("NEON sampleID", "NEON sampleID Hash", "NEON sampleCode (barcode)")';
+	
+		$rs = $this->conn->query($sql);
+	
+		$isAdmin = (
+			!empty($GLOBALS['IS_ADMIN']) ||
+			!empty($GLOBALS['USER_RIGHTS']['CollAdmin']) ||
+			!empty($GLOBALS['USER_RIGHTS']['CollEditor'])
+		);
+	
+		while($r = $rs->fetch_object()){
+			$occid = $r->occid;
+	
+			if($r->identifierName === 'NEON sampleID'){
+				if(!isset($retArr[$occid]['sampleID'])){
+					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
+				}
+			}
+			elseif($r->identifierName === 'NEON sampleID Hash'){
+				if(!$isAdmin){
+					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
+				}
+			}
+			elseif($r->identifierName === 'NEON sampleCode (barcode)'){
+				$retArr[$occid]['sampleCode'] = $this->cleanOutStr($r->identifierValue);
+			}
+		}
+	
+		$rs->free();
+	}
+	//end neon edit
+	
 	//Misc support functions
 	public function getDatasetArr(){
 		$retArr = array();
