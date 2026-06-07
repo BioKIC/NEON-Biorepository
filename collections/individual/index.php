@@ -370,7 +370,7 @@ $traitArr = $indManager->getTraitArr();
 				<ul>
 					<li><a href="#occurtab"><span><?php echo (isset($LANG['DETAILS']) ? $LANG['DETAILS'] : 'Details'); ?></span></a></li>
 					<?php
-					if($displayMap) echo '<li><a href="#maptab"><span>' . (isset($LANG['MAP']) ? $LANG['MAP'] : 'Map') . '</span></a></li>';
+					//if($displayMap) echo '<li><a href="#maptab"><span>' . (isset($LANG['MAP']) ? $LANG['MAP'] : 'Map') . '</span></a></li>';
 					if($genticArr) echo '<li><a href="#genetictab"><span>' . (isset($LANG['GENETIC']) ? $LANG['GENETIC'] : 'Genetic') . '</span></a></li>';
 					if($dupClusterArr) echo '<li><a href="#dupestab-div"><span>' . (isset($LANG['DUPLICATES']) ? $LANG['DUPLICATES'] : 'Duplicates') . '</span></a></li>';
 					?>
