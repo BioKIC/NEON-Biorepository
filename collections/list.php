@@ -273,7 +273,7 @@ $_SESSION['citationvar'] = $searchVar;
 									<i class="fa-solid fa-sort" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
 									Sort
 									<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-										<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
+										<i class="fa-solid fa-chevron-down" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
 									</span>
 								</span>
 								<span class="MuiTouchRipple-root"></span>
