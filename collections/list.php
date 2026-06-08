@@ -126,6 +126,8 @@ $_SESSION['citationvar'] = $searchVar;
 
 	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=<?= date('YmdHis'); ?>" type="text/css" rel="stylesheet" />
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.min.css" type="text/css" rel="stylesheet">
+	<link rel="stylesheet"
+		  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript">
@@ -244,37 +246,55 @@ $_SESSION['citationvar'] = $searchVar;
 				<!-- end neon edit -->
 			</ul>
 			<div id="speclist">
+				<div id="biorepo-coll-type"></div>
 				<div id="queryrecords">
-					<div style="float:right;"> <!--buttons div-->
+					<div style="display:flex; justify-content: flex-end; margin-top:16px;"> <!--buttons div-->
 						<?php
 						if ($SYMB_UID) {
 						?>
-							<span>
-								<button class="icon-button" onclick="displayDatasetTools()" aria-label="<?= $LANG['DATASET_MANAGEMENT'] ?>" title="<?= $LANG['DATASET_MANAGEMENT'] ?>">
-									<svg style="width:1.3em;height:1.3em;" alt="<?php echo $LANG['IMG_DATASET_MANAGEMENT']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-										<path d="M280-280h160v-160H280v160Zm240 0h160v-160H520v160ZM280-520h160v-160H280v160Zm240 0h160v-160H520v160ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z" />
-									</svg>
+							<span style="margin-right: 8px">
+								<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" onclick="displayDatasetTools()" type="button">
+									<span class="MuiButton-label" style="font-size: 0.55rem;">
+										<i class="fa-solid fa-table-cells-large" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
+										Dataset Management
+										<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+											<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
+										</span>
+									</span>
+									<span class="MuiTouchRipple-root"></span>
 								</button>
 							</span>
 						<?php
 						}
 						?>
-						<span>
-							<button class="icon-button" onclick="toggleElement('#sort-div', 'block')" title="<?= $LANG['DISPLAY_SORT'] ?>" aria-label="<?= $LANG['DISPLAY_SORT'] ?>">
-								<img src="<?= $CLIENT_ROOT ?>/images/sort-cream.svg" style="width:1.3em;height:1.3em" alt="<?= $LANG['DISPLAY_SORT'] ?>">
+						<span style="margin-right: 8px">
+							<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="button" onclick="toggleElement('#sort-div', 'block')">
+								<span class="MuiButton-label" style="font-size: 0.55rem;">
+									<i class="fa-solid fa-sort" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
+									Sort
+									<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+										<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
+									</span>
+								</span>
+								<span class="MuiTouchRipple-root"></span>
 							</button>
 						</span>
-						<span>
+						<span style="margin-right: 8px">
 							<form class="button-form" action="listtabledisplay.php" method="post">
 								<input name="comingFrom" type="hidden" value="<?= $comingFrom; ?>" />
 								<input name="sortfield1" type="hidden" value="<?= htmlspecialchars($sortField1, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortfield2" type="hidden" value="<?= htmlspecialchars($sortField2, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortorder" type="hidden" value="<?= $sortOrder ?>" />
 								<input name="searchvar" type="hidden" value="<?php echo $searchVar ?>" />
-								<button class="icon-button" aria-label="<?= $LANG['TABLE_DISPLAY'] ?>" title="<?= $LANG['TABLE_DISPLAY'] ?>">
-									<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_TABLE_DISPLAY'] ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-										<path d="M120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200Zm80-400h560v-160H200v160Zm213 200h134v-120H413v120Zm0 200h134v-120H413v120ZM200-400h133v-120H200v120Zm427 0h133v-120H627v120ZM200-200h133v-120H200v120Zm427 0h133v-120H627v120Z" />
-									</svg>
+								<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
+									<span class="MuiButton-label" style="font-size: 0.55rem;">
+										<i class="fa-solid fa-table" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
+										Table Display
+										<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+											<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
+										</span>
+									</span>
+									<span class="MuiTouchRipple-root"></span>
 								</button>
 							</form>
 						</span>
@@ -282,27 +302,30 @@ $_SESSION['citationvar'] = $searchVar;
 							<!--neon edit-->
 							<form class="button-form" action="download/neonindex.php" method="post" onsubmit="targetPopup(this)">
 							<!--end neon edit-->
-								<button class="icon-button" aria-label="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>" title="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>">
-									<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_DWNL_DATA'] ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-										<path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-									</svg>
+								<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
+									<span class="MuiButton-label" style="font-size: 0.55rem;">
+										<i class="fa-solid fa-download" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
+										Download Records
+										<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+											<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
+										</span>
+									</span>
+									<span class="MuiTouchRipple-root"></span>
 								</button>
 								<input name="searchvar" type="hidden" value="<?= $searchVar ?>" />
 								<input name="dltype" type="hidden" value="specimen" />
 							</form>
 						</span>
-						<span>
+<!--						<span>
 							<button class="icon-button" onclick="copyUrl()" aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
 								<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_COPY']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
 									<path d="M440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm200 160v-80h160q50 0 85-35t35-85q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480q0 83-58.5 141.5T680-280H520Z" />
 								</svg>
 							</button>
-						</span>
+						</span>-->
 					</div>
-					<div id="biorepo-coll-type"></div>
 					<div id="sort-div" style="display:<?= ($sortField1 ? 'block' : 'none') ?>">
-						<section class="fieldset-like">
-							<h3><span><?= $LANG['SORT'] ?></span></h3>
+						<section style="margin: 2rem 0 1rem 1rem;">
 							<form name="sortform" action="list.php" method="post">
 								<div id="sort-inner-div">
 									<div>
@@ -349,7 +372,12 @@ $_SESSION['citationvar'] = $searchVar;
 									</div>
 									<div>
 										<input name="searchvar" type="hidden" value="<?= $searchVar ?>">
-										<button name="formsubmit" type="submit"><?= $LANG['SORT'] ?></button>
+										<button name="formsubmit" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
+											<span class="MuiButton-label" style="font-size: 0.55rem;">
+												Sort
+											</span>
+											<span class="MuiTouchRipple-root"></span>
+										</button>
 									</div>
 								</div>
 							</form>
