@@ -94,7 +94,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<h2 class="anchor" id="sample-use-policy">Sample Use Policy</h2>
 		
 			<p>
-			The NEON Biorepository Sample Use Policy outlines requirements for use, handling, return, and reporting of samples. The policy also indicates that all derived data and media must be shared with the NEON Biorepository and that the ownership of images and media resulting from samples will be retained by NEON.
+			The NEON Biorepository Sample Use Policy outlines requirements for use, handling, return, and reporting of samples. The policy also indicates that all derived data and media must be shared with the NEON Biorepository for publication in the NEON Sample Portal and that the ownership of images and media resulting from samples will be retained by the NEON Biorepository.
 			<a href="samplepolicy.php">Read the full Sample Use Policy</a>.
 			</p>
 		</article>
