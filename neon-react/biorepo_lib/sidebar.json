@@ -57,7 +57,8 @@
           "match": [
             "misc/sampleguidelines.php",
             "misc/cite.php",
-            "misc/samplepolicy.php"
+            "misc/samplepolicy.php",
+            "misc/samplerequests.php"
             ]
         }
     ]

@@ -778,7 +778,9 @@ span.accent-color-darker {
           box-shadow: 0 5px 8px 0;
 }
 
-.modal button {
+.modal-close {
+  position: relative;
+  z-index: 10000;
   float: right;
 }
 

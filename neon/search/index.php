@@ -189,7 +189,7 @@ $siteData = new DatasetsMetadata();
 						<div id="search-form-colls">
 							<section>
 								<!-- Open NEON Collections modal -->
-								<label class="accordion-subheader neon-modal-open">
+								<label class="accordion-subheader neon-modal-open" data-modal-id="biorepo-collections-list">
 								<input
 								  id="all-neon-colls-quick"
 								  data-chip="All Sample Types at the Biorepository"
@@ -261,7 +261,7 @@ $siteData = new DatasetsMetadata();
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
 						<div class="modal-content">
-							<button id="neon-modal-close" class="btn" style="width:auto !important">Accept and close</button>
+							<button id="neon-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
 							<div id="colls-modal">
 								<div>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
@@ -353,10 +353,14 @@ $siteData = new DatasetsMetadata();
 					<!-- Accordion selector -->
 					<input type="checkbox" id="locality" class="accordion-selector" />
 					<!-- Accordion header -->
-					<label for="locality" class="accordion-header">Domains & Sites</label>
+					<label for="locality" class="accordion-header neon-modal-open" data-modal-id="domains-sites-modal">Domains & Sites</label>
 					<!-- Accordion content -->
-					<div class="content">
-						<div id="collection-search-map"></div>
+					<div class="modal" id="domains-sites-modal">
+						<div class="modal-content">
+							<button id="domains-sites-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
+				
+							<div id="collection-search-map"></div>
+						</div>
 					</div>
 				</section>
 				<!-- Collecting Event -->

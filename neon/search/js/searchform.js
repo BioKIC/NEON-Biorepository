@@ -982,7 +982,11 @@ document
       }
 
       event.preventDefault();
-      openModal('#biorepo-collections-list');
+      const modalId = this.dataset.modalId;
+
+      if (modalId) {
+        openModal(`#${modalId}`);
+      }
     });
   });
 // When checking "all neon collections" box, toggle checkboxes in modal
@@ -1009,6 +1013,12 @@ document
       tabSelected.getElementsByClassName('all-neon-colls')[0].checked;
     allNeon.checked = isAllSelected;
     updateChip();
+  });
+document
+  .getElementById('domains-sites-modal-close')
+  .addEventListener('click', function (event) {
+    event.preventDefault();
+    closeModal('#domains-sites-modal');
   });
 //////// Binds Update chip on event change
 const formInputs = document.querySelectorAll('.content input, .content textarea, #search-form-advanced-search select');

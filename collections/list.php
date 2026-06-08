@@ -221,13 +221,13 @@ $_SESSION['citationvar'] = $searchVar;
 						<span>Records</span>
 					</a>
 				</li>
-				<li>
+				<!--<li>-->
 					<!-- neon edit: convert map to JSON tab thus reducing load on this page -->
-					<a id="maptablink" href="maptab.php?<?= $searchVar ?>">
-						<span>Map</span>
-					</a>
+					<!--<a id="maptablink" href="maptab.php?<?= $searchVar ?>">-->
+						<!--<span>Map</span>-->
+					<!--</a>-->
 					<!-- end neon edit -->
-				</li>
+				<!--</li>-->
 				<!-- neon edit: Add new Image tab -->
 				<li>
 					<a id="imagesdiv" href="imagetab.php?<?= $searchVar . '&imagepage=' . $imagePageNumber ?>">
