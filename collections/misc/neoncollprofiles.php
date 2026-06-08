@@ -1,6 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT . '/content/lang/collections/misc/collprofiles.' . $LANG_TAG . '.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceCollectionProfile.php');
