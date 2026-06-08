@@ -595,8 +595,6 @@ $(function () {
 								</div>
 							</div>
 						</div>
-					</section>
-					<!-- Properties -->
 					<section>
 						<!-- Accordion selector -->
 						<input type="checkbox" id="properties" class="accordion-selector"/>
@@ -605,17 +603,32 @@ $(function () {
 						<!-- Accordion content -->
 						<div class="content">
 							<div id="search-form-properties">
-								<div>
-									<input type="checkbox" name="internal" value=1 data-chip="Internal request">
+								<div>										
 									<label for="internal">Internal request</label>
+									<select name="internal" id="internal" data-chip=""
+										onchange="this.dataset.chip = this.value ? 'Internal request: ' + this.options[this.selectedIndex].text : ''">
+										<option value="" selected>All</option>
+										<option value="1">Yes only</option>
+										<option value="0">No only</option>
+									</select>
 								</div>
 								<div>
-									<input type="checkbox" name="outreach" value=1 data-chip="Outreach/Education">
 									<label for="outreach">Primarily for outreach/education</label>
+									<select name="outreach" id="outreach" data-chip=""
+										onchange="this.dataset.chip = this.value ? 'Outreach/Education: ' + this.options[this.selectedIndex].text : ''">
+										<option value="" selected>All</option>
+										<option value="1">Yes only</option>
+										<option value="0">No only</option>
+									</select>
 								</div>
 								<div>
-									<input type="checkbox" name="aiml" value=1 data-chip="Involves AI/ML">
 									<label for="aiml">Involves AI/ML</label>
+									<select name="aiml" id="aiml" data-chip=""
+										onchange="this.dataset.chip = this.value ? 'Involves AI/ML: ' + this.options[this.selectedIndex].text : ''">
+										<option value="" selected>All</option>
+										<option value="1">Yes only</option>
+										<option value="0">No only</option>
+									</select>
 								</div>
 							</div>
 						</div>

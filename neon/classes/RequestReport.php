@@ -237,21 +237,30 @@
 
     // properties filters
 
-    if (!empty($params['aiml'])) {
+    if ($params['aiml'] !== '') {
         if ($params['aiml'] == 1) {
           $where[] = "i.usesAIML = 'yes' ";
         }
-    }
-
-    if (!empty($params['outreach'])) {
-        if ($params['outreach'] == 1) {
-          $where[] = "i.outreach = 'yes' ";
+        elseif($params['aiml'] == 0) {
+          $where[] = "i.usesAIML = 'no' ";
         }
     }
 
-    if (!empty($params['internal'])) {
+    if ($params['outreach'] !== '') {
+        if ($params['outreach'] == 1) {
+          $where[] = "i.outreach = 'yes' ";
+        }
+        elseif ($params['outreach'] == 0) {
+          $where[] = "i.outreach = 'no' ";
+        }
+    }
+
+    if ($params['internal'] !== '') {
         if ($params['internal'] == 1) {
           $where[] = "i.internal = 'yes' ";
+        }
+        elseif ($params['internal'] == 0) {
+          $where[] = "i.internal = 'no' ";
         }
     }
 
