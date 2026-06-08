@@ -153,7 +153,7 @@ function updateChip(e) {
   ).checked;
   let biorepoChecked = Array.from(
     document.querySelectorAll(
-      `#${getCriterionSelected()} input[name="collid[]"]:checked`
+      `#${getCriterionSelected()} input[name="db"]:checked`
     )
   );
   if (!biorepoAllChecked && biorepoChecked.length > 0) {
@@ -180,11 +180,11 @@ function updateChip(e) {
     addChip(getCollsChips('ext-collections-list', 'Some Ext NEON Colls'));
   }
   
-  // then go through remaining inputs (exclude collid and datasetid)
+  // then go through remaining inputs (exclude db and datasetid)
   // go through entire form and find selected items
   formInputs.forEach((item) => {
         if (
-          item.name !== 'collid[]' &&
+          item.name !== 'db' &&
           item.name !== 'datasetid' &&
           !item.name.startsWith('status')
         ) {      
@@ -456,10 +456,10 @@ function getCriterionSelected() {
  * Uses active tab in modal
  */
 function getCollsSelected() {
-  let query = '#' + getCriterionSelected() + ' input[name="collid[]"]:checked';
+  let query = '#' + getCriterionSelected() + ' input[name="db"]:checked';
   let selectedInModal = Array.from(document.querySelectorAll(query));
   let selectedInForm = Array.from(
-    document.querySelectorAll('#search-form-colls input[name="collid[]"]:checked')
+    document.querySelectorAll('#search-form-colls input[name="db"]:checked')
   );
   let collsArr = selectedInForm.concat(selectedInModal);
   return collsArr;
