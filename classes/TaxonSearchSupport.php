@@ -62,7 +62,7 @@ class TaxonSearchSupport{
 				$sql = 'SELECT t.tid, t.sciname FROM taxa t WHERE t.sciname LIKE "'.$this->queryString.'%"';
 				
 				if($this->occurrenceOnly){
-					$sql .= ' AND (t.tid IN (SELECT tidInterpreted FROM omoccurrences) OR t.tid IN (SELECT DISTINCT e.parenttid FROM taxaenumtree e INNER JOIN omoccurrences o ON o.tidInterpreted = e.tid))';
+					$sql .= ' AND (t.tid IN (SELECT tidInterpreted FROM omoccurrences) OR t.tid IN (SELECT DISTINCT e.parenttid FROM taxaenumtree e INNER JOIN omoccurrences o ON o.tidInterpreted = e.tid) OR t.tid IN (SELECT DISTINCT s.tidaccepted FROM taxstatus s INNER JOIN omoccurrences o ON o.tidInterpreted = s.tid) OR t.tid IN (SELECT DISTINCT s.tid FROM taxstatus s INNER JOIN omoccurrences o ON o.tidInterpreted = s.tidaccepted))';
 				}
 				
 				$sql .= ' LIMIT 30';
