@@ -147,13 +147,13 @@ function updateChip(e) {
   if (dSChecked.length > 0 && dSChecked.length < dSList.length) {
     addChip(getDomainsSitesChips());
   }
-  // if any biorepo colls are selected (except for "all"), then add chip
+
   let biorepoAllChecked = document.getElementById(
     'all-neon-colls-quick'
   ).checked;
   let biorepoChecked = Array.from(
     document.querySelectorAll(
-      `#${getCriterionSelected()} input[name="db"]:checked`
+      `#${getCriterionSelected()} input[name="collid[]"]:checked`
     )
   );
   if (!biorepoAllChecked && biorepoChecked.length > 0) {
@@ -184,7 +184,6 @@ function updateChip(e) {
   // go through entire form and find selected items
   formInputs.forEach((item) => {
         if (
-          item.name !== 'db' &&
           item.name !== 'datasetid' &&
           !item.name.startsWith('status')
         ) {      
@@ -449,20 +448,6 @@ function uncheckAll(element) {
 function getCriterionSelected() {
   return collsModal.querySelector('.tab.tab-active input[type=radio]:checked')
     .value;
-}
-
-/**
- * Finds all collections selected
- * Uses active tab in modal
- */
-function getCollsSelected() {
-  let query = '#' + getCriterionSelected() + ' input[name="db"]:checked';
-  let selectedInModal = Array.from(document.querySelectorAll(query));
-  let selectedInForm = Array.from(
-    document.querySelectorAll('#search-form-colls input[name="db"]:checked')
-  );
-  let collsArr = selectedInForm.concat(selectedInModal);
-  return collsArr;
 }
 
 /**

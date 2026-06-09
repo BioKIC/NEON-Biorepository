@@ -9,12 +9,9 @@ header("Content-Type: text/html; charset=".$CHARSET);
 $reportManager = new RequestReportManager();
 $utilities = new Utilities();
 $inquiriesArr = $reportManager->filterSearchInquiries($_POST);
+$ids = array_column($inquiriesArr, 'requestid');
+$idsString = implode(',', $ids ?: []);
 $headerArr = ['id','researcher','date','title','status','samples'];
-
-// echo '<pre>';
-// print_r($_POST);
-// echo '</pre>';
-// exit;
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
@@ -31,7 +28,6 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
     <link rel="stylesheet" href="css/tables.css">
 		<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
-        <link rel="stylesheet" href="css/tables.css">
 
 <style>
     .table-container {
@@ -74,6 +70,28 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
         border: 1px solid #ccc;
         border-radius: 4px;
     }
+
+    .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    }
+
+    .toolbar form {
+        margin: 0;
+    }
+
+    .toolbar button {
+        white-space: nowrap;
+    }
+
+    #filterInput {
+        margin-left: auto;
+        width: 300px;
+        max-width: 100%;
+    }
 </style>
 
 	</head>
@@ -86,17 +104,62 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
 	<?php
 	if($isEditor){
 	?>
+        <h1>Sample Use Inquiries</h1>
+            <div class="toolbar">
+
+                <form action="inquirysearchexporthandler.php" method="post">
+                    
+                    <input type="hidden" name="ids"
+                        value="<?= htmlspecialchars($idsString) ?>" />
+                    <input type="hidden" name="exportTask" value="inquiries" />
+                    <button type="submit" name="action" value="inquiries">
+                        Export Inquiries
+                    </button>
+                </form>
+
+                <form action="inquirysearchexporthandler.php" method="post">
+                    <input type="hidden" name="ids"
+                        value="<?= htmlspecialchars($idsString) ?>" />
+                    <input type="hidden" name="exportTask" value="samples" />
+                    <button type="submit" name="action" value="samples">
+                        Export Samples
+                    </button>
+                </form>
+
+                <form action="inquirysearchexporthandler.php" method="post">
+                    <input type="hidden" name="ids"
+                        value="<?= htmlspecialchars($idsString) ?>" />
+                    <input type="hidden" name="exportTask" value="occurrences" />
+                    <button type="submit" name="action" value="occurrences">
+                        Export Occurrences
+                    </button>
+                </form>
+
+                <form action="inquirysearchexporthandler.php" method="post">
+                    <input type="hidden" name="ids"
+                        value="<?= htmlspecialchars($idsString) ?>" />
+                    <input type="hidden" name="exportTask" value="materialsamples" />
+                    <button type="submit" name="action" value="materialsamples">
+                        Export Material Samples
+                    </button>
+                </form>
+            </div>    
+            
+            <input type="text" id="filterInput" placeholder="Search inquiries...">
+
         <?php
-        echo '<h1>Sample Use Inquiries</h1>';
 
-        echo '<input type="text" id="filterInput" placeholder="Search inquiries...">';
+        if (!empty($inquiriesArr)) {
+            foreach ($inquiriesArr as &$row) {
+                unset($row['requestid']);
+            }
+            unset($row);
 
-        if(!empty($inquiriesArr)){
             echo '<div class="table-container">';
             $inquiriesTable = $utilities->htmlTable($inquiriesArr, $headerArr);
             echo $inquiriesTable;
             echo '</div>';
-        };
+        }
 
 	} else {
         echo '<h3>You do not have permissions to view this page.</h3>';

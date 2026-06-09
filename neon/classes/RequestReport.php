@@ -134,15 +134,15 @@
               ? array_filter($input['status'])
               : [],
 
-          'datasetid' => isset($input['datasetid'])
-              ? (is_array($input['datasetid']) 
-                  ? array_filter($input['datasetid']) 
-                  : array_filter(explode(',', $input['datasetid'])))
-              : [],
+        //   'datasetid' => isset($input['datasetid'])
+        //       ? (is_array($input['datasetid']) 
+        //           ? array_filter($input['datasetid']) 
+        //           : array_filter(explode(',', $input['datasetid'])))
+        //       : [],
 
-          'state' => isset($input['state']) ? trim($input['state']) : '',
-          'local' => isset($input['local']) ? trim($input['local']) : '',
-          'taxa' => isset($input['taxa']) ? trim($input['taxa']) : '',
+        //   'state' => isset($input['state']) ? trim($input['state']) : '',
+        //   'local' => isset($input['local']) ? trim($input['local']) : '',
+        //   'taxa' => isset($input['taxa']) ? trim($input['taxa']) : '',
 
           'inquiryDateStart' => $input['inquiry-eventdate1'] ?? '',
           'inquiryDateEnd'   => $input['inquiry-eventdate2'] ?? '',
@@ -179,6 +179,8 @@
                       : explode(',', $input['collid'])
                 )
               : [],
+
+            'keywords' => isset($input['keywords']) ? trim($input['keywords']) : ''
 
        ];
   }
@@ -294,6 +296,25 @@
         $types .= str_repeat('i', count($params['collid']));
     }
 
+    // description filter
+
+    if (!empty($params['keywords'])) {
+
+        $where[] = "(
+            i.description LIKE ?
+            OR i.secondaryResearchField LIKE ?
+            OR i.primaryResearchField LIKE ?
+        )";
+
+        $keyword = '%' . $params['keywords'] . '%';
+
+        $binds[] = $keyword;
+        $binds[] = $keyword;
+        $binds[] = $keyword;
+
+        $types .= 'sss';
+    }
+
     // catalog number filter
 
     if (!empty($params['catnum'])) {
@@ -350,10 +371,6 @@
         $stmt->bind_param($types, ...$binds);
     }
 
-    var_dump($binds);
-    var_dump($types);
-    print_r($sql);
-
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -361,6 +378,7 @@
 
     while ($row = $result->fetch_assoc()) {
         $dataArr[] = array(
+            'requestid' => $row['id'],
             'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'">'.$row['id'].'</a>',
             'researcher' => is_null($row['name'])?'<span style="color:lightgray;">NULL</span>':$row['name'],
             'date' => is_null($row['inquiryDate'])?'<span style="color:lightgray;">NULL</span>':$row['inquiryDate'],
@@ -418,6 +436,305 @@
       }
 
       return $occArr;
+  }
+
+  // Export inquiry list
+
+public function exportInquiryList($ids){
+
+    $idArray = array_map('intval', explode(',', $ids));
+
+    if(empty($idArray)){
+        die('No IDs provided');
+    }
+
+    $placeholders = implode(',', array_fill(0, count($idArray), '?'));
+
+    $sql = "
+        SELECT r.id,
+        p.name as primaryContact,
+        r.inquiryDate,
+        r.status,
+        r.title,
+        r.funded,
+        r.cut as fundingCut,
+        r.fundingSource,
+        r.primaryResearchField,
+        r.secondaryResearchField as keywords,
+        r.description,
+        r.dataProduced,
+        r.howFoundUs,
+        r.existingSamples,
+        r.futureSamples,
+        r.generatingSamples,
+        r.folderName,
+        r.pendingFundingDate,
+        r.notFundedDate,
+        r.pendingFulfillmentDate,
+        r.pendingSampleListDate,
+        r.activeDate,
+        r.completeDate,
+        r.processing,
+        r.moreThan100,
+        r.internal,
+        r.outreach,
+        r.usesAIML,
+        r.datasetID,
+        r.lastUpdated
+        FROM neonrequest r
+        JOIN neonresearcher p
+        ON r.researcherID = p.researcherID
+        WHERE r.id IN ($placeholders)
+    ";
+
+      $stmt = $this->conn->prepare($sql);
+
+      if(!$stmt){
+          die('SQL prepare failed: ' . $this->conn->error);
+      }
+
+      $types = str_repeat('i', count($idArray));
+
+      $stmt->bind_param($types, ...$idArray);
+
+      if(!$stmt->execute()){
+          die('Query execution failed: ' . $stmt->error);
+      }
+
+      $result = $stmt->get_result();
+
+      if(!$result){
+          die('Result retrieval failed: ' . $stmt->error);
+      }
+
+      $fileName = 'inquiryExport_' . date('Y-m-d_H-i-s') . '.csv';
+
+      header('Content-Type: text/csv; charset=utf-8');
+      header('Content-Disposition: attachment; filename="' . $fileName . '"');
+      header('Pragma: no-cache');
+      header('Expires: 0');
+
+      $output = fopen('php://output', 'w');
+
+      $firstRow = $result->fetch_assoc();
+
+      if($firstRow){
+          fputcsv($output, array_keys($firstRow));
+          fputcsv($output, $firstRow);
+
+          while($row = $result->fetch_assoc()){
+              fputcsv($output, $row);
+          }
+      }
+
+      fclose($output);
+      $stmt->close();
+      exit;
+  }
+  // sample export
+  public function exportSampleList($ids){
+
+    $idArray = array_map('intval', explode(',', $ids));
+
+    if(empty($idArray)){
+        die('No IDs provided');
+    }
+
+    $placeholders = implode(',', array_fill(0, count($idArray), '?'));
+
+    $sql = "
+        SELECT r.id as requestID,
+        s.occid, m.sampleID, m.sampleCode, m.sampleClass,
+        s.status,s.useType,s.substanceProvided,s.available,s.notes,
+        s.shipmentID,
+        s.initialTimestamp,
+        s.editedTimestamp
+        FROM neonsamplerequestlink s
+        JOIN neonrequest r
+        ON s.requestID = r.id
+        JOIN NeonSample m
+        ON s.occid = m.occid
+        WHERE r.id IN ($placeholders)
+    ";
+
+      $stmt = $this->conn->prepare($sql);
+
+      if(!$stmt){
+          die('SQL prepare failed: ' . $this->conn->error);
+      }
+
+      $types = str_repeat('i', count($idArray));
+
+      $stmt->bind_param($types, ...$idArray);
+
+      if(!$stmt->execute()){
+          die('Query execution failed: ' . $stmt->error);
+      }
+
+      $result = $stmt->get_result();
+
+      if(!$result){
+          die('Result retrieval failed: ' . $stmt->error);
+      }
+
+      $fileName = 'sampleExport_' . date('Y-m-d_H-i-s') . '.csv';
+
+      header('Content-Type: text/csv; charset=utf-8');
+      header('Content-Disposition: attachment; filename="' . $fileName . '"');
+      header('Pragma: no-cache');
+      header('Expires: 0');
+
+      $output = fopen('php://output', 'w');
+
+      $firstRow = $result->fetch_assoc();
+
+      if($firstRow){
+          fputcsv($output, array_keys($firstRow));
+          fputcsv($output, $firstRow);
+
+          while($row = $result->fetch_assoc()){
+              fputcsv($output, $row);
+          }
+      }
+
+      fclose($output);
+      $stmt->close();
+      exit;
+  }
+
+  // occurrence export
+  public function exportOccurrenceList($ids){
+
+    $idArray = array_map('intval', explode(',', $ids));
+
+    if(empty($idArray)){
+        die('No IDs provided');
+    }
+
+    $placeholders = implode(',', array_fill(0, count($idArray), '?'));
+
+    $sql = "
+        SELECT r.id as requestID, m.*
+        FROM neonsamplerequestlink s
+        JOIN neonrequest r
+        ON s.requestID = r.id
+        JOIN omoccurrences m
+        ON s.occid = m.occid
+        WHERE r.id IN ($placeholders)
+    ";
+
+      $stmt = $this->conn->prepare($sql);
+
+      if(!$stmt){
+          die('SQL prepare failed: ' . $this->conn->error);
+      }
+
+      $types = str_repeat('i', count($idArray));
+
+      $stmt->bind_param($types, ...$idArray);
+
+      if(!$stmt->execute()){
+          die('Query execution failed: ' . $stmt->error);
+      }
+
+      $result = $stmt->get_result();
+
+      if(!$result){
+          die('Result retrieval failed: ' . $stmt->error);
+      }
+
+      $fileName = 'occurrenceExport_' . date('Y-m-d_H-i-s') . '.csv';
+
+      header('Content-Type: text/csv; charset=utf-8');
+      header('Content-Disposition: attachment; filename="' . $fileName . '"');
+      header('Pragma: no-cache');
+      header('Expires: 0');
+
+      $output = fopen('php://output', 'w');
+
+      $firstRow = $result->fetch_assoc();
+
+      if($firstRow){
+          fputcsv($output, array_keys($firstRow));
+          fputcsv($output, $firstRow);
+
+          while($row = $result->fetch_assoc()){
+              fputcsv($output, $row);
+          }
+      }
+
+      fclose($output);
+      $stmt->close();
+      exit;
+  }
+
+  // material sample export
+  public function exportMaterialSampleList($ids){
+
+    $idArray = array_map('intval', explode(',', $ids));
+
+    if(empty($idArray)){
+        die('No IDs provided');
+    }
+
+    $placeholders = implode(',', array_fill(0, count($idArray), '?'));
+
+    $sql = "SELECT r.id as requestID, m.matSampleID,
+        s.occid, m.catalogNumber, m.guid,
+        s.status,s.useType,s.sampleType,s.notes,
+        s.shipmentID,
+        s.initialTimestamp,
+        s.editedTimestamp
+        FROM neonmaterialsamplerequestlink s
+        JOIN neonrequest r
+        ON s.requestID = r.id
+        JOIN ommaterialsample m
+        ON s.matSampleID = m.matSampleID
+        WHERE r.id IN ($placeholders)";
+
+      $stmt = $this->conn->prepare($sql);
+
+      if(!$stmt){
+          die('SQL prepare failed: ' . $this->conn->error);
+      }
+
+      $types = str_repeat('i', count($idArray));
+
+      $stmt->bind_param($types, ...$idArray);
+
+      if(!$stmt->execute()){
+          die('Query execution failed: ' . $stmt->error);
+      }
+
+      $result = $stmt->get_result();
+
+      if(!$result){
+          die('Result retrieval failed: ' . $stmt->error);
+      }
+
+      $fileName = 'materialSampleExport_' . date('Y-m-d_H-i-s') . '.csv';
+
+      header('Content-Type: text/csv; charset=utf-8');
+      header('Content-Disposition: attachment; filename="' . $fileName . '"');
+      header('Pragma: no-cache');
+      header('Expires: 0');
+
+      $output = fopen('php://output', 'w');
+
+      $firstRow = $result->fetch_assoc();
+
+      if($firstRow){
+          fputcsv($output, array_keys($firstRow));
+          fputcsv($output, $firstRow);
+
+          while($row = $result->fetch_assoc()){
+              fputcsv($output, $row);
+          }
+      }
+
+      fclose($output);
+      $stmt->close();
+      exit;
   }
 
 }

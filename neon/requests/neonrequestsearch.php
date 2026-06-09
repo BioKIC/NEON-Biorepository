@@ -418,7 +418,7 @@ $(function () {
 						</div>
 					</section>
 					<!-- Locality -->
-					<section>
+					<section style="display:none;">
 						<!-- Accordion selector -->
 						<input type="checkbox" id="locality" class="accordion-selector"/>
 						<!-- Accordion header -->
@@ -634,7 +634,7 @@ $(function () {
 						</div>
 					</section>
 					<!-- Taxonomy -->
-					<section>
+					<section style="display:none;">
 						<!-- Accordion selector -->
 						<input type="checkbox" id="taxonomy" class="accordion-selector"/>
 
@@ -678,6 +678,31 @@ $(function () {
 						<span class="assistive-text">Type at least 3 characters for suggestions. Separate multiple with commas.</span>
 						</div>
 						<input type="hidden" name="researcher" id="researcher-ids">
+						</div>
+					</section>
+					<!-- Keywords -->
+					<section>
+						<!-- Accordion selector -->
+						<input type="checkbox" id="keywords-section" class="accordion-selector"/>
+						
+						<!-- Accordion header -->
+						<label for="keywords-section" class="accordion-header">Description text</label>
+
+						<!-- Descriptions -->
+						<div id="search-form-keywords" class="content">
+
+							<div class="input-text-container">
+								<label for="keywords" class="input-text--outlined">
+									<input
+										type="text"
+										name="keywords"
+										id="keywords"
+										data-chip="Description"
+										placeholder="Enter free text...">
+									<span data-label="Description"></span>
+								</label>
+							</div>
+
 						</div>
 					</section>
 				</div>

@@ -5,7 +5,7 @@ include_once($SERVER_ROOT.'/neon/classes/InquiriesManager.php');
 $requestID = (isset($_POST['requestID'])?$_POST['requestID']:'');
 $type = (isset($_POST['type'])?$_POST['type']:'');
 $pubID = (isset($_POST['pubID'])?$_POST['pubID']:'');
-$exportTask = $_POST['exportTask'];
+$exportTask = $_POST['exportTask'] ?? '';
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
