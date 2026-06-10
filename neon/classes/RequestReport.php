@@ -480,6 +480,8 @@ public function exportInquiryList($ids){
         r.outreach,
         r.usesAIML,
         r.datasetID,
+        r.followUpType,
+        r.followUpDate,
         r.lastUpdated
         FROM neonrequest r
         JOIN neonresearcher p
