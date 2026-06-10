@@ -150,6 +150,8 @@
           'activeDateEnd'   => $input['active-eventdate2'] ?? '',
           'statusDateStart' => $input['status-eventdate1'] ?? '',
           'statusDateEnd'   => $input['status-eventdate2'] ?? '',
+          'followUpDateStart' => $input['followup-eventdate1'] ?? '',
+          'followUpDateEnd'   => $input['followup-eventdate2'] ?? '',
 
           'researcher' => isset($input['researcher'])
               ? array_filter(
@@ -234,6 +236,13 @@
         $where[] = "DATE(i.statusDate) BETWEEN ? AND ?";
         $binds[] = $params['statusDateStart'];
         $binds[] = $params['statusDateEnd'];
+        $types .= 'ss';
+    }
+
+    if (!empty($params['followUpDateStart']) && !empty($params['followUpDateEnd'])) {
+        $where[] = "DATE(i.followUpDate) BETWEEN ? AND ?";
+        $binds[] = $params['followUpDateStart'];
+        $binds[] = $params['followUpDateEnd'];
         $types .= 'ss';
     }
 

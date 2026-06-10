@@ -567,6 +567,34 @@ $(function () {
 									Enter BOTH dates in format <b>YYYY-MM-DD</b> (e.g. 2020-01-01 – 2020-12-31).
 								</span>
 								</div>
+							<div class="input-text-container">
+								<label class="input-text--outlined">
+									<span style="font-weight: 500;">Follow Up Date Range</span>
+									
+									<div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
+									<input 
+										type="text" 
+										name="followup-eventdate1" 
+										placeholder="2000-01-01"
+										data-chip="Follow Up Date Start"
+										style="flex:1;"
+									>
+
+									<span style="font-weight:bold;">–</span>
+
+									<input 
+										type="text" 
+										name="followup-eventdate2" 
+										placeholder="2100-12-31"
+										data-chip="Follow Up Date End"
+										style="flex:1;"
+									>
+									</div>
+								</label>
+								<span class="assistive-text">
+									Enter BOTH dates in format <b>YYYY-MM-DD</b> (e.g. 2020-01-01 – 2020-12-31).
+								</span>
+								</div>
 							</div>
 						</div>
 					</section>
