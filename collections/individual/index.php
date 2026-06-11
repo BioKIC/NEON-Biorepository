@@ -402,7 +402,7 @@ $traitArr = $indManager->getTraitArr();
 					if($collMetadata['collectioncode']) $instCode .= ':'.$collMetadata['collectioncode'];
 					?>
 					<div id="title1-div" class="title1-div">
-						<?php echo $collMetadata['collectionname'].' ('.$instCode.')'; ?>
+						<?php echo $collMetadata['publicname']; ?>
 					</div>
 					<div  id="occur-div">
 						<!-- NEON customization -->
