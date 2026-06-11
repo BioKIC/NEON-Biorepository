@@ -546,7 +546,11 @@ ER  -
 			?>
 			<div class="mb-6">
 				<?php
-				echo '<h1 class="font-bold text-left mb-4" style="font-size: 2.1rem;">' . $collData['collectionname'] . '</h1>';
+					$title = !empty($collData['publicname'])
+							? $collData['publicname']
+							: $collData['collectionname'];
+					
+					echo '<h1 class="font-bold text-left mb-4" style="font-size: 2.1rem;">' . $title . '</h1>';
 				?>
 				<div class="flex justify-between items-center">
 					<div class="flex justify-left space-x-3 mt-4">
