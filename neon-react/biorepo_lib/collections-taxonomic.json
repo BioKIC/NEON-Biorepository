@@ -550,6 +550,11 @@
             "collid": 27
           },
           {
+            "id": 72,
+            "name": "Prepared Tissues",
+            "collid": 118
+          },
+          {
             "id": 73,
             "name": "Genomic Extracts for Pathogen Testing (from Blood)",
             "collid": 91

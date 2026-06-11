@@ -402,12 +402,33 @@ class OccurrenceSearchSupport {
 			$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype IN("General Observations","Observations"))) ';
 		}
 		else {
-			$dbArr = explode(';',$dbSearchTerm);
-			$dbStr = "o.collid IN(" . (is_array($dbArr)? implode(',', $dbArr): $dbArr) . ")";
-			$sqlRet .= 'AND ('.$dbStr.') ';
+			//neon edit; mammal material samples
+			$dbArr = explode(',', $dbSearchTerm);
+			$whereParts = [];
+			// regular collections
+			$normalCollids = array_diff($dbArr, [118]);
+			
+			if($normalCollids){
+				$whereParts[] = 'o.collid IN('.implode(',', $normalCollids).')';
+			}
+			
+			// mammal material samples
+			if(in_array(118, $dbArr)){
+				$whereParts[] =
+					'(o.collid IN(17,19,28)
+					AND EXISTS (
+						SELECT 1
+						FROM ommaterialsample ms
+						WHERE ms.occid = o.occid
+					))';
+			}
+			
+			$dbStr = '(' . implode(' OR ', $whereParts) . ')';
+			$sqlRet .= 'AND '.$dbStr.' ';
 		}
 	
 		return $sqlRet;
+	//end neon edit
 	}
 	
 	//neon edit

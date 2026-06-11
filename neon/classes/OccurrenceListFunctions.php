@@ -285,4 +285,29 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			'families' => $retArr
 		);
 	}
+	
+	public function getMaterialSampleTypes(array $occidArr): array {
+		$retArr = [];
+		if(!$occidArr) {
+			return $retArr;
+		}
+	
+		$sql = '
+			SELECT occid, sampleType, disposition
+			FROM ommaterialsample
+			WHERE occid IN('.implode(',', $occidArr).')
+			ORDER BY occid
+		';
+	
+		$rs = $this->conn->query($sql);
+		while($r = $rs->fetch_object()) {
+			$retArr[$r->occid][] = [
+				'sampleType' => $r->sampleType,
+				'disposition' => $r->disposition
+			];
+		}
+	
+		$rs->free();
+		return $retArr;
+	}
 }
