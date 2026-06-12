@@ -830,59 +830,66 @@ if($formSubmit == 'editStatus' && $isEditor){
 
 				</div>
 			<div id="shipments" style="">
-				<fieldset>
-					<legend><?php echo 'Shipments'; ?></legend>
+				<?php
+				if ($pc['contactEmail'] && $pc['orcid']) {
+				?>
+					<fieldset>
+						<legend><?php echo 'Shipments'; ?></legend>
 
-					<div style="clear:both;padding:10px 0;">
-						<div style="float:left;">
-							<button type="button"
-									class="addShipmentButton"
-									data-target="primary">
-								Create New Shipment
-							</button>
-						</div>
-					</div>
-
-					<?php
-					$selectedShipments = $inquiryManager->getShipmentByID($requestID);
-					?>
-
-					<form method="post"
-						action="inquiryform.php?id=<?php echo $requestID; ?>">
-
-						<div style="clear:both;padding-top:6px;float:left;">
-
-							<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
-
-							<input type="text"
-								id="shipmentSearch"
-								placeholder="Search and add shipments..."
-								style="width:400px;">
-
-							<input type="hidden"
-								name="inqshipmentids"
-								id="inqshipmentids">
-							<br>
-							<fieldset>
-								<div id="shipmentList"
-									style="margin-top:10px;"></div>
-							</fieldset>
+						<div style="clear:both;padding:10px 0;">
+							<div style="float:left;">
+								<button type="button"
+										class="addShipmentButton"
+										data-target="primary">
+									Create New Shipment
+								</button>
+							</div>
 						</div>
 
-						<div style="clear:both;padding-top:8px;float:left;">
-							<input name="formsubmit"
-								type="hidden"
-								value="editShipment" />
+						<?php
+						$selectedShipments = $inquiryManager->getShipmentByID($requestID);
+						?>
 
-							<button name="submitButton"
-									type="submit">
-								<?php echo 'Update Shipments' ?>
-							</button>
-						</div>
+						<form method="post"
+							action="inquiryform.php?id=<?php echo $requestID; ?>">
 
-					</form>
+							<div style="clear:both;padding-top:6px;float:left;">
 
-				</fieldset>
+								<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
+
+								<input type="text"
+									id="shipmentSearch"
+									placeholder="Search and add shipments..."
+									style="width:400px;">
+
+								<input type="hidden"
+									name="inqshipmentids"
+									id="inqshipmentids">
+								<br>
+								<fieldset>
+									<div id="shipmentList"
+										style="margin-top:10px;"></div>
+								</fieldset>
+							</div>
+
+							<div style="clear:both;padding-top:8px;float:left;">
+								<input name="formsubmit"
+									type="hidden"
+									value="editShipment" />
+
+								<button name="submitButton"
+										type="submit">
+									<?php echo 'Update Shipments' ?>
+								</button>
+							</div>
+
+						</form>
+
+					</fieldset>
+				<?php
+				}
+				else echo 'Primary contact must have a NEON account and ORCID before shipments can be added';
+				?>
 			</div>
 			</div>
 

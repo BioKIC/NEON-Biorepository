@@ -411,7 +411,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
   public function getPrimaryContactByID($requestID) {
       $requestID = (int)$requestID;
 
-      $sql = "SELECT p.researcherID,p.name,p.institution FROM neonrequest r
+      $sql = "SELECT p.researcherID,p.name,p.institution,p.contactEmail,p.orcid FROM neonrequest r
               LEFT JOIN  neonresearcher p
               ON r.researcherID = p.researcherID
               WHERE r.id = $requestID";
