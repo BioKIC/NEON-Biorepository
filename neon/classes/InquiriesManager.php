@@ -160,7 +160,7 @@ public function getHowFoundUs(){
 
 
   // add researcher to neonresearcher table
-  public function addResearcher($name, $institution, $contactEmail = '', $address = '', $phone = '') {
+  public function addResearcher($name, $institution, $contactEmail = '', $orcid = '', $address = '', $phone = '') {
       // Only name and institution are required
       if (empty($name) || empty($institution)) {
           $this->errorMessage = "Name and institution are required.";
@@ -170,11 +170,12 @@ public function getHowFoundUs(){
       $name = $this->conn->real_escape_string($name);
       $institution = $this->conn->real_escape_string($institution);
       $contactEmail = $this->conn->real_escape_string($contactEmail);
+      $orcid = $this->conn->real_escape_string($orcid);
       $address = $this->conn->real_escape_string($address);
       $phone = $this->conn->real_escape_string($phone);
 
-      $sql = "INSERT INTO neonresearcher (name, institution, contactEmail, address, phone) 
-              VALUES ('$name', '$institution', '$contactEmail', '$address', '$phone')";
+      $sql = "INSERT INTO neonresearcher (name, institution, contactEmail, orcid, address, phone) 
+              VALUES ('$name', '$institution', '$contactEmail', '$orcid', '$address', '$phone')";
 
       if ($this->conn->query($sql)) {
           return $this->conn->insert_id; 

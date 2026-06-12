@@ -17,6 +17,7 @@ try {
     $name = trim($_POST['name'] ?? '');
     $institution = trim($_POST['institution'] ?? '');
     $contactEmail = trim($_POST['contactEmail'] ?? '');
+    $orcid = trim($_POST['orcid'] ?? '');
     $address = trim($_POST['address'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
 
@@ -28,7 +29,7 @@ try {
         throw new Exception('addResearcher method not defined in inquiries manager.');
     }
 
-    $researcherID = $inquiryManager->addResearcher($name, $institution, $contactEmail, $address, $phone);
+    $researcherID = $inquiryManager->addResearcher($name, $institution, $contactEmail, $orcid, $address, $phone);
 
     if (!$researcherID) {
         throw new Exception('Failed to add researcher.');
@@ -40,6 +41,7 @@ try {
         'name' => $name,
         'institution' => $institution,
         'contactEmail' => $contactEmail,
+        'orcid' => $orcid,
         'address' => $address,
         'phone' => $phone
     ]);
