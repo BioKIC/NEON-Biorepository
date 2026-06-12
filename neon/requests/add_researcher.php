@@ -1,10 +1,9 @@
 <?php
-// show errors
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// return JSON
 header('Content-Type: application/json');
 
 include_once('../../config/symbini.php');
@@ -13,6 +12,8 @@ include_once('../../neon/classes/InquiriesManager.php');
 try {
 
     $inquiryManager = new InquiriesManager();
+
+    $researcherID = intval($_POST['researcherID'] ?? 0);
 
     $name = trim($_POST['name'] ?? '');
     $institution = trim($_POST['institution'] ?? '');
@@ -25,14 +26,43 @@ try {
         throw new Exception('Both name and institution are required.');
     }
 
-    if (!method_exists($inquiryManager, 'addResearcher')) {
-        throw new Exception('addResearcher method not defined in inquiries manager.');
-    }
+    if ($researcherID > 0) {
 
-    $researcherID = $inquiryManager->addResearcher($name, $institution, $contactEmail, $orcid, $address, $phone);
+        if (!method_exists($inquiryManager, 'updateResearcher')) {
+            throw new Exception('updateResearcher method not defined in inquiries manager.');
+        }
 
-    if (!$researcherID) {
-        throw new Exception('Failed to add researcher.');
+        $success = $inquiryManager->updateResearcher(
+            $researcherID,
+            $institution,
+            $contactEmail,
+            $orcid,
+            $address,
+            $phone
+        );
+
+        if (!$success) {
+            throw new Exception('Failed to update researcher.');
+        }
+
+    } else {
+
+        if (!method_exists($inquiryManager, 'addResearcher')) {
+            throw new Exception('addResearcher method not defined in inquiries manager.');
+        }
+
+        $researcherID = $inquiryManager->addResearcher(
+            $name,
+            $institution,
+            $contactEmail,
+            $orcid,
+            $address,
+            $phone
+        );
+
+        if (!$researcherID) {
+            throw new Exception('Failed to add researcher.');
+        }
     }
 
     echo json_encode([
@@ -47,6 +77,7 @@ try {
     ]);
 
 } catch (Exception $e) {
+
     echo json_encode([
         'success' => false,
         'message' => $e->getMessage()

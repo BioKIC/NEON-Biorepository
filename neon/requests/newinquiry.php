@@ -220,7 +220,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'Primary Contact (must have email and ORCID)'; ?>:</strong>
+       								<strong><?php echo 'Primary Contact (will need email and ORCID)'; ?>:</strong>
 									</span>
 										<input type="text"
 											id="researcherSearch"

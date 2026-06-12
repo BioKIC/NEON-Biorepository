@@ -164,7 +164,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 	if (!empty($active) && empty($fulfillment)) $errorMessage[] = 'Pending Fulfillment Date required when active date present.';
 	if (!(empty($notfunded) && empty($pendinglist)) && empty($pendingfunding)) $errorMessage[] = 'Pending Funding Date required when funded/not funded date present.';
 	if (!empty($fulfillment) && empty($pendinglist) && !empty($pendingfunding)) $errorMessage[] = 'Must have a funding date prior to a fulfillment date.';
-	if (!empty($fullfillment) && !empty($notfunded)) $errorMessage[] = 'Unfunded proposal cannot be fulfilled (Create new Inquiry Record).';
+	if (!empty($fulfillment) && !empty($notfunded)) $errorMessage[] = 'Unfunded proposal cannot be fulfilled (Create new Inquiry Record).';
 	if (!empty($notfunded) && !empty($pendinglist)) $errorMessage[] = 'Cannot have both funded and not funded date.';
 	if (!empty($complete) && !empty($active)) {
 		if (strtotime($complete) <= strtotime($active)) {
@@ -422,7 +422,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<strong><?php echo 'Primary Contact'; ?>:</strong>
+										<strong><?php echo 'Primary Contact (will need NEON Biorepo account and ORCID)'; ?>:</strong>
 										<input type="text"
 											id="researcherSearch"
 											placeholder="Search researcher..."
@@ -433,6 +433,11 @@ if($formSubmit == 'editStatus' && $isEditor){
 											name="inqresearcher"
 											id="inqresearcher"
 											value="<?php echo $pc['researcherID']; ?>">
+											<button type="button"
+													id="editResearcherBtn"
+													data-researcherid="<?php echo $pc['researcherID']; ?>">
+												Edit Researcher Contact Info
+											</button>
 										<button type="button"
 											class="addResearcherBtn"
 											data-target="primary">
@@ -831,6 +836,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 				</div>
 			<div id="shipments" style="">
 				<?php
+				$selectedShipments = $inquiryManager->getShipmentByID($requestID);
 				if ($pc['contactEmail'] && $pc['orcid']) {
 				?>
 					<fieldset>
@@ -845,11 +851,6 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</button>
 							</div>
 						</div>
-
-						<?php
-						$selectedShipments = $inquiryManager->getShipmentByID($requestID);
-						?>
-
 						<form method="post"
 							action="inquiryform.php?id=<?php echo $requestID; ?>">
 
@@ -909,6 +910,12 @@ if($formSubmit == 'editStatus' && $isEditor){
 		<div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
 			<h2>Add New Researcher</h2>
 			<form id="researcherForm">
+
+
+				<input type="hidden"
+					name="researcherID"
+					id="researcherID">
+
 				<label>Name*:</label>
 				<input type="text" name="name" required style="width:100%;"><br><br>
 
@@ -916,7 +923,10 @@ if($formSubmit == 'editStatus' && $isEditor){
 				<input type="text" name="institution" required style="width:100%;"><br><br>
 
 				<label>Email:</label>
-				<input type="text" name="contact_email"  style="width:100%;"><br><br>
+				<input type="text" name="contactEmail"  style="width:100%;"><br><br>
+
+				<label>ORCID:</label>
+				<input type="text" name="orcid"  style="width:100%;"><br><br>
 
 				<label>Address:</label>
 				<input type="text" name="address"  style="width:100%;"><br><br>
@@ -992,9 +1002,36 @@ function clearPendingChanges() {
 
 document.querySelectorAll('.addResearcherBtn').forEach(btn => {
     btn.addEventListener('click', function() {
+
+        $("#researcherID").val("");
+
+        $("#researcherForm")[0].reset();
+
+        $("[name=name]").prop("readonly", false);
+
+        $("#researcherModal h2").text("Add New Researcher");
+
         document.getElementById('researcherModal').dataset.source = btn.dataset.target;
         document.getElementById('researcherModal').style.display = 'flex';
     });
+});
+
+$("#editResearcherBtn").on("click", function() {
+
+    $("#researcherID").val("<?php echo $pc['researcherID']; ?>");
+
+    $("[name=name]").val(<?php echo json_encode($pc['name']); ?>);
+    $("[name=institution]").val(<?php echo json_encode($pc['institution']); ?>);
+    $("[name=contactEmail]").val(<?php echo json_encode($pc['contactEmail']); ?>);
+    $("[name=orcid]").val(<?php echo json_encode($pc['orcid']); ?>);
+    $("[name=address]").val(<?php echo json_encode($pc['address']); ?>);
+    $("[name=phone]").val(<?php echo json_encode($pc['phone']); ?>);
+
+    $("[name=name]").prop("readonly", true);
+
+    $("#researcherModal h2").text("Edit Researcher");
+
+    $("#researcherModal").css("display", "flex");
 });
 
 document.getElementById('closeResearcherModal').addEventListener('click', function(){
@@ -1038,7 +1075,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
             document.getElementById('researcherModal').style.display = 'none';
             document.getElementById('researcherForm').reset();
 
-            alert('Researcher added successfully.');
+            alert('Researcher added or edited successfully.');
         } else {
             alert('Error: ' + data.message);
         }

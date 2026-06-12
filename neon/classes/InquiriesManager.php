@@ -185,6 +185,41 @@ public function getHowFoundUs(){
       }
   }
 
+  // edit reseaarcher
+
+  public function updateResearcher($researcherID, $institution, $contactEmail = '', $orcid = '', $address = '', $phone = '') {
+
+    if (empty($researcherID) || empty($institution)) {
+        $this->errorMessage = "Researcher ID and institution are required.";
+        return false;
+    }
+
+    $researcherID = (int)$researcherID;
+    $institution = $this->conn->real_escape_string($institution);
+    $contactEmail = $this->conn->real_escape_string($contactEmail);
+    $orcid = $this->conn->real_escape_string($orcid);
+    $address = $this->conn->real_escape_string($address);
+    $phone = $this->conn->real_escape_string($phone);
+
+    $sql = "
+        UPDATE neonresearcher
+        SET
+            institution = '$institution',
+            contactEmail = '$contactEmail',
+            orcid = '$orcid',
+            address = '$address',
+            phone = '$phone'
+        WHERE researcherID = $researcherID
+    ";
+
+    if ($this->conn->query($sql)) {
+        return true;
+    } else {
+        $this->errorMessage = "Database Error: " . $this->conn->error;
+        return false;
+    }
+}
+
    public function addInquiry($collectionManager, $researcherID, $inquiryDate,$title,$collections,$field,$secondaryfields,$funded,$fundingsource,$description,$howfound,$dataproduced,$existing,$future,$new,$additionalresearchers,$drivefolder,$aiml,$internal,$outreach,$processing) {
 
     $collectionManager = (int) $collectionManager;
@@ -411,7 +446,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
   public function getPrimaryContactByID($requestID) {
       $requestID = (int)$requestID;
 
-      $sql = "SELECT p.researcherID,p.name,p.institution,p.contactEmail,p.orcid FROM neonrequest r
+      $sql = "SELECT p.researcherID,p.name,p.institution,p.contactEmail,p.orcid,p.address,p.phone FROM neonrequest r
               LEFT JOIN  neonresearcher p
               ON r.researcherID = p.researcherID
               WHERE r.id = $requestID";
