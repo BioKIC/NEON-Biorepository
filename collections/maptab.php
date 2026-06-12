@@ -16,7 +16,7 @@ $searchVar = $collManager->getQueryTermStr();
 		(separated by semi-colons), different colored markers denote each individual species.
 	</div>
 	<?php
-	$mapParams = 'tabindex=3&gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y&menuClosed&embedded=1';
+	$mapParams = 'tabindex=3&gridSizeSetting=60&minClusterSetting=10&clusterSwitch=y';
 	if (empty($searchVar) && !empty($_SERVER['QUERY_STRING'])) {
 		$searchParams = '?' . $_SERVER['QUERY_STRING'] . '&' . $mapParams;
 	} else {
