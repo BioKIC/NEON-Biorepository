@@ -858,7 +858,7 @@ class OccurrenceCollectionProfile extends OmCollections
 		if(!$collIds) return $retArr;
 	
 		$placeholders = implode(',', array_fill(0, count($collIds), '?'));
-		$sql = "SELECT collid, collectionname FROM omcollections WHERE collid IN ($placeholders) ORDER BY collectionname";
+		$sql = "SELECT collid, COALESCE(NULLIF(publicname, ''), collectionname) AS publicname FROM omcollections WHERE collid IN ($placeholders) ORDER BY COALESCE(NULLIF(publicname, ''), collectionname)";
 		$stmt = $this->conn->prepare($sql);
 	
 		$types = str_repeat('i', count($collIds));
@@ -866,7 +866,7 @@ class OccurrenceCollectionProfile extends OmCollections
 		$stmt->execute();
 	
 		$result = $stmt->get_result();
-		while($row = $result->fetch_assoc()) $retArr[$row['collid']] = $row['collectionname'];
+		while($row = $result->fetch_assoc()) $retArr[$row['collid']] = $row['publicname'];
 	
 		$stmt->close();
 		return $retArr;
