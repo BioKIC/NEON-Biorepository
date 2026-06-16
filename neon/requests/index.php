@@ -27,7 +27,8 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
     <link rel="stylesheet" href="css/tables.css">
 		<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
-        <link rel="stylesheet" href="css/tables.css">
+        <link rel="stylesheet" href="../../js/datatables/datatables.css" />
+        <script src="../../js/datatables/datatables.js"></script>
 
 <style>
     .table-container {
@@ -86,11 +87,14 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
         echo '<h1>Sample Use Inquiries</h1>';
         echo '<p>Total number of samples in active or completed requests: '.$total.'</p>';
 
-        echo '<input type="text" id="filterInput" placeholder="Search inquiries...">';
-
         if(!empty($inquiriesArr)){
             echo '<div class="table-container">';
             $inquiriesTable = $utilities->htmlTable($inquiriesArr, $headerArr);
+            $inquiriesTable = str_replace(
+                '<table',
+                '<table id="inquiriesTable"',
+                $inquiriesTable
+            );
             echo $inquiriesTable;
             echo '</div>';
         };
@@ -107,27 +111,12 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
   </body>
   <script src="js/sortables.js"></script>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const filterInput = document.getElementById('filterInput');
-        const table = document.querySelector('table');
-        
-        filterInput.addEventListener('keyup', function () {
-            const filter = filterInput.value.toLowerCase();
-            const rows = table.getElementsByTagName('tr');
-
-            for (let i = 1; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                let match = false;
-                for (let j = 0; j < cells.length; j++) {
-                    const cellValue = cells[j].textContent.toLowerCase();
-                    if (cellValue.includes(filter)) {
-                        match = true;
-                        break;
-                    }
-                }
-                rows[i].style.display = match ? '' : 'none';
-            }
+<script>
+    $(document).ready(function () {
+        $('#inquiriesTable').DataTable({
+            pageLength: 100,
+            order: [[0, 'desc']],
+            scrollX: true
         });
     });
 </script>

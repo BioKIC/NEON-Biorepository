@@ -203,7 +203,9 @@
                 i.inquiryDate,
                 i.title,
                 i.status,
-                COUNT(s.occid) as samples
+                COUNT(s.occid) as samples,
+                i.followUpType,
+                i.followUpDate
             FROM neonrequest i
             LEFT JOIN neonsamplerequestlink s 
             ON s.requestID = i.id
@@ -399,6 +401,9 @@
             'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
             'status' => is_null($row['status'])?'<span style="color:lightgray;">NULL</span>':$row['status'],
             'samples' => is_null($row['samples'])?'<span style="color:lightgray;">NULL</span>':$row['samples'],
+            'followUpType' => is_null($row['followUpType'])?'<span style="color:lightgray;">NULL</span>':$row['followUpType'],
+            'followUpDate' => is_null($row['followUpDate'])?'<span style="color:lightgray;">NULL</span>':$row['followUpDate']
+
         );
     }
 
