@@ -144,6 +144,8 @@ if($formSubmit == 'editStatus' && $isEditor){
 		$fulfillment = $_POST['inqpendffdate'] ?? '';
 		$active = $_POST['inqshipdate'] ?? '';
 		$complete = $_POST['inqcompletedate'] ?? '';
+		$followUpType = $_POST['inqfollowuptype'] ?? '';
+		$followUpDate = $_POST['inqfollowupdate'] ?? '';
 
 	if (
 		!(
@@ -176,6 +178,9 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$errorMessage[] = 'Active Date cannot be before or equal to Pending Fulfillment Date';
 		}
 	}
+	if ((!empty($pendingfunding) || !empty($active)) && (empty($followUpDate) || (empty($followUpType)))) {
+			$errorMessage[] = 'Follow Up Type and Date are required for active projects and inquiries pending funding.';
+	}
 	if (!empty($fulfillment) && !empty($pendinglist)) {
 		if (strtotime($fulfillment) <= strtotime($pendinglist)) {
 			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Funding Date';
@@ -207,6 +212,8 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$fulfillment,
 			$active,
 			$complete,
+			$followUpType,
+			$followUpDate,
 			$SYMB_UID
 		);
 
@@ -765,6 +772,34 @@ if($formSubmit == 'editStatus' && $isEditor){
 									<div class="fieldDiv">
 										<strong><?php echo 'Completed Date: '?></strong>
 										<input name="inqcompletedate" type="date" value="<?php echo $inquirydata['completeDate']; ?>" />
+									</div>
+								</div>
+							</fieldset>
+							<fieldset>
+								<legend style = "color: red"><?php echo 'Follow Up' ?></legend>
+								<div style="clear:both;padding-top:4px;float:left;">
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<strong><?php echo 'Follow Up Type: '?></strong>
+								<span>
+									<select name="inqfollowuptype" style="width:400px;" aria-label="Select Follow Up Type">
+										<option value="">Select Follow Up Type</option>
+										<option value="">------------------------------------------</option>
+										<?php
+										$followuptypes = array('funding status','loan recall','publication check');
+										foreach($followuptypes as $text){
+											$selected = ($inquirydata['followUpType'] === $text) ? 'selected' : '';
+											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
+										}
+										?>
+									</select>
+								</span>
+			
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+
+									<div class="fieldDiv">
+										<strong><?php echo 'Follow Up Date: '?></strong>
+										<input name="inqfollowupdate" type="date" value="<?php echo $inquirydata['followUpDate']; ?>" />
 									</div>
 								</div>
 							</fieldset>

@@ -49,7 +49,7 @@
 
   public function getInquiriesOut(){
   	$dataArr = array();
-    $sql = 'SELECT r.id, p.name AS researcher, DATE(r.inquiryDate) AS date, r.title, r.status, COUNT(s.occid) AS samples FROM neonrequest AS r LEFT JOIN neonresearcher AS p ON r.researcherID = p.researcherID LEFT JOIN neonsamplerequestlink AS s ON r.id = s.requestID GROUP BY r.id;';
+    $sql = 'SELECT r.id, p.name AS researcher, DATE(r.inquiryDate) AS date, r.title, r.status, COUNT(s.occid) AS samples, r.followUpType, r.followUpDate FROM neonrequest AS r LEFT JOIN neonresearcher AS p ON r.researcherID = p.researcherID LEFT JOIN neonsamplerequestlink AS s ON r.id = s.requestID GROUP BY r.id;';
     if($result = $this->conn->query($sql)){
       while($row = $result->fetch_assoc()){
         $dataArr[] = array(
@@ -59,6 +59,11 @@
           'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
           'status' => is_null($row['status'])?'<span style="color:lightgray;">NULL</span>':$row['status'],
           'samples' => is_null($row['samples'])?'<span style="color:lightgray;">NULL</span>':$row['samples'],
+          'followUpType' => is_null($row['followUpType'])?'<span style="color:lightgray;">NULL</span>':$row['followUpType'],
+          'followUpDate' => is_null($row['followUpDate'])?'<span style="color:lightgray;">NULL</span>':$row['followUpDate']
+
+
+
         );
       }
       $result->free();

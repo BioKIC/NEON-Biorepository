@@ -702,6 +702,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $fulfillment,
       $active,
       $complete,
+      $followUpType,
+      $followUpDate,
       $uid
   ) {
       $requestID = (int)$requestID;
@@ -714,6 +716,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $fulfillment    = !empty($fulfillment)    ? $fulfillment    : null;
       $active         = !empty($active)         ? $active         : null;
       $complete       = !empty($complete)       ? $complete       : null;
+      $followUpType   = !empty($followUpType)   ? $followUpType   : null;
+      $followUpDate   = !empty($followUpDate)   ? $followUpDate   : null;
 
       $dates = [
           'sample use inquiry'    => $inquiryDate,
@@ -772,6 +776,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
                   pendingFulfillmentDate = ?,
                   activeDate = ?, 
                   completeDate = ?, 
+                  followUpType = ?,
+                  followUpDate = ?,
                   lastUpdated = NOW() 
               WHERE id = ?";
 
@@ -782,7 +788,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       }
 
       $stmt->bind_param(
-          "sssssssssssi",
+          "sssssssssssssi",
           $status,
           $statusDate,
           $funded,
@@ -794,6 +800,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
           $fulfillment,
           $active,
           $complete,
+          $followUpType,
+          $followUpDate,
           $requestID
       );
 
@@ -814,7 +822,10 @@ public function addCollectionInquiryLink($requestID, $collections) {
           "pendingSampleListDate" => $pendinglist,
           "pendingFulfillmentDate" => $fulfillment,
           "activeDate" => $active,
-          "completeDate" => $complete
+          "completeDate" => $complete,
+          "followUpType" => $followUpType,
+          "followUpDate" => $followUpDate
+
       ];
 
       foreach ($newData as $field => $newValue) {
