@@ -50,8 +50,8 @@ $linkedCollections = $collManager->getLinkedCollections();
 <html>
 
 <head>
-	<title><?php echo $DEFAULT_TITLE . ' ' . ($collid && isset($collData[$collid]) ? $collData[$collid]['collectionname'] : ''); ?></title>
-	<meta name="keywords" content="Natural history collections,<?php echo ($collid ? $collData[$collid]['collectionname'] : ''); ?>" />
+	<title><?php echo $DEFAULT_TITLE . ' ' . ($collid && isset($collData[$collid]) ? ($collData[$collid]['publicname'] ?: $collData[$collid]['collectionname']) : ''); ?></title>
+	<meta name="keywords" content="Natural history collections,<?php echo ($collid ? (!empty($collData[$collid]['publicname']) ? $collData[$collid]['publicname'].',' : '') . $collData[$collid]['collectionname'] : ''); ?>" />
 	<meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
 	<meta http-equiv="Pragma" content="no-cache">
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
