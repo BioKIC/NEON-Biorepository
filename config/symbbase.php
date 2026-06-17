@@ -5,7 +5,7 @@ if($GLOBALS['HTTPS_ONLY'] ?? true) {
 	header('strict-transport-security: max-age=600');
 }
 date_default_timezone_set('America/Phoenix');
-$CODE_VERSION = '3.4.7';
+$CODE_VERSION = '3.4.9';
 
 /*
 $cspHeader = "default-src 'self'; ";
