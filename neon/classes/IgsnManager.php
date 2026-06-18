@@ -21,7 +21,7 @@ class IgsnManager{
 		$sql = 'SELECT c.collid, CONCAT_WS("-",c.institutioncode,c.collectioncode) as collcode, c.collectionname, count(o.occid) as cnt
 			FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid
 			INNER JOIN NeonSample s ON o.occid = s.occid
-			WHERE c.institutionCode = "NEON" AND c.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) AND o.occurrenceId IS NULL AND s.sampleReceived = 1
+			WHERE c.institutionCode IN ("NEON","ASU") AND c.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) AND o.occurrenceId IS NULL AND s.sampleReceived = 1
 			GROUP BY c.collid';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
