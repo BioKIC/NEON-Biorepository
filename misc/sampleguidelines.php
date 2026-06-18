@@ -72,8 +72,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h2 class="anchor" id="sample-use-agreement">Sample Use Agreement</h2>
 
-			<p><b><i>All sample requests require a mutually developed and signed Sample Use Agreement <a href="documents/sampleUseAgreement.pdf" target="_blank" rel="noopener noreferrer">(example template)</a> between the requesting user and the NEON Biorepository prior to sample processing and shipment or access.</i></b> The Sample Use Agreement documents the terms under which samples are provided and ensures that both parties have a shared understanding of the approved research and responsibilities associated with sample use. Each Sample Use Agreement is developed on a case-by-case basis.</p>
-
+			<p><b><i>All sample requests require a mutually developed and signed Sample Use Agreement <a href="documents/NEONBiorepositorySampleUseAgreement.pdf" target="_blank" rel="noopener noreferrer">(example template)</a> between the requesting user and the NEON Biorepository prior to sample processing and shipment or access.</i></b> The Sample Use Agreement documents the terms under which samples are provided and ensures that both parties have a shared understanding of the approved research and responsibilities associated with sample use. Each Sample Use Agreement is developed on a case-by-case basis.</p>
 			<p>While the exact contents of each agreement vary, Sample Use Agreements generally include:</p>
 
 			<ul>
