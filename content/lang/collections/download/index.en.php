@@ -7,7 +7,7 @@ Translated by: Google Translate (2024-09-13)
 */
 
 $LANG['HOME'] = 'Home';
-$LANG['COLL_SEARCH_DWNL'] = 'Configure Data for Download';
+$LANG['COLL_SEARCH_DWNL'] = 'Collections Search Download';
 $LANG['RETURN'] = 'Return to Search Page';
 $LANG['OCC_DOWNLOAD'] = 'Occurrence Record Download';
 $LANG['DATA_GUIDE'] = 'Data Usage Guidelines: ';
@@ -16,7 +16,7 @@ $LANG['GUIDE_LINK'] = 'data usage terms';
 $LANG['GUIDE_TWO'] = 'Note that additional terms of use specific to the individual collections may be distributed with the data download. When present, the terms                        supplied by the owning institution should take precedence over the general terms posted on the website.';
 $LANG['DOWNLOAD_CHECKL'] = 'Download Checklist';
 $LANG['DOWNLOAD_GEO_DATA'] = 'Download Georeference Data';
-$LANG['DOWNLOAD_SPEC_REC'] = 'Download Records';
+$LANG['DOWNLOAD_SPEC_REC'] = 'Download Specimen Records';
 $LANG['STRUCTURE'] = 'Structure';
 $LANG['SYMB_NATIVE'] = 'Symbiota Native';
 $LANG['MORE_INFO'] = 'More Information';
@@ -26,6 +26,11 @@ $LANG['DARWIN_CORE'] = 'Darwin Core';
 $LANG['IMG_DARWIN_INFO'] = 'Info icon: DwC is a TDWG endorsed standard for biodata. Link to DwC quick ref guide in the dialog.';
 $LANG['DARWIN_GUIDE'] = 'Darwin Core (DwC) is a TDWG endorsed exchange standard specifically for biodiversity datasets.                        For more information on what data fields are included in DwC, visit the';
 $LANG['DARWIN_GUIDE_LINK'] = 'DwC Quick Reference Guide';
+$LANG['TAXONOMIC_RESOLUTION'] = 'Taxonomic Resolution';
+$LANG['ACCEPTED_NAME_USAGE'] = 'Include Accepted Scientific Name and Authorship';
+$LANG['TAXONOMIC_RESOLUTION_GUIDE']= 'Checking this box will add three fields to your occurrences file: acceptedNameUsage, acceptedNameUsageAuthorship,
+    and acceptedNameUsageID. These fields will contain the name, authorship, and taxonID of the "accepted" taxon name of the record\'s scientific name
+    according to the portal\'s taxonomic thesaurus at time of download.';
 $LANG['DATA_EXTS'] = 'Data Extensions';
 $LANG['INCLUDE_HISTORY'] = 'include Determination History';
 $LANG['INCLUDE_IMG'] = 'include Media Records';
@@ -42,6 +47,7 @@ $LANG['UTF_8'] = 'UTF-8 (unicode)';
 $LANG['COMPRESSION'] = 'Compression';
 $LANG['COMPRESSED_ZIP'] = 'Compressed ZIP file';
 $LANG['DOWNLOAD_DATA'] = 'Download Data';
-$LANG['LIMIT_NOTE'] = 'There is a 1,000,000 record limit to downloads';
+$LANG['LIMIT_NOTE'] = '* There is a 1,000,000 record limit to occurrence downloads';
+$LANG['INCLUDE_ASSOCIATIONS'] = 'include Resource Relationships (associations & linked resources)';
 
 ?>
