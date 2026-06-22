@@ -719,7 +719,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $complete       = !empty($complete)       ? $complete       : null;
       $followUpType   = !empty($followUpType)   ? $followUpType   : null;
       $followUpDate   = !empty($followUpDate)   ? $followUpDate   : null;
-      $followUpNotes  = !empty($followUpNotes) ? $followUpNotes   : null;
+      $followUpNotes  = !empty($followUpNotes)  ? $followUpNotes  : null;
 
       $dates = [
           'sample use inquiry'    => $inquiryDate,
@@ -829,7 +829,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
           "completeDate" => $complete,
           "followUpType" => $followUpType,
           "followUpDate" => $followUpDate,
-          "followUpDate" => $followUpNotes
+          "followUpNotes" => $followUpNotes
 
       ];
 
