@@ -146,6 +146,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		$complete = $_POST['inqcompletedate'] ?? '';
 		$followUpType = $_POST['inqfollowuptype'] ?? '';
 		$followUpDate = $_POST['inqfollowupdate'] ?? '';
+		$followUpNotes = $_POST['inqfollowupnotes'] ?? '';
 
 	if (
 		!(
@@ -214,6 +215,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$complete,
 			$followUpType,
 			$followUpDate,
+			$followUpNotes,
 			$SYMB_UID
 		);
 
@@ -785,7 +787,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 										<option value="">Select Follow Up Type</option>
 										<option value="">------------------------------------------</option>
 										<?php
-										$followuptypes = array('funding status','loan recall','publication check','embargo expiration');
+										$followuptypes = array('funding status','loan recall','data return','publication check','embargo expiration');
 										foreach($followuptypes as $text){
 											$selected = ($inquirydata['followUpType'] === $text) ? 'selected' : '';
 											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
@@ -800,6 +802,14 @@ if($formSubmit == 'editStatus' && $isEditor){
 									<div class="fieldDiv">
 										<strong><?php echo 'Follow Up Date: '?></strong>
 										<input name="inqfollowupdate" type="date" value="<?php echo $inquirydata['followUpDate']; ?>" />
+									</div>
+								</div>
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+
+									<div class="fieldDiv">
+										<strong><?php echo 'Follow Up Notes: '?></strong>
+										<input name="inqfollowupnotes" type="text" style="width:600px; height:60px;" value="<?php echo $inquirydata['followUpNotes']; ?>" />
 									</div>
 								</div>
 							</fieldset>

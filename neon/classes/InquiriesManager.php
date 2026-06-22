@@ -704,6 +704,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $complete,
       $followUpType,
       $followUpDate,
+      $followUpNotes,
       $uid
   ) {
       $requestID = (int)$requestID;
@@ -718,6 +719,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $complete       = !empty($complete)       ? $complete       : null;
       $followUpType   = !empty($followUpType)   ? $followUpType   : null;
       $followUpDate   = !empty($followUpDate)   ? $followUpDate   : null;
+      $followUpNotes  = !empty($followUpNotes) ? $followUpNotes   : null;
 
       $dates = [
           'sample use inquiry'    => $inquiryDate,
@@ -778,6 +780,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
                   completeDate = ?, 
                   followUpType = ?,
                   followUpDate = ?,
+                  followUpNotes = ?,
                   lastUpdated = NOW() 
               WHERE id = ?";
 
@@ -788,7 +791,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       }
 
       $stmt->bind_param(
-          "sssssssssssssi",
+          "ssssssssssssssi",
           $status,
           $statusDate,
           $funded,
@@ -802,6 +805,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
           $complete,
           $followUpType,
           $followUpDate,
+          $followUpNotes,
           $requestID
       );
 
@@ -824,7 +828,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
           "activeDate" => $active,
           "completeDate" => $complete,
           "followUpType" => $followUpType,
-          "followUpDate" => $followUpDate
+          "followUpDate" => $followUpDate,
+          "followUpDate" => $followUpNotes
 
       ];
 
