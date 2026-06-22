@@ -574,6 +574,7 @@ ER  -
 
 							$ch = curl_init($gbifUrl);
 							curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+							curl_setopt($ch, CURLOPT_TIMEOUT_MS, 2500);
 							$response = curl_exec($ch);
 							curl_close($ch);
 
