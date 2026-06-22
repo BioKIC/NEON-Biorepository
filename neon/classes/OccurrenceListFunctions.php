@@ -87,13 +87,13 @@ class OccurrenceListFunctions extends OccurrenceManager{
 		$sql = '
 			SELECT
 				o.collid,
-				c.collectionName,
+				c.publicName,
 				COUNT(DISTINCT o.occid) AS recordCnt
 			FROM omoccurrences o
 			INNER JOIN omcollections c ON o.collid = c.collid
 			' . $this->getTableJoins($sqlWhere) . '
 			' . $sqlWhere . '
-			GROUP BY o.collid, c.collectionName
+			GROUP BY o.collid, c.publicName
 		';
 		$rs = $this->conn->query($sql);
 		$countMap = array();
@@ -104,7 +104,7 @@ class OccurrenceListFunctions extends OccurrenceManager{
 				$collid = (int)$r->collid;
 				$cnt = (int)$r->recordCnt;
 				$countMap[$collid] = $cnt;
-				$nameMap[$collid] = $this->cleanOutStr($r->collectionName);
+				$nameMap[$collid] = $r->publicName;
 			}
 			$rs->free();
 		}
@@ -135,12 +135,12 @@ class OccurrenceListFunctions extends OccurrenceManager{
 					}
 					if(!isset($nameMap[$parentCollid])){
 						$nameSql = '
-							SELECT collectionName
+							SELECT publicName
 							FROM omcollections
 							WHERE collid = ' . (int)$parentCollid;
 						$nameRs = $this->conn->query($nameSql);
 						if($nameRs && $nameRow = $nameRs->fetch_object()){
-							$nameMap[$parentCollid] = $this->cleanOutStr($nameRow->collectionName);
+							$nameMap[$parentCollid] = $nameRow->publicName;
 						}
 						if($nameRs){
 							$nameRs->free();
@@ -153,7 +153,7 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			}
 		}
 		$isIdentification = function($name){
-			return stripos($name, 'Identified ') !== false;
+			return stripos($name, 'Identifications') !== false;
 		};
 		foreach($countMap as $collid => $cnt){
 			$name = $nameMap[$collid] ?? '';
@@ -205,6 +205,27 @@ class OccurrenceListFunctions extends OccurrenceManager{
 				}
 			}
 			unset($subtype);
+			$sortedSubtypes = array();
+			
+			for($i = 0; $i < count($subtypes); $i++){
+				if(!empty($subtypes[$i]['isIdentification'])){
+					continue;
+				}
+			
+				$group = array($subtypes[$i]);
+			
+				if(isset($subtypes[$i + 1]) && !empty($subtypes[$i + 1]['isIdentification'])){
+					$group[] = $subtypes[$i + 1];
+				}
+			
+				$sortedSubtypes[] = $group;
+			}
+			
+			usort($sortedSubtypes, function($a, $b){
+				return strcasecmp($a[0]['name'], $b[0]['name']);
+			});
+			
+			$subtypes = array_merge(...$sortedSubtypes);
 			$retArr[] = array(
 				'family' => $familyNode['name'],
 				'total' => $familyTotal,
@@ -272,7 +293,7 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			$subtype['percent'] = round(($subtype['total'] / $totalRecords) * 100, 1);
 		}
 		usort($subtypes, function($a, $b){
-			return $b['total'] <=> $a['total'];
+			return strcasecmp($a['name'], $b['name']);
 		});
 		$retArr[] = array(
 			'family' => 'Other Repositories',

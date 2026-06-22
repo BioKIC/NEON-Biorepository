@@ -556,35 +556,41 @@
           },
           {
             "id": 73,
-            "name": "Genomic Extracts for Pathogen Testing (from Blood)",
-            "collid": 91
-          },
-          {
-            "id": 74,
-            "name": "Genomic Extracts for Pathogen Testing (from Ear Tissue)",
-            "collid": 90
-          },
-          {
-            "id": 75,
             "name": "Parasite Specimens",
             "collid": 85
           },
           {
-            "id": 75,
+            "id": 74,
+            "name": "Genomic Extracts for Pathogen Testing",
+            "children": [
+              {
+                "id": 75,
+                "name": "Blood-Derived",
+                "collid": 91
+              },
+              {
+                "id": 76,
+                "name": "Ear Tissue-Derived",
+                "collid": 90
+              }
+            ]
+          },
+          {
+            "id": 77,
             "name": "Whole Specimens",
             "children": [
               {
-                "id": 76,
+                "id": 78,
                 "name": "Bycatch Specimens (from Beetle Sampling)",
                 "collid": 17
               },
               {
-                "id": 77,
+                "id": 79,
                 "name": "Specimens (Incidental)",
                 "collid": 19
               },
               {
-                "id": 78,
+                "id": 80,
                 "name": "Specimens (Standard Sampling)",
                 "collid": 28
               }
@@ -593,21 +599,21 @@
         ]
       },
       {
-        "id": 79,
+        "id": 81,
         "name": "Reptiles and Amphibians",
         "children": [
           {
-            "id": 80,
+            "id": 82,
             "name": "Bycatch Specimens (from Beetle Sampling; Pooled Catches)",
             "collid": 12
           },
           {
-            "id": 81,
+            "id": 83,
             "name": "Bycatch Specimens (from Beetle Sampling; Unpooled Catches)",
             "collid": 15
           },
           {
-            "id": 82,
+            "id": 84,
             "name": "Bycatch Specimens (from Small Mammal and Fish Sampling)",
             "collid": 70
           }
