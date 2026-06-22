@@ -621,7 +621,6 @@ ER  -
 											background:#26a644;
 											color:#fff;
 											padding:0 8px;
-											font-weight:bold;
 											text-shadow: 0 1.25px 0 rgb(32, 129, 53);
 										">
 											' . number_format($publicationCount) . '
