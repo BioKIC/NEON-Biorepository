@@ -570,8 +570,66 @@ ER  -
 					<div class="flex justify-right space-x-3 mt-4">
 						<?php
 						if ($datasetKey) {
-							echo '<iframe src="https://www.gbif.org/api/widgets/literature/button?gbifDatasetKey=' . $datasetKey . '" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="false" style="width: 140px; height: 24px;"></iframe>';
-							// Check if the Bionomia badge has been created yet - typically lags ~2 weeks behind GBIF publication
+							$gbifUrl = "https://api.gbif.org/v1/literature/search?gbifDatasetKey={$datasetKey}&limit=0";
+
+							$ch = curl_init($gbifUrl);
+							curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+							$response = curl_exec($ch);
+							curl_close($ch);
+
+							$publicationCount = 0;
+
+							if ($response) {
+								$json = json_decode($response, true);
+								$publicationCount = $json['count'] ?? 0;
+							}
+							if ($publicationCount > 0) {
+								echo '
+								<a href="https://www.gbif.org/resource/search?contentType=literature&gbifDatasetKey=' . $datasetKey . '"
+								target="_blank"
+								style="text-decoration:none;">
+									<span style="
+										display:inline-flex;
+										height:24.5px;
+										font-family:Verdana,Geneva,sans-serif;
+										font-size:14px;
+										line-height:24px;
+										border-radius:4px;
+										overflow:hidden;
+										box-shadow: inset 0 -1px 0 rgba(0,0,0,.1);
+									">
+									    <span style="
+											width:28px;
+											background:#396e36;
+											display:flex;
+											align-items:center;
+											justify-content:center;
+										">
+											<img src="../../images/gbif-mark-white-logo.svg"
+												alt="GBIF"
+												style="width:22px;height:22px;">
+										</span>
+										<span style="
+											background:#5a5a5a;
+											color:#fff;
+											padding:0 8px;
+											text-shadow: 0 1.25px 0 rgb(66, 66, 66);
+										">
+											GBIF citations
+										</span>
+										<span style="
+											background:#26a644;
+											color:#fff;
+											padding:0 8px;
+											text-shadow: 0 1.25px 0 rgb(32, 129, 53);
+										">
+											' . number_format($publicationCount) . '
+										</span>
+									</span>
+								</a>';
+							}
+								// Check if the Bionomia badge has been created yet - typically lags ~2 weeks behind GBIF publication
+
 							$bionomiaUrl = 'https://api.bionomia.net/dataset/' . $datasetKey . '/badge.svg';
 							$ch = curl_init($bionomiaUrl);
 							curl_setopt($ch, CURLOPT_NOBODY, true);
