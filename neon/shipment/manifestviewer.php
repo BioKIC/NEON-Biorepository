@@ -7,49 +7,6 @@ include_once($SERVER_ROOT.'/neon/classes/OccurrenceHarvester.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=' . $CLIENT_ROOT . '/neon/shipment/manifestviewer.php?' . $_SERVER['QUERY_STRING']);
 
-// Log visitor IPs
-$logDir = $SERVER_ROOT . '/content/logs';
-
-if (!is_dir($logDir)) {
-    mkdir($logDir, 0775, true);
-}
-
-$logFile = $logDir . '/manifestviewer_ips.csv';
-
-$ip = $_SERVER['HTTP_X_FORWARDED_FOR']
-    ?? $_SERVER['REMOTE_ADDR']
-    ?? 'UNKNOWN';
-
-$user = $SYMB_UID ?? 'guest';
-
-$row = [
-    date('Y-m-d H:i:s'),
-    $ip,
-    $user
-];
-
-// Create file with header if it doesn't exist
-$fileExists = file_exists($logFile);
-
-$fp = fopen($logFile, 'a');
-
-if ($fp) {
-    flock($fp, LOCK_EX);
-
-    if (!$fileExists) {
-        fputcsv($fp, [
-            'timestamp',
-            'ip',
-            'user'
-        ]);
-    }
-
-    fputcsv($fp, $row);
-
-    flock($fp, LOCK_UN);
-    fclose($fp);
-}
-
 $shipmentPK = array_key_exists('shipmentPK', $_REQUEST) ? filter_var($_REQUEST['shipmentPK'], FILTER_SANITIZE_NUMBER_INT) : '';
 $sampleFilter = isset($_REQUEST['sampleFilter']) ? $_REQUEST['sampleFilter'] : '';
 $quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
