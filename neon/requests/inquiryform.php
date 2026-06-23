@@ -147,6 +147,10 @@ if($formSubmit == 'editStatus' && $isEditor){
 		$followUpType = $_POST['inqfollowuptype'] ?? '';
 		$followUpDate = $_POST['inqfollowupdate'] ?? '';
 		$followUpNotes = $_POST['inqfollowupnotes'] ?? '';
+		$suaLink = $_POST['inqsualink'] ?? '';
+		$csrLink = $_POST['inqcsrlink'] ?? '';
+
+
 
 	if (
 		!(
@@ -197,7 +201,9 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Inquiry Date';
 		}
 	}
-	
+	if (!empty($fulfillment) && empty($suaLink)) {
+		$errorMessage[] = 'A sample use agreement is required in order to fulfill a request.';
+	}	
 	if(!empty($active) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Fulfillment Date.';
 
 	if (!empty($errorMessage)) {
@@ -216,6 +222,8 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$followUpType,
 			$followUpDate,
 			$followUpNotes,
+			$suaLink,
+			$csrLink,
 			$SYMB_UID
 		);
 
@@ -700,7 +708,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 					</div>
 					<div id="editstatus" style="">
 						<form name="editingstatus" action="inquiryform.php?id=<?php echo $requestID; ?>" method="post" onsubmit="return verifyInquiryStatusForm(this);">
-							<h4>Note that dates must make sense chronologically in the order listed below. Only Pending Funding and Not Funded dates are not required.</h4>
+							<h4>Note that dates must make sense chronologically in the order listed below.</h4>
 							<fieldset>
 								<legend><?php echo 'Current status' ?></legend>
 								<div style="clear:both;padding-top:4px;float:left;">
@@ -762,8 +770,20 @@ if($formSubmit == 'editStatus' && $isEditor){
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
+										<strong><?php echo 'Link to Signed Sample Use Agreement: '?></strong>
+										<input name="inqsualink" type="text" style = 'width:400px' value="<?php echo $inquirydata['sampleUseAgreementLink']; ?>" />
+									</div>
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
 										<strong><?php echo 'Active/Shipment Date: '?></strong>
 										<input name="inqshipdate" type="date" value="<?php echo $inquirydata['activeDate']; ?>" />
+									</div>
+								</div>
+								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+									<div class="fieldDiv">
+										<strong><?php echo 'Link to Signed Confirmation of Sample Receipt: '?></strong>
+										<input name="inqcsrlink" type="text" style = 'width:400px' value="<?php echo $inquirydata['confirmationOfReceiptLink']; ?>" />
 									</div>
 								</div>
 							</fieldset>
