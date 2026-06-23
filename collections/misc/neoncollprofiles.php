@@ -84,6 +84,33 @@ $linkedCollections = $collManager->getLinkedCollections();
 			document.body.removeChild(tempTextarea);
 
 		}
+
+		<?php
+		if($datasetKey){
+			?>
+			async function loadGbifCount() {
+				const url = 'https://api.gbif.org/v1/literature/search?gbifDatasetKey=<?= $datasetKey ?>&limit=0';
+
+				try {
+					const response = await fetch(url);
+
+					if (!response.ok) {
+						throw new Error(`HTTP error: ${response.status}`);
+					}
+
+					const data = await response.json();
+
+					document.getElementById('gbif-count').textContent = data.count.toLocaleString();
+				} catch (error) {
+					console.error('Error retrieving GBIF count:', error);
+				}
+			}
+
+			// Run when the page loads
+			document.addEventListener('DOMContentLoaded', loadGbifCount);
+			<?php
+		}
+		?>
 		
 		function downloadBib() {
 		   const citationText = document.getElementById('citation').innerText;
@@ -215,7 +242,35 @@ ER  -
 			width: auto !important;
 			object-fit: contain;
 		}
-		
+		#gbif-citations{
+			display:inline-flex;
+			height:24.5px;
+			font-family:Verdana,Geneva,sans-serif;
+			font-size:13.5px;
+			color:#fff;
+			line-height:24px;
+			border-radius:4px;
+			overflow:hidden;
+			box-shadow: inset 0 -1px 0 rgba(0,0,0,.1);
+		}
+		#gbif-citations img{
+			width:24px;
+			height:24.5px;
+			background:#396e36;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+		}
+		#gbif-count{
+			background:#26a644;
+			padding:0 8px;
+			text-shadow: 0 1.25px 0 rgb(32, 129, 53), 0 0 0.8px #fff;
+		}
+		#gbif-text{
+			background:#5a5a5a;
+			padding:0 8px;
+			text-shadow: 0 1.25px 0 rgb(66, 66, 66), 0 0 0.8px #fff;
+		}
 	</style>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap" rel="stylesheet">
@@ -570,78 +625,20 @@ ER  -
 					<div class="flex justify-right space-x-3 mt-4">
 						<?php
 						if ($datasetKey) {
-							$gbifUrl = "https://api.gbif.org/v1/literature/search?gbifDatasetKey={$datasetKey}&limit=0";
-
-							$ch = curl_init($gbifUrl);
-							curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-							curl_setopt($ch, CURLOPT_TIMEOUT_MS, 2500);
-							$response = curl_exec($ch);
-							curl_close($ch);
-
-							$publicationCount = 0;
-
-							if ($response) {
-								$json = json_decode($response, true);
-								$publicationCount = $json['count'] ?? 0;
-							}
-							if ($publicationCount > 0) {
-								echo '
-								<a href="https://www.gbif.org/resource/search?contentType=literature&gbifDatasetKey=' . $datasetKey . '"
-								target="_blank"
-								style="text-decoration:none;">
-									<span style="
-										display:inline-flex;
-										height:24.5px;
-										font-family:Verdana,Geneva,sans-serif;
-										font-size:14px;
-										line-height:24px;
-										border-radius:4px;
-										overflow:hidden;
-										box-shadow: inset 0 -1px 0 rgba(0,0,0,.1);
-									">
-									    <span style="
-											width:28px;
-											background:#396e36;
-											display:flex;
-											align-items:center;
-											justify-content:center;
-										">
-											<img src="../../images/gbif-mark-white-logo.svg"
-												alt="GBIF"
-												style="width:22px;height:22px;">
-										</span>
-										<span style="
-											background:#5a5a5a;
-											color:#fff;
-											padding:0 8px;
-											text-shadow: 0 1.25px 0 rgb(66, 66, 66);
-										">
-											GBIF citations
-										</span>
-										<span style="
-											background:#26a644;
-											color:#fff;
-											padding:0 8px;
-											text-shadow: 0 1.25px 0 rgb(32, 129, 53);
-										">
-											' . number_format($publicationCount) . '
-										</span>
+							?>
+							<div class="flex justify-right space-x-3 mt-4">
+								<a href="https://www.gbif.org/resource/search?contentType=literature&gbifDatasetKey=<?= $datasetKey ?>" target="_blank" style="text-decoration:none;">
+									<span id="gbif-citations">
+										<img src="../../images/gbif-mark-white-logo.svg" alt="GBIF">
+										<span id="gbif-text">GBIF citations</span>
+										<span id="gbif-count"></span>
 									</span>
-								</a>';
-							}
-								// Check if the Bionomia badge has been created yet - typically lags ~2 weeks behind GBIF publication
-
-							$bionomiaUrl = 'https://api.bionomia.net/dataset/' . $datasetKey . '/badge.svg';
-							$ch = curl_init($bionomiaUrl);
-							curl_setopt($ch, CURLOPT_NOBODY, true);
-							curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-							curl_exec($ch);
-							$responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-							curl_close($ch);
-							// Check the response code - display image if exists
-							if ($responseCode === 200) {			
-								echo '<a href="https://bionomia.net/dataset/' . $datasetKey . '"><img src="' . $bionomiaUrl . '" alt="Bionomia dataset badge" style="width:262px; height:24px;"></a>';
-							}
+								</a>
+								<a href="https://bionomia.net/dataset/<?= $datasetKey ?>">
+									<img src="https://api.bionomia.net/dataset/<?= $datasetKey ?>/badge.svg" onerror="this.style.display='none'" alt="Bionomia dataset badge" style="width:262px; height:24px; padding-left:10px;">
+								</a>
+							</div>
+							<?php
 						}
 						?>
 					</div>
