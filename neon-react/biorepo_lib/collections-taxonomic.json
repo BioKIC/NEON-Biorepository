@@ -521,76 +521,90 @@
         ]
       },
       {
-        "id": 67,
         "name": "Small Mammals",
         "children": [
           {
-            "id": 68,
-            "name": "Blood Samples",
+            "name": "Blood",
             "collid": 24
           },
           {
-            "id": 69,
             "name": "DNA Extracts",
             "collid": 71
           },
           {
-            "id": 70,
-            "name": "Ear Tissue",
-            "collid": 25
-          },
-          {
-            "id": 71,
-            "name": "Fecal Samples",
+            "name": "Fecal",
             "collid": 26
           },
           {
-            "id": 72,
-            "name": "Hair Samples",
+            "name": "Hair",
             "collid": 27
           },
           {
-            "id": 72,
-            "name": "Prepared Tissues",
-            "collid": 118
-          },
-          {
-            "id": 73,
-            "name": "Parasite Specimens",
+            "name": "Ecto-Parasites",
             "collid": 85
           },
           {
-            "id": 74,
+            "name": "Tissues",
+            "children": [
+              {
+                "name": "Ear Punches",
+                "collid": 25
+              },
+              {
+                "name": "Gastrointestinal Tracts",
+                "collid": 119
+              },
+              {
+                "name": "Hearts",
+                "collid": 118
+              },
+              {
+                "name": "Lungs",
+                "collid": 120
+              },
+              {
+                "name": "Kidneys",
+                "collid": 121
+              },
+              {
+                "name": "Spleens",
+                "collid": 122
+              },
+              {
+                "name": "Livers",
+                "collid": 123
+              },
+              {
+                "name": "Muscle",
+                "collid": 124
+              }
+            ]
+          },
+          {
             "name": "Genomic Extracts for Pathogen Testing",
             "children": [
               {
-                "id": 75,
                 "name": "Blood-Derived",
                 "collid": 91
               },
               {
-                "id": 76,
-                "name": "Ear Tissue-Derived",
+                "name": "Ear Punch-Derived",
                 "collid": 90
               }
             ]
           },
           {
-            "id": 77,
             "name": "Whole Specimens",
             "children": [
               {
-                "id": 78,
                 "name": "Bycatch Specimens (from Beetle Sampling)",
                 "collid": 17
               },
               {
-                "id": 79,
                 "name": "Specimens (Incidental)",
                 "collid": 19
               },
               {
-                "id": 80,
                 "name": "Specimens (Standard Sampling)",
                 "collid": 28
               }
