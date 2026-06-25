@@ -66,13 +66,13 @@ foreach($combinedCollectionFamilies as &$family){
 }
 unset($family);
 
-//material sample
+//gets material sample information for display
 $materialSampleArr = [];
 $dbSearchTerm = $collManager->getSearchTerm('db');
 
 if($dbSearchTerm){
     $dbArr = explode(',', $dbSearchTerm);
-    if (array_intersect($dbArr, [118, 17, 19, 28])) {
+    if (array_intersect($dbArr, [118, 119, 120, 121, 122, 123, 124, 17, 19, 28])) {
         $materialSampleArr = $occurrenceListFunctions->getMaterialSampleTypes(array_keys($occurArr));
     }
 }
@@ -534,14 +534,15 @@ $_SESSION['citationvar'] = $searchVar;
 									//neon edit
 									if(!empty($materialSampleArr[$occid])){
 										echo '<div style="margin-top:4px;">';
-										echo '<strong>Prepared Tissues:</strong> ';
+										echo '<strong>Material Samples:</strong> ';
 									
 										$sampleDisplayArr = [];
 									
 										foreach($materialSampleArr[$occid] as $sample){
 											$sampleDisplayArr[] =
+												"'" .
 												htmlspecialchars($sample['sampleType'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
-												. ' (' .
+												. "' (" .
 												htmlspecialchars($sample['disposition'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
 												. ')';
 										}
