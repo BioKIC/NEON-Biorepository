@@ -33,6 +33,7 @@ $LANG['CONFIDENCE_IN_DET'] = 'Confidence in Determination';
 $LANG['DETERMINER'] = 'Determiner';
 $LANG['DATE'] = 'Date';
 $LANG['REFERENCE'] = 'Reference';
+$LANG['TAXON_REMARKS'] = 'Taxon Remarks';
 $LANG['MAKE_THIS_CURRENT'] = 'Make this the current determination';
 $LANG['ADD_TO_PRINT'] = 'Add to Annotation Print Queue';
 $LANG['SUBMIT_DET'] = 'Submit Determination';

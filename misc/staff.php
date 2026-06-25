@@ -1,4 +1,6 @@
 <?php
+header("Location: https://www.neonscience.org/asu-neon-biorepository-staff", true, 302);
+exit;
 include_once('../config/symbini.php');
 header("Content-Type: text/html; charset=" . $CHARSET);
 ?>

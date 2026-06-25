@@ -29,7 +29,9 @@ if ($isEditor) {
 	if ($action == 'saveEdits') {
 		$statusStr = $collManager->collectionUpdate($_POST);
 		if ($statusStr === true) {
-			header('Location: collprofiles.php?collid=' . $collid);
+			// neon edit
+			header('Location: neoncollprofiles.php?collid=' . $collid);
+			// end edit
 		} else {
 			$statusStr = $collManager->getErrorMessage();
 		}

@@ -33,7 +33,7 @@ $displayLeftMenu = false;
 include($SERVER_ROOT.'/includes/header.php');
 ?>
 <div class="navpath">
-	<a href="../index.php">Home</a> &gt;&gt;
+	<a href="../../index.php">Home</a> &gt;&gt;
 	<b>NEON Management Tools</b>
 </div>
 <?php
@@ -41,36 +41,35 @@ if($isEditor){
 	?>
 	<div id="innertext">
 		<fieldset style="padding:10px;">
-			<legend><b>Sample Management Tools</b></legend>
-			<ul>
-				<li>Quick search:
+			<legend><b>Management Tools</b></legend>
+			<label>Quick search:</label>
 					<form name="sampleQuickSearchFrom" action="shipment/manifestviewer.php" method="post" style="display: inline" >
 						<input name="quicksearch" type="text" value="" onchange="this.form.submit()" style="width:400px;" />
 					</form>
-				</li>
-				<li><a href="shipment/manifestloader.php">Load and Process New Manifests</a></li>
-				<li><a href="shipment/manifestsearch.php">Manifest Listing and Advanced Search</a></li>
+			<h3>Sample Management</h3>
+			<ul>
+				<li><a href="shipment/manifestloader.php">Submit New Manifests</a></li>
+				<li><a href="shipment/manifestsearch.php">Manifest Search</a></li>
+				<li><a href="../collections/loans/index.php">Loan Management</a></li>
+				<li><a href="../collections/reports/labelmanager.php">Label Printing</a></li>
+			</ul>
+			<h3>Data Management</h3>
+			<ul>
+				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
 				<?php
 				if($IS_ADMIN){
 					?>
 					<li><a href="igsncontrol.php">NEON IGSN Control Panel</a></li>
 					<li><a href="editor/neoneditor.php">NEON Occurrence and Extended Data Editor</a></li>
+					<li><a href="editor/neonnomenclaturaladjustments.php">NEON Nomenclatural Adjustment</a></li>
+					<li><a href="editor/annotationdashboard.php">Annotation Label Dashboard</a></li>
 					<?php
 				}
 				?>
+				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
 			</ul>
-		</fieldset>
-		<fieldset>
-			<legend><b>Request Tools</b></legend>
-			<ul>
-				<li><a href="requests/inquiries.php">Inquiry list</a></li>
-				<li><a href="requests/requestreport.php">Request Status Report</a></li>
-				<li><a href="requests/index.php">Create New Inquiry Record</a></li>
-			</ul>
-		</fieldset>
-		<fieldset>
-			<legend><b>Reports</b></legend>
+			<h3>Reporting</h3>
 			<ul>
 				<li><a href="#" onclick="$('.nps-report').show();return false">NPS Year End Reports</a></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=110&year=2020" onclick="$('#BLDE20-working').show();">BLDE - 2020</a><span id="BLDE20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
@@ -82,11 +81,7 @@ if($isEditor){
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=99&year=2019" onclick="$('#LECO19-working').show();">LECO - 2019</a><span id="LECO19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=131&year=2019" onclick="$('#YELL19-working').show();">YELL - 2019</a><span id="YELL19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li><a href="loans.php">Loans Reports</a></li>
-				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
-				<li><a href="shipment/prepreports.php">Preparations Report</a></li>
-				<li><a href="neonreports/monthlyreportactions.php">Monthly Report</a></li>
-				<li><a href="neonreports/quarterlyreportactions.php">Quarterly Sample Use Report</a></li>
-
+				<li><a href="shipment/prepreports.php">Preparations Reports</a></li>
 			</ul>
 		</fieldset>
 	</div>
@@ -95,7 +90,7 @@ if($isEditor){
 else{
 	?>
 	<div style='font-weight:bold;margin:30px;'>
-		You do not have permissions to access shipment managment tools
+		You do not have permissions to access NEON management tools
 	</div>
 	<?php
 }

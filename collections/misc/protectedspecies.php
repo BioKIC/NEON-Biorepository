@@ -1,4 +1,6 @@
 <?php
+header("Location: https://biorepo.neonscience.org", true, 302);
+exit;
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceProtectedSpecies.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/misc/protectedspecies.' . $LANG_TAG . '.php')){

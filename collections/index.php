@@ -1,4 +1,6 @@
 <?php
+header("Location: https://biorepo.neonscience.org/portal/collections/misc/browsecollprofiles.php", true, 302);
+exit;
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/content/lang/collections/sharedterms.'.$LANG_TAG.'.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceManager.php');

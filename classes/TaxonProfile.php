@@ -741,7 +741,9 @@ class TaxonProfile extends Manager {
 	*/
 	public function getOccTaxonInDbCnt($limitRank = 170, $collidStr = 'all'){
 		$count = -1;
-		if ($this->rankId >= $limitRank) {
+		//neon edit, add unranked nodes
+		if ($this->rankId >= $limitRank || (int)$this->rankId === 12) {
+		//end neon edit
 			//$sql = 'SELECT COUNT(o.occid) as cnt FROM omoccurrences o JOIN (SELECT DISTINCT e.tid, t.sciname FROM taxaenumtree e JOIN taxa t ON e.tid = t.tid WHERE parenttid = '.$this->tid.' OR e.tid = '.$this->tid.') AS parentAndChildren ON o.tidinterpreted = parentAndChildren.tid ';
 			$sql = 'SELECT COUNT(o.occid) as cnt
 				FROM omoccurrences o JOIN (SELECT DISTINCT ts.tid FROM taxaenumtree e JOIN taxa t ON e.tid = t.tid INNER JOIN taxstatus ts ON e.tid = ts.tidaccepted

@@ -12,7 +12,9 @@ $LANG['RSS_FEED'] = 'RSS Feed';
 $LANG['CONTACT'] = 'Contacts';
 $LANG['HOMEPAGE'] = 'Homepage';
 $LANG['MORE_INFO'] = 'More Information';
-$LANG['COLLECTION_SEARCH'] = 'Collection Search Page';
+//neon edit
+$LANG['COLLECTION_SEARCH'] = 'Sample Type Search Page';
+//end neon edit
 $LANG['UPDATE_STATISTICS'] = 'Updating statistics related to this collection...';
 $LANG['DEACTIVATED'] = 'Deactivated';
 $LANG['DEACTIVATED_MESSAGE'] = 'Certain management options are only available for Live Managed Datasets. Contact portal administrator if collection needs to be reclassified.';
@@ -67,11 +69,15 @@ $LANG['DATA_AGGREGATE'] = 'Data harvested from a data aggregator';
 $LANG['DATA_SNAPSHOT'] = 'Data snapshot of local collection database';
 $LANG['LAST_UPDATE'] = 'Last Update';
 $LANG['GLOBAL_UNIQUE_ID'] = 'Global Unique Identifier';
-$LANG['DWCA_PUB'] = 'DwC-Archive Access Point';
+//neon edit
+$LANG['DWCA_PUB'] = 'DwC-Archive';
+//end neon edit
 $LANG['LIVE_DOWNLOAD'] = 'Live Data Download';
 $LANG['FULL_DATA'] = 'DwC-Archive File';
 $LANG['IPT_SOURCE'] = 'IPT / DwC-A Source';
-$LANG['DIGITAL_METADATA'] = 'Digital Metadata';
+//neon edit
+$LANG['DIGITAL_METADATA'] = 'Metadata';
+//end neon edit
 $LANG['USAGE_RIGHTS'] = 'Usage Rights';
 $LANG['USAGE_POLICY'] = 'Usage policy';
 $LANG['RIGHTS_HOLDER'] = 'Rights Holder';
@@ -80,7 +86,9 @@ $LANG['GBIF_DATASET'] = 'GBIF Dataset page';
 $LANG['IDIGBIO_DATASET'] = 'iDigBio Dataset page';
 $LANG['ADDRESS'] = 'Address';
 $LANG['EDIT_INST'] = 'Edit institution information';
-$LANG['COLL_STATISTICS'] = 'Collection Statistics';
+//neon edit
+$LANG['COLL_STATISTICS'] = 'Sample Type Statistics';
+//end neon edit
 $LANG['SPECIMEN_RECORDS'] = 'specimen records';
 $LANG['GEOREFERENCED'] = 'georeferenced';
 $LANG['WITH_IMAGES'] = 'with media';

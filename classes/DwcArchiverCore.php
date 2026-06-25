@@ -90,7 +90,7 @@ class DwcArchiverCore extends Manager{
 			'georeferenceVerificationStatus', 'habitat'
 		);
 
-		//ini_set('memory_limit','512M');
+		ini_set('memory_limit','512M');
 		set_time_limit(1800);
 	}
 
@@ -794,6 +794,38 @@ class DwcArchiverCore extends Manager{
 	public function createDwcArchive(){
 		$status = false;
 		$archiveFile = '';
+		//neon edit
+		if(isset($this->collArr)){
+			$collid = key($this->collArr);
+	
+			if($collid == 117){
+				$this->logOrEcho("Humboldt Tick Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
+	
+				$githubUrl = 'https://raw.githubusercontent.com/sunray1/NEONTickstoHumboldt/master/outputs/zipped/DwC-A.zip';
+				$archiveFile = $this->targetPath . 'NEON-TICC-H_DwC-A.zip';
+	
+				$this->logOrEcho("Downloading archive from: $githubUrl\n");
+				$this->logOrEcho("Saving to: $archiveFile\n");
+	
+				$data = file_get_contents($githubUrl);
+	
+				if($data === false){
+					$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
+					return '';
+				}
+	
+				if(file_put_contents($archiveFile, $data) === false){
+					$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
+					return '';
+				}
+	
+				$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
+				$this->logOrEcho("\n-----------------------------------------------------\n");
+	
+				return $archiveFile;
+			}
+		}
+		//end neon edit
 		if($fileName = $this->getFileName()){
 			$this->logOrEcho('Creating DwC-A file: ' . $fileName . "\n");
 
@@ -1676,10 +1708,49 @@ class DwcArchiverCore extends Manager{
 		$dwcOccurManager->setIncludeAssociatedSequences();
 		$dwcOccurManager->setIncludePaleo($this->hasPaleo);
 		if (!$this->occurrenceFieldArr) $this->occurrenceFieldArr = $dwcOccurManager->getOccurrenceArr($this->schemaType, $this->extended);
+		//neon edit
+		if($this->schemaType === 'symbiota'){
+			$newFields = [];
+			foreach($this->occurrenceFieldArr['fields'] as $key => $val){
+				$newFields[$key] = $val;
+				if($key === 'catalogNumber'){
+					$newFields['sampleID'] = 'ids.sampleID';
+					$newFields['sampleCode'] = 'ids.sampleCode';
+				}
+			}
+			$this->occurrenceFieldArr['fields'] = $newFields;
+		}
+		//end neon edit
 		//Output records
 		$this->applyConditions();
 		if (!$this->conditionSql) return false;
 		$sql = $dwcOccurManager->getSqlOccurrences($this->occurrenceFieldArr['fields']);
+		//neon edit
+		if($this->schemaType === 'symbiota'){
+			$isAdmin = (
+				!empty($GLOBALS['IS_ADMIN']) ||
+				!empty($GLOBALS['USER_RIGHTS']['CollAdmin']) ||
+				!empty($GLOBALS['USER_RIGHTS']['CollEditor'])
+			) ? 1 : 0;
+		
+			$sql .= ' LEFT JOIN (
+				SELECT occid,
+					-- use hash if exists and not admin
+					CASE 
+						WHEN MAX(CASE WHEN identifierName = "NEON sampleID Hash" THEN identifierValue END) IS NOT NULL 
+							 AND '.$isAdmin.' = 0
+						THEN MAX(CASE WHEN identifierName = "NEON sampleID Hash" THEN identifierValue END)
+						ELSE MAX(CASE WHEN identifierName = "NEON sampleID" THEN identifierValue END)
+					END AS sampleID,
+		
+					-- sampleCode 
+					MAX(CASE WHEN identifierName = "NEON sampleCode (barcode)" THEN identifierValue END) AS sampleCode
+		
+				FROM omoccuridentifiers
+				GROUP BY occid
+			) ids ON o.occid = ids.occid ';
+		}
+		//end neon edit
 		$sql .= $this->getTableJoins() . $this->conditionSql;
 		if ($this->schemaType != 'backup') $sql .= ' LIMIT 1000000';
 		//Output header
@@ -2029,14 +2100,15 @@ class DwcArchiverCore extends Manager{
 								$r['usageterms'] = 'CC BY-SA (Attribution-ShareAlike)';
 							}
 							elseif (strpos($r['webstatement'], '/by-nc/')) {
-								$r['usageterms'] = 'CC BY-NC (Attribution-NonCommercial-ShareAlike)';
+								$r['usageterms'] = 'CC BY-NC (Attribution-NonCommercial)';
 							}
 							elseif (strpos($r['webstatement'], '/by-nc-sa/')) {
 								$r['usageterms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
 							}
 						}
 					}
-					if (!$r['usageterms']) $r['usageterms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
+					//if (!$r['usageterms']) $r['usageterms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
+					if (!$r['usageterms']) $r['usageterms'] = 'CC BY-SA (Attribution-ShareAlike)'; // NEON customization
 				}
 				$r['providermanagedid'] = 'urn:uuid:' . $r['providermanagedid'];
 				$r['associatedSpecimenReference'] = $urlPathPrefix . 'collections/individual/index.php?occid=' . $r['occid'];
@@ -2174,16 +2246,49 @@ class DwcArchiverCore extends Manager{
 				break;
 		}
 
-		$output = "This data package was downloaded from a " . $GLOBALS['DEFAULT_TITLE'] . " " . $citationPrefix . " on " . date('Y-m-d H:i:s') . ".\n\nPlease use the following format to cite this dataset:\n";
+		//neon edit
+		$output = "This data package was downloaded from the " . $GLOBALS['DEFAULT_TITLE'] . " on " . date('Y-m-d H:i:s') . ".\n\nPlease use the following to cite this dataset:\n";
 
 		ob_start();
-		if (file_exists($GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '.php')) {
-			include $GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '.php';
-		} else {
-			include $GLOBALS['SERVER_ROOT'] . '/includes/citation' . $citationFormat . '_template.php';
-		}
+		include $GLOBALS['SERVER_ROOT'] . '/includes/citationneondownloadcollection.php';
 		$output .= ob_get_clean();
-		$output .= "\n\nFor more information on citation formats, please see the following page: " . GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/includes/usagepolicy.php";
+		$output .= "\n\n";
+		$output .= "------------------------------------------------------------------\n";
+		$output .= "NEON BIOREPOSITORY CITATION GUIDANCE\n";
+		$output .= "------------------------------------------------------------------\n\n";
+		
+		$output .= "NEON sample data are offered under the Creative Commons Attribution ";
+		$output .= "(CC BY 4.0) license. Attribution is required when using NEON data, ";
+		$output .= "including a link to the license and an indication of any changes made.\n\n";
+		
+		$output .= "License: https://creativecommons.org/licenses/by/4.0/\n\n";
+		
+		$output .= "Records in the NEON Biorepository Sample Portal are periodically ";
+		$output .= "updated and may include value-added data derived from additional ";
+		$output .= "analysis. Because these records are updated on a rolling basis and ";
+		$output .= "are not tied to a specific NEON data release, these data should be ";
+		$output .= "considered provisional and subject to change.\n\n";
+		
+		$output .= "Recommended citation format:\n\n";
+		
+		$output .= "NEON (National Ecological Observatory Network) Biorepository. ";
+		$output .= "[Collection Name]. Data accessed from ";
+		$output .= GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'];
+		$output .= "/collections/misc/neoncollprofiles.php?collid=[collid] ";
+		$output .= "on [date]. ";
+		$output .= "Licensed under CC BY 4.0 ";
+		$output .= "(https://creativecommons.org/licenses/by/4.0/).\n\n";
+		
+		$output .= "If data were modified, filtered, or reformatted for analysis, ";
+		$output .= "please indicate those changes in your citation.\n\n";
+		
+		$output .= "If additional data were obtained directly from the NEON Data Portal, ";
+		$output .= "the relevant NEON Data Product(s) should also be cited according to ";
+		$output .= "NEON data citation guidance.\n\n";
+		
+		$output .= "For more information on citation requirements, please see:\n";
+		$output .= GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/misc/cite.php";
+		//end neon edit
 
 		fwrite($fh, $output);
 

@@ -36,7 +36,7 @@ if($SYMB_UID){
 		}
 		echo '<li>'.$occMsg.'</li>';
 	}
-	echo '<li><a href="taxonomy/taxonomydynamicdisplay.php?target=' . htmlspecialchars($tid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank">Taxonomic Tree</a></li>';
+	//echo '<li><a href="taxonomy/taxonomydynamicdisplay.php?target=' . htmlspecialchars($tid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank">Taxonomic Tree</a></li>';
 	echo '</ul>';
 	echo '</div>';
 	//TODO: list other internal resources such as Taxon Traits, etc
@@ -57,7 +57,7 @@ if($SYMB_UID){
 		echo '<div class="resource-title">'.(isset($LANG['TAXONOMIC_RESOURCES'])?$LANG['TAXONOMIC_RESOURCES']:'Taxonomic Resources').'</div>';
 		echo '<ul>';
 		foreach($resourceArr as $resourceObj){
-			echo '<li><a href="'.$resourceObj['url'].'" target="_blank">'.$resourceObj['name'].' #'.$resourceObj['id'].($resourceObj['guid']?$resourceObj['guid']:'').'</a></li>';
+			echo '<li><a href="'.$resourceObj['url'].'">'.$resourceObj['name'].' #'.$resourceObj['id'].($resourceObj['guid']?$resourceObj['guid']:'').'</a></li>';
 			if($resourceObj['notes']) echo '<li style="margin-left:10px">'.$resourceObj['notes'].'</li>';
 		}
 		echo '</ul>';

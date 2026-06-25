@@ -49,7 +49,9 @@ class OccurrenceDataset{
 			while ($r = $rs->fetch_object()) {
 				$retArr['name'] = $r->name;
 				$retArr['notes'] = $r->notes;
-				$retArr['description'] = $r->description;
+				//neon edit - remove font family from pasted text
+				$retArr['description'] = $this->removeFontFamily($r->description);
+				//end neon edit
 				$retArr['uid'] = $r->uid;
 				$retArr['dynamicproperties'] = $r->dynamicProperties;
 				$retArr['sort'] = $r->sortsequence;
@@ -372,6 +374,39 @@ class OccurrenceDataset{
 		}
 		return $status;
 	}
+
+	//neon edit - remove font families from html, which mess up the rendering
+	public function removeFontFamily($html) {
+		$dom = new DOMDocument();
+	
+		libxml_use_internal_errors(true);
+		$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html,
+			LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+		libxml_clear_errors();
+	
+		$xpath = new DOMXPath($dom);
+	
+		foreach ($xpath->query('//*[@style]') as $node) {
+			$style = $node->getAttribute('style');
+	
+			$style = preg_replace(
+				'/(?:^|;)\s*font-family\s*:\s*[^;]+;?/i',
+				'',
+				$style
+			);
+	
+			$style = trim($style, '; ');
+	
+			if ($style) {
+				$node->setAttribute('style', $style);
+			} else {
+				$node->removeAttribute('style');
+			}
+		}
+	
+		return $dom->saveHTML();
+	}
+	//end neon edit
 
 	//General setters and getters
 	public function getUserList($term) {

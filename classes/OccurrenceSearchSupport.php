@@ -367,23 +367,62 @@ class OccurrenceSearchSupport {
 	}
 
 	public static function getDbWhereFrag($dbSearchTerm){
+		global $SERVER_ROOT;
 		$sqlRet = "";
-		//Do nothing if db = all
-		if($dbSearchTerm != 'all'){
-			if($dbSearchTerm == 'allspec'){
-				$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype = "Preserved Specimens")) ';
+		//neon edit
+		if(strpos($dbSearchTerm, 'all') !== false){
+		
+			// load JSON file
+			$jsonPath = $SERVER_ROOT.'/neon-react/biorepo_lib/collections-taxonomic.json';
+			$json = file_get_contents($jsonPath);
+			$data = json_decode($json, true);
+		
+			$collids = [];
+			self::extractCollids($data, $collids);
+		
+			$dbParts = explode(',', $dbSearchTerm);
+		
+			foreach($dbParts as $part){
+				if(is_numeric($part)){
+					$collids[] = (int)$part;
+				}
 			}
-			elseif($dbSearchTerm == 'allobs'){
-				$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype IN("General Observations","Observations"))) ';
-			} else {
-				// Check in case there is ; inside dbSearchTerm
-				$dbArr = explode(';',$dbSearchTerm);
-				$dbStr = "o.collid IN(" . (is_array($dbArr)? implode(',', $dbArr): $dbArr) . ")";
-				$sqlRet .= 'AND ('.$dbStr.') ';
+		
+			$collids = array_unique($collids);
+		
+			if($collids){
+				$sqlRet .= 'AND (o.collid IN('.implode(',', $collids).')) ';
 			}
 		}
+		//end neon edit
+		elseif($dbSearchTerm == 'allspec'){
+			$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype = "Preserved Specimens")) ';
+		}
+		elseif($dbSearchTerm == 'allobs'){
+			$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype IN("General Observations","Observations"))) ';
+		}
+		else {
+			$dbArr = explode(';',$dbSearchTerm);
+			$dbStr = "o.collid IN(" . (is_array($dbArr)? implode(',', $dbArr): $dbArr) . ")";
+			$sqlRet .= 'AND ('.$dbStr.') ';
+		}
+	
 		return $sqlRet;
 	}
+	
+	//neon edit
+	private static function extractCollids($nodes, &$collids = []) {
+		foreach ($nodes as $node) {
+			if (isset($node['collid'])) {
+				$collids[] = (int)$node['collid'];
+			}
+			if (isset($node['children']) && is_array($node['children'])) {
+				self::extractCollids($node['children'], $collids);
+			}
+		}
+		return $collids;
+	}
+	//end neon edit
 
 	public function setCollidStr($str){
 		$this->collidStr = $str;

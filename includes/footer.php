@@ -1,4 +1,4 @@
-		<footer id="footer">
+		<footer id="main-footer">
 			<div class="l--full-width footer-bottom clearfix">
 				<div class="footer-bottom-left">
 					<a href="https://www.nsf.gov" target="_blank" title="NSF Link" style="margin:0px 30px; width:200px">

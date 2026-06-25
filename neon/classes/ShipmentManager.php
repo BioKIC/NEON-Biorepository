@@ -152,6 +152,65 @@ class ShipmentManager{
 		if($samplePK) return array_shift($retArr);
 		return $retArr;
 	}
+	
+	public function getSampleHeaders($samplePK = null, $filter = null) {
+		$headerArr = array(
+			'sampleID','hashedSampleID','alternativeSampleID','sampleCode','sampleClass','sampleUuid','taxonID','individualCount',
+			'filterVolume','namedLocation','domainRemarks','collectDate','quarantineStatus','sampleReceived','acceptedForAnalysis',
+			'sampleCondition','dynamicProperties','symbiotaTarget','sampleNotes','occurErr','occid','harvestTimestamp','checkinUser',
+			'checkinRemarks','checkinTimestamp'
+		);
+	
+		$targetArr = array();
+	
+		$sql = 'SELECT s.samplePK, s.sampleID, s.hashedSampleID, s.alternativeSampleID, s.sampleCode, s.sampleClass, s.sampleUuid, 
+			s.taxonID, s.individualCount, s.filterVolume, s.namedLocation, s.domainRemarks, s.collectDate, s.quarantineStatus, 
+			s.sampleReceived, s.acceptedForAnalysis, s.sampleCondition, s.dynamicProperties, s.symbiotaTarget, s.notes AS sampleNotes, 
+			s.errorMessage AS occurErr, CONCAT_WS(", ", u.lastname, u.firstname) AS checkinUser, s.checkinRemarks, 
+			s.checkinTimestamp, s.occid, s.harvestTimestamp 
+			FROM NeonSample s 
+			LEFT JOIN users u ON s.checkinuid = u.uid ';
+	
+		if ($samplePK) {
+			$sql .= 'WHERE s.samplePK = '.$samplePK.' ';
+		} else {
+			$sql .= 'WHERE s.shipmentPK = '.$this->shipmentPK.' ';
+			if ($filter) {
+				if ($filter == 'notCheckedIn') {
+					$sql .= 'AND s.checkinTimestamp IS NULL ';
+				} elseif ($filter == 'missingOccid') {
+					$sql .= 'AND s.occid IS NULL ';
+				} elseif ($filter == 'notAccepted') {
+					$sql .= 'AND s.acceptedForAnalysis = 0 ';
+				} elseif ($filter == 'altIds') {
+					$sql .= 'AND s.alternativeSampleID IS NOT NULL ';
+				} elseif ($filter == 'harvestingError') {
+					$sql .= 'AND s.errorMessage IS NOT NULL ';
+				}
+			}
+			$sql .= 'ORDER BY s.sampleID, s.sampleCode';
+		}
+	
+		$rs = $this->conn->query($sql);
+	
+		while ($r = $rs->fetch_assoc()) {
+			foreach ($headerArr as $fieldName) {
+				if ($r[$fieldName] !== '' && $r[$fieldName] !== null && !in_array($fieldName, $targetArr)) {
+					$targetArr[] = $fieldName;
+				}
+			}
+		}
+
+		if (!in_array('checkinTimestamp', $targetArr)) {
+			$targetArr[] = 'checkinUser';
+			$targetArr[] = 'checkinTimestamp';
+		}
+	
+		$rs->free();
+	
+		return $targetArr;
+	}
+
 
 	//Shipment import functions
 	public function uploadManifestFile(){
@@ -404,6 +463,63 @@ class ShipmentManager{
 		return $retArr;
 	}
 
+	public function getDynamicPropertyTags() {
+		$tagArr = [];
+	
+		if (!$this->shipmentPK) return $tagArr;
+	
+		$sql = "
+		SELECT 'containerID' AS propKey,
+			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.containerID')) AS propValue,
+			   COUNT(*) as cnt
+		FROM NeonSample
+		WHERE shipmentPK = ?
+		  AND JSON_EXTRACT(dynamicProperties, '$.containerID') IS NOT NULL
+		GROUP BY propValue
+	
+		UNION ALL
+	
+		SELECT 'plateID' AS propKey,
+			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.plateID')) AS propValue,
+			   COUNT(*) as cnt
+		FROM NeonSample
+		WHERE shipmentPK = ?
+		  AND JSON_EXTRACT(dynamicProperties, '$.plateID') IS NOT NULL
+		GROUP BY propValue
+		
+		UNION ALL
+	
+		SELECT 'plateBarcode' AS propKey,
+			   JSON_UNQUOTE(JSON_EXTRACT(dynamicProperties, '$.plateBarcode')) AS propValue,
+			   COUNT(*) as cnt
+		FROM NeonSample
+		WHERE shipmentPK = ?
+		  AND JSON_EXTRACT(dynamicProperties, '$.plateID') IS NOT NULL
+		GROUP BY propValue
+		";
+	
+		$stmt = $this->conn->prepare($sql);
+		$stmt->bind_param("iii", $this->shipmentPK, $this->shipmentPK, $this->shipmentPK);
+		$stmt->execute();
+		$result = $stmt->get_result();
+	
+		while ($row = $result->fetch_assoc()) {
+			if (!$row['propValue']) continue;
+	
+			$key = $row['propKey'];
+			$val = $row['propValue'];
+			$cnt = $row['cnt'];
+	
+			if (!isset($tagArr[$key])) {
+				$tagArr[$key] = [];
+			}
+	
+			$tagArr[$key][$val] = $cnt;
+		}
+	
+		return $tagArr;
+	}
+	
 	//Check-in functions
 	public function checkinShipment($postArr){
 		$sql = 'UPDATE NeonShipment '.
@@ -653,7 +769,7 @@ class ShipmentManager{
 			//Update target record
 			$sql = 'UPDATE NeonSample
 				SET sampleID = ?, alternativeSampleID = ?, sampleCode = ?, sampleClass = ?, sampleUuid = ?,quarantineStatus = ?, namedLocation = ?, collectDate = ?, taxonID = ?,
-				individualCount = ?, filterVolume = ?, domainRemarks = ?, notes = ? WHERE (samplepk = ?)';
+				individualCount = ?, filterVolume = ?, domainRemarks = ?, notes = ?, checkinRemarks = ? WHERE (samplepk = ?)';
 			$stmt = $this->conn->stmt_init();
 			$stmt->prepare($sql);
 			if($stmt->error==null) {
@@ -667,8 +783,9 @@ class ShipmentManager{
 				$filterVol = isset($postArr['filtervolume'])&&$postArr['filtervolume']?$postArr['filtervolume']:NULL;
 				$domainRemarks = isset($postArr['domainremarks'])&&$postArr['domainremarks']?$postArr['domainremarks']:NULL;
 				$sampleNotes = isset($postArr['samplenotes'])&&$postArr['samplenotes']?$postArr['samplenotes']:NULL;
-				$stmt->bind_param('sssssssssiissi', $sampleID, $altID, $sampleCode, $sampleClass, $sampleUuid, $quarStatus, $namedLoc, $collDate, $taxonID,
-					$indCnt, $filterVol, $domainRemarks, $sampleNotes, $postArr['samplepk']);
+				$checkinRemarks = isset($postArr['checkinremarks'])&&$postArr['checkinremarks']?$postArr['checkinremarks']:NULL;
+				$stmt->bind_param('sssssssssiisssi', $sampleID, $altID, $sampleCode, $sampleClass, $sampleUuid, $quarStatus, $namedLoc, $collDate, $taxonID,
+					$indCnt, $filterVol, $domainRemarks, $sampleNotes, $checkinRemarks, $postArr['samplepk']);
 				$stmt->execute();
 				if($stmt->error==null) $status = true;
 				else{
@@ -1107,6 +1224,9 @@ class ShipmentManager{
 				}
 				if(in_array('occurNotHarvested', $statusArr, true)){
 					$sqlWhere .= 'AND (m.occid IS NULL) ';
+				}
+				if(in_array('harvestNotAttempted', $statusArr, true)){
+					$sqlWhere .= 'AND (m.occid IS NULL AND m.errorMessage IS NULL AND m.acceptedForAnalysis = 1) ';
 				}
 				$this->searchArr['manifestStatus'] = $_REQUEST['manifestStatus'];
 			}

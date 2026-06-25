@@ -8,11 +8,12 @@ header("Content-Type: text/html; charset=".$CHARSET);
 
 if(!$SYMB_UID) header('Location: ../../profile/index.php?refurl=../collections/reports/labelmanager.php?'.htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
-$collid = $_REQUEST['collid'];
+//neon edit
+$collid = !empty($_REQUEST['collid']) ? $_REQUEST['collid'] : 'all';
 $action = array_key_exists('submitaction',$_REQUEST)?$_REQUEST['submitaction']:'';
 
 //Sanitation
-if(!is_numeric($collid)) $collid = 0;
+if ($collid !== 'all' && !is_numeric($collid)) $collid = 0;
 
 $labelManager = new OccurrenceLabel();
 $labelManager->setCollid($collid);
@@ -22,18 +23,24 @@ if(!$limit) $limit = 400;
 elseif($limit > 1000) $limit = 1000;
 
 $isEditor = 0;
+if ($collid === 'all') {
+	$isEditor = 1;
+}
+elseif (
+	$IS_ADMIN ||
+	(array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"])) ||
+	(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"]))
+) {
+	$isEditor = 1;
+}
+
 $occArr = array();
-if($IS_ADMIN || (array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"]))){
-	$isEditor = 1;
-}
-elseif(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"])){
-	$isEditor = 1;
-}
 if($isEditor){
 	if($action == (isset($LANG['FILT_SPEC_REC']) ? $LANG['FILT_SPEC_REC'] : 'Filter Specimen Records')){
 		$occArr = $labelManager->queryOccurrences($_POST, $limit);
 	}
 }
+//end neon edits
 $labelFormatArr = $labelManager->getLabelFormatArr(true);
 ?>
 <!DOCTYPE html>
@@ -194,7 +201,12 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 		<?php
 		if($isEditor){
 			$isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General Observations')?true:false);
-			echo '<h2>'.$labelManager->getCollName().'</h2>';
+			if ($collid === 'all') {
+				echo '<h2>All Collections</h2>';
+			}
+			elseif ($collid) {
+				echo '<h2>' . $labelManager->getCollName() . '</h2>';
+			}
 			?>
 			<div>
 				<form name="datasetqueryform" action="labelmanager.php" method="post" onsubmit="return validateQueryForm(this)">
@@ -241,19 +253,19 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 							</div>
 						</div>
 						<div style="margin:3px;clear:both;">
-							<label for="labelproject"> <?php echo (isset($LANG['LABEL_PROJ']) ? $LANG['LABEL_PROJ'] : 'Label Projects:') ?></label>
-							<select name="labelproject" id="labelproject">
-								<option value=""> <?php echo (isset($LANG['ALL_PROJ']) ? $LANG['ALL_PROJ'] : 'All Projects') ?> </option>
-								<option value="">-------------------------</option>
+							<!--<label for="labelproject"> <?php echo (isset($LANG['LABEL_PROJ']) ? $LANG['LABEL_PROJ'] : 'Label Projects:') ?></label>-->
+							<!--<select name="labelproject" id="labelproject">-->
+							<!--	<option value=""> <?php echo (isset($LANG['ALL_PROJ']) ? $LANG['ALL_PROJ'] : 'All Projects') ?> </option>-->
+							<!--	<option value="">-------------------------</option>-->
 								<?php
-								$lProj = '';
-								if(array_key_exists('labelproject',$_REQUEST)) $lProj = $_REQUEST['labelproject'];
-								$lProjArr = $labelManager->getLabelProjects();
-								foreach($lProjArr as $projStr){
-									echo '<option '.($lProj==$projStr?'SELECTED':'').'>'.$projStr.'</option>'."\n";
-								}
+								//$lProj = '';
+								//if(array_key_exists('labelproject',$_REQUEST)) $lProj = $_REQUEST['labelproject'];
+								//$lProjArr = $labelManager->getLabelProjects();
+								//foreach($lProjArr as $projStr){
+								//	echo '<option '.($lProj==$projStr?'SELECTED':'').'>'.$projStr.'</option>'."\n";
+								//}
 								?>
-							</select>
+							<!--</select>-->
 							<!--
 							Dataset Projects:
 							<select name="datasetproject" >
@@ -272,11 +284,20 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 							</select>
 							-->
 							<?php
-							echo '<span style="margin-left:15px;"><input name="extendedsearch" id="extendedsearch" type="checkbox" value="1" '.(array_key_exists('extendedsearch', $_POST)?'checked':'').' /></span> ';
+							$extendedChecked =
+								(isset($_POST['extendedsearch']) && $_POST['extendedsearch']) ||
+								($collid === 'all' && !isset($_POST['submitaction']));
+							
+							echo '<span style="margin-left:15px;">
+								<input name="extendedsearch" id="extendedsearch" type="checkbox" value="1" ' .
+								($extendedChecked ? 'checked' : '') .
+								' />
+							</span> ';
+
 							if($isGeneralObservation) echo 'Search outside user profile';
 							else echo 'Search within all collections';
 							// Start NEON customization
-							echo '<span style="margin-left:15px;"><input name="excludesubsamples" type="checkbox" value="1" ' . (isset($_POST['excludesubsamples']) || !isset($_POST['excludesubsamples']) ? 'checked' : '') . ' /></span>';
+							echo '<span><input name="excludesubsamples" type="checkbox" value="1" ' . (isset($_POST['excludesubsamples']) || !isset($_POST['excludesubsamples']) ? 'checked' : '') . ' /></span>';
 							echo ' Exclude subsamples';
 							// End NEON customization
 							?>

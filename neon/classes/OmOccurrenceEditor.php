@@ -19,7 +19,8 @@ class OmoccurrenceEditor extends Manager {
         'lifeStage' => "s",'locality' => "s",'locationID' => "s",'maximumDepthInMeters' => "s",'maximumElevationInMeters' => "s",
         'minimumDepthInMeters' => "s",'minimumElevationInMeters' => "s",'occurrenceRemarks' => "s",'preparations' => "s",
         'recordedBy' => "s",'reproductiveCondition' => "s",'samplingProtocol' => "s",'sex' => "s",'stateProvince' => "s",
-        'verbatimDepth' => "s",'verbatimElevation' => "s");
+        'verbatimDepth' => "s",'verbatimElevation' => "s",'country' => "s",'verbatimCoordinates' => "s",'verbatimAttributes' => "s"
+        ,'locationRemarks' => "s",'georeferenceSources' => "s");
 	}
 
 	public function __destruct() {

@@ -239,9 +239,18 @@ else{
 					  <?= $LANG['SEARCH_FILTER'] ?>
 				   </button>
 				   <?php if($isEditor == 1 || $isGenObs): ?>
+					<!-- Start NEON customization
 				   <button id="batch-update-btn" type="button" class="button-toggle" onclick="toggleBatchUpdate(); toggleButtonVisuals(this, 'batchupdatediv', ['query-btn'])">
 					  <?= $LANG['BATCH_TOOL'] ?>
 				   </button>
+				   -->
+					<button id="batch-update-btn"
+							type="button"
+							class="button-toggle"
+							onclick="window.location.href='<?= $CLIENT_ROOT ?>/neon/editor/neoneditor.php';">
+						<?= $LANG['BATCH_TOOL'] ?>
+					</button>
+					<!-- End NEON Customization -->
 				   <?php endif ?>
 				</div>
 			</div>

@@ -33,9 +33,9 @@ class OccurrenceLabel {
 			if ($postArr['taxa']) {
 				$sqlWhere .= 'AND (o.sciname LIKE "' . $this->cleanInStr($postArr['taxa']) . '%") ';
 			}
-			if ($postArr['labelproject']) {
-				$sqlWhere .= 'AND (o.labelproject = "' . $this->cleanInStr($postArr['labelproject']) . '") ';
-			}
+			//if ($postArr['labelproject']) {
+			//	$sqlWhere .= 'AND (o.labelproject = "' . $this->cleanInStr($postArr['labelproject']) . '") ';
+			//}
 			if ($postArr['recordenteredby']) {
 				$sqlWhere .= 'AND (o.recordenteredby = "' . $this->cleanInStr($postArr['recordenteredby']) . '") ';
 			}
@@ -113,10 +113,10 @@ class OccurrenceLabel {
 				$sqlWhere .= 'AND (' . substr($iWhere, 3) . ') ';
 				$sqlOrderBy .= ',i.identifiervalue,o.catalogNumber,o.otherCatalogNumbers';
 			}
-			if ($this->collArr['colltype'] == 'General Observations') {
-				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
-				if (!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= ' AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
-			}
+			//if ($this->collArr['colltype'] == 'General Observations') {
+			//	$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
+			//	if (!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= ' AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
+			//}
 			// Start NEON customization
 			/*
 			elseif (!array_key_exists('extendedsearch', $postArr)) {
@@ -899,8 +899,13 @@ class OccurrenceLabel {
 
 	//General setters and getters
 	public function setCollid($collid) {
+		if ($collid === 'all') {
+			$this->collid = 'all';
+			return;
+		}
+	
 		if (is_numeric($collid)) {
-			$this->collid = $collid;
+			$this->collid = (int)$collid;
 			$this->setCollMetadata();
 		}
 	}

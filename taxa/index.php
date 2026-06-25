@@ -66,7 +66,7 @@ if($SYMB_UID){
 	?>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
-	<script src="../js/symb/taxa.index.js?ver=202101" type="text/javascript"></script>
+	<script src="../js/symb/taxa.index.js?ver=202606" type="text/javascript"></script>
 	<script src="../js/symb/taxa.editor.js?ver=202101" type="text/javascript"></script>
 	<style type="text/css">
 		.resource-title{ font-weight: bold; }
@@ -82,7 +82,7 @@ $cultivarEpithet = !empty($splitSciname['cultivarEpithet']) ? (' ' . $taxonManag
 $tradeName = !empty($splitSciname['tradeName']) ? ($taxonManager->standardizeTradeName($splitSciname['tradeName']) . ' ') : '';
 $nonItalicizedScinameComponent = $cultivarEpithet . $tradeName;
 ?>
-<div id="popup-innertext">
+<div id="innertext">
 	<h1 class="page-heading screen-reader-only"><?= $taxonManager->getTaxonName() ?></h1>
 	<?php
 	if($taxonManager->getTaxonName()){
@@ -123,7 +123,6 @@ $nonItalicizedScinameComponent = $cultivarEpithet . $tradeName;
 							<?php
 							$parentLink = 'index.php?tid='.$taxonManager->getParentTid().'&clid='.$clid.'&pid='.$pid.'&taxauthid='.$taxAuthId;
 							echo '&nbsp;<a href="'.$parentLink.'"><img class="navIcon" src="../images/toparent.png" title="Go to Parent" /></a>';
-							echo '<p>'.$taxonManager->getSearchByTaxon(170,'neon').'</p>';
 							if($taxonManager->isForwarded()){
 						 		echo '<span id="redirectedfrom"> (' . $LANG['REDIRECT'] . ': <i>' . $taxonManager->getSubmittedValue('sciname') . '</i> ' . $taxonManager->getSubmittedValue('author') . ')</span>';
 						 	}
