@@ -13,16 +13,16 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		h1 {
 			font-size: 2.5rem !important;
 		}
-		
+
 		h4 {
 			font-size: 1.1rem !important;
 		}
-		
+
 		.anchor {
 			font-size: 1.675rem !important;
 			scroll-margin-top: 150px;
 		}
-		
+
 		li {
 			margin-bottom: .2rem;
 		}
@@ -35,9 +35,9 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 	<h1 style="text-align:center;">Sample Use Procedures and Requirements</h1>
 
 	<article>
-		<p>NEON Biorepository samples and specimens and their associated data are available for a wide variety of research and educational purposes. Anyone interested in requesting samples may do so. Most requests are fulfilled at no cost; however, unusually large requests or those requiring substantial additional processing may incur fees. You can browse NEON samples via the <a href="https://biorepo.neonscience.org/portal/collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">Sample Portal</a> and initiate inquiries about using samples in your work by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly.</p>
+		<p>NEON Biorepository samples and specimens and their associated data are available for a wide variety of research and educational purposes. Anyone interested in requesting samples may do so. Most requests are fulfilled at no cost; however, unusually large requests or those requiring substantial additional processing may incur fees. You can browse NEON samples via the <a href="../collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">Sample Portal</a> and initiate inquiries about using samples in your work by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly.</p>
 	</article>
-		
+
 	<ol>
 		<li><a href="#proposals-and-letters-of-collaboration-or-support">Proposals and Letters</a></li>
 		<li><a href="#visiting-the-neon-biorepository">Visiting the NEON Biorepository</a></li>
@@ -88,10 +88,10 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<p>Additional conditions or requirements may be included in the Sample Use Agreement depending on the nature of the requested samples or the proposed research.</p>
 		</article>
-		
+
 		<article>
 			<h2 class="anchor" id="sample-use-policy">Sample Use Policy</h2>
-		
+
 			<p>
 			The NEON Biorepository Sample Use Policy outlines requirements for use, handling, return, and reporting of samples. The policy also indicates that all derived data and media must be shared with the NEON Biorepository for publication in the NEON Sample Portal and that the ownership of images and media resulting from samples will be retained by the NEON Biorepository.
 			<a href="samplepolicy.php">Read the full Sample Use Policy</a>.
@@ -113,7 +113,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<p>Loans are typically approved for 6-12 months. Extensions requested before the current loan period expires will generally be approved except when the samples have been requested by other researchers. Failure to return samples within the approved loan period or to maintain communication regarding their status may affect eligibility for future sample requests. Ordinarily, not more than one-half of the samples from a given sample type, NEON site, year, and taxon may be borrowed at any one time. The remainder may be requested upon the return of the first loan.</p>
 		</article>
-		
+
 		<article>
 			<h2 class="anchor" id="citations">NEON Biorepository Citation Requirements</h2>
 
@@ -121,9 +121,9 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			Use of NEON Biorepository samples or data must follow established citation and acknowledgment requirements, including acknowledgment language and citation of data, physical samples, associated media, and derived datasets. See the <a href="cite.php">Acknowledging and Citing the NEON Biorepository</a> page for full details.
 			</p>
 		</article>
-		
+
 		<div style="margin-top: 70px;">
-			<p><em>Last updated May 19, 2026</em></p>	
+			<p><em>Last updated May 19, 2026</em></p>
 		</div>
 	</div>
 
