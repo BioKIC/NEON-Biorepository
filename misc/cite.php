@@ -10,15 +10,15 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
 	<style>
-		
+
 		h1 {
 			font-size: 2.5rem !important;
 		}
-		
+
 		h4 {
 			font-size: 1.1rem !important;
 		}
-		
+
 		.anchor {
 			font-size: 1.675rem !important;
 			scroll-margin-top: 150px;
@@ -53,7 +53,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 	<div id="innertext">
 		<h1>Acknowledging and Citing the NEON Biorepository</h1>
-		
+
 		<article>
 			<h3 class="anchor" id="h.1">Acknowledgement</h3>
 			<p>Any publications involving use of NEON samples and specimens should include the following acknowledgment:</p>
@@ -77,20 +77,20 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<h3 class="anchor" id="h.3">Citation Requirements for Data-Only Use</h3>
 
 			<p>NEON sample data is offered under the Creative Commons Attribution (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>) license. Attribution is required when you use NEON data, including a link to the license and an indication of any changes.</p>
-			
+
 			<p>Records in the <a href="../neon/search/index.php" target="_blank" rel="noopener noreferrer">NEON Biorepository Sample Portal</a> are periodically updated based on ingestion of the most up-to-date NEON data and are, in many cases, supplemented with value-added data obtained from further analysis. Because these records are updated on a rolling basis and are not tied to a specific NEON data release, NEON Biorepository sample data should be considered subject to change and <strong>treated as provisional</strong>. Citations of these data should therefore follow <a href="https://www.neonscience.org/data-samples/guidelines-policies/citing#citing-data" target="_blank" rel="noopener noreferrer">NEON guidance for provisional data</a>, applied to the relevant Biorepository sample types.</p>
 
 			<p><b>Due to the live management of sample data, it is recommended that data for each sample type used in analyses be saved to an external repository for reproducibility, assigned a DOI, and cited as follows:</b></p>
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
-				<a href="https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25" target="_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
+				<a href="../collections/misc/neoncollprofiles.php?collid=25" target="_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
 				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). Data were filtered and reformatted for analysis. Data archived at [your DOI].
 			</blockquote>
 
 			<p><b>For data not saved in an external repository (not recommended), cite each sample type as follows:</b></p>
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
-				<a href="https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25" target="_blank">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
+				<a href="../collections/misc/neoncollprofiles.php?collid=25" target="_blank">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
 				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). No changes were made.
 			</blockquote>
 
@@ -103,7 +103,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<h4>Physical Sample Citations</h4>
 			<p>NEON samples and specimens involved in published research must be listed in either the main text or supplemental information of any relevant publication. A complete list of samples provided will be included in the Sample Use Agreement to support accurate physical sample citations (see example table below).</p>
-			<p>The occurrenceID or full IGSN ID should be used to refer to samples (e.g., <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">https://doi.org/10.58052/NEON0D0YI</a>, <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">igsn:10.58052/NEON0D0YI</a> or <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">igsn:NEON0D0YI</a>) in manuscript text as well as in any data repositories, such as GenBank. In cases where IGSN ID use is already clearly denoted, the preceding igsn: tag may be excluded. Where possible, all representations of IGSN IDs should be hyperlinked with the IGSN ID’s complete DOI link. 
+			<p>The occurrenceID or full IGSN ID should be used to refer to samples (e.g., <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">https://doi.org/10.58052/NEON0D0YI</a>, <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">igsn:10.58052/NEON0D0YI</a> or <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">igsn:NEON0D0YI</a>) in manuscript text as well as in any data repositories, such as GenBank. In cases where IGSN ID use is already clearly denoted, the preceding igsn: tag may be excluded. Where possible, all representations of IGSN IDs should be hyperlinked with the IGSN ID’s complete DOI link.
 			Authors should follow the <a href= "https://zenodo.org/records/18854424" tartget="_blank" rel= "nooopener noreferrer"> Earth Science Information Partners guide</a> to publishing open research using physical samples, as well as established conventions for formatting and displaying IGSN IDs as described by <a href="https://ev.igsn.org/resources/using-igsn-in-publications" target="_blank" rel="noopener noreferrer">IGSN e.V.</a> and <a href="https://support.datacite.org/docs/displaying-igsn-ids" target="_blank" rel="noopener noreferrer">DataCite</a> guidelines. The NEON Biorepository can provide additional guidance on specimen citation conventions.</p>
 
 			<table class="citation-table">
@@ -153,7 +153,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 						<td><a href="https://doi.org/10.58052/NEON03BIT" target="_blank" rel="noopener noreferrer">NEON03BIT</a></td>
 						<td><i>Aedes vexans</i></td>
 					</tr>
-			
+
 					<tr>
 						<td rowspan="3">D07</td>
 						<td rowspan="3">Tennessee</td>
@@ -172,7 +172,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 						<td><a href="https://doi.org/10.58052/NEON03HV3" target="_blank" rel="noopener noreferrer">NEON03HV3</a></td>
 						<td><i>Aedes vexans</i></td>
 					</tr>
-			
+
 					<tr>
 						<td rowspan="4">D08</td>
 						<td rowspan="4">Alabama</td>
@@ -196,7 +196,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 						<td><a href="https://doi.org/10.58052/NEON03I6O" target="_blank" rel="noopener noreferrer">NEON03I6O</a></td>
 						<td><i>Aedes vexans</i></td>
 					</tr>
-			
+
 					<tr>
 						<td rowspan="3">D11</td>
 						<td rowspan="3">Texas</td>
@@ -217,8 +217,8 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 					</tr>
 				</tbody>
 			</table>
-			
-						<p><sup>a.</sup> International Geo Sample Number, <a href="https://www.geosamples.org" target="_blank" rel="noopener noreferrer">www.geosamples.org</a></p>
+
+			<p><sup>a.</sup> International Geo Sample Number, <a href="https://www.geosamples.org" target="_blank" rel="noopener noreferrer">www.geosamples.org</a></p>
 
 			<h4>Sample Data Citations</h4>
 			<p>Data associated with physical sample use must also be cited following the <a href="#h.3">Citation Requirements for Data-Only Use</a> as described above.</p>
@@ -238,16 +238,15 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<blockquote>
 				<b>Example:</b> Steger, L., NEON (National Ecological Observatory Network) Biorepository. Accessed via NEON (National Ecological Observatory Network) Biorepository Sample Portal [2025-09-23]. B00000021553_1611185823_lg. Photograph.
-				<a href="https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg" target="_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg</a>
+				<a href="../imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg" target="_blank" rel="noopener noreferrer">https://biorepo.neonscience.org/imglib/neon/NEON_MAMC-VSS/00000/B00000021553_1611185823_lg.jpg</a>
 			</blockquote>
 
 			<p>A general condition of NEON specimen and sample use is that all raw and derived specimen-level user created image files and associated metadata must be shared with the NEON Biorepository for archive and publication. These images will remain under the ownership of NEON and made available under the Creative Commons Attribution-ShareAlike (CC BY-SA) license.</p>
 		</article>
-		
-	<div style="margin-top: 70px;">
-		<p><em>Last updated May 19, 2026</em></p>	
-	</div>
-	
+
+		<div style="margin-top: 70px;">
+			<p><em>Last updated May 19, 2026</em></p>
+		</div>
 	</div>
 
 </body>
