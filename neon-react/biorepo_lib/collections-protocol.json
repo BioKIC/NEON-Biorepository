@@ -592,7 +592,7 @@
     "children": [
       {
         "id": 82,
-        "name": "Root Cores (Pre-NEON)",
+        "name": "Root Cores (Pre-NEON, Megapit Sampling)",
         "collid": 76
       }
     ]
