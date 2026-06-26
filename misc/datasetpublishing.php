@@ -56,7 +56,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 		<article>
 			<h3 class="anchor" id="h.dupjcs7lsdqj">2. Create a NEON Biorepository Published Research Dataset</h3>
-			<p>Lists of samples used in published work can be highlighted and promoted as <a href="https://biorepo.neonscience.org/portal/collections/datasets/publiclist.php" target="_blank" rel="noopener noreferrer">Published Research Dataset</a> within the NEON Biorepository data portal. These datasets and occurrence records therein can be annotated or expanded at any time, and static copies can be downloaded as Darwin Core Archives. These datasets and their associated publications can then also be cited by future researchers, as outlined in relevant dataset pages, <a href="https://biorepo.neonscience.org/portal/collections/datasets/public.php?datasetid=157" target="_blank" rel="noopener noreferrer">such as this one</a>.</p>
+			<p>Lists of samples used in published work can be highlighted and promoted as <a href="../collections/datasets/publiclist.php" target="_blank" rel="noopener noreferrer">Published Research Dataset</a> within the NEON Biorepository data portal. These datasets and occurrence records therein can be annotated or expanded at any time, and static copies can be downloaded as Darwin Core Archives. These datasets and their associated publications can then also be cited by future researchers, as outlined in relevant dataset pages, <a href="../collections/datasets/public.php?datasetid=157" target="_blank" rel="noopener noreferrer">such as this one</a>.</p>
 		</article>
 
 		<article>

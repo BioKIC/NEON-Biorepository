@@ -13,16 +13,16 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		h1 {
 			font-size: 2.5rem !important;
 		}
-		
+
 		h4 {
 			font-size: 1.1rem !important;
 		}
-		
+
 		.anchor {
 			font-size: 1.675rem !important;
 			scroll-margin-top: 150px;
 		}
-		
+
 		li {
 			margin-bottom: 1rem;
 		}
@@ -49,8 +49,8 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 				<li><b>Prior written approval from the NEON Biorepository is required for permission to transfer specimens between institutions.</b></li>
 
 				<!-- <li><b>Loans are made only for the specific research defined in the original request. If alterations to the original request are needed (e.g., sequencing a different gene or using a different method than originally proposed), then written approval must be obtained from the NEON Biorepository.</li> -->
-				
-				<li><b>Researchers using NEON Biorepository samples must provide all resulting sample-associated data to NEON for publication via the <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank" rel="noopener noreferrer">NEON Sample Portal</a> for public use within 2 years of sample receipt or upon publication, whichever comes first.</b> Special exceptions regarding data embargos, sensitive data, or extensions may be arranged in writing. This data includes, but is not limited to, species determinations, re-identifications, taxonomic updates, corrections to any existing published data, (raw and derived specimen-level) images and other media files, and links to externally-hosted genetic and genomic sequence data. Instructions for providing these data to the NEON Biorepository will be outlined in the Sample Use Agreement. Guidelines for attribution and licensing of researcher-contributed data default to those listed in the Citation Requirements for <a href="https://biorepo.neonscience.org/portal/misc/cite.php#h.3" target="_blank" rel="noopener noreferrer">Data-Only Use</a> and <a href= "biorepo.org/portal/misc.cite.php#h.5" target="_blank" rel="noopener noreferrer" >Using and Citing Sample Images</a> policies. Future users of requestor-derived data will be encouraged to cite the original publications, which will be linked to associated sample records within the NEON Biorepository Sample Portal. The NEON Biorepository retains ownership of all images and media.</li>
+
+				<li><b>Researchers using NEON Biorepository samples must provide all resulting sample-associated data to NEON for publication via the <a href="../neon/search/index.php" target="_blank" rel="noopener noreferrer">NEON Sample Portal</a> for public use within 2 years of sample receipt or upon publication, whichever comes first.</b> Special exceptions regarding data embargos, sensitive data, or extensions may be arranged in writing. This data includes, but is not limited to, species determinations, re-identifications, taxonomic updates, corrections to any existing published data, (raw and derived specimen-level) images and other media files, and links to externally-hosted genetic and genomic sequence data. Instructions for providing these data to the NEON Biorepository will be outlined in the Sample Use Agreement. Guidelines for attribution and licensing of researcher-contributed data default to those listed in the Citation Requirements for <a href="https://biorepo.neonscience.org/portal/misc/cite.php#h.3" target="_blank" rel="noopener noreferrer">Data-Only Use</a> and <a href= "biorepo.org/portal/misc.cite.php#h.5" target="_blank" rel="noopener noreferrer" >Using and Citing Sample Images</a> policies. Future users of requestor-derived data will be encouraged to cite the original publications, which will be linked to associated sample records within the NEON Biorepository Sample Portal. The NEON Biorepository retains ownership of all images and media.</li>
 
 				<li><b>Researchers must follow all requirements listed in the <a href="cite.php" target="_blank" rel="noopener noreferrer">Acknowledging and Citing the NEON Biorepository</a> policy</b>. Specimens used in publications, reports, or presentations should be listed within the main text and/or supplemental information as outlined in the Sample Use Agreement.</li>
 
@@ -59,11 +59,11 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 				<li><b>Upon receipt of samples, the researcher must review the shipment and sign and return a <a href="documents/sampleReceiptConfirmation.pdf" target="_blank" rel="noopener noreferrer">Sample Receipt Confirmation</a></b> acknowledging receipt of the materials and their condition. The researcher’s institution is responsible for proper handling, storage, and use of all samples while in their possession and for ensuring compliance with the Sample Use Agreement, including maintaining appropriate storage conditions and preventing loss or contamination. The NEON Biorepository must be notified promptly if samples are lost, damaged, or compromised while in the researcher’s possession.</li>
 			</ul>
 
-			<p><b><i>All requests require a mutually developed and signed <a href="sampleguidelines.php#sample-use-agreement">Sample Use Agreement </a> prior to sample processing and shipment.</i></b> The NEON Biorepository reserves the right to deny future sample requests from researchers who do not adhere to this Sample Use Policy or to the terms outlined in a signed Sample Use Agreement.</p> 
+			<p><b><i>All requests require a mutually developed and signed <a href="sampleguidelines.php#sample-use-agreement">Sample Use Agreement </a> prior to sample processing and shipment.</i></b> The NEON Biorepository reserves the right to deny future sample requests from researchers who do not adhere to this Sample Use Policy or to the terms outlined in a signed Sample Use Agreement.</p>
 		</article>
-		
+
 		<div style="margin-top: 70px;">
-			<p><em>Last updated June 9, 2026</em></p>	
+			<p><em>Last updated June 9, 2026</em></p>
 		</div>
 	</div>
 

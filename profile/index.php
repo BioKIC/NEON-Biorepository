@@ -9,7 +9,7 @@ if(!empty($THIRD_PARTY_OID_AUTH_ENABLED)){
 use Jumbojett\OpenIDConnectClient;
 
 //neon edit
-if (empty($SYMB_UID)) {
+if (empty($SYMB_UID) && empty($NEON_DEV_MODE)) {
     if (isset($_REQUEST['refurl']) && is_string($_REQUEST['refurl'])) {
         $_SESSION['refurl'] = $_REQUEST['refurl'];
     }
