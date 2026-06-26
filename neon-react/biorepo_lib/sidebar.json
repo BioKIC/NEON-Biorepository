@@ -29,7 +29,7 @@
     "links": [
         {
           "name": "NEON Biorepository Sample Portal at ASU",
-          "hash": "https://biorepo.neonscience.org/portal/neon/search/index.php",
+          "hash": "/portal/neon/search/index.php",
           "match": [
                     "neon/search/index.php",
                     "collections/list.php"

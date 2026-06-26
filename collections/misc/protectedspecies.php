@@ -1,5 +1,5 @@
 <?php
-header("Location: https://biorepo.neonscience.org", true, 302);
+header("Location: ../../", true, 302);
 exit;
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceProtectedSpecies.php');
