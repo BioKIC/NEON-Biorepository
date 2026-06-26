@@ -74,6 +74,25 @@
     return $dataArr;
   }
 
+  // get assignees
+    public function getAssignees() {
+        $sql = "SELECT DISTINCT assignee
+            FROM neonrequest
+            WHERE assignee IS NOT NULL
+            AND assignee <> ''
+            ORDER BY assignee";
+
+        $result = $this->conn->query($sql);
+
+        $assignees = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $assignees[] = $row['assignee'];
+        }
+
+        return $assignees;
+    }
+
   // Gets count of all samples in inquiry
   public function getInqSamplesCnt(){
     $retArr = array();
@@ -186,7 +205,9 @@
                 )
               : [],
 
-            'keywords' => isset($input['keywords']) ? trim($input['keywords']) : ''
+            'keywords' => isset($input['keywords']) ? trim($input['keywords']) : '',
+            'assignee' => isset($input['assignee']) ? trim($input['assignee']) : ''
+
 
        ];
   }
@@ -280,6 +301,14 @@
         elseif ($params['internal'] == 0) {
           $where[] = "i.internal = 'no' ";
         }
+    }
+
+    // assignee filter
+
+    if ($params['assignee'] !== '') {
+        $where[] ="i.assignee = ? ";
+        $binds[] = $params['assignee'];
+        $types .= "s";
     }
 
     // researcher filter

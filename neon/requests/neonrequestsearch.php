@@ -733,6 +733,33 @@ $(function () {
 
 						</div>
 					</section>
+					<!-- Assignee -->
+					 <?php
+					 	$assignees = $reportManager -> getAssignees();
+					 ?>
+					<section>
+						<input type="checkbox" id="assignee-section" class="accordion-selector"/>
+
+						<label for="assignee-section" class="accordion-header">Assignee</label>
+
+						<div class="content">
+							<div class="input-text-container">
+								<label for="assignee">Assignee:</label>
+								<select
+									name="assignee"
+									id="assignee"
+									data-chip=""
+									onchange="this.dataset.chip = this.value ? 'Assignee: ' + this.options[this.selectedIndex].text : ''">
+									<option value="">-- Any --</option>
+									<?php foreach ($assignees as $a): ?>
+										<option value="<?= htmlspecialchars($a) ?>">
+											<?= htmlspecialchars($a) ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+						</div>
+					</section>
 				</div>
 				<!-- Criteria panel -->
 				<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
