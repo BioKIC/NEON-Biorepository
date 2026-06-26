@@ -702,7 +702,6 @@ function getSearchUrl() {
   if (useThesCb && !useThesCb.checked) {
     baseUrl.searchParams.set('usethes', '1');
   }
-  console.log(paramsArr);
   // Appends each key value for each param in search url
   Object.keys(paramsArr).forEach((key) => {
       const value = paramsArr[key];
