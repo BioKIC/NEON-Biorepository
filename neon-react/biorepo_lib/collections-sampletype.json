@@ -29,12 +29,12 @@
           },
           {
             "id": 8,
-            "name": "Root Cores (Megapit)",
+            "name": "Root Cores (Pre-NEON)",
             "collid": 76
           },
           {
             "id": 9,
-            "name": "Root Cores (Tower Plots)",
+            "name": "Root Cores (Standard Sampling)",
             "collid": 10
           }
         ]

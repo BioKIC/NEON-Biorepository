@@ -263,7 +263,7 @@
     "children": [
       {
         "id": 31,
-        "name": "Root Cores (Tower Plots)",
+        "name": "Root Cores (Standard Sampling)",
         "collid": 10
       }
     ]
@@ -592,7 +592,7 @@
     "children": [
       {
         "id": 82,
-        "name": "Root Cores (Megapit)",
+        "name": "Root Cores (Pre-NEON)",
         "collid": 76
       }
     ]
