@@ -9,7 +9,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
 $reportManager = new RequestReportManager();
 $utilities = new Utilities();
 $inquiriesArr = $reportManager->getInquiriesOut($_GET);
-$headerArr = ['id','researcher','inquiry date','title','status','samples','follow up type','follow up date',];
+$headerArr = ['id','researcher','inquiry date','title','status','samples','follow up type','follow up date','assignee'];
 $total = $reportManager->getInqSamplesCnt();
 
 $isEditor = false;

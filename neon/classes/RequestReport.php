@@ -49,7 +49,7 @@
 
   public function getInquiriesOut(){
   	$dataArr = array();
-    $sql = 'SELECT r.id, p.name AS researcher, DATE(r.inquiryDate) AS date, r.title, r.status, COUNT(s.occid) AS samples, r.followUpType, r.followUpDate FROM neonrequest AS r LEFT JOIN neonresearcher AS p ON r.researcherID = p.researcherID LEFT JOIN neonsamplerequestlink AS s ON r.id = s.requestID GROUP BY r.id;';
+    $sql = 'SELECT r.id, p.name AS researcher, DATE(r.inquiryDate) AS date, r.title, r.status, COUNT(s.occid) AS samples, r.followUpType, r.followUpDate, r.assignee FROM neonrequest AS r LEFT JOIN neonresearcher AS p ON r.researcherID = p.researcherID LEFT JOIN neonsamplerequestlink AS s ON r.id = s.requestID GROUP BY r.id;';
     if($result = $this->conn->query($sql)){
       while($row = $result->fetch_assoc()){
         $dataArr[] = array(
@@ -60,9 +60,8 @@
           'status' => is_null($row['status'])?'<span style="color:lightgray;">NULL</span>':$row['status'],
           'samples' => is_null($row['samples'])?'<span style="color:lightgray;">NULL</span>':$row['samples'],
           'followUpType' => is_null($row['followUpType'])?'<span style="color:lightgray;">NULL</span>':$row['followUpType'],
-          'followUpDate' => is_null($row['followUpDate'])?'<span style="color:lightgray;">NULL</span>':$row['followUpDate']
-
-
+          'followUpDate' => is_null($row['followUpDate'])?'<span style="color:lightgray;">NULL</span>':$row['followUpDate'],
+          'assignee' => is_null($row['assignee'])?'<span style="color:lightgray;">NULL</span>':$row['assignee']
 
         );
       }
@@ -205,7 +204,8 @@
                 i.status,
                 COUNT(s.occid) as samples,
                 i.followUpType,
-                i.followUpDate
+                i.followUpDate,
+                i.assignee
             FROM neonrequest i
             LEFT JOIN neonsamplerequestlink s 
             ON s.requestID = i.id
@@ -402,7 +402,8 @@
             'status' => is_null($row['status'])?'<span style="color:lightgray;">NULL</span>':$row['status'],
             'samples' => is_null($row['samples'])?'<span style="color:lightgray;">NULL</span>':$row['samples'],
             'followUpType' => is_null($row['followUpType'])?'<span style="color:lightgray;">NULL</span>':$row['followUpType'],
-            'followUpDate' => is_null($row['followUpDate'])?'<span style="color:lightgray;">NULL</span>':$row['followUpDate']
+            'followUpDate' => is_null($row['followUpDate'])?'<span style="color:lightgray;">NULL</span>':$row['followUpDate'],
+            'assignee' => is_null($row['assignee'])?'<span style="color:lightgray;">NULL</span>':$row['assignee'],
 
         );
     }
@@ -502,6 +503,7 @@ public function exportInquiryList($ids){
         r.followUpType,
         r.followUpDate,
         r.followUpNotes,
+        r.assignee,
         r.sampleUseAgreementLink,
         r.confirmationOfReceiptLink,
         r.lastUpdated

@@ -11,7 +11,7 @@ $utilities = new Utilities();
 $inquiriesArr = $reportManager->filterSearchInquiries($_POST);
 $ids = array_column($inquiriesArr, 'requestid');
 $idsString = implode(',', $ids ?: []);
-$headerArr = ['id','researcher','inquiry date','title','status','samples','follow up type','follow up date'];
+$headerArr = ['id','researcher','inquiry date','title','status','samples','follow up type','follow up date','assignee'];
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;

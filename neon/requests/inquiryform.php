@@ -151,6 +151,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		$csrLink = $_POST['inqcsrlink'] ?? '';
 
 
+		$assignee = $_POST['inqassignee'] ?? '';
 
 	if (
 		!(
@@ -204,6 +205,9 @@ if($formSubmit == 'editStatus' && $isEditor){
 	if (!empty($fulfillment) && empty($suaLink)) {
 		$errorMessage[] = 'A sample use agreement is required in order to fulfill a request.';
 	}	
+	if (!empty($followUpType) && empty($assignee)) {
+		$errorMessage[] = 'Someone should be assigned to follow up.';
+	}	
 	if(!empty($active) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Fulfillment Date.';
 
 	if (!empty($errorMessage)) {
@@ -224,6 +228,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$followUpNotes,
 			$suaLink,
 			$csrLink,
+			$assignee,
 			$SYMB_UID
 		);
 
@@ -829,7 +834,15 @@ if($formSubmit == 'editStatus' && $isEditor){
 
 									<div class="fieldDiv">
 										<strong><?php echo 'Follow Up Notes: '?></strong>
-										<input name="inqfollowupnotes" type="text" style="width:600px; height:60px;" value="<?php echo $inquirydata['followUpNotes']; ?>" />
+										<textarea name="inqfollowupnotes" id="inqfollowupnotes" style="width:600px; height:60px;"> <?php echo $inquirydata['followUpNotes']; ?></textarea>
+
+									</div>
+								</div>
+									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
+
+									<div class="fieldDiv">
+										<strong><?php echo 'Assignee: '?></strong>
+										<input name="inqassignee" type="text" style="width:200px;" value="<?php echo $inquirydata['assignee']; ?>" />
 									</div>
 								</div>
 							</fieldset>

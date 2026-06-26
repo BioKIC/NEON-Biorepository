@@ -707,7 +707,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $followUpNotes,
       $suaLink,
       $csrLink,
-
+      $assignee,
       $uid
   ) {
       $requestID = (int)$requestID;
@@ -725,7 +725,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $followUpNotes  = !empty($followUpNotes)  ? $followUpNotes  : null;
       $suaLink  = !empty($suaLink)  ? $suaLink  : null;
       $csrLink  = !empty($csrLink)  ? $csrLink  : null;
-
+      $assignee  = !empty($assignee)  ? $assignee  : null;
 
       $dates = [
           'sample use inquiry'    => $inquiryDate,
@@ -789,6 +789,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
                   followUpNotes = ?,
                   sampleUseAgreementLink = ?,
                   confirmationOfReceiptLink = ?,
+                  assignee = ?,
                   lastUpdated = NOW() 
               WHERE id = ?";
 
@@ -799,7 +800,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       }
 
       $stmt->bind_param(
-          "ssssssssssssssssi",
+          "sssssssssssssssssi",
           $status,
           $statusDate,
           $funded,
@@ -816,6 +817,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
           $followUpNotes,
           $suaLink,
           $csrLink,
+          $assignee,
           $requestID
       );
 
@@ -841,7 +843,8 @@ public function addCollectionInquiryLink($requestID, $collections) {
           "followUpDate" => $followUpDate,
           "followUpNotes" => $followUpNotes,
           "sampleUseAgreementLink" => $suaLink,
-          "confirmationOfReceiptLink" => $csrLink
+          "confirmationOfReceiptLink" => $csrLink,
+          "assignee" => $assignee
 
       ];
 
