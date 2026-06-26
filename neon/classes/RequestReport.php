@@ -501,6 +501,9 @@ public function exportInquiryList($ids){
         r.datasetID,
         r.followUpType,
         r.followUpDate,
+        r.followUpNotes,
+        r.sampleUseAgreementLink,
+        r.confirmationOfReceiptLink,
         r.lastUpdated
         FROM neonrequest r
         JOIN neonresearcher p
