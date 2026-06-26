@@ -72,9 +72,7 @@ $dbSearchTerm = $collManager->getSearchTerm('db');
 
 if($dbSearchTerm){
     $dbArr = explode(',', $dbSearchTerm);
-    if (array_intersect($dbArr, [118, 119, 120, 121, 122, 123, 124, 17, 19, 28])) {
-        $materialSampleArr = $occurrenceListFunctions->getMaterialSampleTypes(array_keys($occurArr));
-    }
+	$materialSampleArr = $occurrenceListFunctions->getMaterialSampleTypes(array_keys($occurArr));
 }
 //end NEON edit
 $_SESSION['citationvar'] = $searchVar;
