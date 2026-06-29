@@ -24,7 +24,6 @@ if (empty($SYMB_UID) && empty($NEON_DEV_MODE)) {
     header('Location: ' . $target);
     exit;
 }
-
 //end neon edit
 
 if($SYMB_UID){
@@ -132,7 +131,10 @@ if($action == 'logout'){
 elseif($action == 'login'){
 	if($pHandler->authenticate($_POST['password'])){
 		if(!$refUrl || (strtolower(substr($refUrl,0,4)) == 'http') || strpos($refUrl,'newprofile.php')){
-			header('Location: ../index.php');
+			// NEON edit
+			//header('Location: ../index.php');
+			header('Location: ../neonindex.php');
+			// End NEON edit
 		}
 		else{
 			header('Location: '.$refUrl);

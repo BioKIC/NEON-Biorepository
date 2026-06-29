@@ -239,9 +239,11 @@ $dwcManager = new DwcArchiverCore();
 	<div style="width:100%; background-color:white;">
 		<h1 class="page-heading screen-reader-only"><?= $LANG['COLL_SEARCH_DWNL'] ?></h1>
 		<?php
-		if(empty($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT) && !$SYMB_UID){
+		$downloadActive = false;
+		if(!empty($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT) || $SYMB_UID) $downloadActive = true;
+		if(!$downloadActive){
 			$_SESSION['searchvar'] = $searchVar;
-			$queryStr = 'sourcepage=' . $sourcePage . '&dltype=' . $downloadType . '&taxonFilterCode=' . $taxonFilterCode;
+			//$queryStr = 'sourcepage=' . $sourcePage . '&dltype=' . $downloadType . '&taxonFilterCode=' . $taxonFilterCode;
 			//header('Location: ../../profile/index.php?refurl=../collections/download/index.php?' . $queryStr);
 			?>
 			<div id="login-required-container">
@@ -264,9 +266,9 @@ $dwcManager = new DwcArchiverCore();
 							<a class="" target="_blank" href="https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/about/user-accounts">Learn</a>
 							about the benefits of having an account.
 						</p>
-						<form target="../../profile/index.php" method="post">
+						<form name="loginRequiredForm" action="../../profile/index.php" method="post">
 							<button type="submit"><span>Sign In</span></button>
-							<input name="refurl" type="hidden" value="../collections/download/index.php?<?= $sourcePage ?>">
+							<input name="refurl" type="hidden" value="../collections/download/neonindex.php">
 							<input name="dltype" type="hidden" value="<?= $downloadType ?>">
 							<input name="taxonFilterCode" type="hidden" value="<?= $taxonFilterCode ?>">
 						</form>
@@ -358,7 +360,7 @@ $dwcManager = new DwcArchiverCore();
 								   name="agreepolicy"
 								   id="agreepolicy"
 								   value="1"
-								   onchange="toggleDownloadButton()" />
+								   onchange="<?= ($downloadActive? 'toggleDownloadButton()' : '') ?>" />
 
 						<label for="agreepolicy">
 							<strong>I agree to the NEON Data Usage and Citation Policies.</strong>
@@ -373,7 +375,6 @@ $dwcManager = new DwcArchiverCore();
 						<input name="searchvar" type="hidden" value="<?= $searchVar ?>" />
 						<button type="submit" name="submitaction" id="downloadbutton" disabled>
 							<?= $LANG['DOWNLOAD_DATA'] ?>
-
 							<svg
 								class="MuiSvgIcon-root"
 								focusable="false"
