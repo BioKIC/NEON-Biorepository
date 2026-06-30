@@ -1,5 +1,13 @@
 <?php
 include_once('../config/symbini.php');
+
+//NEON edits
+if (empty($NEON_DEV_MODE) || $NEON_DEV_MODE == 1) {
+	header('Location: ' . $CLIENT_ROOT . '/profile/openIdAuth.php');
+	exit;
+}
+//End NEON edits
+
 include_once($SERVER_ROOT.'/classes/ProfileManager.php');
 @include_once($SERVER_ROOT.'/content/lang/profile/userprofile.'.$LANG_TAG.'.php');
 header('Content-Type: text/html; charset='.$CHARSET);
