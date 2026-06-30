@@ -44,15 +44,11 @@ $dwcManager = new DwcArchiverCore();
 				});
 			}
 
-			<?php
-			if(!$searchVar){
-				?>
-				if(sessionStorage.querystr){
-					window.location = "index.php?"+sessionStorage.querystr;
+			if(sessionStorage.querystr){
+				if(document.getElementById("searchVar-input").value == ""){
+					document.getElementById("searchVar-input").value = sessionStorage.querystr;
 				}
-				<?php
 			}
-			?>
 		});
 
 		function extensionSelected(obj){
@@ -372,7 +368,7 @@ $dwcManager = new DwcArchiverCore();
 						<input name="publicsearch" type="hidden" value="1" />
 						<input name="taxonFilterCode" type="hidden" value="<?= $taxonFilterCode; ?>" />
 						<input name="sourcepage" type="hidden" value="<?= htmlspecialchars($sourcePage); ?>" />
-						<input name="searchvar" type="hidden" value="<?= $searchVar ?>" />
+						<input id="searchVar-input" name="searchvar" type="hidden" value="<?= $searchVar ?>" />
 						<button type="submit" name="submitaction" id="downloadbutton" disabled>
 							<?= $LANG['DOWNLOAD_DATA'] ?>
 							<svg

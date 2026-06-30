@@ -222,7 +222,7 @@ if ($isEditor) {
 				return false;
 			}
 			if (isDownloadAction) {
-				f.action = "../download/index.php";
+				f.action = "../download/neonindex.php";
 				targetDownloadPopup(f);
 			}
 			return true;
@@ -454,7 +454,7 @@ if ($isEditor) {
 								</div>
 							</form>
 							<div style="margin: 15px;">
-								<form name="exportAllForm" action="../download/index.php" method="post" onsubmit="targetDownloadPopup(this)">
+								<form name="exportAllForm" action="../download/neonindex.php" method="post" onsubmit="targetDownloadPopup(this)">
 									<input name="searchvar" type="hidden" value="datasetid=<?php echo $datasetId; ?>" />
 									<input name="dltype" type="hidden" value="specimen" />
 									<button type="submit" name="submitaction" value="exportAll"><?php echo $LANG['EXPORT_DS']; ?></button>
