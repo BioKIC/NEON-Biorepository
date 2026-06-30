@@ -293,7 +293,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                         myAccountButton.addEventListener('click', () => {
                     EOL;
 
-                    if(empty($NEON_DEV_MODE)){
+                    if(empty($NEON_DEV_MODE) || $NEON_DEV_MODE == 1){
                     	echo "window.location.href = 'https://data.neonscience.org/myaccount';";
                     }
                     else{
@@ -366,7 +366,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                         signinButton.addEventListener('click', () => {
                     EOL;
 
-                    if(empty($NEON_DEV_MODE)){
+                    if(empty($NEON_DEV_MODE) || $NEON_DEV_MODE == 1){
                     	echo "window.location.href = '".$CLIENT_ROOT."/profile/openIdAuth.php';";
                     }
                     else{
