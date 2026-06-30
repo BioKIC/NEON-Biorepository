@@ -1,4 +1,6 @@
 <?php
+//$NEON_DEV_MODE = 0;		//>0 => redirects to neonscience.org disabled; 1 => login via NEON;  2 = login via Symbiota user tables
+
 $DEFAULT_LANG = 'en';			//Default language
 $DEFAULT_PROJ_ID = 0;
 $DEFAULTCATID = 0;
