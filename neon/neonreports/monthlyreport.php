@@ -19,9 +19,7 @@ if (!$month) {
 $reports = new NEONReports();
 $reportsArr = $reports->getMonthlyReport($month);
 $reportDate = $reports->getReportDate($month,'monthly');
-$headerArr = ['Statistic', 'Current','Change'];
 $utilities = new Utilities();
-
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 
@@ -89,6 +87,7 @@ if ($isEditor) {
 
 		if ($general) {
 			echo '<h2>General Statistics</h2>';
+			$headerArr = ['Statistic', 'Current','Change'];
 			echo $utilities->htmlTable($general, $headerArr);
 		}
 
@@ -102,6 +101,7 @@ if ($isEditor) {
 
 		if ($request) {
 			echo '<h2>Request Summary</h2>';
+			$headerArr = ['Status', 'Current','Change'];
 			echo $utilities->htmlTable($request, $headerArr);
 		}
 
@@ -122,7 +122,7 @@ if ($isEditor) {
 				<canvas id="samplesByClassChart"></canvas>
 			</div>
 			<?php
-
+			$headerArr = ['Sample Class', 'Current','Change'];
 			echo $utilities->htmlTable($sample, $headerArr);
 		}
 		?>
