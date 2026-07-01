@@ -812,7 +812,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 										<option value="">Select Follow Up Type</option>
 										<option value="">------------------------------------------</option>
 										<?php
-										$followuptypes = array('funding status','loan recall','data return','publication check','embargo expiration','pending list check');
+										$followuptypes = array('funding status','loan recall','data return','publication check','embargo expiration','pending list check','none');
 										foreach($followuptypes as $text){
 											$selected = ($inquirydata['followUpType'] === $text) ? 'selected' : '';
 											echo '<option value="' . htmlspecialchars($text) . '" ' . $selected . '>' . htmlspecialchars($text) . '</option>';
