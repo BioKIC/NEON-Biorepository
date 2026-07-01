@@ -586,7 +586,7 @@ ER  -
 								<!--	</a>-->
 								<!--</li>-->
 								<li style="margin-left:10px;">
-									<a href="collprofiles.php?collid=<?php echo $collid; ?>&action=UpdateStatistics">
+									<a href="neoncollprofiles.php?collid=<?php echo $collid; ?>&action=UpdateStatistics">
 										<?php echo (isset($LANG['UPDATE_STATS']) ? $LANG['UPDATE_STATS'] : 'Update Statistics'); ?>
 									</a>
 								</li>

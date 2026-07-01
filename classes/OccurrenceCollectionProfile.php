@@ -800,6 +800,28 @@ class OccurrenceCollectionProfile extends OmCollections
 		if(!$this->collid){
 			return $retArr;
 		}
+		$materialSampleMap = [
+			118 => '%heart%',
+			119 => '%tract%',
+			120 => '%lung%',
+			121 => '%kidney%',
+			122 => '%spleen%',
+			123 => '%liver%',
+			124 => '%muscle%'
+		];
+		
+		$where = 'o.collid = '.(int)$this->collid;
+		
+		if(isset($materialSampleMap[$this->collid])){
+			$where = 'o.collid IN(17,19,28)
+				AND EXISTS (
+					SELECT 1
+					FROM ommaterialsample ms
+					WHERE ms.occid = o.occid
+					AND ms.sampleType LIKE "'.$this->conn->real_escape_string($materialSampleMap[$this->collid]).'"
+				)';
+		}
+		
 		$sql = '
 			SELECT DISTINCT
 				d.name AS siteCode,
@@ -809,7 +831,7 @@ class OccurrenceCollectionProfile extends OmCollections
 				ON o.occid = l.occid
 			INNER JOIN omoccurdatasets d
 				ON l.datasetid = d.datasetid
-			WHERE o.collid = ' . (int)$this->collid . '
+			WHERE '.$where.'
 			AND d.notes = "NEON Site"
 			AND o.eventdate IS NOT NULL
 			AND o.availability = 1
