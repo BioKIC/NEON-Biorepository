@@ -1,5 +1,8 @@
 <?php
 include_once('../../config/symbini.php');
+header('Location: neonindex.php', true, 302);
+exit;
+
 include_once($SERVER_ROOT.'/classes/DwcArchiverCore.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/download/index.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/download/index.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/download/index.en.php');
@@ -43,15 +46,11 @@ $dwcManager = new DwcArchiverCore();
 				});
 			}
 
-			<?php
-			if(!$searchVar){
-				?>
-				if(sessionStorage.querystr){
-					window.location = "index.php?"+sessionStorage.querystr;
+			if(sessionStorage.querystr){
+				if(document.getElementById("searchVar-input").value == ""){
+					document.getElementById("searchVar-input").value = sessionStorage.querystr;
 				}
-				<?php
 			}
-			?>
 		});
 
 		function extensionSelected(obj){
@@ -71,15 +70,15 @@ $dwcManager = new DwcArchiverCore();
 		}
 		<!--NEON edit - GA event-->
 		function validateDownloadForm(f){
-		
+
 			gtag('event', 'data_download', {
 				search_var: f.searchvar.value,
 				source_page: f.sourcepage.value,
 				taxon_filter_code: f.taxonFilterCode.value
 			});
-		
+
 			document.getElementById("workingcircle").style.display = "inline";
-		
+
 			return true;
 		}
 		<!--end NEON edit-->
@@ -119,7 +118,7 @@ $dwcManager = new DwcArchiverCore();
 			<?= $LANG['GUIDE_TWO'] ?>
 		</div>
 		<div style='margin:30px 15px;'>
-			<form name="downloadform" action="downloadhandler.php" method="post" onsubmit="return validateDownloadForm(this);">
+			<form id="downloadform" name="downloadform" action="downloadhandler.php" method="post" onsubmit="return validateDownloadForm(this);">
 				<fieldset>
 					<legend>
 						<?php
@@ -209,7 +208,7 @@ $dwcManager = new DwcArchiverCore();
 						<input name="publicsearch" type="hidden" value="1" />
 						<input name="taxonFilterCode" type="hidden" value="<?= $taxonFilterCode; ?>" />
 						<input name="sourcepage" type="hidden" value="<?= htmlspecialchars($sourcePage); ?>" />
-						<input name="searchvar" type="hidden" value="<?= $searchVar ?>" />
+						<input id="searchVar-input" name="searchvar" type="hidden" value="<?= $searchVar ?>" />
 						<button type="submit" name="submitaction"><?= $LANG['DOWNLOAD_DATA'] ?></button>
 						<img id="workingcircle" src="../../images/ajax-loader_sm.gif" style="margin-bottom:-4px;width:20px;display:none;" />
 					</div>
