@@ -109,7 +109,7 @@ if ($isEditor) {
 		}
 
 		?>
-		<form method="post" action="exportreporthandler.php">
+		<form method="post" action="exportsowreporthandler.php">
 			<input type="hidden" name="sow" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="receipt">
 			<button type="submit">Export Sample Receipt Form Statistics</button>
@@ -146,7 +146,7 @@ if ($isEditor) {
 		}
 
 		?>
-		<form method="post" action="exportreporthandler.php">
+		<form method="post" action="exportsowreporthandler.php">
 			<input type="hidden" name="ay" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="accessioning">
 			<button type="submit">Export Accessioning Statistics</button>
@@ -182,7 +182,7 @@ if ($isEditor) {
 			echo $utilities->htmlTable($data, $headerArr);
 		}
 		?>
-		<form method="post" action="exportreporthandler.php">
+		<form method="post" action="exportsowreporthandler.php">
 			<input type="hidden" name="ay" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="data">
 			<button type="submit">Export Sample Data Statistics</button>
@@ -234,9 +234,9 @@ if ($isEditor) {
 		}
 		?>
 		<p>*Typical requests are of less than 100 samples and no significant processing </P>
-		<form method="post" action="exportreporthandler.php">
+		<form method="post" action="exportsowreporthandler.php">
 			<input type="hidden" name="ay" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
-			<input type="hidden" name="type" value="loans">
+			<input type="hidden" name="type" value="loanrequests">
 			<button type="submit">Export Loan Request Statistics</button>
 		</form>
 		<?php

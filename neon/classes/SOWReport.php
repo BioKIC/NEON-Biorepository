@@ -65,122 +65,210 @@
 
     // Generates data for SOW Report 
     public function generateSOWReport() {
-        $dataArr = [];
 
-        $name = date('Y');
         $reportDate = date('Y-m-d H:i:s');
 
+        $name = (int) date('y');  
+        $month = (int) date('m');
 
-
-        $shipsql = 'SELECT COUNT(*) AS shipments FROM NeonShipment';
-        $sampsql = 'SELECT COUNT(*) AS samples FROM NeonSample';
-        $occursql = 'SELECT COUNT(*) AS occurrences FROM omoccurrences';
-        $errorsql = 'SELECT COUNT(*) AS errors FROM NeonSample WHERE errorMessage IS NOT NULL AND acceptedForAnalysis = 1';
-        $gbifCount = $this->gbifCount();
-        $gbifLit = $this->gbifLit();
-        $scholarData = $this->getScholarProfileStats();
-        $googleScholarLit = $scholarData['total_citations'];
-        $googleScholarHindex = $scholarData['h_index'];
-        $googleScholarI10index = $scholarData['i10_index'];
-        $activesql = "SELECT COUNT(*) AS activeuse FROM neonrequest WHERE status = 'active use'";
-        $completesql = "SELECT COUNT(*) AS completed FROM neonrequest WHERE status = 'completed'";
-        $notfunded = "SELECT COUNT(*) AS notfunded FROM neonrequest WHERE status = 'not funded'";
-        $pendingfulfillmentsql = "SELECT COUNT(*) AS pendingfulfillment FROM neonrequest WHERE status = 'pending fulfillment'";
-        $pendingfundingsql = "SELECT COUNT(*) AS pendingfunding FROM neonrequest WHERE status = 'pending funding'";
-        $pendingsamplelistsql = "SELECT COUNT(*) AS pendingsamplelist FROM neonrequest WHERE status = 'pending sample list'";
-        $inquirylistsql = "SELECT COUNT(*) AS inquiry FROM neonrequest WHERE status = 'sample inquiry'";
-        $useunlikelysql = "SELECT COUNT(*) AS useunlikely FROM neonrequest WHERE status = 'sample use unlikely'";
-        $totalsql = "SELECT COUNT(*) AS total FROM neonrequest";
-
-        // Collect all query results
-        $queries = [
-            'shipments' => $shipsql,
-            'samples' => $sampsql,
-            'occurrences' => $occursql,
-            'harvesting errors' => $errorsql,
-            'GBIF records' => $gbifCount,
-            'GBIF citations' => $gbifLit,
-            'Google Scholar citations' => $googleScholarLit,
-            'Google Scholar H index' => $googleScholarHindex,
-            'Google Scholar I10 index' => $googleScholarI10index,
-            'active use' => $activesql,
-            'completed' => $completesql,
-            'not funded' => $notfunded,
-            'pending fulfillment' => $pendingfulfillmentsql,
-            'pending funding' => $pendingfundingsql,
-            'pending sample list' => $pendingsamplelistsql,
-            'sample inquiry' => $inquirylistsql,
-            'sample use unlikely' => $useunlikelysql,
-            'total' => $totalsql
-        ];
-
-        foreach ($queries as $key => $sql) {
-            if (is_string($sql)) {
-                $result = $this->conn->query($sql);
-                if ($result) {
-                    $row = $result->fetch_assoc();
-                    $dataArr[$key] = array_values($row)[0];
-                } else {
-                    $dataArr[$key] = 0;
-                }
-            } else {
-                $dataArr[$key] = $sql;
-            }
+        if ($month != 7) {
+            throw new Exception('SOW report can only be generated in July (end of Q3).');
         }
 
-        $type = 'general';
-
-        foreach ($dataArr as $statName => $statValue) {
-
-            if ($statName === 'active use') {
-                $type = 'request';
-            }
-
-            $ins = $this->conn->prepare("INSERT INTO neonmonthlyreport (`name`, `type`, `statistic`, `statValue`, `date`) VALUES (?, ?, ?, ?, ?)");
-
-            $ins->bind_param('sssss', $name, $type, $statName, $statValue, $reportDate);
-            $ins->execute();
-
-            if ($ins->error) {
-                error_log("Insert error for $statName: " . $ins->error);
-            }
-        }
-
-        $samplesql = "SELECT sampleClass, COUNT(*) AS count FROM NeonSample GROUP BY sampleClass";
-
-        $result = $this->conn->query($samplesql);
-
-        if ($result) {
-            $ins = $this->conn->prepare(
-                "INSERT INTO neonmonthlyreport (`name`, `type`, `statistic`, `statValue`, `date`)
-                VALUES (?, 'sample', ?, ?, ?)"
-            );
-
-            while ($row = $result->fetch_assoc()) {
-                $statistic = $row['sampleClass'] ?? 'Unknown sampleClass';
-                $statValue = $row['count'];
-
-                $ins->bind_param(
-                    'ssss',
-                    $name,
-                    $statistic,
-                    $statValue,
-                    $reportDate
-                );
-
-                $ins->execute();
-
-                if ($ins->error) {
-                    error_log("Sample insert error ($statistic): " . $ins->error);
-                }
-            }
-
-            $ins->close();
-        }
+        $this->receiptStats($name,$reportDate);
+        $this->accessionStats($name,$reportDate);
+        // $this->dataStats($name,$reportDate);
+        // $this->loanStats($name,$reportDate);
 
         return $name;
     }
 
+    // Calculate accessionStats
+
+    private function accessionStats($ay,$reportDate) {
+        $sql = "SELECT
+                CASE
+                    WHEN (
+                        CASE
+                            WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
+                            ELSE YEAR(h.dateShipped)
+                        END
+                    ) = ?
+                    THEN CONCAT(
+                        CASE
+                            WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
+                            ELSE YEAR(h.dateShipped)
+                        END,
+                        ' ',
+                        CASE
+                            WHEN MONTH(h.dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
+                            WHEN MONTH(h.dateShipped) IN (4,5,6) THEN 'Q3'
+                        END
+                    )
+                    ELSE
+                        CASE
+                            WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
+                            ELSE YEAR(h.dateShipped)
+                        END
+                END AS awardYearLabel,
+
+                COUNT(DISTINCT s.samplePK) AS samples,
+                COUNT(DISTINCT CASE WHEN s.checkinUid IS NOT NULL THEN s.samplePK END) AS samplesCheckedIn
+
+            FROM NeonShipment h
+            JOIN NeonSample s
+                ON h.shipmentPK = s.shipmentPK
+
+            WHERE NOT (
+                (
+                    CASE
+                        WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
+                        ELSE YEAR(h.dateShipped)
+                    END
+                ) = 2026
+                AND MONTH(h.dateShipped) IN (7,8,9)
+            )
+
+            GROUP BY awardYearLabel
+            ORDER BY
+                CASE
+                    WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
+                    ELSE YEAR(h.dateShipped)
+                END;";
+
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("ii", $ay, $ay);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        $insert = $this->conn->prepare("
+                INSERT INTO NeonSOWReport
+                    (name, type, awardYear, statistic, statValue, date)
+                VALUES (?, 'accessioning', ?, ?, ?, ?)
+            ");
+
+            while ($row = $result->fetch_assoc()) {
+
+                $awardYear = $row['awardYearLabel'];
+
+                foreach ([
+                    'samples',
+                    'samplesCheckedIn',
+                    'meanDaysToCheckIn',
+                    'stdevDaysToCheckIn',
+                    'medianDaysToCheckIn',
+                    'proportionCheckedIn',
+                    'proportion30Days'
+                ] as $stat) {
+
+                    $value = $row[$stat];
+
+                    $insert->bind_param(
+                        "sssss",
+                        $ay,
+                        $awardYear,
+                        $stat,
+                        $value,
+                        $reportDate
+                    );
+
+                    $insert->execute();
+                }
+            }
+
+            $insert->close();
+            $stmt->close();
+    }
+
+    // Calculate Receipt Stats
+
+        private function receiptStats($ay, $reportDate) {
+
+            $sql = "SELECT
+                        CASE
+                            WHEN awardYear = ? THEN
+                                CONCAT(
+                                    awardYear,
+                                    ' ',
+                                    CASE
+                                        WHEN MONTH(dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
+                                        WHEN MONTH(dateShipped) IN (4,5,6) THEN 'Q3'
+                                    END
+                                )
+                            ELSE awardYear
+                        END AS awardYearLabel,
+
+                        COUNT(DISTINCT shipmentID) AS shipments,
+                        COUNT(DISTINCT CASE WHEN receiptStatus IS NOT NULL THEN shipmentID END) AS receiptsSubmitted,
+                        ROUND(
+                            100.0 * COUNT(DISTINCT CASE WHEN receiptStatus IS NOT NULL THEN shipmentID END)
+                            / COUNT(DISTINCT shipmentID),
+                            1
+                        ) AS proportionSubmitted
+
+                    FROM (
+                        SELECT *,
+                            CASE
+                                WHEN MONTH(dateShipped) >= 10 THEN YEAR(dateShipped) + 1
+                                ELSE YEAR(dateShipped)
+                            END AS awardYear
+                        FROM NeonShipment
+                    ) s
+
+                    WHERE NOT (
+                        awardYear = ?
+                        AND MONTH(dateShipped) IN (7,8,9)
+                    )
+
+                    GROUP BY awardYearLabel
+                    ORDER BY awardYear";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("ii", $ay, $ay);
+            $stmt->execute();
+
+            $result = $stmt->get_result();
+
+            $insert = $this->conn->prepare("
+                INSERT INTO NeonSOWReport
+                    (name, type, awardYear, statistic, statValue, date)
+                VALUES (?, 'receipts', ?, ?, ?, ?)
+            ");
+
+            while ($row = $result->fetch_assoc()) {
+
+                $awardYear = $row['awardYearLabel'];
+
+                foreach ([
+                    'shipments',
+                    'receiptsSubmitted',
+                    'proportionSubmitted'
+                ] as $stat) {
+
+                    $value = $row[$stat];
+
+                    $insert->bind_param(
+                        "sssss",
+                        $ay,
+                        $awardYear,
+                        $stat,
+                        $value,
+                        $reportDate
+                    );
+
+                    $insert->execute();
+                }
+            }
+
+            $insert->close();
+            $stmt->close();
+        }
+
+
+
+    ################ STUFF NEEDED
 
     // Gets data for SOW Report tables
     public function getSOWReport($ay) {
