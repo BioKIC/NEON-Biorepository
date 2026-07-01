@@ -931,8 +931,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		foreach($this->searchTermArr as $k => $v){
 			if($k == 'countryCode') continue;
 			if($k == 'countryRaw') continue;
-			if(is_array($v)) $v = implode(',', $v);
-			if($v) $retStr .= '&'. $this->cleanOutStr($k) . '=' . $this->cleanOutStr($v);
+			//neon edit; add support for arrays
+			if(is_array($v)) foreach($v as $value) $retStr .= '&'.$this->cleanOutStr($k).'[]='.$this->cleanOutStr($value);
+			elseif($v) $retStr .= '&'.$this->cleanOutStr($k).'='.$this->cleanOutStr($v);
+			//end neon edit
 		}
 		if(isset($this->taxaArr['search'])){
 			$retStr .= '&taxa=' . $this->getTaxaSearchTerm();
