@@ -47,7 +47,14 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 <?php
 if ($isEditor) {
 ?>
-	<h1>NEON SOW Report: <?php echo htmlspecialchars($month); ?></h1>
+	<h1>NEON SOW Report: <?php echo htmlspecialchars($ay); ?></h1>
+	<div class="section-nav">
+		<a href="#receipts">1. Sample Receipt Forms</a> |
+		<a href="#accessioning">2. Accessioning</a> |
+		<a href="#data">3. Sample Data</a> |
+		<a href="#loans">4. Loans</a> |
+		<a href="#loanrequests">5. Loan Requests</a>
+	</div>
  <?php
 
 	if ($reportDate) {
@@ -82,12 +89,18 @@ if ($isEditor) {
 		}
 		?>
 	<!-- RECEIPTS-->
-		<h2>1. Sample Receipt Forms</h2>
-			<h4><b>Statement of Work:</h4></p>
-				<p><b>Task:</b> Return completed receipt form through the NEON data portal</p>s
-				<p><b>AY18:</b> As available</p>
-				<p><b>AY19-AY22:</b> As feasible</p>
-				<p><b>AY23+:</b> Within 3 months for 90% of samples</p>
+		<div class="section">
+			<h2>1. Sample Receipt Forms</h2>
+
+			<h3>Statement of Work</h3>
+
+			<div class="details" id="receipts">
+				<p><strong>Task:</strong> Return completed receipt form through the NEON data portal</p>
+				<p><strong>AY18:</strong> As available</p>
+				<p><strong>AY19–AY22:</strong> As feasible</p>
+				<p><strong>AY23+:</strong> Within 3 months for 90% of samples</p>
+			</div>
+		</div>
 		
 		<?php
 		if ($receipts) {
@@ -102,22 +115,30 @@ if ($isEditor) {
 			<button type="submit">Export Sample Receipt Form Statistics</button>
 		</form>
 
-		<h4>Latency to receipt submission</h4>
-			<p>** Timestamp of receipt submission was not recorded within our shipment tables until August 1, 2022. Therefore, only shipments sent after that date are included.</p>
+		<h3>Latency to receipt submission</h3>
 
+			<div class="details">
+				<p>** Timestamp of receipt submission was not recorded within our shipment tables until August 1, 2022. Therefore, only shipments sent after that date are included.</p>
+			</div>
 			<!--- LATENCY PLOT HERE -->
 
 	
 	<!-- ACCESSIONING-->
-		<h2>2. Accessioning</h2>
-			<h4><b>Statement of Work:</h4></p>
-				<p><b>Task:</b> Accession samples received</p>s
-				<p><b>AY18:</b> As feasible</p>
-				<p><b>AY19-AY22:</b> As feasible</p>
-				<p><b>AY23+:</b> Within 3 months for 90% of samples</p>
+	 	<div class="section" id="accessioning">
+			<h2>2. Accessioning</h2>
+
+			<h3>Statement of Work</h3>
+
+			<div class="details">
+				<p><strong>Task:</strong> Accession samples received</p>
+				<p><strong>AY18:</strong> As feasible</p>
+				<p><strong>AY19-AY22:</strong> As feasible</p>
+				<p><strong>AY23+:</strong> Within 3 months for 90% of samples</p>
 				<p>Calculated as the number of days between shipment date for the shipment and check in timestamp of the sample. This does overestimate the number of days that the sample was not checked in by the Biorepository because it counts shipping times, but does not allow for occasional underestimates due to lag between shipment receipt and shipment check-in.</p>
 				<p>Note that these values ignore (1) all samples from shipments that have not yet been received and (2) all samples marked by the collection manager as not received or not accepted for analysis.</p>
-	
+			</div>
+		</div>
+
 		<?php
 		if ($accessioning) {
 			$headerArr = ['Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Median Days','Proprtion All Time','Proportion <30 Days'];
@@ -131,23 +152,29 @@ if ($isEditor) {
 			<button type="submit">Export Accessioning Statistics</button>
 		</form>
 
-		<h4>Latency for samples that have been checked in</h4>
+		<h3>Latency for samples that have been checked in</h3>
 
 			<!--- LATENCY PLOT HERE -->
 
-		<h4>Number of samples shipped vs. checked-in per month</h4>
+		<h3>Number of samples shipped vs. checked-in per month</h3>
 			
 			<!--- COMPARISON PLOT HERE -->
 	
 	<!-- DATA -->
-		<h2>3. Sample Data</h2>
-			<h4><b>Statement of Work:</h4></p>
-				<p><b>Task:</b>Make sample publically available</p>
-				<p><b>AY18:</b> As feasible</p>
-				<p><b>AY19-AY22:</b> As feasible</p>
-				<p><b>AY23+:</b> Within 3 months for 90% of samples</p>
+	 	<div class="section" id="data">
+			<h2>3. Sample Data</h2>
+
+			<h3>Statement of Work</h3>
+
+			<div class="details">
+				<p><strong>Task:</strong>Make sample publically available</p>
+				<p><strong>AY18:</strong> As feasible</p>
+				<p><strong>AY19-AY22:</strong> As feasible</p>
+				<p><strong>AY23+:</strong> Within 3 months for 90% of samples</p>
 				<p>Calculated as the number of days between shipment date for the shipment and original data harvesting timestamp of the sample. This does overestimate the latency to data availability on the part of the Biorepository because (1) it counts transit times, (2) it ignores latency due to manifest data errors that cause failures to match values in the API, and (3) it ignores lag in data availability in the NEON API, which prevents us from harvesting at the time of check-in.</p>
 				<p>Note that these values ignore (1) all samples from shipments that have not yet been received and (2) all samples marked by the collection manager as not received or not accepted for analysis.</p>
+			</div>
+		</div>		
 		<?php
 
 		if ($data) {
@@ -161,31 +188,44 @@ if ($isEditor) {
 			<button type="submit">Export Sample Data Statistics</button>
 		</form>
 
-		<h4>Latency for samples for which data has been harvested</h4>
+		<h3>Latency for samples for which data has been harvested</h3>
 
 			<!--- LATENCY PLOT HERE -->
 
-		<h4>Number of samples shipped vs. number of samples for which data became available per month</h4>
+		<h3>Number of samples shipped vs. number of samples for which data became available per month</h3>
 
 			<!--- COMPARISON PLOT HERE -->
 
 	<!-- AVAILABLE FOR LOAN -->
-		<h2>4. Loans</h2>
-			<h4><b>Statement of Work:</h4></p>
-				<p><b>Task:</b>Make samples available for loan</p>
-				<p><b>AY18:</b> As feasible</p>
-				<p><b>AY19-AY22:</b> As feasible</p>
-				<p><b>AY23+:</b> Within 3 months for 90% of samples</p>
+
+		<div class="section" id="loans">
+			<h2>4. Loans</h2>
+
+			<h3>Statement of Work</h3>
+
+			<div class="details">
+				<p><strong>Task:</strong>Make samples available for loan</p>
+				<p><strong>AY18:</strong> As feasible</p>
+				<p><strong>AY19-AY22:</strong> As feasible</p>
+				<p><strong>AY23+:</strong> Within 3 months for 90% of samples</p>
 				<p>Samples are available for loan as soon as they are checked-in by the collection managers and the data is harvested from the NEON API and published to the Biorepository portal.</p> 
+			</div>
+		</div>	
 		
 	<!-- LOAN FULFILLMENT -->
-		<h2>5. Loan Requests</h2>
-			<h4><b>Statement of Work:</h4></p>
-				<p><b>Task:</b>Fulfill loan requests</p>
-				<p><b>AY18:</b> As feasible</p>
-				<p><b>AY19-AY22:</b> Within 6 weeks for 90% of requests, except those requiring significant processing or including >100 samples</p>
-				<p><b>AY19-AY22:</b> Within 4 weeks for 90% of requests, except those requiring significant processing or including >100 samples</p>
+	 	<div class="section" id="loansrequests">
+			<h2>5. Loan Requests</h2>
+
+			<h3>Statement of Work</h3>
+
+			<div class="details">
+				<p><strong>Task:</strong>Fulfill loan requests</p>
+				<p><strong>AY18:</strong> As feasible</p>
+				<p><strong>AY19-AY22:</strong> Within 6 weeks for 90% of requests, except those requiring significant processing or including >100 samples</p>
+				<p><strong>AY19-AY22:</strong> Within 4 weeks for 90% of requests, except those requiring significant processing or including >100 samples</p>
 				<p>** Prior to June 2022 only the timestamps for initial inquiry, most recent status update, and shipment were recorded, so time between finalization of the sample list and shipment could not be calculated.</p>
+			</div>
+		</div>	
 
 		<?php
 		if ($loans) {
@@ -213,115 +253,57 @@ else {
 		?>
   </body>
   <script src="../js/sortables.js"></script>
+  </script>
 
-	(function () {
+<style>
 
-		const rawData = chartData_<?= md5($reportDate) ?>;
+.section h2 {
+    margin-bottom: 1rem;
+}
 
-		const labels = rawData.map(r => r.sampleClass);
-		const rawCounts = rawData.map(r => r.count);
-		const logCounts = rawCounts.map(v => Math.log10(v));
+.section h3 {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
 
-		const prefixes = [...new Set(
-			rawData.map(r => r.sampleClass.substring(0, 3))
-		)];
+.details {
+    margin-left: 2rem;  
+}
 
-		const colorPalette = [
-			'#4e79a7', // blue
-			'#f28e2b', // orange
-			'#e15759', // red
-			'#76b7b2', // teal
-			'#59a14f', // green
-			'#edc949', // yellow
-			'#af7aa1', // purple
-			'#ff9da7', // pink
-			'#9c755f', // brown
-			'#bab0ab', // gray
-			'#1f77b4', // dark blue
-			'#ff7f0e', // dark orange
-			'#2ca02c', // dark green
-			'#d62728', // dark red
-			'#9467bd', // violet
-			'#8c564b', // coffee
-			'#e377c2', // magenta
-			'#7f7f7f', // neutral gray
-			'#bcbd22', // olive
-			'#17becf', // cyan
-			'#393b79', // indigo
-			'#637939', // moss
-			'#8c6d31', // gold-brown
-			'#843c39', // brick
-			'#7b4173', // plum
-			'#3182bd', // steel blue
-			'#31a354', // emerald
-			'#756bb1', // lavender
-			'#636363', // charcoal
-			'#e6550d'  // burnt orange
-		];
+.details p {
+    margin: 0.4rem 0;
+    color: #666;         
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
 
+.details strong {
+    color: #333;         
+    font-weight: 600;
+}
+.section-nav {
+    margin: 20px 0;
+    padding: 10px 15px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
 
-		const datasets = prefixes.map((prefix, i) => ({
-			label: prefix,
-			backgroundColor: colorPalette[i % colorPalette.length],
-			data: rawData.map((r, idx) =>
-				r.sampleClass.startsWith(prefix)
-					? logCounts[idx]
-					: null
-			),
-			categoryPercentage: 3.0,
-			barPercentage: 3.0
-		}));
+.section-nav a {
+    text-decoration: none;
+    color: #0056b3;
+    font-weight: 600;
+    margin-right: 12px;
+}
 
+.section-nav a:hover {
+    text-decoration: underline;
+}
 
-		const ctx = document
-			.getElementById('samplesByClassChart')
-			.getContext('2d');
-
-		new Chart(ctx, {
-			type: 'bar',
-			data: {
-				labels: labels,
-				datasets: datasets
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-
-				scales: {
-					x: {
-						display: false
-					},
-					y: {
-						beginAtZero: true,
-						title: {
-							display: true,
-							text: 'Log Number of Samples'
-						}
-					}
-				},
-
-				plugins: {
-					legend: {
-						display: true,
-						position: 'bottom'
-					},
-					tooltip: {
-						callbacks: {
-							title: function (tooltipItems) {
-								return labels[tooltipItems[0].dataIndex];
-							},
-							label: function (tooltipItem) {
-								const index = tooltipItem.dataIndex;
-								return 'Samples: ' + rawCounts[index].toLocaleString();
-							}
-						}
-					}
-				}
-			}
-		});
-
-	})();
-	</script>
+.section {
+    scroll-margin-top: 80px; 
+}
+</style>
 
 
 </html>
