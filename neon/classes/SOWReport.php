@@ -89,7 +89,7 @@
 
         $sql = "SELECT
                 CASE
-                    WHEN awardYear = ? THEN
+                    WHEN awardYear = (2000 + ?) THEN
                         CONCAT(
                             awardYear,
                             ' ',
@@ -125,7 +125,7 @@
                         END
                     ) / COUNT(*),
                     1
-                ) AS proportion30DaysAll,
+                ) AS percent30DaysAll,
 
                 ROUND(
                     100.0 * COUNT(
@@ -144,7 +144,7 @@
                         END
                     ),
                     1
-                ) AS proportion30DaysTypical
+                ) AS percent30DaysTypical
 
             FROM (
                 SELECT
@@ -160,19 +160,71 @@
                 FROM NeonRequest
                 WHERE pendingFulfillmentDate IS NOT NULL
                 AND activeDate IS NOT NULL
-                AND pendingFulfillmentDate > '2021-09-31'
+                AND pendingFulfillmentDate > '2021-09-30'
             ) r
 
             WHERE NOT (
-                awardYear = 2026
+                awardYear = (2000 + ?)
                 AND MONTH(pendingFulfillmentDate) IN (7,8,9)
             )
 
             GROUP BY awardYearLabel
-            ORDER BY awardYear;";
+            
+            UNION ALL
+
+            SELECT
+                'Total' AS awardYearLabel,
+
+                COUNT(*) AS requests,
+
+                ROUND(
+                    AVG(DATEDIFF(activeDate, pendingFulfillmentDate)),
+                    1
+                ) AS meanDays,
+
+                ROUND(
+                    STDDEV_SAMP(DATEDIFF(activeDate, pendingFulfillmentDate)),
+                    1
+                ) AS stdDays,
+
+                ROUND(
+                    100.0 * COUNT(
+                        CASE
+                            WHEN DATEDIFF(activeDate, pendingFulfillmentDate) <= 30
+                            THEN 1
+                        END
+                    ) / COUNT(*),
+                    1
+                ) AS percent30DaysAll,
+
+                ROUND(
+                    100.0 * COUNT(
+                        CASE
+                            WHEN processing <> 'yes'
+                            AND moreThan100 <> 1
+                            AND DATEDIFF(activeDate, pendingFulfillmentDate) <= 30
+                            THEN 1
+                        END
+                    ) /
+                    COUNT(
+                        CASE
+                            WHEN processing <> 'yes'
+                            AND moreThan100 <> 1
+                            THEN 1
+                        END
+                    ),
+                    1
+                ) AS percent30DaysTypical
+
+            FROM NeonRequest
+
+            WHERE pendingFulfillmentDate IS NOT NULL
+            AND activeDate IS NOT NULL
+            AND pendingFulfillmentDate > '2021-09-30'
+            ORDER BY awardYearLabel;";
 
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $ay);
+        $stmt->bind_param("ii", $ay, $ay);
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -191,8 +243,8 @@
                     'requests',
                     'meanDays',
                     'stdDays',
-                    'proportion30DaysAll',
-                    'proportion30DaysTypical'
+                    'percent30DaysAll',
+                    'percent30DaysTypical'
                 ] as $stat) {
 
                     $value = $row[$stat];
@@ -220,7 +272,7 @@
     private function accessionStats($ay,$reportDate) {
         $sql = "SELECT
             CASE
-                WHEN awardYear = ? THEN
+                WHEN awardYear = (2000 + ?) THEN
                     CONCAT(
                         awardYear,
                         ' ',
@@ -264,7 +316,7 @@
                 END)
                 / COUNT(DISTINCT samplePK),
                 1
-            ) AS proportionCheckedIn,
+            ) AS percentCheckedIn,
 
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
@@ -274,7 +326,7 @@
                 END)
                 / COUNT(DISTINCT samplePK),
                 1
-            ) AS proportion30Days
+            ) AS percent30Days
 
         FROM (
             SELECT
@@ -292,16 +344,76 @@
         ) x
 
         WHERE NOT (
-            awardYear = 2026
+            awardYear = (2000 + ?)
             AND MONTH(dateShipped) IN (7,8,9)
         )
 
         GROUP BY awardYearLabel
-        ORDER BY awardYear;";
+        UNION ALL
+
+SELECT
+    'Total' AS awardYearLabel,
+
+    COUNT(DISTINCT samplePK) AS samples,
+
+    COUNT(DISTINCT CASE
+        WHEN checkinUid IS NOT NULL THEN samplePK
+    END) AS samplesCheckedIn,
+
+    ROUND(
+        AVG(
+            CASE
+                WHEN checkinUid IS NOT NULL
+                THEN DATEDIFF(checkinTimestamp, dateShipped)
+            END
+        ),
+        1
+    ) AS meanDays,
+
+    ROUND(
+        STDDEV_SAMP(
+            CASE
+                WHEN checkinUid IS NOT NULL
+                THEN DATEDIFF(checkinTimestamp, dateShipped)
+            END
+        ),
+        1
+    ) AS stdDays,
+
+    ROUND(
+        COUNT(DISTINCT CASE
+            WHEN checkinUid IS NOT NULL THEN samplePK
+        END)
+        / COUNT(DISTINCT samplePK),
+        1
+    ) AS percentCheckedIn,
+
+    ROUND(
+        100.0 * COUNT(DISTINCT CASE
+            WHEN checkinUid IS NOT NULL
+             AND DATEDIFF(checkinTimestamp, dateShipped) <= 30
+            THEN samplePK
+        END)
+        / COUNT(DISTINCT samplePK),
+        1
+    ) AS percent30Days
+
+FROM (
+    SELECT
+        h.dateShipped,
+        s.samplePK,
+        s.checkinUid,
+        s.checkinTimestamp
+    FROM NeonShipment h
+    JOIN NeonSample s
+        ON h.shipmentPK = s.shipmentPK
+) x
+
+        ORDER BY awardYearLabel;";
 
 
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $ay);
+        $stmt->bind_param("ii", $ay, $ay);
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -309,7 +421,7 @@
         $insert = $this->conn->prepare("
                 INSERT INTO NeonSOWReport
                     (name, type, awardYear, statistic, statValue, date)
-                VALUES (?, 'data', ?, ?, ?, ?)
+                VALUES (?, 'accessioning', ?, ?, ?, ?)
             ");
 
             while ($row = $result->fetch_assoc()) {
@@ -321,8 +433,8 @@
                     'samplesCheckedIn',
                     'meanDays',
                     'stdDays',
-                    'proportionCheckedIn',
-                    'proportion30Days'
+                    'percentCheckedIn',
+                    'percent30Days'
                 ] as $stat) {
 
                     $value = $row[$stat];
@@ -349,7 +461,7 @@
     private function dataStats($ay,$reportDate) {
         $sql = "SELECT
             CASE
-                WHEN awardYear = ? THEN
+                WHEN awardYear = (2000 + ?) THEN
                     CONCAT(
                         awardYear,
                         ' ',
@@ -393,17 +505,17 @@
                 END)
                 / COUNT(DISTINCT samplePK),
                 1
-            ) AS proportionWithData,
+            ) AS percentWithData,
 
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
                     WHEN occid IS NOT NULL
-                    AND DATEDIFF(harvestTimestamp, dateShipped) <= 30
+                     AND DATEDIFF(harvestTimestamp, dateShipped) <= 30
                     THEN samplePK
                 END)
                 / COUNT(DISTINCT samplePK),
                 1
-            ) AS proportion30Days
+            ) AS percent30Days
 
         FROM (
             SELECT
@@ -421,16 +533,75 @@
         ) x
 
         WHERE NOT (
-            awardYear = 2026
+            awardYear = (2000 + ?)
             AND MONTH(dateShipped) IN (7,8,9)
         )
 
         GROUP BY awardYearLabel
-        ORDER BY awardYear;";
+
+        UNION ALL
+
+        SELECT
+            'Total' AS awardYearLabel,
+
+            COUNT(DISTINCT samplePK) AS samples,
+
+            COUNT(DISTINCT CASE
+                WHEN occid IS NOT NULL THEN samplePK
+            END) AS samplesWithData,
+
+            ROUND(
+                AVG(
+                    CASE
+                        WHEN occid IS NOT NULL
+                        THEN DATEDIFF(harvestTimestamp, dateShipped)
+                    END
+                ),
+                1
+            ) AS meanDays,
+
+            ROUND(
+                STDDEV_SAMP(
+                    CASE
+                        WHEN occid IS NOT NULL
+                        THEN DATEDIFF(harvestTimestamp, dateShipped)
+                    END
+                ),
+                1
+            ) AS stdDays,
+
+            ROUND(
+                100.0 * COUNT(DISTINCT CASE
+                    WHEN occid IS NOT NULL THEN samplePK
+                END)
+                / COUNT(DISTINCT samplePK),
+                1
+            ) AS percentWithData,
+
+            ROUND(
+                100.0 * COUNT(DISTINCT CASE
+                    WHEN occid IS NOT NULL
+                     AND DATEDIFF(harvestTimestamp, dateShipped) <= 30
+                    THEN samplePK
+                END)
+                / COUNT(DISTINCT samplePK),
+                1
+            ) AS percent30Days
+
+        FROM NeonShipment h
+        JOIN NeonSample s
+            ON h.shipmentPK = s.shipmentPK
+
+        ORDER BY
+            CASE
+                WHEN awardYearLabel = 'Total' THEN 9999
+                ELSE CAST(LEFT(awardYearLabel,4) AS UNSIGNED)
+            END,
+            awardYearLabel;";
 
 
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("i", $ay);
+        $stmt->bind_param("ii", $ay, $ay);
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -438,7 +609,7 @@
         $insert = $this->conn->prepare("
                 INSERT INTO NeonSOWReport
                     (name, type, awardYear, statistic, statValue, date)
-                VALUES (?, 'accessioning', ?, ?, ?, ?)
+                VALUES (?, 'data', ?, ?, ?, ?)
             ");
 
             while ($row = $result->fetch_assoc()) {
@@ -450,8 +621,8 @@
                     'samplesWithData',
                     'meanDays',
                     'stdDays',
-                    'proportionWithData',
-                    'proportion30Days'
+                    'percentWithData',
+                    'percent30Days'
                 ] as $stat) {
 
                     $value = $row[$stat];
@@ -477,44 +648,76 @@
 
         private function receiptStats($ay, $reportDate) {
 
-            $sql = "SELECT
+            $sql = $sql = "SELECT
+                    CASE
+                        WHEN awardYear = (2000 + ?) THEN
+                            CONCAT(
+                                awardYear,
+                                ' ',
+                                CASE
+                                    WHEN MONTH(dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
+                                    WHEN MONTH(dateShipped) IN (4,5,6) THEN 'Q3'
+                                END
+                            )
+                        ELSE awardYear
+                    END AS awardYearLabel,
+
+                    COUNT(DISTINCT shipmentID) AS shipments,
+                    COUNT(DISTINCT CASE
+                        WHEN receiptStatus IS NOT NULL THEN shipmentID
+                    END) AS receiptsSubmitted,
+
+                    ROUND(
+                        100.0 * COUNT(DISTINCT CASE
+                            WHEN receiptStatus IS NOT NULL THEN shipmentID
+                        END)
+                        / COUNT(DISTINCT shipmentID),
+                        1
+                    ) AS percentSubmitted
+
+                FROM (
+                    SELECT *,
                         CASE
-                            WHEN awardYear = ? THEN
-                                CONCAT(
-                                    awardYear,
-                                    ' ',
-                                    CASE
-                                        WHEN MONTH(dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
-                                        WHEN MONTH(dateShipped) IN (4,5,6) THEN 'Q3'
-                                    END
-                                )
-                            ELSE awardYear
-                        END AS awardYearLabel,
+                            WHEN MONTH(dateShipped) >= 10 THEN YEAR(dateShipped) + 1
+                            ELSE YEAR(dateShipped)
+                        END AS awardYear
+                    FROM NeonShipment
+                ) s
 
-                        COUNT(DISTINCT shipmentID) AS shipments,
-                        COUNT(DISTINCT CASE WHEN receiptStatus IS NOT NULL THEN shipmentID END) AS receiptsSubmitted,
-                        ROUND(
-                            100.0 * COUNT(DISTINCT CASE WHEN receiptStatus IS NOT NULL THEN shipmentID END)
-                            / COUNT(DISTINCT shipmentID),
-                            1
-                        ) AS proportionSubmitted
+                WHERE NOT (
+                    awardYear = (2000 + ?)
+                    AND MONTH(dateShipped) IN (7,8,9)
+                )
 
-                    FROM (
-                        SELECT *,
-                            CASE
-                                WHEN MONTH(dateShipped) >= 10 THEN YEAR(dateShipped) + 1
-                                ELSE YEAR(dateShipped)
-                            END AS awardYear
-                        FROM NeonShipment
-                    ) s
+                GROUP BY awardYearLabel
 
-                    WHERE NOT (
-                        awardYear = ?
-                        AND MONTH(dateShipped) IN (7,8,9)
-                    )
+                UNION ALL
 
-                    GROUP BY awardYearLabel
-                    ORDER BY awardYear";
+                SELECT
+                    'Total' AS awardYearLabel,
+
+                    COUNT(DISTINCT shipmentID) AS shipments,
+
+                    COUNT(DISTINCT CASE
+                        WHEN receiptStatus IS NOT NULL THEN shipmentID
+                    END) AS receiptsSubmitted,
+
+                    ROUND(
+                        100.0 * COUNT(DISTINCT CASE
+                            WHEN receiptStatus IS NOT NULL THEN shipmentID
+                        END)
+                        / COUNT(DISTINCT shipmentID),
+                        1
+                    ) AS percentSubmitted
+
+                FROM NeonShipment
+
+                ORDER BY
+                    CASE
+                        WHEN awardYearLabel = 'Total' THEN 9999
+                        ELSE CAST(LEFT(awardYearLabel,4) AS UNSIGNED)
+                    END,
+                    awardYearLabel";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->bind_param("ii", $ay, $ay);
@@ -535,7 +738,7 @@
                 foreach ([
                     'shipments',
                     'receiptsSubmitted',
-                    'proportionSubmitted'
+                    'percentSubmitted'
                 ] as $stat) {
 
                     $value = $row[$stat];
@@ -557,103 +760,26 @@
             $stmt->close();
         }
 
-
-
-    ################ STUFF NEEDED
-
     // Gets data for SOW Report tables
-    public function getSOWReport($ay) {
+    public function getSOWReport($ay,$type) {
 
-        $currentsql = 'SELECT statistic, statValue, type, date
-                    FROM neonmonthlyreport
-                    WHERE name = ?';
+        $sql = 'SELECT awardYear,statistic,statValue
+                FROM neonsowreport
+                WHERE name = ? AND type = ?';
 
-        $currentstmt = $this->conn->prepare($currentsql);
-        $currentstmt->bind_param('s', $month);
-        $currentstmt->execute();
-        $current = $currentstmt->get_result();
-        $currentstmt->close();
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('ss', $ay, $type);
+        $stmt->execute();
 
-        $priorsql = '
-            SELECT statistic, statValue, type, date
-            FROM neonmonthlyreport
-            WHERE name = (
-                SELECT DISTINCT name
-                FROM neonmonthlyreport
-                WHERE name < ?
-                ORDER BY name DESC
-                LIMIT 1
-            )';
+        $result = $stmt->get_result();
+        $rows = [];
 
-        $priorstmt = $this->conn->prepare($priorsql);
-        $priorstmt->bind_param('s', $month);
-        $priorstmt->execute();
-        $prior = $priorstmt->get_result();
-        $priorstmt->close();
-
-        $currentDate = null;
-        $priorDate   = null;
-
-        if ($row = $current->fetch_assoc()) {
-            $currentDate = $row['date'];
-        }
-        $current->data_seek(0);
-
-        if ($row = $prior->fetch_assoc()) {
-            $priorDate = $row['date'];
-        }
-        $prior->data_seek(0);
-
-        $dayChange = '';
-        if ($currentDate && $priorDate) {
-            $d1 = new DateTime($priorDate);
-            $d2 = new DateTime($currentDate);
-            $dayChange = '+' . $d1->diff($d2)->days . ' days';
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
         }
 
-        $currentData = [];
-        while ($row = $current->fetch_assoc()) {
-            $currentData[$row['statistic']] = [
-                'value' => (int)$row['statValue'],
-                'type'  => $row['type']
-            ];
-        }
-
-        $priorData = [];
-        while ($row = $prior->fetch_assoc()) {
-            $priorData[$row['statistic']] = (int)$row['statValue'];
-        }
-
-        $reportRows = [];
-
-        $reportRows[] = [
-            'general',
-            'Prior report date',
-            $priorDate ? date('Y-m-d', strtotime($priorDate)) : 'N/A',
-            $dayChange
-        ];
-        foreach ($currentData as $stat => $data) {
-            $currentValue = $data['value'];
-            $type         = $data['type'];
-            $priorValue   = $priorData[$stat] ?? null;
-
-            if ($priorValue === null) {
-                $change = '';  
-            } else {
-                $diff = $currentValue - $priorValue;
-                $change = ($diff > 0 ? '+' : '') . $diff;
-            }
-
-            $reportRows[] = [
-                $type,
-                $stat,
-                $currentValue,
-                $change
-            ];
-        }
-
-        return $reportRows;
-    
+        $stmt->close();
+        return $rows;
     }
 
 }

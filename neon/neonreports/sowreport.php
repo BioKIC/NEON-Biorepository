@@ -18,7 +18,6 @@ if (!$ay) {
 
 $reports = new SOWReport();
 $reportDate = $reports->getReportDate($ay);
-$reportsArr = $reports->getSOWReport($ay);
 $utilities = new Utilities();
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
@@ -104,7 +103,7 @@ if ($isEditor) {
 		
 		<?php
 		if ($receipts) {
-			$headerArr = ['Award Year', 'No. Shipments','No. Receipts Submitted','Proportion Submitted'];
+			$headerArr = ['Award Year', 'No. Shipments','No. Receipts Submitted','Percent Submitted'];
 			echo $utilities->htmlTable($receipts, $headerArr);
 		}
 
@@ -141,7 +140,7 @@ if ($isEditor) {
 
 		<?php
 		if ($accessioning) {
-			$headerArr = ['Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Proportion All Time','Proportion <30 Days'];
+			$headerArr = ['Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Percent All Time','Percent <30 Days'];
 			echo $utilities->htmlTable($accessioning, $headerArr);
 		}
 
@@ -178,7 +177,7 @@ if ($isEditor) {
 		<?php
 
 		if ($data) {
-			$headerArr = ['Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Proprtion All Time','Proportion <30 Days'];
+			$headerArr = ['Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Proprtion All Time','Percent <30 Days'];
 			echo $utilities->htmlTable($data, $headerArr);
 		}
 		?>
@@ -229,7 +228,7 @@ if ($isEditor) {
 
 		<?php
 		if ($loans) {
-			$headerArr = ['Year', 'No. Requests','Mean Days','Median Days','Proportion <4 wks - All','Proportion <4 wks - Typical*'];
+			$headerArr = ['Year', 'No. Requests','Mean Days','Median Days','Percent <4 wks - All','Percent <4 wks - Typical*'];
 			echo $utilities->htmlTable($loans, $headerArr);
 		}
 		?>
