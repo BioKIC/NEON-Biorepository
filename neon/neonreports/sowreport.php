@@ -141,7 +141,7 @@ if ($isEditor) {
 
 		<?php
 		if ($accessioning) {
-			$headerArr = ['Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Median Days','Proprtion All Time','Proportion <30 Days'];
+			$headerArr = ['Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Proportion All Time','Proportion <30 Days'];
 			echo $utilities->htmlTable($accessioning, $headerArr);
 		}
 
@@ -178,7 +178,7 @@ if ($isEditor) {
 		<?php
 
 		if ($data) {
-			$headerArr = ['Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Median Days','Proprtion All Time','Proportion <30 Days'];
+			$headerArr = ['Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Proprtion All Time','Proportion <30 Days'];
 			echo $utilities->htmlTable($data, $headerArr);
 		}
 		?>
@@ -229,7 +229,7 @@ if ($isEditor) {
 
 		<?php
 		if ($loans) {
-			$headerArr = ['Year', 'No. Requests','Mean Days','Median Days','Proprtion <4 wks - All','Proportion <4 wks - Typical*'];
+			$headerArr = ['Year', 'No. Requests','Mean Days','Median Days','Proportion <4 wks - All','Proportion <4 wks - Typical*'];
 			echo $utilities->htmlTable($loans, $headerArr);
 		}
 		?>

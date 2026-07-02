@@ -77,68 +77,360 @@
 
         $this->receiptStats($name,$reportDate);
         $this->accessionStats($name,$reportDate);
-        // $this->dataStats($name,$reportDate);
-        // $this->loanStats($name,$reportDate);
+        $this->dataStats($name,$reportDate);
+        $this->loanStats($name,$reportDate);
 
         return $name;
     }
 
-    // Calculate accessionStats
+    // Calculate loan requests stats
 
-    private function accessionStats($ay,$reportDate) {
+    private function loanStats($ay,$reportDate) {
+
         $sql = "SELECT
                 CASE
-                    WHEN (
-                        CASE
-                            WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
-                            ELSE YEAR(h.dateShipped)
-                        END
-                    ) = ?
-                    THEN CONCAT(
-                        CASE
-                            WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
-                            ELSE YEAR(h.dateShipped)
-                        END,
-                        ' ',
-                        CASE
-                            WHEN MONTH(h.dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
-                            WHEN MONTH(h.dateShipped) IN (4,5,6) THEN 'Q3'
-                        END
-                    )
-                    ELSE
-                        CASE
-                            WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
-                            ELSE YEAR(h.dateShipped)
-                        END
+                    WHEN awardYear = ? THEN
+                        CONCAT(
+                            awardYear,
+                            ' ',
+                            CASE
+                                WHEN MONTH(pendingFulfillmentDate) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
+                                WHEN MONTH(pendingFulfillmentDate) IN (4,5,6) THEN 'Q3'
+                            END
+                        )
+                    ELSE awardYear
                 END AS awardYearLabel,
 
-                COUNT(DISTINCT s.samplePK) AS samples,
-                COUNT(DISTINCT CASE WHEN s.checkinUid IS NOT NULL THEN s.samplePK END) AS samplesCheckedIn
+                COUNT(*) AS requests,
 
-            FROM NeonShipment h
-            JOIN NeonSample s
-                ON h.shipmentPK = s.shipmentPK
+                ROUND(
+                    AVG(
+                        DATEDIFF(activeDate, pendingFulfillmentDate)
+                    ),
+                    1
+                ) AS meanDays,
+
+                ROUND(
+                    STDDEV_SAMP(
+                        DATEDIFF(activeDate, pendingFulfillmentDate)
+                    ),
+                    1
+                ) AS stdDays,
+
+                ROUND(
+                    100.0 * COUNT(
+                        CASE
+                            WHEN DATEDIFF(activeDate, pendingFulfillmentDate) <= 30
+                            THEN 1
+                        END
+                    ) / COUNT(*),
+                    1
+                ) AS proportion30DaysAll,
+
+                ROUND(
+                    100.0 * COUNT(
+                        CASE
+                            WHEN processing <> 'yes'
+                            AND moreThan100 <> 1
+                            AND DATEDIFF(activeDate, pendingFulfillmentDate) <= 30
+                            THEN 1
+                        END
+                    ) /
+                    COUNT(
+                        CASE
+                            WHEN processing <> 'yes'
+                            AND moreThan100 <> 1
+                            THEN 1
+                        END
+                    ),
+                    1
+                ) AS proportion30DaysTypical
+
+            FROM (
+                SELECT
+                    pendingFulfillmentDate,
+                    activeDate,
+                    processing,
+                    moreThan100,
+                    CASE
+                        WHEN MONTH(pendingFulfillmentDate) >= 10
+                            THEN YEAR(pendingFulfillmentDate) + 1
+                        ELSE YEAR(pendingFulfillmentDate)
+                    END AS awardYear
+                FROM NeonRequest
+                WHERE pendingFulfillmentDate IS NOT NULL
+                AND activeDate IS NOT NULL
+                AND pendingFulfillmentDate > '2021-09-31'
+            ) r
 
             WHERE NOT (
-                (
-                    CASE
-                        WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
-                        ELSE YEAR(h.dateShipped)
-                    END
-                ) = 2026
-                AND MONTH(h.dateShipped) IN (7,8,9)
+                awardYear = 2026
+                AND MONTH(pendingFulfillmentDate) IN (7,8,9)
             )
 
             GROUP BY awardYearLabel
-            ORDER BY
+            ORDER BY awardYear;";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $ay);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        $insert = $this->conn->prepare("
+                INSERT INTO NeonSOWReport
+                    (name, type, awardYear, statistic, statValue, date)
+                VALUES (?, 'loans', ?, ?, ?, ?)
+            ");
+
+            while ($row = $result->fetch_assoc()) {
+
+                $awardYear = $row['awardYearLabel'];
+
+                foreach ([
+                    'requests',
+                    'meanDays',
+                    'stdDays',
+                    'proportion30DaysAll',
+                    'proportion30DaysTypical'
+                ] as $stat) {
+
+                    $value = $row[$stat];
+
+                    $insert->bind_param(
+                        "sssss",
+                        $ay,
+                        $awardYear,
+                        $stat,
+                        $value,
+                        $reportDate
+                    );
+
+                    $insert->execute();
+                }
+            }
+
+            $insert->close();
+            $stmt->close();
+
+    }
+
+     // Calculate accessionStats
+
+    private function accessionStats($ay,$reportDate) {
+        $sql = "SELECT
+            CASE
+                WHEN awardYear = ? THEN
+                    CONCAT(
+                        awardYear,
+                        ' ',
+                        CASE
+                            WHEN MONTH(dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
+                            WHEN MONTH(dateShipped) IN (4,5,6) THEN 'Q3'
+                        END
+                    )
+                ELSE awardYear
+            END AS awardYearLabel,
+
+            COUNT(DISTINCT samplePK) AS samples,
+
+            COUNT(DISTINCT CASE
+                WHEN checkinUid IS NOT NULL THEN samplePK
+            END) AS samplesCheckedIn,
+
+            ROUND(
+                AVG(
+                    CASE
+                        WHEN checkinUid IS NOT NULL
+                        THEN DATEDIFF(checkinTimestamp, dateShipped)
+                    END
+                ),
+                1
+            ) AS meanDays,
+
+            ROUND(
+                STDDEV_SAMP(
+                    CASE
+                        WHEN checkinUid IS NOT NULL
+                        THEN DATEDIFF(checkinTimestamp, dateShipped)
+                    END
+                ),
+                1
+            ) AS stdDays,
+
+            ROUND(
+                100.0 * COUNT(DISTINCT CASE
+                    WHEN checkinUid IS NOT NULL THEN samplePK
+                END)
+                / COUNT(DISTINCT samplePK),
+                1
+            ) AS proportionCheckedIn,
+
+            ROUND(
+                100.0 * COUNT(DISTINCT CASE
+                    WHEN checkinUid IS NOT NULL
+                    AND DATEDIFF(checkinTimestamp, dateShipped) <= 30
+                    THEN samplePK
+                END)
+                / COUNT(DISTINCT samplePK),
+                1
+            ) AS proportion30Days
+
+        FROM (
+            SELECT
+                h.dateShipped,
+                s.samplePK,
+                s.checkinUid,
+                s.checkinTimestamp,
                 CASE
                     WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
                     ELSE YEAR(h.dateShipped)
-                END;";
+                END AS awardYear
+            FROM NeonShipment h
+            JOIN NeonSample s
+                ON h.shipmentPK = s.shipmentPK
+        ) x
+
+        WHERE NOT (
+            awardYear = 2026
+            AND MONTH(dateShipped) IN (7,8,9)
+        )
+
+        GROUP BY awardYearLabel
+        ORDER BY awardYear;";
 
 
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param("ii", $ay, $ay);
+        $stmt->bind_param("i", $ay);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        $insert = $this->conn->prepare("
+                INSERT INTO NeonSOWReport
+                    (name, type, awardYear, statistic, statValue, date)
+                VALUES (?, 'data', ?, ?, ?, ?)
+            ");
+
+            while ($row = $result->fetch_assoc()) {
+
+                $awardYear = $row['awardYearLabel'];
+
+                foreach ([
+                    'samples',
+                    'samplesCheckedIn',
+                    'meanDays',
+                    'stdDays',
+                    'proportionCheckedIn',
+                    'proportion30Days'
+                ] as $stat) {
+
+                    $value = $row[$stat];
+
+                    $insert->bind_param(
+                        "sssss",
+                        $ay,
+                        $awardYear,
+                        $stat,
+                        $value,
+                        $reportDate
+                    );
+
+                    $insert->execute();
+                }
+            }
+
+            $insert->close();
+            $stmt->close();
+    }
+
+    // Calculate data availability Stats
+
+    private function dataStats($ay,$reportDate) {
+        $sql = "SELECT
+            CASE
+                WHEN awardYear = ? THEN
+                    CONCAT(
+                        awardYear,
+                        ' ',
+                        CASE
+                            WHEN MONTH(dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
+                            WHEN MONTH(dateShipped) IN (4,5,6) THEN 'Q3'
+                        END
+                    )
+                ELSE awardYear
+            END AS awardYearLabel,
+
+            COUNT(DISTINCT samplePK) AS samples,
+
+            COUNT(DISTINCT CASE
+                WHEN occid IS NOT NULL THEN samplePK
+            END) AS samplesWithData,
+
+            ROUND(
+                AVG(
+                    CASE
+                        WHEN occid IS NOT NULL
+                        THEN DATEDIFF(harvestTimestamp, dateShipped)
+                    END
+                ),
+                1
+            ) AS meanDays,
+
+            ROUND(
+                STDDEV_SAMP(
+                    CASE
+                        WHEN occid IS NOT NULL
+                        THEN DATEDIFF(harvestTimestamp, dateShipped)
+                    END
+                ),
+                1
+            ) AS stdDays,
+
+            ROUND(
+                100.0 * COUNT(DISTINCT CASE
+                    WHEN occid IS NOT NULL THEN samplePK
+                END)
+                / COUNT(DISTINCT samplePK),
+                1
+            ) AS proportionWithData,
+
+            ROUND(
+                100.0 * COUNT(DISTINCT CASE
+                    WHEN occid IS NOT NULL
+                    AND DATEDIFF(harvestTimestamp, dateShipped) <= 30
+                    THEN samplePK
+                END)
+                / COUNT(DISTINCT samplePK),
+                1
+            ) AS proportion30Days
+
+        FROM (
+            SELECT
+                h.dateShipped,
+                s.samplePK,
+                s.occid,
+                s.harvestTimestamp,
+                CASE
+                    WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
+                    ELSE YEAR(h.dateShipped)
+                END AS awardYear
+            FROM NeonShipment h
+            JOIN NeonSample s
+                ON h.shipmentPK = s.shipmentPK
+        ) x
+
+        WHERE NOT (
+            awardYear = 2026
+            AND MONTH(dateShipped) IN (7,8,9)
+        )
+
+        GROUP BY awardYearLabel
+        ORDER BY awardYear;";
+
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $ay);
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -155,11 +447,10 @@
 
                 foreach ([
                     'samples',
-                    'samplesCheckedIn',
-                    'meanDaysToCheckIn',
-                    'stdevDaysToCheckIn',
-                    'medianDaysToCheckIn',
-                    'proportionCheckedIn',
+                    'samplesWithData',
+                    'meanDays',
+                    'stdDays',
+                    'proportionWithData',
                     'proportion30Days'
                 ] as $stat) {
 
