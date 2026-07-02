@@ -33,14 +33,32 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
     $_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' ' . $ex->getMessage() . ' <ERR/>';
     header('Location:' . $CLIENT_ROOT . '/profile/index.php');
     exit();
-  }  
+  }
+  //status is 1 if authorization was successful
   if($status){
+    //authentication token to query the auth0 API
+    $_SESSION['access_token'] = $oidc->getAccessToken();
+    //sub is the subscriber - the unique ID for that user x provider (google, cilogon, direct, etc.)
     $sub = $oidc->requestUserInfo('sub');
     $_SESSION['AUTH_PROVIDER'] = $AUTH_PROVIDER;
     $_SESSION['AUTH_CLIENT_ID'] = $oidc->getClientID();
 
+    // see if authenticated user is in usersthirdpartyauth table
     if($profManager->authenticate($sub, $PROVIDER_URLS[$AUTH_PROVIDER])){
+      // add session to usersthirdpartyauth
       $profManager->linkThirdPartySid($sid, session_id(), $_SERVER['REMOTE_ADDR']);
+      // update user information from Auth0 fields
+      $profManager->updateLocalUserFromAuth0Metadata(
+          $sub,
+          $oidc->getProviderURL(),
+          $oidc->requestUserInfoByID($sub, 'user_metadata.first_name'),
+          $oidc->requestUserInfoByID($sub, 'user_metadata.last_name'),
+          $oidc->requestUserInfoByID($sub, 'user_metadata.ror_id'),
+          $oidc->requestUserInfoByID($sub, 'user_metadata.affiliation'),
+          $oidc->requestUserInfoByID($sub, 'user_metadata.organization_country'),
+          $oidc->requestUserInfoByID($sub, 'user_metadata.subject_matter_expertise_provider'),
+          $oidc->requestUserInfoByID($sub, 'user_metadata.orcid')
+      );
       if($_SESSION['refurl']){
         header("Location:" . $_SESSION['refurl']);
         unset($_SESSION['refurl']);
@@ -51,9 +69,21 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
     }
     else {
       if ($email = $oidc->requestUserInfo('email')){
-        // Authprovider returned a subscriber; however, user was not authenticated to local user account
         try{
+          // try to link auth user with local user, if not in users table, make new user
           $status = $profManager->linkLocalUserOidSub($email, $sub, $oidc->getProviderURL(), $oidc->requestUserInfo('nickname'), $oidc->requestUserInfoByID($sub, 'user_metadata.first_name'), $oidc->requestUserInfoByID($sub, 'user_metadata.last_name'));
+          // update user information from Auth0 fields
+          $profManager->updateLocalUserFromAuth0Metadata(
+              $sub,
+              $oidc->getProviderURL(),
+              $oidc->requestUserInfoByID($sub, 'user_metadata.first_name'),
+              $oidc->requestUserInfoByID($sub, 'user_metadata.last_name'),
+              $oidc->requestUserInfoByID($sub, 'user_metadata.ror_id'),
+              $oidc->requestUserInfoByID($sub, 'user_metadata.affiliation'),
+              $oidc->requestUserInfoByID($sub, 'user_metadata.organization_country'),
+              $oidc->requestUserInfoByID($sub, 'user_metadata.subject_matter_expertise_provider'),
+              $oidc->requestUserInfoByID($sub, 'user_metadata.orcid')
+          );
         }catch (Exception $ex){
           $_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' '  . $ex->getMessage();
           header('Location:' . $CLIENT_ROOT . '/profile/index.php');
