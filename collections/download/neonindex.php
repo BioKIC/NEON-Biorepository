@@ -69,10 +69,8 @@ $dwcManager = new DwcArchiverCore();
 		function validateDownloadForm(f){
 
 			gtag('event', 'data_download', {
-				user_id: f.symbUid.value,
-				search_var: f.searchvar.value,
-				source_page: f.sourcepage.value,
-				taxon_filter_code: f.taxonFilterCode.value
+				downloader_id: f.symbUid.value,
+				search_var: f.searchvar.value
 			});
 
 			document.getElementById("workingcircle").style.display = "inline";
