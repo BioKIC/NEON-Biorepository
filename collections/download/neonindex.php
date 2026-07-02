@@ -69,6 +69,7 @@ $dwcManager = new DwcArchiverCore();
 		function validateDownloadForm(f){
 
 			gtag('event', 'data_download', {
+				user_id: f.symbUid.value,
 				search_var: f.searchvar.value,
 				source_page: f.sourcepage.value,
 				taxon_filter_code: f.taxonFilterCode.value
@@ -326,6 +327,7 @@ $dwcManager = new DwcArchiverCore();
 						<input type="hidden" name="format" value="csv" />
 						<input type="hidden" name="cset" value="iso-8859-1" />
 						<input type="hidden" name="zip" id="zip" value="" />
+						<input type="hidden" name="symbUid" value="<?= $SYMB_UID ?>">
 
 						<?php
 						if($dwcManager->hasAttributes()){
