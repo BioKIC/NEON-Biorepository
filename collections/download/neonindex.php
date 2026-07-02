@@ -3,6 +3,7 @@ include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/DwcArchiverCore.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/download/index.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/download/index.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/download/index.en.php');
+include_once($SERVER_ROOT . '/config/auth_config.php');
 
 header("Content-Type: text/html; charset=".$CHARSET);
 
@@ -13,6 +14,80 @@ $displayHeader = array_key_exists('displayheader', $_REQUEST) ? filter_var($_REQ
 $searchVar = array_key_exists('searchvar', $_REQUEST) ? htmlspecialchars($_REQUEST['searchvar'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE| ENT_QUOTES) : '';
 
 $dwcManager = new DwcArchiverCore();
+
+function getAccountStatus()
+	{
+		global $AUDIENCE;
+		$accessToken = $_SESSION['ACCESS_TOKEN'];
+		$sub = $_SESSION['SUBSCRIBER'];
+	
+		$ch = curl_init();
+	
+		curl_setopt_array($ch, [
+			CURLOPT_URL => $AUDIENCE . "users/" . $sub,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_HTTPHEADER => [
+				"Authorization: Bearer {$accessToken}"
+			]
+		]);
+		$response = curl_exec($ch);
+	
+		if (curl_errno($ch)) {
+			throw new Exception(curl_error($ch));
+		}
+	
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+	
+		if ($statusCode !== 200) {
+			throw new Exception("Unable to retrieve Auth0 user. HTTP {$statusCode}");
+		}
+	
+		$user = json_decode($response, true);
+		$consentTimestamp = $user['user_metadata']['consent_timestamp'] ?? null;
+		
+		$validConsentTimestamp = false;
+		if (is_numeric($consentTimestamp)) {
+			$seconds = (int) floor($consentTimestamp / 1000);
+			$validConsentTimestamp = checkdate(
+				(int) date('n', $seconds),
+				(int) date('j', $seconds),
+				(int) date('Y', $seconds)
+			);
+		}
+		
+		$step1Complete =
+			($user['user_metadata']['consent_given'] ?? false) === true &&
+			$validConsentTimestamp &&
+			($user['user_metadata']['has_signed_up'] ?? false) === true;
+	
+		$step2Complete =
+			$step1Complete &&
+			($user['email_verified'] ?? false) === true;
+	
+		$step3Complete =
+			$step2Complete &&
+			!empty($user['user_metadata']['first_name']) &&
+			!empty($user['user_metadata']['last_name']) &&
+			!empty($user['user_metadata']['affiliation']) &&
+			!empty($user['user_metadata']['ror_id']) &&
+			!empty($user['user_metadata']['organization_country']) &&
+			!empty($user['user_metadata']['subject_matter_expertise_provider']);
+	
+		$step = 0;
+	
+		if ($step1Complete) $step = 1;
+		if ($step2Complete) $step = 2;
+		if ($step3Complete) $step = 3;
+	
+		return [
+			'ready' => $step === 3,
+			'step' => $step,
+			'step1Complete' => $step1Complete,
+			'step2Complete' => $step2Complete,
+			'step3Complete' => $step3Complete
+		];
+	}
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -234,9 +309,26 @@ $dwcManager = new DwcArchiverCore();
 	<div style="width:100%; background-color:white;">
 		<h1 class="page-heading screen-reader-only"><?= $LANG['COLL_SEARCH_DWNL'] ?></h1>
 		<?php
-		$downloadActive = false;
-		if(!empty($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT) || $SYMB_UID) $downloadActive = true;
-		if(!$downloadActive){
+		$canDownload = false;
+		$showLoginRequired = false;
+		$showValidationRequired = false;
+		
+		if ($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT) {
+			$canDownload = true;
+		}
+		elseif (!$SYMB_UID) {
+			$showLoginRequired = true;
+		}
+		else {
+			$accountStatus = getAccountStatus();
+		
+			if ($accountStatus['ready']) {
+				$canDownload = true;
+			} else {
+				$showValidationRequired = true;
+			}
+		}
+		if ($showLoginRequired) {
 			$_SESSION['searchvar'] = $searchVar;
 			//$queryStr = 'sourcepage=' . $sourcePage . '&dltype=' . $downloadType . '&taxonFilterCode=' . $taxonFilterCode;
 			//header('Location: ../../profile/index.php?refurl=../collections/download/index.php?' . $queryStr);
@@ -270,125 +362,133 @@ $dwcManager = new DwcArchiverCore();
 					</div>
 				</div>
 			</div>
-			<?php
+		<?php
+		}
+		if ($showValidationRequired) {
+		?>
+		// Validation Required container
+		<?php
+		}
+		if ($canDownload) {
+		?>
+			<div style='margin:30px 15px;'>
+				<form name="downloadform" action="downloadhandler.php" method="post" onsubmit="return validateDownloadForm(this);">
+					<fieldset>
+						<legend>
+							<?php
+							echo $LANG['DOWNLOAD_SPEC_REC'];
+							?>
+						</legend>
+						<fieldset class="sectionDiv">
+							<legend>Which package type do you want?</legend>
+	
+							<div class="formElemDiv">
+	
+								<input type="radio"
+									   name="packageType"
+									   id="package-basic"
+									   value="basic"
+									   checked
+									   onchange="setPackageType(this.value)" />
+	
+								<label for="package-basic">
+									<b>Basic</b>
+								</label>
+	
+								<div style="margin:5px 0 15px 25px;">
+									Includes occurrence records only.
+								</div>
+	
+								<input type="radio"
+									   name="packageType"
+									   id="package-expanded"
+									   value="expanded"
+									   onchange="setPackageType(this.value)" />
+	
+								<label for="package-expanded">
+									<b>Expanded</b>
+								</label>
+	
+								<div style="margin:5px 0 15px 25px;">
+									Includes the basic package information plus image links, identifications, measurements, material samples, and additional identifiers.
+								</div>
+	
+							</div>
+	
+							<!-- Hidden extension controls -->
+							<input type="hidden" name="schema" value="symbiota" />
+							<input type="hidden" name="identifications" id="identifications" value="" />
+							<input type="hidden" name="images" id="images" value="" />
+							<input type="hidden" name="format" value="csv" />
+							<input type="hidden" name="cset" value="iso-8859-1" />
+							<input type="hidden" name="zip" id="zip" value="" />
+							<input type="hidden" name="symbUid" value="<?= $SYMB_UID ?>">
+	
+							<?php
+							if($dwcManager->hasAttributes()){
+								echo '<input type="hidden" name="attributes" id="attributes" value="" />';
+							}
+	
+							if($dwcManager->hasMaterialSamples()){
+								echo '<input type="hidden" name="materialsample" id="materialsample" value="" />';
+							}
+	
+							if($dwcManager->hasIdentifiers()){
+								echo '<input type="hidden" name="identifiers" id="identifiers" value="" />';
+							}
+							?>
+						</fieldset>
+						<fieldset class="sectionDiv">
+							<legend>Agree to Policies</legend>
+	
+							<div class="formElemDiv">
+	
+								<div style="margin-bottom:10px;">
+									In order to proceed to download NEON data you must agree to the
+									<a href="../../misc/sampleguidelines.php" target="_blank">
+										Data Usage and Citation Policies</a>.
+								</div>
+	
+								<input type="checkbox"
+									   name="agreepolicy"
+									   id="agreepolicy"
+									   value="1"
+									   onchange="<?= ($canDownload? 'toggleDownloadButton()' : '') ?>" />
+	
+							<label for="agreepolicy">
+								<strong>I agree to the NEON Data Usage and Citation Policies.</strong>
+							</label>
+	
+							</div>
+						</fieldset>
+						<div class="sectionDiv">
+							<input name="publicsearch" type="hidden" value="1" />
+							<input name="taxonFilterCode" type="hidden" value="<?= $taxonFilterCode; ?>" />
+							<input name="sourcepage" type="hidden" value="<?= htmlspecialchars($sourcePage); ?>" />
+							<input id="searchVar-input" name="searchvar" type="hidden" value="<?= $searchVar ?>" />
+							<button type="submit" name="submitaction" id="downloadbutton" disabled>
+								<?= $LANG['DOWNLOAD_DATA'] ?>
+								<svg
+									class="MuiSvgIcon-root"
+									focusable="false"
+									viewBox="0 0 24 24"
+									aria-hidden="true"
+									style="margin-left:8px;width:18px;height:18px;fill:currentColor;vertical-align:middle;"
+								>
+									<path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path>
+								</svg>
+							</button>
+							<img id="workingcircle" src="../../images/ajax-loader_sm.gif" style="margin-bottom:-4px;width:20px;display:none;" />
+						</div>
+						<div class="sectionDiv">
+							*  <?= $LANG['LIMIT_NOTE'] ?>
+						</div>
+					</fieldset>
+				</form>
+			</div>
+		<?php
 		}
 		?>
-
-		<div style='margin:30px 15px;'>
-			<form name="downloadform" action="downloadhandler.php" method="post" onsubmit="return validateDownloadForm(this);">
-				<fieldset>
-					<legend>
-						<?php
-						echo $LANG['DOWNLOAD_SPEC_REC'];
-						?>
-					</legend>
-					<fieldset class="sectionDiv">
-						<legend>Which package type do you want?</legend>
-
-						<div class="formElemDiv">
-
-							<input type="radio"
-								   name="packageType"
-								   id="package-basic"
-								   value="basic"
-								   checked
-								   onchange="setPackageType(this.value)" />
-
-							<label for="package-basic">
-								<b>Basic</b>
-							</label>
-
-							<div style="margin:5px 0 15px 25px;">
-								Includes occurrence records only.
-							</div>
-
-							<input type="radio"
-								   name="packageType"
-								   id="package-expanded"
-								   value="expanded"
-								   onchange="setPackageType(this.value)" />
-
-							<label for="package-expanded">
-								<b>Expanded</b>
-							</label>
-
-							<div style="margin:5px 0 15px 25px;">
-								Includes the basic package information plus image links, identifications, measurements, material samples, and additional identifiers.
-							</div>
-
-						</div>
-
-						<!-- Hidden extension controls -->
-						<input type="hidden" name="schema" value="symbiota" />
-						<input type="hidden" name="identifications" id="identifications" value="" />
-						<input type="hidden" name="images" id="images" value="" />
-						<input type="hidden" name="format" value="csv" />
-						<input type="hidden" name="cset" value="iso-8859-1" />
-						<input type="hidden" name="zip" id="zip" value="" />
-						<input type="hidden" name="symbUid" value="<?= $SYMB_UID ?>">
-
-						<?php
-						if($dwcManager->hasAttributes()){
-							echo '<input type="hidden" name="attributes" id="attributes" value="" />';
-						}
-
-						if($dwcManager->hasMaterialSamples()){
-							echo '<input type="hidden" name="materialsample" id="materialsample" value="" />';
-						}
-
-						if($dwcManager->hasIdentifiers()){
-							echo '<input type="hidden" name="identifiers" id="identifiers" value="" />';
-						}
-						?>
-					</fieldset>
-					<fieldset class="sectionDiv">
-						<legend>Agree to Policies</legend>
-
-						<div class="formElemDiv">
-
-							<div style="margin-bottom:10px;">
-								In order to proceed to download NEON data you must agree to the
-								<a href="../../misc/sampleguidelines.php" target="_blank">
-									Data Usage and Citation Policies</a>.
-							</div>
-
-							<input type="checkbox"
-								   name="agreepolicy"
-								   id="agreepolicy"
-								   value="1"
-								   onchange="<?= ($downloadActive? 'toggleDownloadButton()' : '') ?>" />
-
-						<label for="agreepolicy">
-							<strong>I agree to the NEON Data Usage and Citation Policies.</strong>
-						</label>
-
-						</div>
-					</fieldset>
-					<div class="sectionDiv">
-						<input name="publicsearch" type="hidden" value="1" />
-						<input name="taxonFilterCode" type="hidden" value="<?= $taxonFilterCode; ?>" />
-						<input name="sourcepage" type="hidden" value="<?= htmlspecialchars($sourcePage); ?>" />
-						<input id="searchVar-input" name="searchvar" type="hidden" value="<?= $searchVar ?>" />
-						<button type="submit" name="submitaction" id="downloadbutton" disabled>
-							<?= $LANG['DOWNLOAD_DATA'] ?>
-							<svg
-								class="MuiSvgIcon-root"
-								focusable="false"
-								viewBox="0 0 24 24"
-								aria-hidden="true"
-								style="margin-left:8px;width:18px;height:18px;fill:currentColor;vertical-align:middle;"
-							>
-								<path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path>
-							</svg>
-						</button>
-						<img id="workingcircle" src="../../images/ajax-loader_sm.gif" style="margin-bottom:-4px;width:20px;display:none;" />
-					</div>
-					<div class="sectionDiv">
-						*  <?= $LANG['LIMIT_NOTE'] ?>
-					</div>
-				</fieldset>
-			</form>
-		</div>
 	</div>
 	<?php
 	if($displayHeader) include($SERVER_ROOT.'/includes/footer.php');

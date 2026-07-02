@@ -37,9 +37,10 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
   //status is 1 if authorization was successful
   if($status){
     //authentication token to query the auth0 API
-    $_SESSION['access_token'] = $oidc->getAccessToken();
+    $_SESSION['ACCESS_TOKEN'] = $oidc->getAccessToken();
     //sub is the subscriber - the unique ID for that user x provider (google, cilogon, direct, etc.)
     $sub = $oidc->requestUserInfo('sub');
+    $_SESSION['SUBSCRIBER'] = $sub;
     $_SESSION['AUTH_PROVIDER'] = $AUTH_PROVIDER;
     $_SESSION['AUTH_CLIENT_ID'] = $oidc->getClientID();
 
