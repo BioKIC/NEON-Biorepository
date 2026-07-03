@@ -328,88 +328,90 @@
                 1
             ) AS percent30Days
 
-        FROM (
+            FROM (
+                SELECT
+                    h.dateShipped,
+                    s.samplePK,
+                    s.checkinUid,
+                    s.checkinTimestamp,
+                    CASE
+                        WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
+                        ELSE YEAR(h.dateShipped)
+                    END AS awardYear
+                FROM NeonShipment h
+                JOIN NeonSample s
+                    ON h.shipmentPK = s.shipmentPK
+                WHERE h.shipmentID NOT LIKE '%seudo%'
+            ) x
+
+            WHERE NOT (
+                awardYear = (2000 + ?)
+                AND MONTH(dateShipped) IN (7,8,9)
+            )
+
+            GROUP BY awardYearLabel
+            UNION ALL
+
             SELECT
-                h.dateShipped,
-                s.samplePK,
-                s.checkinUid,
-                s.checkinTimestamp,
-                CASE
-                    WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
-                    ELSE YEAR(h.dateShipped)
-                END AS awardYear
-            FROM NeonShipment h
-            JOIN NeonSample s
-                ON h.shipmentPK = s.shipmentPK
-        ) x
+                'Total' AS awardYearLabel,
 
-        WHERE NOT (
-            awardYear = (2000 + ?)
-            AND MONTH(dateShipped) IN (7,8,9)
-        )
+                COUNT(DISTINCT samplePK) AS samples,
 
-        GROUP BY awardYearLabel
-        UNION ALL
+                COUNT(DISTINCT CASE
+                    WHEN checkinUid IS NOT NULL THEN samplePK
+                END) AS samplesCheckedIn,
 
-SELECT
-    'Total' AS awardYearLabel,
+                ROUND(
+                    AVG(
+                        CASE
+                            WHEN checkinUid IS NOT NULL
+                            THEN DATEDIFF(checkinTimestamp, dateShipped)
+                        END
+                    ),
+                    1
+                ) AS meanDays,
 
-    COUNT(DISTINCT samplePK) AS samples,
+                ROUND(
+                    STDDEV_SAMP(
+                        CASE
+                            WHEN checkinUid IS NOT NULL
+                            THEN DATEDIFF(checkinTimestamp, dateShipped)
+                        END
+                    ),
+                    1
+                ) AS stdDays,
 
-    COUNT(DISTINCT CASE
-        WHEN checkinUid IS NOT NULL THEN samplePK
-    END) AS samplesCheckedIn,
+                ROUND(
+                    100.0 * COUNT(DISTINCT CASE
+                        WHEN checkinUid IS NOT NULL THEN samplePK
+                    END)
+                    / COUNT(DISTINCT samplePK),
+                    1
+                ) AS percentCheckedIn,
 
-    ROUND(
-        AVG(
-            CASE
-                WHEN checkinUid IS NOT NULL
-                THEN DATEDIFF(checkinTimestamp, dateShipped)
-            END
-        ),
-        1
-    ) AS meanDays,
+                ROUND(
+                    100.0 * COUNT(DISTINCT CASE
+                        WHEN checkinUid IS NOT NULL
+                        AND DATEDIFF(checkinTimestamp, dateShipped) <= 30
+                        THEN samplePK
+                    END)
+                    / COUNT(DISTINCT samplePK),
+                    1
+                ) AS percent30Days
 
-    ROUND(
-        STDDEV_SAMP(
-            CASE
-                WHEN checkinUid IS NOT NULL
-                THEN DATEDIFF(checkinTimestamp, dateShipped)
-            END
-        ),
-        1
-    ) AS stdDays,
+            FROM (
+                SELECT
+                    h.dateShipped,
+                    s.samplePK,
+                    s.checkinUid,
+                    s.checkinTimestamp
+                FROM NeonShipment h
+                JOIN NeonSample s
+                    ON h.shipmentPK = s.shipmentPK
+                WHERE h.shipmentID NOT LIKE '%seudo%'
+            ) x
 
-    ROUND(
-        100.0 * COUNT(DISTINCT CASE
-            WHEN checkinUid IS NOT NULL THEN samplePK
-        END)
-        / COUNT(DISTINCT samplePK),
-        1
-    ) AS percentCheckedIn,
-
-    ROUND(
-        100.0 * COUNT(DISTINCT CASE
-            WHEN checkinUid IS NOT NULL
-             AND DATEDIFF(checkinTimestamp, dateShipped) <= 30
-            THEN samplePK
-        END)
-        / COUNT(DISTINCT samplePK),
-        1
-    ) AS percent30Days
-
-FROM (
-    SELECT
-        h.dateShipped,
-        s.samplePK,
-        s.checkinUid,
-        s.checkinTimestamp
-    FROM NeonShipment h
-    JOIN NeonSample s
-        ON h.shipmentPK = s.shipmentPK
-) x
-
-        ORDER BY awardYearLabel;";
+                    ORDER BY awardYearLabel;";
 
 
         $stmt = $this->conn->prepare($sql);
@@ -530,6 +532,8 @@ FROM (
             FROM NeonShipment h
             JOIN NeonSample s
                 ON h.shipmentPK = s.shipmentPK
+            WHERE h.shipmentID NOT LIKE '%seudo%'
+
         ) x
 
         WHERE NOT (
@@ -591,6 +595,7 @@ FROM (
         FROM NeonShipment h
         JOIN NeonSample s
             ON h.shipmentPK = s.shipmentPK
+        WHERE h.shipmentID NOT LIKE '%seudo%'
 
         ORDER BY
             CASE
@@ -787,7 +792,6 @@ FROM (
                             'percentCheckedIn',
                             'percent30Days'
                         );";
-                        echo $sql;
         }
 
         elseif ($type == 'data') {
@@ -799,7 +803,6 @@ FROM (
                             'percentWithData',
                             'percent30Days'
                         );";
-                        echo $sql;
         }
         elseif ($type == 'loans') {
             $sql .= ", FIELD(statistic,
@@ -809,7 +812,6 @@ FROM (
                             'percent30DaysAll',
                             'percent30DaysTypical'
                         );";
-                        echo $sql;
         }
 
 

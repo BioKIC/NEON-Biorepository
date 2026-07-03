@@ -144,7 +144,7 @@ if ($isEditor) {
 			<h3>Statement of Work</h3>
 
 			<div class="details">
-				<p><strong>Task:</strong>Make sample publicly available</p>
+				<p><strong>Task:</strong> Make samples publicly available</p>
 				<p><strong>AY18:</strong> As feasible</p>
 				<p><strong>AY19-AY22:</strong> As feasible</p>
 				<p><strong>AY23+:</strong> Within 3 months for 90% of samples</p>
@@ -181,7 +181,7 @@ if ($isEditor) {
 			<h3>Statement of Work</h3>
 
 			<div class="details">
-				<p><strong>Task:</strong>Make samples available for loan</p>
+				<p><strong>Task:</strong> Make samples available for loan</p>
 				<p><strong>AY18:</strong> As feasible</p>
 				<p><strong>AY19-AY22:</strong> As feasible</p>
 				<p><strong>AY23+:</strong> Within 3 months for 90% of samples</p>
@@ -196,7 +196,7 @@ if ($isEditor) {
 			<h3>Statement of Work</h3>
 
 			<div class="details">
-				<p><strong>Task:</strong>Fulfill loan requests</p>
+				<p><strong>Task:</strong> Fulfill loan requests</p>
 				<p><strong>AY18:</strong> As feasible</p>
 				<p><strong>AY19-AY22:</strong> Within 6 weeks for 90% of requests, except those requiring significant processing or including >100 samples</p>
 				<p><strong>AY19-AY22:</strong> Within 4 weeks for 90% of requests, except those requiring significant processing or including >100 samples</p>
