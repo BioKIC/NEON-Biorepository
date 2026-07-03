@@ -118,7 +118,7 @@ if ($isEditor) {
 
 		<?php
 		if ($accessioning) {
-			$headerArr = ['Award Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Percent All Time','Percent <30 Days'];
+			$headerArr = ['Award Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Percent All Time','Percent <3 Months'];
 			echo $utilities->htmlTable($accessioning, $headerArr);
 		}
 
@@ -155,7 +155,7 @@ if ($isEditor) {
 		<?php
 
 		if ($data) {
-			$headerArr = ['Award Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Percent All Time','Percent <30 Days'];
+			$headerArr = ['Award Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Percent All Time','Percent <3 Months'];
 			echo $utilities->htmlTable($data, $headerArr);
 		}
 		?>

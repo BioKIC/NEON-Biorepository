@@ -120,7 +120,7 @@
                 ROUND(
                     100.0 * COUNT(
                         CASE
-                            WHEN DATEDIFF(activeDate, pendingFulfillmentDate) <= 30
+                            WHEN DATEDIFF(activeDate, pendingFulfillmentDate) <= 90
                             THEN 1
                         END
                     ) / COUNT(*),
@@ -132,7 +132,7 @@
                         CASE
                             WHEN processing <> 'yes'
                             AND moreThan100 <> 1
-                            AND DATEDIFF(activeDate, pendingFulfillmentDate) <= 30
+                            AND DATEDIFF(activeDate, pendingFulfillmentDate) <= 90
                             THEN 1
                         END
                     ) /
@@ -190,7 +190,7 @@
                 ROUND(
                     100.0 * COUNT(
                         CASE
-                            WHEN DATEDIFF(activeDate, pendingFulfillmentDate) <= 30
+                            WHEN DATEDIFF(activeDate, pendingFulfillmentDate) <= 90
                             THEN 1
                         END
                     ) / COUNT(*),
@@ -202,7 +202,7 @@
                         CASE
                             WHEN processing <> 'yes'
                             AND moreThan100 <> 1
-                            AND DATEDIFF(activeDate, pendingFulfillmentDate) <= 30
+                            AND DATEDIFF(activeDate, pendingFulfillmentDate) <= 90
                             THEN 1
                         END
                     ) /
@@ -321,12 +321,12 @@
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
                     WHEN checkinUid IS NOT NULL
-                    AND DATEDIFF(checkinTimestamp, dateShipped) <= 30
+                    AND DATEDIFF(checkinTimestamp, dateShipped) <= 90
                     THEN samplePK
                 END)
-                / COUNT(DISTINCT samplePK),
+                / COUNT(DISTINCT CASE WHEN checkInUid IS NOT NULL THEN samplePK END),
                 1
-            ) AS percent30Days
+            ) AS percent90Days
 
             FROM (
                 SELECT
@@ -342,6 +342,7 @@
                 JOIN NeonSample s
                     ON h.shipmentPK = s.shipmentPK
                 WHERE h.shipmentID NOT LIKE '%seudo%'
+                AND (s.sampleReceived != 0 OR s.sampleReceived IS NULL)
             ) x
 
             WHERE NOT (
@@ -392,12 +393,12 @@
                 ROUND(
                     100.0 * COUNT(DISTINCT CASE
                         WHEN checkinUid IS NOT NULL
-                        AND DATEDIFF(checkinTimestamp, dateShipped) <= 30
+                        AND DATEDIFF(checkinTimestamp, dateShipped) <= 90
                         THEN samplePK
                     END)
-                    / COUNT(DISTINCT samplePK),
+                    / COUNT(DISTINCT CASE WHEN checkInUid IS NOT NULL THEN samplePK END),
                     1
-                ) AS percent30Days
+                ) AS percen90Days
 
             FROM (
                 SELECT
@@ -409,6 +410,8 @@
                 JOIN NeonSample s
                     ON h.shipmentPK = s.shipmentPK
                 WHERE h.shipmentID NOT LIKE '%seudo%'
+                AND (s.sampleReceived != 0 OR s.sampleReceived IS NULL)
+
             ) x
 
                     ORDER BY awardYearLabel;";
@@ -436,7 +439,7 @@
                     'meanDays',
                     'stdDays',
                     'percentCheckedIn',
-                    'percent30Days'
+                    'percent90Days'
                 ] as $stat) {
 
                     $value = $row[$stat];
@@ -512,12 +515,12 @@
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
                     WHEN occid IS NOT NULL
-                     AND DATEDIFF(harvestTimestamp, dateShipped) <= 30
+                     AND DATEDIFF(harvestTimestamp, dateShipped) <= 90
                     THEN samplePK
                 END)
                 / COUNT(DISTINCT samplePK),
                 1
-            ) AS percent30Days
+            ) AS percent90Days
 
         FROM (
             SELECT
@@ -585,12 +588,12 @@
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
                     WHEN occid IS NOT NULL
-                     AND DATEDIFF(harvestTimestamp, dateShipped) <= 30
+                     AND DATEDIFF(harvestTimestamp, dateShipped) <= 90
                     THEN samplePK
                 END)
                 / COUNT(DISTINCT samplePK),
                 1
-            ) AS percent30Days
+            ) AS percent90Days
 
         FROM NeonShipment h
         JOIN NeonSample s
@@ -627,7 +630,7 @@
                     'meanDays',
                     'stdDays',
                     'percentWithData',
-                    'percent30Days'
+                    'percent90Days'
                 ] as $stat) {
 
                     $value = $row[$stat];
@@ -790,7 +793,7 @@
                             'meanDays',
                             'stdDays',
                             'percentCheckedIn',
-                            'percent30Days'
+                            'percent90Days'
                         );";
         }
 
@@ -801,7 +804,7 @@
                             'meanDays',
                             'stdDays',
                             'percentWithData',
-                            'percent30Days'
+                            'percent90Days'
                         );";
         }
         elseif ($type == 'loans') {
