@@ -466,29 +466,30 @@
     private function dataStats($ay,$reportDate) {
         $sql = "SELECT
             CASE
-                WHEN awardYear = (2000 + ?) THEN
+                WHEN x.awardYear = (2000 + ?) THEN
                     CONCAT(
-                        awardYear,
+                        x.awardYear,
                         ' ',
                         CASE
-                            WHEN MONTH(dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
-                            WHEN MONTH(dateShipped) IN (4,5,6) THEN 'Q3'
+                            WHEN MONTH(x.dateShipped) IN (10,11,12,1,2,3) THEN 'Q1+Q2'
+                            WHEN MONTH(x.dateShipped) IN (4,5,6) THEN 'Q3'
                         END
                     )
-                ELSE awardYear
+                ELSE x.awardYear
             END AS awardYearLabel,
 
-            COUNT(DISTINCT samplePK) AS samples,
+            COUNT(DISTINCT x.samplePK) AS samples,
 
             COUNT(DISTINCT CASE
-                WHEN occid IS NOT NULL THEN samplePK
+                WHEN x.occid IS NOT NULL AND o.dateEntered IS NOT NULL
+                THEN x.samplePK
             END) AS samplesWithData,
 
             ROUND(
                 AVG(
                     CASE
-                        WHEN occid IS NOT NULL
-                        THEN DATEDIFF(harvestTimestamp, dateShipped)
+                        WHEN x.occid IS NOT NULL AND o.dateEntered IS NOT NULL
+                        THEN DATEDIFF(o.dateEntered, x.dateShipped)
                     END
                 ),
                 1
@@ -497,8 +498,8 @@
             ROUND(
                 STDDEV_SAMP(
                     CASE
-                        WHEN occid IS NOT NULL
-                        THEN DATEDIFF(harvestTimestamp, dateShipped)
+                        WHEN x.occid IS NOT NULL AND o.dateEntered IS NOT NULL
+                        THEN DATEDIFF(o.dateEntered, x.dateShipped)
                     END
                 ),
                 1
@@ -506,19 +507,21 @@
 
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
-                    WHEN occid IS NOT NULL THEN samplePK
+                    WHEN x.occid IS NOT NULL AND o.dateEntered IS NOT NULL
+                    THEN x.samplePK
                 END)
-                / COUNT(DISTINCT samplePK),
+                / COUNT(DISTINCT x.samplePK),
                 1
             ) AS percentWithData,
 
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
-                    WHEN occid IS NOT NULL
-                     AND DATEDIFF(harvestTimestamp, dateShipped) <= 90
-                    THEN samplePK
+                    WHEN x.occid IS NOT NULL
+                    AND o.dateEntered IS NOT NULL
+                    AND DATEDIFF(o.dateEntered, x.dateShipped) <= 90
+                    THEN x.samplePK
                 END)
-                / COUNT(DISTINCT samplePK),
+                / COUNT(DISTINCT x.samplePK),
                 1
             ) AS percent90Days
 
@@ -527,7 +530,6 @@
                 h.dateShipped,
                 s.samplePK,
                 s.occid,
-                s.harvestTimestamp,
                 CASE
                     WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
                     ELSE YEAR(h.dateShipped)
@@ -536,12 +538,16 @@
             JOIN NeonSample s
                 ON h.shipmentPK = s.shipmentPK
             WHERE h.shipmentID NOT LIKE '%seudo%'
+                AND (s.sampleReceived != 0 OR s.sampleReceived IS NULL)
 
         ) x
 
+        LEFT JOIN omoccurrences o
+            ON x.occid = o.occid
+
         WHERE NOT (
-            awardYear = (2000 + ?)
-            AND MONTH(dateShipped) IN (7,8,9)
+            x.awardYear = (2000 + ?)
+            AND MONTH(x.dateShipped) IN (7,8,9)
         )
 
         GROUP BY awardYearLabel
@@ -551,17 +557,18 @@
         SELECT
             'Total' AS awardYearLabel,
 
-            COUNT(DISTINCT samplePK) AS samples,
+            COUNT(DISTINCT x.samplePK) AS samples,
 
             COUNT(DISTINCT CASE
-                WHEN occid IS NOT NULL THEN samplePK
+                WHEN x.occid IS NOT NULL AND o.dateEntered IS NOT NULL
+                THEN x.samplePK
             END) AS samplesWithData,
 
             ROUND(
                 AVG(
                     CASE
-                        WHEN occid IS NOT NULL
-                        THEN DATEDIFF(harvestTimestamp, dateShipped)
+                        WHEN x.occid IS NOT NULL AND o.dateEntered IS NOT NULL
+                        THEN DATEDIFF(o.dateEntered, x.dateShipped)
                     END
                 ),
                 1
@@ -570,8 +577,8 @@
             ROUND(
                 STDDEV_SAMP(
                     CASE
-                        WHEN occid IS NOT NULL
-                        THEN DATEDIFF(harvestTimestamp, dateShipped)
+                        WHEN x.occid IS NOT NULL AND o.dateEntered IS NOT NULL
+                        THEN DATEDIFF(o.dateEntered, x.dateShipped)
                     END
                 ),
                 1
@@ -579,26 +586,43 @@
 
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
-                    WHEN occid IS NOT NULL THEN samplePK
+                    WHEN x.occid IS NOT NULL AND o.dateEntered IS NOT NULL
+                    THEN x.samplePK
                 END)
-                / COUNT(DISTINCT samplePK),
+                / COUNT(DISTINCT x.samplePK),
                 1
             ) AS percentWithData,
 
             ROUND(
                 100.0 * COUNT(DISTINCT CASE
-                    WHEN occid IS NOT NULL
-                     AND DATEDIFF(harvestTimestamp, dateShipped) <= 90
-                    THEN samplePK
+                    WHEN x.occid IS NOT NULL
+                    AND o.dateEntered IS NOT NULL
+                    AND DATEDIFF(o.dateEntered, x.dateShipped) <= 90
+                    THEN x.samplePK
                 END)
-                / COUNT(DISTINCT samplePK),
+                / COUNT(DISTINCT x.samplePK),
                 1
             ) AS percent90Days
 
-        FROM NeonShipment h
-        JOIN NeonSample s
-            ON h.shipmentPK = s.shipmentPK
-        WHERE h.shipmentID NOT LIKE '%seudo%'
+        FROM (
+            SELECT
+                h.dateShipped,
+                s.samplePK,
+                s.occid,
+                CASE
+                    WHEN MONTH(h.dateShipped) >= 10 THEN YEAR(h.dateShipped) + 1
+                    ELSE YEAR(h.dateShipped)
+                END AS awardYear
+            FROM NeonShipment h
+            JOIN NeonSample s
+                ON h.shipmentPK = s.shipmentPK
+            WHERE h.shipmentID NOT LIKE '%seudo%'
+                AND (s.sampleReceived != 0 OR s.sampleReceived IS NULL)
+
+        ) x
+
+        LEFT JOIN omoccurrences o
+            ON x.occid = o.occid
 
         ORDER BY
             CASE
