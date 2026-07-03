@@ -81,7 +81,7 @@ if ($isEditor) {
 		
 		<?php
 		if ($receipts) {
-			$headerArr = ['Award Year', 'No. Shipments','No. Receipts Submitted','Percent Submitted'];
+			$headerArr = ['Award Award Year', 'No. Shipments','No. Receipts Submitted','Percent Submitted'];
 			echo $utilities->htmlTable($receipts, $headerArr);
 		}
 
@@ -118,7 +118,7 @@ if ($isEditor) {
 
 		<?php
 		if ($accessioning) {
-			$headerArr = ['Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Percent All Time','Percent <30 Days'];
+			$headerArr = ['Award Year', 'No. Samples','No. Checked In', 'Mean Days',"St.D Days",'Percent All Time','Percent <30 Days'];
 			echo $utilities->htmlTable($accessioning, $headerArr);
 		}
 
@@ -155,7 +155,7 @@ if ($isEditor) {
 		<?php
 
 		if ($data) {
-			$headerArr = ['Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Percent All Time','Percent <30 Days'];
+			$headerArr = ['Award Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Percent All Time','Percent <30 Days'];
 			echo $utilities->htmlTable($data, $headerArr);
 		}
 		?>
@@ -206,7 +206,7 @@ if ($isEditor) {
 
 		<?php
 		if ($loans) {
-			$headerArr = ['Year', 'No. Requests','Mean Days','Median Days','Percent <4 wks - All','Percent <4 wks - Typical*'];
+			$headerArr = ['Award Year', 'No. Requests','Mean Days','Median Days','Percent <4 wks - All','Percent <4 wks - Typical*'];
 			echo $utilities->htmlTable($loans, $headerArr);
 		}
 		?>
