@@ -40,8 +40,8 @@
     }
 
     // Find  report date
-    public function getReportDate($period) {
-        $sql = "SELECT date FROM neonsowreport WHERE name = ? LIMIT 1";
+    public function getReportDate($ay) {
+        $sql = "SELECT MAX(date) as date FROM neonsowreport WHERE name = ? LIMIT 1";
 
         $stmt = $this->conn->prepare($sql);
 
@@ -50,7 +50,7 @@
             return null;
         }
 
-        $stmt->bind_param('s', $period);
+        $stmt->bind_param('s', $ay);
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -381,7 +381,7 @@ SELECT
     ) AS stdDays,
 
     ROUND(
-        COUNT(DISTINCT CASE
+        100.0 * COUNT(DISTINCT CASE
             WHEN checkinUid IS NOT NULL THEN samplePK
         END)
         / COUNT(DISTINCT samplePK),
@@ -761,25 +761,82 @@ FROM (
         }
 
     // Gets data for SOW Report tables
-    public function getSOWReport($ay,$type) {
+    public function getSOWReport($ay, $type, $reportDate) {
 
-        $sql = 'SELECT awardYear,statistic,statValue
-                FROM neonsowreport
-                WHERE name = ? AND type = ?';
+        $sql = 'SELECT awardYear, statistic, statValue
+                FROM NeonSOWReport
+                WHERE name = ?
+                AND type = ?
+                AND date = ?
+                ORDER BY awardYear';
+
+        if ($type == 'receipts') {
+            $sql .= ", FIELD(statistic,
+                            'shipments',
+                            'receiptsSubmitted',
+                            'percentSubmitted'
+                        );";
+        }
+
+        elseif ($type == 'accessioning') {
+            $sql .= ", FIELD(statistic,
+                            'samples',
+                            'samplesCheckedIn',
+                            'meanDays',
+                            'stdDays',
+                            'percentCheckedIn',
+                            'percent30Days'
+                        );";
+                        echo $sql;
+        }
+
+        elseif ($type == 'data') {
+            $sql .= ", FIELD(statistic,
+                            'samples',
+                            'samplesWithData',
+                            'meanDays',
+                            'stdDays',
+                            'percentWithData',
+                            'percent30Days'
+                        );";
+                        echo $sql;
+        }
+        elseif ($type == 'loans') {
+            $sql .= ", FIELD(statistic,
+                            'requests',
+                            'meanDays',
+                            'stdDays',
+                            'percent30DaysAll',
+                            'percent30DaysTypical'
+                        );";
+                        echo $sql;
+        }
+
 
         $stmt = $this->conn->prepare($sql);
-        $stmt->bind_param('ss', $ay, $type);
+        $stmt->bind_param('sss', $ay, $type, $reportDate);
         $stmt->execute();
 
         $result = $stmt->get_result();
+
         $rows = [];
 
         while ($row = $result->fetch_assoc()) {
-            $rows[] = $row;
+
+            $awardYear = $row['awardYear'];
+
+            if (!isset($rows[$awardYear])) {
+                $rows[$awardYear] = [
+                    0 => $awardYear
+                ];
+            }
+
+            $rows[$awardYear][$row['statistic']] = $row['statValue'];
         }
 
         $stmt->close();
-        return $rows;
+
+        return array_values($rows);
     }
 
 }

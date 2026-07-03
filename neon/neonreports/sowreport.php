@@ -8,10 +8,6 @@ header("Content-Type: text/html; charset=".$CHARSET);
 
 $ay = $_POST['ay'] ?? $_GET['ay'] ?? null;
 
-if (!preg_match('/^\d{4}$/', $ay)) {
-    $ay = date('Y');
-}
-
 if (!$ay) {
     die('No report AY selected.');
 }
@@ -60,32 +56,14 @@ if ($isEditor) {
 		echo '<p><strong>Report generated: </strong> ' . htmlspecialchars($reportDate) . '</p>';
 	}
 
-	if (!empty($reportsArr)) {
+	if (!empty($reportDate)) {
 		
 
-		$receipts = [];
-		$accessioning = [];
-		$data  = [];
-		$loans = [];
+		$receipts = $reports->getSOWReport($ay,'receipts', $reportDate);
+		$accessioning = $reports->getSOWReport($ay,'accessioning', $reportDate);
+		$data = $reports->getSOWReport($ay,'data', $reportDate);
+		$loans = $reports->getSOWReport($ay,'loans', $reportDate);
 
-		foreach ($reportsArr as $row) {
-			$type = array_shift($row); 
-
-			switch ($type) {
-				case 'receipt':
-					$receipts[] = $row;
-					break;
-				case 'accessioning':
-					$accessioning[] = $row;
-					break;
-				case 'data':
-					$data[] = $row;
-					break;
-				case 'loan':
-					$loans[] = $row;
-					break;
-			}
-		}
 		?>
 	<!-- RECEIPTS-->
 		<div class="section">
@@ -166,7 +144,7 @@ if ($isEditor) {
 			<h3>Statement of Work</h3>
 
 			<div class="details">
-				<p><strong>Task:</strong>Make sample publically available</p>
+				<p><strong>Task:</strong>Make sample publicly available</p>
 				<p><strong>AY18:</strong> As feasible</p>
 				<p><strong>AY19-AY22:</strong> As feasible</p>
 				<p><strong>AY23+:</strong> Within 3 months for 90% of samples</p>
@@ -177,7 +155,7 @@ if ($isEditor) {
 		<?php
 
 		if ($data) {
-			$headerArr = ['Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Proprtion All Time','Percent <30 Days'];
+			$headerArr = ['Year', 'No. Samples','No. Available', 'Mean Days',"St.D Days",'Percent All Time','Percent <30 Days'];
 			echo $utilities->htmlTable($data, $headerArr);
 		}
 		?>
