@@ -256,9 +256,9 @@ $dwcManager = new DwcArchiverCore();
 					<div>
 						<p style="margin: 0px 0px 16px 0px;font-size: 0.8rem; font-family: "Inter", Helvetica, Arial, sans-serif; font-weight: 400; line-height: 1.43;">
 							You must sign in or create and validate an account before proceeding.  Navigate to
-							<a class="" target="_blank" href="https://cert-data.neonscience.org/myaccount">My Account</a>
+							<a class="" target="_blank" href="https://data.neonscience.org/myaccount">My Account</a>
 							to sign in or create an account.
-							<a class="" target="_blank" href="https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/about/user-accounts">Learn</a>
+							<a class="" target="_blank" href="https://www.neonscience.org/about/user-accounts">Learn</a>
 							about the benefits of having an account.
 						</p>
 						<form name="loginRequiredForm" action="../../profile/index.php" method="post">
