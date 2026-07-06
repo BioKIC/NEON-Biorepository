@@ -42,7 +42,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 <?php
 if ($isEditor) {
 ?>
-	<h1>NEON SOW Report: <?php echo htmlspecialchars($ay); ?></h1>
+	<h1>NEON SOW Report: AY<?php echo htmlspecialchars($ay); ?></h1>
 	<div class="section-nav">
 		<a href="#receipts">1. Sample Receipt Forms</a> |
 		<a href="#accessioning">2. Accessioning</a> |
@@ -86,9 +86,10 @@ if ($isEditor) {
 		}
 
 		?>
-		<form method="post" action="exportsowreporthandler.php">
-			<input type="hidden" name="sow" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
-			<input type="hidden" name="type" value="receipt">
+		<form method="post" action="exportsowhandler.php">
+			<input type="hidden" name="ay" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
+			<input type="hidden" name="type" value="receipts">
+			<input type="hidden" name="reportDate"     value="<?= htmlspecialchars($reportDate, ENT_QUOTES) ?>">
 			<button type="submit">Export Sample Receipt Form Statistics</button>
 		</form>
 
@@ -123,13 +124,15 @@ if ($isEditor) {
 		}
 
 		?>
-		<form method="post" action="exportsowreporthandler.php">
+		<form method="post" action="exportsowhandler.php">
 			<input type="hidden" name="ay" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="accessioning">
+			<input type="hidden" name="reportDate"     value="<?= htmlspecialchars($reportDate, ENT_QUOTES) ?>">
 			<button type="submit">Export Accessioning Statistics</button>
 		</form>
 
 		<h3>Latency for samples that have been checked in</h3>
+		
 
 			<!--- LATENCY PLOT HERE -->
 
@@ -159,9 +162,10 @@ if ($isEditor) {
 			echo $utilities->htmlTable($data, $headerArr);
 		}
 		?>
-		<form method="post" action="exportsowreporthandler.php">
+		<form method="post" action="exportsowhandler.php">
 			<input type="hidden" name="ay" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="data">
+			<input type="hidden" name="reportDate"     value="<?= htmlspecialchars($reportDate, ENT_QUOTES) ?>">
 			<button type="submit">Export Sample Data Statistics</button>
 		</form>
 
@@ -211,9 +215,10 @@ if ($isEditor) {
 		}
 		?>
 		<p>*Typical requests are of less than 100 samples and no significant processing </P>
-		<form method="post" action="exportsowreporthandler.php">
+		<form method="post" action="exportsowhandler.php">
 			<input type="hidden" name="ay" value="<?= htmlspecialchars($ay, ENT_QUOTES) ?>">
-			<input type="hidden" name="type" value="loanrequests">
+			<input type="hidden" name="type" value="loans">
+			<input type="hidden" name="reportDate"     value="<?= htmlspecialchars($reportDate, ENT_QUOTES) ?>">
 			<button type="submit">Export Loan Request Statistics</button>
 		</form>
 		<?php

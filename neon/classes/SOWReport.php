@@ -868,6 +868,87 @@
         return array_values($rows);
     }
 
+    // export table
+
+    public function exportTable($ay, $type, $reportDate){
+        $ay = (int)$ay;
+
+        $fileName = $type . '_AY' . $ay . '.csv';
+
+        $result = $this->getSOWReport($ay, $type, $reportDate);
+    if (empty($result)) {
+        die(
+            "No rows returned.<br>" .
+            "AY = $ay<br>" .
+            "Type = $type<br>" .
+            "Report Date = $reportDate"
+        );
+    }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        fputcsv($output, array_keys($result[0]));
+
+        foreach ($result as $row) {
+            fputcsv($output, $row);
+        }
+
+        fclose($output);
+        exit;
+    }
+    
+
+    // latency to receipt plot
+
+    public function receiptPlot($ay) {
+        $ay = (int)$ay;
+
+        $sql = "SELECT dateShipped, DATEDIFF(checkinTimestamp, dateShipped) as daysToReceiptSubmission FROM NeonShipment
+                WHERE shimpentID NOT LIKE '%seudo%'
+                AND dateShipped < ?;";
+
+    }
+
+    // latency to accession in plot
+
+    public function checkinPlot($ay) {
+        $ay = (int)$ay;
+
+        $sql = " SELECT h.dateShipped, DATEDIFF(s.checkinTimestamp, dateShipped) as daysToCheckIn
+                FROM NeonSample s
+                LEFT JOIN NeonShipment h
+                ON s.shipmentPK = h.shipmentPK
+                WHERE shimpentID NOT LIKE '%seudo%'
+                AND s.checkInUid IS NOT NULL
+                AND s.acceptedForAnalysis = 1
+                AND h.dateShipped < ?;";
+
+    }
+
+    // latency to data availability
+
+    public function dataPlot($ay,$reportDate) {
+        $ay = (int)$ay;
+
+        $sql = " SELECT h.dateShipped, DATEDIFF(o.initialTimestamp, dateShipped) as daysToDataAvailability
+                FROM NeonSample s
+                LEFT JOIN NeonShipment h
+                ON s.shipmentPK = h.shipmentPK
+                LEFT JOIN omoccurrences o
+                ON s.occid = o.occid
+                WHERE shimpentID NOT LIKE '%seudo%'
+                AND s.checkInUid IS NOT NULL
+                AND s.acceptedForAnalysis = 1;";
+
+    }
+
+
+
 }
 
 ?>
