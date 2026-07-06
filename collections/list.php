@@ -48,6 +48,7 @@ if ($sortField1) {
 
 $occurArr = $collManager->getSpecimenMap($pageNumber, $cntPerPage);
 //NEON edit
+//sample type summary
 $biorepoAvailabilitySiteCodes = $occurrenceListFunctions->getNeonAvailabilitySiteCodes();
 $collectionTypeSummary = $occurrenceListFunctions->getCollectionTypeSummary();
 $additionalCollectionTypeSummary = $occurrenceListFunctions->getAdditionalCollectionTypeSummary();
@@ -64,6 +65,15 @@ foreach($combinedCollectionFamilies as &$family){
 	);
 }
 unset($family);
+
+//gets material sample information for display
+$materialSampleArr = [];
+$dbSearchTerm = $collManager->getSearchTerm('db');
+
+if($dbSearchTerm){
+    $dbArr = explode(',', $dbSearchTerm);
+	$materialSampleArr = $occurrenceListFunctions->getMaterialSampleTypes(array_keys($occurArr));
+}
 //end NEON edit
 $_SESSION['citationvar'] = $searchVar;
 
@@ -520,6 +530,24 @@ $_SESSION['citationvar'] = $searchVar;
 									echo $localStr;
 									echo '</div><div style="margin:4px">';
 									//neon edit
+									if(!empty($materialSampleArr[$occid])){
+										echo '<div style="margin-top:4px;">';
+										echo '<strong>Material Samples:</strong> ';
+									
+										$sampleDisplayArr = [];
+									
+										foreach($materialSampleArr[$occid] as $sample){
+											$sampleDisplayArr[] =
+												"'" .
+												htmlspecialchars($sample['sampleType'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
+												. "' (" .
+												htmlspecialchars($sample['disposition'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
+												. ')';
+										}
+									
+										echo implode(', ', array_unique($sampleDisplayArr));
+										echo '</div>';
+									}
 									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									//end edit
 									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
