@@ -363,56 +363,78 @@
     ]
   },
   {
-    "id": 49,
     "name": "Frozen Samples",
     "children": [
       {
-        "id": 50,
         "name": "Aquatic Microalgae Sterivex Filters",
         "collid": 98
       },
       {
-        "id": 51,
         "name": "Aquatic Sediments",
         "collid": 92
       },
       {
-        "id": 52,
         "name": "Benthic Microbe Sterivex Filters",
         "collid": 5
       },
       {
-        "id": 53,
         "name": "Small Mammal Blood Samples",
         "collid": 24
       },
       {
-        "id": 54,
-        "name": "Small Mammal Ear Tissue",
-        "collid": 25
-      },
-      {
-        "id": 55,
         "name": "Small Mammal Fecal Samples",
         "collid": 26
       },
       {
-        "id": 56,
+        "name": "Small Mammal Tissues",
+        "children": [
+          {
+            "name": "Small Mammal Ear Punches",
+            "collid": 25
+          },
+          {
+            "name": "Small Mammal Hearts",
+            "collid": 119
+          },
+          {
+            "name": "Small Mammal Gastrointestinal Tracts",
+            "collid": 118
+          },
+          {
+            "name": "Small Mammal Lungs",
+            "collid": 120
+          },
+          {
+            "name": "Small Mammal Kidneys",
+            "collid": 121
+          },
+          {
+            "name": "Small Mammal Spleens",
+            "collid": 122
+          },
+          {
+            "name": "Small Mammal Livers",
+            "collid": 123
+          },
+          {
+            "name": "Small Mammal Muscle",
+            "collid": 124
+          }
+        ]
+      },
+      {
         "name": "Mosquito Bulk Identified",
         "collid": 56
       },
       {
-        "id": 57,
         "name": "Soil Microbe Bulk Subsamples",
         "collid": 31
       },
       {
-        "id": 58,
         "name": "Surface Water Microbe Sterivex Filters",
         "collid": 6
       },
       {
-        "id": 59,
         "name": "Leaf Tissue",
         "collid": 40
       }

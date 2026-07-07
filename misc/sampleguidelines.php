@@ -51,7 +51,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h2 class="anchor" id="proposals-and-letters-of-collaboration-or-support">Proposals and Letters of Collaboration or Support</h2>
 
-			<p>Although funding is not required to use NEON samples, please <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">contact us</a> at least two weeks in advance of internal deadlines for submitting any grant proposals involving NEON samples. The NEON Biorepository requires this time in order to:</p>
+			<p>Although funding is not required to use NEON samples, please <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener">contact us</a> at least two weeks in advance of internal deadlines for submitting any grant proposals involving NEON samples. The NEON Biorepository requires this time in order to:</p>
 
 			<ul>
 				<li>Evaluate whether available samples are suitable for the proposed work.</li>
@@ -66,13 +66,13 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		<article>
 			<h2 class="anchor" id="visiting-the-neon-biorepository">Visiting the NEON Biorepository</h2>
 
-			<p>The NEON Biorepository is located alongside the Arizona State University Biocollections in Tempe, AZ, USA. We welcome visitors interested in accessing, analyzing, borrowing, or learning more about samples on-site. We do not require bench fees. Please <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">contact us</a> to arrange a visit.</p>
+			<p>The NEON Biorepository is located alongside the Arizona State University Biocollections in Tempe, AZ, USA. We welcome visitors interested in accessing, analyzing, borrowing, or learning more about samples on-site. We do not require bench fees. Please <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener">contact us</a> to arrange a visit.</p>
 		</article>
 
 		<article>
 			<h2 class="anchor" id="sample-use-agreement">Sample Use Agreement</h2>
 
-			<p><b><i>All sample requests require a mutually developed and signed Sample Use Agreement <a href="documents/NEONBiorepositorySampleUseAgreement.pdf" target="_blank" rel="noopener noreferrer">(example template)</a> between the requesting user and the NEON Biorepository prior to sample processing and shipment or access.</i></b> The Sample Use Agreement documents the terms under which samples are provided and ensures that both parties have a shared understanding of the approved research and responsibilities associated with sample use. Each Sample Use Agreement is developed on a case-by-case basis.</p>
+			<p><b><i>All sample requests require a mutually developed and signed Sample Use Agreement <a href="documents/NEONBiorepositorySampleUseAgreement.pdf" target="_blank" rel="noopener">(example template)</a> between the requesting user and the NEON Biorepository prior to sample processing and shipment or access.</i></b> The Sample Use Agreement documents the terms under which samples are provided and ensures that both parties have a shared understanding of the approved research and responsibilities associated with sample use. Each Sample Use Agreement is developed on a case-by-case basis.</p>
 			<p>While the exact contents of each agreement vary, Sample Use Agreements generally include:</p>
 
 			<ul>
@@ -107,7 +107,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<p>While any type of use is permissible, requests involving substantial destructive or consumptive use require additional review as a part of the approval process. All requests are evaluated on a case-by-case basis; however, each sample type is subject to guidelines regarding the amount of destructive and consumptive use that can be supported for a single project and the minimum number of samples that must be retained for long-term archive. Requests that involve destructive or significant consumptive use exceeding those guidelines require strong justification and may be subject to external review.</p>
 
-			<p>Other considerations relevant to sample use approval include: species rarity; physical condition of a requested specimen; suitability of requested samples to proposed application; significance relative to NEON’s <a href="https://www.neonscience.org/about/visionandmanagement" target="_blank" rel="noopener noreferrer">mission</a> to enable continental-scale ecology; prior adherence to the NEON Sample Use Policy; and U.S. National Park Service policies, where relevant.</p>
+			<p>Other considerations relevant to sample use approval include: species rarity; physical condition of a requested specimen; suitability of requested samples to proposed application; significance relative to NEON’s <a href="https://www.neonscience.org/about/visionandmanagement" target="_blank" rel="noopener">mission</a> to enable continental-scale ecology; prior adherence to the NEON Sample Use Policy; and U.S. National Park Service policies, where relevant.</p>
 
 			<p>In cases where overlapping requests require destructive, consumptive, or invasive use of samples, priority will be research sponsored by the NSF Biological Sciences Directorate, followed by other NSF-sponsored research and finally non-NSF funded research, outreach, or education uses.</p>
 
