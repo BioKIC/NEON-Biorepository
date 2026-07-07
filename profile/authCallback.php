@@ -44,9 +44,9 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
     $_SESSION['AUTH_PROVIDER'] = $AUTH_PROVIDER;
     $_SESSION['AUTH_CLIENT_ID'] = $oidc->getClientID();
 
-    // see if authenticated user is in usersthirdpartyauth table
+    // see if authenticated user is in usersthirdpartyauth table (and thus in users)
     if($profManager->authenticate($sub, $PROVIDER_URLS[$AUTH_PROVIDER])){
-      // add session to usersthirdpartyauth
+      // add session to usersthirdpartysessions
       $profManager->linkThirdPartySid($sid, session_id(), $_SERVER['REMOTE_ADDR']);
       // update user information from Auth0 fields
       $profManager->updateLocalUserFromAuth0Metadata(
