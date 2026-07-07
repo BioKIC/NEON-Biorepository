@@ -513,7 +513,7 @@ function getAccountStatus()
 							You must sign in or create and validate an account before proceeding.  Navigate to
 							<a target="_blank" href="https://data.neonscience.org/myaccount">My Account</a>
 							to sign in or create an account.
-							<a class="" target="_blank" href="https://www.develop-sr3snxi-di4alr4iwbwyg.us-2.platformsh.site/about/user-accounts">Learn</a>
+							<a class="" target="_blank" href="https://www.neonscience.org/about/user-accounts">Learn</a>
 							about the benefits of having an account.
 						</p>
 						<form name="loginRequiredForm" action="../../profile/index.php" method="post">

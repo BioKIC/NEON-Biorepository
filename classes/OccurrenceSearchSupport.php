@@ -365,11 +365,11 @@ class OccurrenceSearchSupport {
 		elseif(!preg_match('/^[a-z0-9,;]+$/', $dbStr)) $dbStr = 'all';
 		return $dbStr;
 	}
-
-	public static function getDbWhereFrag($dbSearchTerm){
+	//neon edit
+	public static function getDbWhereFrag(array $searchTermArr){
 		global $SERVER_ROOT;
 		$sqlRet = "";
-		//neon edit
+		$dbSearchTerm = $searchTermArr['db'];
 		if(strpos($dbSearchTerm, 'all') !== false){
 		
 			// load JSON file
@@ -402,12 +402,58 @@ class OccurrenceSearchSupport {
 			$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype IN("General Observations","Observations"))) ';
 		}
 		else {
-			$dbArr = explode(';',$dbSearchTerm);
-			$dbStr = "o.collid IN(" . (is_array($dbArr)? implode(',', $dbArr): $dbArr) . ")";
-			$sqlRet .= 'AND ('.$dbStr.') ';
+			// neon edit; mammal material samples
+			$dbArr = array_map('intval', explode(',', $dbSearchTerm));
+			$whereParts = [];
+			
+			$materialSampleMap = [
+				118 => '%tract%',
+				119 => '%heart%',
+				120 => '%lung%',
+				121 => '%kidney%',
+				122 => '%spleen%',
+				123 => '%liver%',
+				124 => '%muscle%'
+			];
+			
+			// regular collections
+			$normalCollids = array_diff($dbArr, array_keys($materialSampleMap));
+			
+			if($normalCollids){
+				$whereParts[] = 'o.collid IN('.implode(',', $normalCollids).')';
+			}
+			
+			// mammal material sample pseudo-collections
+			foreach($materialSampleMap as $collid => $sampleTypeLike){
+				if(in_array($collid, $dbArr)){
+					$materialSql =
+						"(o.collid IN(17,19,28)
+						AND EXISTS (
+							SELECT 1
+							FROM ommaterialsample ms
+							WHERE ms.occid = o.occid
+							AND ms.sampleType LIKE '".$sampleTypeLike."'";
+			
+					if(array_key_exists('availableforloan', $searchTermArr)){
+						$materialSql .= "
+							AND ms.disposition IN('In Collection','Being Processed') OR ms.disposition IS NULL";
+					}
+			
+					$materialSql .= "
+						))";
+			
+					$whereParts[] = $materialSql;
+				}
+			}
+			
+			if($whereParts){
+				$dbStr = '(' . implode(' OR ', $whereParts) . ')';
+				$sqlRet .= 'AND '.$dbStr.' ';
+			}
 		}
 	
 		return $sqlRet;
+	//end neon edit
 	}
 	
 	//neon edit

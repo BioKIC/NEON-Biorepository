@@ -150,8 +150,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$pattern = '/^(all(,\d+)*|\d+(,\d+)*)$/';
 			
 			if (preg_match($pattern, $this->searchTermArr['db'])) {
+				$this->searchTermArr['db'] = $this->cleanInStr($this->searchTermArr['db']);
+				$sqlWhere .= OccurrenceSearchSupport::getDbWhereFrag($this->searchTermArr);
 				//end neon edit
-				$sqlWhere .= OccurrenceSearchSupport::getDbWhereFrag($this->cleanInStr($this->searchTermArr['db']));
 			}
 		}
 		if(array_key_exists('datasetid',$this->searchTermArr)){
@@ -533,16 +534,19 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$sqlWhere .= 'AND ('.substr($catWhere,3).') ';
 			$this->displaySearchArr[] = $this->searchTermArr['catnum'];
 		}
+		//neon edit - make materialsampletype an array
 		if(!empty($this->searchTermArr['materialsampletype'])){
-			if($this->searchTermArr['materialsampletype'] == 'all-ms'){
-				$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM ommaterialsample)) ';
-				$this->displaySearchArr[] = $this->LANG['HAS_MATERIAL_SAMPLE'];
-			}
-			else{
-				$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM ommaterialsample WHERE sampleType = "' . $this->cleanInStr($this->searchTermArr['materialsampletype']) . '")) ';
-				$this->displaySearchArr[] = $this->LANG['MATERIAL_SAMPLE'] . ': ' . $this->searchTermArr['materialsampletype'];
+			$sampleTypes = $this->cleanInStr($this->searchTermArr['materialsampletype']);
+		
+			if(!empty($sampleTypes)){
+				$sqlWhere .= 'AND (o.occid IN(
+					SELECT occid
+					FROM ommaterialsample
+					WHERE sampleType IN("' . implode('","', $sampleTypes) . '")
+				)) ';
 			}
 		}
+		//neon neon edit
 		if(array_key_exists('typestatus', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.typestatus IS NOT NULL) ';
 			$this->displaySearchArr[] = $this->LANG['IS_TYPE'];
@@ -927,8 +931,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		foreach($this->searchTermArr as $k => $v){
 			if($k == 'countryCode') continue;
 			if($k == 'countryRaw') continue;
-			if(is_array($v)) $v = implode(',', $v);
-			if($v) $retStr .= '&'. $this->cleanOutStr($k) . '=' . $this->cleanOutStr($v);
+			//neon edit; add support for arrays
+			if(is_array($v)) foreach($v as $value) $retStr .= '&'.$this->cleanOutStr($k).'[]='.$this->cleanOutStr($value);
+			elseif($v) $retStr .= '&'.$this->cleanOutStr($k).'='.$this->cleanOutStr($v);
+			//end neon edit
 		}
 		if(isset($this->taxaArr['search'])){
 			$retStr .= '&taxa=' . $this->getTaxaSearchTerm();

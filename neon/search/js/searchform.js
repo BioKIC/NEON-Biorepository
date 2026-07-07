@@ -29,6 +29,7 @@ let paramNames = [
   'taxa',
   'taxontype',
   'availableforloan',
+  'materialsampletype[]',
 ];
 
 for (let i = 1; i <= 8; i++) {
@@ -173,6 +174,15 @@ function addChip(element) {
         });
       }
     }
+  } else if (element.name == 'materialsampletype[]') {
+    inputChip.id = 'chip-materialsampletype';
+    const values = $(element).val() || [];
+    inputChip.textContent =
+        `${element.dataset.chip}: ${values.map(v => `'${v}'`).join(', ')}`;
+    chipBtn.onclick = function () {
+        $(element).val([]).trigger('change');
+        removeChip(inputChip);
+    };
   } else {
     inputChip.id = 'chip-' + element.id;
     let isTextOrNum = (element.type == 'text') | (element.type == 'number') | (element.type == 'textarea');
@@ -264,13 +274,13 @@ function updateChip(e) {
         (item.type == 'checkbox' && item.checked) |
         (item.type == 'text' && item.value != '') |
         (item.type == 'textarea' && item.value != '') |
+        (item.type == 'select-multiple' && item.value != '') |
         (item.type == 'number' && item.value != '')
       ) {
         // now add chips depending on type of item
         item.hasAttribute('data-chip') ? addChip(item) : '';
       }
     }
-    // print inputs checked or filled in
   });
 }
 
@@ -649,7 +659,7 @@ function getParam(paramName) {
           : '';
         break;
       case 'SELECT':
-        elementValues = firstEl.options[firstEl.selectedIndex].value;
+        elementValues = Array.from(firstEl.selectedOptions).map(option => option.value);
         break;
       case 'TEXTAREA':
         elementValues = firstEl.value;
@@ -692,13 +702,17 @@ function getSearchUrl() {
   if (useThesCb && !useThesCb.checked) {
     baseUrl.searchParams.set('usethes', '1');
   }
-
   // Appends each key value for each param in search url
-  let queryString = Object.keys(paramsArr).map((key) => {
-    //   return encodeURIComponent(key) + '=' + encodeURIComponent(paramsArr[key])
-    // }).join('&');
-    // console.log(baseURL + queryString);
-    baseUrl.searchParams.append(key, paramsArr[key]);
+  Object.keys(paramsArr).forEach((key) => {
+      const value = paramsArr[key];
+  
+      if (key === 'materialsampletype[]') {
+          value.forEach(v => baseUrl.searchParams.append(key, v));
+      } else if (Array.isArray(value)) {
+          baseUrl.searchParams.append(key, value.join(','));
+      } else {
+          baseUrl.searchParams.append(key, value);
+      }
   });
   return baseUrl.href;
 }
@@ -1021,10 +1035,15 @@ document
     closeModal('#domains-sites-modal');
   });
 //////// Binds Update chip on event change
-const formInputs = document.querySelectorAll('.content input, .content textarea, #search-form-advanced-search select');
-formInputs.forEach((formInput) => {
-  formInput.addEventListener('change', updateChip);
+const formInputs = document.querySelectorAll(
+    '.content input, .content textarea, #search-form-advanced-search select, #materialsampletype'
+);
+
+formInputs.forEach(formInput => {
+    formInput.addEventListener('change', updateChip);
 });
+
+$('#materialsampletype').on('change', updateChip);
 
 document.addEventListener('change', function (e) {
   if (e.target.name === 'datasetid') {
@@ -1135,12 +1154,3 @@ window.addEventListener('load', function () {
   prefillFromUrl();
 });
 
-
-// Hides MOSC-BU checkboxes
-hideColCheckbox(58);
-// Hides identified zoops for now
-hideColCheckbox(55);
-//Hides opal soils
-hideColCheckbox(96); 
-// Hides large invert collection for now
-hideColCheckbox(114);
