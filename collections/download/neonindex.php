@@ -3,6 +3,7 @@ include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/DwcArchiverCore.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/download/index.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/download/index.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/download/index.en.php');
+include_once($SERVER_ROOT . '/config/auth_config.php');
 
 header("Content-Type: text/html; charset=".$CHARSET);
 
@@ -13,6 +14,98 @@ $displayHeader = array_key_exists('displayheader', $_REQUEST) ? filter_var($_REQ
 $searchVar = array_key_exists('searchvar', $_REQUEST) ? htmlspecialchars($_REQUEST['searchvar'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE| ENT_QUOTES) : '';
 
 $dwcManager = new DwcArchiverCore();
+
+function getAccountStatus()
+	{
+		global $AUDIENCE;
+		$accessToken = $_SESSION['ACCESS_TOKEN'];
+		$sub = $_SESSION['SUBSCRIBER'];
+	
+		$ch = curl_init();
+	
+		curl_setopt_array($ch, [
+			CURLOPT_URL => $AUDIENCE . "users/" . $sub,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_HTTPHEADER => [
+				"Authorization: Bearer {$accessToken}"
+			]
+		]);
+		$response = curl_exec($ch);
+	
+		if (curl_errno($ch)) {
+			throw new Exception(curl_error($ch));
+		}
+	
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		
+		$user = json_decode($response, true);
+		
+		if ($statusCode === 401) {
+			if (
+				isset($user['message']) &&
+				str_contains($user['message'], 'Expired token')
+			) {
+				return [
+					'expired'
+				];
+			}
+		
+			throw new Exception(
+				$user['message'] ?? 'Unauthorized'
+			);
+		}
+		
+		if ($statusCode !== 200) {
+			throw new Exception(
+				$user['message'] ?? "Unable to retrieve Auth0 user. HTTP {$statusCode}"
+			);
+		}
+	
+		$consentTimestamp = $user['user_metadata']['consent_timestamp'] ?? null;
+		
+		$validConsentTimestamp = false;
+		if (is_numeric($consentTimestamp)) {
+			$seconds = (int) floor($consentTimestamp / 1000);
+			$validConsentTimestamp = checkdate(
+				(int) date('n', $seconds),
+				(int) date('j', $seconds),
+				(int) date('Y', $seconds)
+			);
+		}
+		
+		$step1Complete =
+			($user['user_metadata']['consent_given'] ?? false) === true &&
+			$validConsentTimestamp &&
+			($user['user_metadata']['has_signed_up'] ?? false) === true;
+	
+		$step2Complete =
+			$step1Complete &&
+			($user['email_verified'] ?? false) === true;
+	
+		$step3Complete =
+			$step2Complete &&
+			!empty($user['user_metadata']['first_name']) &&
+			!empty($user['user_metadata']['last_name']) &&
+			!empty($user['user_metadata']['affiliation']) &&
+			!empty($user['user_metadata']['ror_id']) &&
+			!empty($user['user_metadata']['organization_country']) &&
+			!empty($user['user_metadata']['subject_matter_expertise_provider']);
+	
+		$step = 0;
+	
+		if ($step1Complete) $step = 1;
+		if ($step2Complete) $step = 2;
+		if ($step3Complete) $step = 3;
+	
+		return [
+			'ready' => $step === 3,
+			'step' => $step,
+			'step1Complete' => $step1Complete,
+			'step2Complete' => $step2Complete,
+			'step3Complete' => $step3Complete
+		];
+	}
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -189,7 +282,7 @@ $dwcManager = new DwcArchiverCore();
 			text-decoration: underline;
 		}
 
-		#login-required-container button{
+		.signin-button {
 			border: 0;
 			cursor: pointer;
 			margin: 0;
@@ -215,6 +308,149 @@ $dwcManager = new DwcArchiverCore();
 			padding: 8px 16px;
 			background-color: #0073cf;
 		}
+		
+		.account-validation-card {
+			color: rgba(0, 0, 0, 0.9);
+			font-size: 0.8rem;
+			font-family: "Inter", Helvetica, Arial, sans-serif;
+			line-height: 1.43;
+			border: 1px solid #ffcb4f;
+			border-radius: 4px;
+			background-color: #fff5dc;
+			overflow: hidden;
+			margin: 40px 0 0px;
+		}
+		
+		.account-validation-header {
+			display: flex;
+			align-items: center;
+			padding: 16px 20px 12px;
+		}
+		
+		.account-validation-header h6 {
+			flex-grow: 1;
+			margin: 0;
+			font-size: 0.775rem;
+			font-weight: 600;
+			text-transform: uppercase;
+		}
+		
+		.account-validation-icon-small,
+		.account-validation-icon-large {
+			fill: currentColor;
+			flex-shrink: 0;
+		}
+		
+		.account-validation-icon-small {
+			width: 1.25rem;
+			height: 1.25rem;
+			margin-right: 16px;
+		}
+		
+		.account-validation-icon-large {
+			width: 2.1875rem;
+			height: 2.1875rem;
+			color: #ffcb4f;
+			margin-left: 16px;
+		}
+		
+		.account-validation-body {
+			padding: 0 24px 24px;
+		}
+		
+		.account-validation-body p {
+			margin: 0;
+		}
+		
+		.account-validation-card hr {
+			border: none;
+			height: 1px;
+			background-color: rgba(0, 0, 0, 0.12);
+			margin: 0 0 16px;
+		}
+		
+		.validation-steps-container {
+			width: 100%;
+			margin-top: 16px;
+		}
+		
+		.validation-steps-container h6 {
+			margin: 0;
+			font-size: 0.875rem;
+			font-weight: 600;
+		}
+		
+		.validation-steps-container span {
+			font-size: 0.75rem;
+		}
+		
+		.validation-learn-more {
+			margin-top: 8px !important;
+		}
+		
+		.validation-learn-more a {
+			color: #0073cf;
+			text-decoration: underline;
+		}
+		
+		.validation-learn-more a:hover,
+		.validation-learn-more a:active {
+			color: #0092e2;
+		}
+		
+		.validation-stepper {
+			display: flex;
+			align-items: center;
+			margin-top: 8px;
+			padding: 24px 0;
+			background-color: transparent;
+		}
+		
+		.validation-step {
+			display: flex;
+			align-items: center;
+			padding: 0 8px;
+			color: rgba(0, 0, 0, 0.54);
+			cursor: pointer;
+		}
+		
+		.validation-step.complete,
+		.validation-step.active {
+			color: rgba(0, 0, 0, 0.9);
+			font-weight: 500;
+		}
+		
+		.step-icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 24px;
+			height: 24px;
+			margin-right: 8px;
+			border-radius: 50%;
+			background-color: rgba(0, 0, 0, 0.38);
+			color: #fff;
+			font-size: 0.75rem;
+			font-weight: 600;
+		}
+		
+		.validation-step.complete .step-icon,
+		.validation-step.active .step-icon {
+			background-color: #0073cf;
+		}
+		
+		.step-label {
+			font-size: 0.8rem !important;
+		}
+		
+		.step-connector {
+			flex: 1 1 auto;
+			border-top: 1px solid #7c7f80;
+		}
+		
+		.validation-message {
+			margin-left: 32px;
+		}
 	</style>
 </head>
 <body style="width:700px;min-width:700px;margin-left:auto;margin-right:auto;background-color:#ffffff">
@@ -234,9 +470,28 @@ $dwcManager = new DwcArchiverCore();
 	<div style="width:100%; background-color:white;">
 		<h1 class="page-heading screen-reader-only"><?= $LANG['COLL_SEARCH_DWNL'] ?></h1>
 		<?php
-		$downloadActive = false;
-		if(!empty($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT) || $SYMB_UID) $downloadActive = true;
-		if(!$downloadActive){
+		$canDownload = false;
+		$showLoginRequired = false;
+		$showValidationRequired = false;
+		
+		if ($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT) {
+			$canDownload = true;
+		}
+		elseif (!$SYMB_UID) {
+			$showLoginRequired = true;
+		}
+		else {
+			$accountStatus = getAccountStatus();
+
+			if (isset($accountStatus['expired'])) {
+				$showLoginRequired = true;
+			} elseif ($accountStatus['ready']) {
+				$canDownload = true;
+			} else {
+				$showValidationRequired = true;
+			}
+		}
+		if ($showLoginRequired) {
 			$_SESSION['searchvar'] = $searchVar;
 			//$queryStr = 'sourcepage=' . $sourcePage . '&dltype=' . $downloadType . '&taxonFilterCode=' . $taxonFilterCode;
 			//header('Location: ../../profile/index.php?refurl=../collections/download/index.php?' . $queryStr);
@@ -256,13 +511,13 @@ $dwcManager = new DwcArchiverCore();
 					<div>
 						<p style="margin: 0px 0px 16px 0px;font-size: 0.8rem; font-family: "Inter", Helvetica, Arial, sans-serif; font-weight: 400; line-height: 1.43;">
 							You must sign in or create and validate an account before proceeding.  Navigate to
-							<a class="" target="_blank" href="https://data.neonscience.org/myaccount">My Account</a>
+							<a target="_blank" href="https://data.neonscience.org/myaccount">My Account</a>
 							to sign in or create an account.
 							<a class="" target="_blank" href="https://www.neonscience.org/about/user-accounts">Learn</a>
 							about the benefits of having an account.
 						</p>
 						<form name="loginRequiredForm" action="../../profile/index.php" method="post">
-							<button type="submit"><span>Sign In</span></button>
+							<button class="Mui signin-button" type="submit"><span>Sign In</span></button>
 							<input name="refurl" type="hidden" value="../collections/download/neonindex.php">
 							<input name="dltype" type="hidden" value="<?= $downloadType ?>">
 							<input name="taxonFilterCode" type="hidden" value="<?= $taxonFilterCode ?>">
@@ -270,10 +525,133 @@ $dwcManager = new DwcArchiverCore();
 					</div>
 				</div>
 			</div>
-			<?php
+		<?php
+		}
+		if ($showValidationRequired) {
+			$step = $accountStatus['step'];
+		?>
+			<script>
+				const accountStep = <?= $accountStatus['step'] ?>;
+				
+				const messages = {
+					1: {
+						complete: `
+							<span class="step-icon" style="background-color:#0073cf;">✓</span>
+							<p class="Mui" style="display:inline-block;">Sign In Completed</p>
+						`,
+						incomplete: `
+							<form name="loginRequiredForm" action="../../profile/index.php" method="post">
+								<button class="Mui signin-button" type="submit"><span>Sign In</span></button>
+								<input name="refurl" type="hidden" value="../collections/download/neonindex.php">
+								<input name="dltype" type="hidden" value="<?= $downloadType ?>">
+								<input name="taxonFilterCode" type="hidden" value="<?= $taxonFilterCode ?>">
+							</form>
+						`
+					},
+					2: {
+						complete: `
+							<span class="step-icon" style="background-color:#0073cf;">✓</span>
+							<p class="Mui" style="display:inline-block;">Email Verified</p>
+						`,
+						incomplete: `
+							<p class="Mui">
+								Verify your email by navigating to
+								<a target="_blank" href="https://data.neonscience.org/myaccount">My Account</a>
+								and selecting <strong>Send Verification Email</strong>. Follow the link in the email to complete the verification process.
+							</p>
+						`
+					},
+					3: {
+						incomplete: `
+							<p class="Mui">Validate your account by navigating to <a target="_blank" href="https://data.neonscience.org/myaccount">My Account</a> and updating your account information with all required fields.</p>
+
+						`
+					}
+				};
+				
+				$(document).ready(function() {
+					document.querySelectorAll('.validation-step').forEach(step => {
+						step.addEventListener('click', function () {
+							const stepNumber = parseInt(this.dataset.step);
+							const complete = stepNumber <= accountStep;
+				
+							document.getElementById('validation-message').innerHTML =
+								complete
+									? messages[stepNumber].complete
+									: messages[stepNumber].incomplete;
+						});
+					});
+					const selectedStep = Math.min(accountStep + 1, 3);
+					document.querySelector(`.validation-step[data-step="${selectedStep}"]`).click();
+				
+				});
+			</script>
+			<div class="account-validation-card">
+				<div class="account-validation-header">
+					<svg class="account-validation-icon-small" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
+						<path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+					</svg>
+			
+					<h6>Account Validation</h6>
+			
+					<svg class="account-validation-icon-large" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
+						<path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+					</svg>
+				</div>
+			
+				<div class="account-validation-body">
+					<hr>
+			
+					<p class="Mui">Validate your account to gain access to data and all of the features of the NEON Data Portal.</p class="Mui>
+			
+					<div class="validation-steps-container">
+						<h5 style="margin-bottom: unset;">Account Validation Steps</h5>
+						<span><?= $step ?> of 3 completed</span>
+			
+						<p class="validation-learn-more Mui" style="margin-bottom: 8px;">
+							<a target="_blank" href="https://www.neonscience.org/about/user-accounts">Learn</a>
+							about account validation.
+						</p>
+			
+						<hr>
+			
+						<div class="validation-stepper">
+							<div class="validation-step <?= $step >= 1 ? 'complete' : 'active' ?>" data-step="1">
+								<span class="step-icon">
+									<?= $step >= 1 ? '✓' : '1' ?>
+								</span>
+								<span class="step-label">Sign In</span>
+							</div>
+							
+							<div class="step-connector <?= $step >= 2 ? 'complete' : '' ?>"></div>
+							
+							<div class="validation-step <?= $step >= 2 ? 'complete' : ($step == 1 ? 'active' : '') ?>" data-step="2">
+								<span class="step-icon">
+									<?= $step >= 2 ? '✓' : '2' ?>
+								</span>
+								<span class="step-label">Verify Email</span>
+							</div>
+							
+							<div class="step-connector <?= $step >= 3 ? 'complete' : '' ?>"></div>
+							
+							<div class="validation-step <?= $step == 3 ? 'active' : '' ?>" data-step="3">
+								<span class="step-icon">
+									<?= $step >= 3 ? '✓' : '3' ?>
+								</span>
+								<span class="step-label">Validate Account</span>
+							</div>
+						</div>
+			
+						<hr>
+			
+						<div id="validation-message" class="validation-message">
+						</div>
+					</div>
+				</div>
+			</div>
+		<?php
 		}
 		?>
-
 		<div style='margin:30px 15px;'>
 			<form name="downloadform" action="downloadhandler.php" method="post" onsubmit="return validateDownloadForm(this);">
 				<fieldset>
@@ -356,7 +734,7 @@ $dwcManager = new DwcArchiverCore();
 								   name="agreepolicy"
 								   id="agreepolicy"
 								   value="1"
-								   onchange="<?= ($downloadActive? 'toggleDownloadButton()' : '') ?>" />
+								   onchange="<?= ($canDownload? 'toggleDownloadButton()' : '') ?>" />
 
 						<label for="agreepolicy">
 							<strong>I agree to the NEON Data Usage and Citation Policies.</strong>

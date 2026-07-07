@@ -65,6 +65,10 @@ class OpenIdProfileManager extends ProfileManager
 	{
 		if (empty($thirdparty_sid)) return;
 		//neon edit
+		$this->conn->query("
+			DELETE FROM usersthirdpartysessions
+			WHERE timestamp < NOW() - INTERVAL 24 HOUR
+		");
 		$sql = 'INSERT INTO usersthirdpartysessions(thirdparty_id, localsession_id, ipaddr)
         VALUES (?, ?, ?)
         ON DUPLICATE KEY UPDATE thirdparty_id = thirdparty_id';
@@ -81,17 +85,17 @@ class OpenIdProfileManager extends ProfileManager
 
 	public function linkLocalUserOidSub($email, $sub, $provider, $user_id, $given_name, $family_name)
 	{
+		//neon edit
 		if ($email && $sub && $provider) {
-			$sql = 'SELECT u.uid, oid.subUuid, oid.provider from users u LEFT join usersthirdpartyauth oid ON u.uid = oid.uid 
-			WHERE u.email = ?';
+			$sql = 'SELECT u.uid from users u WHERE u.email = ?';
 			if ($stmt = $this->conn->prepare($sql)) {
 				if ($stmt->bind_param('s', $email)) {
 					$stmt->execute();
 					$results = mysqli_stmt_get_result($stmt);
 					$stmt->close();
 				}
-				//neon edit
-				if ($results->num_rows < 1) {
+				//if no user found or more than 1 user, create new user
+				if ($results->num_rows != 1) {
 				
 					// create local user
 					$sql = 'INSERT INTO users (email, firstname, lastname, username) VALUES (?,?,?,?)';
@@ -123,44 +127,108 @@ class OpenIdProfileManager extends ProfileManager
 				
 					$this->uid = $newUid;
 					return true;
-				} else {
-					//end neon edit
-					if ($results->num_rows == 1) {
-						$row = $results->fetch_array(MYSQLI_ASSOC);
-						if (($row['provider'] == '' && $row['subUuid'] == '') || ($row['provider'] && $row['provider'] !== $provider)) {
-							//found existing user. add 3rdparty auth info
-							$sql = 'INSERT INTO usersthirdpartyauth (uid, subUuid, provider) VALUES(?,?,?)';
-							$this->resetConnection();
-							if ($stmt = $this->conn->prepare($sql)) {
-								$stmt->bind_param('iss', $row['uid'], $sub, $provider);
-								$stmt->execute();
-							}
-							$this->uid = $row['uid'];
-							return true;
-						}
-					} else if ($results->num_rows > 1) {
-						$uidPlaceholder = '';
-						while ($row = $results->fetch_array(MYSQLI_ASSOC)) {
-							$uidPlaceholder = $row['uid']; // assumes one-to-one relationship between user and email address
-							if ($row['provider'] == $provider && $row['subUuid'] !== $sub) {
-								return false; // current assumption is that if this happens, the subUuid is not kosher. 
-								// If this assumption is ever violated, one solution would be to purge relevant rows from usersthirdpartyauth
-							} else continue;
-						}
-						// Provider not found - handle adding new entry to usersthirdpartyauth table
-						$sql = 'INSERT INTO usersthirdpartyauth (uid, subUuid, provider) VALUES(?,?,?)';
-						$this->resetConnection();
-						if ($stmt = $this->conn->prepare($sql)) {
-							$stmt->bind_param('iss', $uidPlaceholder, $sub, $provider);
-							$stmt->execute();
-						}
-						$this->uid = $row['uid'];
-						return true;
+				// if only one user found, link
+				} else if ($results->num_rows == 1) {
+					$row = $results->fetch_array(MYSQLI_ASSOC);
+					//found existing user. add 3rdparty auth info
+					$sql = 'INSERT INTO usersthirdpartyauth (uid, subUuid, provider) VALUES(?,?,?)';
+					$this->resetConnection();
+					if ($stmt = $this->conn->prepare($sql)) {
+						$stmt->bind_param('iss', $row['uid'], $sub, $provider);
+						$stmt->execute();
 					}
+					$this->uid = $row['uid'];
+					return true;
 				}
 			}
 		}
 	}
+	
+	//neon edit; add function to update user table with Auth0 values on login
+	public function updateLocalUserFromAuth0Metadata($sub, $provider, $firstName, $lastName, $institution, $affiliation, $country, $subjectMatterExpertise, $orcid)
+	{
+		if (!$sub || !$provider) return false;
+		// ror lookup
+		if ($institution) {
+			$url = "https://api.ror.org/v2/organizations/" . urlencode($institution);
+		
+			$response = @file_get_contents($url);
+		
+			if ($response !== false) {
+				$ror = json_decode($response, true);
+		
+				if (!empty($ror['names'])) {
+					foreach ($ror['names'] as $name) {
+						if (in_array('ror_display', $name['types'])) {
+							$institution = $name['value'];
+							break;
+						}
+					}
+		
+					// Fallback if no ror_display entry exists
+					if (is_array($ror['names']) && !empty($ror['names']) && is_array($ror['names'][0])) {
+						$institution = $institution ?? $ror['names'][0]['value'];
+					}
+				}
+			}
+		}
+		$sql = '
+			SELECT uid
+			FROM usersthirdpartyauth
+			WHERE subUuid = ? AND provider = ?
+			LIMIT 1
+		';
+	
+		if (!$stmt = $this->conn->prepare($sql)) {
+			throw new Exception("Failed to prepare user lookup");
+		}
+	
+		$stmt->bind_param('ss', $sub, $provider);
+		$stmt->execute();
+		$result = mysqli_stmt_get_result($stmt);
+		$stmt->close();
+	
+		if (!$result || $result->num_rows < 1) {
+			return false;
+		}
+	
+		$row = $result->fetch_array(MYSQLI_ASSOC);
+		$uid = $row['uid'];
+	
+		$sql = '
+			UPDATE users
+			SET firstname = ?,
+				lastname = ?,
+				institution = ?,
+				affiliation = ?,
+				country = ?,
+				subject_matter_expertise_provider = ?,
+				guid = ?
+			WHERE uid = ?
+		';
+	
+		if (!$stmt = $this->conn->prepare($sql)) {
+			throw new Exception("Failed to prepare user metadata update");
+		}
+	
+		$stmt->bind_param(
+			'sssssssi',
+			$firstName,
+			$lastName,
+			$institution,
+			$affiliation,
+			$country,
+			$subjectMatterExpertise,
+			$orcid,
+			$uid
+		);
+	
+		$status = $stmt->execute();
+		$stmt->close();
+	
+		return $status;
+	}
+	//end neon edit
 
 	public function lookupLocalSessionIDWithThirdPartySid($thirdparty_sid)
 	{
