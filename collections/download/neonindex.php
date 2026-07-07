@@ -59,8 +59,8 @@ function getAccountStatus()
 	var_dump($sub);
 	echo "\n";
 
-	echo "<strong>ACCESS TOKEN (first 50 chars)</strong>\n";
-	echo htmlspecialchars(substr($accessToken, 0, 50)) . "...\n\n";
+	echo "<strong>ACCESS TOKEN</strong>\n";
+	echo "<pre>" . htmlspecialchars($accessToken) . "</pre>";
 
 	echo "<strong>Raw Response</strong>\n";
 	echo htmlspecialchars($response) . "\n\n";
