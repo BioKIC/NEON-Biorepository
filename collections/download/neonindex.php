@@ -16,127 +16,97 @@ $searchVar = array_key_exists('searchvar', $_REQUEST) ? htmlspecialchars($_REQUE
 $dwcManager = new DwcArchiverCore();
 
 function getAccountStatus()
-{
-	global $AUDIENCE;
-
-	$accessToken = $_SESSION['ACCESS_TOKEN'];
-	$sub = $_SESSION['SUBSCRIBER'];
-
-	$url = $AUDIENCE . "users/" . rawurlencode($sub);
-
-	$ch = curl_init();
-
-	curl_setopt_array($ch, [
-		CURLOPT_URL => $url,
-		CURLOPT_RETURNTRANSFER => true,
-		CURLOPT_HTTPHEADER => [
-			"Authorization: Bearer {$accessToken}"
-		]
-	]);
-
-	$response = curl_exec($ch);
-
-	if (curl_errno($ch)) {
-		throw new Exception(curl_error($ch));
-	}
-
-	$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	curl_close($ch);
-
-	$user = json_decode($response, true);
-
-	// ===== DEBUG =====
-	echo '<pre style="font-family:monospace;">';
-
-	echo "<strong>URL</strong>\n";
-	echo htmlspecialchars($url) . "\n\n";
-
-	echo "<strong>HTTP Status</strong>\n";
-	var_dump($statusCode);
-	echo "\n";
-
-	echo "<strong>SUBSCRIBER</strong>\n";
-	var_dump($sub);
-	echo "\n";
-
-	echo "<strong>ACCESS TOKEN</strong>\n";
-	echo "<pre>" . htmlspecialchars($accessToken) . "</pre>";
-
-	echo "<strong>Raw Response</strong>\n";
-	echo htmlspecialchars($response) . "\n\n";
-
-	echo "<strong>Decoded Response</strong>\n";
-	print_r($user);
-
-	echo '</pre>';
-	exit;
-	// =================
-
-	if ($statusCode === 401) {
-		if (
-			isset($user['message']) &&
-			str_contains($user['message'], 'Expired token')
-		) {
-			return [
-				'expired' => true
-			];
+	{
+		global $AUDIENCE;
+		$accessToken = $_SESSION['ACCESS_TOKEN'];
+		$sub = $_SESSION['SUBSCRIBER'];
+	
+		$ch = curl_init();
+	
+		curl_setopt_array($ch, [
+			//CURLOPT_URL => $AUDIENCE . "users/" . $sub,
+			CURLOPT_URL => "https://auth.neonscience.org/api/v2/users/" . $sub,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_HTTPHEADER => [
+				"Authorization: Bearer {$accessToken}"
+			]
+		]);
+		$response = curl_exec($ch);
+	
+		if (curl_errno($ch)) {
+			throw new Exception(curl_error($ch));
 		}
-
-		throw new Exception(
-			$user['message'] ?? 'Unauthorized'
-		);
+	
+		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+		
+		$user = json_decode($response, true);
+		
+		if ($statusCode === 401) {
+			if (
+				isset($user['message']) &&
+				str_contains($user['message'], 'Expired token')
+			) {
+				return [
+					'expired'
+				];
+			}
+		
+			throw new Exception(
+				$user['message'] ?? 'Unauthorized'
+			);
+		}
+		
+		if ($statusCode !== 200) {
+			throw new Exception(
+				$user['message'] ?? "Unable to retrieve Auth0 user. HTTP {$statusCode}"
+			);
+		}
+	
+		$consentTimestamp = $user['user_metadata']['consent_timestamp'] ?? null;
+		
+		$validConsentTimestamp = false;
+		if (is_numeric($consentTimestamp)) {
+			$seconds = (int) floor($consentTimestamp / 1000);
+			$validConsentTimestamp = checkdate(
+				(int) date('n', $seconds),
+				(int) date('j', $seconds),
+				(int) date('Y', $seconds)
+			);
+		}
+		
+		$step1Complete =
+			($user['user_metadata']['consent_given'] ?? false) === true &&
+			$validConsentTimestamp &&
+			($user['user_metadata']['has_signed_up'] ?? false) === true;
+	
+		$step2Complete =
+			$step1Complete &&
+			($user['email_verified'] ?? false) === true;
+	
+		$step3Complete =
+			$step2Complete &&
+			!empty($user['user_metadata']['first_name']) &&
+			!empty($user['user_metadata']['last_name']) &&
+			!empty($user['user_metadata']['affiliation']) &&
+			!empty($user['user_metadata']['ror_id']) &&
+			!empty($user['user_metadata']['organization_country']) &&
+			!empty($user['user_metadata']['subject_matter_expertise_provider']);
+	
+		$step = 0;
+	
+		if ($step1Complete) $step = 1;
+		if ($step2Complete) $step = 2;
+		if ($step3Complete) $step = 3;
+	
+		return [
+			'ready' => $step === 3,
+			'step' => $step,
+			'step1Complete' => $step1Complete,
+			'step2Complete' => $step2Complete,
+			'step3Complete' => $step3Complete
+		];
 	}
-
-	if ($statusCode !== 200) {
-		throw new Exception(
-			$user['message'] ?? "Unable to retrieve Auth0 user. HTTP {$statusCode}"
-		);
-	}
-
-	$consentTimestamp = $user['user_metadata']['consent_timestamp'] ?? null;
-
-	$validConsentTimestamp = false;
-	if (is_numeric($consentTimestamp)) {
-		$seconds = (int) floor($consentTimestamp / 1000);
-		$validConsentTimestamp = checkdate(
-			(int) date('n', $seconds),
-			(int) date('j', $seconds),
-			(int) date('Y', $seconds)
-		);
-	}
-
-	$step1Complete =
-		($user['user_metadata']['consent_given'] ?? false) === true &&
-		$validConsentTimestamp &&
-		($user['user_metadata']['has_signed_up'] ?? false) === true;
-
-	$step2Complete =
-		$step1Complete &&
-		($user['email_verified'] ?? false) === true;
-
-	$step3Complete =
-		$step2Complete &&
-		!empty($user['user_metadata']['first_name']) &&
-		!empty($user['user_metadata']['last_name']) &&
-		!empty($user['user_metadata']['affiliation']) &&
-		!empty($user['user_metadata']['ror_id']) &&
-		!empty($user['user_metadata']['organization_country']) &&
-		!empty($user['user_metadata']['subject_matter_expertise_provider']);
-
-	$step = 0;
-
-	if ($step1Complete) $step = 1;
-	if ($step2Complete) $step = 2;
-	if ($step3Complete) $step = 3;
-
-	return [
-		'ready' => $step === 3,
-		'step' => $step,
-		'step1Complete' => $step1Complete,
-		'step2Complete' => $step2Complete,
-		'step3Complete' => $step3Complete
-	];
-}
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -542,6 +512,7 @@ function getAccountStatus()
 					<div>
 						<p style="margin: 0px 0px 16px 0px;font-size: 0.8rem; font-family: "Inter", Helvetica, Arial, sans-serif; font-weight: 400; line-height: 1.43;">
 							You must sign in or create and validate an account before proceeding.  Navigate to
+
 							<a target="_blank" href="https://data.neonscience.org/myaccount">My Account</a>
 							to sign in or create an account.
 							<a class="" target="_blank" href="https://www.neonscience.org/about/user-accounts">Learn</a>
