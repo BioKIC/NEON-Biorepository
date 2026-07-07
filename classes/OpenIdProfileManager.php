@@ -65,6 +65,10 @@ class OpenIdProfileManager extends ProfileManager
 	{
 		if (empty($thirdparty_sid)) return;
 		//neon edit
+		$this->conn->query("
+			DELETE FROM usersthirdpartysessions
+			WHERE timestamp < NOW() - INTERVAL 24 HOUR
+		");
 		$sql = 'INSERT INTO usersthirdpartysessions(thirdparty_id, localsession_id, ipaddr)
         VALUES (?, ?, ?)
         ON DUPLICATE KEY UPDATE thirdparty_id = thirdparty_id';
@@ -81,17 +85,17 @@ class OpenIdProfileManager extends ProfileManager
 
 	public function linkLocalUserOidSub($email, $sub, $provider, $user_id, $given_name, $family_name)
 	{
+		//neon edit
 		if ($email && $sub && $provider) {
-			$sql = 'SELECT u.uid, oid.subUuid, oid.provider from users u LEFT join usersthirdpartyauth oid ON u.uid = oid.uid 
-			WHERE u.email = ?';
+			$sql = 'SELECT u.uid from users u WHERE u.email = ?';
 			if ($stmt = $this->conn->prepare($sql)) {
 				if ($stmt->bind_param('s', $email)) {
 					$stmt->execute();
 					$results = mysqli_stmt_get_result($stmt);
 					$stmt->close();
 				}
-				//neon edit
-				if ($results->num_rows < 1) {
+				//if no user found or more than 1 user, create new user
+				if ($results->num_rows != 1) {
 				
 					// create local user
 					$sql = 'INSERT INTO users (email, firstname, lastname, username) VALUES (?,?,?,?)';
@@ -123,40 +127,18 @@ class OpenIdProfileManager extends ProfileManager
 				
 					$this->uid = $newUid;
 					return true;
-				} else {
-					//end neon edit
-					if ($results->num_rows == 1) {
-						$row = $results->fetch_array(MYSQLI_ASSOC);
-						if (($row['provider'] == '' && $row['subUuid'] == '') || ($row['provider'] && $row['provider'] !== $provider)) {
-							//found existing user. add 3rdparty auth info
-							$sql = 'INSERT INTO usersthirdpartyauth (uid, subUuid, provider) VALUES(?,?,?)';
-							$this->resetConnection();
-							if ($stmt = $this->conn->prepare($sql)) {
-								$stmt->bind_param('iss', $row['uid'], $sub, $provider);
-								$stmt->execute();
-							}
-							$this->uid = $row['uid'];
-							return true;
-						}
-					} else if ($results->num_rows > 1) {
-						$uidPlaceholder = '';
-						while ($row = $results->fetch_array(MYSQLI_ASSOC)) {
-							$uidPlaceholder = $row['uid']; // assumes one-to-one relationship between user and email address
-							if ($row['provider'] == $provider && $row['subUuid'] !== $sub) {
-								return false; // current assumption is that if this happens, the subUuid is not kosher. 
-								// If this assumption is ever violated, one solution would be to purge relevant rows from usersthirdpartyauth
-							} else continue;
-						}
-						// Provider not found - handle adding new entry to usersthirdpartyauth table
-						$sql = 'INSERT INTO usersthirdpartyauth (uid, subUuid, provider) VALUES(?,?,?)';
-						$this->resetConnection();
-						if ($stmt = $this->conn->prepare($sql)) {
-							$stmt->bind_param('iss', $uidPlaceholder, $sub, $provider);
-							$stmt->execute();
-						}
-						$this->uid = $row['uid'];
-						return true;
+				// if only one user found, link
+				} else if ($results->num_rows == 1) {
+					$row = $results->fetch_array(MYSQLI_ASSOC);
+					//found existing user. add 3rdparty auth info
+					$sql = 'INSERT INTO usersthirdpartyauth (uid, subUuid, provider) VALUES(?,?,?)';
+					$this->resetConnection();
+					if ($stmt = $this->conn->prepare($sql)) {
+						$stmt->bind_param('iss', $row['uid'], $sub, $provider);
+						$stmt->execute();
 					}
+					$this->uid = $row['uid'];
+					return true;
 				}
 			}
 		}
