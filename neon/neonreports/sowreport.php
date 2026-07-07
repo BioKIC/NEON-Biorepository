@@ -32,6 +32,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 	</head>
 	<body>
 		<?php
@@ -57,11 +58,12 @@ if ($isEditor) {
 	}
 
 	if (!empty($reportDate)) {
-		
-
 		$receipts = $reports->getSOWReport($ay,'receipts', $reportDate);
+		$receiptLatency = $reports->receiptPlot($reportDate);
 		$accessioning = $reports->getSOWReport($ay,'accessioning', $reportDate);
+		$accessionLatency = $reports->checkinPlot($reportDate);
 		$data = $reports->getSOWReport($ay,'data', $reportDate);
+		$dataLatency = $reports->dataPlot($reportDate);
 		$loans = $reports->getSOWReport($ay,'loans', $reportDate);
 
 		?>
@@ -98,8 +100,7 @@ if ($isEditor) {
 			<div class="details">
 				<p>** Timestamp of receipt submission was not recorded within our shipment tables until August 1, 2022. Therefore, only shipments sent after that date are included.</p>
 			</div>
-			<!--- LATENCY PLOT HERE -->
-
+			<canvas id="receiptLatencyChart" height="100"></canvas>
 	
 	<!-- ACCESSIONING-->
 	 	<div class="section" id="accessioning">
@@ -133,10 +134,9 @@ if ($isEditor) {
 
 		<h3>Latency for samples that have been checked in</h3>
 		
+			<canvas id="accessionLatencyChart" height="100"></canvas>
 
-			<!--- LATENCY PLOT HERE -->
-
-		<h3>Number of samples shipped vs. checked-in per month</h3>
+		<!-- <h3>Number of samples shipped vs. checked-in per month</h3> -->
 			
 			<!--- COMPARISON PLOT HERE -->
 	
@@ -171,9 +171,9 @@ if ($isEditor) {
 
 		<h3>Latency for samples for which data has been harvested</h3>
 
-			<!--- LATENCY PLOT HERE -->
+			<canvas id="dataLatencyChart" height="100"></canvas>
 
-		<h3>Number of samples shipped vs. number of samples for which data became available per month</h3>
+		<!-- <h3>Number of samples shipped vs. number of samples for which data became available per month</h3> --->
 
 			<!--- COMPARISON PLOT HERE -->
 
@@ -235,7 +235,205 @@ else {
 		?>
   </body>
   <script src="../js/sortables.js"></script>
-  </script>
+
+<script>
+	const receipLatency = <?= json_encode($receiptLatency) ?>;
+
+	console.log(receipLatency);
+
+	const receiptCtx = document.getElementById('receiptLatencyChart');
+
+	new Chart(receiptCtx, {
+		type: 'scatter',
+		data: {
+			datasets: [
+				{
+					label: 'Receipt Latency',
+					data: receipLatency,
+					pointRadius: 3
+				},
+				{
+					label: '90-Day Goal',
+					type: 'line',
+					data: [
+						{
+							x: receipLatency[0].x,
+							y: 90
+						},
+						{
+							x: receipLatency[receipLatency.length - 1].x,
+							y: 90
+						}
+					],
+					borderColor: 'red',
+					borderWidth: 2,
+					pointRadius: 0,
+					borderDash: [8, 6]
+				}
+			]
+		},
+		options: {
+			plugins: {
+				legend: {
+					display: false
+				}
+			},
+			scales: {
+				x: {
+					type: 'time',
+					time: {
+						unit: 'month'
+					},
+					title: {
+						display: true,
+						text: 'Shipment Date'
+					}
+				},
+				y: {
+					title: {
+						display: true,
+						text: 'Days to Receipt Submission'
+					}
+				}
+			}
+		}
+	});
+
+	const accessionLatency = <?= json_encode($accessionLatency) ?>;
+
+	console.log(accessionLatency);
+
+	const accessionCtx = document.getElementById('accessionLatencyChart');
+
+	new Chart(accessionCtx, {
+		type: 'scatter',
+		data: {
+			datasets: [
+				{
+					label: 'Accessioning Latency',
+					data: accessionLatency,
+					pointRadius: 3,
+					pointBackgroundColor: 'rgb(54, 162, 235)',
+					pointBorderColor: 'rgb(54, 162, 235)',
+					pointBorderWidth: 0,
+					showLine: false
+				},
+				{
+					label: '90-Day Goal',
+					type: 'line',
+					data: [
+						{
+							x: accessionLatency[0].x,
+							y: 90
+						},
+						{
+							x: accessionLatency[accessionLatency.length - 1].x,
+							y: 90
+						}
+					],
+					borderColor: 'red',
+					borderWidth: 2,
+					pointRadius: 0,
+					borderDash: [8, 6]
+				}
+			]
+		},
+		options: {
+			plugins: {
+				legend: {
+					display: false
+				}
+			},
+			scales: {
+				x: {
+					type: 'time',
+					time: {
+						unit: 'month'
+					},
+					title: {
+						display: true,
+						text: 'Shipment Month'
+					}
+				},
+				y: {
+					title: {
+						display: true,
+						text: 'Shipment Mean Days to Sample Check In'
+					}
+				}
+			}
+		}
+	});
+
+	const dataLatency = <?= json_encode($dataLatency) ?>;
+
+	console.log(dataLatency);
+
+	const dataCtx = document.getElementById('dataLatencyChart');
+
+	new Chart(dataCtx, {
+		type: 'scatter',
+		data: {
+			datasets: [
+				{
+					label: 'DataLatency',
+					data: dataLatency,
+					pointRadius: 3,
+					pointBackgroundColor: 'rgb(54, 162, 235)',
+					pointBorderColor: 'rgb(54, 162, 235)',
+					pointBorderWidth: 0,
+					showLine: false
+				},
+				{
+					label: '90-Day Goal',
+					type: 'line',
+					data: [
+						{
+							x: dataLatency[0].x,
+							y: 90
+						},
+						{
+							x: dataLatency[dataLatency.length - 1].x,
+							y: 90
+						}
+					],
+					borderColor: 'red',
+					borderWidth: 2,
+					pointRadius: 0,
+					borderDash: [8, 6]
+				}
+			]
+		},
+		options: {
+			plugins: {
+				legend: {
+					display: false
+				}
+			},
+			scales: {
+				x: {
+					type: 'time',
+					time: {
+						unit: 'month'
+					},
+					title: {
+						display: true,
+						text: 'Shipment Month'
+					}
+				},
+				y: {
+					title: {
+						display: true,
+						text: 'Shipment Mean Days to Data Availability'
+					}
+				}
+			}
+		}
+	});
+
+
+</script>
+
 
 <style>
 

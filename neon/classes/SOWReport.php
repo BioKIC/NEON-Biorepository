@@ -864,6 +864,7 @@
         }
 
         $stmt->close();
+        $result->free();
 
         return array_values($rows);
     }
@@ -901,50 +902,144 @@
         fclose($output);
         exit;
     }
-    
+
 
     // latency to receipt plot
 
-    public function receiptPlot($ay) {
-        $ay = (int)$ay;
+    public function receiptPlot($reportDate) {
 
-        $sql = "SELECT dateShipped, DATEDIFF(checkinTimestamp, dateShipped) as daysToReceiptSubmission FROM NeonShipment
-                WHERE shimpentID NOT LIKE '%seudo%'
-                AND dateShipped < ?;";
+        $sql = "
+            SELECT
+                dateShipped,
+                DATEDIFF(receiptTimestamp, dateShipped) AS daysToReceiptSubmission
+            FROM NeonShipment
+            WHERE shipmentID NOT LIKE '%seudo%'
+                AND receiptTimestamp IS NOT NULL
+                AND dateShipped < ?
+            ORDER BY dateShipped
+        ";
 
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $reportDate);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        $rows = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = [
+                'x' => $row['dateShipped'],
+                'y' => (int)$row['daysToReceiptSubmission']
+            ];
+        }
+        
+        $result->free();
+        $stmt->close();
+
+        return $rows;
     }
 
     // latency to accession in plot
 
-    public function checkinPlot($ay) {
-        $ay = (int)$ay;
+        public function checkinPlot($reportDate) {
 
-        $sql = " SELECT h.dateShipped, DATEDIFF(s.checkinTimestamp, dateShipped) as daysToCheckIn
+        $sql = "SELECT
+                    DATE_FORMAT(h.dateShipped, '%Y-%m-01') AS shipmentMonth,
+                    AVG(DATEDIFF(s.checkinTimestamp, h.dateShipped)) AS meanDaysToCheckIn
                 FROM NeonSample s
-                LEFT JOIN NeonShipment h
-                ON s.shipmentPK = h.shipmentPK
-                WHERE shimpentID NOT LIKE '%seudo%'
-                AND s.checkInUid IS NOT NULL
-                AND s.acceptedForAnalysis = 1
-                AND h.dateShipped < ?;";
+                JOIN NeonShipment h
+                    ON s.shipmentPK = h.shipmentPK
+                WHERE h.shipmentID NOT LIKE '%seudo%'
+                    AND s.checkinUid IS NOT NULL
+                    AND s.acceptedForAnalysis = 1
+                    AND h.dateShipped < ?
+                GROUP BY shipmentID
+                ORDER BY shipmentMonth;";
 
+        // $sql = "SELECT
+        //     h.dateShipped, 
+        //     DATEDIFF(s.checkinTimestamp, h.dateShipped) AS daysToSampleCheckIn
+        //     FROM NeonSample s
+        //     LEFT JOIN NeonShipment h
+        //     ON s.shipmentPK = h.shipmentPK
+        //     WHERE h.shipmentID NOT LIKE '%seudo%'
+        //         AND s.checkinUid IS NOT NULL
+        //         AND s.acceptedForAnalysis = 1
+        //         AND h.dateShipped < ?
+        //     ORDER BY h.dateShipped
+        //     LIMIT 10000";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $reportDate);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        $rows = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = [
+                'x' => $row['shipmentMonth'],
+                'y' => (int)$row['meanDaysToCheckIn']
+            ];
+        }
+        
+        $result->free();
+        $stmt->close();
+
+        return $rows;
     }
 
     // latency to data availability
 
-    public function dataPlot($ay,$reportDate) {
-        $ay = (int)$ay;
+    public function dataPlot($reportDate) {
 
-        $sql = " SELECT h.dateShipped, DATEDIFF(o.initialTimestamp, dateShipped) as daysToDataAvailability
-                FROM NeonSample s
-                LEFT JOIN NeonShipment h
-                ON s.shipmentPK = h.shipmentPK
-                LEFT JOIN omoccurrences o
-                ON s.occid = o.occid
-                WHERE shimpentID NOT LIKE '%seudo%'
-                AND s.checkInUid IS NOT NULL
-                AND s.acceptedForAnalysis = 1;";
+        $sql = "SELECT
+                    DATE_FORMAT(h.dateShipped, '%Y-%m-01') AS shipmentMonth,
+                    AVG(DATEDIFF(o.dateEntered, h.dateShipped)) AS meanDaysToDataAvailability
+                FROM omoccurrences o
+                JOIN NeonSample s
+                ON o.occid = s.occid
+                JOIN NeonShipment h
+                    ON s.shipmentPK = h.shipmentPK
+                WHERE h.shipmentID NOT LIKE '%seudo%'
+                    AND s.checkinUid IS NOT NULL
+                    AND s.acceptedForAnalysis = 1
+                    AND h.dateShipped < ?
+                GROUP BY shipmentID
+                ORDER BY shipmentMonth;";
 
+
+        // $sql = " SELECT h.dateShipped, DATEDIFF(o.dateEntered, h.dateShipped) as daysToDataAvailability
+        //         FROM NeonSample s
+        //         LEFT JOIN NeonShipment h
+        //         ON s.shipmentPK = h.shipmentPK
+        //         LEFT JOIN omoccurrences o
+        //         ON s.occid = o.occid
+        //         WHERE shipmentID NOT LIKE '%seudo%'
+        //         AND s.checkinUid IS NOT NULL
+        //         AND s.acceptedForAnalysis = 1
+        //         AND h.dateShipped < ?;";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("s", $reportDate);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        $rows = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = [
+                'x' => $row['shipmentMonth'],
+                'y' => (int)$row['meanDaysToDataAvailability']
+            ];
+        }
+
+        $result->free();
+        $stmt->close();
+
+        return $rows;
     }
 
 
