@@ -24,8 +24,7 @@ function getAccountStatus()
 		$ch = curl_init();
 	
 		curl_setopt_array($ch, [
-			//CURLOPT_URL => $AUDIENCE . "users/" . $sub,
-			CURLOPT_URL => "https://auth.neonscience.org/api/v2/users/" . $sub,
+			CURLOPT_URL => $PROVIDER_URLS . "/api/v2/users/" . $sub,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_HTTPHEADER => [
 				"Authorization: Bearer {$accessToken}"
