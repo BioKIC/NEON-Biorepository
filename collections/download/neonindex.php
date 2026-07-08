@@ -17,15 +17,14 @@ $dwcManager = new DwcArchiverCore();
 
 function getAccountStatus()
 	{
-		global $AUDIENCE;
+		global $PROVIDER_URLS;
 		$accessToken = $_SESSION['ACCESS_TOKEN'];
 		$sub = $_SESSION['SUBSCRIBER'];
 	
 		$ch = curl_init();
 	
 		curl_setopt_array($ch, [
-			//CURLOPT_URL => $PROVIDER_URLS . "/api/v2/users/" . $sub,
-			CURLOPT_URL => "https://auth.neonscience.org/api/v2/users/" . $sub,
+			CURLOPT_URL => $PROVIDER_URLS['oid'] . "/api/v2/users/" . $sub,
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_HTTPHEADER => [
 				"Authorization: Bearer {$accessToken}"
