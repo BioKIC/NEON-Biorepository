@@ -17,7 +17,7 @@ $dwcManager = new DwcArchiverCore();
 
 function getAccountStatus()
 	{
-		global $AUDIENCE;
+		global $PROVIDER_URLS;
 		$accessToken = $_SESSION['ACCESS_TOKEN'];
 		$sub = $_SESSION['SUBSCRIBER'];
 	
