@@ -1305,8 +1305,11 @@ public function addCollectionInquiryLink($requestID, $collections) {
 				$available = isset($postArr['available'])&&$postArr['available']?$postArr['available']:NULL;
 				$substanceProvided = isset($postArr['substanceprovided'])&&$postArr['substanceprovided']?$postArr['substanceprovided']:NULL;
 				$notes = isset($postArr['notes'])&&$postArr['notes']?$postArr['notes']:NULL;
-                $shipmentID = array_key_exists('shipmentid', $postArr)? $postArr['shipmentid']: null;				
-                $stmt->bind_param('ssssssi', $stat, $useType, $available, $substanceProvided, $notes, $shipmentID, $postArr['id']);
+                if (array_key_exists('shipmentid', $postArr) && trim($postArr['shipmentid']) !== '') {
+                    $shipmentID = (int)$postArr['shipmentid'];
+                } else {
+                    $shipmentID = null;
+                }                $stmt->bind_param('ssssssi', $stat, $useType, $available, $substanceProvided, $notes, $shipmentID, $postArr['id']);
 				$stmt->execute();
 				if($stmt->error==null) $status = true;
 				else{
@@ -1344,8 +1347,12 @@ public function addCollectionInquiryLink($requestID, $collections) {
                 $useType    = !empty($postArr['usetype']) ? $postArr['usetype'] : NULL;
                 $sampleType  = !empty($postArr['sampletype']) ? $postArr['sampletype'] : NULL;
                 $notes       = !empty($postArr['notes']) ? $postArr['notes'] : NULL;
-                $shipmentID = array_key_exists('shipmentid', $postArr)? $postArr['shipmentid']: null;				
-                $id          = (int)$postArr['id'];
+                if (array_key_exists('shipmentid', $postArr) && trim($postArr['shipmentid']) !== '') {
+                    $shipmentID = (int)$postArr['shipmentid'];
+                } else {
+                    $shipmentID = null;
+                }
+                $id  = (int)$postArr['id'];
                 $stmt->bind_param('sssssi', $stat, $useType, $sampleType, $notes, $shipmentID, $id);
                 $stmt->execute();
 

@@ -171,7 +171,7 @@ if ($isEditor && isset($_POST['action'])) {
                             <option value="requested, not found" <?php if($statValue=='requested, not found') echo 'SELECTED'; ?>>requested, not found</option>
                             <option value="not funded" <?php if($statValue=='not funded') echo 'SELECTED'; ?>>not funded</option>
 							<?php
-							if($statValue && !in_array($statValue,array('pending fulfillment','current','completed','loaned, not used','requests, not found','not funded'))){
+							if($statValue && !in_array($statValue,array('pending fulfillment','current','completed','loaned, not used','requested, not found','not funded'))){
 								echo '<option value="'.$statValue.'" SELECTED>'.$statValue.'</option>';
 							}
 							?>
@@ -182,7 +182,7 @@ if ($isEditor && isset($_POST['action'])) {
                         <?php
                         $useValue = $sampleArr['useType']
                         ?>
-						<select name="usetype">
+						<select name="useType">
 							<option value="">-----</option>
 							<option value="non-destructive" <?php if($useValue=='non-destructive') echo 'SELECTED'; ?>>non-destructive</option>
 							<option value="invasive" <?php if($useValue=='invasive') echo 'SELECTED'; ?>>invasive</option>
@@ -216,7 +216,7 @@ if ($isEditor && isset($_POST['action'])) {
                         <?php
                         $subValue = $sampleArr['substanceProvided']
                         ?>
-						<select name="substanceprovided">
+						<select name="substanceProvided">
 							<option value="">-----</option>
 							<option value="whole sample" <?php if($subValue=='whole sample') echo 'SELECTED'; ?>>whole sample</option>
 							<option value="individual(s)" <?php if($subValue=='individual(s)') echo 'SELECTED'; ?>>individual(s) - indicate number in notes</option>
@@ -225,7 +225,7 @@ if ($isEditor && isset($_POST['action'])) {
                             <option value="image" <?php if($subValue=='image') echo 'SELECTED'; ?>>image</option>
                             <option value="data" <?php if($subValue=='data') echo 'SELECTED'; ?>>data only</option>
                             <?php
-							if($subValue && inIDarray($subValue,array("whole sample","individual(s)","tissue/material sample","subsample/aliquot","image","data"))){
+							if($subValue && in_array($subValue,array("whole sample","individual(s)","tissue/material sample","subsample/aliquot","image","data"))){
 								echo '<option value="'.$subValue.'" SELECTED>'.$subValue.'</option>';
 							}
 							?>
@@ -243,20 +243,21 @@ if ($isEditor && isset($_POST['action'])) {
 						<strong>Shipment:</strong> (return to inquiry form to add shipment to request)
 					</span><br />
 					<span>
-						<?php $currentShipmentId = isset($sampleArr['shipmentID']) ? (string)$sampleArr['shipmentID'] : ''; ?>
-						<select name="shipmentID" style="width:400px;" aria-label="shipment">
-							<option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?> <?php echo ($currentShipmentId !== '' ? 'disabled' : ''); ?>>
-								-- No Shipment Assigned --
-							</option>
-							<option disabled>----------------------------</option>
-							<?php
-								$shipArr = $inquiryManager->getShipmentByID($requestID);
-								foreach ($shipArr as $shipid => $displayName) {
-									$selected = ($currentShipmentId !== '' && (string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
-									echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.htmlspecialchars($displayName).'</option>';
-								}
-							?>
-						</select>
+					<?php $currentShipmentId = isset($sampleArr['shipmentID']) ? (string)$sampleArr['shipmentID'] : ''; ?>
+					<select name="shipmentID" style="width:400px;" aria-label="shipment">
+						<option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?>>
+							-- No Shipment Assigned --
+						</option>
+						<option disabled>----------------------------</option>
+						<?php
+						$shipArr = $inquiryManager->getShipmentByID($requestID);
+						foreach ($shipArr as $shipid => $displayName){
+							$selected = ((string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
+							echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.
+								htmlspecialchars($displayName).'</option>';
+						}
+						?>
+					</select>
 					</span>
 				</div>
                 <div style="clear:both;padding-top:6px;float:left;">

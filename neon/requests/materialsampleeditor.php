@@ -212,22 +212,27 @@ if ($isEditor && isset($_POST['action'])) {
                 <span>
                     <strong><?php echo 'Shipment'; ?>:</strong> <?php echo '(edit inquiry to add new shipment to request)';?>
                 </span><br />
-                <span>
-                    <?php $currentShipmentId = isset($materialsampleArr['shipmentID']) ? (string)$materialsampleArr['shipmentID'] : ''; ?>
-                    <select name="shipmentID" style="width:400px;" aria-label="shipment">
-                    <option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?>>
-                        -- No Shipment Assigned --
-                    </option>
-                    <option disabled>----------------------------</option>
-                    <?php
-                        $shipArr = $inquiryManager->getShipmentByID($requestID);
-                        foreach ($shipArr as $shipid => $name) {
-                            $selected = ($currentShipmentId !== '' && (string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
-                            echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.htmlspecialchars($name).'</option>';
-                        }
-                    ?>
-                    </select>
-                </span>
+					<span>
+					<strong>Shipment:</strong> (return to inquiry form to add shipment to request)
+					</span><br />
+					<span>
+					<?php $currentShipmentId = isset($materialsampleArr['shipmentID']) ? (string)$materialsampleArr['shipmentID'] : ''; ?>
+					<select name="shipmentID" style="width:400px;" aria-label="shipment">
+						<option value="" <?php echo ($currentShipmentId === '' ? 'selected="selected"' : ''); ?>>
+							-- No Shipment Assigned --
+						</option>
+						<option disabled>----------------------------</option>
+						<?php
+						$shipArr = $inquiryManager->getShipmentByID($requestID);
+						foreach ($shipArr as $shipid => $displayName){
+							$selected = ((string)$shipid === $currentShipmentId) ? 'selected="selected"' : '';
+							echo '<option value="'.htmlspecialchars($shipid).'" '.$selected.'>'.
+								htmlspecialchars($displayName).'</option>';
+						}
+						?>
+					</select>
+					</span>
+					</span>
                 </div>
                 <div style="clear:both;padding-top:6px;float:left;">
 					<?php
