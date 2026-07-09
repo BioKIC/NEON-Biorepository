@@ -20,8 +20,6 @@ function getAccountStatus()
 		global $PROVIDER_URLS;
 		$accessToken = $_SESSION['ACCESS_TOKEN'];
 		$sub = $_SESSION['SUBSCRIBER'];
-		echo($accessToken);
-		echo($sub);
 	
 		$ch = curl_init();
 	
@@ -91,8 +89,7 @@ function getAccountStatus()
 			!empty($user['user_metadata']['last_name']) &&
 			!empty($user['user_metadata']['affiliation']) &&
 			!empty($user['user_metadata']['ror_id']) &&
-			!empty($user['user_metadata']['organization_country']) &&
-			!empty($user['user_metadata']['subject_matter_expertise_provider']);
+			!empty($user['user_metadata']['organization_country']);
 	
 		$step = 0;
 	
