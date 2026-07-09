@@ -20,6 +20,8 @@ function getAccountStatus()
 		global $PROVIDER_URLS;
 		$accessToken = $_SESSION['ACCESS_TOKEN'];
 		$sub = $_SESSION['SUBSCRIBER'];
+		echo($accessToken);
+		echo($sub);
 	
 		$ch = curl_init();
 	
