@@ -89,7 +89,14 @@ function getAccountStatus()
 			!empty($user['user_metadata']['last_name']) &&
 			!empty($user['user_metadata']['affiliation']) &&
 			!empty($user['user_metadata']['ror_id']) &&
-			!empty($user['user_metadata']['organization_country']);
+			!empty($user['user_metadata']['organization_country'])
+			(
+				 empty($user['user_metadata']['subject_matter_expertise_provider']) ||
+				 (
+					 !empty($user['user_metadata']['expertise']) &&
+					 !empty($user['user_metadata']['expertise_details'])
+				 )
+			 );
 	
 		$step = 0;
 	
