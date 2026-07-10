@@ -4,7 +4,7 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 ?>
 <html>
 	<head>
-	<title>Requesting Samples</title>
+	<title>Requesting Samples from the NEON Biorepository</title>
 	<?php include_once($SERVER_ROOT . '/includes/head.php'); ?>
 	<style>
 		article { margin: 2rem 0; }
@@ -19,7 +19,7 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 		<!-- This is inner text! -->
 		<div id="innertext">
 			<article>
-				<h1 style="text-align:center;">Requesting Samples</h1>
+				<h1 style="text-align:center;">Requesting Samples from the NEON Biorepository</h1>
 
 				<p>To request samples or learn more about what samples are available for use, you may either browse the <a href="../collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">NEON Biorepository Sample Portal</a> and initiate inquiries by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly. We will follow up within five business days to assist you in identifying appropriate samples and submitting a formal Sample Use Request.</p>
 

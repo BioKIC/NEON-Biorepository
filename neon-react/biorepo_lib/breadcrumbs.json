@@ -59,7 +59,7 @@
   "/misc/samplerequests.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
-    { "name": "Requesting Samples" }
+    { "name": "Requesting Samples from the NEON Biorepository" }
     ],
   "/misc/datasetpublishing.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
