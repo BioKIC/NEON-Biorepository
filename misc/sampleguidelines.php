@@ -5,7 +5,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 <html>
 
 <head>
-	<title>Sample Use Procedures and Requirements</title>
+	<title>Sample Use Guidelines</title>
 	<?php include_once($SERVER_ROOT . '/includes/head.php'); ?>
 	<style>
 		article { margin: 2rem 0; }
@@ -32,7 +32,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 <body>
 
 <div id="innertext">
-	<h1 style="text-align:center;">Sample Use Procedures and Requirements</h1>
+	<h1 style="text-align:center;">Sample Use Guidelines</h1>
 
 	<article>
 		<p>NEON Biorepository samples and specimens and their associated data are available for a wide variety of research and educational purposes. Anyone interested in requesting samples may do so. Most requests are fulfilled at no cost; however, unusually large requests or those requiring substantial additional processing may incur fees. You can browse NEON samples via the <a href="../collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">Sample Portal</a> and initiate inquiries about using samples in your work by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly.</p>
