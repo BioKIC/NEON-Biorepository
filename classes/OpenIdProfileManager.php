@@ -212,6 +212,10 @@ class OpenIdProfileManager extends ProfileManager
 			throw new Exception("Failed to prepare user metadata update");
 		}
 	
+		$subjectMatterExpertise = $subjectMatterExpertise === ''
+			? null
+			: $subjectMatterExpertise;
+	
 		$stmt->bind_param(
 			'sssssssi',
 			$firstName,
