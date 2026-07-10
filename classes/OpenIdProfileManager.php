@@ -215,6 +215,8 @@ class OpenIdProfileManager extends ProfileManager
 		$subjectMatterExpertise = $subjectMatterExpertise === ''
 			? null
 			: $subjectMatterExpertise;
+			
+		echo($subjectMatterExpertise);
 	
 		$stmt->bind_param(
 			'sssssssi',
