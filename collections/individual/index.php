@@ -319,9 +319,9 @@ $traitArr = $indManager->getTraitArr();
 							<span><?php echo $LANG['LINKED_RESOURCES']; ?></span>
 						</a>
 					</li>-->
-					<!-- end NEON edit -->
-					<?php
-					if($traitArr) echo '<li><a href="#traittab"><span>' . (isset($LANG['TRAITS'])?$LANG['TRAITS']:'Traits') . '</span></a></li>';
+					<?php		
+					//if($traitArr) echo '<li><a href="#traittab"><span>' . (isset($LANG['TRAITS'])?$LANG['TRAITS']:'Traits') . '</span></a></li>';
+					//end NEON edit
 					if($isEditor) echo '<li><a href="#edittab"><span>' . $LANG['EDIT_HISTORY'] . '</span></a></li>';
 					?>
 				</ul>
@@ -1401,18 +1401,20 @@ $traitArr = $indManager->getTraitArr();
 				<?php
 				if($traitArr){
 					?>
-					<div id="traittab">
+					<!--neon edit, hide trait tab-->
+					<!--<div id="traittab">-->
 						<?php
-						foreach($traitArr as $traitID => $tArr){
-							if(!$tArr['depStateID']){
-								echo '<div class="trait-div">';
-								$indManager->echoTraitUnit($traitArr[$traitID]);
-								$indManager->echoTraitDiv($traitArr,$traitID);
-								echo '</div>';
-							}
-						}
+						//foreach($traitArr as $traitID => $tArr){
+						//	if(!$tArr['depStateID']){
+						//		echo '<div class="trait-div">';
+						//		$indManager->echoTraitUnit($traitArr[$traitID]);
+						//		$indManager->echoTraitDiv($traitArr,$traitID);
+						//		echo '</div>';
+						//	}
+						//}
 						?>
-					</div>
+					<!--</div>-->
+					<!--end neon edit-->
 					<?php
 				}
 				if($isEditor){
