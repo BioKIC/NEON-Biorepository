@@ -1,6 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OpenIdProfileManager.php');
 include_once($SERVER_ROOT . '/config/auth_config.php');
@@ -51,12 +49,21 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
       // add session to usersthirdpartysessions
       $profManager->linkThirdPartySid($sid, session_id(), $_SERVER['REMOTE_ADDR']);
       // update user information from Auth0 fields
+      $firstName = $oidc->requestUserInfoByID($sub, 'given_name')
+          ?? $oidc->requestUserInfoByID($sub, 'user_metadata.first_name');
+      
+      $lastName = $oidc->requestUserInfoByID($sub, 'family_name')
+          ?? $oidc->requestUserInfoByID($sub, 'user_metadata.last_name');
+          
+      $organization = $oidc->requestUserInfoByID($sub, 'user_metadata.ror_id')
+          ?? $oidc->requestUserInfoByID($sub, 'user_metadata.organization');
+      
       $profManager->updateLocalUserFromAuth0Metadata(
           $sub,
           $oidc->getProviderURL(),
-          $oidc->requestUserInfoByID($sub, 'user_metadata.first_name'),
-          $oidc->requestUserInfoByID($sub, 'user_metadata.last_name'),
-          $oidc->requestUserInfoByID($sub, 'user_metadata.ror_id'),
+          $firstName,
+          $lastName,
+          $organization,
           $oidc->requestUserInfoByID($sub, 'user_metadata.affiliation'),
           $oidc->requestUserInfoByID($sub, 'user_metadata.organization_country'),
           $oidc->requestUserInfoByID($sub, 'user_metadata.subject_matter_expertise_provider'),
