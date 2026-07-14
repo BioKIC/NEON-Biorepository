@@ -91,7 +91,7 @@ if ($isEditor) {
             }
             unset($row);
 
-            $newTypeHeaderArr = ['select', 'disposition', 'count'];
+            $newTypeHeaderArr = ['select', 'disposition', 'sample count'];
 
             echo '<form method="post" action="">';
             echo '<input type="hidden" name="action" value="addNewSamples">';
