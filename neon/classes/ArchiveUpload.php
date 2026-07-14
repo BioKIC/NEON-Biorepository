@@ -21,7 +21,7 @@
 
   // Main functions
 
-// Find potential new archive data
+    // Find potential new archive data
     public function findPotentialNewArchiveSamples() {
         $sql ='SELECT disposition, COUNT(*) as count
                 FROM omoccurrences o
@@ -41,7 +41,6 @@
             $this->errorMessage = $this->conn->error;
             return null;
         }
-
         $stmt->execute();
 
         $result = $stmt->get_result();
@@ -151,7 +150,7 @@
         return $rows;
     }
 
-// Grab prior archive data
+    // Grab prior archive data
     public function getPriorArchiveSampleTable() {
 
         $sql = 'SELECT archiveGuid,sampleID,sampleCode,sampleClass,sampleFate
@@ -179,13 +178,65 @@
         return $rows;
     }
 
-// Update archive data to indicate what has been newly submitted
+    // Update archive data to indicate what has been newly submitted
 
     public function updateArchiveData() {
 
+        $sql = 'UPDATE neonarchiveupload
+                SET submitted = 1
+                WHERE submitted = 0';
+
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            $this->errorMessage = $this->conn->error;
+            return false;
+        }
+
+        $status = $stmt->execute();
+
+        if (!$status) {
+            $this->errorMessage = $stmt->error;
+        }
+
+        $stmt->close();
+
+        return $status;
     }
 
+    // Table for export
 
+    public function getArchiveExport($type) {
+
+        $sql = 'SELECT archiveLaboratoryName,archiveStartDate,sampleID,sampleCode,sampleFate,sampleClass,
+                archiveMedium,storageTemperature,scientificName,scientificNameAuthorship,identificationQualifier,
+                sex,reproductiveCondition,lifeStage,identifiedBy,archiveGuid,accessionNumber,catalogueNumber,
+                externalURLs,collectionCode,remarks
+            FROM neonarchiveupload
+            WHERE submitted = ?';
+
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            $this->errorMessage = $this->conn->error;
+            return null;
+        }
+
+        $stmt->bind_param('i', $type);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = $row;
+        }
+
+        $stmt->close();
+
+        return $rows;
+
+    }
 
 }
 

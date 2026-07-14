@@ -72,7 +72,7 @@ if ($isEditor) {
             );		
 		?>
 		<form method="post" action="exportarchiveuploadhandler.php">
-			<input type="hidden" name="type" value="unsubmitted">
+			<input type="hidden" name="type" value=0>
 			<button type="submit">Export New Archive Upload Data & Mark Samples as Submitted</button>
 		</form>
 		<?php
@@ -116,7 +116,7 @@ if ($isEditor) {
 
 		?>
 		<form method="post" action="exportarchiveuploadhandler.php">
-			<input type="hidden" name="type" value="submitted">
+			<input type="hidden" name="type" value=1>
 			<button type="submit">Export Prior Archive Upload Data</button>
 		</form>
 		<?php
