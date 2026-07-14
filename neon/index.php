@@ -57,6 +57,9 @@ if($isEditor){
 			<ul>
 				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
+			<h3>Reporting</h3>
+			<ul>
+				<li><a href="neonreports/archiveupload.php">Archive Upload</a></li>
 				<?php
 				if($IS_ADMIN){
 					?>
