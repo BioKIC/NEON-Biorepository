@@ -8,7 +8,24 @@ header("Content-Type: text/html; charset=".$CHARSET);
 
 
 $reports = new ArchiveUpload();
-$reportsArr = $reports->getArchiveData();
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['action']) &&
+    $_POST['action'] === 'addNewSamples'
+) {
+    $dispositions = $_POST['disposition'] ?? [];
+
+    $reports->addNewArchiveSamples($dispositions);
+
+    header('Location: archiveupload.php');
+    exit;
+}
+
+$new = $reports->findPotentialNewArchiveSamples();
+$unsubmitted = $reports->getNewArchiveSampleTable();
+$submitted = $reports->getPriorArchiveSampleTable();
+$headerArr = ['archiveGuid','sampleID','sampleCode','sampleClass','sampleFate'];
 $utilities = new Utilities();
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
@@ -26,7 +43,8 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
     <link rel="stylesheet" href="../css/tables.css">
 		<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
-		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <link rel="stylesheet" href="../../js/datatables/datatables.css" />
+        <script src="../../js/datatables/datatables.js"></script>
 	</head>
 	<body>
 		<?php
@@ -37,57 +55,72 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 <?php
 if ($isEditor) {
 ?>
-	<h1>NEON Archive Upload Data?></h1>
+	<h1>NEON Archive Upload Data</h1>
  <?php
 
 
-	if (!empty($reportsArr)) {
+	if (!empty($new) || !empty($submitted) || !empty($unsubmitted)) {
 		
-		echo '<h4><a href=https://data.neonscience.org/web/external-lab-ingest>NEON External Lab Ingest Page</a></h4>';
-		
-        $unsubmitted = [];
-		$submitted = [];
-
-		foreach ($reportsArr as $row) {
-			$status = array_shift($row); 
-
-			switch ($status) {
-                case 0:
-					$unsubmitted[] = $row;
-					break;
-				case 1:
-					$submitted[] = $row;
-					break;
-			}
-		}
-
+		echo '<h4><a href=https://data.neonscience.org/web/external-lab-ingest>NEON External Lab Ingest Page</a></h4>';	
 
 		if ($unsubmitted) {
 			echo '<h2>Unsubmitted Samples</h2>';
-			$headerArr = ['Status', 'Current','Change'];
-			echo $utilities->htmlTable($unsubmitted, $headerArr);
-		}
-
+            echo str_replace(
+                '<table',
+                '<table id="unsubmittedTable"',
+                $utilities->htmlTable($unsubmitted, $headerArr)
+            );		
 		?>
 		<form method="post" action="exportarchiveuploadhandler.php">
 			<input type="hidden" name="type" value="unsubmitted">
-			<button type="submit">Export New Archive Upload Data</button>
+			<button type="submit">Export New Archive Upload Data & Mark Samples as Submitted</button>
 		</form>
 		<?php
+        }
+
+        if ($new) {
+			echo '<h2>Potential New Archive Samples</h2>';
+            foreach ($new as &$row) {
+                $row = array_merge(
+                    [
+                        'select' => '<input type="checkbox" name="disposition[]" value="' .
+                            htmlspecialchars($row['disposition'], ENT_QUOTES) . '">'
+                    ],
+                    $row
+                );
+            }
+            unset($row);
+
+            $newTypeHeaderArr = ['select', 'disposition', 'count'];
+
+            echo '<form method="post" action="">';
+            echo '<input type="hidden" name="action" value="addNewSamples">';
+
+            echo str_replace(
+                '<table',
+                '<table id="newTable"',
+                $utilities->htmlTable($new, $newTypeHeaderArr)
+            );
+
+            echo '<button type="submit">Add to Unsubmitted Sample List</button>';
+            echo '</form>';
+        }
 
         if ($submitted) {
 			echo '<h2>Submitted Samples</h2>';
-			$headerArr = ['Statistic', 'Current','Change'];
-			echo $utilities->htmlTable($submitted, $headerArr);
-		}
+            echo str_replace(
+                '<table',
+                '<table id="submittedTable"',
+                $utilities->htmlTable($submitted, $headerArr)
+            );		
 
 		?>
 		<form method="post" action="exportarchiveuploadhandler.php">
-			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="submitted">
 			<button type="submit">Export Prior Archive Upload Data</button>
 		</form>
 		<?php
+        }
 
 	}
 ?>
@@ -103,6 +136,45 @@ else {
 		include($SERVER_ROOT.'/includes/footer.php');
 		?>
   </body>
-  <script src="../js/sortables.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#newTable').DataTable({
+            pageLength: 25,
+            layout: {
+                topStart: {
+                    pageLength: {
+                        menu: [10, 25, 50, 100, 300, 500, { label: 'All', value: -1 }]
+                    }
+                }
+            },
+            scrollCollapse: true
+        });
+        $('#unsubmittedTable').DataTable({
+            pageLength: 25,
+            layout: {
+                topStart: {
+                    pageLength: {
+                        menu: [10, 25, 50, 100, 300, 500, { label: 'All', value: -1 }]
+                    }
+                }
+            },
+            scrollCollapse: true
+        });
+
+        $('#submittedTable').DataTable({
+            pageLength: 25,
+            layout: {
+                topStart: {
+                    pageLength: {
+                        menu: [10, 25, 50, 100, 300, 500, { label: 'All', value: -1 }]
+                    }
+                }
+            },
+            scrollCollapse: true
+        });
+    });
+</script>
+
 
 </html>
