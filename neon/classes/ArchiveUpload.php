@@ -207,13 +207,23 @@
     // Table for export
 
     public function getArchiveExport($type) {
+        if ($type == 0){
+            $sql = 'SELECT archiveLaboratoryName,archiveStartDate,sampleID,sampleCode,sampleFate,sampleClass,
+                    archiveMedium,storageTemperature,scientificName,scientificNameAuthorship,identificationQualifier,
+                    sex,reproductiveCondition,lifeStage,identifiedBy,archiveGuid,accessionNumber,catalogueNumber,
+                    externalURLs,collectionCode,remarks
+                FROM neonarchiveupload
+                WHERE submitted = ?';
+        }
+        elseif ($type == 1){
+            $sql = 'SELECT archiveLaboratoryName,archiveStartDate,sampleID,sampleCode,sampleFate,sampleClass,
+                    archiveMedium,storageTemperature,scientificName,scientificNameAuthorship,identificationQualifier,
+                    sex,reproductiveCondition,lifeStage,identifiedBy,archiveGuid,accessionNumber,catalogueNumber,
+                    externalURLs,collectionCode,remarks,initialTimestamp
+                FROM neonarchiveupload
+                WHERE submitted = ?';
+        }
 
-        $sql = 'SELECT archiveLaboratoryName,archiveStartDate,sampleID,sampleCode,sampleFate,sampleClass,
-                archiveMedium,storageTemperature,scientificName,scientificNameAuthorship,identificationQualifier,
-                sex,reproductiveCondition,lifeStage,identifiedBy,archiveGuid,accessionNumber,catalogueNumber,
-                externalURLs,collectionCode,remarks
-            FROM neonarchiveupload
-            WHERE submitted = ?';
 
         $stmt = $this->conn->prepare($sql);
 
