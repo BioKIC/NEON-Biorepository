@@ -230,7 +230,7 @@
         $result = $stmt->get_result();
 
         $insert = $this->conn->prepare("
-                INSERT INTO NeonSOWReport
+                INSERT INTO neonsowreport
                     (name, type, awardYear, statistic, statValue, date)
                 VALUES (?, 'loans', ?, ?, ?, ?)
             ");
@@ -424,7 +424,7 @@
         $result = $stmt->get_result();
 
         $insert = $this->conn->prepare("
-                INSERT INTO NeonSOWReport
+                INSERT INTO neonsowreport
                     (name, type, awardYear, statistic, statValue, date)
                 VALUES (?, 'accessioning', ?, ?, ?, ?)
             ");
@@ -639,7 +639,7 @@
         $result = $stmt->get_result();
 
         $insert = $this->conn->prepare("
-                INSERT INTO NeonSOWReport
+                INSERT INTO neonsowreport
                     (name, type, awardYear, statistic, statValue, date)
                 VALUES (?, 'data', ?, ?, ?, ?)
             ");
@@ -758,7 +758,7 @@
             $result = $stmt->get_result();
 
             $insert = $this->conn->prepare("
-                INSERT INTO NeonSOWReport
+                INSERT INTO neonsowreport
                     (name, type, awardYear, statistic, statValue, date)
                 VALUES (?, 'receipts', ?, ?, ?, ?)
             ");
@@ -796,7 +796,7 @@
     public function getSOWReport($ay, $type, $reportDate) {
 
         $sql = 'SELECT awardYear, statistic, statValue
-                FROM NeonSOWReport
+                FROM neonsowreport
                 WHERE name = ?
                 AND type = ?
                 AND date = ?
