@@ -31,12 +31,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 <?php
 $displayLeftMenu = false;
 include($SERVER_ROOT.'/includes/header.php');
-?>
-<div class="navpath">
-	<a href="../../index.php">Home</a> &gt;&gt;
-	<b>NEON Management Tools</b>
-</div>
-<?php
+
 if($isEditor){
 	?>
 	<div id="innertext">
@@ -57,6 +52,9 @@ if($isEditor){
 			<ul>
 				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
+				<li><a href="requests/newinquiry.php">Create New Inquiry</a></li>
+				<li><a href="requests/index.php">Sample Use Inquiry List</a></li>
+				<li><a href="requests/neonrequestsearch.php">Sample Use Search</a></li>
 				<?php
 				if($IS_ADMIN){
 					?>
@@ -72,6 +70,10 @@ if($isEditor){
 			<h3>Reporting</h3>
 			<ul>
 				<li><a href="neonreports/archiveupload.php">Archive Upload</a></li>
+				<li><a href="neonreports/monthlyreportactions.php">Monthly Reports</a></li>
+				<li><a href="neonreports/quarterlyreportactions.php">Quarterly Sample Use Reports</a></li>
+				<li><a href="requests/requestreport.php">Requests By Current Status</a></li>
+				<li><a href="neonreports/sowreportactions.php">SOW Report</a></li>
 				<li><a href="#" onclick="$('.nps-report').show();return false">NPS Year End Reports</a></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=110&year=2020" onclick="$('#BLDE20-working').show();">BLDE - 2020</a><span id="BLDE20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=40&year=2020" onclick="$('#GRSM20-working').show();">GRSM - 2020</a><span id="GRSM20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
@@ -91,7 +93,7 @@ if($isEditor){
 else{
 	?>
 	<div style='font-weight:bold;margin:30px;'>
-		You do not have permissions to access NEON management tools
+		You do not have permissions to access shipment managment tools
 	</div>
 	<?php
 }
