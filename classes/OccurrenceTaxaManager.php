@@ -635,6 +635,11 @@ class OccurrenceTaxaManager {
 	}
 
 	protected function cleanInputStr($str){
+		//neon edit - add support for arrays
+		if(is_array($str)){
+			   return array_map([$this, 'cleanInputStr'], $str);
+		   }
+		//end neon edit
 		if(!is_string($str) && !is_numeric($str) && !is_bool($str)) return '';
 		if(preg_match('/^\d+\'+$/', $str)) return 0;	//SQL Injection attempt, thus set to return nothing rather than a query that puts a load on the db server
 		$str = preg_replace('/%%+/', '%',$str);
@@ -648,6 +653,11 @@ class OccurrenceTaxaManager {
 	}
 
 	protected function cleanInStr($str){
+		//neon edit - add support for arrays
+		if(is_array($str)){
+			   return array_map([$this, 'cleanInStr'], $str);
+		   }
+		//end neon edit
 		$newStr = trim($str);
 		$newStr = preg_replace('/\s\s+/', ' ',$newStr);
 		$newStr = $this->conn->real_escape_string($newStr);

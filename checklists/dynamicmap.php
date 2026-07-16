@@ -1,7 +1,7 @@
 <?php
-header("Location: https://biorepo.neonscience.org", true, 302);
-exit;
 include_once('../config/symbini.php');
+header('Location: ../', true, 302);
+exit;
 //include_once($SERVER_ROOT.'/classes/DynamicChecklistManager.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/checklists/dynamicmap.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT . '/content/lang/checklists/dynamicmap.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT.'/content/lang/checklists/dynamicmap.en.php');
