@@ -116,9 +116,9 @@ if ($isEditor) {
 		// Adds WYSIWYG editor to description field
 		tinymce.init({
 			selector: '#description',
-			plugins: 'link lists image',
+			plugins: 'link lists image code',
 			menubar: '',
-			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image'],
+			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
 			branding: false,
 			default_link_target: "_blank",
 			paste_as_text: true
