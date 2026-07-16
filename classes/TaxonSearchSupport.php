@@ -10,9 +10,6 @@ class TaxonSearchSupport{
 	private $taxonType;
 	private $rankLow = 0;
 	private $rankHigh;
-	//neon edit
-	private $occurrenceOnly = false;
-	//end neon edit
 
  	public function __construct(){
 		$this->conn = MySQLiConnectionFactory::getCon('readonly');
@@ -58,15 +55,7 @@ class TaxonSearchSupport{
 
 			}
 			elseif($this->taxonType == TaxaSearchType::SCIENTIFIC_NAME){
-				//neon edit
-				$sql = 'SELECT t.tid, t.sciname FROM taxa t WHERE t.sciname LIKE "'.$this->queryString.'%"';
-				
-				if($this->occurrenceOnly){
-					$sql .= ' AND (t.tid IN (SELECT tidInterpreted FROM omoccurrences) OR t.tid IN (SELECT DISTINCT e.parenttid FROM taxaenumtree e INNER JOIN omoccurrences o ON o.tidInterpreted = e.tid) OR t.tid IN (SELECT DISTINCT s.tidaccepted FROM taxstatus s INNER JOIN omoccurrences o ON o.tidInterpreted = s.tid) OR t.tid IN (SELECT DISTINCT s.tid FROM taxstatus s INNER JOIN omoccurrences o ON o.tidInterpreted = s.tidaccepted))';
-				}
-				
-				$sql .= ' LIMIT 30';
-				//end neon edit
+				$sql = 'SELECT tid, sciname FROM taxa WHERE sciname LIKE "'.$this->queryString.'%" LIMIT 30';
 			}
 			elseif($this->taxonType == TaxaSearchType::FAMILY_ONLY){
 				$sql = 'SELECT tid, sciname FROM taxa WHERE rankid = 140 AND sciname LIKE "'.$this->queryString.'%" LIMIT 30';
@@ -138,12 +127,6 @@ class TaxonSearchSupport{
 	public function setRankHigh($rank){
 		if(is_numeric($rank)) $this->rankHigh = $rank;
 	}
-	
-	//neon edit
-	public function setOccurrenceOnly($v){
-		$this->occurrenceOnly = !empty($v);
-	}
-	//end neon edit
 
 	//Misc functions
 	private function cleanInStr($str){

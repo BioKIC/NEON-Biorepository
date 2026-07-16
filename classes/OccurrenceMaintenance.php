@@ -587,35 +587,12 @@ class OccurrenceMaintenance {
 			$collArr = explode(',', $this->collidStr);
 			foreach($collArr as $collid){
 				if(is_numeric($collid)){
-					//neon edit allow for sudo-colletion stats
-					$materialSampleMap = [
-						118 => '%tract%',
-						119 => '%heart%',
-						120 => '%lung%',
-						121 => '%kidney%',
-						122 => '%spleen%',
-						123 => '%liver%',
-						124 => '%muscle%'
-					];
-					
-					$where = 'o.collid = '.$collid;
-					
-					if(isset($materialSampleMap[$collid])){
-						$where = 'o.collid IN(17,19,28)
-							AND EXISTS (
-								SELECT 1
-								FROM ommaterialsample ms
-								WHERE ms.occid = o.occid
-								AND ms.sampleType LIKE "'.$materialSampleMap[$collid].'"
-							)';
-					}
-					//end neon edit
 					$statsArr = Array();
 					$this->outputMsg('Calculating specimen, georeference, family, genera, and species counts... ', 1);
 					$sql = 'SELECT COUNT(CASE WHEN t.RankId >= 220 THEN o.occid ELSE NULL END) AS SpecimensCountID,
 						COUNT(DISTINCT CASE WHEN t.RankId >= 220 THEN t.SciName ELSE NULL END) AS TotalTaxaCount, COUNT(o.typeStatus) AS TypeCount
 						FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.TID
-						WHERE '.$where;
+						WHERE o.collid IN('.$collid.')';
 					$rs = $this->conn->query($sql);
 					while($r = $rs->fetch_object()){
 						$statsArr['SpecimensCountID'] = $r->SpecimensCountID;
@@ -627,7 +604,7 @@ class OccurrenceMaintenance {
 					$this->outputMsg('Calculating number of specimens imaged... ', 1);
 					$sql = 'SELECT count(DISTINCT o.occid) as imgspeccnt, count(DISTINCT m.mediaID) AS imgcnt
 						FROM omoccurrences o INNER JOIN media m ON o.occid = m.occid
-						WHERE '.$where;
+						WHERE o.collid = '.$collid;
 					$rs = $this->conn->query($sql);
 					if($r = $rs->fetch_object()){
 						$statsArr['imgcnt'] = $r->imgcnt.':'.$r->imgspeccnt;
@@ -639,7 +616,7 @@ class OccurrenceMaintenance {
 						COUNT(CASE WHEN g.resourceurl LIKE "%ncbi%" THEN o.occid ELSE NULL END) AS gencnt,
 						COUNT(CASE WHEN g.resourceurl NOT LIKE "%boldsystems%" AND g.resourceurl NOT LIKE "%ncbi%" THEN o.occid ELSE NULL END) AS geneticcnt
 						FROM omoccurrences o INNER JOIN omoccurgenetic g ON o.occid = g.occid
-						WHERE '.$where;
+						WHERE o.collid = '.$collid;
 					$rs = $this->conn->query($sql);
 					if($r = $rs->fetch_object()){
 						$statsArr['boldcnt'] = $r->boldcnt;
@@ -649,7 +626,7 @@ class OccurrenceMaintenance {
 					$rs->free();
 
 					$this->outputMsg('Calculating reference counts... ', 1);
-					$sql = 'SELECT count(r.occid) as refcnt FROM omoccurrences o INNER JOIN referenceoccurlink r ON o.occid = r.occid WHERE '.$where;
+					$sql = 'SELECT count(r.occid) as refcnt FROM omoccurrences o INNER JOIN referenceoccurlink r ON o.occid = r.occid WHERE o.collid = '.$collid;
 					$rs = $this->conn->query($sql);
 					if($r = $rs->fetch_object()){
 						$statsArr['refcnt'] = $r->refcnt;
@@ -661,7 +638,7 @@ class OccurrenceMaintenance {
 						COUNT(CASE WHEN t.RankId >= 220 THEN o.occid ELSE NULL END) AS IDSpecimensPerFamily,
 						COUNT(CASE WHEN t.RankId >= 220 AND o.decimalLatitude IS NOT NULL THEN o.occid ELSE NULL END) AS IDGeorefSpecimensPerFamily
 						FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.TID
-						WHERE '.$where.' GROUP BY o.family';
+						WHERE o.collid = '.$collid.' GROUP BY o.family ';
 					$rs = $this->conn->query($sql);
 					while($r = $rs->fetch_object()){
 						if($r->family){
@@ -679,7 +656,7 @@ class OccurrenceMaintenance {
 						COUNT(CASE WHEN t.RankId >= 220 THEN o.occid ELSE NULL END) AS IDSpecimensPerCountry,
 						COUNT(CASE WHEN t.RankId >= 220 AND o.decimalLatitude IS NOT NULL THEN o.occid ELSE NULL END) AS IDGeorefSpecimensPerCountry
 						FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.TID
-						WHERE '.$where.' GROUP BY o.country';
+						WHERE o.collid = '.$collid.' GROUP BY o.country ';
 					$rs = $this->conn->query($sql);
 					while($r = $rs->fetch_object()){
 						if($r->country){
@@ -698,72 +675,18 @@ class OccurrenceMaintenance {
 			}
 		}
 	}
-	//neon edit - allow for material sample collections
-	//public function updateCollectionStatsBasic($collid){
-	//	if(is_numeric($collid)){
-	//		$this->outputMsg('Calculating specimen, georeference, family, genera, and species counts... ',1);
-	//		$statArr = array();
-	//		$sql = 'SELECT COUNT(o.occid) AS SpecimenCount, COUNT(o.decimalLatitude) AS GeorefCount, COUNT(DISTINCT o.family) AS FamilyCount, '.
-	//			'COUNT(DISTINCT CASE WHEN t.RankId >= 180 THEN t.UnitName1 ELSE NULL END) AS GeneraCount, '.
-	//			'COUNT(DISTINCT CASE WHEN t.RankId = 220 THEN t.SciName ELSE NULL END) AS SpeciesCount '.
-	//			'FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.TID '.
-	//			'WHERE o.collid = ?';
-	//		if($stmt = $this->conn->prepare($sql)){
-	//			$stmt->bind_param('i', $collid);
-	//			$stmt->execute();
-	//			$stmt->bind_result($recCnt, $georefCnt, $familyCnt, $genusCnt, $speciesCnt);
-	//			if($stmt->fetch()){
-	//				$statArr['recordcnt'] = $recCnt;
-	//				$statArr['georefcnt'] = $georefCnt;
-	//				$statArr['familycnt'] = $familyCnt;
-	//				$statArr['genuscnt'] = $genusCnt;
-	//				$statArr['speciescnt'] =  $speciesCnt;
-	//			}
-	//			$stmt->close();
-	//		}
-	//		if($statArr) $this->updateCollectionStats($statArr, $collid);
-	//	}
-	//}
-	
+
 	public function updateCollectionStatsBasic($collid){
 		if(is_numeric($collid)){
 			$this->outputMsg('Calculating specimen, georeference, family, genera, and species counts... ',1);
 			$statArr = array();
-	
-			$materialSampleMap = [
-				118 => '%heart%',
-				119 => '%tract%',
-				120 => '%lung%',
-				121 => '%kidney%',
-				122 => '%spleen%',
-				123 => '%liver%',
-				124 => '%muscle%'
-			];
-	
-			$where = 'o.collid = ?';
-			$bindType = 'i';
-			$bindValue = $collid;
-	
-			if(isset($materialSampleMap[$collid])){
-				$where = 'o.collid IN(17,19,28)
-					AND EXISTS (
-						SELECT 1
-						FROM ommaterialsample ms
-						WHERE ms.occid = o.occid
-						AND ms.sampleType LIKE ?
-					)';
-				$bindType = 's';
-				$bindValue = $materialSampleMap[$collid];
-			}
-	
 			$sql = 'SELECT COUNT(o.occid) AS SpecimenCount, COUNT(o.decimalLatitude) AS GeorefCount, COUNT(DISTINCT o.family) AS FamilyCount, '.
 				'COUNT(DISTINCT CASE WHEN t.RankId >= 180 THEN t.UnitName1 ELSE NULL END) AS GeneraCount, '.
 				'COUNT(DISTINCT CASE WHEN t.RankId = 220 THEN t.SciName ELSE NULL END) AS SpeciesCount '.
 				'FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.TID '.
-				'WHERE '.$where;
-	
+				'WHERE o.collid = ?';
 			if($stmt = $this->conn->prepare($sql)){
-				$stmt->bind_param($bindType, $bindValue);
+				$stmt->bind_param('i', $collid);
 				$stmt->execute();
 				$stmt->bind_result($recCnt, $georefCnt, $familyCnt, $genusCnt, $speciesCnt);
 				if($stmt->fetch()){
@@ -771,15 +694,13 @@ class OccurrenceMaintenance {
 					$statArr['georefcnt'] = $georefCnt;
 					$statArr['familycnt'] = $familyCnt;
 					$statArr['genuscnt'] = $genusCnt;
-					$statArr['speciescnt'] = $speciesCnt;
+					$statArr['speciescnt'] =  $speciesCnt;
 				}
 				$stmt->close();
 			}
-	
 			if($statArr) $this->updateCollectionStats($statArr, $collid);
 		}
 	}
-	//end neon edits
 
 	private function updateCollectionStats($inputData, $collid){
 		$status = false;
