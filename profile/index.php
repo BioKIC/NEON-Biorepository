@@ -9,7 +9,7 @@ if(!empty($THIRD_PARTY_OID_AUTH_ENABLED)){
 use Jumbojett\OpenIDConnectClient;
 
 //neon edit
-if (empty($SYMB_UID)) {
+if (empty($SYMB_UID) && (empty($NEON_DEV_MODE) || $NEON_DEV_MODE == 1)) {
     if (isset($_REQUEST['refurl']) && is_string($_REQUEST['refurl'])) {
         $_SESSION['refurl'] = $_REQUEST['refurl'];
     }
@@ -24,21 +24,7 @@ if (empty($SYMB_UID)) {
     header('Location: ' . $target);
     exit;
 }
-
 //end neon edit
-
-if($SYMB_UID){
-	if($_SESSION['refurl'] ?? false){
-		header("Location:" . $_SESSION['refurl']);
-		unset($_SESSION['refurl']);
-	}
-	if ($_REQUEST['refurl'] ?? false){
-		header("Location:" . $_REQUEST['refurl']);
-	}
-	else{
-		header("Location:" . GeneralUtil::getDomain() . $CLIENT_ROOT . '/profile/viewprofile.php');
-	}
-}
 
 include_once($SERVER_ROOT.'/classes/ProfileManager.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/profile/index.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/profile/index.' . $LANG_TAG . '.php');
@@ -183,6 +169,23 @@ if (array_key_exists('last_message', $_SESSION)){
 	unset($_SESSION['last_message']);
 }
 
+if($SYMB_UID){
+	//Redirect logged in users somewhere else, with user's profile page the default target
+	if(!empty($_REQUEST['refurl']) && substr($_REQUEST['refurl'], 0, 1) == '/'){
+		$refUrl = htmlspecialchars($_REQUEST['refurl'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
+		header('Location:' . GeneralUtil::getDomain() . $CLIENT_ROOT . $refUrl);
+		exit;
+	}
+	elseif(!empty($_SESSION['refurl']) && substr($_SESSION['refurl'], 0, 1) == '/'){
+		header('Location:' . GeneralUtil::getDomain() . $CLIENT_ROOT . $_SESSION['refurl']);
+		unset($_SESSION['refurl']);
+		exit;
+	}
+	else{
+		header('Location:' . GeneralUtil::getDomain() . $CLIENT_ROOT . '/profile/viewprofile.php');
+		exit;
+	}
+}
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">

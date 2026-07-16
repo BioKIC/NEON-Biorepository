@@ -9,6 +9,14 @@ $sourcePage = array_key_exists("sourcepage", $_REQUEST) ? $_REQUEST["sourcepage"
 $schema = array_key_exists("schema", $_REQUEST) ? $_REQUEST["schema"] : "symbiota";
 $cSet = array_key_exists("cset", $_POST) ? $_POST["cset"] : '';
 
+if(empty($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT) && !$SYMB_UID){
+	//Portal is configured to limit data exports to requistered users
+	http_response_code(401);
+	header('Content-Type: application/json');
+	echo json_encode(['error' => 'Unauthorized access']);
+	exit;
+}
+
 if ($schema == 'backup') {
 	$collid = $_POST['collid'];
 	if ($collid && is_numeric($collid)) {
