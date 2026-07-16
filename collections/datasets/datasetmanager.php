@@ -121,7 +121,10 @@ if ($isEditor) {
 			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
 			branding: false,
 			default_link_target: "_blank",
-			paste_as_text: true
+			paste_as_text: true,
+			invalid_styles: {
+				'*': 'font-family'
+			}
 		});
 		tinymce.init({
 			selector: '#citation',
