@@ -478,12 +478,12 @@
       },
       {
         "id": 11,
-        "name": "Root Cores (Pre-NEON, Megapit Sampling)",
+        "name": "Root Cores (Megapit)",
         "collid": 76
       },
       {
         "id": 12,
-        "name": "Root Cores (Standard Sampling)",
+        "name": "Root Cores (Tower Plots)",
         "collid": 10
       }
     ]
@@ -509,90 +509,65 @@
         ]
       },
       {
+        "id": 67,
         "name": "Small Mammals",
         "children": [
           {
-            "name": "Blood",
+            "id": 68,
+            "name": "Blood Samples",
             "collid": 24
           },
           {
+            "id": 69,
             "name": "DNA Extracts",
             "collid": 71
           },
           {
-            "name": "Fecal",
+            "id": 70,
+            "name": "Ear Tissue",
+            "collid": 25
+          },
+          {
+            "id": 71,
+            "name": "Fecal Samples",
             "collid": 26
           },
           {
-            "name": "Hair",
+            "id": 72,
+            "name": "Hair Samples",
             "collid": 27
           },
           {
-            "name": "Ecto-Parasites",
+            "id": 73,
+            "name": "Genomic Extracts for Pathogen Testing (from Blood)",
+            "collid": 91
+          },
+          {
+            "id": 74,
+            "name": "Genomic Extracts for Pathogen Testing (from Ear Tissue)",
+            "collid": 90
+          },
+          {
+            "id": 75,
+            "name": "Parasite Specimens",
             "collid": 85
           },
           {
-            "name": "Tissues",
-            "children": [
-              {
-                "name": "Ear Punches",
-                "collid": 25
-              },
-              {
-                "name": "Gastrointestinal Tracts",
-                "collid": 118
-              },
-              {
-                "name": "Hearts",
-                "collid": 119
-              },
-              {
-                "name": "Lungs",
-                "collid": 120
-              },
-              {
-                "name": "Kidneys",
-                "collid": 121
-              },
-              {
-                "name": "Spleens",
-                "collid": 122
-              },
-              {
-                "name": "Livers",
-                "collid": 123
-              },
-              {
-                "name": "Muscle",
-                "collid": 124
-              }
-            ]
-          },
-          {
-            "name": "Genomic Extracts for Pathogen Testing",
-            "children": [
-              {
-                "name": "Blood-Derived",
-                "collid": 91
-              },
-              {
-                "name": "Ear Punch-Derived",
-                "collid": 90
-              }
-            ]
-          },
-          {
+            "id": 75,
             "name": "Whole Specimens",
             "children": [
               {
+                "id": 76,
                 "name": "Bycatch Specimens (from Beetle Sampling)",
                 "collid": 17
               },
               {
+                "id": 77,
                 "name": "Specimens (Incidental)",
                 "collid": 19
               },
               {
+                "id": 78,
                 "name": "Specimens (Standard Sampling)",
                 "collid": 28
               }
@@ -601,21 +576,21 @@
         ]
       },
       {
-        "id": 81,
+        "id": 79,
         "name": "Reptiles and Amphibians",
         "children": [
           {
-            "id": 82,
+            "id": 80,
             "name": "Bycatch Specimens (from Beetle Sampling; Pooled Catches)",
             "collid": 12
           },
           {
-            "id": 83,
+            "id": 81,
             "name": "Bycatch Specimens (from Beetle Sampling; Unpooled Catches)",
             "collid": 15
           },
           {
-            "id": 84,
+            "id": 82,
             "name": "Bycatch Specimens (from Small Mammal and Fish Sampling)",
             "collid": 70
           }

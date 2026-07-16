@@ -1,7 +1,9 @@
 <?php
-include_once('../../config/symbini.php');
-header("Location: ../../neon/search/index.php", true, 302);
+header("Location: https://biorepo.neonscience.org/portal/neon/search/index.php", true, 302);
 exit;
+// error_reporting(E_ALL);
+// ini_set('display_errors', '1');
+include_once('../../config/symbini.php');
 include_once($SERVER_ROOT . '/classes/CollectionMetadata.php');
 include_once($SERVER_ROOT . '/classes/DatasetsMetadata.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceManager.php');

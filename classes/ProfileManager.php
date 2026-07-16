@@ -14,7 +14,7 @@ class ProfileManager extends Manager{
 	protected $displayName;
 	protected $token;
 
-	public function __construct($connType = 'write'){
+	public function __construct($connType = 'readonly'){
 		parent::__construct(null, $connType);
 	}
 

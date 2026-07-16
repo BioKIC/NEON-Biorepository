@@ -77,7 +77,7 @@ $searchVar .= '&comingFrom=' . $comingFrom;
 							<svg xmlns="http://www.w3.org/2000/svg" style="width:1.3em;height:1.3em" alt="<?= $LANG['LIST_DISPLAY'] ?>" height="24" viewBox="0 -960 960 960" width="24"> <path d="M280-600v-80h560v80H280Zm0 160v-80h560v80H280Zm0 160v-80h560v80H280ZM160-600q-17 0-28.5-11.5T120-640q0-17 11.5-28.5T160-680q17 0 28.5 11.5T200-640q0 17-11.5 28.5T160-600Zm0 160q-17 0-28.5-11.5T120-480q0-17 11.5-28.5T160-520q17 0 28.5 11.5T200-480q0 17-11.5 28.5T160-440Zm0 160q-17 0-28.5-11.5T120-320q0-17 11.5-28.5T160-360q17 0 28.5 11.5T200-320q0 17-11.5 28.5T160-280Z"/></svg>
 						</button>
 					</form>
-					<form action="download/neonindex.php" method="post" style="float:left" onsubmit="targetPopup(this)">
+					<form action="download/index.php" method="post" style="float:left" onsubmit="targetPopup(this)">
 						<button class="icon-button" style="margin:5px;padding:5px;" title="<?= $LANG['DOWNLOAD_SPECIMEN_DATA']; ?>" aria-label="<?= $LANG['DOWNLOAD_SPECIMEN_DATA']; ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" style="width:1.3em;height:1.3em" alt="<?= $LANG['DOWNLOAD_SPECIMEN_DATA']; ?>" height="24" viewBox="0 -960 960 960" width="24"> <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>
 						</button>

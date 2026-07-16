@@ -263,7 +263,7 @@
     "children": [
       {
         "id": 31,
-        "name": "Root Cores (Standard Sampling)",
+        "name": "Root Cores (Tower Plots)",
         "collid": 10
       }
     ]
@@ -419,87 +419,61 @@
     ]
   },
   {
+    "id": 51,
     "name": "MAM – Small Mammal Sampling",
     "children": [
       {
+        "id": 52,
         "name": "Mammal Blood Samples",
         "collid": 24
       },
       {
+        "id": 53,
         "name": "Mammal DNA Extracts (from Ear Tissue)",
         "collid": 71
       },
       {
+        "id": 54,
+        "name": "Mammal Ear Tissue",
+        "collid": 25
+      },
+      {
+        "id": 55,
         "name": "Mammal Fecal Samples",
         "collid": 26
       },
       {
+        "id": 56,
         "name": "Mammal Hair Samples",
         "collid": 27
       },
       {
-        "name": "Mammal Ecto-Parasites",
+        "id": 57,
+        "name": "Mammal Parasites",
         "collid": 85
       },
       {
-        "name": "Mammal Tissues",
-        "children": [
-          {
-            "name": "Ear Punches",
-            "collid": 25
-          },
-          {
-            "name": "Gastrointestinal Tracts",
-            "collid": 118
-          },
-          {
-            "name": "Hearts",
-            "collid": 119
-          },
-          {
-            "name": "Lungs",
-            "collid": 120
-          },
-          {
-            "name": "Kidneys",
-            "collid": 121
-          },
-          {
-            "name": "Spleens",
-            "collid": 122
-          },
-          {
-            "name": "Livers",
-            "collid": 123
-          },
-          {
-            "name": "Muscle",
-            "collid": 124
-          }
-        ]
+        "id": 58,
+        "name": "Mammal Genomic Extracts for Pathogen Testing (from Blood)",
+        "collid": 91
       },
       {
-        "name": "Genomic Extracts for Pathogen Testing",
-        "children": [
-          {
-            "name": "Blood-Derived",
-            "collid": 91
-          },
-          {
-            "name": "Ear Punch-Derived",
-            "collid": 90
-          }
-        ]
+        "id": 59,
+        "name": "Mammal Genomic Extracts for Pathogen Testing (from Ear Tissue)",
+        "collid": 90
       },
       {
+        "id": 60,
         "name": "Mammal Specimens (Standard Sampling)",
         "collid": 28
       },
       {
+        "id": 61,
         "name": "Mammal Specimens (Incidental)",
         "collid": 19
       },
       {
+        "id": 62,
         "name": "Reptiles and Amphibians Specimen Bycatch",
         "collid": 70
       }
@@ -618,7 +592,7 @@
     "children": [
       {
         "id": 82,
-        "name": "Root Cores (Pre-NEON, Megapit Sampling)",
+        "name": "Root Cores (Megapit)",
         "collid": 76
       }
     ]
