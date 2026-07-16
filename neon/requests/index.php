@@ -1,0 +1,124 @@
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+include_once('../../config/symbini.php');
+include_once($SERVER_ROOT.'/neon/classes/RequestReport.php');
+include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
+header("Content-Type: text/html; charset=".$CHARSET);
+
+$reportManager = new RequestReportManager();
+$utilities = new Utilities();
+$inquiriesArr = $reportManager->getInquiriesOut($_GET);
+$headerArr = ['id','researcher','inquiry date','title','status','samples','follow up type','follow up date','assignee'];
+$total = $reportManager->getInqSamplesCnt();
+
+$isEditor = false;
+if($IS_ADMIN) $isEditor = true;
+elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
+?>
+
+<html>
+	<head>
+		<title><?php echo $DEFAULT_TITLE; ?> Sample Use Inquiries</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
+		<?php
+		include_once($SERVER_ROOT.'/includes/head.php');
+		?>
+    <link rel="stylesheet" href="css/tables.css">
+		<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+		<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="../../js/datatables/datatables.css" />
+        <script src="../../js/datatables/datatables.js"></script>
+
+<style>
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 1em;
+        font-size: 0.95em;
+        background-color: #fff;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        cursor: pointer;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    #filterInput {
+        padding: 8px;
+        margin-top: 10px;
+        width: 100%;
+        max-width: 300px;
+        font-size: 1em;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+</style>
+
+	</head>
+	<body>
+		<?php
+		$displayLeftMenu = false;
+		include($SERVER_ROOT.'/includes/header.php');
+		?>
+		<div id="innertext">
+			<?php
+			if($isEditor){
+				?>
+        <?php
+        echo '<h1>Sample Use Inquiries</h1>';
+        echo '<p>Total number of samples in active or completed requests: '.$total.'</p>';
+
+        if(!empty($inquiriesArr)){
+            echo '<div class="table-container">';
+            $inquiriesTable = $utilities->htmlTable($inquiriesArr, $headerArr);
+            $inquiriesTable = str_replace(
+                '<table',
+                '<table id="inquiriesTable"',
+                $inquiriesTable
+            );
+            echo $inquiriesTable;
+            echo '</div>';
+        };
+        ?>
+				<?php
+			} else {
+        echo '<h3>Please login to get access to this page.</h3>';
+      }
+			?>
+		</div>
+		<?php
+		include($SERVER_ROOT.'/includes/footer.php');
+		?>
+  </body>
+  <script src="js/sortables.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#inquiriesTable').DataTable({
+            pageLength: 100,
+            order: [[0, 'desc']],
+            scrollX: true
+        });
+    });
+</script>
+
+</html>
