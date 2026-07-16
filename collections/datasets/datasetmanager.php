@@ -116,15 +116,21 @@ if ($isEditor) {
 		// Adds WYSIWYG editor to description field
 		tinymce.init({
 			selector: '#description',
-			plugins: 'link lists image code',
+			plugins: 'link lists image',
 			menubar: '',
-			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image'],
 			branding: false,
 			default_link_target: "_blank",
-			paste_as_text: true,
-			invalid_styles: {
-				'*': 'font-family'
-			}
+			paste_as_text: true
+		});
+		tinymce.init({
+			selector: '#citation',
+			plugins: 'link lists image',
+			menubar: '',
+			toolbar: ['undo redo | bold italic underline | link '],
+			branding: false,
+			default_link_target: "_blank",
+			paste_as_text: true
 		});
 	</script>
 	<script type="text/javascript">
@@ -222,7 +228,7 @@ if ($isEditor) {
 				return false;
 			}
 			if (isDownloadAction) {
-				f.action = "../download/neonindex.php";
+				f.action = "../download/index.php";
 				targetDownloadPopup(f);
 			}
 			return true;
@@ -453,14 +459,14 @@ if ($isEditor) {
 									?>
 								</div>
 							</form>
-							<div style="margin: 15px;">
-								<form name="exportAllForm" action="../download/neonindex.php" method="post" onsubmit="targetDownloadPopup(this)">
-									<input name="searchvar" type="hidden" value="datasetid=<?php echo $datasetId; ?>" />
-									<input name="dltype" type="hidden" value="specimen" />
-									<button type="submit" name="submitaction" value="exportAll"><?php echo $LANG['EXPORT_DS']; ?></button>
-								</form>
-							</div>
-						<?php
+								<div style="margin: 15px;">
+									<form name="exportAllForm" action="../download/index.php" method="post" onsubmit="targetDownloadPopup(this)">
+										<input name="searchvar" type="hidden" value="datasetid=<?php echo $datasetId; ?>" />
+										<input name="dltype" type="hidden" value="specimen" />
+										<button type="submit" name="submitaction" value="exportAll"><?php echo $LANG['EXPORT_DS']; ?></button>
+									</form>
+								</div>
+							<?php
 						} else {
 						?>
 							<div style="font-weight:bold; margin:15px"><?php echo $LANG['NO_OCCS_DS']; ?></div>
@@ -476,7 +482,7 @@ if ($isEditor) {
 							<section class="fieldset-like">
 								<h2><span><b><?php echo $LANG['EDITOR']; ?></b></span></h2>
 								<form name="editform" action="datasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
-									<div>
+									<div style="margin:25px 10px;">
 										<label for="name"><?php echo $LANG['NAME']; ?></label>
 										<input name="name" id="name" type="text" value="<?php echo $mdArr['name']; ?>" aria-label="<?php echo $LANG['NAME']; ?>" style="width:70%" />
 									</div>
@@ -487,13 +493,17 @@ if ($isEditor) {
 											<label for="ispublic"><?php echo $LANG['PUB_VISIBLE']; ?></label>
 										</p>
 									</div>
-									<div>
+									<div style="margin:25px 10px;">
 										<label for="notes"><?php echo $LANG['NOTES_INTERNAL']; ?></label>
 										<input name="notes" id="notes" type="text" value="<?php echo $mdArr['notes']; ?>" style="width:70%" aria-label="<?php echo $LANG['NOTES_INTERNAL']; ?>" />
 									</div>
-									<div>
-										<label for="description"><?php echo $LANG['DESCRIPTION']; ?></label>
+									<div style="margin:15px;">
+										<label for="description"><?php echo $LANG['DESCRIPTION'] . '</br>'; ?></label>
 										<textarea name="description" id="description" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo $mdArr['description']; ?></textarea>
+									</div>
+									<div style="margin:15px;">
+										<label for="citation"><?php echo 'Citation<br>'; ?></label>
+										<textarea name="citation" id="citation" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo 'Citation'; ?>"><?php echo $mdArr['bibliographicCitation']; ?></textarea>
 									</div>
 									<div style="margin:15px;">
 										<input name="tabindex" type="hidden" value="1" />
@@ -501,6 +511,25 @@ if ($isEditor) {
 										<button name="submitaction" type="submit" value="Save Edits"><?php echo $LANG['SAVE_EDITS']; ?></button>
 									</div>
 								</form>
+								<!--- NEON Addition -->
+									<?php if ($mdArr['category'] == "Request") { 
+										?>
+										<div style="margin:15px;">
+										<?php $type = 'dataset'; ?>
+										<?php $pubID = $datasetId; ?>
+										<form action="<?php echo $CLIENT_ROOT; ?>/neon/requests/exporthandler.php" method="post">
+											<input type="hidden" name="pubID" value="<?php echo $pubID; ?>" />
+											<input type="hidden" name="type" value="<?php echo $type; ?>" />
+											<input type="hidden" name="exportTask" value="pubtable" />
+											<button type="submit">
+												Export Publication-Ready Table
+											</button>
+										</form>
+										</div>
+									<?php
+									};
+									?>
+								<!--- END NEON Addition -->
 							</section>
 							<section class="fieldset-like">
 								<h2><span><b><?php echo $LANG['DEL_DS']; ?></b></span></h2>
