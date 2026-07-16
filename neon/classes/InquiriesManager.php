@@ -2144,7 +2144,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
             return false;
         }
 
-        $name = substr($row['title'], 0, 100);
+        $name = substr($row['title'], 0, 5000);
         $name = $this->conn->real_escape_string($name);
         $description = $this->conn->real_escape_string($row['description'] ?? '');
         $notes = "Dataset created from request $requestID";
