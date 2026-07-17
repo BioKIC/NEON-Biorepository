@@ -895,8 +895,11 @@ public function addCollectionInquiryLink($requestID, $collections) {
 
       $requestID = (int)$requestID;
 
-      $sql = "SELECT occid,status,useType,substanceProvided,available,notes,shipmentID FROM neonsamplerequestlink
-            WHERE requestID = ?";
+      $sql = "SELECT s.occid,o.sampleID,o.sampleCode,s.status,s.useType,s.substanceProvided
+            FROM neonsamplerequestlink s
+            LEFT JOIN NeonSample o 
+            ON s.occid = o.occid
+            WHERE s.requestID = ?";
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
           $this->errorMessage = "Dababase error: " . $this->conn->error;
@@ -922,7 +925,9 @@ public function addCollectionInquiryLink($requestID, $collections) {
 
       $requestID = (int)$requestID;
 
-      $sql = "SELECT matSampleID,occid,status,useType,sampleType,notes,shipmentID FROM neonmaterialsamplerequestlink
+      $sql = "SELECT r.matSampleID,r.occid,s.catalogNumber,r.status,r.useType,r.sampleType FROM neonmaterialsamplerequestlink r
+            LEFT JOIN ommaterialsample s
+            ON r.matSampleID = s.matSampleID
             WHERE requestID = ?";
       $stmt = $this->conn->prepare($sql);
       if (!$stmt) {
