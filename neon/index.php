@@ -55,6 +55,7 @@ if($isEditor){
 				<li><a href="requests/newinquiry.php">Create New Inquiry</a></li>
 				<li><a href="requests/index.php">Sample Use Inquiry List</a></li>
 				<li><a href="requests/neonrequestsearch.php">Sample Use Search</a></li>
+				<li><a href="../collections/datasets/publiclist.php">Research Datasets</a></li>
 				<?php
 				if($IS_ADMIN){
 					?>

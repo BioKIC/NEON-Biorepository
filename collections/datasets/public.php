@@ -17,6 +17,26 @@ $searchUrl = '../../collections/list.php?datasetid=' . $datasetid;
 $tableUrl = '../../collections/listtabledisplay.php?datasetid=' . $datasetid;
 $taxaUrl = '../../collections/list.php?datasetid=' . $datasetid . '&tabindex=0';
 // $downloadUrl = '../../collections/download/index.php?datasetid='.$datasetid;
+
+# NEON edit
+$datasetManager = new OccurrenceDataset();
+
+$mdArr = $datasetManager->getDatasetMetadata($datasetid);
+
+$isEditor = 0;
+if ($SYMB_UID == $mdArr['uid']) {
+	$isEditor = 1;
+} elseif (isset($mdArr['roles'])) {
+	if (in_array('DatasetAdmin', $mdArr['roles'])) {
+		$isEditor = 1;
+	} elseif (in_array('DatasetEditor', $mdArr['roles'])) {
+		$isEditor = 1;
+	} 
+} elseif ($IS_ADMIN) {
+	$isEditor = 1;
+}
+# end NEON edit
+
 $ocArr = $datasetManager->getOccurrences($datasetid);
 ?>
 <!DOCTYPE html>
@@ -38,6 +58,13 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 		</div>
 		<!-- This is inner text! -->
 		<div role="main" id="innertext">
+			<!-- NEON edit -->
+			<?php
+			if ($isEditor == 1) {
+				echo "<a href='../datasets/datasetmanager.php?datasetid=" . $datasetid . "'>Manage Dataset</a>";
+			}
+			?>
+			<!-- end NEON edit -->
     	<h1 class="page-heading"><?php echo $LANG['DATASET']; ?>: <?php echo $dArr['name'] ;?></h1>
     <ul>
       <!-- Metadata -->

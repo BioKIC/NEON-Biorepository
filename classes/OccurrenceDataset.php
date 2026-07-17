@@ -224,20 +224,39 @@ class OccurrenceDataset{
 			return false;
 		}
 
-		//Delete datasets
-		$sql2 = 'DELETE FROM omoccurdatasets WHERE datasetid = ' . $dsid;
+		// NEON edit
+
+		//Delete dataset records
+		$sql2 = 'DELETE FROM omoccurdatasetlink WHERE datasetid = ' . $dsid;
 		if (!$this->conn->query($sql2)) {
 			$this->errorArr[] = 'ERROR: Unable to delete target datasets: ' . $this->conn->error;
 			return false;
 		}
-		return true;
 
-		//Delete dataset records
-		$sql3 = 'DELETE FROM omoccurdatasetlink WHERE datasetid = ' . $dsid;
-		if (!$this->conn->query($sql3)) {
+		//Delete reference dataset link
+		$sql4 = 'DELETE FROM referencedatasetlink WHERE datasetid = ' . $dsid;
+		if (!$this->conn->query($sql4)) {
 			$this->errorArr[] = 'ERROR: Unable to delete target datasets: ' . $this->conn->error;
 			return false;
 		}
+
+		//Delete datasets
+		$sql4 = 'DELETE FROM omoccurdatasets WHERE datasetid = ' . $dsid;
+		if (!$this->conn->query($sql4)) {
+			$this->errorArr[] = 'ERROR: Unable to delete target datasets: ' . $this->conn->error;
+			return false;
+		}
+
+		$sql5 = 'UPDATE neonrequest
+				SET datasetID = NULL
+				WHERE datasetID = ' . $dsid;
+		if (!$this->conn->query($sql5)) {
+			$this->errorArr[] = 'ERROR: Unable to delete link to request database: ' . $this->conn->error;
+			return false;
+		}
+
+		// End NEON edit
+
 		return true;
 	}
 
