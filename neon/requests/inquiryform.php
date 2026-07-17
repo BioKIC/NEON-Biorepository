@@ -263,6 +263,10 @@ if($formSubmit == 'editStatus' && $isEditor){
 		}
 	}
 
+if(!$isEditor) {
+	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
+
+}
 
 ?>
 <!DOCTYPE html>

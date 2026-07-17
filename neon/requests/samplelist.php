@@ -532,7 +532,7 @@ include($SERVER_ROOT.'/includes/header.php');
 	else{
 		?>
 		<div style='font-weight:bold;margin:30px;'>
-			You do not have permissions to view requests
+		Please login with administrator permissions get access to this page.
 		</div>
 		<?php
 	}

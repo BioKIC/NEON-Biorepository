@@ -132,6 +132,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 	<?php
 	$displayLeftMenu = false;
 	include($SERVER_ROOT . '/includes/header.php');
+	if ($isEditor) {
 	?>
 	<div role="main" id="innertext">
 		<h1 class="page-heading">Sample Importer</h1>
@@ -362,6 +363,10 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 		?>
 	</div>
 	<?php
+	}
+	else{
+		echo '<h3>Please login with administrator permissions get access to this page.</h3>';
+	}
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
 </body>

@@ -15,7 +15,7 @@ $headerArr = ['id','researcher','inquiry date','title','status','samples','follo
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
-elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
+elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 ?>
 
 <html>
@@ -170,7 +170,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
         }
 
 	} else {
-        echo '<h3>You do not have permissions to view this page.</h3>';
+	    echo '<h3>Please login with administrator permissions get access to this page.</h3>';
     }
 		?>
 		</div>

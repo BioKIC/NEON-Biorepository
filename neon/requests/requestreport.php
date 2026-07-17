@@ -33,11 +33,6 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		$displayLeftMenu = false;
 		include($SERVER_ROOT.'/includes/header.php');
 		?>
-		<div class="navpath">
-			<a href="../../../index.php">Home</a> &gt;&gt;
-			<a href="../index.php">Management Tools</a> &gt;&gt;
-			<b>Request Status Report</b>
-		</div>
 		<div id="innertext">
 <?php
 if ($isEditor) {
@@ -55,7 +50,7 @@ if ($isEditor) {
     echo $reportsTable;
   }
 } else {
-  echo '<h3>Please login to get access to this page.</h3>';
+	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
 }
 ?>
 
