@@ -44,15 +44,20 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		$displayLeftMenu = false;
 		include($SERVER_ROOT.'/includes/header.php');
 		?>
-		<div class="navpath">
-			<a href="../../../index.php">Home</a> &gt;&gt;
-			<a href="../index.php">Management Tools</a> &gt;&gt;
-			<b>NEON Quarterly Sample Use Report</b>
-		</div>
 		<div id="innertext">
 <?php
 if ($isEditor) {
 ?>
+	<div class="section-nav">
+		<a href="#requestsbystatus">Requests by Status Comparisons by AY</a> |
+		<a href="#researcherrequestsbystatus">Researchers and Requests by Status</a> |
+		<a href="#bysampletype">Researchers and Samples by Sample Type</a> |
+		<a href="#byusetype">Samples By Use Type</a> |
+		<a href="#byfield">Samples By Research Field</a> |
+		<a href="#discongen">Samples Distributed, Consumed, and Generated</a> |
+		<a href="#updates">Data Updates</a> |
+		<a href="#plots">Plots</a> 
+	</div>
 	<h1>NEON Quarterly Sample Use Report: <?php echo htmlspecialchars($quarter); ?></h1>
  <?php
 
@@ -87,8 +92,30 @@ if ($isEditor) {
 
 		foreach ($tables as $tableType => $periodData) {
 
+			$openedSection = false;
+
 			if (in_array($tableType, $excludeTableTypes, true)) {
 				continue;
+			}
+			elseif ($tableType == 'Requests by Status Comparisons by AY') {
+				echo '<div class="section" id="requestsbystatus">';
+				$openedSection = true;
+			}
+			elseif ($tableType == 'Researchers and Requests by Status') {
+				echo '<div class="section" id="researcherrequestsbystatus">';
+				$openedSection = true;
+			}
+			elseif ($tableType == 'Researchers and Samples by Collection') {
+				echo '<div class="section" id="bysampletype">';
+				$openedSection = true;
+			}
+			elseif ($tableType == 'Samples by Use Type') {
+				echo '<div class="section" id="byusetype">';
+				$openedSection = true;
+			}
+			elseif ($tableType == 'Samples by Primary Research Field') {
+				echo '<div class="section" id="byfield">';
+				$openedSection = true;
 			}
 
 			echo '<h2>' . htmlspecialchars($tableType) . '</h2>';
@@ -285,105 +312,116 @@ if ($isEditor) {
 				<input type="hidden" name="quarter" value="' . htmlspecialchars($quarter, ENT_QUOTES) . '">
 				<input type="hidden" name="tabletype" value="' . htmlspecialchars($tableType, ENT_QUOTES) . '">
 				<button type="submit">Download above table as CSV</button>
-				</form>';		
+				</form>';	
+			
+			if ($openedSection) {
+				echo '</div>';
+			}
 		
 	}
 }
 	
 ?>
-	<h2>Samples Distributed, Consumed, and Generated This Quarter</h2>
+	<div class="section" id="discongen">
+		<h2>Samples Distributed, Consumed, and Generated This Quarter</h2>
 
-	<form method="post" action="exportquarterlydataset.php">
-		<input type="hidden" name="type" value="samples_distributed">
-		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Samples Distributed</button>
-	</form>
+		<form method="post" action="exportquarterlydataset.php">
+			<input type="hidden" name="type" value="samples_distributed">
+			<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+			<button type="submit">Download Samples Distributed</button>
+		</form>
 
-	<form method="post" action="exportquarterlydataset.php">
-		<input type="hidden" name="type" value="samples_consumed">
-		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Samples Consumed</button>
-	</form>
+		<form method="post" action="exportquarterlydataset.php">
+			<input type="hidden" name="type" value="samples_consumed">
+			<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+			<button type="submit">Download Samples Consumed</button>
+		</form>
 
-	<form method="post" action="exportquarterlydataset.php">
-		<input type="hidden" name="type" value="samples_generated">
-		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Samples Generated</button>
-	</form>
+		<form method="post" action="exportquarterlydataset.php">
+			<input type="hidden" name="type" value="samples_generated">
+			<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+			<button type="submit">Download Samples Generated</button>
+		</form>
 
-	<h2>Data Updates This Quarter</h2>
-
-	<form method="post" action="exportquarterlydataset.php">
-		<input type="hidden" name="type" value="data_edits">
-		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Data Edits</button>
-	</form>
-
-	<form method="post" action="exportquarterlydataset.php">
-		<input type="hidden" name="type" value="datasets_generated">
-		<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
-		<button type="submit">Download Datasets Generated</button>
-	</form>
-
-	<h2>Cumulative Requests</h2>
-
-	<div style="height: 450px; max-width: 1000px;">
-		<canvas id="cumulativeRequests"></canvas>
 	</div>
+	<div class="section" id="updates">
+		<h2>Data Updates This Quarter</h2>
 
-	<h2>Cumulative Sample Use</h2>
+		<form method="post" action="exportquarterlydataset.php">
+			<input type="hidden" name="type" value="data_edits">
+			<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+			<button type="submit">Download Data Edits</button>
+		</form>
 
-	<div style="display:flex; gap:30px; height:450px; max-width:500px;">
-		<canvas id="allSamplesChart"></canvas>
-		<canvas id="researchSamplesChart"></canvas>
+		<form method="post" action="exportquarterlydataset.php">
+			<input type="hidden" name="type" value="datasets_generated">
+			<input type="hidden" name="quarter" value="<?= htmlspecialchars($quarter, ENT_QUOTES) ?>">
+			<button type="submit">Download Datasets Generated</button>
+		</form>
+
 	</div>
+	<div class="section" id="plots">
 
-	<h2>Requests by Initiation Award Year</h2>
-	<h4>Bars indicate the number of requests by status summarized by the award year in which the initial inquiry was received</h4>
+		<h2>Cumulative Requests</h2>
 
-	<div style="height: 450px; max-width: 1000px;">
-		<canvas id="requestsByInitiationAY"></canvas>
-	</div>
+		<div style="height: 450px; max-width: 1000px;">
+			<canvas id="cumulativeRequests"></canvas>
+		</div>
 
-	<h2>Requests by Award Year of Status Update</h2>
-	<h4>Bars indicate the number of requests by status summarized by the award year in which the last status update was recorded</h4>
+		<h2>Cumulative Sample Use</h2>
 
-	<div style="height: 450px; max-width: 1000px;">
-		<canvas id="requestsByStatusAY"></canvas>
-	</div>
+		<div style="display:flex; gap:30px; height:450px; max-width:500px;">
+			<canvas id="allSamplesChart"></canvas>
+			<canvas id="researchSamplesChart"></canvas>
+		</div>
 
-	<h2>Sample Use by Taxonomic Group To Date</h2>
+		<h2>Requests by Initiation Award Year</h2>
+		<h4>Bars indicate the number of requests by status summarized by the award year in which the initial inquiry was received</h4>
 
-	<div style="display:flex; gap:40px;">
-		<div style="flex:1">
-			<h3>All Sample Use</h3>
-			<div style="height:350px;">
-				<canvas id="collectionChart"></canvas>
+		<div style="height: 450px; max-width: 1000px;">
+			<canvas id="requestsByInitiationAY"></canvas>
+		</div>
+
+		<h2>Requests by Award Year of Status Update</h2>
+		<h4>Bars indicate the number of requests by status summarized by the award year in which the last status update was recorded</h4>
+
+		<div style="height: 450px; max-width: 1000px;">
+			<canvas id="requestsByStatusAY"></canvas>
+		</div>
+
+		<h2>Sample Use by Taxonomic Group To Date</h2>
+
+		<div style="display:flex; gap:40px;">
+			<div style="flex:1">
+				<h3>All Sample Use</h3>
+				<div style="height:350px;">
+					<canvas id="collectionChart"></canvas>
+				</div>
+			</div>
+
+			<div style="flex:1">
+				<h3>Excluding Image-Only Use</h3>
+				<div style="height:350px;">
+					<canvas id="collectionChartNoImage"></canvas>
+				</div>
 			</div>
 		</div>
 
-		<div style="flex:1">
-			<h3>Excluding Image-Only Use</h3>
-			<div style="height:350px;">
-				<canvas id="collectionChartNoImage"></canvas>
+		<h2>Sample Use by Storage Type To Date</h2>
+
+		<div style="display:flex; gap:40px;">
+			<div style="flex:1">
+				<h3>All Sample Use</h3>
+				<div style="height:350px;">
+					<canvas id="storageChart"></canvas>
+				</div>
 			</div>
-		</div>
-	</div>
 
-	<h2>Sample Use by Storage Type To Date</h2>
-
-	<div style="display:flex; gap:40px;">
-		<div style="flex:1">
-			<h3>All Sample Use</h3>
-			<div style="height:350px;">
-				<canvas id="storageChart"></canvas>
-			</div>
-		</div>
-
-		<div style="flex:1">
-			<h3>Excluding Image-Only Use</h3>
-			<div style="height:350px;">
-				<canvas id="storageChartNoImage"></canvas>
+			<div style="flex:1">
+				<h3>Excluding Image-Only Use</h3>
+				<div style="height:350px;">
+					<canvas id="storageChartNoImage"></canvas>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -1035,9 +1073,7 @@ foreach ($useTypesNoImage as $type) {
 const storageLabels_<?= md5($reportDate) ?> = <?= json_encode($storages) ?>;
 const storageDatasets_<?= md5($reportDate) ?> = <?= json_encode($datasets) ?>;
 const storageDatasetsNoImage_<?= md5($reportDate) ?> = <?= json_encode($datasetsNoImage) ?>;
-</script>
 
-<script>
 (function () {
 
 function buildStorageChart(canvasID, labels, datasetsRaw){
@@ -1114,5 +1150,31 @@ buildStorageChart(
 
 })();
 </script>
+
+<style>
+	.section-nav {
+    margin: 20px 0;
+    padding: 10px 15px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.section-nav a {
+    text-decoration: none;
+    color: #0056b3;
+    font-weight: 600;
+    margin-right: 12px;
+}
+
+.section-nav a:hover {
+    text-decoration: underline;
+}
+
+.section {
+    scroll-margin-top: 130px;
+}
+</style>
+
 
 </html>
