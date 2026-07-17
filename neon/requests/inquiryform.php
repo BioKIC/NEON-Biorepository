@@ -870,12 +870,17 @@ if(!$isEditor) {
 							<div style="clear:both;padding-top:8px;float:left;">
 								<?php
 								if (!empty($sampledata)) {
+									foreach ($sampledata as &$row) {
+										$row['occid'] = '<a href="https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=' . htmlspecialchars($row['occid']) . '" target="_blank" rel="noopener noreferrer">'
+													. htmlspecialchars($row['occid'])
+													. '</a>';
+									}
 									echo str_replace(
 										'<table',
 										'<table id="sampleTable"',
 										$utilities->htmlTable(
 											$sampledata,
-											['occid', 'status', 'use type', 'substance', 'available', 'notes', 'shipment']
+											['occid', 'sampleID', 'sampleCode', 'status', 'use type', 'substance']
 										)
 									);
 								}
@@ -895,12 +900,17 @@ if(!$isEditor) {
 								<div style="clear:both;padding-top:8px;float:left;">
 								<?php
 								if (!empty($materialsampledata)) {
+									foreach ($materialsampledata as &$row) {
+										$row['occid'] = '<a href="https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=' . htmlspecialchars($row['occid']) . '" target="_blank" rel="noopener noreferrer">'
+													. htmlspecialchars($row['occid'])
+													. '</a>';
+									}
 									echo str_replace(
 										'<table',
 										'<table id="materialSampleTable"',
 										$utilities->htmlTable(
 											$materialsampledata,
-											['material sample PK','occid','status','use type','sample type','notes','shipment']
+											['PK','occid','ms catalog number','status','use type','sample type']
 										)
 									);
 								}
