@@ -37,6 +37,8 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+		<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+        <script src="../../js/datatables/datatables.js"></script>
 
 	</head>
 	<body>
@@ -305,7 +307,16 @@ if ($isEditor) {
 					be reflective of the numbers of samples that are actually available for use.</p>';
 			}
 
-			echo $utilities->htmlTable($finalRows, $headers);
+			if ($tableType == 'Researchers and Samples by Sample Type') {
+				echo str_replace(
+					'<table',
+					'<table id="sampleTable"',
+					$utilities->htmlTable($finalRows, $headers)
+				);	
+			}
+			else {
+				echo $utilities->htmlTable($finalRows, $headers);
+			}
 
 
 			echo '<form method="post" action="exportquarterlyreporthandler.php" style="margin-bottom:20px;">
@@ -1149,10 +1160,25 @@ buildStorageChart(
 );
 
 })();
+
+$(document).ready(function () {
+    $('#sampleTable').DataTable({
+        pageLength: 10,
+        layout: {
+            topStart: {
+                pageLength: {
+                    menu: [10, 25, 50, 100, { label: 'All', value: -1 }]
+                }
+            }
+        },
+        scrollCollapse: true
+    });
+});
+
 </script>
 
 <style>
-	.section-nav {
+.section-nav {
     margin: 20px 0;
     padding: 10px 15px;
     background: #f5f5f5;

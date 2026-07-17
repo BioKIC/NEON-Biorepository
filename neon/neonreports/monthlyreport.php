@@ -37,6 +37,8 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+        <script src="../../js/datatables/datatables.js"></script>
 	</head>
 	<body>
 		<?php
@@ -130,7 +132,11 @@ if ($isEditor) {
 			</div>
 			<?php
 			$headerArr = ['Sample Class', 'Current','Change'];
-			echo $utilities->htmlTable($sample, $headerArr);
+			echo str_replace(
+                '<table',
+                '<table id="sampleTable"',
+                $utilities->htmlTable($sample, $headerArr)
+            );		
 		}
 		?>
 		<form method="post" action="exportmonthlyreporthandler.php">
@@ -269,7 +275,22 @@ else {
 		});
 
 	})();
-	</script>
+
+    $(document).ready(function () {
+        $('#sampleTable').DataTable({
+            pageLength: 25,
+            layout: {
+                topStart: {
+                    pageLength: {
+                        menu: [10, 25, 50, 100, { label: 'All', value: -1 }]
+                    }
+                }
+            },
+            scrollCollapse: true
+        });
+    });
+</script>
+
 	<style>
 	.section-nav {
 		margin: 20px 0;
