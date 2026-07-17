@@ -333,6 +333,9 @@ if ($isEditor) {
 			echo '</div>';
 		}
 		if ($datasetId) {
+			# NEON edit
+			echo "<a href='../datasets/public.php?datasetid=" . $datasetId . "'>View Dataset</a>";
+			# End NEON edit
 			echo '<div style="margin:10px 0px 5px 20px;font-weight:bold;font-size:130%;">' . $mdArr['name'] . '</div>';
 			if ($role) echo '<div style="margin-left:20px" title="' . $LANG['ROLE'] . '"' . $roleLabel . '>' . $LANG['ROLE'] . ': ' . $role . '</div>';
 			if ($isEditor) {
