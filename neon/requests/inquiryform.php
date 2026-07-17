@@ -124,7 +124,7 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		);
 
 		if ($updatedrequestid) {
-			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success");
+			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success&tabindex=" . $tabIndex);
 			exit();
 		} else {
 			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
@@ -233,7 +233,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		);
 
 		if ($updatedrequestid) {
-			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success");
+			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success&tabindex=" . $tabIndex);
 			exit();
 		} else {
 			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
@@ -256,7 +256,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		);
 
 		if ($updatedRequestID) {
-			header("Location: inquiryform.php?id=" . $updatedRequestID . "&status=success");
+			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success&tabindex=" . $tabIndex);			
 			exit();
 		} else {
 			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
@@ -496,7 +496,7 @@ if(!$isEditor) {
    						 			<div class="fieldDiv">
 
        										<label for="inqtitle"><strong><?php echo 'Inquiry Title'; ?>:</strong></label><br>
-											<textarea name="inqtitle" id="inqtitle" style="width:1000px; height:60px;"> <?php echo $inquirydata['title']; ?></textarea>
+											<textarea name="inqtitle" id="inqtitle" style="width:800px; height:60px;"> <?php echo $inquirydata['title']; ?></textarea>
    								 	</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
@@ -643,7 +643,7 @@ if(!$isEditor) {
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 										<div class="fieldDiv">
 											<label for="inqdescription"><strong><?php echo 'Project Description: '; ?></strong></label><br>
-											<textarea name="inqdescription" id="inqdescription" style="width:1000px; height:150px;"> <?php echo $inquirydata['description']; ?></textarea>
+											<textarea name="inqdescription" id="inqdescription" style="width:800px; height:150px;"> <?php echo $inquirydata['description']; ?></textarea>
 										</div>
 									</div>
 								</div>
