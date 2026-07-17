@@ -164,7 +164,9 @@ elseif($action == 'addAllToDataset'){
 						?>
 						<div class="dataset-item">
 							<div>
-								<a href="datasetmanager.php?datasetid=<?php echo $dsid; ?>" title="<?php echo (isset($LANG['MNG_EDIT']) ? $LANG['MNG_EDIT'] : 'Manage and edit dataset') ?>">
+								<!---NEON edit -->
+								<a href="../../neon/datasets/neondatasetmanager.php?datasetid=<?php echo $dsid; ?>" title="<?php echo (isset($LANG['MNG_EDIT']) ? $LANG['MNG_EDIT'] : 'Manage and edit dataset') ?>">
+								<!---end NEON edit -->
 									<?php
 									echo '<b>'.$dsArr['name'].' (#'.$dsid.')</b>';
 									?>
