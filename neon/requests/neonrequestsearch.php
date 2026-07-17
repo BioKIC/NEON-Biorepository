@@ -773,7 +773,7 @@ $(function () {
 		<?php
 	}
 	else { 
-		echo '<h3>You do not have permissions to view this page.</h3>';
+	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
 		}
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>

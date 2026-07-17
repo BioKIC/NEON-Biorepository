@@ -101,7 +101,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
         ?>
 				<?php
 			} else {
-        echo '<h3>Please login to get access to this page.</h3>';
+	    echo '<h3>Please login with administrator permissions get access to this page.</h3>';
       }
 			?>
 		</div>

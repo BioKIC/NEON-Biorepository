@@ -52,11 +52,14 @@ if($IS_ADMIN) $isEditor = true;
 			if($sortableTable){
 				?>
 				$('#materialsampletable').DataTable({
-					paging: false,
+					pageLength: 25,
+					lengthMenu: [10, 25, 50, 100, { label: 'All', value: -1 }],
 					scrollCollapse: true,
 					fixedHeader: true,
-					columnDefs: [{ orderable: false, targets: [0, -1]}],
-					});
+					columnDefs: [
+						{ orderable: false, targets: [0, -1] }
+					]
+				});
 				$("#materialsampletable").DataTable().rows().every( function () {
 					var tr = $(this.node());
 					var childValue = tr.data('child-value');
@@ -426,7 +429,7 @@ include($SERVER_ROOT.'/includes/header.php');
 	else{
 		?>
 		<div style='font-weight:bold;margin:30px;'>
-			You do not have permissions to view requests
+		Please login with administrator permissions get access to this page.
 		</div>
 		<?php
 	}

@@ -38,11 +38,6 @@ if ($isEditor && isset($_POST['generate_report'])) {
 $displayLeftMenu = false;
 include($SERVER_ROOT.'/includes/header.php');
 ?>
-<div class="navpath">
-    <a href="../../../index.php">Home</a> &gt;&gt;
-    <a href="../index.php">Management Tools</a> &gt;&gt;
-    <b>NEON Quarterly Sample Use Report</b>
-</div>
 <div id="innertext">
 <?php
 if ($isEditor) {
@@ -72,7 +67,7 @@ if ($isEditor) {
 
 <?php
 } else {
-    echo '<h3>Please login to get access to this page.</h3>';
+	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
 }
 ?>
 </div>

@@ -472,8 +472,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			<?php
 		}
 		else{
-			if(!$isEditor) echo '<h2>' . $LANG['NOT_AUTH_LOANS'] . '</h2>';
-			else echo '<h2>' . $LANG['UNKNOWN_ERROR'] . '</h2>';
+			echo '<h3>Please login with administrator permissions get access to this page.</h3>';
 		}
 		?>
 	</div>

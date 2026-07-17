@@ -55,6 +55,11 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 <?php
 if ($isEditor) {
 ?>
+    <div class="section-nav">
+		<a href="#unsubmitted">Unsubmitted Samples</a> |
+		<a href="#potentialnew">Potential New Samples</a> |
+		<a href="#submitted">Submitted Samples</a>
+	</div>
 	<h1>NEON Archive Upload Data</h1>
  <?php
 
@@ -62,8 +67,8 @@ if ($isEditor) {
 	if (!empty($new) || !empty($submitted) || !empty($unsubmitted)) {
 		
 		echo '<h4><a href=https://data.neonscience.org/web/external-lab-ingest>NEON External Lab Ingest Page</a></h4>';	
-
 		if ($unsubmitted) {
+            echo "<div class='section' id='unsubmitted'>";
 			echo '<h2>Unsubmitted Samples</h2>';
             echo str_replace(
                 '<table',
@@ -75,10 +80,12 @@ if ($isEditor) {
 			<input type="hidden" name="type" value=0>
 			<button type="submit">Export New Archive Upload Data & Mark Samples as Submitted</button>
 		</form>
+        </div>
 		<?php
         }
 
         if ($new) {
+            echo "<div class='section' id='potentialnew'>";
 			echo '<h2>Potential New Archive Samples</h2>';
             foreach ($new as &$row) {
                 $row = array_merge(
@@ -104,9 +111,11 @@ if ($isEditor) {
 
             echo '<button type="submit">Add to Unsubmitted Sample List</button>';
             echo '</form>';
+            echo '</div>';
         }
 
         if ($submitted) {
+            echo "<div class='section' id='submitted'>";
 			echo '<h2>Submitted Samples</h2>';
             echo str_replace(
                 '<table',
@@ -119,6 +128,7 @@ if ($isEditor) {
 			<input type="hidden" name="type" value=1>
 			<button type="submit">Export Prior Archive Upload Data</button>
 		</form>
+        </div>
 		<?php
         }
 
@@ -128,7 +138,7 @@ if ($isEditor) {
 <?php
 } 
 else {
-	echo '<h3>Please login to get access to this page.</h3>';
+	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
 }
 ?>
 		</div>
@@ -175,6 +185,30 @@ else {
         });
     });
 </script>
+<style>
+	.section-nav {
+		margin: 20px 0;
+		padding: 10px 15px;
+		background: #f5f5f5;
+		border: 1px solid #ddd;
+		border-radius: 5px;
+	}
+
+	.section-nav a {
+		text-decoration: none;
+		color: #0056b3;
+		font-weight: 600;
+		margin-right: 12px;
+	}
+
+	.section-nav a:hover {
+		text-decoration: underline;
+	}
+
+	.section {
+		scroll-margin-top: 120px;
+	}
+	</style>
 
 
 </html>

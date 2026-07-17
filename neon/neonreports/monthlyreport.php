@@ -37,21 +37,23 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<script src="../../js/jquery-3.2.1.min.js" type="text/javascript"></script>
 		<script src="../../js/jquery-ui-1.12.1/jquery-ui.min.js" type="text/javascript"></script>
 		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+        <script src="../../js/datatables/datatables.js"></script>
 	</head>
 	<body>
 		<?php
 		$displayLeftMenu = false;
 		include($SERVER_ROOT.'/includes/header.php');
 		?>
-		<div class="navpath">
-			<a href="../../../index.php">Home</a> &gt;&gt;
-			<a href="../index.php">Management Tools</a> &gt;&gt;
-			<b>NEON Monthly Report</b>
-		</div>
 		<div id="innertext">
 <?php
 if ($isEditor) {
 ?>
+	<div class="section-nav">
+		<a href="#stats">General Statistics</a> |
+		<a href="#requests">Request Summary</a> |
+		<a href="#samples">Samples Received by Class To Date</a>
+	</div>
 	<h1>NEON Monthly Report: <?php echo htmlspecialchars($month); ?></h1>
  <?php
 
@@ -86,9 +88,11 @@ if ($isEditor) {
 		}
 
 		if ($general) {
+			echo "<div class='section' id='stats'>";
 			echo '<h2>General Statistics</h2>';
 			$headerArr = ['Statistic', 'Current','Change'];
 			echo $utilities->htmlTable($general, $headerArr);
+
 		}
 
 		?>
@@ -97,9 +101,11 @@ if ($isEditor) {
 			<input type="hidden" name="type" value="general">
 			<button type="submit">Export General Statistics Report</button>
 		</form>
+		</div>
 		<?php
 
 		if ($request) {
+			echo "<div class='section' id='requests'>";
 			echo '<h2>Request Summary</h2>';
 			$headerArr = ['Status', 'Current','Change'];
 			echo $utilities->htmlTable($request, $headerArr);
@@ -111,11 +117,14 @@ if ($isEditor) {
 			<input type="hidden" name="type" value="request">
 			<button type="submit">Export Request Summary</button>
 		</form>
+		</div>
 		<?php
 
 		if ($sample) {
 						
 			?>
+		<div class='section' id='samples'>
+
 			<h2>Samples Received by Class To Date</h2>
 
 			<div style="width:100%; max-width:1000px;">
@@ -123,7 +132,11 @@ if ($isEditor) {
 			</div>
 			<?php
 			$headerArr = ['Sample Class', 'Current','Change'];
-			echo $utilities->htmlTable($sample, $headerArr);
+			echo str_replace(
+                '<table',
+                '<table id="sampleTable"',
+                $utilities->htmlTable($sample, $headerArr)
+            );		
 		}
 		?>
 		<form method="post" action="exportmonthlyreporthandler.php">
@@ -131,6 +144,7 @@ if ($isEditor) {
 			<input type="hidden" name="type" value="sample">
 			<button type="submit">Export Samples Received</button>
 		</form>
+		</div>
 		<?php
 
 
@@ -143,7 +157,7 @@ if ($isEditor) {
 <?php
 } 
 else {
-	echo '<h3>Please login to get access to this page.</h3>';
+	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
 }
 ?>
 		</div>
@@ -261,7 +275,45 @@ else {
 		});
 
 	})();
-	</script>
 
+    $(document).ready(function () {
+        $('#sampleTable').DataTable({
+            pageLength: 25,
+            layout: {
+                topStart: {
+                    pageLength: {
+                        menu: [10, 25, 50, 100, { label: 'All', value: -1 }]
+                    }
+                }
+            },
+            scrollCollapse: true
+        });
+    });
+</script>
+
+	<style>
+	.section-nav {
+		margin: 20px 0;
+		padding: 10px 15px;
+		background: #f5f5f5;
+		border: 1px solid #ddd;
+		border-radius: 5px;
+	}
+
+	.section-nav a {
+		text-decoration: none;
+		color: #0056b3;
+		font-weight: 600;
+		margin-right: 12px;
+	}
+
+	.section-nav a:hover {
+		text-decoration: underline;
+	}
+
+	.section {
+		scroll-margin-top: 120px;
+	}
+	</style>
 
 </html>

@@ -43,7 +43,6 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 <?php
 if ($isEditor) {
 ?>
-	<h1>NEON SOW Report: AY<?php echo htmlspecialchars($ay); ?></h1>
 	<div class="section-nav">
 		<a href="#receipts">1. Sample Receipt Forms</a> |
 		<a href="#accessioning">2. Accessioning</a> |
@@ -51,6 +50,7 @@ if ($isEditor) {
 		<a href="#loans">4. Loans</a> |
 		<a href="#loanrequests">5. Loan Requests</a>
 	</div>
+	<h1>NEON SOW Report: AY<?php echo htmlspecialchars($ay); ?></h1>
  <?php
 
 	if ($reportDate) {
@@ -226,7 +226,7 @@ if ($isEditor) {
 	}
 } 
 else {
-	echo '<h3>Please login to get access to this page.</h3>';
+	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
 }
 ?>
 		</div>

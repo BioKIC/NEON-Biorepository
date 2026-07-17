@@ -39,6 +39,20 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 				{ width: '10%', targets: 4 },
 			]
 		});
+		$.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+			if (settings.nTable.id !== 'loanSpecimenTable') return true;
+
+			if (!$('#showOutstanding').prop('checked')) {
+				return true;
+			}
+
+			return data[4].trim() === '';
+		});
+
+		$('#showOutstanding').on('change', function () {
+			table.draw();
+		});
+		
 	}
 //end neon edit
 	var skipFormVerification = false;
@@ -422,9 +436,18 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 					<input name="tabindex" type="hidden" value="1" />
 				</fieldset>
 			</div>
-			<table id="loanSpecimenTable" class="display" style="font-size:12px;"> <!--neon edit-->
+			<!--neon edit-->
+			<div style="text-align:right; margin-bottom:10px;">
+				<label style="font-weight:normal;">
+				<input type="checkbox" id="showOutstanding">
+					Show only outstanding specimens
+				</label>
+			</div>
+			<table id="loanSpecimenTable" class="display" style="font-size:12px;"> 
 				<thead> <!--neon edit-->
 					<tr>
+						<label>
+
 						<th class="form-checkbox"><input type="checkbox" onclick="selectAll(this);" title="<?php echo $LANG['SEC_DESEL_ALL']; ?>" /></th>
 						<th>&nbsp;</th>
 						<th><?php echo $LANG['CATNO']; ?>
@@ -457,8 +480,7 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 							</td>
 							<td>
 								<div>
-									<a href="#" onclick="openIndPopup(<?php echo $occid; ?>); return false;"><img class="icon-img" src="../../images/list.png" title="<?php echo $LANG['OPEN_SPECIMEN_DETAILS']; ?>" /></a><br/>
-								</div>
+									<a href="#" onclick="openIndPopup(<?php echo $occid; ?>); return false;"><?php echo $occid; ?></a><br/>								</div>
 								<div>
 									<a href="#" onclick="openEditorPopup(<?php echo $occid; ?>); return false;"><img class="icon-img" src="../../images/edit.png" title="<?php echo $LANG['OPEN_OCC_EDITOR']; ?>" /></a>
 								</div>

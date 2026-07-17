@@ -263,6 +263,10 @@ if($formSubmit == 'editStatus' && $isEditor){
 		}
 	}
 
+if(!$isEditor) {
+	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
+
+}
 
 ?>
 <!DOCTYPE html>
@@ -270,12 +274,14 @@ if($formSubmit == 'editStatus' && $isEditor){
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>">
 	<title><?php echo 'View and Edit Existing Inquiry Record' ?></title>
-	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
+	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
+	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+    <script src="../../js/datatables/datatables.js"></script>
 
 	<script>
 
@@ -864,13 +870,14 @@ if($formSubmit == 'editStatus' && $isEditor){
 							<div style="clear:both;padding-top:8px;float:left;">
 								<?php
 								if (!empty($sampledata)) {
-									echo '<div class="table-container">';
-									$samplesTable = $utilities->htmlTable(
-										$sampledata, 
-										['occid','status','use type','substance','available','notes','shipment']
+									echo str_replace(
+										'<table',
+										'<table id="sampleTable"',
+										$utilities->htmlTable(
+											$sampledata,
+											['occid', 'status', 'use type', 'substance', 'available', 'notes', 'shipment']
+										)
 									);
-									echo $samplesTable;
-									echo '</div>';
 								}
 								?>
 							</div>
@@ -886,18 +893,19 @@ if($formSubmit == 'editStatus' && $isEditor){
 									</button>
 								</div>
 								<div style="clear:both;padding-top:8px;float:left;">
-									<?php
-									if (!empty($materialsampledata)) {
-										echo '<div class="table-container">';
-										$materialSamplesTable = $utilities->htmlTable(
-											$materialsampledata, 
+								<?php
+								if (!empty($materialsampledata)) {
+									echo str_replace(
+										'<table',
+										'<table id="materialSampleTable"',
+										$utilities->htmlTable(
+											$materialsampledata,
 											['material sample PK','occid','status','use type','sample type','notes','shipment']
-										);
-										echo $materialSamplesTable;
-										echo '</div>';
-									}
-									?>
-								</div>
+										)
+									);
+								}
+								?>
+							</div>
 							</fieldset>
 				</div>
 				<div id="saveNotice"
@@ -1593,33 +1601,50 @@ $(document).ready(function(){
 
 });
 
-	window.addEventListener("beforeunload", function (e) {
+window.addEventListener("beforeunload", function (e) {
 
-		if (hasPendingChanges) {
+	if (hasPendingChanges) {
 
-			e.preventDefault();
+		e.preventDefault();
 
-			e.returnValue = '';
-		}
-	});
+		e.returnValue = '';
+	}
+});
+
+$(document).ready(function () {
+    $('#sampleTable').DataTable({
+        pageLength: 10,
+        layout: {
+            topStart: {
+                pageLength: {
+                    menu: [10, 25, 50, 100, { label: 'All', value: -1 }]
+                }
+            }
+        },
+        scrollCollapse: true
+    });
+});
+
+$(document).ready(function () {
+    $('#materialSampleTable').DataTable({
+        pageLength: 10,
+        layout: {
+            topStart: {
+                pageLength: {
+                    menu: [10, 25, 50, 100, { label: 'All', value: -1 }]
+                }
+            }
+        },
+        scrollCollapse: true
+    });
+});
+
 
 	</script>
 </body>
 </html>
 
 <style>
-    .table-container {
-        overflow-x: auto;
-    }
-
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        margin-top: 1em;
-        font-size: 0.95em;
-        background-color: #fff;
-    }
-
     th, td {
         border: 1px solid #ddd;
         padding: 8px;
