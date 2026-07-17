@@ -17,6 +17,17 @@ $inquiryManager = new InquiriesManager();
 
 $statusStr = '';
 
+$title = '';
+$inquiryDate = '';
+$secondaryfields = '';
+$dataproduced = '';
+$fundingsource = '';
+$description = '';
+$drivefolder = '';
+$existing = '';
+$future = '';
+$new = '';
+
 
 if($formSubmit == 'createInquiry' && $isEditor){
     $collectionManager = $_POST['inqmanager'] ?? '';
@@ -363,8 +374,13 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
        										<label for="inqdata"><strong><?php echo 'Types of Data Produced (separate multiple with semicolons)'; ?>:</strong></label><br>
-        									<input name="inqdata" id="inqdata" type="text" style="width:400px;" value="<?php echo htmlspecialchars($dataproduced ?? '', ENT_QUOTES); ?>" />
-   								 	</div>
+											<input 
+												name="inqdate" 
+												id="inqdate" 
+												type="date" 
+												value="<?php echo htmlspecialchars($inquiryDate ?? '', ENT_QUOTES); ?>" 
+											/>   								 	
+										</div>
 									</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
