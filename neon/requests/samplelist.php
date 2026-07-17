@@ -50,11 +50,14 @@ if($IS_ADMIN) $isEditor = true;
 			if($sortableTable){
 				?>
 				$('#sampletable').DataTable({
-					paging: false,
+					pageLength: 25,
+					lengthMenu: [10, 50, 100, 500, { label: 'All', value: -1 }],
 					scrollCollapse: true,
 					fixedHeader: true,
-					columnDefs: [{ orderable: false, targets: [0, -1]}],
-					});
+					columnDefs: [
+						{ orderable: false, targets: [0, -1] }
+					]
+				});
 				$("#sampletable").DataTable().rows().every( function () {
 					var tr = $(this.node());
 					var childValue = tr.data('child-value');
