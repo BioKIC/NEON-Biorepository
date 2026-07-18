@@ -61,7 +61,7 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 			<!-- NEON edit -->
 			<?php
 			if ($isEditor == 1) {
-				echo "<a href='../datasets/datasetmanager.php?datasetid=" . $datasetid . "'>Manage Dataset</a>";
+				echo "<a href='../../neon/datasets/neondatasetmanager.php?datasetid=" . $datasetid . "'>Manage Dataset</a>";
 			}
 			?>
 			<!-- end NEON edit -->

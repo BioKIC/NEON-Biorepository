@@ -365,6 +365,66 @@ class OccurrenceDataset{
 		}
 		return $retArr;
 	}
+	// NEON addition
+
+	public function neonGetOccurrences($datasetId) {
+		$retArr = array();
+
+		$sql = "WITH domains AS (
+					SELECT l.occid, d.name
+					FROM omoccurdatasetlink l
+					LEFT JOIN omoccurdatasets d
+						ON l.datasetID = d.datasetID
+					WHERE d.datasetID > 0 AND d.datasetID < 20
+				),
+				sites AS (
+					SELECT l.occid, d.name
+					FROM omoccurdatasetlink l
+					LEFT JOIN omoccurdatasets d
+						ON l.datasetID = d.datasetID
+					WHERE d.datasetID > 32 AND d.datasetID < 132
+				)
+
+				SELECT
+					o.occid,
+					e.name AS domain,
+					o.stateProvince,
+					t.name AS siteID,
+					m.sampleID,
+					m.sampleCode AS barcode,
+					o.catalogNumber AS IGSN,
+					CONCAT('https://doi.org/10.58052/', o.catalogNumber) AS IGSN_ID,
+					o.sciname AS scientificName
+				FROM domains e
+				LEFT JOIN NeonSample m
+					ON e.occid = m.occid
+				LEFT JOIN omoccurrences o
+					ON e.occid = o.occid
+				LEFT JOIN sites t
+					ON e.occid = t.occid
+				JOIN omoccurdatasetlink sl
+					ON e.occid = sl.occid
+				WHERE sl.datasetID = ?
+				ORDER BY domain, stateProvince, siteID, IGSN";
+
+		if ($stmt = $this->conn->prepare($sql)) {
+			$stmt->bind_param("i", $datasetId);
+			$stmt->execute();
+
+			$result = $stmt->get_result();
+
+			while ($row = $result->fetch_assoc()) {
+				$retArr[] = $row;
+			}
+
+			$stmt->close();
+		} else {
+			$this->errorMessage = 'Unable to prepare sample query.';
+		}
+
+		return $retArr;
+	}
+	// end NEON edit
 
 	public function removeSelectedOccurrences($datasetId, $occArr) {
 		$status = true;
