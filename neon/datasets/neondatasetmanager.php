@@ -472,13 +472,6 @@ if ($isEditor) {
 									</div>
 
 								</form>
-								<div style="margin: 15px;">
-									<form name="exportAllForm" action="../collections/download/index.php" method="post" onsubmit="targetDownloadPopup(this)">
-										<input name="searchvar" type="hidden" value="datasetid=<?php echo $datasetId; ?>" />
-										<input name="dltype" type="hidden" value="specimen" />
-										<button type="submit" name="submitaction" value="exportAll"><?php echo $LANG['EXPORT_DS']; ?></button>
-									</form>
-								</div>
 							<?php
 						} else {
 						?>
@@ -496,26 +489,26 @@ if ($isEditor) {
 								<h2><span><b><?php echo $LANG['EDITOR']; ?></b></span></h2>
 								<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
 									<div style="margin:25px 10px;">
-										<label for="name">Title</label>
+										<label for="name"><strong>Title</strong></label>
 										<input name="name" id="name" type="text" value="<?php echo $mdArr['name']; ?>" aria-label="<?php echo $LANG['NAME']; ?>" style="width:70%" />
 									</div>
 									<div>
 										<p>
 											<input type="checkbox" name="ispublic" id="ispublic" value="1" aria-label="<?php echo $LANG['PUB_VISIBLE']; ?>" <?php echo ($mdArr['ispublic'] ? 'CHECKED' : ''); ?> />
 											<!-- <b><?php echo $LANG['PUB_VISIBLE']; ?></b> -->
-											<label for="ispublic"><?php echo $LANG['PUB_VISIBLE']; ?></label>
+											<label for="ispublic"><strong><?php echo $LANG['PUB_VISIBLE']; ?></strong></label>
 										</p>
 									</div>
 									<div style="margin:25px 10px;">
-										<label for="notes"><?php echo $LANG['NOTES_INTERNAL']; ?></label>
+										<label for="notes"><strong><?php echo $LANG['NOTES_INTERNAL']; ?></strong></label>
 										<input name="notes" id="notes" type="text" value="<?php echo $mdArr['notes']; ?>" style="width:70%" aria-label="<?php echo $LANG['NOTES_INTERNAL']; ?>" />
 									</div>
 									<div style="margin:15px;">
-										<label for="description"><?php echo $LANG['DESCRIPTION'] . '</br>'; ?></label>
+										<label for="description"><strong><?php echo $LANG['DESCRIPTION'] . '</br>'; ?></strong></label>
 										<textarea name="description" id="description" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo $mdArr['description']; ?></textarea>
 									</div>
 									<div style="margin:15px;">
-										<label for="citation"><?php echo 'Citation<br>'; ?></label>
+										<label for="citation"><strong><?php echo 'Citation<br>'; ?></strong></label>
 										<textarea name="citation" id="citation" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo 'Citation'; ?>"><?php echo $mdArr['bibliographicCitation']; ?></textarea>
 									</div>
 									<div style="margin:15px;">
@@ -664,7 +657,7 @@ if ($isEditor) {
 
 										<div title="User">
 
-											User 
+											<strong>User</strong> 
 
 											<input 
 												id="userinput" 
