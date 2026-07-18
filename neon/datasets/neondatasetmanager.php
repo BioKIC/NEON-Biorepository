@@ -3,14 +3,16 @@ include_once('../../config/symbini.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceDataset.php');
 if ($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.en.php');
+include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
+
 header("Content-Type: text/html; charset=" . $CHARSET);
 
-if (!$SYMB_UID) header('Location: ../../profile/index.php?refurl=../collections/datasets/datasetmanager.php?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
+if (!$SYMB_UID) header('Location: ../../profile/index.php?refurl=../../neon/datasets/neondatasetmanager.php?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
 $datasetId = $_REQUEST['datasetid'];
 $tabIndex = array_key_exists('tabindex', $_REQUEST) ? $_REQUEST['tabindex'] : 0;
 $action = array_key_exists('submitaction', $_REQUEST) ? $_REQUEST['submitaction'] : '';
-$pageNumber = array_key_exists('pagenumber', $_REQUEST) ? filter_var($_REQUEST['pagenumber'], FILTER_SANITIZE_NUMBER_INT) : 1;
+$utilities = new Utilities();
 
 //Sanitation
 if (!is_numeric($datasetId)) $datasetId = 0;
@@ -63,18 +65,6 @@ if ($isEditor) {
 			} else {
 				$statusStr = implode(',', $datasetManager->getErrorArr());
 			}
-		} elseif ($action == 'Merge') {
-			if ($datasetManager->mergeDatasets($_POST['dsids[]'])) {
-				$statusStr = $LANG['DS_MERGED'];
-			} else {
-				$statusStr = implode(',', $datasetManager->getErrorArr());
-			}
-		} elseif ($action == 'Clone (make copy)') {
-			if ($datasetManager->cloneDatasets($_POST['dsids[]'])) {
-				$statusStr = $LANG['DS_CLONED'];
-			} else {
-				$statusStr = implode(',', $datasetManager->getErrorArr());
-			}
 		} elseif ($action == 'Delete Dataset') {
 			if ($datasetManager->deleteDataset($_POST['datasetid'])) {
 				header('Location: index.php');
@@ -87,13 +77,7 @@ if ($isEditor) {
 			} else {
 				$statusStr = implode(',', $datasetManager->getErrorArr());
 			}
-		} elseif ($action == 'DelUser') {
-			if ($datasetManager->deleteUser($datasetId, $_POST['uid'], $_POST['role'])) {
-				$statusStr = $LANG['USER_REMOVED'];
-			} else {
-				$statusStr = implode(',', $datasetManager->getErrorArr());
-			}
-		}
+		} 
 	}
 }
 
@@ -112,6 +96,8 @@ if ($isEditor) {
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript" src="../../js/symb/shared.js"></script>
 	<script type="text/javascript" src="../../js/tinymce/tinymce.min.js"></script>
+	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+    <script src="../../js/datatables/datatables.js"></script>
 	<script type="text/javascript">
 		// Adds WYSIWYG editor to description field
 		tinymce.init({
@@ -134,6 +120,31 @@ if ($isEditor) {
 			branding: false,
 			default_link_target: "_blank",
 			paste_as_text: true
+		});
+		$(document).ready(function () {
+			$('#sampleTable').DataTable({
+				pageLength: 25,
+				order: [[1, 'asc']], // sort by Occurrence ID
+				responsive: true,
+				stateSave: true,
+				columnDefs: [
+					{
+						orderable: false,
+						searchable: false,
+						targets: 0 // checkbox column
+					}
+				],
+				layout: {
+					topStart: {
+						pageLength: {
+							menu: [10,25,50,100,300,500,{label:'All',value:-1}]
+						}
+					},
+					topEnd: 'search',
+					bottomStart: 'info',
+					bottomEnd: 'paging'
+				}
+			});
 		});
 	</script>
 	<script type="text/javascript">
@@ -166,7 +177,7 @@ if ($isEditor) {
 			});
 
 			$("#userinput").autocomplete({
-				source: "../rpc/getuserlist.php",
+				source: "../../collections/rpc/getuserlist.php",
 				minLength: 3,
 				autoFocus: true,
 				select: function(event, ui) {
@@ -303,6 +314,32 @@ if ($isEditor) {
 			font-weight: bold;
 			text-decoration: underline;
 		}
+
+		.contact-box {
+			float: right;
+			width: 300px;
+			margin: 10px 20px 20px 20px;
+			padding: 15px;
+			border: 1px solid #ccc;
+			border-radius: 8px;
+			background-color: #f5f8fa;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+		}
+
+		.contact-box h2 {
+			margin: 0;
+			font-size: 1.1em;
+			line-height: 1.4;
+		}
+
+		.contact-box a {
+			color: #006699;
+			text-decoration: none;
+		}
+
+		.contact-box a:hover {
+			text-decoration: underline;
+		}
 	</style>
 </head>
 
@@ -333,140 +370,110 @@ if ($isEditor) {
 			echo '</div>';
 		}
 		if ($datasetId) {
-			# NEON edit
 			echo "<a href='../datasets/public.php?datasetid=" . $datasetId . "'>View Dataset</a>";
-			# End NEON edit
 			echo '<div style="margin:10px 0px 5px 20px;font-weight:bold;font-size:130%;">' . $mdArr['name'] . '</div>';
 			if ($role) echo '<div style="margin-left:20px" title="' . $LANG['ROLE'] . '"' . $roleLabel . '>' . $LANG['ROLE'] . ': ' . $role . '</div>';
 			if ($isEditor) {
 		?>
 				<div id="tabs" style="margin:10px;">
 					<ul>
-						<li><a href="#occurtab"><span><?php echo htmlspecialchars($LANG['OCC_LIST'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></span></a></li>
-						<?php
-						if ($isEditor == 1) {
-						?>
-							<li><a href="#admintab"><span><?php echo htmlspecialchars($LANG['GEN_MANAGEMENT'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></span></a></li>
+						<?php if ($isEditor == 1) { ?>
+							<li><a href="#admintab"><span>Dataset Description</span></a></li>
+						<?php } ?>
+
+						<li><a href="#occurtab"><span>Samples</span></a></li>
+
+						<?php if ($isEditor == 1) { ?>
 							<li><a href="#accesstab"><span><?php echo htmlspecialchars($LANG['USER_ACCESS'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></span></a></li>
-						<?php
-						}
-						?>
+						<?php } ?>
 					</ul>
 					<div id="occurtab">
 						<?php
-						$retLimit = 200;
-						$maxNumberOfPagesBeforeShowPageJump = 10;
-						if ($occArr = $datasetManager->getOccurrences($datasetId, $pageNumber, $retLimit)) {
+						if ($occArr = $datasetManager->neonGetOccurrences($datasetId)) {
+							$headerArr = ['occid','Domain', 'State','Site','Sample ID','Sample Code','IGSN ID','Scientific Name'];
 						?>
-
 							<div style="float:right;margin-right:10px">
 								<?php echo '<b>' . $LANG['COUNT'] . ': ' . count($occArr) . ' ' . $LANG['RECORDS'] . '</b>'; ?>
 							</div>
-							<div class="gridlike-form" style="width: max-content; margin-left:0; margin-right:0;">
-								<div class="gridlike-form-row" style="justify-content: center; flex-wrap: wrap; gap: 5px;">
+								<form name="occurform"
+									action="neondatasetmanager.php"
+									method="post"
+									onsubmit="return validateOccurForm(this)">
 
-									<?php
-									$pageCount = ceil($datasetManager->getOccurrenceCount($datasetId) / $retLimit);
-									if (($pageNumber) > $pageCount) $pageNumber = 1;
-									echo $LANG['PAGE'] . '<b> ' . ($pageNumber) . '</b> ' . $LANG['OF'] . ' <b>' . $pageCount . '</b> : ';
-									//sliding window
-									echo '<a href="datasetmanager.php?datasetid=' . $datasetId . '&pagenumber=1" class="pagination-link" data-keep-link="1">';
-									echo (1);
-									echo '</a>';
-									echo '<span class="pagination-link"> ...</span>';
-									$beginning = max(2, $pageNumber - 5);
-									$end = min($pageNumber, min($pageCount + max(1, $pageNumber - 5), ($maxNumberOfPagesBeforeShowPageJump / 2) + max(1, $pageNumber - 5)));
-									for ($x = $beginning; $x < $end; $x++) {
-										//first x
-										// for ($x = 1; $x < min($pageNumber, $maxNumberOfPagesBeforeShowPageJump / 2); $x++) {
-										if ($x > 2) echo '<span class="pagination-link" data-even-odd="' . $x . '"> | </span>';
-										if (($pageNumber) == $x) echo '<b>';
-										else echo '<a href="datasetmanager.php?datasetid=' . $datasetId . '&pagenumber=' . $x . '" class="pagination-link" data-even-odd="' . $x . '">';
-										echo ($x);
-										if (($pageNumber) == $x) echo '</b>';
-										else echo '</a>';
-									}
-									?>
-									<div id="jump-to-page" name="jump-to-page">
-										<form action="datasetmanager.php" method="get" class="gridlike-form" style="margin:0;">
-											<div class="gridlike-form-row">
-												<input type="hidden" name="datasetid" value="<?php echo $datasetId; ?>">
-												<label class="screen-reader-only" for="jumpToPage">Jump to Page:</label>
-												<input placeholder="Jump to Page" type="number" id="jumpToPage" name="pagenumber" min="1" max="<?php echo $pageCount; ?>" required style="margin:0; min-width:9vw;">
-												<button type="submit">Go</button>
-											</div>
-										</form>
+									<div class="section">
+										<h2>Submitted Samples</h2>
+
+										<table id="sampleTable" class="styledtable display" style="width:100%;font-size:12px;">
+											<thead>
+												<tr>
+													<th>
+														<input type="checkbox"
+															onclick="selectAll(this);"
+															title="<?php echo $LANG['SEL_DESEL_SPCS']; ?>">
+													</th>
+													<th>occid</th>
+													<th>Domain</th>
+													<th>State</th>
+													<th>Site</th>
+													<th>Sample ID</th>
+													<th>Sample Code</th>
+													<th>IGSN ID</th>
+													<th>Scientific Name</th>
+												</tr>
+											</thead>
+
+											<tbody>
+											<?php
+											$i = 0;
+											foreach ($occArr as $row) {
+												$i++;
+											?>
+												<tr class="<?php echo ($i % 2 ? 'alt' : ''); ?>">
+													<td>
+														<input type="checkbox"
+															name="occid[]"
+															value="<?php echo $row['occid']; ?>">
+													</td>
+
+													<td>
+														<a href="#"
+														onclick="openIndPopup(<?php echo $row['occid']; ?>); return false;">
+															<?php echo $row['occid']; ?>
+														</a>
+													</td>
+
+													<td><?php echo htmlspecialchars($row['domain'] ?? ''); ?></td>
+													<td><?php echo htmlspecialchars($row['stateProvince'] ?? ''); ?></td>
+													<td><?php echo htmlspecialchars($row['siteID'] ?? ''); ?></td>
+													<td><?php echo htmlspecialchars($row['sampleID'] ?? ''); ?></td>
+													<td><?php echo htmlspecialchars($row['barcode'] ?? ''); ?></td>
+													<td>
+														<a href="<?php echo htmlspecialchars($row['IGSN_ID']); ?>"
+														target="_blank">
+															<?php echo htmlspecialchars($row['IGSN']); ?>
+														</a>
+													</td>
+													<td><?php echo htmlspecialchars($row['scientificName']); ?></td>
+												</tr>
+											<?php } ?>
+											</tbody>
+										</table>
 									</div>
-									<?php
-									// sliding window
-									$theLastX = $pageCount - ($maxNumberOfPagesBeforeShowPageJump / 2);
-									$beginning = max($pageNumber + 1, min($pageNumber + 1, $theLastX));
-									$end = min($pageNumber + 1 + ($maxNumberOfPagesBeforeShowPageJump / 2), $pageCount - 1);
-									for ($x = $beginning; $x <= $end; $x++) {
-										// last x
-										// for ($x = max($pageCount - ($maxNumberOfPagesBeforeShowPageJump / 2), $pageNumber) + 1; $x <= $pageCount; $x++) {
-										if ($x > 1) echo '<span class="pagination-link" data-even-odd="' . $x . '"> | </span>';
-										if (($pageNumber) == $x) echo '<b>';
-										else echo '<a href="datasetmanager.php?datasetid=' . $datasetId . '&pagenumber=' . $x . '" class="pagination-link" data-even-odd="' . $x . '">';
-										echo ($x);
-										if (($pageNumber) == $x) echo '</b>';
-										else echo '</a>';
-									}
-									echo '<span class="pagination-link"> | ...</span>';
-									echo '<a href="datasetmanager.php?datasetid=' . $datasetId . '&pagenumber=' . $pageCount . '" class="pagination-link" data-keep-link="' . $pageCount . '">';
-									echo ($pageCount);
-									echo '</a>';
-									?>
-								</div>
-							</div>
-							<form name="occurform" action="datasetmanager.php" method="post" onsubmit="return validateOccurForm(this)">
-								<table class="styledtable" style="font-size:12px;">
-									<tr>
-										<th><input name="" value="" type="checkbox" onclick="selectAll(this);" title="<?php echo $LANG['SEL_DESEL_SPCS']; ?>" /></th>
-										<th><?php echo $LANG['CAT_NUM']; ?></th>
-										<th><?php echo $LANG['COLLECTOR']; ?></th>
-										<th><?php echo $LANG['SCI_NAME']; ?></th>
-										<th><?php echo $LANG['LOCALITY']; ?></th>
-									</tr>
-									<?php
-									$trCnt = 0;
-									foreach ($occArr as $occid => $recArr) {
-										$trCnt++;
-									?>
-										<tr <?php echo ($trCnt % 2 ? 'class="alt"' : ''); ?>>
-											<td>
-												<input type="checkbox" name="occid[]" value="<?php echo $occid; ?>" />
-											</td>
-											<td>
-												<?php echo '<a href="#" onclick="openIndPopup(' . $occid . '); return false;">' . $recArr['catnum'] . '</a>'; ?>
-											</td>
-											<td>
-												<?php echo $recArr['coll']; ?>
-											</td>
-											<td>
-												<?php echo $recArr['sciname']; ?>
-											</td>
-											<td>
-												<?php echo $recArr['loc']; ?>
-											</td>
-										</tr>
-									<?php
-									}
-									?>
-								</table>
+									<div style="margin:15px;">
+										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
+
+										<?php if ($occArr && $isEditor < 3) { ?>
+											<button type="submit"
+													name="submitaction"
+													value="Remove Selected Occurrences">
+												<?php echo $LANG['REM_SEL_OCCS']; ?>
+											</button>
+										<?php } ?>
+									</div>
+
+								</form>
 								<div style="margin: 15px;">
-									<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
-									<?php
-									if ($occArr && $isEditor < 3) {
-									?>
-										<button type="submit" name="submitaction" value="Remove Selected Occurrences"><?php echo $LANG['REM_SEL_OCCS']; ?></button>
-									<?php
-									}
-									?>
-								</div>
-							</form>
-								<div style="margin: 15px;">
-									<form name="exportAllForm" action="../download/index.php" method="post" onsubmit="targetDownloadPopup(this)">
+									<form name="exportAllForm" action="../collections/download/index.php" method="post" onsubmit="targetDownloadPopup(this)">
 										<input name="searchvar" type="hidden" value="datasetid=<?php echo $datasetId; ?>" />
 										<input name="dltype" type="hidden" value="specimen" />
 										<button type="submit" name="submitaction" value="exportAll"><?php echo $LANG['EXPORT_DS']; ?></button>
@@ -487,9 +494,9 @@ if ($isEditor) {
 						<div id="admintab">
 							<section class="fieldset-like">
 								<h2><span><b><?php echo $LANG['EDITOR']; ?></b></span></h2>
-								<form name="editform" action="datasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
+								<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
 									<div style="margin:25px 10px;">
-										<label for="name"><?php echo $LANG['NAME']; ?></label>
+										<label for="name">Title</label>
 										<input name="name" id="name" type="text" value="<?php echo $mdArr['name']; ?>" aria-label="<?php echo $LANG['NAME']; ?>" style="width:70%" />
 									</div>
 									<div>
@@ -512,12 +519,11 @@ if ($isEditor) {
 										<textarea name="citation" id="citation" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo 'Citation'; ?>"><?php echo $mdArr['bibliographicCitation']; ?></textarea>
 									</div>
 									<div style="margin:15px;">
-										<input name="tabindex" type="hidden" value="1" />
+										<input name="tabindex" type="hidden" value="0" />
 										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
 										<button name="submitaction" type="submit" value="Save Edits"><?php echo $LANG['SAVE_EDITS']; ?></button>
 									</div>
 								</form>
-								<!--- NEON Addition -->
 									<?php if ($mdArr['category'] == "Request") { 
 										?>
 										<div style="margin:15px;">
@@ -535,83 +541,193 @@ if ($isEditor) {
 									<?php
 									};
 									?>
-								<!--- END NEON Addition -->
 							</section>
 							<section class="fieldset-like">
 								<h2><span><b><?php echo $LANG['DEL_DS']; ?></b></span></h2>
-								<form name="editform" action="datasetmanager.php" method="post" onsubmit="return confirm('<?php echo $LANG['SURE_DEL_DS_PERM']; ?>')">
+								<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return confirm('<?php echo $LANG['SURE_DEL_DS_PERM']; ?>')">
 									<div style="margin:15px;">
 										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
-										<input name="tabindex" type="hidden" value="1" />
+										<input name="tabindex" type="hidden" value="0" />
 										<button class="button-danger" name="submitaction" type="submit" value="Delete Dataset"><?php echo $LANG['DEL_DS']; ?></button>
 									</div>
 								</form>
 							</section>
 						</div>
-						<div id="accesstab">
-							<div style="margin:25px 10px;">
+					<div id="accesstab">
+
+						<div style="display:flex; gap:30px; align-items:flex-start; margin:25px 10px;">
+
+							<div style="flex:1;">
+
 								<?php
 								$userArr = $datasetManager->getUsers($datasetId);
-								$roleArr = array('DatasetAdmin' => 'Full Access Users', 'DatasetEditor' => 'Read/Write Users', 'DatasetReader' => 'Read Only Users');
+
+								$roleArr = array(
+									'DatasetAdmin' => 'Full Access Users',
+									'DatasetEditor' => 'Read/Write Users',
+									'DatasetReader' => 'Read Only Users'
+								);
+
 								foreach ($roleArr as $roleStr => $labelStr) {
 								?>
-									<div class="section-title"><?php echo $labelStr; ?></div>
+
+									<div class="section-title">
+										<?php echo $labelStr; ?>
+									</div>
+
 									<div style="margin:15px;">
-										<?php
-										if (array_key_exists($roleStr, $userArr)) {
-										?>
+
+										<?php if (array_key_exists($roleStr, $userArr)) { ?>
+
 											<ul>
 												<?php
-												$uArr = $userArr[$roleStr];
-												foreach ($uArr as $uid => $name) {
+												foreach ($userArr[$roleStr] as $uid => $name) {
 												?>
+
 													<li>
-														<?php echo $name; ?>
-														<form name="deluserform" method="post" action="datasetmanager.php" style="display:inline;" onsubmit="return confirm('<?php echo $LANG['SURE_REM_USER'] . ' ' . $name . '?'; ?>')">
-															<input name="submitaction" type="hidden" value="DelUser" />
-															<input name="role" type="hidden" value="<?php echo $roleStr; ?>" />
-															<input name="uid" type="hidden" value="<?php echo $uid; ?>" />
-															<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
-															<input name="tabindex" type="hidden" value="2" />
-															<input name="submitimage" type="image" src="../../images/drop.png" style="width:1.2em" alt="<?php echo $LANG['DROP_ICON']; ?>" />
+														<?php echo htmlspecialchars($name); ?>
+
+														<form 
+															name="deluserform" 
+															method="post" 
+															action="neondatasetmanager.php" 
+															style="display:inline;" 
+															onsubmit="return confirm('<?php echo $LANG['SURE_REM_USER'] . ' ' . $name . '?'; ?>')">
+
+															<input type="hidden" name="submitaction" value="DelUser" />
+															<input type="hidden" name="role" value="<?php echo $roleStr; ?>" />
+															<input type="hidden" name="uid" value="<?php echo $uid; ?>" />
+															<input type="hidden" name="datasetid" value="<?php echo $datasetId; ?>" />
+															<input type="hidden" name="tabindex" value="2" />
+
+															<input 
+																name="submitimage" 
+																type="image" 
+																src="../../images/drop.png" 
+																style="width:1.2em" 
+																alt="<?php echo $LANG['DROP_ICON']; ?>" />
+
 														</form>
+
 													</li>
+
 												<?php
 												}
 												?>
 											</ul>
-										<?php
-										} else echo '<div style="margin:15px;">' . $LANG['NONE_ASSIGNED'] . '</div>';
-										?>
+
+										<?php } else { ?>
+
+											<div style="margin:15px;">
+												<?php echo $LANG['NONE_ASSIGNED']; ?>
+											</div>
+
+										<?php } ?>
+
 									</div>
+
 								<?php
 								}
 								?>
+
 							</div>
-							<div style="margin:15px;">
-								<section class="fieldset-like">
-									<h2><span><b><?php echo $LANG['ADD_USER']; ?></b></span></h2>
-									<form name="addform" action="datasetmanager.php" method="post" onsubmit="return validateUserAddForm(this)">
-										<div title="<?php echo $LANG['TYPE_LOGIN']; ?>">
-											<?php echo $LANG['LOGIN_NAME']; ?>:
-											<input id="userinput" type="text" style="width:400px;" aria-label="<?php echo $LANG['LOGIN_NAME'] ?>" />
-											<input id="uid-add" name="uid" type="hidden" value="" />
-										</div>
-										<label for="role"><?php echo $LANG['ROLE']; ?>:</label>
-										<select name="role" id="role">
-											<option value="DatasetAdmin"><?php echo $LANG['FULL_ACCESS']; ?></option>
-											<option value="DatasetEditor"><?php echo $LANG['READ_WRITE_ACCESS']; ?></option>
-											<option value="DatasetReader"><?php echo $LANG['READ_ACCESS']; ?></option>
-										</select>
-										<div style="margin:10px;">
-											<input name="tabindex" type="hidden" value="2" />
-											<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
-											<button type="submit" name="submitaction" value="addUser"><?php echo $LANG['ADD_USER']; ?></button>
-										</div>
-									</form>
-								</section>
+
+
+							<div class="contact-box">
+
+								<h2>
+									<a href="https://www.neonscience.org/about/contact-neon-biorepository">
+										Contact the NEON Biorepository to authorize additional users.
+									</a>
+								</h2>
+
 							</div>
+
 						</div>
+
+
+						<?php if ($isEditor == 1) { ?>
+
+							<div style="margin:15px;">
+
+								<section class="fieldset-like">
+
+									<h2>
+										<span><b><?php echo $LANG['ADD_USER']; ?></b></span>
+									</h2>
+
+									<form 
+										name="addform" 
+										action="neondatasetmanager.php" 
+										method="post" 
+										onsubmit="return validateUserAddForm(this)">
+
+										<div title="User">
+
+											User 
+
+											<input 
+												id="userinput" 
+												type="text" 
+												style="width:400px;" 
+												aria-label="User" />
+
+											<input 
+												id="uid-add" 
+												name="uid" 
+												type="hidden" 
+												value="" />
+
+										</div>
+
+
+										<label for="role">
+											<?php echo $LANG['ROLE']; ?>:
+										</label>
+
+
+										<select name="role" id="role">
+
+											<option value="DatasetAdmin">
+												<?php echo $LANG['FULL_ACCESS']; ?>
+											</option>
+
+											<option value="DatasetEditor">
+												<?php echo $LANG['READ_WRITE_ACCESS']; ?>
+											</option>
+
+											<option value="DatasetReader">
+												<?php echo $LANG['READ_ACCESS']; ?>
+											</option>
+
+										</select>
+
+
+										<div style="margin:10px;">
+
+											<input type="hidden" name="tabindex" value="2" />
+											<input type="hidden" name="datasetid" value="<?php echo $datasetId; ?>" />
+
+											<button 
+												type="submit" 
+												name="submitaction" 
+												value="addUser">
+
+												<?php echo $LANG['ADD_USER']; ?>
+
+											</button>
+
+										</div>
+
+									</form>
+
+								</section>
+
+							</div>
+
+						<?php } ?>
+
+					</div>
 					<?php
 					}
 					?>
