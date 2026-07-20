@@ -258,7 +258,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                   p.style.fontSize = '.95rem';
 
                   p.textContent =
-                    'The primary NEON website, <a href="https://www.neonscience.org">www.neonscience.org</a>, is currently down. We are working on a solution and hope to have this resolved shortly. Thank you for your patience.';
+                    'The primary NEON website, www.neonscience.org, is currently down. We are working on a solution and hope to have this resolved shortly. Thank you for your patience.';
 
                   banner.appendChild(p);
                   headerEl.insertAdjacentElement('afterend', banner);
