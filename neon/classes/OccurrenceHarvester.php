@@ -1272,9 +1272,9 @@ class OccurrenceHarvester{
 		if($dwcArr['collid'] == 75){
 			//Tick pathogen extracts
 			$dwcArr['individualCount'] = 1;
-			$dwcArr['preparations'] = '-80 degrees C.';
+			$dwcArr['preparations'] = '-80 degrees C';
 			$dwcArr['lifeStage'] = 'Nymph';
-			$dwcArr['sex'] = '';
+			$dwcARR['sex'] = NULL;
 		}
 		elseif($dwcArr['collid'] == 116){
 			if($dwcArr['sex'] == 'Nymph') {
