@@ -227,14 +227,14 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
                 // --- Add yellow notification banner right after <header> ---
                 (function () {
-                  //const now = new Date();
-                  //
-                  //// Set your exact window here
-                  //const start = new Date('2026-03-30T00:00:00-04:00');
-                  //const end   = new Date('2026-04-02T02:00:00-04:00');
-                  //
-                  //// Only show during this window
-                  //if (now < start || now > end) return;
+                  const now = new Date();
+                  
+                  // Set your exact window here
+                  const start = new Date('2026-03-30T00:00:00-04:00');
+                  const end   = new Date('2026-04-02T02:00:00-04:00');
+                  
+                  // Only show during this window
+                  if (now < start || now > end) return;
 
                   const headerEl = document.querySelector('header');
                   if (!headerEl) return;
