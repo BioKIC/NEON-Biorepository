@@ -227,14 +227,14 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 
                 // --- Add yellow notification banner right after <header> ---
                 (function () {
-                  const now = new Date();
-
-                  // Set your exact window here
-                  const start = new Date('2026-03-30T00:00:00-04:00');
-                  const end   = new Date('2026-04-02T02:00:00-04:00');
-
-                  // Only show during this window
-                  if (now < start || now > end) return;
+                  //const now = new Date();
+                  //
+                  //// Set your exact window here
+                  //const start = new Date('2026-03-30T00:00:00-04:00');
+                  //const end   = new Date('2026-04-02T02:00:00-04:00');
+                  //
+                  //// Only show during this window
+                  //if (now < start || now > end) return;
 
                   const headerEl = document.querySelector('header');
                   if (!headerEl) return;
@@ -258,7 +258,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                   p.style.fontSize = '.95rem';
 
                   p.textContent =
-                    'Due to planned maintenance which is scheduled to occur between Wednesday, April 1st at 8:30pm MT, and Thursday, April 2nd at 2:00am MT, the NEON Biorepository Sample Portal will be unavailable.';
+                    'The primary NEON website, <a href="https://www.neonscience.org">www.neonscience.org</a>, is currently down. We are working on a solution and hope to have this resolved shortly. Thank you for your patience.';
 
                   banner.appendChild(p);
                   headerEl.insertAdjacentElement('afterend', banner);
