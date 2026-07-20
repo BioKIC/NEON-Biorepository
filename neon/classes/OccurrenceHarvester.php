@@ -958,8 +958,8 @@ class OccurrenceHarvester{
 										if(!empty($sampleArr['recorded_by'])) $identifiedBy = $this->translatePersonnel($sampleArr['recorded_by']);
 										elseif(!empty($sampleArr['collected_by'])) $identifiedBy =  $this->translatePersonnel($sampleArr['collected_by']);
 										else($identifiedBy= 'NEON Technician');
-										if(!empty($sampleArr['collectDate'])) $identifiedDate = $sampleArr['collectDate'];
-										elseif(!empty($sampleArr['collect_end_date'])) $identifiedDate = $sampleArr['collect_end_date'];
+										if(!empty($sampleArr['collect_end_date'])) $identifiedDate = $sampleArr['collect_end_date'];
+										elseif(!empty($sampleArr['collectDate'])) $identifiedDate = $sampleArr['collectDate'];
 										else ($identifiedDate = 's.d.');
 										break;
 									}
@@ -1596,7 +1596,8 @@ class OccurrenceHarvester{
 				$baseID['sciname'] = $collArr[$sourceCollid]['defaultId'];
 				$baseID['tidInterpreted'] = $collArr[$sourceCollid]['tid'];
 				if ($dwcArr['recordedBy']) $baseID['identifiedBy'] = $dwcArr['recordedBy'];
-				if ($dwcArr['eventDate']) $baseID['identifiedDate'] = $dwcArr['eventDate'];
+				if ($dwcArr['eventDate2']) $baseID['identifiedDate'] = $dwcArr['eventDate2'];
+				elseif ($dwcArr['eventDate']) $baseID['identifiedDate'] = $dwcArr['eventDate'];
 			}
 			
 			// if it's microalgae and has no common tid, give it the pseudo ecological taxon
@@ -1631,7 +1632,9 @@ class OccurrenceHarvester{
 					}
 					$baseID['identificationRemarks'] = 'Identification source: parsed from NEON sampleID';
 					if ($dwcArr['recordedBy']) $baseID['identifiedBy'] = $dwcArr['recordedBy'];
-					if ($dwcArr['eventDate']) $baseID['dateIdentified'] = $dwcArr['eventDate'];
+					if ($dwcArr['eventDate2']) $baseID['dateIdentified'] = $dwcArr['eventDate2'];
+					elseif ($dwcArr['eventDate']) $baseID['dateIdentified'] = $dwcArr['eventDate'];
+
 				}	
 			}
 
@@ -1861,7 +1864,8 @@ class OccurrenceHarvester{
 				}
 				if($sciname){
 					$idDate = 's.d.';
-					if(!empty($dwcArr['eventDate'])) $idDate = $dwcArr['eventDate'];
+					if(!empty($dwcArr['eventDate2'])) $idDate = $dwcArr['eventDate2'];
+					elseif(!empty($dwcArr['eventDate'])) $idDate = $dwcArr['eventDate'];
 					if(!empty($dwcArr['recordedBy']) && in_array($dwcArr['collid'],array(5,6,10,13,16,18,21,23,30,31,41,42,61,67,68,69,76,92,96))) $idBy = $dwcArr['recordedBy'];
 					else $idBy = 'NEON Lab';
 					$dwcArr['identifications'][] = array('sciname' => $sciname,'tidInterpreted'=>$tid, 'identifiedBy' => $idBy, 'dateIdentified' => $idDate, 'isCurrent' => 1);
