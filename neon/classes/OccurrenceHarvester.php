@@ -1236,7 +1236,7 @@ class OccurrenceHarvester{
 				}
 				$dwcArr['habitat'] = implode('; ', $habitatArr);
 			}
-			if($elevMin === '' && !isset($dwcArr['minimumElevationInMeters'])) {
+			if($elevMin === '' && !isset($dwcArr['minimumElevationInMeters']) && isset($resultArr_history['locationElevation'])) {
 				$elevMin = round($resultArr_history['locationElevation']);
 			}
 			if ($elevMin !== '' && !isset($dwcArr['minimumElevationInMeters'])) {
