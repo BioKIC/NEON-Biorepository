@@ -632,7 +632,11 @@ class OccurrenceHarvester{
 						if($fArr['smsKey'] == 'minimum_depth_in_meters' && $fArr['smsValue']) $tableArr['minimum_depth_in_meters'] = $fArr['smsValue'];
 						if($fArr['smsKey'] == 'maximum_depth_in_meters' && $fArr['smsValue']) $tableArr['maximum_depth_in_meters'] = $fArr['smsValue'];
 						if($fArr['smsKey'] == 'reproductive_condition' && $fArr['smsValue']) $tableArr['reproductive_condition'] = $fArr['smsValue'];
-						if($fArr['smsKey'] == 'sampling_protocol' && $fArr['smsValue']) $tableArr['sampling_protocol'] = $fArr['smsValue'];
+						if ($fArr['smsKey'] == 'sampling_protocol' && $fArr['smsValue']) {
+							$tableArr['sampling_protocol'] = (strpos($fArr['smsValue'], 'NEON.DOC') === 0)
+								? "https://data.neonscience.org/api/v0/documents/" . $fArr['smsValue']
+								: $fArr['smsValue'];
+						}						
 						if($fArr['smsKey'] == 'sex' && $fArr['smsValue']) $tableArr['sex'] = $fArr['smsValue'];
 						if (
 							$fArr['smsKey'] == 'life_stage' &&
