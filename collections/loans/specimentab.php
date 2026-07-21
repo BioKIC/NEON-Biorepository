@@ -25,19 +25,20 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 <script src="../../js/datatables/datatables.js"></script>
 <link rel="stylesheet" href="../../js/datatables/datatables.css" />
 <script type="text/javascript">
-	if (!$.fn.DataTable.isDataTable('#loanSpecimenTable')) {
-		const table = new DataTable('#loanSpecimenTable', {
-			pageLength: 50,
-			lengthMenu: [10, 25, 50, 100],
-			columnDefs: [
-				{ orderable: false, targets: [0, 1, 2] },
-	
-				{ width: '5%', targets: 0 },
-				{ width: '5%', targets: 1 },
-				{ width: '30%', targets: 2 },
-				{ width: '50%', targets: 3 },
-				{ width: '10%', targets: 4 },
-			]
+		let table = null;
+		$(function () {
+			table = new DataTable('#loanSpecimenTable', {
+				pageLength: 50,
+				lengthMenu: [10,25,50,100],
+				columnDefs: [
+					{ orderable: false, targets: [0,1,2] },
+					{ width: '5%', targets: 0 },
+					{ width: '5%', targets: 1 },
+					{ width: '30%', targets: 2 },
+					{ width: '50%', targets: 3 },
+					{ width: '10%', targets: 4 }
+				]
+			});
 		});
 		$.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
 			if (settings.nTable.id !== 'loanSpecimenTable') return true;
@@ -53,7 +54,6 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 			table.draw();
 		});
 		
-	}
 //end neon edit
 	var skipFormVerification = false;
 
@@ -446,7 +446,6 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 			<table id="loanSpecimenTable" class="display" style="font-size:12px;"> 
 				<thead> <!--neon edit-->
 					<tr>
-						<label>
 
 						<th class="form-checkbox"><input type="checkbox" onclick="selectAll(this);" title="<?php echo $LANG['SEC_DESEL_ALL']; ?>" /></th>
 						<th>&nbsp;</th>
