@@ -171,7 +171,7 @@ function getAccountStatus()
 		function validateDownloadForm(f){
 
 			gtag('event', 'data_download', {
-				downloader_id: f.symbUid.value,
+				catnum: f.symbUid.value,
 				search_var: f.searchvar.value
 			});
 
