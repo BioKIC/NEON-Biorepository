@@ -39,7 +39,6 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 		<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 		<link rel="stylesheet" href="../../js/datatables/datatables.css" />
         <script src="../../js/datatables/datatables.js"></script>
-
 	</head>
 	<body>
 		<?php
@@ -519,23 +518,44 @@ foreach ($reportsArr as $row) {
 				scales: {
 					x: {
 						stacked: true,
+						ticks: {
+							font: {
+								size: 25
+							}
+						},
 						title: {
 							display: true,
-							text: 'Award Year of Initiation'
+							text: 'Award Year of Initiation',
+							font: {
+								size: 25
+							}
 						}
 					},
 					y: {
 						stacked: true,
 						beginAtZero: true,
+						ticks: {
+							font: {
+								size: 22
+							}
+						},
 						title: {
 							display: true,
-							text: 'Number of Requests'
+							text: 'Number of Requests',
+							font: {
+								size: 22
+							}
 						}
 					}
 				},
 				plugins: {
 					legend: {
-						position: 'bottom'
+						position: 'bottom',
+						labels: {
+							font: {
+								size: 22
+							}
+						}
 					},
 					tooltip: {
 						callbacks: {
@@ -619,7 +639,15 @@ foreach ($reportsArr as $row) {
 						stacked: true,
 						title: {
 							display: true,
-							text: 'Award Year of Status Update'
+							text: 'Award Year of Status Update',
+							font: {
+								size: 22
+							}
+						},
+						ticks: {
+							font: {
+								size: 22
+							}
 						}
 					},
 					y: {
@@ -627,13 +655,26 @@ foreach ($reportsArr as $row) {
 						beginAtZero: true,
 						title: {
 							display: true,
-							text: 'Number of Requests'
+							text: 'Number of Requests',
+							font: {
+								size: 22
+							}
+						},
+						ticks: {
+							font: {
+									size: 22
+								}
 						}
 					}
 				},
 				plugins: {
 					legend: {
-						position: 'bottom'
+						position: 'bottom',
+						labels: {
+							font: {
+								size: 22
+							}
+						}
 					},
 					tooltip: {
 						callbacks: {
@@ -720,20 +761,41 @@ foreach ($reportsArr as $row) {
                     },
                     title: {
                         display: true,
-                        text: 'Date'
-                    }
+                        text: 'Date',
+						font: {
+							size: 22
+						}
+                    },
+					ticks: {
+						font: {
+							size: 22
+						}
+					}
                 },
                 y: {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Cumulative Number of Requests'
-                    }
+                        text: 'Cumulative Number of Requests',
+						font: {
+							size: 22
+						}
+                    },
+					ticks: {
+						font: {
+							size: 22
+						}
+					}
                 }
             },
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+					labels: {
+						font: {
+							size: 22
+						}
+					} 
                 }
             }
         }
@@ -791,18 +853,43 @@ foreach ($reportsArr as $row) {
                     legend: { display:false },
                     title: {
                         display: true,
-                        text: 'All Samples Used'
+                        text: 'All Samples Used',
+						font: {
+							size: 22
+						}
                     }
                 },
                 scales: {
                     x: {
                         type:'time',
                         time:{unit:'year'},
-                        title:{display:true,text:'Date'}
+                        title:{
+							display:true,
+							text:'Date',
+							font: {
+								size: 22
+							}
+						},
+						ticks: {
+							font: {
+								size: 22
+							}
+						}
                     },
                     y: {
                         beginAtZero:true,
-                        title:{display:true,text:'Cumulative Samples'}
+                        title:{
+							display:true,
+							text:'Cumulative Samples',
+							font: {
+								size: 22
+							}
+						},
+						ticks: {
+							font: {
+								size: 22
+							}
+						}
                     }
                 }
             }
@@ -820,7 +907,10 @@ foreach ($reportsArr as $row) {
                     borderColor: '#0472cf',
                     backgroundColor: '#0472cf',
                     pointRadius: 0,
-                    tension: 0.2
+                    tension: 0.2,
+					font: {
+						size: 22
+					}
                 }]
             },
             options: {
@@ -830,18 +920,43 @@ foreach ($reportsArr as $row) {
                     legend: { display:false },
                     title: {
                         display: true,
-                        text: 'Samples Excluding Image-Only Use'
+                        text: 'Samples Excluding Image-Only Use',
+						font: {
+							size: 22
+						}
                     }
                 },
                 scales: {
                     x: {
                         type:'time',
                         time:{unit:'year'},
-                        title:{display:true,text:'Date'}
+                        title: {
+							display:true,
+							text:'Date',
+							font: {
+								size: 22
+							}
+						},
+						ticks: {
+							font: {
+								size: 22
+							}
+						},
                     },
                     y: {
                         beginAtZero:true,
-                        title:{display:true,text:'Cumulative Samples'}
+                        title:{
+							display:true,
+							text:'Cumulative Samples',
+							font: {
+								size: 22
+							}
+						},
+						ticks: {
+							font: {
+								size: 22
+							}
+						},
                     }
                 }
             }
@@ -958,21 +1073,53 @@ function buildChart(canvasID, labels, datasetsRaw){
 			scales: {
 				x: {
 					stacked: true,
-					title: { display: true, text: 'Taxonomic Group' }
+					title: { 
+						display: true, 
+						text: 'Taxonomic Group',
+						font: {
+							size: 20
+						}
+					},
+					ticks: {
+						font: {
+							size: 16
+						}
+					}
 				},
 				y: {
 					stacked: true,
 					beginAtZero: true,
-					title: { display: true, text: 'Number of Samples' }
+					title: { 
+						display: true, 
+						text: 'Number of Samples',
+						font: {
+							size: 18
+						} 
+					},
+					ticks: {
+						font: {
+							size: 16
+						}
+					}
 				}
 			},
 			plugins: {
-				legend: { position: 'bottom' },
+				legend: { 
+					position: 'bottom',
+					labels: {
+						font: {
+							size: 20
+						}
+					} 
+				},
 				datalabels: {
 				color: '#000',
 				anchor: 'end',
 				align: 'end',
-				font: { weight: 'bold' },
+				font: { 
+					weight: 'bold',
+					size: 12
+				},
 				formatter: function(value, context) {
 					const datasetIndex = context.datasetIndex;
 					const dataIndex = context.dataIndex;
@@ -1114,16 +1261,55 @@ function buildStorageChart(canvasID, labels, datasetsRaw){
 			responsive: true,
 			maintainAspectRatio: false,
 			scales: {
-				x: { stacked: true, title: { display: true, text: 'Storage Type' } },
-				y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Number of Samples' } }
+				x: { 
+					stacked: true, 
+						title: { 
+							display: true, 
+							text: 'Storage Type',
+							font: {
+								size: 20
+							} 
+						},
+					ticks: {
+						font: {
+							size: 16
+						}
+					} 
+					},
+				y: {
+					stacked: true, 
+					beginAtZero: true, 
+					title: { 
+						display: true, 
+						text: 'Number of Samples',
+						font: {
+							size: 18
+						} 
+					},
+					ticks: {
+						font: {
+							size: 16
+						}
+					}
+				}
 			},
 			plugins: {
-				legend: { position: 'bottom' },
+				legend: { 
+					position: 'bottom',
+					labels: {
+						font: {
+							size: 20
+						}
+					} 
+				},
 				datalabels: {
 					color: '#000',
 					anchor: 'end',
 					align: 'end',
-					font: { weight: 'bold' },
+					font: { 
+						weight: 'bold',
+						size: 16
+					 },
 					formatter: function(value, context) {
 						const datasetIndex = context.datasetIndex;
 						const dataIndex = context.dataIndex;
