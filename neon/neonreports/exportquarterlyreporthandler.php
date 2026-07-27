@@ -54,12 +54,25 @@ if (!$sampleRow) {
     die('No data found');
 }
 
-$rowKeys = array_keys($sampleRow);
-$rowLabelKey = $rowKeys[0];
-$valueKeys   = array_slice($rowKeys, 1);
+if ($tabletype === 'Samples by Use Type') {
+    $rowLabelKey = 'substance';
+    $secondaryLabelKey = 'useType';
+    $valueKeys = ['samples'];
+} else {
+    $rowKeys = array_keys($sampleRow);
+    $rowLabelKey = $rowKeys[0];
+    $secondaryLabelKey = null;
+    $valueKeys = array_slice($rowKeys, 1);
+}
 
-
-$headers = [ucwords(str_replace('_',' ',$rowLabelKey))];
+if ($secondaryLabelKey) {
+    $headers = [
+        'Substance',
+        'Use Type'
+    ];
+} else {
+    $headers = [ucwords(str_replace('_',' ',$rowLabelKey))];
+}
 
 foreach ($periodData as $period => $rows) {
 
@@ -90,26 +103,44 @@ $allLabels = [];
 
 foreach ($periodData as $rows) {
     foreach ($rows as $r) {
-        $allLabels[$r[$rowLabelKey]] = true;
+        if ($secondaryLabelKey) {
+            $allLabels[$r[$rowLabelKey] . '||' . $r[$secondaryLabelKey]] = true;
+        } else {
+            $allLabels[$r[$rowLabelKey]] = true;
+        }
     }
 }
 
 $allLabels = array_keys($allLabels);
 
-usort($allLabels, function($a, $b) {
+usort($allLabels, function($a, $b) use ($secondaryLabelKey) {
+
+    if ($secondaryLabelKey) {
+        list($aPrimary,) = explode('||', $a, 2);
+        list($bPrimary,) = explode('||', $b, 2);
+
+        if ($aPrimary === 'Total Unique') return 1;
+        if ($bPrimary === 'Total Unique') return -1;
+
+        return strcasecmp($a, $b);
+    }
 
     if ($a === 'Total Unique') return 1;
     if ($b === 'Total Unique') return -1;
 
-	    return strcasecmp($a, $b);
-	});
+    return strcasecmp($a, $b);
+});
 
 $finalRows = [];
 
 foreach ($allLabels as $label) {
 
-    $rowOut = [$label];
-
+    if ($secondaryLabelKey) {
+        list($primary, $secondary) = explode('||', $label);
+        $rowOut = [$primary, $secondary];
+    } else {
+        $rowOut = [$label];
+    }
     foreach ($periodData as $period => $rows) {
 
         if (str_contains($quarter, 'Q1') && ($period === 'Award Year' || $period === 'Prior Award Year')) {
@@ -119,9 +150,19 @@ foreach ($allLabels as $label) {
         $match = null;
 
         foreach ($rows as $r) {
-            if ($r[$rowLabelKey] == $label) {
-                $match = $r;
-                break;
+            if ($secondaryLabelKey) {
+                if (
+                    $r[$rowLabelKey] == $primary &&
+                    $r[$secondaryLabelKey] == $secondary
+                ) {
+                    $match = $r;
+                    break;
+                }
+            } else {
+                if ($r[$rowLabelKey] == $label) {
+                    $match = $r;
+                    break;
+                }
             }
         }
 
