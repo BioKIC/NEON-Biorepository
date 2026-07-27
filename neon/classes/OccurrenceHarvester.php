@@ -1278,7 +1278,7 @@ class OccurrenceHarvester{
 			$dwcArr['individualCount'] = 1;
 			$dwcArr['preparations'] = '-80 degrees C';
 			$dwcArr['lifeStage'] = 'Nymph';
-			$dwcARR['sex'] = NULL;
+			$dwcArr['sex'] = NULL;
 		}
 		elseif($dwcArr['collid'] == 116){
 			if($dwcArr['sex'] == 'Nymph') {
@@ -1600,8 +1600,11 @@ class OccurrenceHarvester{
 				$baseID['sciname'] = $collArr[$sourceCollid]['defaultId'];
 				$baseID['tidInterpreted'] = $collArr[$sourceCollid]['tid'];
 				if ($dwcArr['recordedBy']) $baseID['identifiedBy'] = $dwcArr['recordedBy'];
-				if ($dwcArr['eventDate2']) $baseID['identifiedDate'] = $dwcArr['eventDate2'];
-				elseif ($dwcArr['eventDate']) $baseID['identifiedDate'] = $dwcArr['eventDate'];
+				if (isset($dwcArr['eventDate2'])) {
+					$baseID['dateIdentified'] = $dwcArr['eventDate2'];
+				} elseif (isset($dwcArr['eventDate'])) {
+					$baseID['dateIdentified'] = $dwcArr['eventDate'];
+				}
 			}
 			
 			// if it's microalgae and has no common tid, give it the pseudo ecological taxon
@@ -1636,9 +1639,11 @@ class OccurrenceHarvester{
 					}
 					$baseID['identificationRemarks'] = 'Identification source: parsed from NEON sampleID';
 					if ($dwcArr['recordedBy']) $baseID['identifiedBy'] = $dwcArr['recordedBy'];
-					if ($dwcArr['eventDate2']) $baseID['dateIdentified'] = $dwcArr['eventDate2'];
-					elseif ($dwcArr['eventDate']) $baseID['dateIdentified'] = $dwcArr['eventDate'];
-
+					if (isset($dwcArr['eventDate2'])) {
+						$baseID['dateIdentified'] = $dwcArr['eventDate2'];
+					} elseif (isset($dwcArr['eventDate'])) {
+						$baseID['dateIdentified'] = $dwcArr['eventDate'];
+					}
 				}	
 			}
 
