@@ -404,14 +404,14 @@ if ($isEditor) {
 		<div style="display:flex; gap:40px;">
 			<div style="flex:1">
 				<h3>All Sample Use</h3>
-				<div style="height:350px;">
+				<div style="height:600px;">
 					<canvas id="collectionChart"></canvas>
 				</div>
 			</div>
 
 			<div style="flex:1">
 				<h3>Excluding Image-Only Use</h3>
-				<div style="height:350px;">
+				<div style="height:600px;">
 					<canvas id="collectionChartNoImage"></canvas>
 				</div>
 			</div>
@@ -422,14 +422,14 @@ if ($isEditor) {
 		<div style="display:flex; gap:40px;">
 			<div style="flex:1">
 				<h3>All Sample Use</h3>
-				<div style="height:350px;">
+				<div style="height:600px;">
 					<canvas id="storageChart"></canvas>
 				</div>
 			</div>
 
 			<div style="flex:1">
 				<h3>Excluding Image-Only Use</h3>
-				<div style="height:350px;">
+				<div style="height:600px;">
 					<canvas id="storageChartNoImage"></canvas>
 				</div>
 			</div>
