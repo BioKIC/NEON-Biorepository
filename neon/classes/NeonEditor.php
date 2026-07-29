@@ -271,6 +271,10 @@ class NeonEditor extends UtilitiesFileImport {
 				$this->logOrEcho('ERROR: ms_catalogNumber is not mapped in the import field map.', 1);
 				return;
 			}
+			if (!in_array('sampleType', array_map('strtolower', array_keys($this->fieldMap)))) {
+				$this->logOrEcho('ERROR: sampleType is not mapped in the import field map.', 1);
+				return;
+			}
 			$importManager = new OmMaterialSample($this->conn);
 			foreach ($occidArr as $occid) {
 				$importManager->setOccid($occid);
