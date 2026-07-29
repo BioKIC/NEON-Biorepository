@@ -47,6 +47,7 @@ if($isEditor){
 				<li><a href="shipment/manifestsearch.php">Manifest Search</a></li>
 				<li><a href="../collections/loans/index.php">Loan Management</a></li>
 				<li><a href="../collections/reports/labelmanager.php">Label Printing</a></li>
+				<li><a href="editor/annotationdashboard.php">Annotation Label Dashboard</a></li>
 			</ul>
 			<h3>Data Management</h3>
 			<ul>
@@ -62,11 +63,9 @@ if($isEditor){
 					<li><a href="igsncontrol.php">NEON IGSN Control Panel</a></li>
 					<li><a href="editor/neoneditor.php">NEON Occurrence and Extended Data Editor</a></li>
 					<li><a href="editor/neonnomenclaturaladjustments.php">NEON Nomenclatural Adjustment</a></li>
-					<li><a href="editor/annotationdashboard.php">Annotation Label Dashboard</a></li>
 					<?php
 				}
 				?>
-				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
 			</ul>
 			<h3>Reporting</h3>
 			<ul>
@@ -86,6 +85,7 @@ if($isEditor){
 				<li class="nps-report"><a href="npsReportHandler.php?dsid=131&year=2019" onclick="$('#YELL19-working').show();">YELL - 2019</a><span id="YELL19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
 				<li><a href="loans.php">Loans Report</a></li>
 				<li><a href="shipment/prepreports.php">Preparations Report</a></li>
+				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
 			</ul>
 		</fieldset>
 	</div>

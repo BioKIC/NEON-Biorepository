@@ -278,14 +278,12 @@ class NeonEditor extends UtilitiesFileImport {
 				$msArr = array();
 				foreach ($fieldArr as $field) {
 					$fieldLower = strtolower($field);
-					$recordIdx = $this->fieldMap[$fieldLower] ?? $this->fieldMap['ms_' . $fieldLower] ?? null;
+					$recordIdx = $this->fieldMap['ms_' . $fieldLower]
+						?? $this->fieldMap[$fieldLower]
+						?? null;					
 					if ($recordIdx !== null && !empty($recordArr[$recordIdx])) {
 						$msArr[$field] = $this->encodeString($recordArr[$recordIdx]);
 					}
-				}
-				if (isset($msArr['ms_catalogNumber']) && $msArr['ms_catalogNumber']) {
-				 	$msArr['catalogNumber'] = $msArr['ms_catalogNumber'];
-				 	unset($msArr['ms_catalogNumber']);
 				}
 				if ($postArr['action'] === 'add') {
 					if(empty($msArr['sampleType'])) {

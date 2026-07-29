@@ -220,8 +220,9 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
 		<h1 class="page-heading"><?= 'NEON Data Importer/Editor' ?></h1>
+		<div 
 		<div class="pageDescription-div">
-			<?= 'Example batch upload instructions and mapping details' ?>:
+			<?= 'Example batch upload instructions and mapping details for related Symbiota tools' ?>:
 			<ul>
 				<li><a href="https://docs.symbiota.org/Collection_Manager_Guide/Importing_Uploading/linked_resources" target="_blank"><?= $LANG['ASSOCIATIONS'] ?></a></li>
 				<?php if ($IS_ADMIN) echo '<li><a href="https://docs.symbiota.org/Portal_Manager_Guide/importing_determinations" target="_blank">' . $LANG['DETERMINATIONS'] . '</a></li>'; ?>
