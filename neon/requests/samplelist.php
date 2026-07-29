@@ -194,7 +194,7 @@ if($IS_ADMIN) $isEditor = true;
 
 				if (data.exists) {
 					// dataset exists, go straight to manager
-					window.location.href = `../../collections/datasets/datasetmanager.php?datasetid=${data.datasetid}`;
+					window.location.href = `../datasets/neondatasetmanager.php?datasetid=${data.datasetid}`;
 				} else {
 					// Ask user if they want to create a new dataset
 					if (!confirm("No dataset exists for this request. Do you want to create a new dataset?")) {
@@ -214,7 +214,7 @@ if($IS_ADMIN) $isEditor = true;
 					}
 
 					if (createData.success) {
-						window.location.href = `../../collections/datasets/datasetmanager.php?datasetid=${createData.datasetid}`;
+						window.location.href = `../datasets/neondatasetmanager.php?datasetid=${createData.datasetid}`;
 					} else {
 						alert("Error creating dataset: " + createData.error);
 					}
