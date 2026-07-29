@@ -170,7 +170,6 @@ if($formSubmit == 'editStatus' && $isEditor){
 	if ($cut =="yes" && empty($notfunded)) $errorMessage[] = 'Must indicate that proposal was not funded to select "cut"';
 	if (!empty($complete) && empty($active)) $errorMessage[] = 'Active Date required when complete date present.';
 	if (!empty($active) && empty($fulfillment)) $errorMessage[] = 'Pending Fulfillment Date required when active date present.';
-	if (!(empty($notfunded) && empty($pendinglist)) && empty($pendingfunding)) $errorMessage[] = 'Pending Funding Date required when funded/not funded date present.';
 	if (!empty($fulfillment) && empty($pendinglist) && !empty($pendingfunding)) $errorMessage[] = 'Must have a funding date prior to a fulfillment date.';
 	if (!empty($fulfillment) && !empty($notfunded)) $errorMessage[] = 'Unfunded proposal cannot be fulfilled (Create new Inquiry Record).';
 	if (!empty($notfunded) && !empty($pendinglist)) $errorMessage[] = 'Cannot have both funded and not funded date.';
@@ -208,7 +207,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 	if (!empty($followUpType) && empty($assignee)) {
 		$errorMessage[] = 'Someone should be assigned to follow up.';
 	}	
-	if(!empty($active) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Fulfillment Date.';
+	if(!empty($active) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Active Date.';
 
 	if (!empty($errorMessage)) {
 		$statusStr = '<span style="color:red;">' . implode(', ', $errorMessage) . '</span>';
