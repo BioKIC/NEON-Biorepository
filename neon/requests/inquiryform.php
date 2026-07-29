@@ -48,19 +48,19 @@ if($formSubmit == 'editInquiry' && $isEditor){
 
 		$collectionManager = $_POST['inqmanager'] ?? '';
 		$researcherID = $_POST['inqresearcher'] ?? '';
-		$title = $_POST['inqtitle'] ?? '';
+		$title = trim($_POST['inqtitle'] ?? '');
 		$collections = [];
 		if(!empty($_POST['inqcolls'])){
 			$collections = explode(',', $_POST['inqcolls']);
 		}
 		$field = $_POST['inqfield'] ?? '';
 		$aiml = $_POST['inqaiml'] ?? '';
-		$secondaryfields = $_POST['inqsecondaryfields'] ?? '';
+		$secondaryfields = trim($_POST['inqsecondaryfields'] ?? '');
 		$funded = $_POST['inqfunded'] ?? '';
-		$fundingsource = $_POST['inqfundingsource'] ?? '';
-		$description = $_POST['inqdescription'] ?? '';
+		$fundingsource = trim($_POST['inqfundingsource'] ?? '');
+		$description = trim($_POST['inqdescription'] ?? '');
 		$howfound = $_POST['inqhowfound'] ?? '';
-		$dataproduced = $_POST['inqdata'] ?? '';
+		$dataproduced = trim($_POST['inqdata'] ?? '');
 		$existing = $_POST['inqexist'] ?? '';
 		$future = $_POST['inqfuture'] ?? '';
 		$new = $_POST['inqnew'] ?? '';
@@ -68,7 +68,7 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		if(!empty($_POST['inqadditionalresearcher'])){
 			$additionalresearchers = explode(',', $_POST['inqadditionalresearcher']);
 		}
-		$drivefolder = $_POST['inqdrive'] ?? '';
+		$drivefolder = trim($_POST['inqdrive'] ?? '');
 		$internal = $_POST['inqinternal'] ?? '';
 		$outreach = $_POST['inqoutreach'] ?? '';
 		$processing = $_POST['inqprocess'] ?? '';
