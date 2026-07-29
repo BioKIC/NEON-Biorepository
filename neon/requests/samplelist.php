@@ -50,7 +50,7 @@ if($IS_ADMIN) $isEditor = true;
 			if($sortableTable){
 				?>
 				$('#sampletable').DataTable({
-					pageLength: 25,
+					pageLength: 500,
 					lengthMenu: [10, 50, 100, 500, { label: 'All', value: -1 }],
 					scrollCollapse: true,
 					fixedHeader: true,
@@ -416,7 +416,6 @@ include($SERVER_ROOT.'/includes/header.php');
 						<fieldset id="samplePanel">
 							<legend>Sample Listing</legend>
 							<div>
-								<div style="float:left">Records displayed: <?php echo count($sampleList); ?></div>
 								<div style="float:left; margin-left: 50px;"><input name="sorthandler" type="checkbox" onchange="tableSortHandlerChanged(this)" <?= ($sortableTable ? 'checked' : '') ?> > Make table sortable</div>
 								<div style="float:right;">
 									<form name="filterSampleForm" action="samplelist.php#samplePanel" method="post" style="">
