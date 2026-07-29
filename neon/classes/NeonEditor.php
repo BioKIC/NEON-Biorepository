@@ -234,26 +234,27 @@ class NeonEditor extends UtilitiesFileImport {
 							if (!$existingAssociation && !empty($assocArr['objectID'])) {
 								$existingAssociation = $importManager->getAssociationArr(array('associationType' => $assocArr['associationType'], 'objectID' => $assocArr['objectID']));
 							}
-							if ($existingAssociation) {
-								if ($assocID = key($existingAssociation)) {
-									$importManager->setAssocID($assocID);
-									if ($assocArr['relationship'] == 'DELETE') {
-										if ($importManager->deleteAssociation()) {
-                                            $this->logOrEcho($LANG['ASSOC_DELETED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+							// if ($existingAssociation) {
+							// 	if ($assocID = key($existingAssociation)) {
+							// 		$importManager->setAssocID($assocID);
+							// 		if ($assocArr['relationship'] == 'DELETE') {
+							// 			if ($importManager->deleteAssociation()) {
+                            //                 $this->logOrEcho($LANG['ASSOC_DELETED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
 
-										} else {
-											$this->logOrEcho($LANG['ERROR_DELETING'] . ': ' . $importManager->getErrorMessage(), 1);
-										}
-									} else {
-										if ($importManager->updateAssociation($assocArr)) {
-						                    $this->logOrEcho($LANG['ASSOC_UPDATED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-                                            $status = true;
-										} else {
-											$this->logOrEcho($LANG['ERROR_UPDATING'] . ': ' . $importManager->getErrorMessage(), 1);
-										}
-									}
-								}
-							} else {
+							// 			} else {
+							// 				$this->logOrEcho($LANG['ERROR_DELETING'] . ': ' . $importManager->getErrorMessage(), 1);
+							// 			}
+							// 		} else {
+							// 			if ($importManager->updateAssociation($assocArr)) {
+						    //                 $this->logOrEcho($LANG['ASSOC_UPDATED'] . ': <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
+                            //                 $status = true;
+							// 			} else {
+							// 				$this->logOrEcho($LANG['ERROR_UPDATING'] . ': ' . $importManager->getErrorMessage(), 1);
+							// 			}
+							// 		}
+							// 	}
+							// } 
+							else {
 								$this->logOrEcho($LANG['TARGET_NOT_FOUND'], 1);
 							}
 						} elseif ($importManager->insertAssociation($assocArr)) {
