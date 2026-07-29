@@ -373,15 +373,10 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqdata"><strong><?php echo 'Types of Data Produced (separate multiple with semicolons)'; ?>:</strong></label><br>
-											<input 
-												name="inqdate" 
-												id="inqdate" 
-												type="date" 
-												value="<?php echo htmlspecialchars($inquiryDate ?? '', ENT_QUOTES); ?>" 
-											/>   								 	
-										</div>
-									</div>
+       										<label for="inqdata"><strong><?php echo 'Types of Data Produced (separate multiple with semicolons): '?></strong> </label><br>
+											<input name="inqdata" id="inqdata" type="text" style="width:800px;" value="<?php echo htmlspecialchars($dataproduced ?? '', ENT_QUOTES); ?>" />
+
+   								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
