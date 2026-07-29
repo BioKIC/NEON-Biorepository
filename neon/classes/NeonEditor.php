@@ -287,8 +287,11 @@ class NeonEditor extends UtilitiesFileImport {
 				 	$msArr['catalogNumber'] = $msArr['ms_catalogNumber'];
 				 	unset($msArr['ms_catalogNumber']);
 				}
-
 				if ($postArr['action'] === 'add') {
+					if(empty($msArr['sampleType'])) {
+						$this->logOrEcho('SKIPPED: sampleType value is required');
+						continue;
+					}
 					$existingoccid = $importManager->getMatSampleIdByCatalogNumber($msArr['catalogNumber']);
 					if ($existingoccid) {
 						$this->logOrEcho('SKIPPED: Material Sample with catalogNumber "' . $msArr['catalogNumber'] .
