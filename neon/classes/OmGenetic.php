@@ -50,6 +50,19 @@ class OmGenetic{
             $identifier   = $this->parameterArr['identifier']   ?? null;
             $resourcename = $this->parameterArr['resourcename'] ?? null;
 
+			if (empty($identifier) || empty($resourcename)) {
+				$missing = [];
+				if (empty($identifier)) {
+					$missing[] = 'identifier';
+				}
+				if (empty($resourcename)) {
+					$missing[] = 'resourcename';
+				}
+
+				$this->errorMessage = 'Required field(s) missing: ' . implode(', ', $missing);
+				return false;
+			}
+
             $dupSql = 'SELECT idoccurgenetic 
                     FROM omoccurgenetic 
                     WHERE occid = ? AND identifier <=> ? AND resourcename <=> ? 
