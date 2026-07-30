@@ -220,15 +220,49 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
 		<h1 class="page-heading"><?= 'NEON Data Importer/Editor' ?></h1>
-		<div 
-		<div class="pageDescription-div">
-			<?= 'Example batch upload instructions and mapping details for related Symbiota tools' ?>:
-			<ul>
-				<li><a href="https://docs.symbiota.org/Collection_Manager_Guide/Importing_Uploading/linked_resources" target="_blank"><?= $LANG['ASSOCIATIONS'] ?></a></li>
-				<?php if ($IS_ADMIN) echo '<li><a href="https://docs.symbiota.org/Portal_Manager_Guide/importing_determinations" target="_blank">' . $LANG['DETERMINATIONS'] . '</a></li>'; ?>
-				<li><a href="https://docs.symbiota.org/Collection_Manager_Guide/Images/media_upload_url" target="_blank"><?= $LANG['IMAGE_URLS'] ?></a></li>
-			</ul>
-		</div>
+		<fieldset>
+			<legend><b>Instructions</b></legend>
+			<details>
+				<summary style="cursor:pointer; font-weight:bold; font-size:16px;">
+					Show/Hide Import Instructions
+				</summary>
+					<p style="margin-left:10%; margin-right:10%; font-size:15px"> 
+						This is the best tool for batch uploading and editing NEON sample data, including occurrence and extended data, associated with existing sample occurrence records. 
+						All uploads/edits require a match to an existing sample occurrence record based on a <strong>unique</strong> identifier. When mapping fields, the central occurrence record
+						identifier that must be matched with a target field beginning with "subject identifier" and can preferentially be the occid, occurrenceID, or catalogNumber 
+						or any unique otherCatalogNumber value (e.g., barcode), if needed. Below are the available import types.
+					</p>
+					<h4><b><u>Occurrences</u></b></h4>
+						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type is similar to a skeletal file upload, except that it is not specific to a single collection, can be used to update data, and can selectively prevent future data updates when harvesting NEON data. 
+							Use the "Action" dropdown to select whether you would only like to only add data to empty fields or to also allow updates when data does exist. Check the box at the bottom if you would like data edits by NEON to overwrite these manual edits.
+					</p>
+					<h4><b><u>Associations</u></b></h4>
+						<p style="margin-left:10%; margin-right:10%; font-size:15px"> Before loading associations, you first have to assign the association type. See the associated <a href="https://docs.symbiota.org/Collection_Manager_Guide/Importing_Uploading/linked_resources" target="_blank">Symbiota doc</a> for definitions and explanations of fields for each type. Types other than Internal Occurrence and Taxon Observation will be rare for the NEON portal.</a>
+						<br> <br>
+						<strong>Occurrence - Internal:</strong> For this association type, you must have a subject, as with all possible import types, in addition to an object identifier. The subject is associated to the object with the relationship (e.g., "subject sample hasHost object sample"). Relationship subtypes can optionally be chosen, such as to indicate a type of subsample. At this time, there is no option to batch update or delete associations via the front end.
+						<br> <br>
+						<strong>Taxon Observation:</strong> This association type operates in the same way as internal occurrence associations, except the object of the relationship is a scientific name instead of another sample in the portal.
+						</p>
+					<h4><b><u>Determinations</u></b></h4>
+						<p style="margin-left:10%; margin-right:10%; font-size:15px"> ###
+					</p>
+					<h4><b><u>Genetic Links</u></b></h4>
+						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type allows the upload or editing or linkages between samples and genetic or genomic data. 
+							In addition to the sample identifier, an <strong>identifier</strong> for the genetic sequence information (e.g., identifier assigned by BOLD, biosample number in GenBank) and a <strong>resourcename</strong> (e.g., "Barcode of Life (BOLD)") are required. 
+							We are using the locus field to describe what was sequenced, which may be a locus (e.g.,"Cytochrome Oxidase Subunit 1 5' Region") or a more general description (e.g., "metagenome"). ResourceUrl should be used to link to where the genetic or genomic data is externally stored.
+					</p>
+					<h4><b><u>Identifiers</u></b></h4>
+						<p style="margin-left:10%; margin-right:10%; font-size:15px"> This tool allows you to batch add, update, or delete sample identifiers. In addition to an existing identifier, an identifierName (e.g., "Alternative NEON sampleID") and identifierValue are required. 
+							Use the action "Batch Add or Update" to add new identifiers or update existing ones by additionally checking the box below, select batch delete to delete the identifier record with the identifierName, identifierValue, and sample combination. 
+					</p>
+					<h4><b><u>Material Samples</u></b></h4>
+						<p style="margin-left:10%; margin-right:10%; font-size:15px"> ###
+					<br>
+					<h4><b><u>Media</u></b></h4>
+						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type is described by the relevant <a href="https://docs.symbiota.org/Collection_Manager_Guide/Images/media_upload_url" target="_blank">Symbiota doc</a>. Note that under nearly all circumstances, images taken of Biorepository samples should have an <strong>owner</strong> value of "NEON (National Ecological Observatory Network) Biorepository" and a <strong>rights</strong> value of "https://creativecommons.org/licenses/by-sa/4.0/".
+						The person who took the image/recorded the media should be credited in the "creator" field. </p>
+			</details>
+		</fieldset>
 		<?php
 		if (!$isEditor) {
 			echo '<h2>' . $LANG['ERR_NOT_AUTH'] . '</h2>';
@@ -279,8 +313,8 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 											echo '<option value="' . $term . '">' . $display . '</option>';
 										}
 										?>
-										<option value="">-------------------</option>
-										<option value="DELETE"><?= $LANG['BATCH_DELETE'] ?></option>
+										<!-- <option value="">-------------------</option>
+										<option value="DELETE"><?= $LANG['BATCH_DELETE'] ?></option> -->
 									</select>
 								</div>
 								<div class="formField-div">
@@ -321,12 +355,12 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 									</select>
 								</div>
 							<?php
-							} elseif ($importType == 1) {
+							//} elseif ($importType == 1) {
 							?>
-								<div class="formField-div">
+								<!-- <div class="formField-div">
 									<input name="replace" type="checkbox" value="1">
 									<label for="replace"><?= $LANG['MATCHING_IDENTIFIERS'] ?></label>
-								</div>
+								</div> -->
 							<?php
 							}
 							if ($importType == 4){
@@ -425,18 +459,18 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 							<label for="importType"><?= $LANG['IMPORT_TYPE'] ?>: </label>
 							<select id="importType" name="importType" onchange="importTypeChanged(this)" aria-label="<?php echo $LANG['IMPORT_TYPE'] ?>">
 								<option value="">-------------------</option>
+								<option value="6"><?= 'Occurrence (or Skeletal)' ?></option>
 								<option value="1"><?= $LANG['ASSOCIATIONS'] ?></option>
 								<?php if ($IS_ADMIN) {
 									echo '<option value="2">' . $LANG['DETERMINATIONS'] . '</option>';
 								}
 								?>
-								<option value="3"><?= $LANG['IMAGE_FIELD_MAP'] ?></option>
+								<option value="7"><?= 'Genetic Links' ?></option>
+								<option value="5"><?= $LANG['IDENTIFIERS'] ?></option>
 								<?php
 									echo '<option value="4">' . $LANG['MATERIAL_SAMPLE'] . '</option>';
 								?>
-								<option value="5"><?= $LANG['IDENTIFIERS'] ?></option>
-								<option value="6"><?= 'Occurrence' ?></option>
-								<option value="7"><?= 'Genetic' ?></option>
+								<option value="3"><?= 'Media' ?></option>
 							</select>
 						</div>
 						<div id="associationType-div" class="formField-div" style="display:none">
