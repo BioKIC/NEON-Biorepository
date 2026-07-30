@@ -229,25 +229,30 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 					<p style="margin-left:10%; margin-right:10%; font-size:15px"> 
 						This is the best tool for batch uploading and editing NEON sample data, including occurrence and extended data, associated with existing sample occurrence records. 
 						All uploads/edits require a match to an existing sample occurrence record based on a <strong>unique</strong> identifier. When mapping fields, the central occurrence record
-						identifier that must be matched with a target field beginning with "subject identifier" and can preferentially be the occid, occurrenceID, or catalogNumber 
+						identifier must be matched with a target field beginning with "subject identifier" and can preferentially be the occid, occurrenceID, or catalogNumber 
 						or any unique otherCatalogNumber value (e.g., barcode), if needed. Below are the available import types.
 					</p>
 					<h4><b><u>Occurrences</u></b></h4>
-						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type is similar to a skeletal file upload, except that it is not specific to a single collection, can be used to update data, and can selectively prevent future data updates when harvesting NEON data. 
-							Use the "Action" dropdown to select whether you would only like to only add data to empty fields or to also allow updates when data does exist. Check the box at the bottom if you would like data edits by NEON to overwrite these manual edits.
+						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type can work similarly to a skeletal file upload, except that it is not specific to a single collection, can be used to update data, and can selectively prevent future data updates when harvesting NEON data. 
+							Use the "Action" dropdown to select whether you would only like to only add data to empty fields (analogous to a skeletal file) or to also allow updates when data does exist. Check the box at the bottom if you would like data edits by NEON to overwrite these manual edits during harvesting.
 					</p>
 					<h4><b><u>Associations</u></b></h4>
-						<p style="margin-left:10%; margin-right:10%; font-size:15px"> Before loading associations, you first have to assign the association type. See the associated <a href="https://docs.symbiota.org/Collection_Manager_Guide/Importing_Uploading/linked_resources" target="_blank">Symbiota doc</a> for definitions and explanations of fields for each type. Types other than Internal Occurrence and Taxon Observation will be rare for the NEON portal.</a>
+						<p style="margin-left:10%; margin-right:10%; font-size:15px"> Before loading associations, you first have to assign the association type. See the associated <a href="https://docs.symbiota.org/Collection_Manager_Guide/Importing_Uploading/linked_resources" target="_blank">Symbiota doc</a> for definitions and explanations of fields for each type. Types other than Internal Occurrence and Taxon Observation will be rarely used in the NEON portal.</a>
 						<br> <br>
-						<strong>Occurrence - Internal:</strong> For this association type, you must have a subject, as with all possible import types, in addition to an object identifier. The subject is associated to the object with the relationship (e.g., "subject sample hasHost object sample"). Relationship subtypes can optionally be chosen, such as to indicate a type of subsample. At this time, there is no option to batch update or delete associations via the front end.
+						<strong>Occurrence - Internal:</strong> For this association type, you must have a an object identifier in addition to the typical subject identifier. The subject is associated to the object with the relationship (e.g., "subject" has "relationship" to "object"). Relationship subtypes can optionally be chosen, such as to indicate a type of subsample. At this time, there is no option to batch update or delete associations via the front end.
 						<br> <br>
-						<strong>Taxon Observation:</strong> This association type operates in the same way as internal occurrence associations, except the object of the relationship is a scientific name instead of another sample in the portal.
+						<strong>Taxon Observation:</strong> This association type operates in the same way as internal occurrence associations, except the object of the relationship is a scientific name rather than another sample in the portal.
 						</p>
 					<h4><b><u>Determinations</u></b></h4>
-						<p style="margin-left:10%; margin-right:10%; font-size:15px"> ###
+						<p style="margin-left:10%; margin-right:10%; font-size:15px"> This tool allows you to add determinations by adding a new determination record and updating the associated fields within the primary occurrence record.
+							In addition to a unique identifier for the sample, a scientific name is required. If not provided, identificationDate will be autopopulated with "s.d.", identifiedBy will be autopopulated with "unknown", and all other fields will be null. 
+							Determinations in the NEON portal should be as complete as possible, including authorship, references, qualifiers, etc. The tidInterpreted value will be populated by the scientific name provided if there is one and only one taxon with that scientific name in the portal's taxonomic hierarchy. If there is 0 or more than 1 matching tid, tidInterpreted will be null in the records.
+							If the determination being added is the current determination, put 1 in the field <strong>isCurrent</strong>. If isCurrent is not mapped or not set as 1, the new determination will not become the active determination. Check the box below the field mappings to propagate the new determination to all other occurrences with a derivedFromSameIndividual association defined within the portal.
+							Deleting and updating determinations is not yet supported in batch in the NEON portal and must be done either in individually in the occurrence editor or via the backend. 
+							Our tool is a modified version of the Symbiota tool described in this <a href="https://docs.symbiota.org/Portal_Manager_Guide/importing_determinations/" targe ="_blank">Symbiota doc</a>.
 					</p>
 					<h4><b><u>Genetic Links</u></b></h4>
-						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type allows the upload or editing or linkages between samples and genetic or genomic data. 
+						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type allows uploading or editing linkages between samples and genetic or genomic data. 
 							In addition to the sample identifier, an <strong>identifier</strong> for the genetic sequence information (e.g., identifier assigned by BOLD, biosample number in GenBank) and a <strong>resourcename</strong> (e.g., "Barcode of Life (BOLD)") are required. 
 							We are using the locus field to describe what was sequenced, which may be a locus (e.g.,"Cytochrome Oxidase Subunit 1 5' Region") or a more general description (e.g., "metagenome"). ResourceUrl should be used to link to where the genetic or genomic data is externally stored.
 					</p>
@@ -256,10 +261,15 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 							Use the action "Batch Add or Update" to add new identifiers or update existing ones by additionally checking the box below, select batch delete to delete the identifier record with the identifierName, identifierValue, and sample combination. 
 					</p>
 					<h4><b><u>Material Samples</u></b></h4>
-						<p style="margin-left:10%; margin-right:10%; font-size:15px"> ###
+						<p style="margin-left:10%; margin-right:10%; font-size:15px"> This import type allows you to batch add or update material sample records. In addition to the identifier for the parent sample and an identifier for the material sample (material sample catalogNumber required when adding new samples), you must include a sampleType when adding a sample. 
+							In the NEON Biorepository portal, material sample records should generally also minimally includes information within the condition, preparation, and preservation related fields.
+							Note that this tool does not at this time allow you to add duplicate material sample catalogNumbers. If necessary, this must be done individually or via the back end of the database. However, you can update material samples with duplicated catalogNumbers by matching with the guid/materialSampleID/recordID instead of the catalogNumber.
+							Our tool is a modified version of the Symbiota tool described in this <a href="https://docs.symbiota.org/Collection_Manager_Guide/Importing_Uploading/material_samples" targe ="_blank">Symbiota doc</a>.
 					<br>
 					<h4><b><u>Media</u></b></h4>
-						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type is described by the relevant <a href="https://docs.symbiota.org/Collection_Manager_Guide/Images/media_upload_url" target="_blank">Symbiota doc</a>. Note that under nearly all circumstances, images taken of Biorepository samples should have an <strong>owner</strong> value of "NEON (National Ecological Observatory Network) Biorepository" and a <strong>rights</strong> value of "https://creativecommons.org/licenses/by-sa/4.0/".
+						<p style="margin-left:10%; margin-right:10%; font-size:15px">This import type is described by the relevant <a href="https://docs.symbiota.org/Collection_Manager_Guide/Images/media_upload_url" target="_blank">Symbiota doc</a>. 
+						This is useful when media files are hosted externally or are already hosted on the Biorepository server but need to be associated with additional records. Use Globus to batch add new media files to the server.
+						Note that under nearly all circumstances, images taken of Biorepository samples should have an <strong>owner</strong> value of "NEON (National Ecological Observatory Network) Biorepository" and a <strong>rights</strong> value of "https://creativecommons.org/licenses/by-sa/4.0/".
 						The person who took the image/recorded the media should be credited in the "creator" field. </p>
 			</details>
 		</fieldset>
