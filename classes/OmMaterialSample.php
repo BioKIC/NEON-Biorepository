@@ -202,6 +202,26 @@ class OmMaterialSample{
 		return null;
 	}
 
+	public function getMatSampleIdByGuid($guid) {
+		$sql = 'SELECT matSampleID
+				FROM ommaterialsample
+				WHERE (guid = ? OR recordID = ?)
+				LIMIT 1';
+
+		$stmt = $this->conn->prepare($sql);
+		$stmt->bind_param('ss', $guid, $guid);
+		$stmt->execute();
+		$stmt->bind_result($matSampleID);
+
+		if ($stmt->fetch()) {
+			$stmt->close();
+			return $matSampleID;
+		}
+
+		$stmt->close();
+		return false;
+	}
+
 	public function getMatSampleIdByCatalogNumber($catalogNumber){
 		$sql = 'SELECT occid 
 				FROM ommaterialsample 

@@ -169,10 +169,10 @@ class NeonEditor extends UtilitiesFileImport {
 					continue;
 				}
 				if (empty($detArr['identifiedBy'])) {
-					$paramArr['identifiedBy'] = 'unknown';
+					$detArr['identifiedBy'] = 'unknown';
 				}
 				if (empty($detArr['dateIdentified'])) {
-					$paramArr['dateIdentified'] = 's.d.';
+					$detArr['dateIdentified'] = 's.d.';
 				}
 				if (!empty($postArr['associatedoccurrences']) && $postArr['associatedoccurrences'] == 1) {
 					$results = $detManager->insertAndPropagateNEONDetermination($occid, $detArr);
@@ -268,10 +268,6 @@ class NeonEditor extends UtilitiesFileImport {
 				}
 			}
 		} elseif ($this->importType == self::IMPORT_MATERIAL_SAMPLE) {
-			if (!in_array('ms_catalognumber', array_map('strtolower', array_keys($this->fieldMap)))) {
-				$this->logOrEcho('ERROR: ms_catalogNumber is not mapped in the import field map.', 1);
-				return;
-			}
 			$importManager = new OmMaterialSample($this->conn);
 			foreach ($occidArr as $occid) {
 				$importManager->setOccid($occid);
@@ -287,8 +283,16 @@ class NeonEditor extends UtilitiesFileImport {
 					}
 				}
 				if ($postArr['action'] === 'add') {
+					if (!in_array('ms_catalognumber', array_map('strtolower', array_keys($this->fieldMap)))) {
+						$this->logOrEcho('ERROR: ms_catalogNumber is not mapped in the import field map.', 1);
+						return;
+					}
 					if(empty($msArr['sampleType'])) {
 						$this->logOrEcho('SKIPPED: sampleType value is required');
+						continue;
+					}
+					if (empty($msArr['catalogNumber'])) {
+						$this->logOrEcho('SKIPPED: ms_catalogNumber value is required');
 						continue;
 					}
 					$existingoccid = $importManager->getMatSampleIdByCatalogNumber($msArr['catalogNumber']);
@@ -302,27 +306,52 @@ class NeonEditor extends UtilitiesFileImport {
 						$this->logOrEcho('ERROR loading Material Sample: ' . $importManager->getErrorMessage(), 1);
 					}
 				} elseif ($postArr['action'] === 'update') {
-						$matSampleID = $importManager->getMatSampleIdByOccidAndCatalogNumber($occid, $msArr['catalogNumber']);
 
-						if (!$matSampleID) {
-							$this->logOrEcho(
-								'SKIPPED: No existing material sample found for occid ' . 
-								$occid . ' with catalogNumber "' . $msArr['catalogNumber'] . '"',
-								1
-							);
-							continue;
-						}
-
-						$importManager->setMatSampleID($matSampleID);
-
-						if ($importManager->updateMaterialSample($msArr)) {
-							$this->logOrEcho(
-								'Material sample updated: <a href="' . $GLOBALS['CLIENT_ROOT'] . '/collections/editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">' . $occid . '</a>', 1);
-							$status = true;
-						} else {
-							$this->logOrEcho('ERROR updating Material Sample: ' . $importManager->getErrorMessage(), 1);
-						}
+					if (!empty($msArr['guid'])) {
+						$matSampleID = $importManager->getMatSampleIdByGuid($msArr['guid']);
+					} elseif (!empty($msArr['catalogNumber'])) {
+						$matSampleID = $importManager->getMatSampleIdByOccidAndCatalogNumber(
+							$occid,
+							$msArr['catalogNumber']
+						);
+					} else {
+						$this->logOrEcho(
+							'SKIPPED: Either guid or ms_catalogNumber must be provided to update a material sample.',
+							1
+						);
+						continue;
 					}
+
+					if (!$matSampleID) {
+						$this->logOrEcho(
+							'SKIPPED: No matching material sample found.',
+							1
+						);
+						continue;
+					}
+
+					$importManager->setMatSampleID($matSampleID);
+
+					if ($importManager->updateMaterialSample($msArr)) {
+						$this->logOrEcho(
+							'Material sample updated: <a href="' .
+							$GLOBALS['CLIENT_ROOT'] .
+							'/collections/editor/occurrenceeditor.php?occid=' .
+							$occid .
+							'" target="_blank">' .
+							$occid .
+							'</a>',
+							1
+						);
+						$status = true;
+					} else {
+						$this->logOrEcho(
+							'ERROR updating Material Sample: ' .
+							$importManager->getErrorMessage(),
+							1
+						);
+					}
+				}
 			}
 		} elseif ($this->importType == self::IMPORT_IDENTIFIERS) {
 			$importManager = new OmIdentifiers($this->conn);
