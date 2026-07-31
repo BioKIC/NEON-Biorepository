@@ -291,16 +291,47 @@ class OmDeterminations extends Manager{
 						// tid lookup
 						try {
 							$tid = null;
-							$tidSql = 'SELECT t.tid FROM taxa t WHERE t.sciName = ? LIMIT 2';
-							if ($tidstmt = $this->conn->prepare($tidSql)) {
-								$tidstmt->bind_param('s', $inputArr['sciname']);
-								if ($tidstmt->execute()) {
-									$result = $tidstmt->get_result();
+
+							$taxSql = 'SELECT t.tid, s.family, t.author
+									FROM taxa t
+									LEFT JOIN taxstatus s
+									ON t.tid = s.tid
+									WHERE t.sciName = ?
+									LIMIT 2';
+
+							if($taxStmt = $this->conn->prepare($taxSql)){
+								$taxStmt->bind_param('s', $inputArr['sciname']);
+
+								if($taxStmt->execute()){
+									$result = $taxStmt->get_result();
+
 									if($result->num_rows === 1){
-										$tid = (int)$result->fetch_assoc()['tid'];
-										$updateSql = 'UPDATE omoccurdeterminations SET tidInterpreted = ? WHERE detid = ?';
+										$row = $result->fetch_assoc();
+
+										$tid = (int)$row['tid'];
+
+										if(empty($inputArr['family'])){
+											$inputArr['family'] = $row['family'];
+										}
+
+										if(empty($inputArr['scientificNameAuthorship'])){
+											$inputArr['scientificNameAuthorship'] = $row['author'];
+										}
+
+										$updateSql = 'UPDATE omoccurdeterminations
+													SET tidInterpreted = ?,
+														family = ?,
+														scientificNameAuthorship = ?
+													WHERE detID = ?';
+
 										if($updateStmt = $this->conn->prepare($updateSql)){
-											$updateStmt->bind_param('ii', $tid, $this->detID);
+											$updateStmt->bind_param(
+												'issi',
+												$tid,
+												$inputArr['family'],
+												$inputArr['scientificNameAuthorship'],
+												$this->detID
+											);
 											$updateStmt->execute();
 											$updateStmt->close();
 										} else $this->errorMessage .= ' ERROR preparing tid update: '.$this->conn->error;
@@ -309,11 +340,19 @@ class OmDeterminations extends Manager{
 									} else {
 										$this->errorMessage .= ' No tid found for sciname.';
 									}
-								} else $this->errorMessage .= ' ERROR executing tid query: '.$tidstmt->error;
-								$tidstmt->close();
-							} else $this->errorMessage .= ' ERROR preparing tid query: '.$this->conn->error;
-						} catch(Exception $e){
-							$this->errorMessage .= ' TID lookup exception: '.$e->getMessage();
+								}
+								else{
+									$this->errorMessage .= ' ERROR executing taxa lookup: '.$taxStmt->error;
+								}
+
+								$taxStmt->close();
+							}
+							else{
+								$this->errorMessage .= ' ERROR preparing taxa lookup: '.$this->conn->error;
+							}
+						}
+						catch(Exception $e){
+							$this->errorMessage .= ' Taxa lookup exception: '.$e->getMessage();
 						}
 
 						if(!empty($inputArr['isCurrent']) && intval($inputArr['isCurrent']) === 1){
@@ -341,9 +380,16 @@ class OmDeterminations extends Manager{
 										o.tidInterpreted = d.tidInterpreted,
 										o.identificationQualifier = d.identificationQualifier,
 										o.identificationReferences = d.identificationReferences,
-										o.identificationRemarks = d.identificationRemarks
-									WHERE d.detid = ? AND d.isCurrent = 1';
-								if ($occStmt = $this->conn->prepare($occUpdateSql)){
+										o.identificationRemarks = d.identificationRemarks,
+										o.genus = d.genus,
+										o.taxonRemarks = d.taxonRemarks,
+										o.specificEpithet = d.specificEpithet,
+										o.infraspecificEpithet = d.infraspecificEpithet,
+										o.taxonRank = d.taxonRank
+									WHERE d.detID = ?
+									AND d.isCurrent = 1';
+
+								if($occStmt = $this->conn->prepare($occUpdateSql)){
 									$occStmt->bind_param('i', $this->detID);
 									$occStmt->execute();
 									$occStmt->close();
