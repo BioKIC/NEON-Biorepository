@@ -59,6 +59,8 @@ if ($isEditor && $action) {
 <?php include_once($SERVER_ROOT.'/includes/head.php'); ?>
 <script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
 <script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
+<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+<script src="../../js/datatables/datatables.js"></script>
 <style>
 fieldset { padding:15px; width:800px; margin: 0 auto; }
 .fieldGroupDiv { clear:both; margin-top:2px; height:25px; }
@@ -96,12 +98,12 @@ tr:hover { background-color: #f1f1f1; }
                 $idlist = array_column($samples, 'id');
                 $availabilitydata = $inquiryManager->getSampleAvailabilityTable($idlist);
                 if (!empty($availabilitydata)) {
-                    echo '<div class="table-container">';
-                    $availabilitytable = $utilities->htmlTable(
-                        $availabilitydata, 
-                        ['sampleID','sampleCode','availability: request','availability: occurrence']
-                    );
-                    echo $availabilitytable;
+                    $headerArr =  ['sampleID','sampleCode','availability: request','availability: occurrence'];
+                    echo str_replace(
+                        '<table',
+                        '<table id="availabilityTable"',
+                        $utilities->htmlTable($availabilitydata, $headerArr)
+                    );	
                     echo '</div>';
                 }
                 ?>
@@ -118,12 +120,12 @@ tr:hover { background-color: #f1f1f1; }
             <?php
             $dispositiondata = $inquiryManager->getSampleDispositionTable($idlist);
             if (!empty($dispositiondata)) {
-                echo '<div class="table-container">';
-                $dispositiontable = $utilities->htmlTable(
-                    $dispositiondata, 
-                    ['sampleID','sampleCode','disposition']
+                $headerArr = ['sampleID','sampleCode','disposition'];
+                echo str_replace(
+                    '<table',
+                    '<table id="dispositionTable"',
+                    $utilities->htmlTable($dispositiondata, $headerArr)
                 );
-                echo $dispositiontable;
                 echo '</div>';
             }
             ?>
@@ -149,4 +151,33 @@ tr:hover { background-color: #f1f1f1; }
 <?php endif; ?>
 </body>
 </html>
+<script>
+$(document).ready(function () {
+
+    $('#availabilityTable').DataTable({
+        pageLength: 10,
+        layout: {
+            topStart: {
+                pageLength: {
+                    menu: [10, 25, 50, 100, { label: 'All', value: -1 }]
+                }
+            }
+        },
+        scrollCollapse: true
+    });
+
+    $('#dispositionTable').DataTable({
+        pageLength: 10,
+        layout: {
+            topStart: {
+                pageLength: {
+                    menu: [10, 25, 50, 100, { label: 'All', value: -1 }]
+                }
+            }
+        },
+        scrollCollapse: true
+    });
+
+});
+</script>
 
