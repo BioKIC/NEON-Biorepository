@@ -435,15 +435,30 @@
         $this->sampleUseByStatusAYBarChart($name,$reportDate,$endquarter);
         $this->cumulativeRequests($endquarter,$reportDate);
         $this->cumulativeSampleRequests($endquarter,$reportDate);
+        $this->generateQuarterlyReportSummary($name,$reportDate);
 
         return $name;
     
     }
 
-    public function generateQuarterlyReportSummary($quarter,$reportDate) {
+    public function quarterlySummary($reportDate) {
+        $sql = "SELECT status FROM neonquarterlyreport
+                WHERE tabletype = 'Summary' AND date = ?";
         
-        $name = $quarter;
-        preg_match('/AY(\d+)\s+Q(\d+)/', $quarter, $matches);
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $reportDate);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $summary = $row['status'];
+
+        return $summary;
+
+    }
+
+    public function generateQuarterlyReportSummary($name,$reportDate) {
+        
+        preg_match('/AY(\d+)\s+Q(\d+)/', $name, $matches);
         $year = $matches[1];
         $quarter = $matches[2]; 
 
@@ -595,10 +610,18 @@
         . $yearcolls . '</b> sample types have been newly requested for projects involving <b>' . $yearresearchers . '</b> different 
         researchers. To date, <b>' . $samples . '</b> unique samples across <b>'
         . $colls . '</b> sample types have been requested for projects involving <b>' . $researchers . '</b> different 
-        researchers. </br>';  
-        
-        return $summary;
-    
+        researchers. <br>';  
+
+        $ins = $this->conn->prepare("INSERT INTO neonquarterlyreport (`name`, `tabletype`, `status`, `date`) 
+        VALUES (?, 'Summary', ?, ?)");
+
+        $ins->bind_param('sss', $name, $summary, $reportDate);
+        $ins->execute();
+
+        if ($ins->error) {
+            error_log("Insert error for report summary: " . $ins->error);
+        }
+
     }
 
     public function compareRequests($name,$reportDate,$startquarter,$endquarter,$startyear){

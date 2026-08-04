@@ -69,7 +69,7 @@ if ($isEditor) {
 	?>
 	<h2>Summary:</h2>
 	<?php
-	$summary = $reports->generateQuarterlyReportSummary($quarter,$reportDate);
+	$summary = $reports->quarterlySummary($reportDate);
 	echo '<p>' . $summary . '</p>';
 
 	if (!empty($reportsArr)) {
@@ -87,7 +87,8 @@ if ($isEditor) {
 				'Sample Use By Initiation Year Bar Chart',
 				'Sample Use By Status Year Bar Chart',
 				'Samples by Sample Type and Use Type',
-				'Samples by Storage Type and Use Type'
+				'Samples by Storage Type and Use Type',
+				'Summary'
 			];
 
 
