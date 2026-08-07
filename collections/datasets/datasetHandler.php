@@ -20,7 +20,10 @@ if($SYMB_UID){
 			if($datasetManager->createDataset($name, '', '', '', $SYMB_UID)) $datasetID = $datasetManager->getDatasetId();
 			else echo $datasetManager->getErrorMessage();
 		}
-		$targetLink = 'datasetmanager.php?datasetid='.$datasetID;
+		// start NEON edit
+		//$targetLink = 'datasetmanager.php?datasetid='.$datasetID;
+		$targetLink = '../../neon/datasets/neondatasetmanager.php?datasetid='.$datasetID;
+		// end NEON edit
 		if($sourcePage == 'individual') $targetLink = '../individual/index.php?occid='.$occid;
 		if($datasetID){
 			if($action == 'addSelectedToDataset'){
