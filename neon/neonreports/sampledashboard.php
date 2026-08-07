@@ -65,7 +65,7 @@ if ($isEditor) {
     ?>
         <div class="section" id="cumulativeSamplesSection">
             <h2>Cumulative Samples Received To Date: <?= number_format($samps) ?></h2>
-            <div style="height: 450px; max-width: 1000px;">
+                <div style="width: 100%; max-width: 1200px; height: 600px;">
                 <canvas id="cumulativeSamples"></canvas>
             </div>
         </div>
@@ -89,7 +89,7 @@ if ($isEditor) {
     ?>
         <div class="section" id="cumulativeShipmentsSection">
             <h2>Cumulative Shipments Received To Date: <?= number_format($ships) ?></h2>
-            <div style="height: 450px; max-width: 1000px;">
+            <div style="width: 100%; max-width: 1200px; height: 600px;">
                 <canvas id="cumulativeShipments"></canvas>
             </div>
         </div>
@@ -113,7 +113,7 @@ if ($isEditor) {
     ?>
         <div class="section" id="cumulativeCheckinSection">
             <h2>Cumulative Samples Checked In To Date: <?= number_format($checkin) ?></h2>
-            <div style="height: 450px; max-width: 1000px;">
+            <div style="width: 100%; max-width: 1200px; height: 600px;">
                 <canvas id="cumulativeCheckIn"></canvas>
             </div>
         </div>
@@ -138,7 +138,7 @@ if ($isEditor) {
     ?>
         <div class="section" id="cumulativeRecordsSection">
             <h2>Cumulative Occurrence Records To Date: <?= number_format($records) ?></h2>
-            <div style="height: 450px; max-width: 1000px;">
+            <div style="width: 100%; max-width: 1200px; height: 600px;">
                 <canvas id="cumulativeRecords"></canvas>
             </div>
         </div>
@@ -181,6 +181,7 @@ else {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: false
@@ -196,7 +197,7 @@ else {
                         display: true,
                         text: 'Date',
                         font: {
-                            size: 24
+                            size: 28
                         }
                     },
                     ticks: {
@@ -211,7 +212,7 @@ else {
                         display: true,
                         text: 'Samples',
                         font: {
-                            size: 24
+                            size: 28
                         }
                     },
                     ticks: {
@@ -243,6 +244,7 @@ else {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: false
@@ -258,7 +260,7 @@ else {
                         display: true,
                         text: 'Date',
                         font: {
-                            size: 24
+                            size: 28
                         }
                     },
                     ticks: {
@@ -273,7 +275,7 @@ else {
                         display: true,
                         text: 'Shipments',
                         font: {
-                            size: 24
+                            size: 28
                         }
                     },
                     ticks: {
@@ -305,6 +307,7 @@ else {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: false
@@ -320,7 +323,7 @@ else {
                         display: true,
                         text: 'Date',
                         font: {
-                            size: 24
+                            size: 28
                         }
                     },
                     ticks: {
@@ -335,7 +338,7 @@ else {
                         display: true,
                         text: 'Samples',
                         font: {
-                            size: 24
+                            size: 28
                         }
                     },
                     ticks: {
@@ -367,6 +370,7 @@ else {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: false
@@ -382,7 +386,7 @@ else {
                         display: true,
                         text: 'Date',
                         font: {
-                            size: 24
+                            size: 28
                         }
                     },
                     ticks: {
@@ -397,7 +401,7 @@ else {
                         display: true,
                         text: 'Occurrence Records',
                         font: {
-                            size: 24
+                            size: 28
                         }
                     },
                     ticks: {
