@@ -585,6 +585,16 @@
         $row = $result->fetch_assoc();
         $samples = (int)$row['total'];
 
+        $sql = 'SELECT COUNT(s.occid) AS total FROM neonsamplerequestlink s
+            JOIN neonrequestshipment h ON s.shipmentID = h.id
+            WHERE h.shipDate <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $nonunique = (int)$row['total'];
+
         $sql = 'SELECT COUNT(DISTINCT(o.collid)) AS colls FROM neonsamplerequestlink s
             JOIN omoccurrences o ON s.occid=o.occid
             JOIN neonrequestshipment h ON s.shipmentID = h.id
@@ -606,9 +616,22 @@
         $row = $result->fetch_assoc();
         $researchers = (int)$row['res'];
 
+        $sql = 'SELECT COUNT(s.samplePK) AS total FROM NeonSample s
+                LEFT JOIN NeonShipment h
+                ON s.shipmentPK = h.shipmentPK
+                WHERE h.shipmentID NOT LIKE "%eudo%" AND s.initialtimestamp <= ?';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param('s', $endquarter);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $total = (int)$row['total'];
+
+        $percent = round($samples / $total * 100, 1);
+
         $summary .= 'In AY' . $year . ' to date, <b>' . $yearsamples . '</b> unique samples across <b>'
         . $yearcolls . '</b> sample types have been newly requested for projects involving <b>' . $yearresearchers . '</b> different 
-        researchers. To date, <b>' . $samples . '</b> unique samples across <b>'
+        researchers. To date, <b>' . $nonunique . '</b> samples and <b>' . $samples . '</b> unique samples ('. $percent . '%) across <b>'
         . $colls . '</b> sample types have been requested for projects involving <b>' . $researchers . '</b> different 
         researchers. <br>';  
 
