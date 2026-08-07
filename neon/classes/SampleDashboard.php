@@ -119,6 +119,7 @@
                 AND tidInterpreted IS NOT NULL
                 GROUP BY tidInterpreted
             ) t
+            GROUP BY taxon_date
             ORDER BY taxon_date;";
 
         $stmt = $this->conn->prepare($sql);
