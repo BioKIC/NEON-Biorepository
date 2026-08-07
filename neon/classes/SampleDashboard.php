@@ -109,17 +109,22 @@
     public function cumulativeTaxa() {
         $sql = "SELECT
                 taxon_date,
-                COUNT(*) OVER (ORDER BY taxon_date) AS cumulative_taxa
+                SUM(new_taxa) OVER (ORDER BY taxon_date) AS cumulative_taxa
             FROM (
                 SELECT
-                    MIN(DATE(dateEntered)) AS taxon_date,
-                    tidInterpreted
-                FROM omoccurrences
-                WHERE dateEntered IS NOT NULL
-                AND tidInterpreted IS NOT NULL
-                GROUP BY tidInterpreted
-            ) t
-            GROUP BY taxon_date
+                    taxon_date,
+                    COUNT(*) AS new_taxa
+                FROM (
+                    SELECT
+                        tidInterpreted,
+                        MIN(DATE(dateEntered)) AS taxon_date
+                    FROM omoccurrences
+                    WHERE dateEntered IS NOT NULL
+                    AND tidInterpreted IS NOT NULL
+                    GROUP BY tidInterpreted
+                ) first_seen
+                GROUP BY taxon_date
+            ) daily
             ORDER BY taxon_date;";
 
         $stmt = $this->conn->prepare($sql);
