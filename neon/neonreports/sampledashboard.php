@@ -44,6 +44,7 @@ if ($isEditor) {
 		<a href="#cumulativeShipmentsSection">Shipments Received</a> |
 		<a href="#cumulativeCheckinSection">Sample Check In</a> |
 		<a href="#cumulativeRecordsSection">Occurrence Records</a>
+        <a href="#cumulativeTaxaSection">Taxa</a>
 	</div>
 	<h1>NEON Sample Dashboard: <?php echo date('Y-m-d H:i:s'); ?></h1>
  <?php
@@ -140,6 +141,31 @@ if ($isEditor) {
             <h2>Cumulative Occurrence Records To Date: <?= number_format($records) ?></h2>
             <div style="width: 100%; max-width: 1200px; height: 600px;">
                 <canvas id="cumulativeRecords"></canvas>
+            </div>
+        </div>
+    <?php
+    }
+
+    $cumulativeTaxa = [];
+
+    $result = $reports->cumulativeTaxa();
+
+    while ($row = $result->fetch_assoc()) {
+        $cumulativeTaxa[] = [
+            'x' => $row['taxon_date'],
+            'y' => (int)$row['cumulative_taxa']
+        ];
+    }
+    
+    $taxa = $reports->totalTaxa();
+
+
+	if (!empty($cumulativeTaxa)) {
+    ?>
+        <div class="section" id="cumulativeTaxaSection">
+            <h2>Cumulative Taxa To Date: <?= number_format($taxa) ?></h2>
+            <div style="width: 100%; max-width: 1200px; height: 600px;">
+                <canvas id="cumulativeTaxa"></canvas>
             </div>
         </div>
     <?php
@@ -400,6 +426,69 @@ else {
                     title: {
                         display: true,
                         text: 'Occurrence Records',
+                        font: {
+                            size: 28
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const chartDataCumTax= <?= json_encode($cumulativeTaxa) ?>;
+
+    const cttax = document.getElementById('cumulativeTaxa');
+
+    new Chart(cttax, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Cumulative Taxa',
+                data: chartDataCumTax,
+                parsing: {
+                    xAxisKey: 'x',
+                    yAxisKey: 'y'
+                },
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'month'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Date',
+                        font: {
+                            size: 28
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            size: 16
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Taxa',
                         font: {
                             size: 28
                         }

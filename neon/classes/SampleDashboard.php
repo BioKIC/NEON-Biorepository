@@ -106,6 +106,26 @@
 
         return $stmt->get_result();
     }
+    public function cumulativeTaxa() {
+        $sql = "SELECT
+                taxon_date,
+                COUNT(*) OVER (ORDER BY taxon_date) AS cumulative_taxa
+            FROM (
+                SELECT
+                    MIN(DATE(dateEntered)) AS taxon_date,
+                    tidInterpreted
+                FROM omoccurrences
+                WHERE dateEntered IS NOT NULL
+                AND tidInterpreted IS NOT NULL
+                GROUP BY tidInterpreted
+            ) t
+            ORDER BY taxon_date;";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->get_result();
+    }
 
     public function totalSamples() {
         $sql = "
@@ -161,6 +181,19 @@
     public function totalRecords() {
         $sql = "
             SELECT COUNT(*) AS total
+            FROM omoccurrences;";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+
+        return (int)$row['total'];
+    }
+
+    public function totalTaxa() {
+        $sql = "
+            SELECT COUNT(DISTINCT(tidInterpreted)) AS total
             FROM omoccurrences;";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
