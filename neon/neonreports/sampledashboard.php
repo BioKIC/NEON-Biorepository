@@ -65,7 +65,7 @@ if ($isEditor) {
 	if (!empty($cumulativeSamples)) {
     ?>
         <div class="section" id="cumulativeSamplesSection">
-            <h2>Cumulative Samples Received To Date: <?= number_format($samps) ?></h2>
+            <h2>Cumulative Physical Samples Received To Date: <?= number_format($samps) ?></h2>
                 <div style="width: 100%; max-width: 1200px; height: 600px;">
                 <canvas id="cumulativeSamples"></canvas>
             </div>
