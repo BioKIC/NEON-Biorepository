@@ -185,7 +185,7 @@
         // Collect all query results
         $queries = [
             'shipments' => $shipsql,
-            'samples' => $sampsql,
+            'manifest sample records' => $sampsql,
             'occurrences' => $occursql,
             'harvesting errors' => $errorsql,
             'GBIF records' => $gbifCount,
