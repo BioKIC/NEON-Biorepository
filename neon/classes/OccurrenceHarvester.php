@@ -804,7 +804,15 @@ class OccurrenceHarvester{
 
 				}
 				if(isset($sampleArr['reproductive_condition'])) $dwcArr['reproductiveCondition'] = $sampleArr['reproductive_condition'];
-				if(isset($sampleArr['sampling_protocol'])) $dwcArr['samplingProtocol'] = $sampleArr['sampling_protocol'];
+				if(isset($sampleArr['sampling_protocol'])) {
+					if (    str_starts_with($sampleArr['sampling_protocol'], 'NEON') ||
+    						str_starts_with($sampleArr['sampling_protocol'], 'https') ||
+							str_starts_with($sampleArr['sampling_protocol'], 'sample-release') ||
+    						str_starts_with($sampleArr['sampling_protocol'], 'https') ||
+							str_starts_with($sampleArr['sampling_protocol'], 'Sherman')) {
+						$dwcArr['samplingProtocol'] = $sampleArr['sampling_protocol'];
+					};
+				};
 				if(isset($sampleArr['sex'])) $dwcArr['sex'] = $sampleArr['sex'];
 				if(isset($sampleArr['life_stage'])) $dwcArr['lifeStage'] = $sampleArr['life_stage'];
 				if(isset($sampleArr['associated_taxa'])) $dwcArr['associatedTaxa'] = $this->translateAssociatedTaxa($sampleArr['associated_taxa']);
