@@ -22,7 +22,7 @@ class ImageProcessorAI {
 			return '';
 		}
 
-		self::$statusStr .= "\nAI cleaned identifier: \"" . $str . '" => "' . $specPk . '"';
+		self::$statusStr .= "| AI cleaned identifier: \"" . $str . '" => "' . $specPk . '"';
 
 		return $specPk;
 	}
@@ -83,8 +83,8 @@ class ImageProcessorAI {
 
 		if(isset($json['usage'])){
 			$usage = $json['usage'];
-			self::$statusStr = 'AI TOKENS | prompt: ' . $usage['prompt_tokens'] .
-				' | completion: ' . $usage['completion_tokens'] .
+			self::$statusStr = 'AI TOKENS | input: ' . $usage['prompt_tokens'] .
+				' | output: ' . $usage['completion_tokens'] .
 				' | total: ' . $usage['total_tokens'];
 		}
 
