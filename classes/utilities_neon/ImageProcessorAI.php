@@ -22,7 +22,7 @@ class ImageProcessorAI {
 			return '';
 		}
 
-		self::$statusStr .= '\n\tAI cleaned identifier: "' . $str . '" => "' . $specPk . '"';
+		self::$statusStr .= "\nAI cleaned identifier: \"" . $str . '" => "' . $specPk . '"';
 
 		return $specPk;
 	}
