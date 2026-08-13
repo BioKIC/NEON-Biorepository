@@ -5,6 +5,7 @@ class ImageProcessorAI {
 
 	/**
 	 * Extract a primary key (catalog number) from a string (e.g. file name, catalogNumber field).
+	 * Pricing - A prompt uses about 153 tokens each on average. Using gpt-5.4 which is $2.50 / 1M tokens, we can make 16 prompts per 1 cent.  $2.50 or 1M = 7,500 prompts. 
 	 *
 	 * - AI mode:
 	 *   Sends the input string to an AI-based cleaner, optionally guided by an
