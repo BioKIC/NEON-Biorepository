@@ -19,7 +19,7 @@ class ImageProcessorAI {
 		$specPk = self::cleanWithAI($str, $example, $extra);
 
 		if(!$specPk){
-			self::$statusStr = 'AI failed to extract identifier from: ' . $str;
+			// the error should be returned in the callAI function
 			return '';
 		}
 
