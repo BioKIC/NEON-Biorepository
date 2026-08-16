@@ -60,7 +60,8 @@
             "misc/samplepolicy.php",
             "misc/samplerequests.php",
             "neon/datasets/neonpublic.php",
-            "neon/datasets/neonpubliclist.php"
+            "neon/datasets/neonpubliclist.php",
+            "neon/datasets/neondatasetmanager.php",
             ]
         }
     ]
