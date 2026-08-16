@@ -61,7 +61,7 @@
             "misc/samplerequests.php",
             "neon/datasets/neonpublic.php",
             "neon/datasets/neonpubliclist.php",
-            "neon/datasets/neondatasetmanager.php",
+            "neon/datasets/neondatasetmanager.php"
             ]
         }
     ]
