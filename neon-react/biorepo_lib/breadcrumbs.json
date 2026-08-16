@@ -199,10 +199,23 @@
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Image Breakdown" }
     ],
-  "/collections/datasets/publiclist.php": [
+  "/neon/datasets/neonpubliclist.php": [
     { "name": "Impact", "href": "https://www.neonscience.org/impact" },
     { "name": "Papers & Publications", "href": "https://www.neonscience.org/impact/papers-publications" },
-    { "name": "Published Sample Research Datasets" }
+    { "name": "NEON Biorepository Research Projects" }
+    ],
+  "/neon/datasets/neonpublic.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Biorepository Research Projects", "href": "neonpubliclist.php" },
+    { "name": "Research Project" }
+    ],
+  "/neon/datasets/neondatasetmanager.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
+    { "name": "Biorepository Research Projects", "href": "../../collections/datasets/neonpubliclist.php" },
+    { "name": "Research Project", "href": "../../collections/datasets/neonpublic.php?datasetid=#" },
+    { "name": "Manage Project" }
     ],
   "/profile/usermanagement.php": [
     { "name": "User Management" }

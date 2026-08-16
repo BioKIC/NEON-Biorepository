@@ -44,13 +44,14 @@ class OccurrenceDataset{
 		$retArr = array();
 		if ($dsid) {
 			//Get and return individual dataset
-			$sql = 'SELECT datasetid, name, notes, description, bibliographicCitation, uid, dynamicProperties, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') AND ispublic=1';
+			//neon edit, remove isPublic requirement since this is managed in the list
+			$sql = 'SELECT datasetid, name, notes, description, bibliographicCitation, uid, dynamicProperties, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ')';
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
 				$retArr['name'] = $r->name;
 				$retArr['notes'] = $r->notes;
-				//neon edit - remove font family from pasted text
-				$retArr['description'] = $this->removeFontFamily($r->description);
+				// neon edit - remove all HTML from pasted text
+				$retArr['description'] = strip_tags($r->description);
 				//end neon edit
 				$retArr['bibliographicCitation'] = $r->bibliographicCitation;
 				$retArr['uid'] = $r->uid;
@@ -59,9 +60,110 @@ class OccurrenceDataset{
 				$retArr['ts'] = $r->initialtimestamp;
 			}
 			$rs->free();
+	
+			//neon edit - Get sample types
+			$retArr['sampleTypes'] = array();
+			$sql = 'SELECT c.collid, c.publicName, COUNT(*) AS sampleCount FROM omoccurdatasetlink odl INNER JOIN omoccurrences o ON odl.occid = o.occid INNER JOIN omcollections c ON o.collid = c.collid WHERE odl.datasetid = ' . $dsid . ' GROUP BY c.collid, c.publicName ORDER BY c.publicName';
+			$rs = $this->conn->query($sql);
+			while ($r = $rs->fetch_object()) {
+				$retArr['sampleTypes'][] = array(
+					'sampleType' => array(
+						'value' => $r->publicName,
+						'link' => 'https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=' . $r->collid
+					),
+					'sampleCount' => (int)$r->sampleCount
+				);
+			}
+			$rs->free();
+			//Get sites
+			$retArr['sites'] = array();
+			$sql = 'SELECT DISTINCT site.name FROM omoccurdatasetlink odl INNER JOIN omoccurdatasetlink siteLink ON odl.occid = siteLink.occid INNER JOIN omoccurdatasets site ON siteLink.datasetid = site.datasetid WHERE odl.datasetid = ' . $dsid . ' AND site.notes = "NEON Site" ORDER BY site.name';
+			$rs = $this->conn->query($sql);
+			while ($r = $rs->fetch_object()) {
+				$retArr['sites'][] = $r->name;
+			}
+			$rs->free();
+			//end neon edit
 		}
 		return $retArr;
 	}
+	
+	//neon edit
+	public function getRequestInquiryMetadata($dsid) {
+		$retArr = array();
+		if ($dsid) {
+			$sql = 'SELECT r.name, r.institution, nr.activeDate, nr.completeDate FROM neonrequest nr LEFT JOIN neonresearcher r ON nr.researcherID = r.researcherID WHERE nr.datasetID = ' . $dsid;
+			$rs = $this->conn->query($sql);
+			while ($r = $rs->fetch_object()) {
+				$retArr['name'] = $r->name;
+				$retArr['institution'] = $r->institution;
+				$retArr['activeDate'] = $r->activeDate;
+				$retArr['completeDate'] = $r->completeDate;
+				$retArr['completeDate'] = $r->completeDate !== null ? $r->completeDate : 'In Progress';
+			}
+			$rs->free();
+		}
+		return $retArr;
+	}
+	
+	public function getPublicProjects() {
+		$retArr = array();
+	
+		$sql = "SELECT od.datasetid, od.name, od.notes, od.description, r.name AS researcherName, r.institution, nr.activeDate, nr.completeDate FROM omoccurdatasets od LEFT JOIN neonrequest nr ON od.datasetid = nr.datasetID LEFT JOIN neonresearcher r ON nr.researcherID = r.researcherID WHERE od.ispublic = 1 AND od.category = 'Request' ORDER BY od.name";
+		$rs = $this->conn->query($sql);
+	
+		$datasetIds = array();
+	
+		while ($r = $rs->fetch_object()) {
+			$datasetIds[] = (int)$r->datasetid;
+	
+			$retArr[$r->datasetid] = array(
+				'datasetid' => (int)$r->datasetid,
+				'name' => $r->name,
+				'notes' => $r->notes,
+				'description' => strip_tags($r->description),
+				'researcherName' => $r->researcherName,
+				'institution' => $r->institution,
+				'activeDate' => $r->activeDate,
+				'completeDate' => $r->completeDate,
+				'sampleTypes' => array(),
+				'sites' => array()
+			);
+		}
+	
+		$rs->free();
+	
+		if ($datasetIds) {
+			$idStr = implode(',', $datasetIds);
+	
+			$sql = 'SELECT odl.datasetid, c.collid, c.publicName, COUNT(*) AS sampleCount FROM omoccurdatasetlink odl INNER JOIN omoccurrences o ON odl.occid = o.occid INNER JOIN omcollections c ON o.collid = c.collid WHERE odl.datasetid IN (' . $idStr . ') GROUP BY odl.datasetid, c.collid, c.publicName ORDER BY c.publicName';
+			$rs = $this->conn->query($sql);
+	
+			while ($r = $rs->fetch_object()) {
+				$retArr[$r->datasetid]['sampleTypes'][] = array(
+					'sampleType' => array(
+						'value' => $r->publicName,
+						'link' => 'https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=' . $r->collid
+					),
+					'sampleCount' => (int)$r->sampleCount
+				);
+			}
+	
+			$rs->free();
+	
+			$sql = 'SELECT DISTINCT odl.datasetid, site.name FROM omoccurdatasetlink odl INNER JOIN omoccurdatasetlink siteLink ON odl.occid = siteLink.occid INNER JOIN omoccurdatasets site ON siteLink.datasetid = site.datasetid WHERE odl.datasetid IN (' . $idStr . ') AND site.notes = "NEON Site" ORDER BY site.name';
+			$rs = $this->conn->query($sql);
+	
+			while ($r = $rs->fetch_object()) {
+				$retArr[$r->datasetid]['sites'][] = $r->name;
+			}
+	
+			$rs->free();
+		}
+	
+		return array_values($retArr);
+	}
+	//end neon edit
 
 	public function getDatasetMetadata($dsid) {
 		$retArr = array();
