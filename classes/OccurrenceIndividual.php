@@ -442,9 +442,11 @@ class OccurrenceIndividual extends Manager{
 			}
 		}
 		if($relOccidArr){
-			$sql = 'SELECT o.occid, o.sciname, IFNULL(o.institutioncode, c.institutioncode) as instCode, IFNULL(o.collectioncode, c.collectioncode) as collCode, o.catalogNumber, o.occurrenceID, o.recordID
+			//neon edit - pull public name instead of collectioncode
+			$sql = 'SELECT o.occid, o.sciname, IFNULL(o.institutioncode, c.institutioncode) as instCode, c.publicName as collCode, o.catalogNumber, o.occurrenceID, o.recordID
 				FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid
 				WHERE o.occid IN(' . implode(',', array_keys($relOccidArr)) . ')';
+			//end neon edit
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				foreach($relOccidArr[$r->occid] as $targetAssocID){

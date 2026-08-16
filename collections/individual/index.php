@@ -364,13 +364,32 @@ $traitArr = $indManager->getTraitArr();
 						<!-- End of NEON customization -->
 						<?php
 						if(array_key_exists('relation',$occArr)){
+							//neon edit - normalize array
+							$relations = [];
+							
+							foreach($occArr['relation'] as $assocArr) {
+								$occidAssoc = $assocArr['occidassoc'];
+							
+								if(!isset($relations[$occidAssoc])) {
+									$relations[$occidAssoc] = $assocArr;
+								} else {
+									$relationships = explode(', ', $relations[$occidAssoc]['relationship']);
+							
+									if(!in_array($assocArr['relationship'], $relationships)) {
+										$relations[$occidAssoc]['relationship'] .= ', ' . $assocArr['relationship'];
+									}
+								}
+							}
+							//end neon edit
 							?>
 								<fieldset id="association-div" class="top-light-margin">
 									<legend><?= $LANG['ASSOCIATIONS']; ?></legend>
 									<?php
 									$displayLimit = 5;
 									$cnt = 0;
-									foreach($occArr['relation'] as $id => $assocArr){
+									//neon edit - use normalized relations array instead of occid[relations]
+									foreach($relations as $occidAssoc => $assocArr) {
+									//end neon edit
 										if($cnt == $displayLimit){
 											echo '<div class="relation-hidden"><a href="#" onclick="$(\'.relation-hidden\').toggle();return false;">show all records</a></div>';
 											echo '<div class="relation-hidden" style="display:none">';
