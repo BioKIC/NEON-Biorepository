@@ -2222,9 +2222,9 @@ public function addCollectionInquiryLink($requestID, $collections) {
 
                 $citations[] = "NEON (National Ecological Observatory Network) Biorepository. "
                             . $collectionName
-                            . " Data accessed from https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid="
+                            . ". Data accessed from https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid="
                             . $collid
-                            . " on " . $SYS_TIME . ".<br><br>";
+                            . " on " . $SYS_TIME . ". Licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Data archived at [your DOI].<br><br>";
             }
 
             if (!empty($citations)) {
