@@ -53,9 +53,6 @@ if($isEditor){
 			<ul>
 				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
-				<li><a href="requests/newinquiry.php">Create New Inquiry</a></li>
-				<li><a href="requests/index.php">Sample Use Inquiry List</a></li>
-				<li><a href="requests/neonrequestsearch.php">Sample Use Search</a></li>
 				<li><a href="../collections/datasets/publiclist.php">Research Datasets</a></li>
 				<?php
 				if($IS_ADMIN){
@@ -65,6 +62,17 @@ if($isEditor){
 					<li><a href="editor/neonnomenclaturaladjustments.php">NEON Nomenclatural Adjustment</a></li>
 					<?php
 				}
+				?>
+			</ul>
+			<h3>Sample Use</h3>
+			<ul>
+				<li><a href="requests/newinquiry.php">Create New Inquiry</a></li>
+				<li><a href="requests/index.php">Sample Use Inquiry List</a></li>
+				<li><a href="requests/neonrequestsearch.php">Sample Use Search</a></li>
+				<li><a href="https://asu.co1.qualtrics.com/jfe/form/SV_3mDAqC10lcVtLTw">Sample Use Request Form</a></li>
+				<li><a href="https://biorepo.neonscience.org/portal/misc/documents/NEONBiorepositorySampleUseAgreement.pdf">Sample Use Agreement Template</a></li>
+				<li><a href="https://docs.google.com/document/d/1z9yHLh6GPagrI3lqdk2Cf87KXaQGt7Nc/">Confirmation of Sample Receipt Template</a></li>
+				<?php
 				?>
 			</ul>
 			<h3>Reporting</h3>
