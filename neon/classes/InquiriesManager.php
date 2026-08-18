@@ -2153,10 +2153,13 @@ public function addCollectionInquiryLink($requestID, $collections) {
         $name = $this->conn->real_escape_string($name);
         $description = $this->conn->real_escape_string($row['description'] ?? '');
         $notes = "Dataset created from request $requestID";
+        $dynamicProperties = $this->conn->real_escape_string(
+            json_encode(['requestID' => $requestID])
+        );        
 
         // create new dataset
-        $insertSql = "INSERT INTO omoccurdatasets (name, description, category, notes, isPublic, uid) 
-                      VALUES ('$name', '$description', 'Request' ,'$notes', 1, $uid)";
+        $insertSql = "INSERT INTO omoccurdatasets (name, description, category, notes, isPublic, uid, dynamicProperties) 
+                      VALUES ('$name', '$description', 'Request' ,'$notes', 1, $uid, '$dynamicProperties')";
         if (!$this->conn->query($insertSql)) {
             $this->errorMessage = "Failed to create dataset: " . $this->conn->error;
             return false;

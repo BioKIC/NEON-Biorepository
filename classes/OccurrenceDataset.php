@@ -63,11 +63,12 @@ class OccurrenceDataset{
 		return $retArr;
 	}
 
+// NEON edit to include dynamicProperties
 	public function getDatasetMetadata($dsid) {
 		$retArr = array();
 		if ($GLOBALS['SYMB_UID'] && $dsid) {
 			//Get and return individual dataset
-			$sql = 'SELECT datasetid, name, notes, description, category, bibliographicCitation, uid, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') ';
+			$sql = 'SELECT datasetid, name, notes, description, category, bibliographicCitation, uid, sortsequence, initialtimestamp, ispublic, dynamicProperties FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') ';
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
 				$retArr['name'] = $r->name;
@@ -79,6 +80,7 @@ class OccurrenceDataset{
 				$retArr['sort'] = $r->sortsequence;
 				$retArr['ts'] = $r->initialtimestamp;
 				$retArr['ispublic'] = $r->ispublic;
+				$retArr['dynamicProperties'] = $r->dynamicProperties;
 			}
 			$rs->free();
 			//Get roles for current user
@@ -91,6 +93,7 @@ class OccurrenceDataset{
 		}
 		return $retArr;
 	}
+	// NEON edit to include dynamicProperties
 
 	public function getDatasetArr() {
 		$retArr = array();
@@ -128,14 +131,47 @@ class OccurrenceDataset{
 		return $retArr;
 	}
 
-	public function editDataset($dsid, $name, $notes, $description, $ispublic) {
-		$sql = 'UPDATE omoccurdatasets SET name = "' . $this->cleanInStr($name) . '", notes = "' . $this->cleanInStr($notes) . '", description = "' . $this->cleanInStr($description) . '", ispublic = ' . $this->cleanInStr($ispublic) . ' WHERE datasetid = ' . $dsid;
-		if (!$this->conn->query($sql)) {
-			$this->errorArr[] = 'ERROR saving dataset edits: ' . $this->conn->error;
+	//  NEON edit to add citation, clean input
+	public function editDataset($datasetID, $name, $notes, $description, $ispublic, $bibliographicCitation) {
+		$datasetID = intval($datasetID);
+		$ispublic = intval($ispublic);
+
+		$sql = "UPDATE omoccurdatasets
+				SET name = ?,
+					notes = ?,
+					description = ?,
+					ispublic = ?,
+					bibliographicCitation = ?
+				WHERE datasetid = ?";
+
+		$stmt = $this->conn->prepare($sql);
+
+		if (!$stmt) {
+			$this->errorArr[] = 'ERROR preparing dataset update: ' . $this->conn->error;
 			return false;
 		}
+
+		$stmt->bind_param(
+			'sssisi',
+			$name,
+			$notes,
+			$description,
+			$ispublic,
+			$bibliographicCitation,
+			$datasetID
+		);
+
+		if (!$stmt->execute()) {
+			$this->errorArr[] = 'ERROR saving dataset edits: ' . $stmt->error;
+			$stmt->close();
+			return false;
+		}
+
+		$stmt->close();
+
 		return true;
 	}
+	//  end NEON edit
 
 	public function createDataset($name, $notes, $description, $ispublic, $uid) {
 		$sql = 'INSERT INTO omoccurdatasets (name,notes,description,ispublic,uid)
@@ -489,6 +525,23 @@ class OccurrenceDataset{
 		return $dom->saveHTML();
 	}
 	//end neon edit
+
+	// neon edit -- get sample use agreement
+	public function getUseAgreement($requestID) {
+		$sql = 'SELECT sampleUseAgreementLink
+				FROM neonrequest
+				WHERE id = ' . intval($requestID);
+		$rs = $this->conn->query($sql);
+		if (!$rs) {
+			$this->errorMessage = $this->conn->error;
+			return null;
+		}
+		if ($row = $rs->fetch_assoc()) {
+			return $row['sampleUseAgreementLink'];
+		}
+		return null;
+	}
+	// end neon edit
 
 	//General setters and getters
 	public function getUserList($term) {
