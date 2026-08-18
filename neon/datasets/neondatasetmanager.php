@@ -131,6 +131,7 @@ if ($isEditor) {
 				branding: false,
 				default_link_target: "_blank",
 				paste_as_text: true,
+				height: 150
 			});
 
 			$('#sampleTable').DataTable({
