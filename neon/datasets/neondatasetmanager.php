@@ -59,7 +59,7 @@ if ($isEditor) {
 	if ($isEditor == 1) {
 		if ($action == 'Save Edits') {
 			$isPublic = (isset($_POST['ispublic']) && is_numeric($_POST['ispublic']) ? 1 : 0);
-			if ($datasetManager->editDataset($_POST['datasetid'], $_POST['name'], $_POST['notes'], $_POST['description'], $isPublic)) {
+			if ($datasetManager->editDataset($_POST['datasetid'], $_POST['name'], $_POST['notes'], $_POST['description'], $isPublic, $_POST['citation'])) {
 				$mdArr = $datasetManager->getDatasetMetadata($datasetId);
 				$statusStr = $LANG['DS_EDITS_SAVED'];
 			} else {
@@ -99,29 +99,41 @@ if ($isEditor) {
 	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
     <script src="../../js/datatables/datatables.js"></script>
 	<script type="text/javascript">
-		// Adds WYSIWYG editor to description field
-		tinymce.init({
-			selector: '#description',
-			plugins: 'link lists image code',
-			menubar: '',
-			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
-			branding: false,
-			default_link_target: "_blank",
-			paste_as_text: true,
-			invalid_styles: {
-				'*': 'font-family'
-			}
-		});
-		tinymce.init({
-			selector: '#citation',
-			plugins: 'link lists image',
-			menubar: '',
-			toolbar: ['undo redo | bold italic underline | link '],
-			branding: false,
-			default_link_target: "_blank",
-			paste_as_text: true
-		});
+		// Adds WYSIWYG editor to description and citation field
 		$(document).ready(function () {
+
+			tinymce.init({
+				selector: '#description',
+				plugins: 'link lists image code',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true,
+				invalid_styles: {
+					'*': 'font-family'
+				}
+			});
+			tinymce.init({
+				selector: '#citation',
+				plugins: 'link lists image',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link '],
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true
+			});
+			tinymce.init({
+				selector: '#name',
+				plugins: 'link lists image',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link '],
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true,
+				height: 150
+			});
+
 			$('#sampleTable').DataTable({
 				pageLength: 25,
 				order: [[1, 'asc']], // sort by Occurrence ID
@@ -309,10 +321,42 @@ if ($isEditor) {
 		});
 	</script>
 	<style>
-		.section-title {
-			margin: 0px 15px;
-			font-weight: bold;
-			text-decoration: underline;
+
+		.tinymce-wrapper {
+			width: 70%;
+			margin: 25px 10px;
+		}
+
+		.tinymce-wrapper .tox-tinymce {
+			width: 100% !important;
+			border: 1px solid #bbb !important;
+			border-radius: 3px !important;
+			box-sizing: border-box;
+		}
+
+		.tinymce-wrapper .tox-editor-header {
+			background: #f5f5f5 !important;
+			border-bottom: 1px solid #ccc !important;
+			padding: 4px !important;
+		}
+
+		.tinymce-wrapper .tox-toolbar,
+		.tinymce-wrapper .tox-toolbar__primary {
+			background: #f5f5f5 !important;
+		}
+
+		.tinymce-wrapper .tox-tbtn {
+			margin: 1px !important;
+			color: white !important;
+
+		}
+
+		.tinymce-wrapper .tox-edit-area {
+			border: 0 !important;
+		}
+
+		.tinymce-wrapper > div {
+			width: 100%;
 		}
 
 		.contact-box {
@@ -370,7 +414,11 @@ if ($isEditor) {
 			echo '</div>';
 		}
 		if ($datasetId) {
-			echo "<a href='../datasets/public.php?datasetid=" . $datasetId . "'>View Dataset</a>";
+			echo "<a href='../../collections/datasets/public.php?datasetid=" . $datasetId . "'>View Public Dataset Page</a>";
+				if ($mdArr['category'] == "Request" && $isEditor) { 
+					$requestId = json_decode($mdArr['dynamicProperties'], true)['requestID'];
+					echo "</br><a href='../requests/inquiryform.php?id=" . $requestId . "'>Manage Request</a>";
+				}
 			echo '<div style="margin:10px 0px 5px 20px;font-weight:bold;font-size:130%;">' . $mdArr['name'] . '</div>';
 			if ($role) echo '<div style="margin-left:20px" title="' . $LANG['ROLE'] . '"' . $roleLabel . '>' . $LANG['ROLE'] . ': ' . $role . '</div>';
 			if ($isEditor) {
@@ -489,8 +537,12 @@ if ($isEditor) {
 								<h2><span><b><?php echo $LANG['EDITOR']; ?></b></span></h2>
 								<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
 									<div style="margin:25px 10px;">
-										<label for="name"><strong>Title</strong></label>
-										<input name="name" id="name" type="text" value="<?php echo $mdArr['name']; ?>" aria-label="<?php echo $LANG['NAME']; ?>" style="width:70%" />
+									<div class="tinymce-wrapper">
+										<label for="name"><strong>Title</strong></label><br>
+										<textarea name="name" id="name" rows="2" aria-label="Title" width=70%><?php
+											echo htmlspecialchars($mdArr['name'] ?? '', ENT_QUOTES | ENT_HTML5, $CHARSET); ?>
+										</textarea>									
+									</div>
 									</div>
 									<div>
 										<p>
@@ -503,13 +555,33 @@ if ($isEditor) {
 										<label for="notes"><strong><?php echo $LANG['NOTES_INTERNAL']; ?></strong></label>
 										<input name="notes" id="notes" type="text" value="<?php echo $mdArr['notes']; ?>" style="width:70%" aria-label="<?php echo $LANG['NOTES_INTERNAL']; ?>" />
 									</div>
-									<div style="margin:15px;">
-										<label for="description"><strong><?php echo $LANG['DESCRIPTION'] . '</br>'; ?></strong></label>
-										<textarea name="description" id="description" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo $mdArr['description']; ?></textarea>
+									<?php 
+									if ($mdArr['category'] == "Request") { 
+										$agreement = $datasetManager->getUseAgreement($requestId);
+										if ($agreement && str_contains($agreement, 'drive.google.com') !== false) {
+											echo "	<div style='margin:25px 10px;'>
+													</br><strong><a href='" . $agreement . "'>View Sample Use Agreement</a></strong>
+													</div>";
+										}
+										else {
+        									echo "	<div style='margin:25px 10px;'> 
+													<strong style='color:red;'>No Sample Use Agreement is Linked to this Request</strong>
+													</div>";
+										}
+									}
+									?>
+									<div class="tinymce-wrapper">
+										<label for="description"> <strong><?php echo $LANG['DESCRIPTION']; ?></strong></label>
+										<textarea name="description" id="description" rows="10" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php
+											echo htmlspecialchars($mdArr['description'] ?? '', ENT_QUOTES | ENT_HTML5, $CHARSET);?>
+										</textarea>
 									</div>
-									<div style="margin:15px;">
-										<label for="citation"><strong><?php echo 'Citation<br>'; ?></strong></label>
-										<textarea name="citation" id="citation" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo 'Citation'; ?>"><?php echo $mdArr['bibliographicCitation']; ?></textarea>
+
+									<div class="tinymce-wrapper">
+										<label for="citation"><strong>Citation</strong></label>
+										<textarea name="citation" id="citation" rows="10" aria-label="Citation"><?php
+											echo htmlspecialchars($mdArr['bibliographicCitation'] ?? '', ENT_QUOTES | ENT_HTML5, $CHARSET); ?>
+										</textarea>
 									</div>
 									<div style="margin:15px;">
 										<input name="tabindex" type="hidden" value="0" />
