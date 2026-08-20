@@ -397,10 +397,42 @@ if ($isEditor) {
 
 	</script>
 	<style>
-		.section-title {
-			margin: 0px 15px;
-			font-weight: bold;
-			text-decoration: underline;
+
+		.tinymce-wrapper {
+			width: 70%;
+			margin: 25px 10px;
+		}
+
+		.tinymce-wrapper .tox-tinymce {
+			width: 100% !important;
+			border: 1px solid #bbb !important;
+			border-radius: 3px !important;
+			box-sizing: border-box;
+		}
+
+		.tinymce-wrapper .tox-editor-header {
+			background: #f5f5f5 !important;
+			border-bottom: 1px solid #ccc !important;
+			padding: 4px !important;
+		}
+
+		.tinymce-wrapper .tox-toolbar,
+		.tinymce-wrapper .tox-toolbar__primary {
+			background: #f5f5f5 !important;
+		}
+
+		.tinymce-wrapper .tox-tbtn {
+			margin: 1px !important;
+			color: white !important;
+
+		}
+
+		.tinymce-wrapper .tox-edit-area {
+			border: 0 !important;
+		}
+
+		.tinymce-wrapper > div {
+			width: 100%;
 		}
 
 		.contact-box {
@@ -532,6 +564,13 @@ if ($isEditor) {
 			echo '</div>';
 		}
 		if ($datasetId) {
+			echo "<a href='../../collections/datasets/public.php?datasetid=" . $datasetId . "'>View Public Dataset Page</a>";
+				if ($mdArr['category'] == "Request" && $isEditor) { 
+					$requestId = json_decode($mdArr['dynamicProperties'], true)['requestID'];
+					echo "</br><a href='../requests/inquiryform.php?id=" . $requestId . "'>Manage Request</a>";
+				}
+			echo '<div style="margin:10px 0px 5px 20px;font-weight:bold;font-size:130%;">' . $mdArr['name'] . '</div>';
+			if ($role) echo '<div style="margin-left:20px" title="' . $LANG['ROLE'] . '"' . $roleLabel . '>' . $LANG['ROLE'] . ': ' . $role . '</div>';
 			if ($isEditor) {
 		?>
 				<div id="tabs" style="margin:10px;padding:0;">

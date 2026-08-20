@@ -862,9 +862,21 @@ if(!$isEditor) {
 						<fieldset>
 							<legend><?php echo 'Samples'; ?></legend>									
 							<div style="clear:both;padding-top:8px;float:left;">
-								<button type="button" onclick="window.location.href='samplelist.php?id=<?php echo $requestID; ?>'">
-								View and Modify Sample List
+								<button type="button" onclick = "window.location.href='samplelist.php?id=<?php echo $requestID; ?>'">
+									View and Modify Sample List
 								</button>
+								<?php 
+								if($sampledata) {
+								?>
+									<div style="clear:both;padding:10px 0;">
+										<div style="float:left;">
+										<button type="button" onclick="handleDataset(<?= $requestID ?>)">
+											Dataset Management
+										</button>
+									</div>
+								<?php 
+								}
+								?>
 							</div>
 							<div style="clear:both;padding-top:8px;float:left;">
 								<?php
@@ -1078,6 +1090,44 @@ if(!$isEditor) {
 	?>
 
 	<script>
+
+	async function handleDataset(requestID) {
+			try {
+				let response = await fetch(`datasethandler.php?id=${requestID}&action=check`);
+				let data = await response.json();
+
+				if (data.exists) {
+					// dataset exists, go straight to manager
+					window.location.href = `../datasets/neondatasetmanager.php?datasetid=${data.datasetid}`;
+				} else {
+					// Ask user if they want to create a new dataset
+					if (!confirm("No dataset exists for this request. Do you want to create a new dataset?")) {
+						return; // user cancelled
+					}
+
+					// user confirmed, create dataset
+					response = await fetch(`datasethandler.php?id=${requestID}&action=create`);
+					const text = await response.text();
+					let createData;
+					try {
+						createData = JSON.parse(text);
+					} catch (e) {
+						console.error("Non-JSON response:", text);
+						alert("Failed to communicate with the dataset handler. See console for details.");
+						return;
+					}
+
+					if (createData.success) {
+						window.location.href = `../datasets/neondatasetmanager.php?datasetid=${createData.datasetid}`;
+					} else {
+						alert("Error creating dataset: " + createData.error);
+					}
+				}
+			} catch (err) {
+				console.error("Dataset handler fetch error:", err);
+				alert("Failed to communicate with the dataset handler.");
+			}
+		}
 
 let hasPendingChanges = false;
 
