@@ -109,37 +109,37 @@ if ($isEditor) {
 			console.log("citation before:", $('#citation').val());
 			console.log("name before:", $('#name').val());
 
-			// tinymce.init({
-			// 	selector: '#description',
-			// 	plugins: 'link lists image code',
-			// 	menubar: '',
-			// 	toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
-			// 	branding: false,
-			// 	default_link_target: "_blank",
-			// 	paste_as_text: true,
-			// 	invalid_styles: {
-			// 		'*': 'font-family'
-			// 	}
-			// });
 			tinymce.init({
-				selector: '#citation',
-				plugins: 'link lists image',
+				selector: '#description',
+				plugins: 'link lists image code',
 				menubar: '',
-				toolbar: ['undo redo | bold italic underline | link '],
+				toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
 				branding: false,
 				default_link_target: "_blank",
-				paste_as_text: true
+				paste_as_text: true,
+				invalid_styles: {
+					'*': 'font-family'
+				}
 			});
 			// tinymce.init({
-			// 	selector: '#name',
+			// 	selector: '#citation',
 			// 	plugins: 'link lists image',
 			// 	menubar: '',
 			// 	toolbar: ['undo redo | bold italic underline | link '],
 			// 	branding: false,
 			// 	default_link_target: "_blank",
-			// 	paste_as_text: true,
-			// 	height: 150
+			// 	paste_as_text: true
 			// });
+			tinymce.init({
+				selector: '#name',
+				plugins: 'link lists image',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link '],
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true,
+				height: 150
+			});
 
 			$('#sampleTable').DataTable({
 				pageLength: 25,
