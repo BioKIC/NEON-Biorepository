@@ -108,53 +108,56 @@ if ($isEditor) {
 		console.log('name before:', $('#name').val());
 
 
-    tinymce.init({
+$(document).ready(async function () {
+
+    console.log("TINY INIT START");
+
+    console.log("description before:", $('#description').val());
+    console.log("citation before:", $('#citation').val());
+    console.log("name before:", $('#name').val());
+
+    await tinymce.init({
         selector: '#description',
         plugins: 'link lists image code',
         menubar: '',
-        toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+        toolbar: 'undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code',
         branding: false,
         default_link_target: "_blank",
         paste_as_text: true,
         invalid_styles: {
             '*': 'font-family'
         }
-    }).then(function () {
-
-        console.log('description initialized');
-
-        return tinymce.init({
-            selector: '#citation',
-            plugins: 'link lists image',
-            menubar: '',
-            toolbar: ['undo redo | bold italic underline | link'],
-            branding: false,
-            default_link_target: "_blank",
-            paste_as_text: true
-        });
-
-    }).then(function () {
-
-        console.log('citation initialized');
-
-        return tinymce.init({
-            selector: '#name',
-            plugins: 'link lists image',
-            menubar: '',
-            toolbar: ['undo redo | bold italic underline | link'],
-            branding: false,
-            default_link_target: "_blank",
-            paste_as_text: true,
-            height: 150
-        });
-
-    }).then(function () {
-
-        console.log('name initialized');
-
-    }).catch(function (error) {
-        console.error('TinyMCE initialization failed:', error);
     });
+
+    console.log("description initialized");
+
+    await tinymce.init({
+        selector: '#citation',
+        plugins: 'link lists image',
+        menubar: '',
+        toolbar: 'undo redo | bold italic underline | link',
+        branding: false,
+        default_link_target: "_blank",
+        paste_as_text: true
+    });
+
+    console.log("citation initialized");
+
+    await tinymce.init({
+        selector: '#name',
+        plugins: 'link lists image',
+        menubar: '',
+        toolbar: 'undo redo | bold italic underline | link',
+        branding: false,
+        default_link_target: "_blank",
+        paste_as_text: true,
+        height: 150
+    });
+
+    console.log("name initialized");
+
+    console.log("ALL TINYMCE EDITORS INITIALIZED");
+});
 
 
 		console.log('TINY INIT END');
