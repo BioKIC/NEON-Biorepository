@@ -22,6 +22,8 @@ if ($action && !preg_match('/^[a-zA-Z0-9\s_]+$/', $action)) $action = '';
 $datasetManager = new OccurrenceDataset();
 
 $mdArr = $datasetManager->getDatasetMetadata($datasetId);
+echo '<!-- DEBUG datasetId=' . htmlspecialchars((string)$datasetId) . ' -->';
+echo '<!-- DEBUG description=' . htmlspecialchars((string)($mdArr['description'] ?? '')) . ' -->';
 $role = '';
 $roleLabel = '';
 $isEditor = 0;
