@@ -404,46 +404,41 @@ $traitArr = $indManager->getTraitArr();
 							<div id="cat-div" class="bottom-breathing-room-rel-sm">
 								<?php
 								// Start NEON Customization
-								// Check if occurrenceid is an IGSN
+								// Check if catalogNumber is an IGSN
 								if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['catalognumber'])) {
 									echo '<label>'.$LANG['ARCHIVE_GUID'].': </label>';
 									echo $occArr['catalognumber'];
-									echo '<span style="margin-left: 10px"><a href="https://doi.org/10.58052/' . $occArr['catalognumber'] . '" target="_blank">SESAR Record</a></span>';
-
-									// Get GBIF recordID using GBIF API
-									if($occArr['occurrenceid']){
-										if ($collMetadata['publishtogbif'] == 1) {
-											$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']);
-											$aggkeys = json_decode($jsonRaw);
-
-											if (json_last_error() !== JSON_ERROR_NONE) {
-												echo 'JSON Error: ' . json_last_error_msg();
-												echo '<br>Cleaned string: ' . htmlspecialchars($jsonRaw);
-											} elseif (isset($aggkeys->datasetKey)) {
-												$datasetKey = $aggkeys->datasetKey;
-											}
-											$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
-											$response = file_get_contents($gbifApiUrl);
-											$data = json_decode($response, true);
-											if (isset($data['count']) && $data['count'] == 1 && isset($data['results'][0]['key'])) {
-												$gbifID = $data['results'][0]['key'];
-												$gbifUrl = "https://www.gbif.org/occurrence/$gbifID";
-												echo '<span style="margin-left: 10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
-											}
-										}
-									}
 								}
 								else{
 									echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
 									echo $occArr['catalognumber'];
 								}
-								// End NEON Customization
+								// Get GBIF recordID using GBIF API
+								if ($collMetadata['publishtogbif'] == 1 && $occArr['occurrenceid']) {
+									$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']);
+									$aggkeys = json_decode($jsonRaw);
+									if (json_last_error() !== JSON_ERROR_NONE) {
+										echo 'JSON Error: ' . json_last_error_msg();
+											echo '<br>Cleaned string: ' . htmlspecialchars($jsonRaw);
+									} elseif (isset($aggkeys->datasetKey)) {
+										$datasetKey = $aggkeys->datasetKey;
+									}
+									$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
+									$response = file_get_contents($gbifApiUrl);
+									$data = json_decode($response, true);
+									if (isset($data['count']) && $data['count'] == 1 && isset($data['results'][0]['key'])) {
+										$gbifID = $data['results'][0]['key'];
+										$gbifUrl = "https://www.gbif.org/occurrence/$gbifID";
+										echo '<span style="margin-left: 10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
+									}
+								}
 								?>
 							</div>
 							<?php
 						}
-						?>
-						<div id="occurrenceid-div" class="bottom-breathing-room-rel-sm">
+						if($occArr['occurrenceid']){
+							?>
+							<div id="occurrenceid-div" class="bottom-breathing-room-rel-sm">
 							<?php
 							echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
 							$resolvableGuid = false;
@@ -452,10 +447,14 @@ $traitArr = $indManager->getTraitArr();
 							if(isset($occArr['occurrenceid'])){
 								echo $occArr['occurrenceid'];
 							}
-							if($resolvableGuid) echo '</a>';
+							if($resolvableGuid) {
 							?>
-						</div>
-						<?php
+								</a>
+							</div>
+							<?php
+							}
+						}
+						// End NEON Customization
 						if($occArr['othercatalognumbers']){
 							?>
 							<div id="assoccatnum-div" class="assoccatnum-div bottom-breathing-room-rel-sm">
