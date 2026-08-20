@@ -98,90 +98,91 @@ if ($isEditor) {
 	<script type="text/javascript" src="../../js/tinymce/tinymce.min.js"></script>
 	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
     <script src="../../js/datatables/datatables.js"></script>
-	<script type="text/javascript">
+	<script type="text/javascript"></script>
 		// Adds WYSIWYG editor to description and citation field
-$(document).ready(function () {
+	<script>
+	$(document).ready(function () {
 
-    console.log("TINY INIT START");
+		console.log("TINY INIT START");
 
-    console.log("description before:", $('#description').val());
-    console.log("citation before:", $('#citation').val());
-    console.log("name before:", $('#datasetName').val());
+		console.log("description before:", $('#description').val());
+		console.log("citation before:", $('#citation').val());
+		console.log("name before:", $('#datasetName').val());
 
-    tinymce.init({
-        selector: '#description, #citation, #datasetName',
+		tinymce.init({
+			selector: '#description, #citation, #datasetName',
 
-        plugins: 'link lists image code',
+			plugins: 'link lists image code',
 
-        menubar: false,
+			menubar: '',
 
-        toolbar: 'undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code',
+			toolbar: 'undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code',
 
-        branding: false,
+			branding: false,
 
-        default_link_target: '_blank',
+			default_link_target: '_blank',
 
-        paste_as_text: true,
+			paste_as_text: true,
 
-        invalid_styles: {
-            '*': 'font-family'
-        },
+			invalid_styles: {
+				'*': 'font-family'
+			},
 
-        height: 300,
+			height: 300,
 
-        setup: function (editor) {
-            editor.on('init', function () {
-                console.log('TinyMCE initialized:', editor.id);
-            });
-        }
-    }).then(function (editors) {
+			setup: function (editor) {
+				editor.on('init', function () {
+					console.log('TinyMCE initialized:', editor.id);
+				});
+			}
+		}).then(function (editors) {
 
-        console.log(
-            "ALL TINYMCE EDITORS INITIALIZED:",
-            editors.map(function (editor) {
-                return editor.id;
-            })
-        );
+			console.log(
+				"ALL TINYMCE EDITORS INITIALIZED:",
+				editors.map(function (editor) {
+					return editor.id;
+				})
+			);
 
-    }).catch(function (error) {
-        console.error("TinyMCE initialization failed:", error);
-    });
+			$('#sampleTable').DataTable({
+				pageLength: 25,
+				order: [[1, 'asc']],
+				responsive: true,
+				stateSave: true,
+				columnDefs: [
+					{
+						orderable: false,
+						searchable: false,
+						targets: 0
+					}
+				],
+				layout: {
+					topStart: {
+						pageLength: {
+							menu: [
+								10,
+								25,
+								50,
+								100,
+								300,
+								500,
+								{ label: 'All', value: -1 }
+							]
+						}
+					},
+					topEnd: 'search',
+					bottomStart: 'info',
+					bottomEnd: 'paging'
+				}
+			});
 
+		}).catch(function (error) {
 
-    // Initialize DataTables independently
-    $('#sampleTable').DataTable({
-        pageLength: 25,
-        order: [[1, 'asc']],
-        responsive: true,
-        stateSave: true,
-        columnDefs: [
-            {
-                orderable: false,
-                searchable: false,
-                targets: 0
-            }
-        ],
-        layout: {
-            topStart: {
-                pageLength: {
-                    menu: [
-                        10,
-                        25,
-                        50,
-                        100,
-                        300,
-                        500,
-                        { label: 'All', value: -1 }
-                    ]
-                }
-            },
-            topEnd: 'search',
-            bottomStart: 'info',
-            bottomEnd: 'paging'
-        }
-    });
+			console.error("TinyMCE initialization failed:", error);
 
-});
+		});
+
+	});
 	</script>
 	<script type="text/javascript">
 		var isDownloadAction = false;
