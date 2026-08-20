@@ -107,6 +107,23 @@ if ($isEditor) {
 		console.log('citation before:', $('#citation').val());
 		console.log('name before:', $('#name').val());
 
+		const nameInit = tinymce.init({
+    selector: '#name',
+    plugins: 'link lists image',
+    menubar: '',
+    toolbar: ['undo redo | bold italic underline | link'],
+    branding: false,
+    default_link_target: "_blank",
+    paste_as_text: true,
+    height: 150
+});
+
+nameInit.then(function(editors) {
+    console.log('NAME INIT OK', editors);
+}).catch(function(error) {
+    console.error('NAME INIT FAILED', error);
+});
+
 const descInit = tinymce.init({
     selector: '#description',
     plugins: 'link lists image code',
@@ -141,23 +158,6 @@ citationInit.then(function(editors) {
     console.log('CITATION INIT OK', editors);
 }).catch(function(error) {
     console.error('CITATION INIT FAILED', error);
-});
-
-
-const nameInit = tinymce.init({
-    selector: '#name',
-    plugins: 'link lists image',
-    menubar: '',
-    toolbar: ['undo redo | bold italic underline | link'],
-    branding: false,
-    default_link_target: "_blank",
-    paste_as_text: true
-});
-
-nameInit.then(function(editors) {
-    console.log('NAME INIT OK', editors);
-}).catch(function(error) {
-    console.error('NAME INIT FAILED', error);
 });
 		console.log('TINY INIT END');
 
