@@ -121,15 +121,15 @@ if ($isEditor) {
 			// 		'*': 'font-family'
 			// 	}
 			// });
-			// tinymce.init({
-			// 	selector: '#citation',
-			// 	plugins: 'link lists image',
-			// 	menubar: '',
-			// 	toolbar: ['undo redo | bold italic underline | link '],
-			// 	branding: false,
-			// 	default_link_target: "_blank",
-			// 	paste_as_text: true
-			// });
+			tinymce.init({
+				selector: '#citation',
+				plugins: 'link lists image',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link '],
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true
+			});
 			tinymce.init({
 				selector: '#name',
 				plugins: 'link lists image',
