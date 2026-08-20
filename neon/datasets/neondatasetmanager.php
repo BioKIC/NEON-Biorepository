@@ -101,35 +101,29 @@ if ($isEditor) {
 	<script type="text/javascript">
 		// Adds WYSIWYG editor to description and citation field
 
-		$(document).ready(async function () {
+		$(document).ready( function () {
 
-			console.log("TINY INIT START");
-
-			console.log("description before:", $('#description').val());
-			console.log("citation before:", $('#citation').val());
-			console.log("name before:", $('#name').val());
-
-			// tinymce.init({
-			// 	selector: '#description',
-			// 	plugins: 'link lists image code',
-			// 	menubar: '',
-			// 	toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
-			// 	branding: false,
-			// 	default_link_target: "_blank",
-			// 	paste_as_text: true,
-			// 	invalid_styles: {
-			// 		'*': 'font-family'
-			// 	}
-			// });
-			// tinymce.init({
-			// 	selector: '#citation',
-			// 	plugins: 'link lists image',
-			// 	menubar: '',
-			// 	toolbar: ['undo redo | bold italic underline | link '],
-			// 	branding: false,
-			// 	default_link_target: "_blank",
-			// 	paste_as_text: true
-			// });
+			tinymce.init({
+				selector: '#description',
+				plugins: 'link lists image code',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true,
+				invalid_styles: {
+					'*': 'font-family'
+				}
+			});
+			tinymce.init({
+				selector: '#citation',
+				plugins: 'link lists image',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link '],
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true
+			});
 			tinymce.init({
 				selector: '#name',
 				plugins: 'link lists image',
