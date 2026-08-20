@@ -109,7 +109,7 @@ class OccurrenceDataset{
 	public function getPublicProjects() {
 		$retArr = array();
 	
-		$sql = "SELECT od.datasetid, od.name, od.notes, od.description, r.name AS researcherName, r.institution, nr.activeDate, nr.completeDate FROM omoccurdatasets od LEFT JOIN neonrequest nr ON od.datasetid = nr.datasetID LEFT JOIN neonresearcher r ON nr.researcherID = r.researcherID WHERE od.ispublic = 1 AND od.category = 'Request' ORDER BY od.name";
+		$sql = "SELECT od.datasetid, od.name, od.notes, od.description, r.name AS researcherName, r.institution, nr.activeDate, nr.completeDate FROM omoccurdatasets od LEFT JOIN neonrequest nr ON od.datasetid = nr.datasetID LEFT JOIN neonresearcher r ON nr.researcherID = r.researcherID WHERE od.ispublic = 1 AND od.category = 'Request' AND nr.activeDate IS NOT NULL ORDER BY od.name";
 		$rs = $this->conn->query($sql);
 	
 		$datasetIds = array();
