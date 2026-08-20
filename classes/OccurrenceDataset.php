@@ -234,7 +234,7 @@ class OccurrenceDataset{
 	}
 
 	//  NEON edit to add citation, clean input
-	public function editDataset($datasetID, $name, $notes, $description, $ispublic, $bibliographicCitation) {
+	public function editDataset($datasetID, $name, $notes, $description, $ispublic) {
 		$datasetID = intval($datasetID);
 		$ispublic = intval($ispublic);
 
@@ -242,8 +242,7 @@ class OccurrenceDataset{
 				SET name = ?,
 					notes = ?,
 					description = ?,
-					ispublic = ?,
-					bibliographicCitation = ?
+					ispublic = ?
 				WHERE datasetid = ?";
 
 		$stmt = $this->conn->prepare($sql);
@@ -254,12 +253,11 @@ class OccurrenceDataset{
 		}
 
 		$stmt->bind_param(
-			'sssisi',
+			'sssii',
 			$name,
 			$notes,
 			$description,
 			$ispublic,
-			$bibliographicCitation,
 			$datasetID
 		);
 
