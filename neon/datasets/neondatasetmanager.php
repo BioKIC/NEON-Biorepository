@@ -107,58 +107,56 @@ if ($isEditor) {
 		console.log('citation before:', $('#citation').val());
 		console.log('name before:', $('#name').val());
 
-const descInit = tinymce.init({
-    selector: '#description',
-    plugins: 'link lists image code',
-    menubar: '',
-    toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
-    branding: false,
-    default_link_target: "_blank",
-    paste_as_text: true,
-    invalid_styles: {
-        '*': 'font-family'
-    }
-});
 
-descInit.then(function(editors) {
-    console.log('DESCRIPTION INIT OK', editors);
-}).catch(function(error) {
-    console.error('DESCRIPTION INIT FAILED', error);
-});
+    tinymce.init({
+        selector: '#description',
+        plugins: 'link lists image code',
+        menubar: '',
+        toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+        branding: false,
+        default_link_target: "_blank",
+        paste_as_text: true,
+        invalid_styles: {
+            '*': 'font-family'
+        }
+    }).then(function () {
+
+        console.log('description initialized');
+
+        return tinymce.init({
+            selector: '#citation',
+            plugins: 'link lists image',
+            menubar: '',
+            toolbar: ['undo redo | bold italic underline | link'],
+            branding: false,
+            default_link_target: "_blank",
+            paste_as_text: true
+        });
+
+    }).then(function () {
+
+        console.log('citation initialized');
+
+        return tinymce.init({
+            selector: '#name',
+            plugins: 'link lists image',
+            menubar: '',
+            toolbar: ['undo redo | bold italic underline | link'],
+            branding: false,
+            default_link_target: "_blank",
+            paste_as_text: true,
+            height: 150
+        });
+
+    }).then(function () {
+
+        console.log('name initialized');
+
+    }).catch(function (error) {
+        console.error('TinyMCE initialization failed:', error);
+    });
 
 
-const citationInit = tinymce.init({
-    selector: '#citation',
-    plugins: 'link lists image',
-    menubar: '',
-    toolbar: ['undo redo | bold italic underline | link'],
-    branding: false,
-    default_link_target: "_blank",
-    paste_as_text: true
-});
-
-citationInit.then(function(editors) {
-    console.log('CITATION INIT OK', editors);
-}).catch(function(error) {
-    console.error('CITATION INIT FAILED', error);
-});
-
-
-const nameInit = tinymce.init({
-    selector: '#name',
-    plugins: 'link lists image',
-    menubar: '',
-    toolbar: ['undo redo | bold italic underline | link'],
-    branding: false,
-    default_link_target: "_blank",
-    paste_as_text: true
-});
-
-nameInit.then(function(editors) {
-    console.log('NAME INIT OK', editors);
-}).catch(function(error) {
-    console.error('NAME INIT FAILED', error);
-});
 		console.log('TINY INIT END');
 
 			$('#sampleTable').DataTable({
