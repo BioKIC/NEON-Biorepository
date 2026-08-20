@@ -558,9 +558,6 @@ if ($isEditor) {
 									<?php 
 									if ($mdArr['category'] == "Request") { 
 										$agreement = $datasetManager->getUseAgreement($requestId);
-										print_r($agreement);
-										echo $mdArr;
-										echo $requestId;
 										if ($agreement && str_contains($agreement, 'drive.google.com') !== false) {
 											echo "	<div style='margin:25px 10px;'>
 													</br><strong><a href='" . $agreement . "'>View Sample Use Agreement</a></strong>
