@@ -109,50 +109,37 @@ if ($isEditor) {
 			console.log("citation before:", $('#citation').val());
 			console.log("name before:", $('#name').val());
 
-			await tinymce.init({
-				selector: '#description',
-				plugins: 'link lists image code',
-				menubar: '',
-				toolbar: 'undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code',
-				branding: false,
-				default_link_target: "_blank",
-				paste_as_text: true,
-				invalid_styles: {
-					'*': 'font-family'
-				}
-			});
-
-			console.log("description initialized");
-
-			await tinymce.init({
-				selector: '#citation',
-				plugins: 'link lists image',
-				menubar: '',
-				toolbar: 'undo redo | bold italic underline | link',
-				branding: false,
-				default_link_target: "_blank",
-				paste_as_text: true
-			});
-
-			console.log("citation initialized");
-
-			await tinymce.init({
-				selector: '#name',
-				plugins: 'link lists image',
-				menubar: '',
-				toolbar: 'undo redo | bold italic underline | link',
-				branding: false,
-				default_link_target: "_blank",
-				paste_as_text: true,
-				height: 150
-			});
-
-			console.log("name initialized");
-
-			console.log("ALL TINYMCE EDITORS INITIALIZED");
-
-
-		console.log('TINY INIT END');
+			// tinymce.init({
+			// 	selector: '#description',
+			// 	plugins: 'link lists image code',
+			// 	menubar: '',
+			// 	toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+			// 	branding: false,
+			// 	default_link_target: "_blank",
+			// 	paste_as_text: true,
+			// 	invalid_styles: {
+			// 		'*': 'font-family'
+			// 	}
+			// });
+			// tinymce.init({
+			// 	selector: '#citation',
+			// 	plugins: 'link lists image',
+			// 	menubar: '',
+			// 	toolbar: ['undo redo | bold italic underline | link '],
+			// 	branding: false,
+			// 	default_link_target: "_blank",
+			// 	paste_as_text: true
+			// });
+			// tinymce.init({
+			// 	selector: '#name',
+			// 	plugins: 'link lists image',
+			// 	menubar: '',
+			// 	toolbar: ['undo redo | bold italic underline | link '],
+			// 	branding: false,
+			// 	default_link_target: "_blank",
+			// 	paste_as_text: true,
+			// 	height: 150
+			// });
 
 			$('#sampleTable').DataTable({
 				pageLength: 25,
