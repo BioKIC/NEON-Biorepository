@@ -98,76 +98,78 @@ if ($isEditor) {
 	<script type="text/javascript" src="../../js/tinymce/tinymce.min.js"></script>
 	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
     <script src="../../js/datatables/datatables.js"></script>
-	<script type="text/javascript"></script>
+	<script type="text/javascript">
 		// Adds WYSIWYG editor to description and citation field
-	<script>
-	$(document).ready(function () {
 
-		console.log("TINY INIT START");
+		$(document).ready(async function () {
 
-		console.log("description before:", $('#description').val());
-		console.log("citation before:", $('#citation').val());
-		console.log("name before:", $('#datasetName').val());
+			console.log("TINY INIT START");
 
-		tinymce.init({
-			selector: '#description, #citation, #datasetName',
+			console.log("description before:", $('#description').val());
+			console.log("citation before:", $('#citation').val());
+			console.log("name before:", $('#name').val());
 
-			plugins: 'link lists image code',
+			await tinymce.init({
+				selector: '#description',
+				plugins: 'link lists image code',
+				menubar: '',
+				toolbar: 'undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code',
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true,
+				invalid_styles: {
+					'*': 'font-family'
+				}
+			});
 
-			menubar: '',
+			console.log("description initialized");
 
-			toolbar: 'undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code',
+			await tinymce.init({
+				selector: '#citation',
+				plugins: 'link lists image',
+				menubar: '',
+				toolbar: 'undo redo | bold italic underline | link',
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true
+			});
 
-			branding: false,
+			console.log("citation initialized");
 
-			default_link_target: '_blank',
+			await tinymce.init({
+				selector: '#name',
+				plugins: 'link lists image',
+				menubar: '',
+				toolbar: 'undo redo | bold italic underline | link',
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: true,
+				height: 150
+			});
 
-			paste_as_text: true,
+			console.log("name initialized");
 
-			invalid_styles: {
-				'*': 'font-family'
-			},
+			console.log("ALL TINYMCE EDITORS INITIALIZED");
 
-			height: 300,
 
-			setup: function (editor) {
-				editor.on('init', function () {
-					console.log('TinyMCE initialized:', editor.id);
-				});
-			}
-		}).then(function (editors) {
-
-			console.log(
-				"ALL TINYMCE EDITORS INITIALIZED:",
-				editors.map(function (editor) {
-					return editor.id;
-				})
-			);
+		console.log('TINY INIT END');
 
 			$('#sampleTable').DataTable({
 				pageLength: 25,
-				order: [[1, 'asc']],
+				order: [[1, 'asc']], // sort by Occurrence ID
 				responsive: true,
 				stateSave: true,
 				columnDefs: [
 					{
 						orderable: false,
 						searchable: false,
-						targets: 0
+						targets: 0 // checkbox column
 					}
 				],
 				layout: {
 					topStart: {
 						pageLength: {
-							menu: [
-								10,
-								25,
-								50,
-								100,
-								300,
-								500,
-								{ label: 'All', value: -1 }
-							]
+							menu: [10,25,50,100,300,500,{label:'All',value:-1}]
 						}
 					},
 					topEnd: 'search',
@@ -175,14 +177,7 @@ if ($isEditor) {
 					bottomEnd: 'paging'
 				}
 			});
-
-		}).catch(function (error) {
-
-			console.error("TinyMCE initialization failed:", error);
-
 		});
-
-	});
 	</script>
 	<script type="text/javascript">
 		var isDownloadAction = false;
@@ -564,7 +559,7 @@ if ($isEditor) {
 									<div style="margin:25px 10px;">
 									<div class="tinymce-wrapper">
 										<label for="name"><strong>Title</strong></label><br>
-										<textarea name="name" id="datasetName" rows="2" aria-label="Title" width=70%><?php
+										<textarea name="name" id="name" rows="2" aria-label="Title" width=70%><?php
 											echo htmlspecialchars($mdArr['name'] ?? '', ENT_QUOTES | ENT_HTML5, $CHARSET); ?>
 										</textarea>									
 									</div>
