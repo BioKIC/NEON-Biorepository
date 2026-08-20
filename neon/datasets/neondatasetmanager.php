@@ -151,8 +151,7 @@ const nameInit = tinymce.init({
     toolbar: ['undo redo | bold italic underline | link'],
     branding: false,
     default_link_target: "_blank",
-    paste_as_text: true,
-    height: 150
+    paste_as_text: true
 });
 
 nameInit.then(function(editors) {
