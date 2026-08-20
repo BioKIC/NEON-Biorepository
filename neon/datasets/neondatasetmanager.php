@@ -113,12 +113,9 @@ if ($isEditor) {
 				invalid_styles: {
 					'*': 'font-family'
 				}
-			});.then(function (editors) {
-    const editor = editors[0];
-
-    console.log('TEXTAREA:', document.getElementById('description').value);
-    console.log('TINYMCE:', editor.getContent());
-});
+			});..then(function (editors) {
+				console.log('description initialized');
+			});
 			tinymce.init({
 				selector: '#citation',
 				plugins: 'link lists image',
@@ -127,6 +124,8 @@ if ($isEditor) {
 				branding: false,
 				default_link_target: "_blank",
 				paste_as_text: true
+			});.then(function (editors) {
+				console.log('citation initialized');
 			});
 			tinymce.init({
 				selector: '#name',
@@ -137,6 +136,8 @@ if ($isEditor) {
 				default_link_target: "_blank",
 				paste_as_text: true,
 				height: 150
+			});.then(function (editors) {
+				console.log('name initialized');
 			});
 
 			$('#sampleTable').DataTable({
