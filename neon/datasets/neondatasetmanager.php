@@ -564,13 +564,10 @@ if ($isEditor) {
 			echo '</div>';
 		}
 		if ($datasetId) {
-			echo "<a href='../../collections/datasets/public.php?datasetid=" . $datasetId . "'>View Public Dataset Page</a>";
-				if ($mdArr['category'] == "Request" && $isEditor) { 
-					$requestId = json_decode($mdArr['dynamicProperties'], true)['requestID'];
-					echo "</br><a href='../requests/inquiryform.php?id=" . $requestId . "'>Manage Request</a>";
-				}
-			echo '<div style="margin:10px 0px 5px 20px;font-weight:bold;font-size:130%;">' . $mdArr['name'] . '</div>';
-			if ($role) echo '<div style="margin-left:20px" title="' . $LANG['ROLE'] . '"' . $roleLabel . '>' . $LANG['ROLE'] . ': ' . $role . '</div>';
+			//if ($mdArr['category'] == "Request" && $isEditor) { 
+			//	$requestId = json_decode($mdArr['dynamicProperties'], true)['requestID'];
+			//	echo "</br><a href='../requests/inquiryform.php?id=" . $requestId . "'>Manage Request</a>";
+			//}
 			if ($isEditor) {
 		?>
 				<div id="tabs" style="margin:10px;padding:0;">
