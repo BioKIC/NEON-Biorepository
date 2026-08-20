@@ -22,8 +22,6 @@ if ($action && !preg_match('/^[a-zA-Z0-9\s_]+$/', $action)) $action = '';
 $datasetManager = new OccurrenceDataset();
 
 $mdArr = $datasetManager->getDatasetMetadata($datasetId);
-echo '<!-- DEBUG datasetId=' . htmlspecialchars((string)$datasetId) . ' -->';
-echo '<!-- DEBUG description=' . htmlspecialchars((string)($mdArr['description'] ?? '')) . ' -->';
 $role = '';
 $roleLabel = '';
 $isEditor = 0;
@@ -115,7 +113,12 @@ if ($isEditor) {
 				invalid_styles: {
 					'*': 'font-family'
 				}
-			});
+			});.then(function (editors) {
+    const editor = editors[0];
+
+    console.log('TEXTAREA:', document.getElementById('description').value);
+    console.log('TINYMCE:', editor.getContent());
+});
 			tinymce.init({
 				selector: '#citation',
 				plugins: 'link lists image',
