@@ -101,37 +101,42 @@ if ($isEditor) {
 	<script type="text/javascript">
 		// Adds WYSIWYG editor to description and citation field
 		$(document).ready(function () {
+			Promise.all([
+				tinymce.init({
+					selector: '#description',
+					plugins: 'link lists image code',
+					menubar: '',
+					toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+					branding: false,
+					default_link_target: "_blank",
+					paste_as_text: true,
+					invalid_styles: {
+						'*': 'font-family'
+					}
+				}),
 
-			tinymce.init({
-				selector: '#description',
-				plugins: 'link lists image code',
-				menubar: '',
-				toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
-				branding: false,
-				default_link_target: "_blank",
-				paste_as_text: true,
-				invalid_styles: {
-					'*': 'font-family'
-				}
-			});
-			tinymce.init({
-				selector: '#citation',
-				plugins: 'link lists image',
-				menubar: '',
-				toolbar: ['undo redo | bold italic underline | link '],
-				branding: false,
-				default_link_target: "_blank",
-				paste_as_text: true
-			});
-			tinymce.init({
-				selector: '#name',
-				plugins: 'link lists image',
-				menubar: '',
-				toolbar: ['undo redo | bold italic underline | link '],
-				branding: false,
-				default_link_target: "_blank",
-				paste_as_text: true,
-				height: 150
+				tinymce.init({
+					selector: '#citation',
+					plugins: 'link lists image',
+					menubar: '',
+					toolbar: ['undo redo | bold italic underline | link'],
+					branding: false,
+					default_link_target: "_blank",
+					paste_as_text: true
+				}),
+
+				tinymce.init({
+					selector: '#name',
+					plugins: 'link lists image',
+					menubar: '',
+					toolbar: ['undo redo | bold italic underline | link'],
+					branding: false,
+					default_link_target: "_blank",
+					paste_as_text: true,
+					height: 150
+				})
+			]).then(function (editors) {
+				console.log('ALL TINYMCE EDITORS INITIALIZED', editors);
 			});
 
 			$('#sampleTable').DataTable({
