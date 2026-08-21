@@ -784,7 +784,8 @@ class OccurrenceSesar extends Manager {
 		$status = false;
 		if($this->namespace){
 			$fullOccurrenceID = 'https://doi.org/10.58052/' . $igsn;
-			$sql = 'SELECT occurrenceID FROM omoccurrences WHERE occurrenceID = "' . $this->cleanInStr($fullOccurrenceID) . '"';			$rs = $this->conn->query($sql);
+			$sql = 'SELECT occurrenceID FROM omoccurrences WHERE occurrenceID = "' . $this->cleanInStr($fullOccurrenceID) . '"';
+			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
 				$status = true;
 			}
@@ -875,7 +876,7 @@ class OccurrenceSesar extends Manager {
 
 		if($sesarResultArr['totalCnt']){
 			$this->logOrEcho('Calculating stats...',1);
-			$sql = "UPDATE igsnverification i INNER JOIN omoccurrences o ON $sql = 'UPDATE igsnverification i INNER JOIN omoccurrences o ON CONCAT('https://doi.org/10.58052/', i.igsn) = o.occurrenceid SET i.occidInPortal = o.occid WHERE i.occidInPortal IS NULL'; = o.occurrenceid SET i.occidInPortal = o.occid WHERE i.occidInPortal IS NULL";
+			$sql = 'UPDATE igsnverification i INNER JOIN omoccurrences o ON CONCAT("https://doi.org/10.58052/", i.igsn) = o.occurrenceid SET i.occidInPortal = o.occid WHERE i.occidInPortal IS NULL';
 			if(!$this->conn->query($sql)){
 				$this->logOrEcho('ERROR updating IGSN field: '.$this->conn->error,2);
 			}
@@ -1011,7 +1012,7 @@ class OccurrenceSesar extends Manager {
 		$sqlArr[] = 'UPDATE igsnverification v INNER JOIN omoccuridentifiers i ON v.catalogNumber = i.identifierValue
 			INNER JOIN omoccurrences o ON i.occid = o.occid
 			SET v.syncStatus = "newIGSN, new record, matching NEON ID"
-			WHERE v.occidInPortal IS NULL AND v.igsn !=SUBSTRING_INDEX(o.occurrenceID, "https://doi.org/10.58052/", -1) AND v.syncStatus IS NULL';
+			WHERE v.occidInPortal IS NULL AND v.igsn != SUBSTRING_INDEX(o.occurrenceID, "https://doi.org/10.58052/", -1) AND v.syncStatus IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification SET syncStatus = "Occurrence not in portal" WHERE occidInPortal IS NULL AND catalogNumber IS NOT NULL AND syncStatus IS NULL';
 		foreach($sqlArr as $sql){
 			if(!$this->conn->query($sql)){
@@ -1224,7 +1225,14 @@ class OccurrenceSesar extends Manager {
 		//Get maximum identifier
 		if($this->collid){
 			$seed = 0;
-			$sql = 'SELECT MAX(SUBSTR(occurrenceID),LENGTH("https://doi.org/10.58052/" +1)) AS maxid FROM omoccurrences WHERE occurrenceID LIKE "https://doi.org/10.58052/NEO%" AND LENGTH(SUBSTR(occurrenceID,LENGTH("https://doi.org/10.58052/") + 1)) = 9';
+			$sql = 'SELECT MAX(
+						SUBSTR(occurrenceID, LENGTH("https://doi.org/10.58052/") + 1)
+					) AS maxid
+					FROM omoccurrences
+					WHERE occurrenceID LIKE "https://doi.org/10.58052/NEON%"
+					  AND LENGTH(
+						  SUBSTR(occurrenceID, LENGTH("https://doi.org/10.58052/") + 1)
+					  ) = 9;';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
 				$seed = $r->maxid;

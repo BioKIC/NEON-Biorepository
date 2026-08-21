@@ -72,7 +72,7 @@ class IgsnManager{
 		$sql = 'UPDATE NeonSample s
 				INNER JOIN omoccurrences o ON o.occid = s.occid
 				SET s.igsnPushedToNEON = 1
-				WHERE o.occurrenceID LIKE "NEON%" 
+				WHERE o.occurrenceID LIKE "https://doi.org/10.58052/NEON%" 
 				AND o.collid IN(44,74,78,79,80,82,83,95,97,4,85,96,81,115)';
 		$this->conn->query($sql);
 		$retArr = array();
@@ -226,8 +226,8 @@ class IgsnManager{
 		header ('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		//Build SQL
 		$fieldMap = array('sampleID' => 's.sampleID', 'sampleCode' => 's.sampleCode', 'sampleFate' => '"archived" AS sampleFate',
-			'sampleClass' => 's.sampleClass', 'archiveGuid' => 'o.catalogNumber', 'catalogueNumber' => 'o.catalogNumber',
-			'externalURLs' => 'CONCAT("https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=", o.occid) AS referenceUrl',
+			'sampleClass' => 's.sampleClass', 'archiveGuid' => 'o.catalogNumber AS archiveGuid', 'catalogueNumber' => 'o.catalogNumber AS catalogueNumber',
+			'externalURLs' => 'CONCAT("https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=", o.occid) AS externalURLs',
 			'collectionCode' => 'CONCAT_WS(":", c.institutionCode, c.collectionCode) as collectionCode',
 			'archiveStartDate' => '"" AS archiveStartDate', 'archiveMedium' => 's.archiveMedium', 'storageTemperature' => '"" AS storageTemperature',
 			'scientificName' => '"" AS scientificName', 'scientificNameAuthorship' => '"" AS scientificNameAuthorship', 'identificationQualifier' => '"" AS identificationQualifier',
