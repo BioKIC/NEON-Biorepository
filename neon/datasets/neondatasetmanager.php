@@ -114,7 +114,7 @@ if ($isEditor) {
 	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
     <script src="../../js/datatables/datatables.js"></script>
 	<script type="text/javascript">
-		// Adds WYSIWYG editor to description field
+		// Adds WYSIWYG editor to fields
 		tinymce.init({
 			selector: '#description',
 			height: 300,
@@ -142,28 +142,34 @@ if ($isEditor) {
 				});
 			}
 		});
-		//tinymce.init({
-		//	selector: '#citation',
-		//	height: 300,
-		//	plugins: 'link lists image',
-		//	menubar: '',
-		//	toolbar: ['undo redo | bold italic underline | link '],
-		//	branding: false,
-		//	default_link_target: "_blank",
-		//	paste_as_text: true,
-		//	setup: function(editor) {
-		//		editor.on('init', function() {
-		//			var container = editor.getContainer();
-		//	
-		//			container.querySelectorAll('button').forEach(function(button) {
-		//				button.classList.add('Mui');
-		//				button.querySelectorAll('svg').forEach(function(icon) {
-		//					icon.style.filter = 'none';
-		//				});
-		//			});
-		//		});
-		//	}
-		//});
+		tinymce.init({
+			selector: '#name',
+			height: 300,
+			plugins: 'link lists image code',
+			menubar: '',
+			toolbar: ['undo redo | bold italic underline | code'],
+			branding: false,
+			forced_root_block: 'div',
+			default_link_target: "_blank",
+			paste_as_text: true,
+			invalid_styles: {
+				'*': 'font-family'
+			},
+			setup: function(editor) {
+				editor.on('init', function() {
+					var container = editor.getContainer();
+			
+					container.querySelectorAll('button').forEach(function(button) {
+						button.classList.add('Mui');
+						button.style.filter = 'none';
+			
+						button.querySelectorAll('*').forEach(function(element) {
+							element.style.filter = 'none';
+						});
+					});
+				});
+			}
+		});
 		$(document).ready(function () {
 			$('#sampleTable').DataTable({
 				pageLength: 25,
@@ -1026,13 +1032,7 @@ if ($isEditor) {
 								<hr class="MuiDivider-root">
 							</div>
 							<div class="MuiFormControl-root MuiTextField-root" style="width:98%; margin:25px 10px;">
-								<label
-									class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined<?php echo !empty($mdArr['name']) ? ' MuiInputLabel-shrink MuiFormLabel-filled' : ''; ?>"
-									data-shrink="<?php echo !empty($mdArr['name']) ? 'true' : 'false'; ?>"
-									style="<?php echo !empty($mdArr['name']) ? 'background-color:#fff;' : ''; ?>"
-								>
-									Title
-								</label>
+								<span class="MuiTypography-root MuiTypography-caption">Title</span>
 							
 								<textarea
 									name="name"

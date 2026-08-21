@@ -201,7 +201,7 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
 	<head>
-		<title><?php echo $dArr['name'] ;?></title>
+		<title><?php echo strip_tags($dArr['name']); ?></title>
 		<?php
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
