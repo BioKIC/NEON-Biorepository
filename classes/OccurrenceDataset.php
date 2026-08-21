@@ -50,9 +50,7 @@ class OccurrenceDataset{
 			while ($r = $rs->fetch_object()) {
 				$retArr['name'] = $r->name;
 				$retArr['notes'] = $r->notes;
-				// neon edit - remove all HTML from pasted text
-				$retArr['description'] = strip_tags($r->description);
-				//end neon edit
+				$retArr['description'] = $r->description;
 				$retArr['bibliographicCitation'] = $r->bibliographicCitation;
 				$retArr['uid'] = $r->uid;
 				$retArr['dynamicproperties'] = $r->dynamicProperties;
@@ -123,7 +121,7 @@ class OccurrenceDataset{
 				'datasetid' => (int)$r->datasetid,
 				'name' => $r->name,
 				'notes' => $r->notes,
-				'description' => strip_tags($r->description),
+				'description' => $r->description,
 				'researcherName' => $r->researcherName,
 				'institution' => $r->institution,
 				'activeDate' => $r->activeDate,

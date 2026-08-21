@@ -120,9 +120,10 @@ if ($isEditor) {
 			height: 300,
 			plugins: 'link lists image code',
 			menubar: '',
-			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | bullist numlist | indent outdent | blockquote | code'],
 			branding: false,
 			default_link_target: "_blank",
+			forced_root_block: 'div',
 			paste_as_text: true,
 			invalid_styles: {
 				'*': 'font-family'
