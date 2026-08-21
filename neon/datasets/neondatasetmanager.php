@@ -552,6 +552,59 @@ if ($isEditor) {
 			padding-left: 4px;
 			padding-right: 4px;
 		}
+		.view-samples-button {
+			display: inline-flex;
+			align-items: center;
+			gap: 14px;
+			background-color: #fff;
+			border: 2px solid #0073CF;
+			border-radius: 3px;
+			color: #0073CF;
+			font-size: 13px;
+			font-weight: bold;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			text-decoration: none;
+			padding: 10px 20px;
+			cursor: pointer;
+			font-family: Inter, Helvetica, Arial, sans-serif;
+		}
+		
+		.view-samples-button .button-arrow {
+			display: inline-block;
+			font-size: 26px;
+			font-weight: bold;
+			line-height: 1;
+		}
+		
+		.view-samples-button:hover {
+			color: #0095D9;
+			border-color: #0095D9;
+		}
+		
+		.view-samples-button:hover .button-arrow {
+			transform: translateX(3px);
+		}
+		
+		.view-samples-button:hover {
+			text-decoration: none;
+			color: #0095D9;
+		}
+		
+		.view-samples-button:hover .button-text {
+			text-decoration: underline;
+		}
+		
+		.view-samples-button .button-arrow {
+			text-decoration: none;
+		}
+		
+		.view-samples-container {
+			padding-top: 30px;
+			padding-bottom: 20px;
+			display: flex;
+			justify-content: flex-end;
+		}
 	</style>
 </head>
 
@@ -796,6 +849,16 @@ if ($isEditor) {
 										</div>
 										<div style="padding:0 15px;">
 											<hr class="MuiDivider-root">
+										</div>
+										<div class="view-samples-container">
+											<a
+												class="Mui view-samples-button"
+												href="../../collections/list.php?datasetid=<?php echo $datasetId; ?>"
+												target="_blank"
+											>
+												<span class="button-text">Explore Samples</span>
+												<span class="button-arrow">›</span>
+											</a>
 										</div>
 										<table id="sampleTable" class="Mui sample-table">
 											<thead>

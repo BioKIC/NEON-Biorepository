@@ -169,10 +169,6 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 	.view-samples-button:hover .button-arrow {
 		transform: translateX(3px);
 	}
-
-	.view-samples-container {
-		padding: 20px;
-	}
 	
 	.sample-types-header {
 		display: flex;
@@ -249,7 +245,11 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 			<div class="sample-types-header">
 				<h2>Sample Types Used</h2>
 			
-				<a class="Mui view-samples-button" href="<?php echo htmlspecialchars($searchUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>">
+				<a
+					class="Mui view-samples-button"
+					href="<?php echo htmlspecialchars($searchUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>"
+					target="_blank"
+				>
 					<span class="button-text">Explore Samples</span>
 					<span class="button-arrow">›</span>
 				</a>
