@@ -92,14 +92,16 @@ class OccurrenceDataset{
 	public function getRequestInquiryMetadata($dsid) {
 		$retArr = array();
 		if ($dsid) {
-			$sql = 'SELECT r.name, r.institution, nr.activeDate, nr.completeDate FROM neonrequest nr LEFT JOIN neonresearcher r ON nr.researcherID = r.researcherID WHERE nr.datasetID = ' . $dsid;
+			$sql = 'SELECT nr.id, r.name, r.institution, nr.activeDate, nr.completeDate, nr.sampleUseAgreementLink FROM neonrequest nr LEFT JOIN neonresearcher r ON nr.researcherID = r.researcherID WHERE nr.datasetID = ' . $dsid;
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
+				$retArr['id'] = $r->id;
 				$retArr['name'] = $r->name;
 				$retArr['institution'] = $r->institution;
 				$retArr['activeDate'] = $r->activeDate;
 				$retArr['completeDate'] = $r->completeDate;
 				$retArr['completeDate'] = $r->completeDate !== null ? $r->completeDate : 'In Progress';
+				$retArr['sampleUseAgreementLink'] = $r->sampleUseAgreementLink;
 			}
 			$rs->free();
 		}
@@ -625,23 +627,6 @@ class OccurrenceDataset{
 		return $dom->saveHTML();
 	}
 	//end neon edit
-
-	// neon edit -- get sample use agreement
-	public function getUseAgreement($requestID) {
-		$sql = 'SELECT sampleUseAgreementLink
-				FROM neonrequest
-				WHERE id = ' . intval($requestID);
-		$rs = $this->conn->query($sql);
-		if (!$rs) {
-			$this->errorMessage = $this->conn->error;
-			return null;
-		}
-		if ($row = $rs->fetch_assoc()) {
-			return $row['sampleUseAgreementLink'];
-		}
-		return null;
-	}
-	// end neon edit
 
 	//General setters and getters
 	public function getUserList($term) {

@@ -565,9 +565,6 @@ if ($isEditor) {
 		}
 		if ($datasetId) {
 			//if ($mdArr['category'] == "Request" && $isEditor) { 
-			//	$requestId = json_decode($mdArr['dynamicProperties'], true)['requestID'];
-			//	echo "</br><a href='../requests/inquiryform.php?id=" . $requestId . "'>Manage Request</a>";
-			//}
 			if ($isEditor) {
 		?>
 				<div id="tabs" style="margin:10px;padding:0;">
@@ -988,6 +985,65 @@ if ($isEditor) {
 								<div style="color:#666; font-size:0.9em;">
 									Make this project visible to the public
 								</div>
+							</div>
+							<div style="padding:0 15px;">
+								<hr class="MuiDivider-root">
+							</div>
+							<div> 
+							<?php
+							if ($mdArr['category'] == "Request" && $isEditor) { 
+								$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
+								if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {							?>
+									<a
+										href="<?php echo htmlspecialchars($rArr['sampleUseAgreementLink'], ENT_QUOTES, $CHARSET); ?>"
+										target="_blank"
+										rel="noopener noreferrer"
+										class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeMedium MuiButton-sizeMedium"
+										style="font-size:0.7em; text-decoration:none; margin:25px 10px; color:white"
+									>
+										<span class="MuiButton-label">
+											Sample Use Agreement
+											<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+												<svg
+													aria-hidden="true"
+													class="MuiSvgIcon-root"
+													focusable="false"
+													viewBox="0 0 24 24"
+												>
+													<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+												</svg>
+											</span>
+										</span>
+									</a>
+							<?php
+								} else 	echo '<h5 class="MuiTypography-root MuiTypography-h5" style="color:red; padding:16px 0; margin: 25px 10px">No Sample Use Agreement exists for this project.</h5>';
+								if ($rArr['id'] && $isEditor == 1) {
+								?>
+									<a
+										href="../requests/inquiryform.php?id=<?php echo urlencode($rArr['id']); ?>"
+										target="_blank"
+										rel="noopener noreferrer"
+										class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeMedium MuiButton-sizeMedium"
+										style="font-size:0.7em; text-decoration:none; margin:25px 10px; color:white"
+									>
+										<span class="MuiButton-label">
+											Manage Request
+											<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+												<svg
+													aria-hidden="true"
+													class="MuiSvgIcon-root"
+													focusable="false"
+													viewBox="0 0 24 24"
+												>
+													<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+												</svg>
+											</span>
+										</span>
+									</a>
+							<?php
+								}
+							}
+							?>
 							</div>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root">
