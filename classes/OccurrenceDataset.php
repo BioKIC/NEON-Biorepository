@@ -400,10 +400,19 @@ class OccurrenceDataset{
 
 	public function getUsers($datasetId) {
 		$retArr = array();
-		$sql = 'SELECT u.uid, r.role, CONCAT_WS(", ",u.lastname,u.firstname) as username ' .
-			'FROM userroles r INNER JOIN users u ON r.uid = u.uid ' .
-			'WHERE r.role IN("DatasetAdmin","DatasetEditor","DatasetReader") ' .
-			'AND (r.tablename = "omoccurdatasets") AND (r.tablepk = ' . $datasetId . ')';
+		//neon edit - pull email username if full name is empty
+		$sql = 'SELECT u.uid, r.role,
+				CASE
+					WHEN u.firstname IS NULL AND u.lastname IS NULL
+						THEN SUBSTRING_INDEX(u.email, "@", 1)
+					ELSE CONCAT_WS(", ", u.lastname, u.firstname)
+				END AS username
+			FROM userroles r
+			INNER JOIN users u ON r.uid = u.uid
+			WHERE r.role IN("DatasetAdmin","DatasetEditor","DatasetReader")
+			AND r.tablename = "omoccurdatasets"
+			AND r.tablepk = ' . $datasetId;
+		//end neon edit
 		//echo $sql;
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_object()) {
