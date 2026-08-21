@@ -1312,10 +1312,36 @@ if ($isEditor) {
 										to authorize additional users.
 									</p>
 								</div>
-							
-							
 								<?php if ($isEditor == 1) { ?>
-							
+									<div>
+										<div
+											class="MuiTypography-root MuiTypography-body1"
+											style="line-height:1.6; color:#555;"
+										>
+											<div style="font-weight:bold; margin-bottom:6px;">
+												Dataset access levels:
+											</div>
+											
+											<div style="margin-left:20px; margin-bottom:4px;">
+												<strong>Full Access:</strong>
+												NEON Biorepository staff/editors who can manage all project information,
+												samples, and user access.
+											</div>
+											
+											<div style="margin-left:20px; margin-bottom:4px;">
+												<strong>Read/Write:</strong>
+												Project PIs who can edit project information and samples and view user access,
+												but cannot manage users.
+											</div>
+											
+											<div style="margin-left:20px; margin-bottom:10px;">
+												<strong>Read Only:</strong>
+												Users who can view project information, citations, and sample data,
+												but cannot make changes or view user access.
+											</div>
+										</div>
+									</div>
+								
 									<div
 										class="MuiPaper-root MuiCard-root MuiPaper-outlined MuiPaper-rounded"
 										style="padding:20px;"
