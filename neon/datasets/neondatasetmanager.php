@@ -564,7 +564,6 @@ if ($isEditor) {
 			echo '</div>';
 		}
 		if ($datasetId) {
-			//if ($mdArr['category'] == "Request" && $isEditor) { 
 			if ($isEditor) {
 		?>
 				<div id="tabs" style="margin:10px;padding:0;">
