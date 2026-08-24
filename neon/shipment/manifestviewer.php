@@ -72,7 +72,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					{ targets: 0, className: 'notoggle' }, // don't let people remove/add this column
 					{ targets: [7, 8, 9, 10], visible: false }, // make this column not visible on load
 					{ targets: [6], className: 'dt-left' }, // align date column to the left instead of the automatic right
-					{ targets: [13,14,15,16,17,18,19,20,21,22], visible: false, searchable: true, className: 'notoggle' } // child notes data
+					{ targets: 13, visible: false, searchable: false, className: 'notoggle' } // child notes data
 				],
 				layout: {
 					topStart: {
@@ -88,58 +88,26 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					}
 				},
 				createdRow: function(row, data, dataIndex) {
-					let str = '';
-				
-					const safe = val => val !== null && val !== undefined && val !== '';
-				
-					if (safe(data[13])) str += `<div>Alternative Sample ID: ${data[13]}</div>`;
-					if (safe(data[14])) str += `<div>Hashed Sample ID: ${data[14]}</div>`;
-					if (safe(data[15])) str += `<div>Individual Count: ${data[15]}</div>`;
-					if (safe(data[16])) str += `<div>Filter Volume: ${data[16]}</div>`;
-					if (safe(data[17])) str += `<div>Domain Remarks: ${data[17]}</div>`;
-					if (safe(data[18])) str += `<div>Sample Notes: ${data[18]}</div>`;
-					if (safe(data[19])) str += `<div>Check-in Remarks: ${data[19]}</div>`;
-					if (safe(data[20])) {
-						try {
-							const parsed = JSON.parse(data[20]);
-							const propStr = Object.entries(parsed)
-								.map(([key, val]) => `${key}: ${val}`)
-								.join('; ');
-							str += `<div>${propStr}</div>`;
-						} catch (e) {
-							console.warn("Invalid JSON in dynamicProperties:", data[20]);
-							str += `<div>${data[20]}</div>`; // fallback
-						}
+					if (data[13]) {
+						$(row).attr('data-child-value', data[13]);
 					}
-				
-					if (safe(data[21])) {
-						try {
-							const parsed = JSON.parse(data[21]);
-							const symbStr = Object.entries(parsed).map(([label, val]) => `${label}: ${val}`).join('; ');
-							str += `<div>Symbiota targeted data [${symbStr}]</div>`;
-						} catch (e) {
-							console.warn("Invalid symbiotaTarget JSON:", data[21]);
-						}
-					}
-				
-					if (safe(data[22])) str += `<div>Occurrence Harvesting Error: ${data[22]}</div>`;
-				
-					if (str) {
-						$(row).attr('data-child-value', str);
-					}
-				}	
+				}
 			});
 			
 			
 			let firstDrawComplete = false;
 			table.on('draw', function() {
-				table.rows().every(function () {
+				$('#manifestTable tbody tr.child-row').remove();
+				table.rows({ page: 'current' }).every(function () {
 					const tr = $(this.node());
 					const childValue = tr.data('child-value');
-			
-					if (childValue !== undefined) {
-						this.child(childValue).show();
-						tr.addClass('shown');
+				
+					if (childValue) {
+						tr.after(
+							'<tr class="child-row">' +
+								'<td colspan="13">' + childValue + '</td>' +
+							'</tr>'
+						);
 					}
 				});
 				if (firstDrawComplete) return;
@@ -337,14 +305,22 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			}
 			var sampleIdentifier = document.getElementById('fullIdentifier').textContent.trim();
 			if(sampleIdentifier != ""){
-				//alert("rpc/checkinsample.php?shipmentpk=<?php echo $shipmentPK; ?>&identifier="+sampleIdentifier+"&received="+f.sampleReceived.value+"&accepted="+f.acceptedForAnalysis.value+"&condition="+f.sampleCondition.value+"&altSampleID="+f.alternativeSampleID.value+"&notes="+f.checkinRemarks.value);
+				var requestData = {
+					shipmentpk: "<?php echo $shipmentPK; ?>",
+					identifier: sampleIdentifier,
+					received: f.sampleReceived.value,
+					accepted: f.acceptedForAnalysis.value,
+					condition: f.sampleCondition.value,
+					altSampleID: f.alternativeSampleID.value,
+					notes: f.checkinRemarks.value
+				};
 				$.ajax({
 					type: "POST",
 					url: "rpc/checkinsample.php",
 					dataType: 'json',
-					data: { shipmentpk: "<?php echo $shipmentPK; ?>", identifier: sampleIdentifier, received: f.sampleReceived.value, accepted: f.acceptedForAnalysis.value, condition: f.sampleCondition.value, altSampleID: f.alternativeSampleID.value, notes: f.checkinRemarks.value }
+					data: requestData
 				}).done(function( retJson ) {
-					$("#checkinText").show();
+					$("#checkinText").stop(true, true).show();
 					if(retJson.status == 0){
 						$("#checkinText").css('color', 'red');
 						$("#checkinText").text('check-in failed!');
@@ -356,21 +332,38 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 						// Update table in real time
 						var table = $('#manifestTable').DataTable();
 						var row = $('#scbox-' + retJson.samplePK).closest('tr');
-				
+						
 						if (row.length !== 0) {
-							var receivedVal = (f.sampleReceived.value === "1") ? "Y" :
-											  (f.sampleReceived.value === "0") ? "N" : "";
+							table.columns([11]).visible(true, false);
+							var receivedVal =
+								requestData.received === "1" ? "Y" :
+								requestData.received === "0" ? "N" : "";
+				
+							var acceptedVal =
+								requestData.accepted === "1" ? "Y" :
+								requestData.accepted === "0" ? "N" : "";
+				
 							table.cell(row, 8).data(receivedVal);
-						
-							var acceptedVal = (f.acceptedForAnalysis.value === "1") ? "Y" :
-											  (f.acceptedForAnalysis.value === "0") ? "N" : "";
 							table.cell(row, 9).data(acceptedVal);
-						
-							table.cell(row, 10).data(f.sampleCondition.value);
-						
-							table.cell(row, 11).data('checked in');
-						
-							table.draw(false);
+							table.cell(row, 10).data(requestData.condition);
+							var now = new Date();
+							
+							var checkinDate =
+								now.getFullYear() + '-' +
+								String(now.getMonth() + 1).padStart(2, '0') + '-' +
+								String(now.getDate()).padStart(2, '0') + ' ' +
+								String(now.getHours()).padStart(2, '0') + ':' +
+								String(now.getMinutes()).padStart(2, '0') + ':' +
+								String(now.getSeconds()).padStart(2, '0');
+							
+							var checkinCell =
+								checkinDate +
+								' <a href="#" onclick="return openSampleCheckinEditor(' + retJson.samplePK + ')">' +
+								'<img src="../../images/edit.png" style="width:13px">' +
+								'</a>';
+							
+							table.cell(row, 11).data(checkinCell);
+
 						}
 						
 						
@@ -389,7 +382,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					}
 					else if(retJson.status == 2){
 						$("#checkinText").css('color', 'orange');
-						$("#checkinText").text('already checked!');
+						$("#checkinText").text('already checked in!');
 					}
 					else if(retJson.status == 3){
 						$("#checkinText").css('color', 'red');
@@ -399,10 +392,9 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 						$("#checkinText").css('color', 'red');
 						$("#checkinText").text('Failed: unknown error!');
 					}
-					$("#checkinText").animate({fontSize: "125%"}, "slow");
-					$("#checkinText").animate({fontSize: "100%"}, "slow");
-					$("#checkinText").animate({fontSize: "125%"}, "slow");
-					$("#checkinText").animate({fontSize: "100%"}, "slow").delay(5000).fadeOut();
+					$("#checkinText")
+						.delay(5000)
+						.fadeOut(200);
 					f.identifier.focus();
 				});
 			}
