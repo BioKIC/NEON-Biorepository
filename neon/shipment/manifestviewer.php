@@ -72,7 +72,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					{ targets: 0, className: 'notoggle' }, // don't let people remove/add this column
 					{ targets: [7, 8, 9, 10], visible: false }, // make this column not visible on load
 					{ targets: [6], className: 'dt-left' }, // align date column to the left instead of the automatic right
-					{ targets: [13,14,15,16,17,18,19,20,21,22], visible: false, searchable: false, className: 'notoggle' } // child notes data
+					{ targets: [13,14,15,16,17,18,19,20,21,22], visible: false, searchable: true, className: 'notoggle' } // child notes data
 				],
 				layout: {
 					topStart: {
