@@ -97,13 +97,17 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			
 			let firstDrawComplete = false;
 			table.on('draw', function() {
-				table.rows().every(function () {
+				$('#manifestTable tbody tr.child-row').remove();
+				table.rows({ page: 'current' }).every(function () {
 					const tr = $(this.node());
 					const childValue = tr.data('child-value');
-			
-					if (childValue !== undefined) {
-						this.child(childValue).show();
-						tr.addClass('shown');
+				
+					if (childValue) {
+						tr.after(
+							'<tr class="child-row">' +
+								'<td colspan="13">' + childValue + '</td>' +
+							'</tr>'
+						);
 					}
 				});
 				if (firstDrawComplete) return;
