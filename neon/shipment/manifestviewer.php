@@ -337,14 +337,22 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 			}
 			var sampleIdentifier = document.getElementById('fullIdentifier').textContent.trim();
 			if(sampleIdentifier != ""){
-				//alert("rpc/checkinsample.php?shipmentpk=<?php echo $shipmentPK; ?>&identifier="+sampleIdentifier+"&received="+f.sampleReceived.value+"&accepted="+f.acceptedForAnalysis.value+"&condition="+f.sampleCondition.value+"&altSampleID="+f.alternativeSampleID.value+"&notes="+f.checkinRemarks.value);
+				var requestData = {
+					shipmentpk: "<?php echo $shipmentPK; ?>",
+					identifier: sampleIdentifier,
+					received: f.sampleReceived.value,
+					accepted: f.acceptedForAnalysis.value,
+					condition: f.sampleCondition.value,
+					altSampleID: f.alternativeSampleID.value,
+					notes: f.checkinRemarks.value
+				};
 				$.ajax({
 					type: "POST",
 					url: "rpc/checkinsample.php",
 					dataType: 'json',
-					data: { shipmentpk: "<?php echo $shipmentPK; ?>", identifier: sampleIdentifier, received: f.sampleReceived.value, accepted: f.acceptedForAnalysis.value, condition: f.sampleCondition.value, altSampleID: f.alternativeSampleID.value, notes: f.checkinRemarks.value }
+					data: requestData
 				}).done(function( retJson ) {
-					$("#checkinText").show();
+					$("#checkinText").stop(true, true).show();
 					if(retJson.status == 0){
 						$("#checkinText").css('color', 'red');
 						$("#checkinText").text('check-in failed!');
@@ -356,21 +364,38 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 						// Update table in real time
 						var table = $('#manifestTable').DataTable();
 						var row = $('#scbox-' + retJson.samplePK).closest('tr');
+						table.columns([11]).visible(true, false);
 				
 						if (row.length !== 0) {
-							var receivedVal = (f.sampleReceived.value === "1") ? "Y" :
-											  (f.sampleReceived.value === "0") ? "N" : "";
+							var receivedVal =
+								requestData.received === "1" ? "Y" :
+								requestData.received === "0" ? "N" : "";
+				
+							var acceptedVal =
+								requestData.accepted === "1" ? "Y" :
+								requestData.accepted === "0" ? "N" : "";
+				
 							table.cell(row, 8).data(receivedVal);
-						
-							var acceptedVal = (f.acceptedForAnalysis.value === "1") ? "Y" :
-											  (f.acceptedForAnalysis.value === "0") ? "N" : "";
 							table.cell(row, 9).data(acceptedVal);
-						
-							table.cell(row, 10).data(f.sampleCondition.value);
-						
-							table.cell(row, 11).data('checked in');
-						
-							table.draw(false);
+							table.cell(row, 10).data(requestData.condition);
+							var now = new Date();
+							
+							var checkinDate =
+								now.getFullYear() + '-' +
+								String(now.getMonth() + 1).padStart(2, '0') + '-' +
+								String(now.getDate()).padStart(2, '0') + ' ' +
+								String(now.getHours()).padStart(2, '0') + ':' +
+								String(now.getMinutes()).padStart(2, '0') + ':' +
+								String(now.getSeconds()).padStart(2, '0');
+							
+							var checkinCell =
+								checkinDate +
+								' <a href="#" onclick="return openSampleCheckinEditor(' + retJson.samplePK + ')">' +
+								'<img src="../../images/edit.png" style="width:13px">' +
+								'</a>';
+							
+							table.cell(row, 11).data(checkinCell);
+
 						}
 						
 						
@@ -389,7 +414,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					}
 					else if(retJson.status == 2){
 						$("#checkinText").css('color', 'orange');
-						$("#checkinText").text('already checked!');
+						$("#checkinText").text('already checked in!');
 					}
 					else if(retJson.status == 3){
 						$("#checkinText").css('color', 'red');
@@ -399,10 +424,9 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 						$("#checkinText").css('color', 'red');
 						$("#checkinText").text('Failed: unknown error!');
 					}
-					$("#checkinText").animate({fontSize: "125%"}, "slow");
-					$("#checkinText").animate({fontSize: "100%"}, "slow");
-					$("#checkinText").animate({fontSize: "125%"}, "slow");
-					$("#checkinText").animate({fontSize: "100%"}, "slow").delay(5000).fadeOut();
+					$("#checkinText")
+						.delay(5000)
+						.fadeOut(200);
 					f.identifier.focus();
 				});
 			}
