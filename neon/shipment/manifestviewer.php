@@ -364,9 +364,9 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 						// Update table in real time
 						var table = $('#manifestTable').DataTable();
 						var row = $('#scbox-' + retJson.samplePK).closest('tr');
-						table.columns([11]).visible(true, false);
-				
+						
 						if (row.length !== 0) {
+							table.columns([11]).visible(true, false);
 							var receivedVal =
 								requestData.received === "1" ? "Y" :
 								requestData.received === "0" ? "N" : "";
