@@ -140,7 +140,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				if (val) {
 					table.page.len(-1);
 				} else {
-					table.page.len(100);
+					table.page.len(500);
 					selectAllBox.checked = false;
 				}
 			
