@@ -75,17 +75,19 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 					{ targets: 13, visible: false, searchable: false, className: 'notoggle' } // child notes data
 				],
 				layout: {
-					topStart: {
+					top2Start: {
 						pageLength: {
-							menu: [10, 25, 50, 100, 300, 500, { label: 'All', value: -1 }] //Change the options in the page length
+							menu: [10, 25, 50, 100, 300, 500, { label: 'All', value: -1 }]
 						},
-						buttons: [
-							{
-								extend: 'columnsToggle',
-								columns: ':not(.notoggle)'
-							}
-						]
-					}
+						buttons: [{
+							extend: 'columnsToggle',
+							columns: ':not(.notoggle)'
+						}]
+					},
+					topStart: 'info',
+					topEnd: 'paging',
+					bottomStart: null,
+					bottomEnd: null
 				},
 				createdRow: function(row, data, dataIndex) {
 					if (data[13]) {
@@ -94,20 +96,16 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 				}
 			});
 			
-			
 			let firstDrawComplete = false;
 			table.on('draw', function() {
-				$('#manifestTable tbody tr.child-row').remove();
-				table.rows({ page: 'current' }).every(function () {
+				table.rows({ page: 'current' }).every(function() {
 					const tr = $(this.node());
 					const childValue = tr.data('child-value');
-				
+			
+					tr.next('.child-row').remove();
+			
 					if (childValue) {
-						tr.after(
-							'<tr class="child-row">' +
-								'<td colspan="13">' + childValue + '</td>' +
-							'</tr>'
-						);
+						tr.after('<tr class="child-row"><td colspan="13">' + childValue + '</td></tr>');
 					}
 				});
 				if (firstDrawComplete) return;
@@ -635,6 +633,22 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 	  
 		.input-group input:focus {
 		  outline: 2px solid #88f;
+		}
+		
+		#manifestTable_wrapper .dt-layout-row {
+			display: flex;
+			flex-wrap: nowrap;
+			align-items: center;
+		}
+		
+		#manifestTable_wrapper .dt-layout-start {
+			flex: 1;
+		}
+		
+		#manifestTable_wrapper .dt-layout-end {
+			flex: 0 0 auto;
+			width: auto;
+			margin-left: auto;
 		}
 	</style>
 </head>
