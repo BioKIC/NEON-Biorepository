@@ -973,7 +973,7 @@ if ($isEditor) {
 								<br>
 								- If you are using <strong>data only</strong>, only the sample data citation(s) are required.
 								<br>
-								- See the
+								- See
 								<a
 									class="MuiTypography-root MuiLink-root MuiLink-underlineAlways MuiTypography-colorPrimary"
 									href="../../misc/cite.php"
