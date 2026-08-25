@@ -1294,15 +1294,19 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 <?php
 $selectedResearchers = $inquiryManager->getAdditionalResearchersByID($requestID);
 
-foreach($selectedResearchers as $id => $label){
+$researcherData = array_map(
+    function($id, $label) {
+        return [
+            'id' => (string)$id,
+            'label' => $label
+        ];
+    },
+    array_keys($selectedResearchers),
+    array_values($selectedResearchers)
+);
 ?>
-window.selectedResearchers.push({
-    id: "<?php echo $id; ?>",
-    label: "<?php echo addslashes($label); ?>"
-});
-<?php
-}
-?>
+
+window.selectedResearchers = <?= json_encode($researcherData) ?>;
 
 function renderAdditionalResearchers(){
 
