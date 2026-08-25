@@ -58,7 +58,10 @@
             "misc/sampleguidelines.php",
             "misc/cite.php",
             "misc/samplepolicy.php",
-            "misc/samplerequests.php"
+            "misc/samplerequests.php",
+            "neon/datasets/neonpublic.php",
+            "neon/datasets/neonpubliclist.php",
+            "neon/datasets/neondatasetmanager.php"
             ]
         }
     ]

@@ -2137,7 +2137,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
             return false;
         }
 
-        $sql = "SELECT title, description FROM neonrequest WHERE id = $requestID";
+        $sql = "SELECT title, description,internal FROM neonrequest WHERE id = $requestID";
         $row = $this->conn->query($sql);
         if (!$row) {
             $this->errorMessage = "Failed to fetch request: " . $this->conn->error;
@@ -2156,10 +2156,16 @@ public function addCollectionInquiryLink($requestID, $collections) {
         $dynamicProperties = $this->conn->real_escape_string(
             json_encode(['requestID' => $requestID])
         );        
+        if ($row['internal'] == 'no') {
+            $isPublic = 1;
+        }
+        else {
+            $isPublic = 0;
+        }
 
         // create new dataset
         $insertSql = "INSERT INTO omoccurdatasets (name, description, category, notes, isPublic, uid, dynamicProperties) 
-                      VALUES ('$name', '$description', 'Request' ,'$notes', 1, $uid, '$dynamicProperties')";
+                      VALUES ('$name', '$description', 'Request' ,'$notes', $isPublic, $uid, '$dynamicProperties')";
         if (!$this->conn->query($insertSql)) {
             $this->errorMessage = "Failed to create dataset: " . $this->conn->error;
             return false;
