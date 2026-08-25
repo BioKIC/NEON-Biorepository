@@ -204,7 +204,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 	if (!empty($fulfillment) && empty($suaLink)) {
 		$errorMessage[] = 'A sample use agreement is required in order to fulfill a request.';
 	}	
-	if (!empty($followUpType) && empty($assignee)) {
+	if (!empty($followUpType) && $followUpType != 'none' && empty($assignee)) {
 		$errorMessage[] = 'Someone should be assigned to follow up.';
 	}	
 	if(!empty($active) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Active Date.';
