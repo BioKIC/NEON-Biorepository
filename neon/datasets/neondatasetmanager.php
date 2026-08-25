@@ -969,8 +969,10 @@ if ($isEditor) {
 								class="MuiTypography-root MuiTypography-body1"
 								style="margin:0; line-height:1.6;"
 							>
-								If you are using <strong>physical samples or specimens</strong>, include both the physical sample citations table and the sample data citation(s) provided below.
-								If you are using <strong>sample data only</strong>, only the sample type citation(s) are required.
+								If you are using <strong>physical samples</strong>, include both the physical sample citations table and the sample data citation(s) provided below.
+								<br>
+								If you are using <strong>data only</strong>, only the sample data citation(s) are required.
+								<br>
 								See the
 								<a
 									class="MuiTypography-root MuiLink-root MuiLink-underlineAlways MuiTypography-colorPrimary"
