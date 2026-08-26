@@ -414,22 +414,26 @@ $traitArr = $indManager->getTraitArr();
 									echo $occArr['catalognumber'];
 								}
 								// Get GBIF recordID using GBIF API
-								if ($collMetadata['publishtogbif'] == 1 && $occArr['occurrenceid']) {
-									$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']);
-									$aggkeys = json_decode($jsonRaw);
-									if (json_last_error() !== JSON_ERROR_NONE) {
-										echo 'JSON Error: ' . json_last_error_msg();
-											echo '<br>Cleaned string: ' . htmlspecialchars($jsonRaw);
-									} elseif (isset($aggkeys->datasetKey)) {
-										$datasetKey = $aggkeys->datasetKey;
-									}
-									$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
-									$response = file_get_contents($gbifApiUrl);
-									$data = json_decode($response, true);
-									if (isset($data['count']) && $data['count'] == 1 && isset($data['results'][0]['key'])) {
-										$gbifID = $data['results'][0]['key'];
-										$gbifUrl = "https://www.gbif.org/occurrence/$gbifID";
-										echo '<span style="margin-left: 10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
+								if ($collMetadata['publishtogbif'] == 1 && !empty($occArr['catalognumber'])) {
+									$aggkeys = json_decode(html_entity_decode($collMetadata['aggkeysstr']));
+									if (isset($aggkeys->datasetKey) && !empty($occArr['occurrenceid'])) {
+										$gbifApiUrl = 'https://api.gbif.org/v1/occurrence/search?' . http_build_query([
+											'datasetKey' => $aggkeys->datasetKey,
+											'occurrenceID' => $occArr['occurrenceid']
+										]);
+										$ch = curl_init($gbifApiUrl);
+										curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 5, CURLOPT_USERAGENT => 'NEON Portal/1.0']);
+										$response = curl_exec($ch);
+										$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+										curl_close($ch);
+								
+										if ($httpCode == 200 && $response) {
+											$data = json_decode($response, true);
+											if (($data['count'] ?? 0) == 1 && isset($data['results'][0]['key'])) {
+												$gbifUrl = 'https://www.gbif.org/occurrence/' . $data['results'][0]['key'];
+												echo '<span style="margin-left:10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
+											}
+										}
 									}
 								}
 								?>
