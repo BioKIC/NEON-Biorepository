@@ -389,7 +389,7 @@ class OccurrenceHarvester{
 				if($sampleArr['occid']){
 					//This is a reharvest event, check to make sure IGSNs match
 					if(isset($sampleArr['occurrenceID']) && $sampleArr['occurrenceID']){
-						if($sampleArr['occurrenceID'] == $igsnMatch[1]){
+						if($sampleArr['occurrenceID'] == 'https://doi.org/10.58052/' . $igsnMatch[1]){
 							$neonSampleUpdate['igsnPushedToNEON'] = 1;
 						}
 						else{
