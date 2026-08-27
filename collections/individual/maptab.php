@@ -20,7 +20,7 @@ if(!empty($_REQUEST['declat']) && !empty($_REQUEST['declng'])){
 		<script type="text/javascript">
 			var map;
 			var mapInit = false;
-			const coordError = <?= $coordError ?>;
+			var coordError = <?= $coordError ?>;
 
 			initializeMap();
 

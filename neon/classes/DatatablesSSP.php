@@ -308,7 +308,8 @@ class SSP {
 		$primaryKey,
 		$columns,
 		$whereResult=null,
-		$whereAll=null
+		$whereAll=null,
+		$extraColumns=array()
 	) {
 		$bindings = array();
 		$whereAllBindings = array();
@@ -359,8 +360,12 @@ class SSP {
 		}
 
 		// Main query to actually get the data
-		$data = self::sql_exec( $db, $bindings,
-			"SELECT `".implode("`, `", self::pluck($columns, 'db'))."`
+		$selectColumns = array_unique(
+			array_merge(self::pluck($columns, 'db'), $extraColumns)
+		);
+		
+		$data = self::sql_exec($db, $bindings,
+			"SELECT `".implode("`, `", $selectColumns)."`
 			 FROM `$table`
 			 $where
 			 $order

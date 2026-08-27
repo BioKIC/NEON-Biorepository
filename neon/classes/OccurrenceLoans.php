@@ -14,20 +14,34 @@ class OccurrenceLoans extends Manager{
   // Gets all loans for all collections, with links for loan and collection
   public function getLoanOutAll(){
   	$dataArr = array();
-    $sql = 'SELECT
-l.loanid, l.collidown, c.collectioncode, c.collectionname, i.institutioncode AS borrower, l.forwhom, l.datesent, l.datedue, l.dateclosed, COUNT(o.occid) AS numspecimens, l.createdbyown AS enteredby FROM omoccurloans AS l LEFT JOIN institutions AS i ON l.iidborrower = i.iid LEFT JOIN omcollections AS c  ON l.collidown = c.collid JOIN omoccurloanslink AS o ON l.loanid = o.loanid GROUP BY loanid;';
+    $sql = "SELECT
+            l.loanid,
+            l.collidown,
+            CONCAT(l.forwhom,' (',i.institutioncode,')') AS requestor,
+            l.forwhom,
+            l.datesent,
+            l.datedue,
+            l.dateclosed,
+            COUNT(o.occid) AS totalspecimens,
+            SUM(CASE WHEN o.returndate IS NULL THEN 1 ELSE 0 END) AS specimensout,
+            l.createdbyown AS assignee
+        FROM omoccurloans AS l
+        LEFT JOIN institutions AS i
+            ON l.iidborrower = i.iid
+        JOIN omoccurloanslink AS o
+            ON l.loanid = o.loanid
+        GROUP BY l.loanid;";
     if($result = $this->conn->query($sql)){
       while($row = $result->fetch_assoc()){
         $dataArr[] = array(
-          'loanid' => '<a href="../collections/loans/outgoing.php?collid='.$row['collidown'].'&loanid='.$row['loanid'].'">'.$row['loanid'].'</a>',
-          'collection' => '<a href="../collections/misc/collprofiles.php?collid='.$row['collidown'].'">['.$row['collectioncode'].'] '.$row['collectionname'].'</a>',
-          'borrower' => is_null($row['borrower'])?'<span style="color:lightgray;">NULL</span>':$row['borrower'],
-          'forwhom' => is_null($row['forwhom'])?'<span style="color:lightgray;">NULL</span>':$row['forwhom'],
-          'datesent' => is_null($row['datesent'])?'<span style="color:lightgray;">NULL</span>':$row['datesent'],
-          'datedue' => is_null($row['datedue'])?'<span style="color:lightgray;">NULL</span>':$row['datedue'],
-          'dateclosed' => is_null($row['dateclosed'])?'<span style="color:lightgray;">NULL</span>':$row['dateclosed'],
-          'numspecimens' => is_null($row['numspecimens'])?'<span style="color:lightgray;">NULL</span>':$row['numspecimens'],
-          'enteredby' => is_null($row['enteredby'])?'<span style="color:lightgray;">NULL</span>':$row['enteredby'],
+          'loanID' => '<a href="../collections/loans/outgoing.php?collid='.$row['collidown'].'&loanid='.$row['loanid'].'">'.$row['loanid'].'</a>',
+          'requestor' => is_null($row['requestor'])?'<span style="color:lightgray;">NULL</span>':$row['requestor'],
+          'dateSent' => is_null($row['datesent'])?'<span style="color:lightgray;">NULL</span>':$row['datesent'],
+          'dateDue' => is_null($row['datedue'])?'<span style="color:lightgray;">NULL</span>':$row['datedue'],
+          'dateClosed' => is_null($row['dateclosed'])?'<span style="color:lightgray;">NULL</span>':$row['dateclosed'],
+          'totalSpecimens' => is_null($row['totalspecimens']) ? '<span style="color:lightgray;">NULL</span>' : $row['totalspecimens'],
+          'specimensOut' => is_null($row['specimensout']) ? '<span style="color:lightgray;">NULL</span>' : $row['specimensout'],
+          'assignee' => is_null($row['assignee'])?'<span style="color:lightgray;">NULL</span>':$row['assignee'],
         );
       }
       $result->free();

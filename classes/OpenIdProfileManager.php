@@ -148,10 +148,11 @@ class OpenIdProfileManager extends ProfileManager
 	public function updateLocalUserFromAuth0Metadata($sub, $provider, $firstName, $lastName, $institution, $affiliation, $country, $subjectMatterExpertise, $orcid)
 	{
 		if (!$sub || !$provider) return false;
-		// ror lookup
+		// ROR lookup
 		if ($institution) {
-			$url = "https://api.ror.org/v2/organizations/" . urlencode($institution);
+			$originalInstitution = $institution;
 		
+			$url = "https://api.ror.org/v2/organizations/" . urlencode($institution);
 			$response = @file_get_contents($url);
 		
 			if ($response !== false) {
@@ -159,15 +160,15 @@ class OpenIdProfileManager extends ProfileManager
 		
 				if (!empty($ror['names'])) {
 					foreach ($ror['names'] as $name) {
-						if (in_array('ror_display', $name['types'])) {
+						if (in_array('ror_display', $name['types'], true)) {
 							$institution = $name['value'];
 							break;
 						}
 					}
 		
-					// Fallback if no ror_display entry exists
-					if (is_array($ror['names']) && !empty($ror['names']) && is_array($ror['names'][0])) {
-						$institution = $institution ?? $ror['names'][0]['value'];
+					// assumes instutition is an organization and not an ror
+					if ($institution === $originalInstitution && isset($ror['names'][0]['value'])) {
+						$institution = $ror['names'][0]['value'];
 					}
 				}
 			}

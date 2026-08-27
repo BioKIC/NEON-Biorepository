@@ -59,8 +59,8 @@ $linkedCollections = $collManager->getLinkedCollections();
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
-	<script src="../../js/jquery.js?ver=20130917" type="text/javascript"></script>
-	<script src="../../js/jquery-ui.js?ver=20130917" type="text/javascript"></script>
+	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 	<script>
 		function toggleById(target) {
 			if (target != null) {
@@ -464,7 +464,11 @@ ER  -
 										<?php echo (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
 									</a>
 								</li>
-								<!-- <li>
+								<li>
+									<a href='../../neon/editor/neoneditor.php'>NEON Occurrence (Skeletal) and Extended Data Editor</a>
+								</li>
+								<!--
+								<li>
 									<a href="#" onclick="$('li.importItem').show(); return false;">
 										<?php echo (isset($LANG['IMPORT_SPECIMEN']) ? $LANG['IMPORT_SPECIMEN'] : 'Import/Update Specimen Records'); ?>
 									</a>

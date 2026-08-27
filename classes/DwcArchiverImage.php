@@ -4,7 +4,8 @@ class DwcArchiverImage{
 	public static function getImageArr($schemaType){
 		$fieldArr['coreid'] = 'o.occid';
 		$termArr['identifier'] = 'http://purl.org/dc/terms/identifier';
-		$fieldArr['identifier'] = 'IFNULL(m.originalurl,m.url) as identifier';
+		//$fieldArr['identifier'] = 'IFNULL(m.originalurl,m.url) as identifier';
+		$fieldArr['identifier'] = "LEFT(SUBSTRING_INDEX(IFNULL(m.originalurl,m.url), '/', -1), LENGTH(SUBSTRING_INDEX(IFNULL(m.originalurl,m.url), '/', -1)) - LENGTH(SUBSTRING_INDEX(SUBSTRING_INDEX(IFNULL(m.originalurl,m.url), '/', -1), '.', -1)) - 1) AS identifier";
 		$termArr['accessURI'] = 'http://rs.tdwg.org/ac/terms/accessURI';
 		$fieldArr['accessURI'] = 'IFNULL(NULLIF(m.originalurl,""),m.url) as accessURI';
 		$termArr['thumbnailAccessURI'] = 'http://rs.tdwg.org/ac/terms/thumbnailAccessURI';

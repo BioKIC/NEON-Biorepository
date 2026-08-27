@@ -319,9 +319,9 @@ $traitArr = $indManager->getTraitArr();
 							<span><?php echo $LANG['LINKED_RESOURCES']; ?></span>
 						</a>
 					</li>-->
-					<!-- end NEON edit -->
-					<?php
-					if($traitArr) echo '<li><a href="#traittab"><span>' . (isset($LANG['TRAITS'])?$LANG['TRAITS']:'Traits') . '</span></a></li>';
+					<?php		
+					//if($traitArr) echo '<li><a href="#traittab"><span>' . (isset($LANG['TRAITS'])?$LANG['TRAITS']:'Traits') . '</span></a></li>';
+					//end NEON edit
 					if($isEditor) echo '<li><a href="#edittab"><span>' . $LANG['EDIT_HISTORY'] . '</span></a></li>';
 					?>
 				</ul>
@@ -404,46 +404,45 @@ $traitArr = $indManager->getTraitArr();
 							<div id="cat-div" class="bottom-breathing-room-rel-sm">
 								<?php
 								// Start NEON Customization
-								// Check if occurrenceid is an IGSN
+								// Check if catalogNumber is an IGSN
 								if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['catalognumber'])) {
 									echo '<label>'.$LANG['ARCHIVE_GUID'].': </label>';
 									echo $occArr['catalognumber'];
-									echo '<span style="margin-left: 10px"><a href="https://doi.org/10.58052/' . $occArr['catalognumber'] . '" target="_blank">SESAR Record</a></span>';
-
-									// Get GBIF recordID using GBIF API
-									if($occArr['occurrenceid']){
-										if ($collMetadata['publishtogbif'] == 1) {
-											$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']);
-											$aggkeys = json_decode($jsonRaw);
-
-											if (json_last_error() !== JSON_ERROR_NONE) {
-												echo 'JSON Error: ' . json_last_error_msg();
-												echo '<br>Cleaned string: ' . htmlspecialchars($jsonRaw);
-											} elseif (isset($aggkeys->datasetKey)) {
-												$datasetKey = $aggkeys->datasetKey;
-											}
-											$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
-											$response = file_get_contents($gbifApiUrl);
-											$data = json_decode($response, true);
-											if (isset($data['count']) && $data['count'] == 1 && isset($data['results'][0]['key'])) {
-												$gbifID = $data['results'][0]['key'];
-												$gbifUrl = "https://www.gbif.org/occurrence/$gbifID";
-												echo '<span style="margin-left: 10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
-											}
-										}
-									}
 								}
 								else{
 									echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
 									echo $occArr['catalognumber'];
 								}
-								// End NEON Customization
+								// Get GBIF recordID using GBIF API
+								if ($collMetadata['publishtogbif'] == 1 && !empty($occArr['catalognumber'])) {
+									$aggkeys = json_decode(html_entity_decode($collMetadata['aggkeysstr']));
+									if (isset($aggkeys->datasetKey) && !empty($occArr['catalognumber'])) {
+										$gbifApiUrl = 'https://api.gbif.org/v1/occurrence/search?' . http_build_query([
+											'datasetKey' => $aggkeys->datasetKey,
+											'occurrenceID' => $occArr['catalognumber']
+										]);
+										$ch = curl_init($gbifApiUrl);
+										curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 5, CURLOPT_USERAGENT => 'NEON Portal/1.0']);
+										$response = curl_exec($ch);
+										$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+										curl_close($ch);
+								
+										if ($httpCode == 200 && $response) {
+											$data = json_decode($response, true);
+											if (($data['count'] ?? 0) == 1 && isset($data['results'][0]['key'])) {
+												$gbifUrl = 'https://www.gbif.org/occurrence/' . $data['results'][0]['key'];
+												echo '<span style="margin-left:10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
+											}
+										}
+									}
+								}
 								?>
 							</div>
 							<?php
 						}
-						?>
-						<div id="occurrenceid-div" class="bottom-breathing-room-rel-sm">
+						if($occArr['occurrenceid']){
+							?>
+							<div id="occurrenceid-div" class="bottom-breathing-room-rel-sm">
 							<?php
 							echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
 							$resolvableGuid = false;
@@ -452,10 +451,14 @@ $traitArr = $indManager->getTraitArr();
 							if(isset($occArr['occurrenceid'])){
 								echo $occArr['occurrenceid'];
 							}
-							if($resolvableGuid) echo '</a>';
+							if($resolvableGuid) {
 							?>
-						</div>
-						<?php
+								</a>
+							</div>
+							<?php
+							}
+						}
+						// End NEON Customization
 						if($occArr['othercatalognumbers']){
 							?>
 							<div id="assoccatnum-div" class="assoccatnum-div bottom-breathing-room-rel-sm">
@@ -1401,18 +1404,20 @@ $traitArr = $indManager->getTraitArr();
 				<?php
 				if($traitArr){
 					?>
-					<div id="traittab">
+					<!--neon edit, hide trait tab-->
+					<!--<div id="traittab">-->
 						<?php
-						foreach($traitArr as $traitID => $tArr){
-							if(!$tArr['depStateID']){
-								echo '<div class="trait-div">';
-								$indManager->echoTraitUnit($traitArr[$traitID]);
-								$indManager->echoTraitDiv($traitArr,$traitID);
-								echo '</div>';
-							}
-						}
+						//foreach($traitArr as $traitID => $tArr){
+						//	if(!$tArr['depStateID']){
+						//		echo '<div class="trait-div">';
+						//		$indManager->echoTraitUnit($traitArr[$traitID]);
+						//		$indManager->echoTraitDiv($traitArr,$traitID);
+						//		echo '</div>';
+						//	}
+						//}
 						?>
-					</div>
+					<!--</div>-->
+					<!--end neon edit-->
 					<?php
 				}
 				if($isEditor){

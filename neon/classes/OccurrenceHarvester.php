@@ -632,7 +632,11 @@ class OccurrenceHarvester{
 						if($fArr['smsKey'] == 'minimum_depth_in_meters' && $fArr['smsValue']) $tableArr['minimum_depth_in_meters'] = $fArr['smsValue'];
 						if($fArr['smsKey'] == 'maximum_depth_in_meters' && $fArr['smsValue']) $tableArr['maximum_depth_in_meters'] = $fArr['smsValue'];
 						if($fArr['smsKey'] == 'reproductive_condition' && $fArr['smsValue']) $tableArr['reproductive_condition'] = $fArr['smsValue'];
-						if($fArr['smsKey'] == 'sampling_protocol' && $fArr['smsValue']) $tableArr['sampling_protocol'] = $fArr['smsValue'];
+						if ($fArr['smsKey'] == 'sampling_protocol' && $fArr['smsValue']) {
+							$tableArr['sampling_protocol'] = (strpos($fArr['smsValue'], 'NEON.DOC') === 0)
+								? "https://data.neonscience.org/api/v0/documents/" . $fArr['smsValue']
+								: $fArr['smsValue'];
+						}						
 						if($fArr['smsKey'] == 'sex' && $fArr['smsValue']) $tableArr['sex'] = $fArr['smsValue'];
 						if (
 							$fArr['smsKey'] == 'life_stage' &&
@@ -800,7 +804,15 @@ class OccurrenceHarvester{
 
 				}
 				if(isset($sampleArr['reproductive_condition'])) $dwcArr['reproductiveCondition'] = $sampleArr['reproductive_condition'];
-				if(isset($sampleArr['sampling_protocol'])) $dwcArr['samplingProtocol'] = $sampleArr['sampling_protocol'];
+				if(isset($sampleArr['sampling_protocol'])) {
+					if (    str_starts_with($sampleArr['sampling_protocol'], 'NEON') ||
+    						str_starts_with($sampleArr['sampling_protocol'], 'https') ||
+							str_starts_with($sampleArr['sampling_protocol'], 'sample-release') ||
+    						str_starts_with($sampleArr['sampling_protocol'], 'https') ||
+							str_starts_with($sampleArr['sampling_protocol'], 'Sherman')) {
+						$dwcArr['samplingProtocol'] = $sampleArr['sampling_protocol'];
+					};
+				};
 				if(isset($sampleArr['sex'])) $dwcArr['sex'] = $sampleArr['sex'];
 				if(isset($sampleArr['life_stage'])) $dwcArr['lifeStage'] = $sampleArr['life_stage'];
 				if(isset($sampleArr['associated_taxa'])) $dwcArr['associatedTaxa'] = $this->translateAssociatedTaxa($sampleArr['associated_taxa']);
@@ -958,8 +970,8 @@ class OccurrenceHarvester{
 										if(!empty($sampleArr['recorded_by'])) $identifiedBy = $this->translatePersonnel($sampleArr['recorded_by']);
 										elseif(!empty($sampleArr['collected_by'])) $identifiedBy =  $this->translatePersonnel($sampleArr['collected_by']);
 										else($identifiedBy= 'NEON Technician');
-										if(!empty($sampleArr['collectDate'])) $identifiedDate = $sampleArr['collectDate'];
-										elseif(!empty($sampleArr['collect_end_date'])) $identifiedDate = $sampleArr['collect_end_date'];
+										if(!empty($sampleArr['collect_end_date'])) $identifiedDate = $sampleArr['collect_end_date'];
+										elseif(!empty($sampleArr['collectDate'])) $identifiedDate = $sampleArr['collectDate'];
 										else ($identifiedDate = 's.d.');
 										break;
 									}
@@ -1232,7 +1244,7 @@ class OccurrenceHarvester{
 				}
 				$dwcArr['habitat'] = implode('; ', $habitatArr);
 			}
-			if($elevMin === '' && !isset($dwcArr['minimumElevationInMeters'])) {
+			if($elevMin === '' && !isset($dwcArr['minimumElevationInMeters']) && isset($resultArr_history['locationElevation'])) {
 				$elevMin = round($resultArr_history['locationElevation']);
 			}
 			if ($elevMin !== '' && !isset($dwcArr['minimumElevationInMeters'])) {
@@ -1272,9 +1284,9 @@ class OccurrenceHarvester{
 		if($dwcArr['collid'] == 75){
 			//Tick pathogen extracts
 			$dwcArr['individualCount'] = 1;
-			$dwcArr['preparations'] = '-80 degrees C.';
+			$dwcArr['preparations'] = '-80 degrees C';
 			$dwcArr['lifeStage'] = 'Nymph';
-			$dwcArr['sex'] = '';
+			$dwcArr['sex'] = NULL;
 		}
 		elseif($dwcArr['collid'] == 116){
 			if($dwcArr['sex'] == 'Nymph') {
@@ -1596,7 +1608,11 @@ class OccurrenceHarvester{
 				$baseID['sciname'] = $collArr[$sourceCollid]['defaultId'];
 				$baseID['tidInterpreted'] = $collArr[$sourceCollid]['tid'];
 				if ($dwcArr['recordedBy']) $baseID['identifiedBy'] = $dwcArr['recordedBy'];
-				if ($dwcArr['eventDate']) $baseID['identifiedDate'] = $dwcArr['eventDate'];
+				if (isset($dwcArr['eventDate2'])) {
+					$baseID['dateIdentified'] = $dwcArr['eventDate2'];
+				} elseif (isset($dwcArr['eventDate'])) {
+					$baseID['dateIdentified'] = $dwcArr['eventDate'];
+				}
 			}
 			
 			// if it's microalgae and has no common tid, give it the pseudo ecological taxon
@@ -1631,7 +1647,11 @@ class OccurrenceHarvester{
 					}
 					$baseID['identificationRemarks'] = 'Identification source: parsed from NEON sampleID';
 					if ($dwcArr['recordedBy']) $baseID['identifiedBy'] = $dwcArr['recordedBy'];
-					if ($dwcArr['eventDate']) $baseID['dateIdentified'] = $dwcArr['eventDate'];
+					if (isset($dwcArr['eventDate2'])) {
+						$baseID['dateIdentified'] = $dwcArr['eventDate2'];
+					} elseif (isset($dwcArr['eventDate'])) {
+						$baseID['dateIdentified'] = $dwcArr['eventDate'];
+					}
 				}	
 			}
 
@@ -1861,7 +1881,8 @@ class OccurrenceHarvester{
 				}
 				if($sciname){
 					$idDate = 's.d.';
-					if(!empty($dwcArr['eventDate'])) $idDate = $dwcArr['eventDate'];
+					if(!empty($dwcArr['eventDate2'])) $idDate = $dwcArr['eventDate2'];
+					elseif(!empty($dwcArr['eventDate'])) $idDate = $dwcArr['eventDate'];
 					if(!empty($dwcArr['recordedBy']) && in_array($dwcArr['collid'],array(5,6,10,13,16,18,21,23,30,31,41,42,61,67,68,69,76,92,96))) $idBy = $dwcArr['recordedBy'];
 					else $idBy = 'NEON Lab';
 					$dwcArr['identifications'][] = array('sciname' => $sciname,'tidInterpreted'=>$tid, 'identifiedBy' => $idBy, 'dateIdentified' => $idDate, 'isCurrent' => 1);

@@ -5,7 +5,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 <html>
 
 <head>
-	<title>Sample Use Procedures and Requirements</title>
+	<title>Sample Use Guidelines</title>
 	<?php include_once($SERVER_ROOT . '/includes/head.php'); ?>
 	<style>
 		article { margin: 2rem 0; }
@@ -32,7 +32,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 <body>
 
 <div id="innertext">
-	<h1 style="text-align:center;">Sample Use Procedures and Requirements</h1>
+	<h1 style="text-align:center;">Sample Use Guidelines</h1>
 
 	<article>
 		<p>NEON Biorepository samples and specimens and their associated data are available for a wide variety of research and educational purposes. Anyone interested in requesting samples may do so. Most requests are fulfilled at no cost; however, unusually large requests or those requiring substantial additional processing may incur fees. You can browse NEON samples via the <a href="../collections/misc/browsecollprofiles.php" target="_blank"">Sample Type Browser</a> or <a href="https://biorepo.neonscience.org/portal/neon/search/index.php" target="_blank">Sample Portal</a> and initiate inquiries about using samples in your work by <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">contacting us</a> directly.</p>
@@ -105,7 +105,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<p>Sample uses can be non-invasive, invasive, consumptive, or destructive. Non-invasive use does not materially affect the condition or future availability of a sample; invasive alters a sample in a manner that may affect subsequent applications; consumptive use depletes a portion of a sample; and destructive use renders a sample unavailable for further use.</p>
 
-			<p>While any type of use is permissible, requests involving substantial destructive or consumptive use require additional review as a part of the approval process. All requests are evaluated on a case-by-case basis; however, each sample type is subject to guidelines regarding the amount of destructive and consumptive use that can be supported for a single project and the minimum number of samples that must be retained for long-term archive. Requests that involve destructive or significant consumptive use exceeding those guidelines require strong justification and may be subject to external review.</p>
+			<p>While any type of use is permissible, requests involving substantial destructive or consumptive use require additional review as a part of the approval process. All requests are evaluated on a case-by-case basis; however, each sample type is subject to guidelines regarding the amount of destructive and consumptive use that can be supported for a single project and the minimum number of samples that must be retained for long-term archive. Requests that involve destructive or significant consumptive use exceeding those guidelines require strong justification and may be subject to external review. Pilots to demonstrate likely success of projects involving destructive use are highly encouraged.</p>
 
 			<p>Other considerations relevant to sample use approval include: species rarity; physical condition of a requested specimen; suitability of requested samples to proposed application; significance relative to NEON’s <a href="https://www.neonscience.org/about/visionandmanagement" target="_blank" rel="noopener">mission</a> to enable continental-scale ecology; prior adherence to the NEON Sample Use Policy; and U.S. National Park Service policies, where relevant.</p>
 
