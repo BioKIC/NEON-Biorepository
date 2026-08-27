@@ -1284,6 +1284,9 @@ class OccurrenceEditorManager {
 		if ($postArr) {
 			$postArr = array_merge($postArr, $this->getDatefields($postArr));
 			$guid = UuidFactory::getUuidV4();
+			// NEON customization
+			$guid = "uuid:".$guid;
+			// end NEON customization
 			$sql = 'INSERT IGNORE INTO omoccurrences(collid, recordID, ' . implode(',', array_keys($this->fieldArr['omoccurrences'])) . ') VALUES (' . $postArr['collid'] . ', "' . $guid . '"';
 			if (!isset($postArr['dateentered']) || !$postArr['dateentered']) $postArr['dateentered'] = date('Y-m-d H:i:s');
 			if (!isset($postArr['basisofrecord']) || !$postArr['basisofrecord']) $postArr['basisofrecord'] = (strpos($this->collMap['colltype'], 'Observations') !== false ? 'HumanObservation' : 'PreservedSpecimen');
