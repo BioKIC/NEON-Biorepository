@@ -30,8 +30,8 @@ usort($pArr, function ($a, $b) {
                     href="https://www.neonscience.org/samples"
                     target="_blank"
                 >NEON Biorepository</a>. These projects span a wide range of disciplines, sample types, and research questions, demonstrating the many ways NEON samples and specimens can support new discoveries and extend the scientific value of NEON data.
-                <br><br>
-                The projects listed here are led by PIs who have opted in to listing their project publicly. 
+                <!-- <br><br>
+                The projects listed here are led by PIs who have opted in to listing their project publicly.  -->
             </p>
             
 			<!--List Projects in React Table-->
