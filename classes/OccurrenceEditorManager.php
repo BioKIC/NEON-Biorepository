@@ -1445,6 +1445,18 @@ class OccurrenceEditorManager {
 					$dateArr['enddayofyear'] = $endDayOfYear;
 				}
 			}
+			if($occurrenceArr['eventdate2'] && $occurrenceArr['eventdate'] != $occurrenceArr['eventdate2']){
+				$dateArr['day'] = '';
+				if (preg_match('/(\d{4})-(\d{2})-(\d{2})/', $occurrenceArr['eventdate2'], $m)) {
+					if (!empty($m[1]) && $m[1] != $dateArr['year']){
+						$dateArr['year'] = '';
+						$dateArr['month'] = '';
+					}
+					elseif (!empty($m[2]) && $m[2] != $dateArr['month']){
+						$dateArr['month'] = '';
+					}
+				}
+			}
 		}
 		return $dateArr;
 	}
@@ -2661,15 +2673,15 @@ class OccurrenceEditorManager {
 		//neon edit
 		if ($limitToUser) {
 			$collArr = array('0');
-		
+
 			if (isset($GLOBALS['USER_RIGHTS']['CollEditor'])) {
 				$collArr = $GLOBALS['USER_RIGHTS']['CollEditor'];
 			}
-			
+
 			if (isset($GLOBALS['USER_RIGHTS']['CollAdmin'])) {
 				$collArr = array_merge($collArr, $GLOBALS['USER_RIGHTS']['CollAdmin']);
 			}
-		
+
 			$sql .= 'WHERE (collid IN(' . implode(',', $collArr) . ')) ';
 		}
 		//end neon edit
