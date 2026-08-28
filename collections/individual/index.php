@@ -443,20 +443,22 @@ $traitArr = $indManager->getTraitArr();
 						if($occArr['occurrenceid']){
 							?>
 							<div id="occurrenceid-div" class="bottom-breathing-room-rel-sm">
-							<?php
-							echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
-							$resolvableGuid = false;
-							if(substr($occArr['occurrenceid'],0,4) == 'http') $resolvableGuid = true;
-							if($resolvableGuid) echo '<a href="' . $occArr['occurrenceid'] . '" target="_blank">';
-							if(isset($occArr['occurrenceid'])){
-								echo $occArr['occurrenceid'];
-							}
-							if($resolvableGuid) {
-							?>
-								</a>
+								<?php
+								echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
+								$resolvableGuid = false;
+								if(substr($occArr['occurrenceid'],0,4) == 'http') $resolvableGuid = true;
+								if($resolvableGuid) echo '<a href="' . $occArr['occurrenceid'] . '" target="_blank">';
+								if(isset($occArr['occurrenceid'])){
+									echo $occArr['occurrenceid'];
+								}
+								if($resolvableGuid) {
+									?>
+									</a>
+									<?php
+								}
+								?>
 							</div>
-							<?php
-							}
+						<?php
 						}
 						// End NEON Customization
 						if($occArr['othercatalognumbers']){
