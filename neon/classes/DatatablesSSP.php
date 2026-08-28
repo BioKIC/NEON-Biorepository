@@ -150,6 +150,17 @@ class SSP {
 
 		if ( isset($request['search']) && $request['search']['value'] != '' ) {
 			$str = $request['search']['value'];
+			
+			$extraSearchColumns = [
+				'alternativeSampleID', 'hashedSampleID', 'individualCount',
+				'filterVolume', 'domainRemarks', 'notes', 'checkinRemarks',
+				'dynamicProperties', 'symbiotaTarget', 'errorMessage'
+			];
+			
+			foreach ($extraSearchColumns as $field) {
+				$binding = self::bind($bindings, '%'.$str.'%', 's');
+				$globalSearch[] = "`".$field."` LIKE ".$binding;
+			}
 
 			for ( $i=0, $ien=count($request['columns']) ; $i<$ien ; $i++ ) {
 				$requestColumn = $request['columns'][$i];
