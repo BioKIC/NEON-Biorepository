@@ -438,6 +438,13 @@ include($SERVER_ROOT.'/includes/header.php');
 					  <label class="form-check-label" for="st9">Receipt Not Submitted</label>
 					</div>
 				  </div>
+				<div class="col-12 col-md-4">
+					<div class="form-check">
+					  <input name="manifestStatus[]" class="form-check-input" type="checkbox" value="harvestNotAttempted" id="st9"
+						<?php echo ((strpos($manifestStatus, 'harvestNotAttempted') !== false) ? 'checked' : ''); ?>>
+					  <label class="form-check-label" for="st9">Harvest Not Attempted</label>
+					</div>
+				  </div>
 				</div>
 			  </fieldset>
 			

@@ -57,52 +57,52 @@
       },
       {
         "id": 12,
-        "name": "Individual Prepared Specimens",
+        "name": "Individually Prepared Specimens",
         "children": [
           {
             "id": 13,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens (from Clip Harvest Biomass Sampling)",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Herbarium Specimens (from Clip Harvest Sampling)",
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 9            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 107           
               }
             ]
           },
           {
             "id": 14,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens (from Point Transect Sampling)",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Herbarium Specimens (from Point Transect Surveys)",
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 7            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 108           
               }
             ]
           },
           {
             "id": 15,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens (from Opportunistic Sampling)",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Herbarium Specimens (from Opportunistic Sampling)",
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 8            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 109           
               }
             ]
@@ -151,32 +151,32 @@
         "children": [
           {
             "id": 24,
-            "name": "Aquatic Macroalgae (from Clip Harvest Biomass Sampling)",
+            "name": "Aquatic Macroalgae (from Clip Harvest Sampling)",
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Taxonomy Samples",
+                "name": "Bulk Samples",
                 "collid": 50            
               },
               {
                 "id": 1,
-                "name": "Bulk Taxonomy Sample Identifications",
+                "name": "Bulk Sample Identifications",
                 "collid": 105           
               }
             ]
           },
           {
             "id": 25,
-            "name": "Aquatic Macroalgae (from Point Transects Sampling)",
+            "name": "Aquatic Macroalgae (from Point Transect Surveys)",
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Taxonomy Samples",
+                "name": "Bulk Samples",
                 "collid": 73            
               },
               {
                 "id": 1,
-                "name": "Bulk Taxonomy Sample Identifications",
+                "name": "Bulk Sample Identifications",
                 "collid": 106           
               }
             ]

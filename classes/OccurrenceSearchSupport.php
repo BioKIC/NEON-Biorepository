@@ -117,18 +117,108 @@ class OccurrenceSearchSupport {
 	}
 
 	public static function getDbWhereFrag($dbSearchTerm){
-		$sqlRet = '';
-		if ($dbSearchTerm == 'allspec'){
-			$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype IN("Preserved Specimens","Fossil Specimens"))) ';
+		global $SERVER_ROOT;
+		$sqlRet = "";
+		$dbSearchTerm = $searchTermArr['db'];
+		if(strpos($dbSearchTerm, 'all') !== false){
+		
+			// load JSON file
+			$jsonPath = $SERVER_ROOT.'/neon-react/biorepo_lib/collections-taxonomic.json';
+			$json = file_get_contents($jsonPath);
+			$data = json_decode($json, true);
+		
+			$collids = [];
+			self::extractCollids($data, $collids);
+		
+			$dbParts = explode(',', $dbSearchTerm);
+		
+			foreach($dbParts as $part){
+				if(is_numeric($part)){
+					$collids[] = (int)$part;
+				}
+			}
+		
+			$collids = array_unique($collids);
+		
+			if($collids){
+				$sqlRet .= 'AND (o.collid IN('.implode(',', $collids).')) ';
+			}
+		}
+		//end neon edit
+		elseif($dbSearchTerm == 'allspec'){
+			$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype = "Preserved Specimens","Fossil Specimens")) ';
 		}
 		elseif($dbSearchTerm == 'allobs'){
 			$sqlRet .= 'AND (o.collid IN(SELECT collid FROM omcollections WHERE colltype IN("General Observations","Observations"))) ';
 		}
-		elseif(preg_match('/^[0-9;,]+$/', $dbSearchTerm)){
-			$sqlRet .= 'AND (o.collid IN(' . str_replace(';', ',', $dbSearchTerm) . ')) ';
+		else {
+			// neon edit; mammal material samples
+			$dbArr = array_map('intval', explode(',', $dbSearchTerm));
+			$whereParts = [];
+			
+			$materialSampleMap = [
+				118 => '%tract%',
+				119 => '%heart%',
+				120 => '%lung%',
+				121 => '%kidney%',
+				122 => '%spleen%',
+				123 => '%liver%',
+				124 => '%muscle%'
+			];
+			
+			// regular collections
+			$normalCollids = array_diff($dbArr, array_keys($materialSampleMap));
+			
+			if($normalCollids){
+				$whereParts[] = 'o.collid IN('.implode(',', $normalCollids).')';
+			}
+			
+			// mammal material sample pseudo-collections
+			foreach($materialSampleMap as $collid => $sampleTypeLike){
+				if(in_array($collid, $dbArr)){
+					$materialSql =
+						"(o.collid IN(17,19,28)
+						AND EXISTS (
+							SELECT 1
+							FROM ommaterialsample ms
+							WHERE ms.occid = o.occid
+							AND ms.sampleType LIKE '".$sampleTypeLike."'";
+			
+					if(array_key_exists('availableforloan', $searchTermArr)){
+						$materialSql .= "
+							AND ms.disposition IN('In Collection','Being Processed') OR ms.disposition IS NULL";
+					}
+			
+					$materialSql .= "
+						))";
+			
+					$whereParts[] = $materialSql;
+				}
+			}
+			
+			if($whereParts){
+				$dbStr = '(' . implode(' OR ', $whereParts) . ')';
+				$sqlRet .= 'AND '.$dbStr.' ';
+			}
 		}
+	
 		return $sqlRet;
+		//end neon edit
 	}
+	
+	//neon edit
+	private static function extractCollids($nodes, &$collids = []) {
+		foreach ($nodes as $node) {
+			if (isset($node['collid'])) {
+				$collids[] = (int)$node['collid'];
+			}
+			if (isset($node['children']) && is_array($node['children'])) {
+				self::extractCollids($node['children'], $collids);
+			}
+		}
+		return $collids;
+	}
+	//end neon edit
 
 	public function setCollidStr($str){
 		$this->collidStr = $str;

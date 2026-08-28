@@ -22,8 +22,9 @@ $menuClosed = array_key_exists('menuClosed',$_REQUEST)? true: false;
 $catId = array_key_exists('catid',$_REQUEST) ? filter_var($_REQUEST['catid'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $tabIndex = array_key_exists('tabindex',$_REQUEST) ? filter_var($_REQUEST['tabindex'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $submitForm = array_key_exists('submitform', $_REQUEST) ? $_REQUEST['submitform'] : '';
-//neon edit
-$embedded = !empty($_REQUEST['embedded']);
+
+//neon edit - never open search menu
+$menuClosed = true;
 //end neon edit
 
 $shouldUseMinimalMapHeader = $SHOULD_USE_MINIMAL_MAP_HEADER ?? false;
@@ -90,6 +91,7 @@ $serverHost = GeneralUtil::getDomain();
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title><?php echo $DEFAULT_TITLE . ' - ' . $LANG['MAP_INTERFACE'] ?></title>
 		<?php
+		$DEACTIVATE_REACT = true;		//NEON customization
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
 		<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/listdisplay.css" type="text/css" rel="stylesheet" />
@@ -613,7 +615,7 @@ $serverHost = GeneralUtil::getDomain();
 			let map = new LeafletMap('map', {
 				lang: "<?= $LANG_TAG ?>",
 				default_bounds: [],
-			}, 
+			},
 				JSON.parse(`<?= json_encode($GEO_JSON_LAYERS ?? []) ?>`)
 			);
 
@@ -2149,9 +2151,8 @@ $serverHost = GeneralUtil::getDomain();
 			class="service-container"
 		>
 		</div>
-		
-    <!--neon edit-->
-		<?php if (!$embedded): ?>
+		<!--neon edit - never allow search panel to be opened and displayed -->
+		<!--
 		<div>
 			<button id="search-panel-button" onclick="document.getElementById('defaultpanel').style.width='29rem'; document.getElementById('search-panel-button').style.display='none';" style="position:absolute;top:0;left:0;margin:0px;z-index:10; gap: 0.2rem<?= $menuClosed ? '' : '; display:none'?>">
 				<span style="padding-bottom:0.2rem">
@@ -2160,7 +2161,7 @@ $serverHost = GeneralUtil::getDomain();
 				<b><?= $LANG['OPEN_SEARCH_PANEL'] ?></b>
 			</button>
 		</div>
-		<?php endif; ?>
+		-->
 		<!--end neon edit-->
     
 		<div id='map' style='width:100vw;height:100vh;z-index:1'></div>

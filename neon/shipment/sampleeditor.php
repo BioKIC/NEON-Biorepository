@@ -149,7 +149,7 @@ if($isEditor){
 						// });
 					}
 					else if(resJson.code == 2){
-						alert("Is this sampleClass valid? Unable to locate within collection's table");
+						alert("Is this sampleClass valid? Unable to locate within collections table");
 					}
 				});
 			}
@@ -250,7 +250,12 @@ if($isEditor){
 				</div>
 				<div class="fieldGroupDiv">
 					<div class="fieldDiv">
-						<b>Notes:</b> <input name="sampleNotes" type="text" value="<?php echo isset($sampleArr['sampleNotes'])?$sampleArr['sampleNotes']:''; ?>" style="width:500px" />
+						<b>Internal Notes:</b> <input name="sampleNotes" type="text" value="<?php echo isset($sampleArr['sampleNotes'])?$sampleArr['sampleNotes']:''; ?>" style="width:500px" />
+					</div>
+				</div>
+				<div class="fieldGroupDiv">
+					<div class="fieldDiv">
+						<b>Remarks for Receipt:</b> <input name="checkinRemarks" type="text" value="<?php echo isset($sampleArr['checkinRemarks'])?$sampleArr['checkinRemarks']:''; ?>" style="width:500px" />
 					</div>
 				</div>
 				<div style="clear:both;margin:15px">

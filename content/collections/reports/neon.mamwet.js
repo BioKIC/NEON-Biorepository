@@ -57,7 +57,7 @@ labels.forEach((label) => {
   catNums.innerHTML = newCatNum;
   catNums.classList.add('mt-2');
   // Removes ORCID from collector
-  let recordedBy = label.querySelector('.collector');
+  let recordedBy = label.querySelector('.recordedby');
   if (recordedBy) {
     let hasOrcid = recordedBy.innerText.toLowerCase().includes('orcid');
     if (hasOrcid) {
@@ -78,7 +78,7 @@ labels.forEach((label) => {
         prepBy = obj.prepared_by;
       }
     } catch (e) {
-      // If invalid JSON, leave prepBy empty
+      console.error('Invalid JSON:', e);
     }
 
   dynProps.innerText = 'Prep. by: ' + (prepBy || '');

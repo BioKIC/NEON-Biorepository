@@ -12,6 +12,9 @@ $term = (array_key_exists('term',$_REQUEST)?$_REQUEST['term']:'');
 $taxonType = (array_key_exists('t',$_REQUEST)?$_REQUEST['t']:0);
 $rankLow = (array_key_exists('ranklow',$_REQUEST)?$_REQUEST['ranklow']:0);
 $rankHigh = (array_key_exists('rankhigh',$_REQUEST)?$_REQUEST['rankhigh']:0);
+//neon edit
+$occurrenceOnly = (array_key_exists('occurrenceOnly', $_REQUEST) ? $_REQUEST['occurrenceOnly'] : 0);
+//end neon edit
 
 $nameArr = array();
 if($term){
@@ -21,6 +24,9 @@ if($term){
    $searchManager->setTaxonType($taxonType);
    $searchManager->setRankLow($rankLow);
    $searchManager->setRankHigh($rankHigh);
+   //neon edit
+   $searchManager->setOccurrenceOnly($occurrenceOnly);
+   //end neon edit
 
    $nameArr = $searchManager->getTaxaSuggest();
 }

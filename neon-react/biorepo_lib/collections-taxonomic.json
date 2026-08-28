@@ -4,82 +4,94 @@
     "name": "Aquatic Plants, Bryophytes, Lichens, and Macroalgae",
     "children": [
       {
-        "id": 2,
-        "name": "Chemically-Preserved Specimens (from Clip Harvest Biomass Sampling)",
+        "id": 10,
+        "name": "Macroalgae",
         "children": [
           {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 50            
+            "id": 2,
+            "name": "Chemically-Preserved Specimens (from Clip Harvest Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 50
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 105
+              }
+            ]
           },
           {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 105           
+            "id": 3,
+            "name": "Chemically-Preserved Specimens (from Point Transects Surveys)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Bulk Samples",
+                "collid": 73
+              },
+              {
+                "id": 1,
+                "name": "Bulk Sample Identifications",
+                "collid": 106
+              }
+            ]
           }
         ]
       },
       {
-        "id": 3,
-        "name": "Chemically-Preserved Specimens (from Point Transects Sampling)",
+        "id": 20,
+        "name": "Vascular Plants, Bryophytes & Lichens",
         "children": [
           {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 73            
+            "id": 4,
+            "name": "Herbarium Specimens (from Clip Harvest Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Specimens",
+                "collid": 9
+              },
+              {
+                "id": 1,
+                "name": "Specimen Identifications",
+                "collid": 107
+              }
+            ]
           },
           {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 106           
-          }
-        ]
-      },
-      {
-        "id": 4,
-        "name": "Herbarium Specimens (from Clip Harvest Biomass Sampling)",
-        "children": [
-          {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 9            
+            "id": 5,
+            "name": "Herbarium Specimens (from Point Transect Surveys)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Specimens",
+                "collid": 7
+              },
+              {
+                "id": 1,
+                "name": "Specimen Identifications",
+                "collid": 108
+              }
+            ]
           },
           {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 107           
-          }
-        ]
-      },
-      {
-        "id": 5,
-        "name": "Herbarium Specimens (from Point Transect Sampling)",
-        "children": [
-          {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 7            
-          },
-          {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 108           
-          }
-        ]
-      },
-      {
-        "id": 6,
-        "name": "Herbarium Specimens (from Opportunistic Sampling)",
-        "children": [
-          {
-            "id": 1,
-            "name": "Bulk Samples",
-            "collid": 8            
-          },
-          {
-            "id": 1,
-            "name": "Bulk Sample Identifications",
-            "collid": 109           
+            "id": 4,
+            "name": "Herbarium Specimens (from Opportunistic Sampling)",
+            "children": [
+              {
+                "id": 1,
+                "name": "Specimens",
+                "collid": 8
+              },
+              {
+                "id": 1,
+                "name": "Specimen Identifications",
+                "collid": 109
+              }
+            ]
           }
         ]
       }
@@ -539,35 +551,41 @@
           },
           {
             "id": 73,
-            "name": "Genomic Extracts for Pathogen Testing (from Blood)",
-            "collid": 91
-          },
-          {
-            "id": 74,
-            "name": "Genomic Extracts for Pathogen Testing (from Ear Tissue)",
-            "collid": 90
-          },
-          {
-            "id": 75,
             "name": "Parasite Specimens",
             "collid": 85
           },
           {
-            "id": 75,
+            "id": 74,
+            "name": "Genomic Extracts for Pathogen Testing",
+            "children": [
+              {
+                "id": 75,
+                "name": "Blood-Derived",
+                "collid": 91
+              },
+              {
+                "id": 76,
+                "name": "Ear Tissue-Derived",
+                "collid": 90
+              }
+            ]
+          },
+          {
+            "id": 77,
             "name": "Whole Specimens",
             "children": [
               {
-                "id": 76,
+                "id": 78,
                 "name": "Bycatch Specimens (from Beetle Sampling)",
                 "collid": 17
               },
               {
-                "id": 77,
+                "id": 79,
                 "name": "Specimens (Incidental)",
                 "collid": 19
               },
               {
-                "id": 78,
+                "id": 80,
                 "name": "Specimens (Standard Sampling)",
                 "collid": 28
               }
@@ -576,21 +594,21 @@
         ]
       },
       {
-        "id": 79,
+        "id": 81,
         "name": "Reptiles and Amphibians",
         "children": [
           {
-            "id": 80,
+            "id": 82,
             "name": "Bycatch Specimens (from Beetle Sampling; Pooled Catches)",
             "collid": 12
           },
           {
-            "id": 81,
+            "id": 83,
             "name": "Bycatch Specimens (from Beetle Sampling; Unpooled Catches)",
             "collid": 15
           },
           {
-            "id": 82,
+            "id": 84,
             "name": "Bycatch Specimens (from Small Mammal and Fish Sampling)",
             "collid": 70
           }

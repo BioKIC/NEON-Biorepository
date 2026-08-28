@@ -49,7 +49,7 @@
   },
   {
     "id": 6,
-    "name": "AMC – Surface Aquatic Microbial Sampling",
+    "name": "AMC – Aquatic Microbial Sampling",
     "children": [
       {
         "id": 7,
@@ -79,11 +79,11 @@
     "children": [
       {
         "id": 12,
-        "name": "Clip Harvest Biomass Sampling",
+        "name": "Clip Harvest Sampling",
         "children": [
           {
             "id": 13,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Chemical Preservation",
+            "name": "Aquatic Macroalgae Chemical Preservation",
             "children": [
               {
                 "id": 1,
@@ -99,16 +99,16 @@
           },
           {
             "id": 14,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Herbarium Specimens",
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 9            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 107           
               }
             ]
@@ -117,11 +117,11 @@
       },
       {
         "id": 15,
-        "name": "Point Transects Sampling",
+        "name": "Point Transect Surveys",
         "children": [
           {
             "id": 16,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Chemical Preservation",
+            "name": "Aquatic Macroalgae Chemical Preservation",
             "children": [
               {
                 "id": 1,
@@ -137,16 +137,16 @@
           },
           {
             "id": 17,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Herbarium Specimens",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Herbarium Specimens",
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 7            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 108           
               }
             ]
@@ -159,16 +159,16 @@
         "children": [
           {
             "id": 19,
-            "name": "Aquatic Plant, Bryophyte, and Macroalgae Opportunistic Specimens",
+            "name": "Aquatic Plant, Bryophyte, and Lichen Opportunistic Specimens",
             "children": [
               {
                 "id": 1,
-                "name": "Bulk Samples",
+                "name": "Specimens",
                 "collid": 8            
               },
               {
                 "id": 1,
-                "name": "Bulk Sample Identifications",
+                "name": "Specimen Identifications",
                 "collid": 109           
               }
             ]
@@ -190,7 +190,7 @@
   },
   {
     "id": 22,
-    "name": "BET - Ground Beetle Sampling",
+    "name": "BET – Ground Beetle Sampling",
     "children": [
       {
         "id": 23,
@@ -259,7 +259,7 @@
   },
   {
     "id": 30,
-    "name": "BGB – Plant Belowground Biomass Sampling",
+    "name": "BBC – Plant Belowground Biomass Sampling",
     "children": [
       {
         "id": 31,
@@ -409,7 +409,7 @@
   },
   {
     "id": 49,
-    "name": "LTR - Litterfall And Fine Woody Debris",
+    "name": "LTR – Litterfall and Fine Woody Debris",
     "children": [
       {
         "id": 50,
@@ -551,7 +551,7 @@
   },
   {
     "id": 75,
-    "name": "SLS - Soil Biogeochemical And Microbial Sampling",
+    "name": "SLS – Soil Biogeochemical and Microbial Sampling",
     "children": [
       {
         "id": 76,
@@ -572,7 +572,7 @@
   },
   {
     "id": 79,
-    "name": "TCK - Tick And Tickborne Pathogen Sampling",
+    "name": "TCK – Tick and Tick-Borne Pathogen Sampling",
     "children": [
       {
         "id": 80,
@@ -619,7 +619,7 @@
       {
         "id": 85,
         "name": "Zooplankton Bulk Taxonomy Sample Identifications",
-        "collid": 45
+        "collid": 104
       }
     ]
   }

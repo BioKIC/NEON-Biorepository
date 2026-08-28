@@ -160,7 +160,13 @@ if($SYMB_UID){
 }
 
 $displayMap = false;
-if($occArr && is_numeric($occArr['decimallatitude']) && is_numeric($occArr['decimallongitude'])) $displayMap = true;
+if($occArr && is_numeric($occArr['decimallatitude']) && is_numeric($occArr['decimallongitude'])){
+	if($occArr['decimallatitude'] <= 90 && $occArr['decimallatitude'] >= -90){
+		if($occArr['decimallongitude'] <= 180 && $occArr['decimallongitude'] >= -180){
+			$displayMap = true;
+		}
+	}
+}
 $dupClusterArr = $indManager->getDuplicateArr();
 $commentArr = $indManager->getCommentArr($isEditor);
 $traitArr = $indManager->getTraitArr();
@@ -172,6 +178,7 @@ $traitArr = $indManager->getTraitArr();
 	<meta http-equiv="Content-Type" content="text/html; charset=<?= $CHARSET; ?>">
 	<link href="<?= $CSS_BASE_PATH ?>/jquery-ui.css" type="text/css" rel="stylesheet">
 	<?php
+	$DEACTIVATE_REACT = true;		//NEON customization
 	include_once($SERVER_ROOT.'/includes/head.php');
 	include_once($SERVER_ROOT.'/includes/leafletMap.php');
 	include_once($SERVER_ROOT.'/includes/googleanalytics.php');
@@ -184,18 +191,9 @@ $traitArr = $indManager->getTraitArr();
 	<script src="<?= $CLIENT_ROOT; ?>/js/symb/domManipulationUtils.js" type="text/javascript"></script>
 	<script type="text/javascript">
 		var tabIndex = <?= $tabIndex; ?>;
-		var map;
-		var mapInit = false;
 
 		$(document).ready(function() {
 			$('#tabs-div').tabs({
-				beforeActivate: function(event, ui) {
-					if(document.getElementById("map_canvas") && ui.newTab.index() == 1 && !mapInit){
-						mapInit = true;
-						initializeMap();
-					}
-					return true;
-				},
 				active: tabIndex
 			});
 		});
@@ -375,16 +373,18 @@ $traitArr = $indManager->getTraitArr();
 				<ul>
 					<li><a href="#occurtab"><span><?php echo (isset($LANG['DETAILS']) ? $LANG['DETAILS'] : 'Details'); ?></span></a></li>
 					<?php
-					if($displayMap) echo '<li><a href="#maptab"><span>' . (isset($LANG['MAP']) ? $LANG['MAP'] : 'Map') . '</span></a></li>';
+					if($displayMap) echo '<li><a href="maptab.php?declat=' . $occArr['decimallatitude'] . '&declng=' . $occArr['decimallongitude'] . '&coorderror=' . $occArr['coordinateuncertaintyinmeters'] . '"><span>Map</span></a></li>';
 					if($genticArr) echo '<li><a href="#genetictab"><span>' . (isset($LANG['GENETIC']) ? $LANG['GENETIC'] : 'Genetic') . '</span></a></li>';
 					if($dupClusterArr) echo '<li><a href="#dupestab-div"><span>' . (isset($LANG['DUPLICATES']) ? $LANG['DUPLICATES'] : 'Duplicates') . '</span></a></li>';
 					?>
+					<!-- NEON edit -->
 					<!--<li><a href="#commenttab"><span><?php echo ($commentArr?count($commentArr).' ':''); echo (isset($LANG['COMMENTS']) ? $LANG['COMMENTS'] : 'Comments'); ?></span></a></li>-->
-					<li>
+					<!--<li>
 						<a href="linkedresources.php?occid=<?php echo $occid . '&tid=' . $occArr['tidinterpreted'] . '&clid=' . $clid . '&collid=' . $collid ?>">
 							<span><?php echo $LANG['LINKED_RESOURCES']; ?></span>
 						</a>
-					</li>
+					</li>-->
+					<!-- end NEON edit -->
 					<?php
 					if($traitArr) echo '<li><a href="#traittab"><span>' . (isset($LANG['TRAITS'])?$LANG['TRAITS']:'Traits') . '</span></a></li>';
 					if($isEditor) echo '<li><a href="#edittab"><span>' . $LANG['EDIT_HISTORY'] . '</span></a></li>';
@@ -405,7 +405,7 @@ $traitArr = $indManager->getTraitArr();
 					if($collMetadata['collectioncode']) $instCode .= ':'.$collMetadata['collectioncode'];
 					?>
 					<div id="title1-div" class="title1-div">
-						<?php echo $collMetadata['collectionname'].' ('.$instCode.')'; ?>
+						<?php echo $collMetadata['publicname']; ?>
 					</div>
 					<div  id="occur-div">
 						<!-- NEON customization -->
@@ -1133,20 +1133,21 @@ $traitArr = $indManager->getTraitArr();
 										// START NEON CUSTOMIZATION //
 										if($imgArr['creator']) {
 											if($imgArr['owner']){
-												echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].', '.$imgArr['owner'].'</div>';
+												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</br></b> '.$imgArr['owner'].'</div>';
 											}
 											else {
-												echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].'</div>';
+												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</div>';
 											}
 										}
-										// END NEON CUSTOMIZATION //									
+										elseif($imgArr['owner']) echo '<div>' . $imgArr['owner'].'</div>';
+									if($imgArr['rights']) echo '<div><b> License: </b>'.$imgArr['rights'].'</div>';
+									else echo '<div><b> License: </b>CC BY-SA (Attribution-ShareAlike)</div>';
 									if($imgArr['url'] && substr($thumbUrl,0,7)!='process' && $imgArr['url'] != $imgArr['lgurl']) echo '<div><a href="' . $imgArr['url'] . '" target="_blank">' . $LANG['OPEN_MEDIUM'] . '</a></div>';
 									if($imgArr['lgurl']) echo '<div><a href="' . $imgArr['lgurl'] . '" target="_blank">' . $LANG['OPEN_LARGE'] . '</a></div>';
 									if($imgArr['sourceurl']) echo '<div><a href="' . $imgArr['sourceurl'] . '" target="_blank">' . $LANG['OPEN_SOURCE'] . '</a></div>';
-									//Use image rights settings as the default for current record
-									if($imgArr['rights']) $collMetadata['rights'] = $imgArr['rights'];
 									if($imgArr['copyright']) $collMetadata['rightsholder'] = $imgArr['copyright'];
 									if($imgArr['accessrights']) $collMetadata['accessrights'] = $imgArr['accessrights'];
+										// END NEON CUSTOMIZATION //
 									echo '</div>';
 								}
 								?>
@@ -1331,13 +1332,6 @@ $traitArr = $indManager->getTraitArr();
 					</div>
 				</div>
 				<?php
-				if($displayMap){
-					?>
-					<div id="maptab">
-						<div id='map_canvas' style='width:100%;height:600px;'></div>
-					</div>
-					<?php
-				}
 				if($genticArr){
 					?>
 					<div id="genetictab">

@@ -57,6 +57,9 @@ function initTaxaSuggest() {
                 t: function () {
                   return $("#" + taxonTypeId).val();
                 },
+                //neon edit
+                occurrenceOnly: $("#" + inputId).data("occurrence-only") ? 1 : 0
+                //end neon edit
               },
               response
             );

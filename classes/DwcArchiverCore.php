@@ -199,9 +199,9 @@ class DwcArchiverCore extends Manager{
 			if ($this->applyConditionLimit){
 				//Downloads initiated via the dwcapubhandler.php webservice are limited to being filtered by only subset of indexed fields
 				$condAllowArr = array(
-						'catalognumber', 'othercatalognumbers', 'occurrenceid', 'family', 'sciname', 'country' ,'stateprovince', 'county', 'municipality',
-						'recordedby', 'recordnumber', 'eventdate', 'decimallatitude', 'decimallongitude', 'minimumelevationinmeters', 'maximumelevationinmeters', 'cultivationstatus',
-						'datelastmodified', 'dateentered', 'processingstatus', 'dbpk'
+					'catalognumber', 'othercatalognumbers', 'occurrenceid', 'family', 'sciname', 'country' ,'stateprovince', 'county', 'municipality',
+					'recordedby', 'recordnumber', 'eventdate', 'decimallatitude', 'decimallongitude', 'minimumelevationinmeters', 'maximumelevationinmeters', 'cultivationstatus',
+					'datelastmodified', 'dateentered', 'processingstatus', 'dbpk'
 				);
 				if(!in_array(strtolower($field), $condAllowArr)){
 					return false;
@@ -992,29 +992,29 @@ class DwcArchiverCore extends Manager{
 	public function getEmlDom($emlArr = null){
 		$RIGHTS_TERMS_DEFS = array(
 				'https://creativecommons.org/publicdomain/zero/1.0/' => array(
-						'title' => 'CC0 1.0 (Public-domain)',
-						'url' => 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
-						'def' => 'Users can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.'
+					'title' => 'CC0 1.0 (Public-domain)',
+					'url' => 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
+					'def' => 'Users can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.'
 				),
 				'https://creativecommons.org/licenses/by/4.0/' => array(
-						'title' => 'CC BY (Attribution)',
-						'url' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
-						'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.'
+					'title' => 'CC BY (Attribution)',
+					'url' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
+					'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.'
 				),
 				'https://creativecommons.org/licenses/by-nc/4.0/' => array(
-						'title' => 'CC BY-NC (Attribution-Non-Commercial)',
-						'url' => 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
-						'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material. The licensor cannot revoke these freedoms as long as you follow the license terms.'
+					'title' => 'CC BY-NC (Attribution-Non-Commercial)',
+					'url' => 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
+					'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material. The licensor cannot revoke these freedoms as long as you follow the license terms.'
 				),
 				'https://creativecommons.org/licenses/by/4.0/' => array(
-						'title' => 'CC BY (Attribution)',
-						'url' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
-						'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.'
+					'title' => 'CC BY (Attribution)',
+					'url' => 'https://creativecommons.org/licenses/by/4.0/legalcode',
+					'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.'
 				),
 				'https://creativecommons.org/licenses/by-nc/4.0/' => array(
-						'title' => 'CC BY-NC (Attribution-Non-Commercial)',
-						'url' => 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
-						'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material. The licensor cannot revoke these freedoms as long as you follow the license terms.'
+					'title' => 'CC BY-NC (Attribution-Non-Commercial)',
+					'url' => 'https://creativecommons.org/licenses/by-nc/4.0/legalcode',
+					'def' => 'Users can copy, redistribute the material in any medium or format, remix, transform, and build upon the material. The licensor cannot revoke these freedoms as long as you follow the license terms.'
 				)
 		);
 
@@ -1524,7 +1524,7 @@ class DwcArchiverCore extends Manager{
 					$hearderArr = $this->getHeaderArr();
 					if($hearderArr) $this->writeOutRecord($outputHandler, $hearderArr);
 				}
-				$chunkSize = 50000;
+				$chunkSize = 100000;
 				$lastOccid = 0;
 				$sql .= 'AND o.occid > ? ORDER BY occid LIMIT ?';
 				$stmt = $this->conn->prepare($sql);
@@ -1704,10 +1704,10 @@ class DwcArchiverCore extends Manager{
 		if ($this->schemaType == 'coge') {
 			//Convert to GeoLocate flavor
 			$glFields = array(
-					'specificEpithet' => 'Species', 'scientificNameAuthorship' => 'ScientificNameAuthor', 'recordedBy' => 'Collector', 'recordNumber' => 'CollectorNumber',
-					'year' => 'YearCollected', 'month' => 'MonthCollected', 'day' => 'DayCollected', 'decimalLatitude' => 'Latitude', 'decimalLongitude' => 'Longitude',
-					'minimumElevationInMeters' => 'MinimumElevation', 'maximumElevationInMeters' => 'MaximumElevation', 'maximumDepthInMeters' => 'MaximumDepth',
-					'minimumDepthInMeters' => 'MinimumDepth','occurrenceRemarks' => 'Notes', 'collID' => 'collId', 'recordID' => 'recordId'
+				'specificEpithet' => 'Species', 'scientificNameAuthorship' => 'ScientificNameAuthor', 'recordedBy' => 'Collector', 'recordNumber' => 'CollectorNumber',
+				'year' => 'YearCollected', 'month' => 'MonthCollected', 'day' => 'DayCollected', 'decimalLatitude' => 'Latitude', 'decimalLongitude' => 'Longitude',
+				'minimumElevationInMeters' => 'MinimumElevation', 'maximumElevationInMeters' => 'MaximumElevation', 'maximumDepthInMeters' => 'MaximumDepth',
+				'minimumDepthInMeters' => 'MinimumDepth','occurrenceRemarks' => 'Notes', 'collID' => 'collId', 'recordID' => 'recordId'
 			);
 			foreach ($fieldArr as $k => $v) {
 				if (array_key_exists($k, $glFields)) $headerArr[] = $glFields[$k];
@@ -1763,14 +1763,16 @@ class DwcArchiverCore extends Manager{
 		$sql = 'INSERT IGNORE INTO omexportoccurrences(omExportID, occid, collid, taxonID, family, scientificNameAuthorship, occurrenceRemarks, recordSecurity) ';
 		if (strpos($this->conditionSql,"early.myaStart"))
 			$sql .= $this->paleoWithSql;
-		$sql .= 'SELECT ' . $this->exportID . ' AS omExportID, o.occid, o.collid, o.tidInterpreted, o.family, o.scientificNameAuthorship, o.occurrenceRemarks, o.recordSecurity FROM omoccurrences o ';
-		$sql .= $this->getTableJoins() . $this->conditionSql;
-		$sql .= 'LIMIT 1000000';
-		if($stmt = $this->conn->prepare($sql)){
-			try{
-				if($stmt->execute()){
-					if($stmt->affected_rows || !$stmt->error){
-						$status = true;
+			$sql .= 'SELECT ' . $this->exportID . ' AS omExportID, o.occid, o.collid, o.tidInterpreted, o.family, o.scientificNameAuthorship, o.occurrenceRemarks, o.recordSecurity FROM omoccurrences o ';
+			$sql .= $this->getTableJoins() . $this->conditionSql;
+			$sql .= 'LIMIT 1000000';
+			if($stmt = $this->conn->prepare($sql)){
+				try{
+					if($stmt->execute()){
+						if($stmt->affected_rows || !$stmt->error){
+							$status = true;
+						}
+						else $this->errorMessage = $stmt->error;
 					}
 				} catch (mysqli_sql_exception $e){
 					$this->errorMessage = $stmt->error;

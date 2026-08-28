@@ -20,6 +20,7 @@ $datasetKey = $collManager->getDatasetKey();
 $resourceJson = isset($collData[$collid]['resourcejson']) ? json_decode($collData[$collid]['resourcejson'], true) : [];
 $dataProductIds = array_map(fn($item) => basename($item['url']), $resourceJson);
 $encodedJson = json_encode(array_values($dataProductIds), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+$biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 
 $editCode = 0;		//0 = no permissions; 1 = CollEditor; 2 = CollAdmin; 3 = SuperAdmin
 if ($SYMB_UID) {
@@ -34,17 +35,23 @@ if ($SYMB_UID) {
 
 <script>
   window.BiorepoCollectionData = '<?php echo $encodedJson; ?>';
+	window.biorepoAvailabilitySiteCodes = <?php echo json_encode(
+		$biorepoAvailabilitySiteCodes ?? [],
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
 </script>
 
 <?php
 $collData = $collManager->getCollectionMetadata();
+
+$linkedCollections = $collManager->getLinkedCollections();
 ?>
 
 <html>
 
 <head>
-	<title><?php echo $DEFAULT_TITLE . ' ' . ($collid && isset($collData[$collid]) ? $collData[$collid]['collectionname'] : ''); ?></title>
-	<meta name="keywords" content="Natural history collections,<?php echo ($collid ? $collData[$collid]['collectionname'] : ''); ?>" />
+	<title><?php echo $DEFAULT_TITLE . ' ' . ($collid && isset($collData[$collid]) ? ($collData[$collid]['publicname'] ?: $collData[$collid]['collectionname']) : ''); ?></title>
+	<meta name="keywords" content="Natural history collections,<?php echo ($collid ? (!empty($collData[$collid]['publicname']) ? $collData[$collid]['publicname'].',' : '') . $collData[$collid]['collectionname'] : ''); ?>" />
 	<meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
 	<meta http-equiv="Pragma" content="no-cache">
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
@@ -304,11 +311,11 @@ ER  -
 									<?php echo (isset($LANG['EDIT_EXISTING']) ? $LANG['EDIT_EXISTING'] : 'Edit Existing Occurrence Records'); ?>
 								</a>
 							</li>
-							<li>
+							<!-- <li>
 							<a href="../editor/batchdeterminations.php?collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['ADD_BATCH_DETER']) ? $LANG['ADD_BATCH_DETER'] : 'Add Batch Determinations/Nomenclatural Adjustments'); ?>
 								</a>
-							</li>
+							</li> -->
 							<li>
 								<a href="../reports/labelmanager.php?collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['PRINT_LABELS']) ? $LANG['PRINT_LABELS'] : 'Print Specimen Labels'); ?>
@@ -402,7 +409,7 @@ ER  -
 										<?php echo (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
 									</a>
 								</li>
-								<li>
+								<!-- <li>
 									<a href="#" onclick="$('li.importItem').show(); return false;">
 										<?php echo (isset($LANG['IMPORT_SPECIMEN']) ? $LANG['IMPORT_SPECIMEN'] : 'Import/Update Specimen Records'); ?>
 									</a>
@@ -421,7 +428,7 @@ ER  -
 									<a href="../admin/specupload.php?uploadtype=6&collid=<?php echo $collid; ?>">
 										<?php echo (isset($LANG['DWCA_IMPORT']) ? $LANG['DWCA_IMPORT'] : 'DwC-Archive Import'); ?>
 									</a>
-								</li>
+								</li> -->
 								<!--<li class="importItem" style="margin-left:10px;display:none;">-->
 								<!--	<a href="../admin/specupload.php?uploadtype=8&collid=<?php echo $collid; ?>">-->
 								<!--		<?php echo (isset($LANG['IPT_IMPORT']) ? $LANG['IPT_IMPORT'] : 'IPT Import'); ?>-->
@@ -489,11 +496,9 @@ ER  -
 								<?php
 								if ($collData['colltype'] != 'General Observations') {
 								?>
-									<!--<li style="margin-left:10px;">-->
-									<!--	<a href="../cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">-->
-									<!--		<?php echo (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>-->
-									<!--	</a>-->
-									<!--</li>-->
+									<li style="margin-left:10px;">
+									<a href="../cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">
+									<?php echo (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>
 								<?php
 								}
 								?>
@@ -541,18 +546,22 @@ ER  -
 			?>
 			<div class="mb-6">
 				<?php
-				echo '<h1 class="text-3xl font-bold text-left mb-4">' . $collData['collectionname'] . '</h1>';
+					$title = !empty($collData['publicname'])
+							? $collData['publicname']
+							: $collData['collectionname'];
+					
+					echo '<h1 class="font-bold text-left mb-4" style="font-size: 2.1rem;">' . $title . '</h1>';
 				?>
 				<div class="flex justify-between items-center">
 					<div class="flex justify-left space-x-3 mt-4">
 						<a href="<?php echo $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>">
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+								<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
 										<span class="MuiButton-label">Browse Records</span>
 										<span class="MuiTouchRipple-root"></span>
 								</button>
 						</a>
 						<a href="<?php echo $CLIENT_ROOT . '/neon/search/index.php?db=' . $collid; ?>">
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+								<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
 										<span class="MuiButton-label">Search this Sample Type</span>
 										<span class="MuiTouchRipple-root"></span>
 								</button>
@@ -580,9 +589,34 @@ ER  -
 				</div>
 			</div>
 			
+			<?php if (!empty($collData['identificationcollids'])): ?>
+			
+			<div class="mb-6 border-l-4 border-[#0073cf] bg-[#f4f9ff] p-4">
+				<div class="flex items-start">
+						<i class="fas fa-info-circle text-[#0073cf] text-lg mt-1 mr-3"></i>
+				
+						<div>
+								<div class="font-semibold text-gray-900">
+										Looking for a specific taxon?
+								</div>
+				
+								<div class="text-gray-700">
+										Taxonomic identifications derived from these samples are available through a related sample type.
+								</div>
+				
+								<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/neoncollprofiles.php?collid=<?php echo $collData['identificationcollids']; ?>"
+									 class="inline-block mt-2 text-[#0073cf] font-semibold hover:underline">
+										Browse Identifications →
+								</a>
+						</div>
+				</div>
+			</div>
+			
+			<?php endif; ?>
+			
 			<div class="grid grid-cols-1 gap-4 mb-6">
 				<div id="fulldescription-container">
-					<h2 class="text-xl font-semibold mb-2">About</h2>
+					<h2 class="font-semibold mb-2" style="font-size: 1.7rem;">About</h2>
 					<?php
 					echo $collData["fulldescription"];
 					?>
@@ -647,28 +681,12 @@ ER  -
 					</div>
 					<div class="border-t-2 border-gray-200 mt-6 pt-4">
 						<h2 class="text-xl font-semibold mb-2">Citation</h2>
-						<p style="padding:16px"><strong>Please use the appropriate citation in your publications. See <a href="<?php echo $CLIENT_ROOT . '/neon/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for more info.</strong></p>
+						<p style="padding:16px"><strong>Please use the appropriate citation in your publications. See <a href="<?php echo $CLIENT_ROOT . '/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for more info.</strong></p>
 						<?php
-						if (file_exists($SERVER_ROOT . '/includes/citationcollection.php')) {
 							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;"">
 							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">';
-							// If GBIF dataset key is available, fetch GBIF format from API
-							if ($collData['publishtogbif'] && $datasetKey && file_exists($SERVER_ROOT . '/includes/citationgbif.php')) {
-								$gbifUrl = 'http://api.gbif.org/v1/dataset/' . $datasetKey;
-								$responseData = json_decode(file_get_contents($gbifUrl));
-								if ($responseData === null && json_last_error() !== JSON_ERROR_NONE) {
-									error_log('Error in JSON decoding: ' . json_last_error_msg());
-									throw new Exception('Error in JSON decoding');
-								}
-								$collData['gbiftitle'] = $responseData->title;
-								$collData['doi'] = $responseData->doi;
-								$_SESSION['colldata'] = $collData;
-								include($SERVER_ROOT . '/includes/citationgbif.php');
-							} else {
-								include($SERVER_ROOT . '/includes/citationcollection.php');
-							}
+							include($SERVER_ROOT . '/includes/citationneoncollection.php');
 							echo '</div>';
-						}
 						?>
 							<div class="flex space-x-2">
 								<button id="copyButton" data-tooltip-id="tooltip-copy" 
@@ -701,6 +719,49 @@ ER  -
 				</div>
 			</div>
 			
+			<?php if (!empty($linkedCollections)): ?>
+		
+			<div class="border-t-2 border-gray-200 mt-6 pt-4">
+					<h2 class="text-xl mb-2">Related Sample Types</h2>
+			
+					<?php foreach ($linkedCollections as $collid => $collectionName):
+							$collid = (int)$collid;
+							$collectionName = htmlspecialchars($collectionName);
+					
+							$url = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid;
+							?>
+			
+							<div class="MuiListItem-container">
+									<div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">
+			
+											<div class="MuiListItemIcon-root" style="min-width: 40px">
+													<i class="fas fa-flask fa-lg"></i>
+											</div>
+			
+											<div class="MuiListItemText-root MuiListItemText-multiline">
+													<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
+															<?= $collectionName ?>
+													</span>
+											</div>
+			
+									</div>
+			
+									<div class="MuiListItemSecondaryAction-root">
+											<a href="<?= htmlspecialchars($url) ?>"
+												 target="_blank"
+												 rel="noopener noreferrer"
+												 class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">
+			
+													<span class="MuiButton-label">Explore</span>
+											</a>
+									</div>
+							</div>
+			
+					<?php endforeach; ?>
+			
+			</div>
+			<?php endif; ?>
+
 			<div class="border-t-2 border-gray-200 mt-6 pt-4">
 			  <h2 class="text-xl mb-2">Linked Data Products and Protocols</h2>
 			  <div class="mb-4">
@@ -751,7 +812,7 @@ ER  -
 							echo '    </div>';
 							echo '    <div class="MuiListItemSecondaryAction-root">';
 							echo '        <a href="' . $url . '" target="_blank" rel="noopener noreferrer">';
-							echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
+							echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
 							echo '                <span class="MuiButton-label">Explore</span>';
 							echo '                <span class="MuiTouchRipple-root"></span>';
 							echo '            </button>';
@@ -792,7 +853,7 @@ ER  -
 						echo '    </div>';
 						echo '    <div class="MuiListItemSecondaryAction-root">';
 						echo '        <a href="' . $dwcaUrl . '" target="_blank" rel="noopener noreferrer">';
-						echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
+						echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
 						echo '                <span class="MuiButton-label">';
 						echo '                    <span class="MuiButton-startIcon MuiButton-iconSizeMedium">';
 						echo '                        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true">';
@@ -843,7 +904,7 @@ ER  -
 					echo '    </div>';
 					echo '    <div class="MuiListItemSecondaryAction-root">';
 					echo '        <a href="' . $emlUrl . '" target="_blank" rel="noopener noreferrer">';
-					echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+					echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
 					echo '                <span class="MuiButton-label">View</span>';
 					echo '            </button>';
 					echo '        </a>';
@@ -886,7 +947,7 @@ ER  -
 						echo '    </div>';
 						echo '    <div class="MuiListItemSecondaryAction-root">';
 						echo '        <a href="' . $gbifUrl . '" target="_blank" rel="noopener noreferrer">';
-						echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+						echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
 						echo '                <span class="MuiButton-label">Access</span>';
 						echo '            </button>';
 						echo '        </a>';
@@ -934,7 +995,7 @@ ER  -
 							echo '    </div>';
 							echo '    <div class="MuiListItemSecondaryAction-root">';
 							echo '        <a href="' . $ediUrl . '" target="_blank" rel="noopener noreferrer">';
-							echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+							echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
 							echo '                <span class="MuiButton-label">Access</span>';
 							echo '            </button>';
 							echo '        </a>';
@@ -984,7 +1045,7 @@ ER  -
 							echo '    </div>';
 							echo '    <div class="MuiListItemSecondaryAction-root">';
 							echo '        <a href="' . $idigbioUrl . '" target="_blank" rel="noopener noreferrer">';
-							echo '            <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
+							echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
 							echo '                <span class="MuiButton-label">Open</span>';
 							echo '            </button>';
 							echo '        </a>';
@@ -1017,7 +1078,7 @@ ER  -
 					}
 					?>
 					<a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">
-							<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
+							<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
 									<span class="MuiButton-label">Contact the Biorepository</span>
 									<span class="MuiTouchRipple-root"></span>
 							</button>

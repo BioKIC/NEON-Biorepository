@@ -2887,17 +2887,22 @@ class OccurrenceEditorManager {
 	public function getCollectionList($limitToUser = true) {
 		$retArr = array();
 		$sql = 'SELECT collid, collectionname FROM omcollections ';
-		//neon edit
 		if ($limitToUser) {
 			$collArr = array('0');
-
-			if (isset($GLOBALS['USER_RIGHTS']['CollEditor'])) {
-				$collArr = $GLOBALS['USER_RIGHTS']['CollEditor'];
+			//neon edit
+			if (isset($GLOBALS['USER_RIGHTS']['CollAdmin'])){
+				$collArr = $GLOBALS['USER_RIGHTS']['CollAdmin'];
 			}
-
+			if (isset($GLOBALS['USER_RIGHTS']['CollEditor'])) {
+				$collArr = array_merge($collArr, $GLOBALS['USER_RIGHTS']['CollEditor']);
+			}
 			$sql .= 'WHERE (collid IN(' . implode(',', $collArr) . ')) ';
+			/*
+			if (isset($GLOBALS['USER_RIGHTS']['CollEditor'])) {
+				$sql .= 'OR (collid IN(' . implode(',', $GLOBALS['USER_RIGHTS']['CollEditor']) . ') AND colltype = "General Observations")';
+			}*/
+			//end neon edit
 		}
-		//end neon edit
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_object()) {
 			$retArr[$r->collid] = $r->collectionname;
