@@ -75,11 +75,11 @@ class DwcArchiverCore extends Manager{
 		$this->charSetOut = $this->charSetSource;
 
 		$this->securityArr = array(
-			'eventDate', 'eventDate2', 'month', 'day', 'startDayOfYear', 'endDayOfYear', 'verbatimEventDate',
-			'recordNumber', 'locality', 'locationRemarks', 'minimumElevationInMeters', 'maximumElevationInMeters', 'verbatimElevation',
-			'decimalLatitude', 'decimalLongitude', 'geodeticDatum', 'coordinateUncertaintyInMeters', 'footprintWKT',
-			'verbatimCoordinates', 'georeferenceRemarks', 'georeferencedBy', 'georeferenceProtocol', 'georeferenceSources',
-			'georeferenceVerificationStatus', 'habitat'
+				'eventDate', 'eventDate2', 'month', 'day', 'startDayOfYear', 'endDayOfYear', 'verbatimEventDate',
+				'recordNumber', 'locality', 'locationRemarks', 'minimumElevationInMeters', 'maximumElevationInMeters', 'verbatimElevation',
+				'decimalLatitude', 'decimalLongitude', 'geodeticDatum', 'coordinateUncertaintyInMeters', 'footprintWKT',
+				'verbatimCoordinates', 'georeferenceRemarks', 'georeferencedBy', 'georeferenceProtocol', 'georeferenceSources',
+				'georeferenceVerificationStatus', 'habitat'
 		);
 
 		if(array_key_exists('acceptedNameUsage', $_REQUEST)) {

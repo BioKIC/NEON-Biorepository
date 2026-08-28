@@ -9,9 +9,10 @@ include_once($SERVER_ROOT.'/classes/ImageLibrarySearch.php');
 $imgLibManager = new ImageLibrarySearch();
 $imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
 //end neon edit
-if ($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/list.' . $LANG_TAG . '.php'))
-	include_once($SERVER_ROOT . '/content/lang/collections/list.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/collections/list.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('collections/list');
+
 header("Content-Type: text/html; charset=" . $CHARSET);
 
 $taxonFilter = array_key_exists('taxonfilter', $_REQUEST) ? filter_var($_REQUEST['taxonfilter'], FILTER_SANITIZE_NUMBER_INT) : 0;
@@ -30,6 +31,12 @@ if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
 }
 
 $_SESSION['datasetid'] = filter_var($datasetid, FILTER_SANITIZE_NUMBER_INT);
+
+//NEON edit
+include_once($SERVER_ROOT.'/classes/ImageLibrarySearch.php');
+$imgLibManager = new ImageLibrarySearch();
+$imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
+//end NEON edit
 
 $collManager = new OccurrenceListManager();
 $searchVar = $collManager->getQueryTermStr();
@@ -134,13 +141,7 @@ $_SESSION['citationvar'] = $searchVar;
 		let urlQueryStr = "<?php if ($searchVar) echo $searchVar . '&page=' . $pageNumber; ?>";
 
 		$(document).ready(function() {
-			<?php
-			if ($searchVar) {
-			?>
-				sessionStorage.querystr = "<?php echo $searchVar; ?>";
-			<?php
-			}
-			?>
+			setSessionQueryStr();
 
 			$('#tabs').tabs({
 				active: <?= $tabIndex; ?>,
@@ -184,6 +185,10 @@ $_SESSION['citationvar'] = $searchVar;
 	<script src="../js/symb/shared.js?ver=1" type="text/javascript"></script>
 </head>
 <body>
+	<div id="all_collections_parent_container" data-config='<?= json_encode([
+		'CURRENT_URL' => $_SERVER['REQUEST_URI'],
+	]) ?>'></div>
+	<div id="service-container" data-search-var="<?= $searchVar; ?>"></div>
 	<?php
 	$displayLeftMenu = (isset($collections_listMenu) ? $collections_listMenu : false);
 	include($SERVER_ROOT . '/includes/header.php');
@@ -251,20 +256,15 @@ $_SESSION['citationvar'] = $searchVar;
 					<div style="display:flex; justify-content: flex-end; margin-top:16px;"> <!--buttons div-->
 						<?php
 						if ($SYMB_UID) {
-						?>
-							<span style="margin-right: 8px">
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" onclick="displayDatasetTools()" type="button">
-									<span class="MuiButton-label" style="font-size: 0.55rem;">
-										<i class="fa-solid fa-table-cells-large" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
-										Dataset Management
-										<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-											<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
-										</span>
-									</span>
-									<span class="MuiTouchRipple-root"></span>
+							?>
+							<span>
+								<button class="icon-button" onclick="displayDatasetTools()" aria-label="<?= $LANG['DATASET_MANAGEMENT'] ?>" title="<?= $LANG['DATASET_MANAGEMENT'] ?>">
+									<svg style="width:1.3em;height:1.3em;" alt="<?php echo $LANG['IMG_DATASET_MANAGEMENT']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
+										<path d="M280-280h160v-160H280v160Zm240 0h160v-160H520v160ZM280-520h160v-160H280v160Zm240 0h160v-160H520v160ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z" />
+									</svg>
 								</button>
 							</span>
-						<?php
+							<?php
 						}
 						?>
 						<span style="margin-right: 8px">
@@ -316,13 +316,47 @@ $_SESSION['citationvar'] = $searchVar;
 								<input name="dltype" type="hidden" value="specimen" />
 							</form>
 						</span>
-<!--						<span>
-							<button class="icon-button" onclick="copyUrl()" aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
+						<span>
+							<button class="icon-button" onclick="copyUrl('<?= htmlspecialchars($comingFrom, ENT_QUOTES, 'UTF-8'); ?>')" aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
 								<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_COPY']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
 									<path d="M440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm200 160v-80h160q50 0 85-35t35-85q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480q0 83-58.5 141.5T680-280H520Z" />
 								</svg>
 							</button>
-						</span>-->
+						</span>
+					</div>
+					<div style="margin:5px;">
+						<?php
+						$collSearchStr = $collManager->getCollectionSearchStr();
+						if(!empty($LANG[$collSearchStr])) $collSearchStr = $LANG[$collSearchStr];
+						if (strlen($collSearchStr) > 100) {
+							$collSearchArr = explode('; ', $collSearchStr);
+							$collSearchStr = '';
+							$cnt = 0;
+							while ($collElem = array_shift($collSearchArr)) {
+								$collSearchStr .= $collElem . '; ';
+								if ($cnt == 10 && $collSearchArr) {
+									$collSearchStr = trim($collSearchStr, '; ') . '<span class="inst-span">... (<a href="#" onclick="$(\'.inst-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="inst-span" style="display:none">; ';
+								}
+								$cnt++;
+							}
+							if ($cnt > 11) $collSearchStr .= '</span>';
+						}
+						//neon edit
+						echo '<div><b>Sample Type(s):</b> ' . $collSearchStr . '</div>';
+						//end neon edit
+						if ($taxaSearchStr = $collManager->getTaxaSearchStr()) {
+							if (strlen($taxaSearchStr) > 300) $taxaSearchStr = substr($taxaSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.taxa-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="taxa-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>';
+							echo '<div><b>' . $LANG['TAXA'] . ':</b> ' . $taxaSearchStr . '</div>';
+						}
+						if ($associationSearchStr = $collManager->getAssociationSearchStr()) {
+							if (strlen($associationSearchStr) > 300) $associationSearchStr = substr($associationSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.association-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="association-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>'; // @TODO wouldn't this truncate in either case?
+							echo '<div><b>' . $LANG['ASSOCIATIONS'] . ':</b> ' . $associationSearchStr . '</div>';
+						}
+						if ($localSearchStr = $collManager->getLocalSearchStr()) {
+							echo '<div><b>' . $LANG['SEARCH_CRITERIA'] . ':</b> ' . $localSearchStr . '</div>';
+							$_SESSION['datasetName'] = $localSearchStr;
+						}
+						?>
 					</div>
 					<div id="sort-div" style="display:<?= ($sortField1 ? 'block' : 'none') ?>">
 						<section style="margin: 2rem 0 1rem 1rem;">
@@ -346,6 +380,13 @@ $_SESSION['citationvar'] = $searchVar;
 												'o.county' => $LANG['COUNTY'],
 												'o.minimumElevationInMeters' => $LANG['ELEVATION']
 											);
+											if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
+												$sortFields = array_merge($sortFields, [
+													'paleo.lateInterval' => $LANG['LATE_INT'],
+													'paleo.earlyInterval' => $LANG['EARLY_INT'],
+													'paleo.formation' => $LANG['FORMATION']
+												]);
+											}
 											foreach ($sortFields as $k => $v) {
 												echo '<option value="' . $k . '" ' . ($k == $sortField1 ? 'SELECTED' : '') . '>' . $v . '</option>';
 											}
@@ -473,9 +514,7 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									if (isset($fieldArr['media']) && isset($fieldArr['media']['thumbnailurl'])) {
 										echo '<div style="float:right;margin:5px 25px;">';
-										// neon edit
-										echo '<a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
-										// end edit
+										echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
 										echo '<img src="' . $fieldArr['media']['thumbnailurl'] . '" style="height:70px" alt="' . $LANG['IMG_OCC'] . '"/></a></div>';
 									}
 									echo '<div style="margin:4px;">';
@@ -517,17 +556,30 @@ $_SESSION['citationvar'] = $searchVar;
 										if (isset($fieldArr['elev']) && $fieldArr['elev']) $localStr .= ', ' . $fieldArr['elev'] . 'm';
 									}
 									$localStr = trim($localStr, ' ,');
-									echo $localStr;
-									echo '</div><div style="margin:4px">';
-									//neon edit
-									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
-									//end edit
+									echo $localStr . '</div>';
+									if (!empty($fieldArr['earlyInterval']) || !empty($fieldArr['lateInterval']) || !empty($fieldArr['formation'])) {
+										echo '<div style="margin:4px;">';
+										echo $LANG['GEO_CONTEXT'] . ':' . ' ';
+										$earlyInt = $fieldArr['earlyInterval'] ?? '';
+										$lateInt = $fieldArr['lateInterval'] ?? '';
+										if ($earlyInt || $lateInt) {
+											if ($lateInt === '' || $earlyInt === $lateInt)
+												echo '<span style="margin-right:20px;">' . $earlyInt . '</span>';
+											else
+												echo '<span style="margin-right:20px;">' . trim("$earlyInt to $lateInt") . '</span>';
+										}
+										if (!empty($fieldArr['formation']))
+											echo '<span>' . $fieldArr['formation'] . '</span>';
+										echo '</div>';
+									}
+									echo '<div style="margin:4px">';
+									echo '<b><a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
 								}
 								?>
 							</table>
 						</form>
-					<?php
+						<?php
 						echo $paginationStr;
 						echo '<hr/>';
 					} else {

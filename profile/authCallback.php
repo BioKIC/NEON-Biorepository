@@ -4,9 +4,9 @@ include_once($SERVER_ROOT.'/classes/OpenIdProfileManager.php');
 include_once($SERVER_ROOT . '/config/auth_config.php');
 require_once($SERVER_ROOT . '/vendor/autoload.php');
 use Jumbojett\OpenIDConnectClient;
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/profile/authCallback.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/profile/authCallback.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/profile/authCallback.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 
+Language::load('profile/authCallback');
 
 $profManager = new OpenIdProfileManager();
 
@@ -23,7 +23,7 @@ if(isset($SHOULD_VERIFY_PEERS)){
 
 
 if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
-  
+
   try{
     $status = $oidc->authenticate();
     $claims = $oidc->getVerifiedClaims();
@@ -33,7 +33,7 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
     $_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' ' . $ex->getMessage() . ' <ERR/>';
     header('Location:' . $CLIENT_ROOT . '/profile/index.php');
     exit();
-  }  
+  }
   if($status){
     $sub = $oidc->requestUserInfo('sub');
     $_SESSION['AUTH_PROVIDER'] = $AUTH_PROVIDER;
@@ -79,16 +79,15 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
           $_SESSION['last_message'] = $LANG['ERROR'] . " <ERR/>";
           header('Location:'. $CLIENT_ROOT . '/profile/index.php');
         }
-        
+
       }
       else{
-        $_SESSION['last_message'] = $LANG['UNABLE_RETRIEVE_EMAIL'] . " <ERR/>";
-        header('Location:' . $CLIENT_ROOT . '/profile/index.php');
+      	$_SESSION['last_message'] = $LANG['UNABLE_RETRIEVE_EMAIL'] . " <ERR/>";
+      	header('Location:' . $CLIENT_ROOT . '/profile/index.php');
       }
     }
-  } else {
-    $_SESSION['last_message'] = $LANG['AUTHENTICATION_FAILED'] . " <ERR/>";
-    header('Location:' . $CLIENT_ROOT . '/profile/index.php');    
-  }
 
+  }
+  $_SESSION['last_message'] = $LANG['AUTHENTICATION_FAILED'] . " <ERR/>";
+  header('Location:' . $CLIENT_ROOT . '/profile/index.php');
 }
