@@ -25,7 +25,7 @@ try {
 	error_log($e->getMessage());
 }
 
-$creatorArray = Media::getCreatorArray();
+$creatorArray = Media::getCreatorArray(false);
 ?>
 <script type="text/javascript">
 	function verifyImgAddForm(f){
@@ -231,7 +231,7 @@ $creatorArray = Media::getCreatorArray();
 										}
 									}
 
-									echo '<img src="' . $displayUrl . '" style="width:250px;" title="'.$imgArr['caption'].'"
+									echo '<img src="' . $displayUrl . '" style="width:250px;overflow-wrap:anywhere;" title="'.$imgArr['caption'].'"
 									alt="Link of image '. $displayUrl .
 									'; Caption: ' . $imgArr['caption'] . 
 									'; Notes: ' . $imgArr['notes'] . 
@@ -297,7 +297,7 @@ $creatorArray = Media::getCreatorArray();
 								</div>
 								<div>
 									<b><?php echo $LANG['WEB_URL']; ?>: </b>
-									<a href="<?php echo $imgArr["url"]; ?>"  title="<?php echo $imgArr["url"]; ?>" target="_blank">
+									<a href="<?=  $imgUrl ?>"  title="<?=  $imgUrl ?>" target="_blank">
 										<?php
 										$urlDisplay = $imgArr["url"];
 										if($urlDisplay && strlen($urlDisplay) > 60) $urlDisplay = '...'.substr($urlDisplay,-60);

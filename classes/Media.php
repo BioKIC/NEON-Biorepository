@@ -283,6 +283,12 @@ class Media {
 
 		$misc = [
 			'pdf' => 'application/pdf',
+			'txt' => 'text/plain',
+			'csv' => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'application/vnd.msexcel', 'text/plain'],
+			'zip' => [
+				'application/zip', 'application/x-zip', 'application/x-zip-compressed', 'application/s-compressed', 'multipart/x-zip'],
+			'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+			'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel']
 		];
 
 		if($type === MediaType::Image) {
@@ -340,15 +346,15 @@ class Media {
 	}
 
 	/* Internal Function for creating a file array for media that doesn't need to be uploaded. Primarly used for media upload */
-	private static function parse_map_only_file(array $clean_post_arr): array {
+	private static function parse_map_only_file(array $post_arr): array {
 		// Map only files must have format and a url
-		if(!(isset($clean_post_arr['originalUrl']) || isset($clean_post_arr['url']))) {
+		if(!(isset($post_arr['originalUrl']) || isset($post_arr['url']))) {
 			return [];
 		}
 
-		$url = $clean_post_arr['originalUrl'] ?? $clean_post_arr['url'];
-		$file_type_mime = $clean_post_arr['format'] ?? '';
-		$media_upload_type = $clean_post_arr['mediaUploadType'] ?? '';
+		$url = $post_arr['originalUrl'] ?? $post_arr['url'];
+		$file_type_mime = $post_arr['format'] ?? '';
+		$media_upload_type = $post_arr['mediaUploadType'] ?? '';
 
 		if($media_upload_type) {
 			$media_upload_type = MediaType::tryFrom($media_upload_type);
@@ -393,12 +399,10 @@ class Media {
 			$conn = Database::connect('write');
 		}
 
-		$clean_post_arr = Sanitize::in($post_arr);
-
 		//Not Sure if I Need
-		$mapLargeImg = !($clean_post_arr['nolgimage']?? true);
+		$mapLargeImg = !($post_arr['nolgimage']?? true);
 
-		if(empty($clean_post_arr['tid']) && !empty($clean_post_arr['occid'])){
+		if(empty($post_arr['tid']) && !empty($post_arr['occid'])){
 			$sql = <<< SQL
 			SELECT tidinterpreted 
 			FROM omoccurrences 
@@ -408,72 +412,78 @@ class Media {
 			$taxon_result = QueryUtil::executeQuery(
 				$conn,
 				$sql,
-				[$clean_post_arr['occid']]
+				[$post_arr['occid']]
 			);
 
 			if($row = $taxon_result->fetch_object()) {
-				$clean_post_arr['tid'] = $row->tidinterpreted;
+				$post_arr['tid'] = $row->tidinterpreted;
 			}
 		}
 
-		if(!($clean_post_arr['copytoserver'] ?? false) && !($clean_post_arr['format'] ?? false)) {
-			$file = self::parse_map_only_file($clean_post_arr);
+		if(!($post_arr['copytoserver'] ?? false) && !($post_arr['format'] ?? false)) {
+			$file = self::parse_map_only_file($post_arr);
 
 			if( (!self::isValidFile($file) || !$file['type']) ) {
-				$file = UploadUtil::getRemoteFileInfo($clean_post_arr['originalUrl']);
+				$file = UploadUtil::getRemoteFileInfo($post_arr['originalUrl']);
 			}
 
-			$clean_post_arr['format'] = $file['type'] ?? null;
+			$post_arr['format'] = $file['type'] ?? null;
 
-			if(!isset($clean_post_arr['sourceIdentifier'])) {
-				$clean_post_arr['sourceIdentifier'] = 'filename: ' . $file['name'];
+			if(!isset($post_arr['sourceIdentifier'])) {
+				$post_arr['sourceIdentifier'] = 'filename: ' . $file['name'];
 			}
 		}
 
 		// Converts Deprecated mimes to proper mime type
-		if($real_mime = UploadUtil::DEPRECATED_MIME_CONVERSION[$clean_post_arr['format']] ?? false) {
-			$clean_post_arr['format'] = $real_mime;
+		if($real_mime = UploadUtil::DEPRECATED_MIME_CONVERSION[$post_arr['format']] ?? false) {
+			$post_arr['format'] = $real_mime;
 		}
 
-		if(!self::getAllowedMime($clean_post_arr['format'])) {
-			throw new MediaException(MediaException::FileTypeNotAllowed, ' ' . $clean_post_arr['format']);
+		if(!self::getAllowedMime($post_arr['format'])) {
+			throw new MediaException(MediaException::FileTypeNotAllowed, ' ' . $post_arr['format']);
 		}
 
 		$keyValuePairs = [
-			"tid" => $clean_post_arr["tid"] ?? null,
-			"occid" => $clean_post_arr["occid"] ?? null,
-			"url" => $clean_post_arr['weburl'] ?? $clean_post_arr['url'] ?? null,
-			"thumbnailUrl" => $clean_post_arr["thumbnailUrl"] ?? null,
+			"tid" => $post_arr["tid"] ?? null,
+			"occid" => $post_arr["occid"] ?? null,
+			"url" => $post_arr['weburl'] ?? $post_arr['url'] ?? null,
+			"thumbnailUrl" => $post_arr["thumbnailUrl"] ?? null,
 			// Will get popluated below
-			"originalUrl" => $clean_post_arr['originalUrl'],
-			"archiveUrl" => $clean_post_arr["archiveUrl"] ?? null,// Only Occurrence import
+			"originalUrl" => $post_arr['originalUrl'],
+			"archiveUrl" => $post_arr["archiveUrl"] ?? null,// Only Occurrence import
 			// This is a very bad name that refers to source or downloaded url
-			"sourceUrl" => $clean_post_arr["sourceUrl"] ?? null,// TPImageEditorManager / Occurrence import
-			"referenceUrl" => $clean_post_arr["referenceUrl"] ?? null,// check keys again might not be one,
-			"creator" => $clean_post_arr["creator"] ?? null,
-			"creatorUid" => OccurrenceUtil::verifyUser($clean_post_arr["creatorUid"] ?? null, $conn),
-			"format" =>  $clean_post_arr['format'],
-			"caption" => $clean_post_arr["caption"] ?? null,
-			"owner" => $clean_post_arr["owner"] ?? null,
-			"locality" => $clean_post_arr["locality"] ?? null,
-			"anatomy" => $clean_post_arr["anatomy"] ?? null,
-			"notes" => $clean_post_arr["notes"] ?? null,
-			"username" => Sanitize::in($GLOBALS['USERNAME']),
-			// check if its is_numeric?
-			"sortOccurrence" => $clean_post_arr['sortOccurrence'] ?? null,
-			"sourceIdentifier" => $clean_post_arr['sourceIdentifier'] ?? null,
-			"rights" => $clean_post_arr['rights'] ?? null,
-			"accessRights" => $clean_post_arr['accessRights'] ?? null,
-			"copyright" => $clean_post_arr['copyright'] ?? null,
-			"hashFunction" => $clean_post_arr['hashFunction'] ?? null,
-			"hashValue" => $clean_post_arr['hashValue'] ?? null,
-			"mediaMD5" => $clean_post_arr['mediaMD5'] ?? null,
-			"recordID" => $clean_post_arr['recordID'] ?? UuidFactory::getUuidV4(),
-			"mediaType" => self::getMediaTypeStrFromMime($clean_post_arr['format']),
+			"sourceUrl" => $post_arr["sourceUrl"] ?? null,// TPImageEditorManager / Occurrence import
+			"referenceUrl" => $post_arr["referenceUrl"] ?? null,// check keys again might not be one,
+			"creator" => $post_arr["creator"] ?? null,
+			"creatorUid" => OccurrenceUtil::verifyUser($post_arr["creatorUid"] ?? null, $conn),
+			"format" =>  $post_arr['format'],
+			"caption" => $post_arr["caption"] ?? null,
+			"owner" => $post_arr["owner"] ?? null,
+			"locality" => $post_arr["locality"] ?? null,
+			"anatomy" => $post_arr["anatomy"] ?? null,
+			"notes" => $post_arr["notes"] ?? null,
+			"username" => $GLOBALS['USERNAME'],
+			"sourceIdentifier" => $post_arr['sourceIdentifier'] ?? null,
+			"rights" => $post_arr['rights'] ?? null,
+			"accessRights" => $post_arr['accessRights'] ?? null,
+			"copyright" => $post_arr['copyright'] ?? null,
+			"hashFunction" => $post_arr['hashFunction'] ?? null,
+			"hashValue" => $post_arr['hashValue'] ?? null,
+			"mediaMD5" => $post_arr['mediaMD5'] ?? null,
+			"recordID" => $post_arr['recordID'] ?? UuidFactory::getUuidV4(),
+			"mediaType" => self::getMediaTypeStrFromMime($post_arr['format']),
 		];
 
-		$sort_sequence = $clean_post_arr['sortsequence'] ?? $clean_post_arr['sortSequence'] ?? false;
-		$keyValuePairs["sortsequence"] = is_numeric($sort_sequence)? $sort_sequence: 50;
+		//Will correctly match whether input is camel or lower case
+		$sortFields = array('sortOccurrence','sortSequence');
+		foreach($sortFields as $field){
+			$inputField = '';
+			if(isset($post_arr[$field])) $inputField = $field;
+			elseif(isset($post_arr[strtolower($field)])) $inputField = strtolower($field);
+			if($inputField && is_numeric($post_arr[$inputField])){
+				$keyValuePairs[$field] = $post_arr[$inputField];
+			}
+		}
 
 		$keys = implode(",", array_keys($keyValuePairs));
 		$parameters = str_repeat('?,', count($keyValuePairs) - 1) . '?';
@@ -486,7 +496,7 @@ class Media {
 		//Insert to other tables as needed like imagetags...
 
 		$media_id = $conn->insert_id;
-		self::update_tags($media_id, $clean_post_arr, $conn);
+		self::update_tags($media_id, $post_arr, $conn);
 
 		// Attach created id to metadata
 		$keyValuePairs['mediaID'] = $media_id;
@@ -578,11 +588,7 @@ class Media {
 					$width = $size[0];
 					$height = $size[1];
 
-
-					$storage->upload($file);
-					$createdFilepaths['originalUrl'] = $storage->getDirPath($file);
-
-					$urls = [
+					$urls = [ 
 						'thumbnailUrl' => [
 							'name' => self::addToFilename($file['name'], '_tn'),
 							'width' => $GLOBALS['IMG_TN_WIDTH']?? 200,
@@ -595,38 +601,48 @@ class Media {
 						]
 					];
 
+					self::insertMediaMetadata($media_metadata['mediaID'], 'originalUrl', $file['size'], md5_file($file['tmp_name']));
+
 					foreach($urls as $url => $data) {
 						if(!($media_metadata[$url] ?? false)) {
+							$tmp = tmpfile();
+							$temp_path = stream_get_meta_data($tmp)['uri'];
+
 							self::create_image(
-								$file['name'],
-								$data['name'],
-								$storage,
+								$file['tmp_name'],
+								$temp_path,
 								$data['width'],
 								$data['height']
 							);
+
+							//If file doesn't according to the upload strategy then upload it to the correct place. This will only run if the media storage is remote to the server
+							if(!$storage->file_exists($data['name'])) {
+								$storage->upload([
+									'name' => $data['name'],
+									'tmp_name' => $temp_path,
+									'type' => $file['type'],
+								]);
+							}
 
 							if($storage->file_exists($data['name'])) {
 								$metadata[$url] = $storage->getUrlPath($data['name']);
 								$createdFilepaths[$url] = $storage->getDirPath($data['name']);
 							}
 
+							self::insertMediaMetadata($media_metadata['mediaID'], $url, filesize($temp_path), md5_file($temp_path));
+
+							unlink($temp_path);
 						}
 					}
 
+					$createdFilepaths['originalUrl'] = $storage->getDirPath($file);
 					self::update_metadata($metadata, $media_metadata['mediaID'], $conn);
-				} elseif($media_type === MediaType::Audio) {
-					$storage->upload($file);
-					$createdFilepaths['originalUrl'] = $storage->getDirPath($file);
-				} elseif($media_type === MediaType::Misc) {
-					$storage->upload($file);
-					$createdFilepaths['originalUrl'] = $storage->getDirPath($file);
 				}
-			}
 
-			foreach($createdFilepaths as $field => $filepath) {
-				if(file_exists($filepath)) {
-					self::insertMediaMetadata($media_metadata['mediaID'], $field, filesize($filepath), md5_file($filepath));
-				}
+				// Upload and Cleanup temporary file
+				$storage->upload($file);
+				$createdFilepaths['originalUrl'] = $storage->getDirPath($file);
+				unlink($file['tmp_name']);
 			}
 
 			mysqli_commit($conn);
@@ -634,9 +650,7 @@ class Media {
 			mysqli_rollback($conn);
 
 			foreach($createdFilepaths as $field => $filepath) {
-				if(file_exists($filepath)) {
-					unlink($filepath);
-				}
+				$storage->remove($filepath);
 			}
 
 			array_push(self::$errors, $th->getMessage());
@@ -887,23 +901,15 @@ class Media {
 	 * @param int $new_width Maximum width for the new image if zero will box to height
 	 * @param int $new_height Maximum height for the new image if zero will box to width
 	 */
-	public static function create_image($src_file, $new_file, StorageStrategy $storage, $new_width, $new_height): void {
+	public static function create_image($src_path, $new_path, $new_width, $new_height): void {
 		global $USE_IMAGE_MAGICK;
 
 		if($USE_IMAGE_MAGICK) {
-			self::create_image_imagick($src_file, $new_file, $storage, $new_width, $new_height);
+			self::create_image_imagick($src_path, $new_path, $new_width, $new_height);
 		} elseif(extension_loaded('gd') && function_exists('gd_info')) {
-			self::create_image_gd($src_file, $new_file, $storage, $new_width, $new_height);
+			self::create_image_gd($src_path, $new_path, $new_width, $new_height);
 		} else {
 			throw new Exception('No image handler for image conversions');
-		}
-
-		//If file doesn't according to the upload strategy then upload it to the correct place. This will only run if the media storage is remote to the server
-		if(!$storage->file_exists($new_file)) {
-			$storage->upload([
-				'name' => $new_file,
-				'tmp_name' => $storage->getDirPath($new_file),
-			]);
 		}
 	}
 
@@ -914,19 +920,15 @@ class Media {
 	 * Most portals using imagick have ImageMagick installed on server and make system calls in order to use it.
 	 * At the time of making this function no know portals have the imagick pecl package installed but and implemenation was made as we are potentially heading in that direction.
 	 *
-	 * @param string $src_file Filename to image base
-	 * @param string $new_file Filename for newly resized image
-	 * @param StorageStrategy $storage Class that instructs where how how an image should be stored
+	 * @param string $src_file Filepath to image base
+	 * @param string $new_file Filepath for newly resized image
 	 * @param int $new_width Maximum width for the new image if zero will box to height
 	 * @param int $new_height Maximum height for the new image if zero will box to width
 	 */
 	private static function create_image_imagick(
-		string $src_file, string $new_file,
-		StorageStrategy $storage,
+		string $src_path, string $new_path,
 		int $new_width, int $new_height
 	): void {
-		$src_path = $storage->getDirPath($src_file);
-		$new_path = $storage->getDirPath($new_file);
 
 		if($new_height === 0 && $new_width === 0) {
 			throw new Exception('Must have width or height as non zero values');
@@ -946,7 +948,7 @@ class Media {
 			$qualityRating = self::DEFAULT_JPG_COMPRESSION;
 
 			if($new_width < 300) {
-				$ct = system('convert '. $src_path . ' -thumbnail ' . $new_width .' x ' . ($new_width * 1.5).' '.$new_path);
+				$ct = system('convert '. $src_path . ' -thumbnail ' . $new_width .'x' . ($new_width * 1.5).' '.$new_path);
 			} else {
 				$ct = system('convert '. $src_path . ' -resize ' . $new_width.'x' . ($new_width * 1.5) . ($qualityRating?' -quality '.$qualityRating:'').' '.$new_path);
 			}
@@ -965,18 +967,13 @@ class Media {
 	 *
 	 * @param string $src_file Filename to image base
 	 * @param string $new_file Filename for newly resized image
-	 * @param StorageStrategy $storage Class that instructs where how how an image should be stored
 	 * @param int $new_width Maximum width for the new image if zero will box to height
 	 * @param int $new_height Maximum height for the new image if zero will box to width
 	 */
 	private static function create_image_gd(
-		string $src_file, string $new_file,
-		StorageStrategy $storage,
+		string $src_path, string $new_path,
 		int $new_width, int $new_height
 	): void {
-
-		$src_path = $storage->getDirPath($src_file);
-		$new_path = $storage->getDirPath($new_file);
 
 		if($new_width === 0 && $new_height === 0) {
 			throw new Exception('Must have width or height as non zero values');
@@ -989,7 +986,7 @@ class Media {
 		$mime_type = $size['mime'];
 
 		if(!self::enough_memory_gd($size[0], $size[1])) {
-			throw new MediaException(MediaException::NotEnoughMemoryImage, ': ' . $new_file);
+			throw new MediaException(MediaException::NotEnoughMemoryImage, ': ' . $new_path);
 		}
 
 		$orig_width = $width;
@@ -1167,22 +1164,12 @@ class Media {
 
 			//Unlink all files
 			if($remove_files) {
-				$root_url = self::getMediaRootUrl();
-				$root_path = self::getMediaRootPath();
+				$storage = StorageFactory::make();
+
 				foreach($media_urls as $url) {
-					if($url && $root_url) {
-						if(strpos($url, $root_url) === 0){		//Only images residing on local server can be deleted
-							//Convert url to a local path
-							$path = $root_path . substr($url, strlen($root_url));
-							if(file_exists($path)){
-								if(is_writable($path)) {
-									if(!unlink($path)) {
-										error_log("WARNING: File (path: " . $path . ") failed to delete from server");
-									}
-								} else{
-									throw new MediaException(MediaException::FilepathNotWritable, $path);
-								}
-							}
+					if($url && $storage->file_exists($url)) {
+						if(!$storage->remove($url)) {
+							error_log("WARNING: File (path: " . $url . ") failed to delete from server");
 						}
 					}
 				}
@@ -1351,12 +1338,17 @@ class Media {
 	/**
 	 * @return array<string>
 	 */
-	public static function getCreatorArray(): array {
+	public static function getCreatorArray(bool $with_media = true): array {
 		$sql = <<< SQL
-		SELECT u.uid, CONCAT_WS(', ',u.lastname,u.firstname) AS fullname 
+		SELECT DISTINCT u.uid, CONCAT_WS(', ',u.lastname,u.firstname) AS fullname
 		FROM users u 
-		ORDER BY u.lastname, u.firstname 
 		SQL;
+
+		if($with_media) {
+			$sql .= ' LEFT JOIN media m on u.uid = m.creatorUid WHERE m.creatorUid IS NOT NULL';
+		}
+
+		$sql .= ' ORDER BY u.lastname, u.firstname';
 
 		$result = QueryUtil::executeQuery(Database::connect('readonly'), $sql);
 		$creators = array();

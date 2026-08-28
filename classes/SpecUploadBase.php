@@ -353,7 +353,7 @@ class SpecUploadBase extends SpecUpload{
 			'errorradius'=>'coordinateuncertaintyradius','publicpositionalaccuracy'=>'coordinateuncertaintyinmeters','errorradiusunits'=>'coordinateuncertaintyunits','errorradiusunit'=>'coordinateuncertaintyunits',
 			'datum'=>'geodeticdatum','utmzone'=>'utmzoning','township'=>'trstownship','range'=>'trsrange','section'=>'trssection','georeferencingsource'=>'georeferencesources','georefremarks'=>'georeferenceremarks',
 			'elevationmeters'=>'minimumelevationinmeters','minelevationm'=>'minimumelevationinmeters','maxelevationm'=>'maximumelevationinmeters','verbatimelev'=>'verbatimelevation',
-			'field:associatedspecies'=>'associatedtaxa','associatedspecies'=>'associatedtaxa','assoctaxa'=>'associatedtaxa','specimennotes'=>'occurrenceremarks','notes'=>'occurrenceremarks',
+			'field:associatedspecies'=>'associatedtaxa','associatedspecies'=>'associatedtaxa','assoctaxa'=>'associatedtaxa','specimennotes'=>'occurrenceremarks','notes'=>'occurrenceremarks', 'remarks'=>'occurrenceRemarks',
 			'generalnotes'=>'occurrenceremarks','plantdescription'=>'verbatimattributes','description'=>'verbatimattributes','specimendescription'=>'verbatimattributes',
 			'phenology'=>'reproductivecondition','field:habitat'=>'habitat','habitatdescription'=>'habitat','sitedeschabitat'=>'habitat','captivecultivated'=>'cultivationstatus',
 			'ometid'=>'exsiccatiidentifier','exsiccataeidentifier'=>'exsiccatiidentifier','exsnumber'=>'exsiccatinumber','exsiccataenumber'=>'exsiccatinumber',
@@ -378,7 +378,7 @@ class SpecUploadBase extends SpecUpload{
 			foreach($msArr as $term){
 				$term = strtolower($term);
 				$baseTerm = substr($term,15);
-				if($baseTerm != 'individualcount' && $baseTerm != 'disposition' && $baseTerm != 'catalognumber') $translationMap[$baseTerm] = $term;
+				if($baseTerm != 'individualcount' && $baseTerm != 'disposition' && $baseTerm != 'catalognumber' && $baseTerm != 'remarks') $translationMap[$baseTerm] = $term;
 			}
 		}
 		if($mode == 'ident'){
@@ -742,7 +742,10 @@ class SpecUploadBase extends SpecUpload{
 		$sql = 'UPDATE uploadspectemp SET family = sciname WHERE (family IS NULL) AND (sciname LIKE "%aceae" OR sciname LIKE "%idae")';
 		$this->conn->query($sql);
 
-		$sql = 'UPDATE uploadspectemp SET sciname = family WHERE (family IS NOT NULL) AND (sciname IS NULL) ';
+		$sql = 'UPDATE uploadspectemp SET sciname = TRIM(CONCAT_WS(" ", genus, specificEpithet, taxonRank, infraSpecificEpithet)) WHERE sciname IS NULL AND genus IS NOT NULL';
+		$this->conn->query($sql);
+
+		$sql = 'UPDATE uploadspectemp SET sciname = family WHERE sciname IS NULL AND family IS NOT NULL';
 		$this->conn->query($sql);
 
 		#Updating records with null author

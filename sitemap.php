@@ -61,7 +61,7 @@ if(!$schemaVersion){
 				<li><?= $LANG['DATA_PUBLISHING'] ?></li>
 				<li class="nested-li"><a href="collections/datasets/rsshandler.php" target="_blank"><?= $LANG['COLLECTIONS_RSS'] ?></a></li>
 				<li class="nested-li"><a href="collections/datasets/datapublisher.php"><?= $LANG['DARWINCORE'] ?></a> - <?= $LANG['PUBDATA'] ?></li>
-				<li style="margin-left:15px;"><a href="<?= $CLIENT_ROOT ?>/content/dwca/rss.xml" target="_blank"><?= $LANG['RSS'] ?></a></li>
+				<li class="nested-li"><a href="<?= $CLIENT_ROOT ?>/content/dwca/rss.xml" target="_blank"><?= $LANG['RSS'] ?></a></li>
 				<!--neon edit-->
 				<!--<li><a href="collections/misc/protectedspecies.php"><?= $LANG['PROTECTED_SPECIES'] ?></a> - <?= $LANG['LISTOFTAXA'] ?></li>-->
 				<!--end neon edit-->
@@ -152,11 +152,7 @@ if(!$schemaVersion){
 				if($SYMB_UID){
 					if($IS_ADMIN){
 						?>
-						<h2 class="subheader">
-							<span>
-								<?= $LANG['ADMIN'] ?>
-							</span>
-						</h2>
+						<h2 class="subheader"><span><?= $LANG['ADMIN_MENU']; ?></span></h2>
 						<ul>
 							<li>
 								<a href="profile/usermanagement.php"><?= $LANG['USERPERM'] ?></a>
@@ -221,6 +217,7 @@ if(!$schemaVersion){
 							<!--end neon edit-->
 						</ul>
 						<?php
+						include('profile/adminmenu.php');
 					}
 					//neon edit
 					//if($KEY_MOD_IS_ACTIVE || array_key_exists("KeyAdmin",$USER_RIGHTS)){
