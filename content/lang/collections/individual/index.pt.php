@@ -23,6 +23,10 @@ $LANG['ASSOCIATIONS'] = 'Associações';
 $LANG['CATALOG_NUMBER'] = 'Catálogo #';
 $LANG['OCCURRENCE_ID'] = 'ID da ocorrência';
 $LANG['OTHER_CATALOG_NUMBERS'] = 'Catálogo Secundário #';
+// start NEON customization
+$LANG['ARCHIVE_GUID'] = 'N° de Catalogue (archiveGUID)';
+$LANG['ASSOCIATIONS'] = 'Associações';
+// end NEON customization
 $LANG['TAXON'] = 'Táxon';
 $LANG['ID_PROTECTED'] = 'identificação protegida';
 $LANG['ID_QUALIFIER'] = 'Qualificador de identificação';

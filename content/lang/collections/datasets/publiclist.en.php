@@ -5,6 +5,6 @@ Language: English
 ------------------
 */
 
-$LANG['PUB_DAT_LIST'] = 'Public Datasets List'; 
+$LANG['PUB_DAT_LIST'] = 'Published Sample Research Datasets';
 
 ?>

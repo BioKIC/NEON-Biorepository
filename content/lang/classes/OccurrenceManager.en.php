@@ -20,6 +20,9 @@ $LANG['MATERIAL_SAMPLE'] = 'Material Sample';
 $LANG['IS_TYPE'] = 'is type';
 $LANG['HAS_IMAGES'] = 'has images';
 $LANG['HAS_GENETIC_DATA'] = 'has genetic data';
+// START NEON customization
+$LANG['AVAILABLE'] = 'is available for loan';
+// END NEON customization
 $LANG['HAS_COORDINATES'] = 'has coordinates';
 $LANG['EXCLUDE_CULTIVATED'] = 'excluding cultivated/captive occurrences';
 $LANG['INCLUDE_CULTIVATED'] = 'includes cultivated/captive occurrences';

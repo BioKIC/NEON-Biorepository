@@ -53,6 +53,7 @@ if($collid && $isEditor){
 						echo '<a href="' . htmlspecialchars($valueArr['url'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank">' . htmlspecialchars($valueArr['url'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a>';
 						echo '<a href="#" onclick="editLink('.$key.');return false"><img src="../../images/edit.png" style="width:1.2em" /></a>';
 						echo '<a href="#" onclick="deleteLink('.$key.');return false"><img src="../../images/del.png" style="width:1.2em" /></a>';
+						
 						foreach($valueArr['title'] as $langCode => $titleValue){
 							$langStr = $langCode;
 							if($langCode == 'en') $langStr = (isset($LANG['ENGLISH'])?$LANG['ENGLISH']:'English');
@@ -85,6 +86,7 @@ if($collid && $isEditor){
 						<span class="field-label">URL:</span>
 						<span class="field-elem"><input name="url" type="text" style="width:600px;" /></span>
 					</div>
+					
 					<?php
 					foreach($langArr as $langCode){
 						$langStr = $langCode;
@@ -289,6 +291,7 @@ if($collid && $isEditor){
 			var f = document.linkForm;
 			clearForm();
 			f.url.value = resourceJSON[linkIndex].url;
+			
 			for(var i = 0; i < langArr.length; i++) {
 				try {
 					var titleValue = resourceJSON[linkIndex].title[langArr[i]];

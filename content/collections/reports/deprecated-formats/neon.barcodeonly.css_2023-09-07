@@ -1,0 +1,30 @@
+/***
+ * NEON Barcode-only Custom Label Styles
+ * Author: Ed Gilbert
+ * Version: Aug 2023
+ ***/
+.label-bottom {
+  display: none;
+}
+
+.cn-barcode {
+  width: 2cm;
+}
+
+.cn-barcode img {
+  width: 4cm;
+}
+
+.label {
+}
+
+.label-header {
+}
+
+.label-blocks {
+}
+
+.other-catalog-numbers {
+  font-size: 9pt;
+}
+

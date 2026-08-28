@@ -23,7 +23,7 @@ if(isset($SHOULD_VERIFY_PEERS)){
 
 
 if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
-  
+
   try{
     $status = $oidc->authenticate();
     $claims = $oidc->getVerifiedClaims();
@@ -33,7 +33,7 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
     $_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' ' . $ex->getMessage() . ' <ERR/>';
     header('Location:' . $CLIENT_ROOT . '/profile/index.php');
     exit();
-  }  
+  }
   if($status){
     $sub = $oidc->requestUserInfo('sub');
     $_SESSION['AUTH_PROVIDER'] = $AUTH_PROVIDER;
@@ -44,13 +44,16 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
       if($_SESSION['refurl']){
         header("Location:" . $_SESSION['refurl']);
         unset($_SESSION['refurl']);
+      } else {
+        header("Location: " . $CLIENT_ROOT . '/index.php');
+        unset($_SESSION['refurl']);
       }
     }
     else {
       if ($email = $oidc->requestUserInfo('email')){
         // Authprovider returned a subscriber; however, user was not authenticated to local user account
         try{
-          $status = $profManager->linkLocalUserOidSub($email, $sub, $oidc->getProviderURL());
+          $status = $profManager->linkLocalUserOidSub($email, $sub, $oidc->getProviderURL(), $oidc->requestUserInfo('nickname'), $oidc->requestUserInfoByID($sub, 'user_metadata.first_name'), $oidc->requestUserInfoByID($sub, 'user_metadata.last_name'));
         }catch (Exception $ex){
           $_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' '  . $ex->getMessage();
           header('Location:' . $CLIENT_ROOT . '/profile/index.php');
@@ -61,6 +64,9 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
             $profManager->linkThirdPartySid($sid, session_id(), $_SERVER['REMOTE_ADDR']);
             if($_SESSION['refurl']){
               header("Location:" . $_SESSION['refurl']);
+              unset($_SESSION['refurl']);
+            } else {
+              header("Location: " . $CLIENT_ROOT . '/index.php');
               unset($_SESSION['refurl']);
             }
           }
@@ -73,11 +79,11 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
           $_SESSION['last_message'] = $LANG['ERROR'] . " <ERR/>";
           header('Location:'. $CLIENT_ROOT . '/profile/index.php');
         }
-        
+
       }
       else{
-        $_SESSION['last_message'] = $LANG['UNABLE_RETRIEVE_EMAIL'] . " <ERR/>";
-        header('Location:' . $CLIENT_ROOT . '/profile/index.php');
+      	$_SESSION['last_message'] = $LANG['UNABLE_RETRIEVE_EMAIL'] . " <ERR/>";
+      	header('Location:' . $CLIENT_ROOT . '/profile/index.php');
       }
     }
 

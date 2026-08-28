@@ -379,7 +379,7 @@ $traitArr = $indManager->getTraitArr();
 					if($genticArr) echo '<li><a href="#genetictab"><span>' . (isset($LANG['GENETIC']) ? $LANG['GENETIC'] : 'Genetic') . '</span></a></li>';
 					if($dupClusterArr) echo '<li><a href="#dupestab-div"><span>' . (isset($LANG['DUPLICATES']) ? $LANG['DUPLICATES'] : 'Duplicates') . '</span></a></li>';
 					?>
-					<li><a href="#commenttab"><span><?php echo ($commentArr?count($commentArr).' ':''); echo (isset($LANG['COMMENTS']) ? $LANG['COMMENTS'] : 'Comments'); ?></span></a></li>
+					<!--<li><a href="#commenttab"><span><?php echo ($commentArr?count($commentArr).' ':''); echo (isset($LANG['COMMENTS']) ? $LANG['COMMENTS'] : 'Comments'); ?></span></a></li>-->
 					<li>
 						<a href="linkedresources.php?occid=<?php echo $occid . '&tid=' . $occArr['tidinterpreted'] . '&clid=' . $clid . '&collid=' . $collid ?>">
 							<span><?php echo $LANG['LINKED_RESOURCES']; ?></span>
@@ -408,15 +408,26 @@ $traitArr = $indManager->getTraitArr();
 						<?php echo $collMetadata['collectionname'].' ('.$instCode.')'; ?>
 					</div>
 					<div  id="occur-div">
-						<?php
-						if(array_key_exists('loan',$occArr)){
-							?>
-							<div id="loan-div" title="<?php echo 'Loan #'.$occArr['loan']['identifier']; ?>">
-								<?php echo $LANG['ON_LOAN']; ?>
-								<?php echo $occArr['loan']['code']; ?>
-							</div>
+						<!-- NEON customization -->
+						<div id="availability-div">
 							<?php
-						}
+							if (in_array($occArr['collid'], array(44,74,79,80,82,83,95,97,115))){
+								echo "<strong><span style='color:green;'>Contact holding institution for information about loans</span></strong>";
+							}
+							elseif (array_key_exists('loan', $occArr)) {
+								echo "<strong><span style='color:red;'>Currently on loan to </span></strong>";
+								echo "<strong><span style='color:red;'>" . $occArr['loan']['code']. "</span></strong>";
+							}
+							elseif ($occArr['availability'] == 1 ) {
+								echo "<strong><span style='color:green;'>This sample is available for loan</span></strong>";
+							}
+							 else {
+								echo "<strong><span style='color:red;'>This sample is NOT available for loan</span></strong>";
+							}
+							?>
+						</div>
+						<!-- End of NEON customization -->
+						<?php
 						if(array_key_exists('relation',$occArr)){
 							?>
 								<fieldset id="association-div" class="top-light-margin">
@@ -432,8 +443,14 @@ $traitArr = $indManager->getTraitArr();
 										echo '<div>';
 										echo $assocArr['relationship'];
 										if($assocArr['subtype']) echo ' ('.$assocArr['subtype'].')';
-										echo ': ';
+										// Start NEON customization
+										$coll = $assocArr['collectionCode'];
+										echo ' (' . $coll . '): ';
 										$relID = $assocArr['objectID'];
+										if (strpos($relID, ':') !== false && substr($relID, strpos($relID, ':') + 1) === '') {
+											$relID .= $assocArr['occidassoc'];
+										}
+										// End NEON custom addition
 										$relUrl = $assocArr['resourceurl'];
 										if(!$relUrl && $assocArr['occidassoc']) $relUrl = $GLOBALS['CLIENT_ROOT'].'/collections/individual/index.php?occid='.$assocArr['occidassoc'];
 										if($relUrl) $relID = '<a href="' . $relUrl . '" target="_blank">' . ($relID ? $relID : $relUrl) . '</a>';
@@ -451,8 +468,41 @@ $traitArr = $indManager->getTraitArr();
 							?>
 							<div id="cat-div" class="bottom-breathing-room-rel-sm">
 								<?php
-								echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
-								echo $occArr['catalognumber'];
+								// Start NEON Customization
+								// Check if occurrenceid is an IGSN
+								if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['catalognumber'])) {
+									echo '<label>'.$LANG['ARCHIVE_GUID'].': </label>';
+									echo $occArr['catalognumber'];
+									echo '<span style="margin-left: 10px"><a href="https://doi.org/10.58052/' . $occArr['catalognumber'] . '" target="_blank">SESAR Record</a></span>';
+
+									// Get GBIF recordID using GBIF API
+									if($occArr['occurrenceid']){
+										if ($collMetadata['publishtogbif'] == 1) {
+											$jsonRaw = html_entity_decode($collMetadata['aggkeysstr']);
+											$aggkeys = json_decode($jsonRaw);
+
+											if (json_last_error() !== JSON_ERROR_NONE) {
+												echo 'JSON Error: ' . json_last_error_msg();
+												echo '<br>Cleaned string: ' . htmlspecialchars($jsonRaw);
+											} elseif (isset($aggkeys->datasetKey)) {
+												$datasetKey = $aggkeys->datasetKey;
+											}
+											$gbifApiUrl = "https://api.gbif.org/v1/occurrence/search?datasetKey={$datasetKey}&occurrenceID={$occArr['occurrenceid']}";
+											$response = file_get_contents($gbifApiUrl);
+											$data = json_decode($response, true);
+											if (isset($data['count']) && $data['count'] == 1 && isset($data['results'][0]['key'])) {
+												$gbifID = $data['results'][0]['key'];
+												$gbifUrl = "https://www.gbif.org/occurrence/$gbifID";
+												echo '<span style="margin-left: 10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
+											}
+										}
+									}
+								}
+								else{
+									echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
+									echo $occArr['catalognumber'];
+								}
+								// End NEON Customization
 								?>
 							</div>
 							<?php
@@ -475,16 +525,51 @@ $traitArr = $indManager->getTraitArr();
 							?>
 							<div id="assoccatnum-div" class="assoccatnum-div bottom-breathing-room-rel-sm">
 								<?php
-								foreach($occArr['othercatalognumbers'] as $catValueArr){
-									$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
-									if(!empty($catValueArr['name'])) $catTag = $catValueArr['name'];
-									echo '<div><label>'.$catTag.':</label> ' . $catValueArr['value'] . '</div>';
+								// Start NEON customization
+								$hideSampleID = false;
+								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
+									if (isset($catValueArr['name']) && $catValueArr['name'] === 'NEON sampleID Hash' && !$GLOBALS['IS_ADMIN']) {
+										$hideSampleID = true;
+										break;
+									}
 								}
+								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
+									$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
+									if (!empty($catValueArr['name'])) {
+										$catTag = $catValueArr['name'];
+									}
+									if ($catTag === 'NEON sampleID' && $hideSampleID) {
+										continue;
+									}
+
+									if ($catTag === 'NEON sampleID') {
+										$catTag = 'Sample Tag (sampleID)';
+									} elseif ($catTag === 'NEON sampleCode (barcode)') {
+										$catTag = 'Barcode (sampleCode)';
+									} elseif ($catTag === 'NEON sampleUUID') {
+										$catTag = 'SampleUuid';
+									}
+									echo '<div><label>' . htmlspecialchars($catTag) . ':</label> ' . htmlspecialchars($catValueArr['value']);
+									if ($IS_ADMIN && ($catTag == 'Barcode (sampleCode)' || $catTag == 'Sample Tag (sampleID)')) {
+										echo ' <span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $occid . '" target="_blank">Go to Manifest</a></span>';
+									}
+									echo '</div>';
+								}
+								//End NEON customization
 								?>
 							</div>
 							<?php
 						}
-						if($occArr['sciname']){
+						if($occArr['sciname'] ){
+							// NEON customization - show correct determinations for secured reader
+							foreach ($occArr['dets'] as $key => $det) {
+								if (!$isSecuredReader) {
+									if ($det['securitystatus'] == 1) {
+										unset($occArr['dets'][$key]);
+									}
+								}
+							}
+							// End NEON customization
 							?>
 							<div id="sciname-div" class="sciname-div bottom-breathing-room-rel-sm">
 								<?php
@@ -636,6 +721,13 @@ $traitArr = $indManager->getTraitArr();
 								?>
 							</div>
 							<?php
+						}
+						if($occArr['recordsecurity'] == 2){
+							echo '<div style="margin-left:10px"><span class="notice-span">'.$LANG['PROTECTED'].':<span> ';
+							if($occArr['securityreason'] && substr($occArr['securityreason'],0,1) != '<') echo $occArr['securityreason'];
+							else echo $LANG['PROTECTED_REASON'];
+							if($isSecuredReader) echo '<br/>'.(isset($LANG['ACCESS_GRANTED'])?$LANG['ACCESS_GRANTED']:'Current user has been granted access');
+							echo '</div>';
 						}
 						if($occArr['eventid']){
 							?>
@@ -1038,7 +1130,16 @@ $traitArr = $indManager->getTraitArr();
 									echo '<div id="thumbnail-div" class="thumbnail-div">';
 									echo Media::render_media_item($imgArr);
 									if($imgArr['caption']) echo '<div><i>'.$imgArr['caption'].'</i></div>';
-									if($imgArr['creator']) echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].'</div>';
+										// START NEON CUSTOMIZATION //
+										if($imgArr['creator']) {
+											if($imgArr['owner']){
+												echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].', '.$imgArr['owner'].'</div>';
+											}
+											else {
+												echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].'</div>';
+											}
+										}
+										// END NEON CUSTOMIZATION //									
 									if($imgArr['url'] && substr($thumbUrl,0,7)!='process' && $imgArr['url'] != $imgArr['lgurl']) echo '<div><a href="' . $imgArr['url'] . '" target="_blank">' . $LANG['OPEN_MEDIUM'] . '</a></div>';
 									if($imgArr['lgurl']) echo '<div><a href="' . $imgArr['lgurl'] . '" target="_blank">' . $LANG['OPEN_LARGE'] . '</a></div>';
 									if($imgArr['sourceurl']) echo '<div><a href="' . $imgArr['sourceurl'] . '" target="_blank">' . $LANG['OPEN_SOURCE'] . '</a></div>';
@@ -1085,11 +1186,19 @@ $traitArr = $indManager->getTraitArr();
 								<legend><?= $LANG['SOURCE_RECORD'] ?></legend>
 								<div>
 									<?php
+									// NEON customization
 									if(!empty($occArr['source']['sourceName'])){
+										if($occArr['source']['sourceName']=='NEON Sample Viewer'){
+										?>
+										<div>
+											<a href="<?= $occArr['source']['url'] ?>" target="_blank"><strong>NEON Sample Viewer</strong></a>
+										</div>
+										<?php
+										}
+										else {
 										?>
 										<div><label><?= $LANG['DATA_SOURCE'] ?>:</label> <?= $occArr['source']['sourceName'] ?></div>
 										<?php
-									}
 									if(!empty($occArr['source']['sourceID'])){
 										?>
 										<div><label><?= $LANG['SOURCE_ID'] ?>:</label> <?= $occArr['source']['sourceID'] ?></div>
@@ -1098,10 +1207,13 @@ $traitArr = $indManager->getTraitArr();
 									?>
 									<div>
 										<label><?= $LANG['SOURCE_URL'] ?>:</label>
-										<a href="<?= $occArr['source']['url'] ?>" target="_blank"><?=  $occArr['source']['url'] ?></a>
+										<a href="<?= $occArr['source']['url'] ?>" target="_blank"><?= $occArr['source']['url'] ?></a>
 									</div>
 									<div><label><?= $LANG['SOURCE_MANAGEMENT'] ?>:</label> <?= $sourceManagement ?></div>
 									<?php
+										}
+									}
+									// End NEON customization
 									$dateLastModified = $occArr['source']['refreshTimestamp'];
 									if(array_key_exists('fieldsModified', $_POST)){
 										//Input from refersh event
@@ -1151,23 +1263,29 @@ $traitArr = $indManager->getTraitArr();
 						?>
 						<div id="contact-div">
 							<?php
+							//neon edit
+							//if($collMetadata['contact']){
+							//	echo $LANG['ADDITIONAL_INFO'].': '.$collMetadata['contact'];
+							//	if($collMetadata['email']){
+							//		$otherCatNum = '';
+							//		if($occArr['othercatalognumbers']){
+							//			foreach($occArr['othercatalognumbers'] as $identArr){
+							//				$otherCatNum .= urlencode($identArr['value']) . ', ';
+							//			}
+							//			$otherCatNum = ' (' . trim($otherCatNum, ', ') . ')';
+							//		}
+							//		$emailSubject = $DEFAULT_TITLE . ' occurrence: ' . urlencode($occArr['catalognumber']) . $otherCatNum;
+							//		$refPath = GeneralUtil::getDomain().$CLIENT_ROOT.'/collections/individual/index.php?occid='.$occArr['occid'];
+							//		$emailBody = $LANG['SPECIMEN_REFERENCED'].': '.$refPath;
+							//		$emailRef = 'subject=' . rawurlencode($emailSubject) . '&cc=' . $ADMIN_EMAIL . '&body=' . rawurlencode($emailBody);
+							//		echo ' (<a href="mailto:' . $collMetadata['email'] . '?' . $emailRef . '">' . $collMetadata['email'] . '</a>)';
+							//	}
+							//}
 							if($collMetadata['contact']){
-								echo $LANG['ADDITIONAL_INFO'].': '.$collMetadata['contact'];
-								if($collMetadata['email']){
-									$otherCatNum = '';
-									if($occArr['othercatalognumbers']){
-										foreach($occArr['othercatalognumbers'] as $identArr){
-											$otherCatNum .= urlencode($identArr['value']) . ', ';
-										}
-										$otherCatNum = ' (' . trim($otherCatNum, ', ') . ')';
-									}
-									$emailSubject = $DEFAULT_TITLE . ' occurrence: ' . urlencode($occArr['catalognumber']) . $otherCatNum;
-									$refPath = GeneralUtil::getDomain().$CLIENT_ROOT.'/collections/individual/index.php?occid='.$occArr['occid'];
-									$emailBody = $LANG['SPECIMEN_REFERENCED'].': '.$refPath;
-									$emailRef = 'subject=' . rawurlencode($emailSubject) . '&cc=' . $ADMIN_EMAIL . '&body=' . rawurlencode($emailBody);
-									echo ' (<a href="mailto:' . $collMetadata['email'] . '?' . $emailRef . '">' . $collMetadata['email'] . '</a>)';
-								}
+								echo "For additional information about this specimen, please contact the ";
+								echo '<a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">NEON Biorepository</a>';
 							}
+							//end edit
 							?>
 						</div>
 						<?php
@@ -1295,81 +1413,81 @@ $traitArr = $indManager->getTraitArr();
 					<?php
 				}
 				?>
-				<div id="commenttab">
+				<!--<div id="commenttab">-->
 					<?php
-					$commentTabIndex = 1;
-					if($displayMap) $commentTabIndex++;
-					if($genticArr) $commentTabIndex++;
-					if($dupClusterArr) $commentTabIndex++;
-					if($commentArr){
-						echo '<div><label>'.count($commentArr).' '.$LANG['COMMENTS'].'</label></div>';
-						echo '<hr style="color:gray;"/>';
-						foreach($commentArr as $comId => $comArr){
+//					$commentTabIndex = 1;
+//					if($displayMap) $commentTabIndex++;
+//					if($genticArr) $commentTabIndex++;
+//					if($dupClusterArr) $commentTabIndex++;
+//					if($commentArr){
+//						echo '<div><label>'.count($commentArr).' '.$LANG['COMMENTS'].'</label></div>';
+//						echo '<hr style="color:gray;"/>';
+//						foreach($commentArr as $comId => $comArr){
 							?>
-							<div style="margin:15px;">
+							<!--<div style="margin:15px;">-->
 								<?php
-								echo '<div>';
-								echo '<b>'.$comArr['username'].'</b> <span style="color:gray;">posted '.$comArr['initialtimestamp'].'</span>';
-								echo '</div>';
-								if($comArr['reviewstatus'] == 0 || $comArr['reviewstatus'] == 2) echo '<div style="color:red;">'.$LANG['COMMENT_NOT_PUBLIC'].'</div>';
-								echo '<div style="margin:10px;">'.$comArr['comment'].'</div>';
-								if($comArr['reviewstatus']){
-									if($SYMB_UID){
-										echo '<div><a href="index.php?formsubmit=reportcomment&repcomid=' . $comId . '&occid=' . $occid . '&tabindex=' . $commentTabIndex . '">';
-										echo $LANG['REPORT'];
-										echo '</a></div>';
-									}
-								}
-								else{
-									echo '<div><a href="index.php?formsubmit=makecommentpublic&publiccomid=' . $comId . '&occid=' . $occid . '&tabindex=' . $commentTabIndex . '">';
-									echo $LANG['MAKE_COMMENT_PUBLIC'];
-									echo '</a></div>';
-								}
-								if($isEditor || ($SYMB_UID && $comArr['username'] == $PARAMS_ARR['un'])){
-									?>
-									<div style="margin:20px;">
-										<form name="delcommentform" action="index.php" method="post" onsubmit="return confirm('<?php echo $LANG['CONFIRM_DELETE']; ?>?')">
-											<input name="occid" type="hidden" value="<?php echo $occid; ?>" />
-											<input name="comid" type="hidden" value="<?php echo $comId; ?>" />
-											<input name="tabindex" type="hidden" value="<?php echo $commentTabIndex; ?>" />
-											<button class="button-danger" name="formsubmit" type="submit" value="deleteComment"><?php echo $LANG['DELETE_COMMENT']; ?></button>
-										</form>
-									</div>
+//								echo '<div>';
+//								echo '<b>'.$comArr['username'].'</b> <span style="color:gray;">posted '.$comArr['initialtimestamp'].'</span>';
+//								echo '</div>';
+//								if($comArr['reviewstatus'] == 0 || $comArr['reviewstatus'] == 2) echo '<div style="color:red;">'.$LANG['COMMENT_NOT_PUBLIC'].'</div>';
+//								echo '<div style="margin:10px;">'.$comArr['comment'].'</div>';
+//								if($comArr['reviewstatus']){
+//									if($SYMB_UID){
+//										echo '<div><a href="index.php?formsubmit=reportcomment&repcomid=' . $comId . '&occid=' . $occid . '&tabindex=' . $commentTabIndex . '">';
+//										echo $LANG['REPORT'];
+//										echo '</a></div>';
+//									}
+//								}
+//								else{
+//									echo '<div><a href="index.php?formsubmit=makecommentpublic&publiccomid=' . $comId . '&occid=' . $occid . '&tabindex=' . $commentTabIndex . '">';
+//									echo $LANG['MAKE_COMMENT_PUBLIC'];
+//									echo '</a></div>';
+//								}
+//								if($isEditor || ($SYMB_UID && $comArr['username'] == $PARAMS_ARR['un'])){
+//									?>
+									<!--<div style="margin:20px;">-->
+									<!--	<form name="delcommentform" action="index.php" method="post" onsubmit="return confirm('<?php echo $LANG['CONFIRM_DELETE']; ?>?')">-->
+									<!--		<input name="occid" type="hidden" value="<?php echo $occid; ?>" />-->
+									<!--		<input name="comid" type="hidden" value="<?php echo $comId; ?>" />-->
+									<!--		<input name="tabindex" type="hidden" value="<?php echo $commentTabIndex; ?>" />-->
+									<!--		<button class="button-danger" name="formsubmit" type="submit" value="deleteComment"><?php echo $LANG['DELETE_COMMENT']; ?></button>-->
+									<!--	</form>-->
+									<!--</div>-->
 									<?php
-								}
+//								}
 								?>
-							</div>
-							<hr style="color:gray;"/>
+							<!--</div>-->
+							<!--<hr style="color:gray;"/>-->
 							<?php
-						}
-					}
-					else echo '<div class="title2-div left-breathing-room-rel top-breathing-room-rel bottom-breathing-room" >'.$LANG['NO_COMMENTS'].'</div>';
-					if($SYMB_UID){
+//						}
+//					}
+//					else echo '<div class="title2-div left-breathing-room-rel top-breathing-room-rel bottom-breathing-room" >'.$LANG['NO_COMMENTS'].'</div>';
+//					if($SYMB_UID){
 						?>
-						<form class="left-breathing-room-rel" name="commentform" action="index.php" method="post" onsubmit="return verifyCommentForm(this);">
-							<label for="commentstr"><?php echo $LANG['NEW_COMMENT']; ?></label>
-							<textarea name="commentstr" id="commentstr" rows="8" style="width:98%;"></textarea>
-							<div class="bottom-breathing-room">
-								<input name="occid" type="hidden" value="<?php echo $occid; ?>" />
-								<input name="tabindex" type="hidden" value="<?php echo $commentTabIndex; ?>" />
-								<button type="submit" name="formsubmit" value="submitComment"><?php echo $LANG['SUBMIT_COMMENT']; ?></button>
-							</div>
-							<div>
-								<?php echo $LANG['MESSAGE_WARNING']; ?>
-							</div>
-						</form>
+						<!--<form class="left-breathing-room-rel" name="commentform" action="index.php" method="post" onsubmit="return verifyCommentForm(this);">-->
+						<!--	<label for="commentstr"><?php echo $LANG['NEW_COMMENT']; ?></label>-->
+						<!--	<textarea name="commentstr" id="commentstr" rows="8" style="width:98%;"></textarea>-->
+						<!--	<div class="bottom-breathing-room">-->
+						<!--		<input name="occid" type="hidden" value="<?php echo $occid; ?>" />-->
+						<!--		<input name="tabindex" type="hidden" value="<?php echo $commentTabIndex; ?>" />-->
+						<!--		<button type="submit" name="formsubmit" value="submitComment"><?php echo $LANG['SUBMIT_COMMENT']; ?></button>-->
+						<!--	</div>-->
+						<!--	<div>-->
+						<!--		<?php echo $LANG['MESSAGE_WARNING']; ?>-->
+						<!--	</div>-->
+						<!--</form>-->
 						<?php
-					}
-					else{
-						echo '<div style="margin:10px;">';
-						echo '<a href="../../profile/index.php?refurl=../collections/individual/index.php?tabindex=2&occid=' . $occid . '">';
-						echo $LANG['LOGIN'];
-						echo '</a> ';
-						echo $LANG['TO_LEAVE_COMMENT'];
-						echo '</div>';
-					}
+//					}
+//					else{
+//						echo '<div style="margin:10px;">';
+//						echo '<a href="../../profile/index.php?refurl=../collections/individual/index.php?tabindex=2&occid=' . $occid . '">';
+//						echo $LANG['LOGIN'];
+//						echo '</a> ';
+//						echo $LANG['TO_LEAVE_COMMENT'];
+//						echo '</div>';
+//					}
 					?>
-				</div>
+				<!--</div>-->
 				<?php
 				if($traitArr){
 					?>

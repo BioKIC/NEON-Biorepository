@@ -212,7 +212,7 @@ if($collMetadata['colltype'] == 'General Observations') $isGenObs = 1;
 					echo '</div>';
 				}
 				?>
-				<div style="margin:10px">
+				<div style="margin:20px">
 					*<?php echo (isset($LANG['ADMINS_INHERIT'])?$LANG['ADMINS_INHERIT']:'Administrators automatically inherit editing rights'); ?>
 				</div>
 			</section>
@@ -242,12 +242,12 @@ if($collMetadata['colltype'] == 'General Observations') $isGenObs = 1;
 						<?php
 					}
 					else{
-						echo '<div style="font-weight:bold;">';
+						echo '<div style="font-weight:bold;margin:20px;">';
 						echo (isset($LANG['NO_RARE_READERS'])?$LANG['NO_RARE_READERS']:'There are no Sensitive Species Reader permissions');
 						echo '</div>';
 					}
 					?>
-					<div style="margin:10px">
+					<div style="margin:20px">
 						*<?php echo (isset($LANG['ADMINS_EDITS_INHERIT'])?$LANG['ADMINS_EDITS_INHERIT']:'Administrators and editors automatically inherit protected species viewing rights'); ?>
 					</div>
 				</section>
@@ -257,7 +257,7 @@ if($collMetadata['colltype'] == 'General Observations') $isGenObs = 1;
 			?>
 			<section class="fieldset-like">
 				<h2><span><b><?php echo (isset($LANG['ADD_NEW_USER'])?$LANG['ADD_NEW_USER']:'Add a New Admin/Editor/Reader'); ?></b></span></h2>
-				<form name="addrights" action="collpermissions.php" method="post" onsubmit="return verifyAddRights(this)">
+				<form name="addrights" style="margin: 20px;" action="collpermissions.php" method="post" onsubmit="return verifyAddRights(this)">
 					<div>
 						<?php echo $LANG['ENTER_USER_NAME']; ?>:
 						<input id="userinput" type="text" style="width:400px;" aria-label="<?php echo $LANG['ENTER_USER_NAME'] ?>" />
@@ -291,7 +291,7 @@ if($collMetadata['colltype'] == 'General Observations') $isGenObs = 1;
 			if(!$isGenObs && $genObsArr){
 				?>
 				<section class="fieldset-like">
-					<h2><span><b><?php echo (isset($LANG['PERS_OBS_SPONSOR'])?$LANG['PERS_OBS_SPONSOR']:'Personal Observation Management Sponsorship'); ?></b></span></h2>					<div style="margin:10px">
+					<h2><span><b><?php echo (isset($LANG['PERS_OBS_SPONSOR'])?$LANG['PERS_OBS_SPONSOR']:'Personal Observation Management Sponsorship'); ?></b></span></h2>					<div style="margin:20px">
 					<?php echo (isset($LANG['SPONSOR_EXPLAIN'])?$LANG['SPONSOR_EXPLAIN']:'
 						Collection administrators listed above can sponsor users for Personal Observation Management.
 						This allows users to enter field data as observations that are linked directly to their user profile, print labels,

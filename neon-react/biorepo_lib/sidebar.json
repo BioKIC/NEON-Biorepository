@@ -1,0 +1,61 @@
+{
+  "publiclist.php": {
+    "sidebarTitle": "Impact",
+    "links": [
+        {
+          "name": "Observatory Blog",
+          "hash": "https://www.neonscience.org/impact/observatory-blog"
+        },
+        {
+          "name": "Case Studies",
+          "hash": "https://www.neonscience.org/impact/case-studies"
+        },
+        {
+          "name": "Spotlights",
+          "hash": "https://www.neonscience.org/impact/spotlights"
+        },
+        {
+          "name": "Papers & Publications",
+          "hash": "https://www.neonscience.org/impact/papers-publications"
+        },
+        {
+          "name": "Newsroom",
+          "hash": "https://www.neonscience.org/impact/newsroom"
+        }
+    ]
+  },
+  "default": {
+    "sidebarTitle": "Samples & Specimens",
+    "links": [
+        {
+          "name": "Biorepository Sample Portal at ASU",
+          "hash": "https://biorepo.neonscience.org/portal/neon/search/index.php",
+          "match": [
+                    "neon/search/index.php",
+                    "collections/list.php"
+                    ]
+        },
+        {
+          "name": "About Samples",
+          "hash": "https://www.neonscience.org/about-samples",
+          "match": [
+                    "collections/misc/browsecollprofiles.php",
+                    "collections/misc/neoncollprofiles.php"
+                    ]
+        },
+        {
+          "name": "Finding and Accessing Sample Data",
+          "hash": "https://www.neonscience.org/finding-and-accessing-sample-data",
+          "match": [
+            "projects/browsechecklists.php",
+            "neon/checklists/checklist.php"
+            ]
+        },
+        {
+          "name": "Requesting and Using Samples",
+          "hash": "https://www.neonscience.org/requesting-and-using-samples",
+          "match": "#"
+        }
+    ]
+  }
+}

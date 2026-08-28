@@ -1,0 +1,406 @@
+/******** NEON BASE STYLES *********/
+
+
+/* 
+Some styles copied from https://www.neonscience.org/
+
+Reorganized by Laura Rocha Prado
+Jan 2021
+*/
+
+
+/******* TOC ********/
+
+
+/*
+1. FONTS
+2. GENERAL
+3. TYPOGRAPHY
+4. HEADER
+5. FOOTER
+*/
+
+
+/******* 1. FONTS ********/
+
+@font-face {
+  font-family: 'Inter';
+  src: url(../neon/fonts/Inter-300.woff2) format('woff2'), url(../neon/fonts/Inter-300.woff) format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url(../neon/fonts/Inter-400.woff2) format('woff2'), url(../neon/fonts/Inter-400.woff) format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url(../neon/fonts/Inter-700.woff2) format('woff2'), url(../neon/fonts/Inter-700.woff) format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-feature-settings: "ss02" 1;
+}
+
+
+/******* 2. GENERAL ********/
+
+html:not([class^="Mui"]):not([class*=" Mui"]),
+input:not([class^="Mui"]):not([class*=" Mui"]) {
+  font-family: 'Inter', sans-serif;
+}
+
+
+/* * html {
+  font-size: 100%;
+} */
+
+footer:not([class^="Mui"]):not([class*=" Mui"]),
+header:not([class^="Mui"]):not([class*=" Mui"]),
+nav:not([class^="Mui"]):not([class*=" Mui"]) {
+  display: block;
+}
+
+
+/******* 3. TYPOGRAPHY ********/
+
+h1:not([class^="Mui"]):not([class*=" Mui"]) {
+  font-size: 1.7rem;
+  line-height: 1.1;
+  margin: 0;
+  font-weight: 400;
+}
+
+h2:not([class^="Mui"]):not([class*=" Mui"]) {
+  font-size: 1.4rem;
+  line-height: 1;
+  font-weight: normal;
+}
+
+h3:not([class^="Mui"]):not([class*=" Mui"]) {
+  font-size: 1.2rem;
+  line-height: 1;
+  font-weight: normal;
+}
+
+p:not([class^="Mui"]):not([class*=" Mui"]) {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 1em 0;
+  color: #565a5c;
+}
+
+a:not([class^="Mui"]):not([class*=" Mui"]):not([class^="ui-"]) {
+  color: #0073cf;
+  cursor: pointer;
+}
+
+p:not([class^="Mui"]):not([class*=" Mui"]) a:not([class^="Mui"]):not([class*=" Mui"]) {
+  text-decoration: underline;
+}
+
+li:not([class^="Mui"]):not([class*=" Mui"]):not([class^="ui-"]) {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #565a5c;
+}
+
+
+/******* 4. HEADER ********/
+
+
+/* Old styles */
+
+
+/* Breakpoint at 1200 for menu */
+
+
+/* TOP BAR (GLOBAL MENU) */
+
+.region-utility {
+  display: block;
+  position: fixed;
+  z-index: 2920;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  height: 37px;
+}
+
+.region-utility .block-title {
+  display: none;
+}
+
+.region-utility .nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  list-style: none;
+  height: 33px;
+  background-color: #002d74;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.region-utility .nav .nav-item,
+.region-utility #styleguide-header ul .nav-item,
+#styleguide-header .region-utility ul .nav-item {
+  display: inline-block;
+  margin: 0;
+}
+
+
+/* .region-utility .nav .nav-item:first-child .nav-link,.region-utility #styleguide-header ul .nav-item:first-child .nav-link,#styleguide-header .region-utility ul .nav-item:first-child .nav-link {
+  background-color: white;
+  color: #002d74;
+} */
+
+.region-utility .nav .nav-link,
+.region-utility #styleguide-header ul .nav-link,
+#styleguide-header .region-utility ul .nav-link {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-transform: uppercase;
+  font-weight: 800;
+  padding: 6px 1.5rem;
+  font-size: 0.9em;
+  letter-spacing: 1px;
+}
+
+.region-utility .nav .nav-link.active,
+.region-utility #styleguide-header ul .nav-link.active,
+#styleguide-header .region-utility ul .nav-link.active {
+  background-color: white;
+  color: #002d74;
+}
+
+@media (min-width: 375px) and (max-width: 1024px) {
+  .region-utility {
+    height: 31px;
+  }
+  .region-utility .nav {
+    justify-content: flex-start;
+    height: 28px;
+  }
+  .region-utility .nav .nav-link,
+  .region-utility #styleguide-header ul .nav-link,
+  #styleguide-header .region-utility ul .nav-link {
+    padding: 3px 1rem;
+    font-size: 0.8em;
+    letter-spacing: 0.5px;
+  }
+}
+
+@media (max-width: 374px) {
+  .region-utility .nav .nav-link,
+  .region-utility #styleguide-header ul .nav-link,
+  #styleguide-header .region-utility ul .nav-link {
+    padding: 3px 5px;
+    font-size: 0.8em;
+    letter-spacing: 0.5px;
+  }
+}
+
+
+/* END OF TOP BAR (GLOBAL MENU) */
+
+/* Medium screens */
+
+@media (min-width: 426px) and (max-width: 1024px) {
+  #header #branding .branding-link {
+    display: block;
+    background-image: url(../neon/images/neon-white-logo_2023.svg);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+  }
+  #header #branding .branding-link>img {
+    display: none;
+  }
+}
+
+
+/* Large screens */
+
+@media (min-width: 1025px) {
+  #header {
+    background: linear-gradient(to bottom, #006bcd 0%, #014089 100%);
+    border-top: 1px solid #004e9f;
+    border-bottom: none !important;
+    padding: 0;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin: 0;
+  }
+  #header .l--constrained>.header--home .branding-link,
+  #header .view-field-sites .view-empty p>.header--home .branding-link,
+  .view-field-sites .view-empty #header p>.header--home .branding-link,
+  #header .l--constrained>#branding .branding-link,
+  #header .view-field-sites .view-empty p>#branding .branding-link,
+  .view-field-sites .view-empty #header p>#branding .branding-link {
+    display: block;
+    width: 100%;
+    height: 50px;
+    cursor: default;
+  }
+  #header .l--constrained>#main-menu .depth--1,
+  #header .view-field-sites .view-empty p>#main-menu .depth--1,
+  .view-field-sites .view-empty #header p>#main-menu .depth--1 {
+    height: 67px;
+  }
+  #header #branding .branding-link {
+    display: block;
+    background-image: url(../neon/images/neon-white-logo_2023.svg);
+    /*background-image: url(/portal/images/layout/nsf-neon-logo.png);*/
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+  }
+  #header #branding .branding-link>img {
+    display: none;
+  }
+}
+
+@media (min-width: 1300px) {
+  #header .l--constrained>.header--home .branding-link,
+  #header .view-field-sites .view-empty p>.header--home .branding-link,
+  .view-field-sites .view-empty #header p>.header--home .branding-link,
+  #header .l--constrained>#branding .branding-link,
+  #header .view-field-sites .view-empty p>#branding .branding-link,
+  .view-field-sites .view-empty #header p>#branding .branding-link {
+    display: block;
+    width: 100%;
+    height: 70px;
+  }
+  #header .l--constrained>#main-menu .depth--1,
+  #header .view-field-sites .view-empty p>#main-menu .depth--1,
+  .view-field-sites .view-empty #header p>#main-menu .depth--1 {
+    height: 79px;
+  }
+}
+
+#main-header {
+  display: none;
+}
+
+#header {
+  z-index: 2900;
+  position: sticky;
+  top: 0;
+}
+
+
+/* Medium and Small screens */
+
+@media (max-width: 1024px) {
+  #header {
+    top: 0;
+    border-bottom: 1px solid rgba(208, 208, 208, 0.6);
+    box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.25);
+    background: linear-gradient(to bottom, #006bcd 0%, #014089 100%);
+  }
+  .front #header #branding .branding-link {
+    background-image: url(..neon/images/logo-mobile.svg);
+  }
+}
+
+@media (min-width: 426px) and (max-width: 1024px) {
+  #branding .branding-link {
+    display: block;
+    position: relative;
+    top: 1px;
+    width: 150px;
+    height: 50px;
+  }
+}
+
+
+/* Small screens */
+
+@media (max-width: 425px) {
+  #biorepo-header li {
+    display: block;
+  }
+  #branding .branding-link img {
+    display: block;
+    position: relative;
+    top: 1px;
+    width: 80%;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 426px) {
+  /*  #header {
+    top: 30px;
+  }*/
+  #branding .branding-link {
+    width: 115px;
+    height: 40px;
+  }
+  ul#biorepo-header h1 {
+    font-size: 1.8rem;
+    margin: 0 auto;
+    /* padding: 10px; */
+  }
+}
+
+
+/******* END OF HEADER ********/
+
+
+/******* 5. FOOTER ********/
+
+#main-footer {
+  display:  none;
+}
+
+/******* 5. NEON CLASSES ********/
+
+.link--button.link--arrow {
+    display: inline-block;
+    border: 1px solid #0073CF;
+    border-radius: 2px;
+    font-weight: bold;
+    line-height: 24px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #0073CF;
+    margin: 0 0 0 0;
+    -webkit-transition: all 0.25s;
+    -o-transition: all 0.25s;
+    transition: all 0.25s;
+    padding: 0.5625rem 1.125rem 0.5625rem 1.125rem;
+    font-size: 0.8125rem;
+}
+
+.align-right {
+    float:right;
+    margin: 0 0 1.875rem 3.75rem;
+    max-width: 45%;
+}
+
+figure figcaption,figure .field--name-field-caption {
+    margin: 0;
+    background: #F5F6F7;
+    border-radius: 0px 0px 6px 6px;
+    padding: 1.125rem 1.875rem;
+    font-size: 15px;
+    color: #565A5C;
+}

@@ -64,7 +64,11 @@ class OpenIdProfileManager extends ProfileManager
 	public function linkThirdPartySid($thirdparty_sid, $local_sid, $ip)
 	{
 		if (empty($thirdparty_sid)) return;
-		$sql = 'INSERT INTO usersthirdpartysessions(thirdparty_id, localsession_id, ipaddr) VALUES (?, ?, ?)';
+		//neon edit
+		$sql = 'INSERT INTO usersthirdpartysessions(thirdparty_id, localsession_id, ipaddr)
+        VALUES (?, ?, ?)
+        ON DUPLICATE KEY UPDATE thirdparty_id = thirdparty_id';
+		//end neon edit
 		if ($stmt = $this->conn->prepare($sql)) {
 			if ($stmt->bind_param('sss', $thirdparty_sid, $local_sid, $ip)) {
 				$stmt->execute();
@@ -75,7 +79,7 @@ class OpenIdProfileManager extends ProfileManager
 		}
 	}
 
-	public function linkLocalUserOidSub($email, $sub, $provider)
+	public function linkLocalUserOidSub($email, $sub, $provider, $user_id, $given_name, $family_name)
 	{
 		if ($email && $sub && $provider) {
 			$sql = 'SELECT u.uid, oid.subUuid, oid.provider from users u LEFT join usersthirdpartyauth oid ON u.uid = oid.uid 
@@ -86,10 +90,41 @@ class OpenIdProfileManager extends ProfileManager
 					$results = mysqli_stmt_get_result($stmt);
 					$stmt->close();
 				}
+				//neon edit
 				if ($results->num_rows < 1) {
-					//Local user does not exist
-					throw new Exception("User does not exist in symbiota database <ERR/>");
+				
+					// create local user
+					$sql = 'INSERT INTO users (email, firstname, lastname, username) VALUES (?,?,?,?)';
+					$this->resetConnection();
+				
+					if ($stmt = $this->conn->prepare($sql)) {
+						if ($family_name === null || $family_name === '') {
+								$given_name  = 'NEON';
+								$family_name = 'Account';
+							}
+						$stmt->bind_param('ssss', $email, $given_name, $family_name, $user_id);
+						$stmt->execute();
+						$newUid = $this->conn->insert_id;
+						$stmt->close();
+					} else {
+						throw new Exception("Failed to create local user");
+					}
+				
+					// link third party auth
+					$sql = 'INSERT INTO usersthirdpartyauth (uid, subUuid, provider) VALUES (?,?,?)';
+				
+					if ($stmt = $this->conn->prepare($sql)) {
+						$stmt->bind_param('iss', $newUid, $sub, $provider);
+						$stmt->execute();
+						$stmt->close();
+					} else {
+						throw new Exception("Failed to link third party auth");
+					}
+				
+					$this->uid = $newUid;
+					return true;
 				} else {
+					//end neon edit
 					if ($results->num_rows == 1) {
 						$row = $results->fetch_array(MYSQLI_ASSOC);
 						if (($row['provider'] == '' && $row['subUuid'] == '') || ($row['provider'] && $row['provider'] !== $provider)) {
@@ -142,20 +177,30 @@ class OpenIdProfileManager extends ProfileManager
 		return $localSessionID;
 	}
 
-	public function removeThirdPartySid($thirdparty_sid, $local_sid)
+	public function removeThirdPartySid($local_sid, $thirdparty_sid)
 	{
-		$sql = 'DELETE FROM usersthirdpartysessions WHERE thirdparty_id = ? AND localsession_id = ? LIMIT 1';
+		//$sql = 'DELETE FROM usersthirdpartysessions WHERE thirdparty_id = ? AND localsession_id = ? LIMIT 1';
+		//if ($stmt = $this->conn->prepare($sql)) {
+		//	if ($stmt->bind_param('ss', $thirdparty_sid, $local_sid)) {
+		//		$stmt->execute();
+		//		$stmt->close();
+		//	}
+		//}
+		//neon edit
+		$sql = 'DELETE FROM usersthirdpartysessions WHERE localsession_id = ? LIMIT 1';
+		$this->resetConnection();
 		if ($stmt = $this->conn->prepare($sql)) {
-			if ($stmt->bind_param('ss', $thirdparty_sid, $local_sid)) {
+			if ($stmt->bind_param('s', $local_sid)) {
 				$stmt->execute();
 				$stmt->close();
 			}
 		}
+		//end edit
 	}
 
 	public function forceLogout($targetSessionId, $thirdparty_sid)
 	{
-		if(!empty($thirdparty_sid)){
+		if(!empty($targetSessionId)){
 			$this->removeThirdPartySid($targetSessionId, $thirdparty_sid);
 		}		
 		session_write_close();
