@@ -341,6 +341,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
                         ?>
 						<legend>Import Samples For Request # <?php echo "Request #$requestID - $name - $title"; ?></legend>
 						<div class="formField-div">
+							<i>Select a CSV for import.</i><br>
 							<input name="importFile" type="file" onchange="verifyFileSize(this)" aria-label="Choose File" />
 						</div>
 						<div class="formField-div">

@@ -61,7 +61,6 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		$description = trim($_POST['inqdescription'] ?? '');
 		$howfound = $_POST['inqhowfound'] ?? '';
 		$dataproduced = trim($_POST['inqdata'] ?? '');
-		$existing = $_POST['inqexist'] ?? '';
 		$future = $_POST['inqfuture'] ?? '';
 		$new = $_POST['inqnew'] ?? '';
 		$additionalresearchers = [];
@@ -85,7 +84,6 @@ if($formSubmit == 'editInquiry' && $isEditor){
 	if (empty($description)) $missing[] = 'Description';
 	if (empty($howfound)) $missing[] = 'How Found Us';
 	if (empty($dataproduced)) $missing[] = 'Data Produced';
-	if (empty($existing)) $missing[] = 'Existing Samples';
 	if (empty($future)) $missing[] = 'Future Samples';
 	if (empty($new)) $missing[] = 'Generating Samples';
 	if (empty($additionalresearchers)) $missing[] = 'Additional Researchers';
@@ -111,7 +109,6 @@ if($formSubmit == 'editInquiry' && $isEditor){
 			$description,
 			$howfound,
 			$dataproduced,
-			$existing,
 			$future,
 			$new,
 			$additionalresearchers,
@@ -202,7 +199,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		}
 	}
 	if (!empty($fulfillment) && empty($suaLink)) {
-		$errorMessage[] = 'A sample use agreement is required in order to fulfill a request.';
+		$errorMessage[] = 'A sample use agreement is required in order to fulfill a request. Put in NA for internal requests (or similar) that do not require an agreement.';
 	}	
 	if (!empty($followUpType) && $followUpType != 'none' && empty($assignee)) {
 		$errorMessage[] = 'Someone should be assigned to follow up.';
@@ -449,7 +446,7 @@ if(!$isEditor) {
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<strong><?php echo 'Primary Contact (will need NEON Biorepo account and ORCID)'; ?>:</strong>
+										<strong>Primary Contact</strong><br><i>Note: the primary contact must have an associated email and ORCID before receiving samples.</i><br>
 										<input type="text"
 											id="researcherSearch"
 											placeholder="Search researcher..."
@@ -473,7 +470,7 @@ if(!$isEditor) {
 									</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
-								<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong><br />
+								<strong>Additional Researchers (select all)</strong><br/><i>Choose none for rare cases in which there are no collaborators.</i><br>
 								<span>
 									<input type="text"
 										id="additionalResearcherSearch"
@@ -494,7 +491,7 @@ if(!$isEditor) {
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
 
-       										<label for="inqtitle"><strong><?php echo 'Inquiry Title'; ?>:</strong></label><br>
+       										<label for="inqtitle"><strong><?php echo 'Public Inquiry Title'; ?>:</strong></label><br>
 											<textarea name="inqtitle" id="inqtitle" style="width:800px; height:60px;"><?php echo $inquirydata['title']; ?></textarea>
    								 	</div>
 								</div>
@@ -634,14 +631,14 @@ if(!$isEditor) {
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqfundingsource"><strong><?php echo 'Funding Source: '; ?></strong></label><br>
+       										<label for="inqfundingsource"><strong><?php echo 'Funding Source'; ?>:</strong><br><i>"Internal" if no external funder exists.</i></label><br>
         									<input name="inqfundingsource" id="inqfundingsource" type="text" style="width:400px;" value="<?php echo $inquirydata['fundingSource'];?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 										<div class="fieldDiv">
-											<label for="inqdescription"><strong><?php echo 'Project Description: '; ?></strong></label><br>
+											<label for="inqdescription"><strong><?php echo 'Public Project Description: '; ?></strong></label><br>
 											<textarea name="inqdescription" id="inqdescription" style="width:800px; height:150px;"><?php echo $inquirydata['description']; ?></textarea>
 										</div>
 									</div>
@@ -663,12 +660,6 @@ if(!$isEditor) {
 											?>
 										</select>
 									</span>
-								</div>
-								<div style="clear:both;padding-top:6px;float:left;">
-									<label for="inqexist"><strong><?php echo 'May use existing samples?' ?></strong></label>
-									<input type="hidden" name="inqexist" value="no" />
-									<input type="checkbox" name="inqexist" value="yes"
-										<?php echo (!empty($inquirydata['existingSamples']) && $inquirydata['existingSamples'] === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<label for="inqfuture"><strong><?php echo 'May use future samples not yet at the Biorepository?' ?></strong></label>
@@ -704,7 +695,8 @@ if(!$isEditor) {
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqdrive"><strong><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
+       										<label for="inqdrive"><strong><?php echo 'Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
+											<i>Place inquiry folder within <a href='https://drive.google.com/drive/folders/18dxKEfUd6V7IpUEUi6dkQoOLzm9gyy-3?usp=drive_link'>Researcher Requests and Agreements</a></i><br>
         									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo $inquirydata['folderName']; ?>" />
    								 	</div>
 								</div>
@@ -780,8 +772,8 @@ if(!$isEditor) {
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
-										<strong><?php echo 'Link to Signed Sample Use Agreement: '?></strong>
-										<input name="inqsualink" type="text" style = 'width:400px' value="<?php echo $inquirydata['sampleUseAgreementLink']; ?>" />
+										<strong>Link to Signed Sample Use Agreement:</strong></br><i>Use NA for internal requests (or similar) that do not require an agreement.</i></br>
+										<input name="inqsualink" type="text" style = 'width:800px' value="<?php echo $inquirydata['sampleUseAgreementLink']; ?>" />
 									</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
