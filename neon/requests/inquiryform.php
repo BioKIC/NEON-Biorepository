@@ -61,7 +61,6 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		$description = trim($_POST['inqdescription'] ?? '');
 		$howfound = $_POST['inqhowfound'] ?? '';
 		$dataproduced = trim($_POST['inqdata'] ?? '');
-		$existing = $_POST['inqexist'] ?? '';
 		$future = $_POST['inqfuture'] ?? '';
 		$new = $_POST['inqnew'] ?? '';
 		$additionalresearchers = [];
@@ -85,7 +84,6 @@ if($formSubmit == 'editInquiry' && $isEditor){
 	if (empty($description)) $missing[] = 'Description';
 	if (empty($howfound)) $missing[] = 'How Found Us';
 	if (empty($dataproduced)) $missing[] = 'Data Produced';
-	if (empty($existing)) $missing[] = 'Existing Samples';
 	if (empty($future)) $missing[] = 'Future Samples';
 	if (empty($new)) $missing[] = 'Generating Samples';
 	if (empty($additionalresearchers)) $missing[] = 'Additional Researchers';
@@ -111,7 +109,6 @@ if($formSubmit == 'editInquiry' && $isEditor){
 			$description,
 			$howfound,
 			$dataproduced,
-			$existing,
 			$future,
 			$new,
 			$additionalresearchers,
@@ -167,42 +164,42 @@ if($formSubmit == 'editStatus' && $isEditor){
 	) {
 		$errorMessage[] = 'Initial Inquiry Date required.';
 	}
-	if ($cut =="yes" && empty($notfunded)) $errorMessage[] = 'Must indicate that proposal was not funded to select "cut"';
+	if ($cut =="yes" && empty($notfunded)) $errorMessage[] = 'Switch to not funded in order to select "cut"';
 	if (!empty($complete) && empty($active)) $errorMessage[] = 'Active Date required when complete date present.';
 	if (!empty($active) && empty($fulfillment)) $errorMessage[] = 'Pending Fulfillment Date required when active date present.';
-	if (!empty($fulfillment) && empty($pendinglist) && !empty($pendingfunding)) $errorMessage[] = 'Must have a funding date prior to a fulfillment date.';
+	if (!empty($fulfillment) && empty($pendinglist) && !empty($pendingfunding)) $errorMessage[] = 'Proposals must have a Funded Date in order to have a Pending Fulfillment Date.';
 	if (!empty($fulfillment) && !empty($notfunded)) $errorMessage[] = 'Unfunded proposal cannot be fulfilled (Create new Inquiry Record).';
 	if (!empty($notfunded) && !empty($pendinglist)) $errorMessage[] = 'Cannot have both funded and not funded date.';
 	if (!empty($complete) && !empty($active)) {
 		if (strtotime($complete) <= strtotime($active)) {
-			$errorMessage[] = 'Completed Date cannot be before or equal to Active Date';
+			$errorMessage[] = 'Completed Date cannot be before Active Date';
 		}
 	}
 	if (!empty($fulfillment) && !empty($active)) {
-		if (strtotime($active) <= strtotime($fulfillment)) {
-			$errorMessage[] = 'Active Date cannot be before or equal to Pending Fulfillment Date';
+		if (strtotime($active) < strtotime($fulfillment)) {
+			$errorMessage[] = 'Active Date cannot be before Pending Fulfillment Date';
 		}
 	}
-	if ((!empty($pendingfunding) || !empty($active)) && !empty($notfunded) && (empty($followUpDate) || (empty($followUpType)))) {
+	if ((!empty($pendingfunding) || !empty($active)) && !empty($notfunded) && (empty($followUpDate) || empty($followUpType))) {
 			$errorMessage[] = 'Follow Up Type and Date are required for active projects and inquiries pending funding.';
 	}
 	if (!empty($fulfillment) && !empty($pendinglist)) {
-		if (strtotime($fulfillment) <= strtotime($pendinglist)) {
-			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Funding Date';
+		if (strtotime($fulfillment) < strtotime($pendinglist)) {
+			$errorMessage[] = 'Pending Fulfillment Date cannot be before Funded Date';
 		}
 	}
 	if (!empty($inquiryDate) && !empty($pendingfunding)) {
-		if (strtotime($pendingfunding) <= strtotime($inquiryDate)) {
-			$errorMessage[] = 'Pending Funding Date cannot be before or equal to Inquiry Date';
+		if (strtotime($pendingfunding) < strtotime($inquiryDate)) {
+			$errorMessage[] = 'Pending Funding Date cannot be before Inquiry Date';
 		}
 	}
 	if (!empty($inquiryDate) && !empty($fulfillment)) {
-		if (strtotime($fulfillment) <= strtotime($inquiryDate)) {
-			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Inquiry Date';
+		if (strtotime($fulfillment) < strtotime($inquiryDate)) {
+			$errorMessage[] = 'Pending Fulfillment Date cannot be before Inquiry Date';
 		}
 	}
 	if (!empty($fulfillment) && empty($suaLink)) {
-		$errorMessage[] = 'A sample use agreement is required in order to fulfill a request.';
+		$errorMessage[] = 'A sample use agreement is required in order to fulfill a request. Put in NA for internal requests (or similar) that do not require an agreement.';
 	}	
 	if (!empty($followUpType) && $followUpType != 'none' && empty($assignee)) {
 		$errorMessage[] = 'Someone should be assigned to follow up.';
@@ -449,7 +446,7 @@ if(!$isEditor) {
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<strong><?php echo 'Primary Contact (will need NEON Biorepo account and ORCID)'; ?>:</strong>
+										<strong>Primary Contact</strong><br><i>Note: the primary contact must have an associated email and ORCID before receiving samples.</i><br>
 										<input type="text"
 											id="researcherSearch"
 											placeholder="Search researcher..."
@@ -473,7 +470,7 @@ if(!$isEditor) {
 									</span>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
-								<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong><br />
+								<strong>Additional Researchers (select all)</strong><br/><i>Choose none for rare cases in which there are no collaborators.</i><br>
 								<span>
 									<input type="text"
 										id="additionalResearcherSearch"
@@ -494,7 +491,7 @@ if(!$isEditor) {
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
 
-       										<label for="inqtitle"><strong><?php echo 'Inquiry Title'; ?>:</strong></label><br>
+       										<label for="inqtitle"><strong><?php echo 'Public Inquiry Title'; ?>:</strong></label><br>
 											<textarea name="inqtitle" id="inqtitle" style="width:800px; height:60px;"><?php echo $inquirydata['title']; ?></textarea>
    								 	</div>
 								</div>
@@ -634,14 +631,14 @@ if(!$isEditor) {
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqfundingsource"><strong><?php echo 'Funding Source: '; ?></strong></label><br>
+       										<label for="inqfundingsource"><strong><?php echo 'Funding Source'; ?>:</strong><br><i>"Internal" if no external funder exists.</i></label><br>
         									<input name="inqfundingsource" id="inqfundingsource" type="text" style="width:400px;" value="<?php echo $inquirydata['fundingSource'];?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 										<div class="fieldDiv">
-											<label for="inqdescription"><strong><?php echo 'Project Description: '; ?></strong></label><br>
+											<label for="inqdescription"><strong><?php echo 'Public Project Description: '; ?></strong></label><br>
 											<textarea name="inqdescription" id="inqdescription" style="width:800px; height:150px;"><?php echo $inquirydata['description']; ?></textarea>
 										</div>
 									</div>
@@ -663,12 +660,6 @@ if(!$isEditor) {
 											?>
 										</select>
 									</span>
-								</div>
-								<div style="clear:both;padding-top:6px;float:left;">
-									<label for="inqexist"><strong><?php echo 'May use existing samples?' ?></strong></label>
-									<input type="hidden" name="inqexist" value="no" />
-									<input type="checkbox" name="inqexist" value="yes"
-										<?php echo (!empty($inquirydata['existingSamples']) && $inquirydata['existingSamples'] === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<label for="inqfuture"><strong><?php echo 'May use future samples not yet at the Biorepository?' ?></strong></label>
@@ -704,7 +695,8 @@ if(!$isEditor) {
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqdrive"><strong><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
+       										<label for="inqdrive"><strong><?php echo 'Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
+											<i>Place inquiry folder within <a href='https://drive.google.com/drive/folders/18dxKEfUd6V7IpUEUi6dkQoOLzm9gyy-3?usp=drive_link'>Researcher Requests and Agreements</a></i><br>
         									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo $inquirydata['folderName']; ?>" />
    								 	</div>
 								</div>
@@ -780,8 +772,8 @@ if(!$isEditor) {
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
-										<strong><?php echo 'Link to Signed Sample Use Agreement: '?></strong>
-										<input name="inqsualink" type="text" style = 'width:400px' value="<?php echo $inquirydata['sampleUseAgreementLink']; ?>" />
+										<strong>Link to Signed Sample Use Agreement:</strong></br><i>Use NA for internal requests (or similar) that do not require an agreement.</i></br>
+										<input name="inqsualink" type="text" style = 'width:800px' value="<?php echo $inquirydata['sampleUseAgreementLink']; ?>" />
 									</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
