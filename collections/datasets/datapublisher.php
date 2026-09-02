@@ -589,11 +589,14 @@ if ($isEditor) {
 					<?php
 					foreach ($dwcaArr as $k => $v) {
 						//neon edit; add gbif column
-						$collManager->setCollid($v['collid']);
-						$gbifMetadata = current($collManager->getCollectionMetadata());
-						
-						$publishesToGbif = isset($gbifMetadata['publishtogbif'])
-							&& (int)$gbifMetadata['publishtogbif'] === 1;
+						$gbifCollManager = new OccurrenceCollectionProfile();
+						$gbifCollManager->setCollid($v['collid']);
+					
+						$gbifMetadata = current($gbifCollManager->getCollectionMetadata());
+					
+						$publishesToGbif =
+							isset($gbifMetadata['publishtogbif']) &&
+							$gbifMetadata['publishtogbif'] == 1;
 						//end neon edit
 						?>
 						<tr>
