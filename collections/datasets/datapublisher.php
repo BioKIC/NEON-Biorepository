@@ -589,7 +589,8 @@ if ($isEditor) {
 					<?php
 					foreach ($dwcaArr as $k => $v) {
 						//neon edit; add gbif column
-						$gbifMetadata = current($collManager->getCollectionMetadata($v['collid']));
+						$collManager->setCollid($v['collid']);
+						$gbifMetadata = current($collManager->getCollectionMetadata());
 						$publishesToGbif = !empty($gbifMetadata['publishtogbif']);
 						//end neon edit
 						?>
