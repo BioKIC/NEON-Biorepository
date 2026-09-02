@@ -53,7 +53,7 @@ if($isEditor){
 			<ul>
 				<li><a href="search/index.php">Sample Search</a></li>
 				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
-				<li><a href="../collections/datasets/publiclist.php">Research Datasets</a></li>
+				<li><a href="datasets/neonpubliclist.php">Research Datasets</a></li>
 				<?php
 				if($IS_ADMIN){
 					?>
