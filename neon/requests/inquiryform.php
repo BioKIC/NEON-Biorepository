@@ -164,38 +164,38 @@ if($formSubmit == 'editStatus' && $isEditor){
 	) {
 		$errorMessage[] = 'Initial Inquiry Date required.';
 	}
-	if ($cut =="yes" && empty($notfunded)) $errorMessage[] = 'Must indicate that proposal was not funded to select "cut"';
+	if ($cut =="yes" && empty($notfunded)) $errorMessage[] = 'Switch to not funded in order to select "cut"';
 	if (!empty($complete) && empty($active)) $errorMessage[] = 'Active Date required when complete date present.';
 	if (!empty($active) && empty($fulfillment)) $errorMessage[] = 'Pending Fulfillment Date required when active date present.';
-	if (!empty($fulfillment) && empty($pendinglist) && !empty($pendingfunding)) $errorMessage[] = 'Must have a funding date prior to a fulfillment date.';
+	if (!empty($fulfillment) && empty($pendinglist) && !empty($pendingfunding)) $errorMessage[] = 'Proposals must have a Funded Date in order to have a Pending Fulfillment Date.';
 	if (!empty($fulfillment) && !empty($notfunded)) $errorMessage[] = 'Unfunded proposal cannot be fulfilled (Create new Inquiry Record).';
 	if (!empty($notfunded) && !empty($pendinglist)) $errorMessage[] = 'Cannot have both funded and not funded date.';
 	if (!empty($complete) && !empty($active)) {
 		if (strtotime($complete) <= strtotime($active)) {
-			$errorMessage[] = 'Completed Date cannot be before or equal to Active Date';
+			$errorMessage[] = 'Completed Date cannot be before Active Date';
 		}
 	}
 	if (!empty($fulfillment) && !empty($active)) {
-		if (strtotime($active) <= strtotime($fulfillment)) {
-			$errorMessage[] = 'Active Date cannot be before or equal to Pending Fulfillment Date';
+		if (strtotime($active) < strtotime($fulfillment)) {
+			$errorMessage[] = 'Active Date cannot be before Pending Fulfillment Date';
 		}
 	}
-	if ((!empty($pendingfunding) || !empty($active)) && !empty($notfunded) && (empty($followUpDate) || (empty($followUpType)))) {
+	if ((!empty($pendingfunding) || !empty($active)) && !empty($notfunded) && (empty($followUpDate) || empty($followUpType))) {
 			$errorMessage[] = 'Follow Up Type and Date are required for active projects and inquiries pending funding.';
 	}
 	if (!empty($fulfillment) && !empty($pendinglist)) {
-		if (strtotime($fulfillment) <= strtotime($pendinglist)) {
-			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Funding Date';
+		if (strtotime($fulfillment) < strtotime($pendinglist)) {
+			$errorMessage[] = 'Pending Fulfillment Date cannot be before Funded Date';
 		}
 	}
 	if (!empty($inquiryDate) && !empty($pendingfunding)) {
-		if (strtotime($pendingfunding) <= strtotime($inquiryDate)) {
-			$errorMessage[] = 'Pending Funding Date cannot be before or equal to Inquiry Date';
+		if (strtotime($pendingfunding) < strtotime($inquiryDate)) {
+			$errorMessage[] = 'Pending Funding Date cannot be before Inquiry Date';
 		}
 	}
 	if (!empty($inquiryDate) && !empty($fulfillment)) {
-		if (strtotime($fulfillment) <= strtotime($inquiryDate)) {
-			$errorMessage[] = 'Pending Fulfillment Date cannot be before or equal to Inquiry Date';
+		if (strtotime($fulfillment) < strtotime($inquiryDate)) {
+			$errorMessage[] = 'Pending Fulfillment Date cannot be before Inquiry Date';
 		}
 	}
 	if (!empty($fulfillment) && empty($suaLink)) {
