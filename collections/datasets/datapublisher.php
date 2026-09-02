@@ -591,7 +591,9 @@ if ($isEditor) {
 						//neon edit; add gbif column
 						$collManager->setCollid($v['collid']);
 						$gbifMetadata = current($collManager->getCollectionMetadata());
-						$publishesToGbif = !empty($gbifMetadata['publishtogbif']);
+						
+						$publishesToGbif = isset($gbifMetadata['publishtogbif'])
+							&& (int)$gbifMetadata['publishtogbif'] === 1;
 						//end neon edit
 						?>
 						<tr>
