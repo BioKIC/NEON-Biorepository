@@ -1923,7 +1923,14 @@ class DwcArchiverCore extends Manager{
 				}
 				//$dwcOccurManager->appendUpperTaxonomy($r);
 				$dwcOccurManager->appendUpperTaxonomy2($r);
-				if ($rankStr = $dwcOccurManager->getTaxonRank($r['rankid'])) $r['t_taxonRank'] = $rankStr;
+				//neon edit; set taxonRank to Kingdom for Bulk Canopy Foliage
+				if ($r['scientificName'] === 'Plantae') {
+					$rankStr = 'Kingdom';
+				} else {
+					$rankStr = $dwcOccurManager->getTaxonRank($r['rankid']);
+				}
+				
+				if ($rankStr) $r['t_taxonRank'] = $rankStr;
 				unset($r['rankid']);
 
 				// if(isset($r['dynamicProperties'])) {
