@@ -793,9 +793,9 @@ if($spprid) $specManager->setProjVariables($spprid);
 												<div title="<?php echo $LANG['UNABLE_MATCH_ID']; ?>">
 													<b><?php echo $LANG['MISSING_RECORD']; ?>:</b>
 													<div style="margin:5px 15px">
-														<input type="radio" name="createnewrec" value="0" />
+														<input type="radio" name="createnewrec" value="0" CHECKED />
 														<?php echo $LANG['SKIP_AND_NEXT']; ?><br/>
-														<input type="radio" name="createnewrec" value="1" CHECKED />
+														<input type="radio" name="createnewrec" value="1" />
 														<?php echo $LANG['CREATE_AND_LINK']; ?>
 													</div>
 												</div>
