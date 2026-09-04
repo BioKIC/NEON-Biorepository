@@ -308,7 +308,10 @@ if ($isEditor) {
 					echo '</ul>';
 					if ($publishGBIF) {
 						echo '<ul>';
-						$collManager->triggerGBIFCrawl($collArr['dwcaurl'], $collid, $collArr['collectionname']);
+						//neon edit; don't run if on localhost
+						if ($_SERVER['HTTP_HOST'] !== 'localhost') $collManager->triggerGBIFCrawl($collArr['dwcaurl'], $collid, $collArr['collectionname']);
+						else echo 'Skipping GBIF crawl on localhost';
+						//end neon edit
 						echo '</ul>';
 					}
 				}
