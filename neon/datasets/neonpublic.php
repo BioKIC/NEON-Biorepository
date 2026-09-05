@@ -14,6 +14,25 @@ if (!is_numeric($datasetid)) $datasetid = 0;
 $datasetManager = new OccurrenceDataset();
 $dArr = $datasetManager->getPublicDatasetMetadata($datasetid);
 $rArr = $datasetManager->getRequestInquiryMetadata($datasetid);
+$aArr = $datasetManager->getAssociatedDatasets($datasetid);
+$pArr = $datasetManager->getPublicProjects();
+
+$assocDatasetIDs = array_column($aArr, 'datasetID');
+$assocDatasetLookup = [];
+
+foreach ($assocDatasetIDs as $id) {
+    $assocDatasetLookup[(int) $id] = true;
+}
+
+$pArr = array_values(array_filter($pArr, function ($row) use ($assocDatasetLookup) {
+    $projectID = (int) $row['datasetid'];
+    return isset($assocDatasetLookup[$projectID]);
+}));
+
+usort($pArr, function ($a, $b) {
+    return strtotime($b['activeDate']) <=> strtotime($a['activeDate']);
+});
+
 $searchUrl = '../../collections/list.php?datasetid=' . $datasetid;
 $tableUrl = '../../collections/listtabledisplay.php?datasetid=' . $datasetid;
 $taxaUrl = '../../collections/list.php?datasetid=' . $datasetid . '&tabindex=0';
@@ -193,6 +212,42 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 	.view-samples-button .button-arrow {
 		text-decoration: none;
 	}
+
+	.related-datasets-table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 15px;
+	}
+
+	.related-datasets-table th {
+		padding: 12px 15px;
+		text-align: left;
+		border-bottom: 1px solid #fff;
+		vertical-align: top;
+		background-color: #0073CF;
+		color: #fff;
+		font-weight: bold;
+	}
+
+	.related-datasets-table td {
+		padding: 12px 15px;
+		text-align: left;
+		border-bottom: 1px solid #fff;
+		vertical-align: top;
+	}
+
+	.related-datasets-table tbody tr:hover {
+		background-color: #f7f7f7;
+	}
+
+	.related-datasets-table a {
+		color: #0073CF;
+		text-decoration: none;
+	}
+
+	.related-datasets-table a:hover {
+		text-decoration: underline;
+	}
 </style>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -270,6 +325,53 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 				); ?>;
 			</script>
 			<div id="sample-site-map"></div>
+			<!--List Associated Datasets in React Table-->
+			<?php if (!empty($pArr)) { ?>
+
+				<div>
+					<h2>Related Datasets</h2>
+				</div>
+
+				<div style="overflow-x: auto;">
+					<table class="related-datasets-table">
+						<thead>
+							<tr>
+								<th>Title</th>
+								<th>PI Name</th>
+							</tr>
+						</thead>
+
+						<tbody>
+
+							<?php foreach ($pArr as $project) { ?>
+
+								<tr>
+
+									<td>
+										<a href="neonpublic.php?datasetid=<?php echo (int)$project['datasetid']; ?>">
+											<?php echo htmlspecialchars(
+												$project['name'] ?? '',
+												ENT_QUOTES,
+												$CHARSET
+											); ?>
+										</a>
+									</td>
+
+									<td>
+										<?php echo htmlspecialchars(
+											$project['researcherName'] ?? '',
+											ENT_QUOTES,
+											$CHARSET
+										); ?>
+									</td>
+
+								</tr>
+
+							<?php } ?>
+						</tbody>
+					</table>
+				</div>
+			<?php } ?>
 		</div>
 	</body>
 </html>

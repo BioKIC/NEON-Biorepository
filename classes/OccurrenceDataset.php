@@ -168,6 +168,7 @@ class OccurrenceDataset{
 // NEON edit to include dynamicProperties
 	public function getDatasetMetadata($dsid) {
 		$retArr = array();
+		$dsid = (int)$dsid;
 		if ($GLOBALS['SYMB_UID'] && $dsid) {
 			//Get and return individual dataset
 			$sql = 'SELECT datasetid, name, notes, description, category, bibliographicCitation, uid, sortsequence, initialtimestamp, ispublic, dynamicProperties FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') ';
@@ -196,6 +197,41 @@ class OccurrenceDataset{
 		return $retArr;
 	}
 	// NEON edit to include dynamicProperties
+
+	// NEON specific function
+	public function getAssociatedDatasets($dsid) {
+		$retArr = array();
+		$dsid = (int)$dsid;
+		$sql = "SELECT DISTINCT a.datasetID AS assocDatasetID, d.name
+			FROM omoccurdatasetassociations a
+			INNER JOIN omoccurdatasets d
+			ON a.datasetID = d.datasetID
+			WHERE a.associatedDatasetID = $dsid
+			AND a.datasetID <> $dsid
+
+			UNION
+
+			SELECT DISTINCT a.associatedDatasetID AS assocDatasetID, d.name
+			FROM omoccurdatasetassociations a
+			INNER JOIN omoccurdatasets d
+			ON a.associatedDatasetID = d.datasetID
+			WHERE a.datasetID = $dsid
+			AND a.associatedDatasetID <> $dsid";
+
+		$rs = $this->conn->query($sql);
+
+		while ($r = $rs->fetch_object()) {
+			$retArr[] = array(
+				'datasetID' => $r->assocDatasetID,
+				'name' => $r->name
+			);
+		}
+
+		$rs->free();
+
+		return $retArr;
+	}
+	// end NEON function
 
 	public function getDatasetArr() {
 		$retArr = array();
@@ -634,6 +670,27 @@ class OccurrenceDataset{
 		return $dom->saveHTML();
 	}
 	//end neon edit
+
+	// NEON function
+	public function addDatasetAssociation($datasetID, $associatedDatasetID) {
+
+		$datasetID = (int)$datasetID;
+		$associatedDatasetID = (int)$associatedDatasetID;
+
+		if (!$datasetID || !$associatedDatasetID) {
+			return false;
+		}
+
+		if ($datasetID == $associatedDatasetID) {
+			return false;
+		}
+
+		$sql = "INSERT INTO omoccurdatasetassociations (datasetID, associatedDatasetID)
+			VALUES ($datasetID, $associatedDatasetID)";
+
+		return $this->conn->query($sql);
+	}
+	// end NEON function
 
 	//General setters and getters
 	public function getUserList($term) {

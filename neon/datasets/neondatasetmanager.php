@@ -22,6 +22,8 @@ if ($action && !preg_match('/^[a-zA-Z0-9\s_]+$/', $action)) $action = '';
 $datasetManager = new OccurrenceDataset();
 
 $mdArr = $datasetManager->getDatasetMetadata($datasetId);
+$adArr = $datasetManager->getAssociatedDatasets($datasetId);
+$datasetArr = $datasetManager->getPublicDatasets();
 
 // Dataset access levels:
 // 1 = Full Access: NEON Biorepository staff/editors who can manage all project information,
@@ -89,6 +91,12 @@ if ($isEditor) {
 		} elseif ($action == 'DelUser') {
 			if ($datasetManager->deleteUser($datasetId, $_POST['uid'], $_POST['role'])) {
 				$statusStr = 'User access removed successfully.';
+			} else {
+				$statusStr = implode(',', $datasetManager->getErrorArr());
+			}
+		} elseif ($action == 'Link Dataset') {
+			if ($datasetManager->addDatasetAssociation($datasetId, $_POST['associatedDatasetID'])) {
+				$statusStr = 'Dataset associated successfully.';
 			} else {
 				$statusStr = implode(',', $datasetManager->getErrorArr());
 			}
@@ -1096,6 +1104,117 @@ if ($isEditor) {
 							</div>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root">
+							</div>
+							<div style="margin:15px; text-align:left;">
+								<input name="tabindex" type="hidden" value="0" />
+								<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
+								
+								<?php if (!empty($adArr)) { ?>
+									<div style="font-weight:bold;">
+										Associated Datasets
+									</div>
+
+									<div style="margin:30px;">
+										<?php foreach ($adArr as $ad) { ?>
+											<a href="../datasets/neondatasetmanager.php?datasetid=<?php echo $ad['datasetID']; ?>">
+												<?php echo htmlspecialchars($ad['name']); ?>
+											</a>
+											<br>
+										<?php } ?>
+									</div>
+
+								<?php } ?>
+
+								<?php if ($isEditor == 1) { ?>
+
+									<form
+										name="linkdatasetform"
+										action="neondatasetmanager.php"
+										method="post"
+									>
+
+										<input
+											name="datasetid"
+											type="hidden"
+											value="<?php echo $datasetId; ?>"
+										/>
+
+										<div style="margin-top:15px;">
+
+											<label
+												for="associatedDatasetID"
+												style="font-weight:bold;"
+											>
+												Link Dataset
+											</label>
+
+											<br><br>
+
+											<select
+												name="associatedDatasetID"
+												id="associatedDatasetID"
+												style="width:80%; max-width:700px;"
+											>
+
+												<option value="">-- Select Dataset --</option>
+
+												<?php
+												if (!empty($datasetArr)) {
+
+													foreach ($datasetArr as $dataset) {
+
+														$assocDatasetID = (int)$dataset['datasetid'];
+														$assocDatasetName = $dataset['name'];
+
+														if ($assocDatasetID == $datasetId) {
+															continue;
+														}
+
+														$alreadyAssociated = false;
+
+														if (!empty($adArr)) {
+															foreach ($adArr as $ad) {
+
+																if ((int)$ad['datasetID'] == $assocDatasetID) {
+																	$alreadyAssociated = true;
+																	break;
+																}
+															}
+														}
+
+														if (!$alreadyAssociated) {
+															?>
+															<option value="<?php echo $assocDatasetID; ?>">
+																<?php echo htmlspecialchars($assocDatasetName); ?>
+															</option>
+															<?php
+														}
+													}
+												}
+												?>
+
+											</select>
+
+											<br><br>
+
+											<button
+												class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+												name="submitaction"
+												type="submit"
+												value="Link Dataset"
+											>
+												<span class="MuiButton-label">
+													Link Dataset
+												</span>
+
+												<span class="MuiTouchRipple-root"></span>
+											</button>
+
+										</div>
+
+									</form>
+
+								<?php } ?>
 							</div>
 							<div class="MuiFormControl-root MuiTextField-root" style="width:98%; margin:25px 10px;">
 								<span class="MuiTypography-root MuiTypography-caption">Title</span>
