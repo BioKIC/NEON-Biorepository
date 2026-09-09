@@ -22,7 +22,6 @@ if ($action && !preg_match('/^[a-zA-Z0-9\s_]+$/', $action)) $action = '';
 $datasetManager = new OccurrenceDataset();
 
 $mdArr = $datasetManager->getDatasetMetadata($datasetId);
-$adArr = $datasetManager->getAssociatedDatasets($datasetId);
 $datasetArr = $datasetManager->getPublicDatasets();
 
 // Dataset access levels:
@@ -104,6 +103,7 @@ if ($isEditor) {
 	}
 }
 
+$adArr = $datasetManager->getAssociatedDatasets($datasetId);
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -111,7 +111,7 @@ if ($isEditor) {
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET; ?>">
 	<title>Manage Project</title>
-	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
+
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
@@ -696,7 +696,7 @@ if ($isEditor) {
 		if ($datasetId) {
 			if ($isEditor) {
 		?>
-				<div id="tabs" style="margin:10px;padding:0;">
+				<div id="tabs" style="margin:10px;padding:0;border:1px solid #e6e6e6;">
 				
 					<div class="MuiTabs-root">
 						<div class="MuiTabs-scroller MuiTabs-fixed" style="overflow:hidden;">
@@ -1038,6 +1038,8 @@ if ($isEditor) {
 					</div>
 					<div id="admintab" class="dataset-tab-content">
 						<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
+							
+							<!--Visibility section-->
 							<div style="display:flex; align-items:center; gap:80px; margin:20px 0; padding-left:15px;">
 								<div style="font-weight:bold;">
 									Visibility
@@ -1102,120 +1104,115 @@ if ($isEditor) {
 									Make this project visible to the public
 								</div>
 							</div>
-							<div style="padding:0 15px;">
-								<hr class="MuiDivider-root">
-							</div>
+							
+							<!--Linked Datasets section-->
 							<div style="margin:15px; text-align:left;">
 								<input name="tabindex" type="hidden" value="0" />
 								<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
 								
 								<?php if (!empty($adArr)) { ?>
-									<div style="font-weight:bold;">
-										Associated Datasets
+									<div style="padding:0 15px;">
+										<hr class="MuiDivider-root">
+									</div>
+									<div style="font-weight:bold;margin-top: 20px;">
+										Linked Datasets
 									</div>
 
-									<div style="margin:30px;">
-										<?php foreach ($adArr as $ad) { ?>
-											<a href="../datasets/neondatasetmanager.php?datasetid=<?php echo $ad['datasetID']; ?>">
-												<?php echo htmlspecialchars($ad['name']); ?>
-											</a>
-											<br>
-										<?php } ?>
+									<div>
+										<ul class="MuiList-root MuiList-padding">
+											<?php foreach ($adArr as $ad) { ?>
+												<a href="../datasets/neonpublic.php?datasetid=<?php echo $ad['datasetID']; ?>"
+													class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-button"
+													style="text-decoration:none; color:inherit;">
+										
+													<div class="MuiListItemIcon-root">
+														<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24">
+															<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 1 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"></path>
+														</svg>
+													</div>
+										
+													<div class="MuiListItemText-root">
+														<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
+															<?php echo htmlspecialchars(strip_tags($ad['name'])); ?>
+														</span>
+													</div>
+										
+													<span class="MuiTouchRipple-root"></span>
+												</a>
+											<?php } ?>
+										</ul>
 									</div>
 
 								<?php } ?>
 
 								<?php if ($isEditor == 1) { ?>
-
-									<form
-										name="linkdatasetform"
-										action="neondatasetmanager.php"
-										method="post"
-									>
-
-										<input
-											name="datasetid"
-											type="hidden"
-											value="<?php echo $datasetId; ?>"
-										/>
-
-										<div style="margin-top:15px;">
-
-											<label
-												for="associatedDatasetID"
-												style="font-weight:bold;"
-											>
-												Link Dataset
-											</label>
-
-											<br><br>
-
-											<select
-												name="associatedDatasetID"
-												id="associatedDatasetID"
-												style="width:80%; max-width:700px;"
-											>
-
-												<option value="">-- Select Dataset --</option>
-
-												<?php
-												if (!empty($datasetArr)) {
-
-													foreach ($datasetArr as $dataset) {
-
-														$assocDatasetID = (int)$dataset['datasetid'];
-														$assocDatasetName = $dataset['name'];
-
-														if ($assocDatasetID == $datasetId) {
-															continue;
-														}
-
-														$alreadyAssociated = false;
-
-														if (!empty($adArr)) {
-															foreach ($adArr as $ad) {
-
-																if ((int)$ad['datasetID'] == $assocDatasetID) {
-																	$alreadyAssociated = true;
-																	break;
+									<div style="padding:0 15px;">
+										<hr class="MuiDivider-root">
+									</div>
+									<form name="linkdatasetform" action="neondatasetmanager.php" method="post">
+										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>"/>
+											<div style="margin-top:15px;">
+												<div style="display:flex; align-items:center; gap:10px;">
+											
+													<div class="MuiFormControl-root">
+														<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled" data-shrink="true" style="background:#fff;">
+															Select Dataset
+														</label>
+											
+														<select class="MuiInputBase-input MuiOutlinedInput-input" name="associatedDatasetID" style="border:1px solid rgba(0, 0, 0, 0.23); outline:none; background:#fff; width:80%; max-width:700px;" onfocus="this.style.borderColor='#0073CF'; this.style.borderWidth='2px';" onblur="this.style.borderColor='rgba(0, 0, 0, 0.23)'; this.style.borderWidth='1px';">
+															<option value="">-----</option>
+											
+															<?php
+															if (!empty($datasetArr)) {
+															
+																usort($datasetArr, function ($a, $b) {
+																	return strcasecmp(strip_tags($a['name']), strip_tags($b['name']));
+																});
+															
+																foreach ($datasetArr as $dataset) {
+																	$assocDatasetID = (int)$dataset['datasetid'];
+																	$assocDatasetName = strip_tags($dataset['name']);
+															
+																	if ($assocDatasetID == $datasetId) continue;
+															
+																	$alreadyAssociated = false;
+															
+																	if (!empty($adArr)) {
+																		foreach ($adArr as $ad) {
+																			if ((int)$ad['datasetID'] == $assocDatasetID) {
+																				$alreadyAssociated = true;
+																				break;
+																			}
+																		}
+																	}
+															
+																	if (!$alreadyAssociated) {
+																		echo '<option value="' . $assocDatasetID . '">' . htmlspecialchars($assocDatasetName) . '</option>';
+																	}
 																}
 															}
-														}
-
-														if (!$alreadyAssociated) {
 															?>
-															<option value="<?php echo $assocDatasetID; ?>">
-																<?php echo htmlspecialchars($assocDatasetName); ?>
-															</option>
-															<?php
-														}
-													}
-												}
-												?>
-
-											</select>
-
-											<br><br>
-
-											<button
-												class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-												name="submitaction"
-												type="submit"
-												value="Link Dataset"
-											>
-												<span class="MuiButton-label">
-													Link Dataset
-												</span>
-
-												<span class="MuiTouchRipple-root"></span>
-											</button>
-
-										</div>
-
+														</select>
+													</div>
+											
+													<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium" tabindex="0" name="submitaction" type="submit" value="Link Dataset" style="font-size:.8rem;">
+														<span class="MuiButton-label">Link</span>
+														<span class="MuiTouchRipple-root"></span>
+													</button>
+											
+												</div>
+											
+												<p class="MuiFormHelperText-root MuiFormHelperText-contained">
+													Link associated datasets together
+												</p>
+											</div>
 									</form>
-
 								<?php } ?>
 							</div>
+							<div style="padding:0 15px;">
+								<hr class="MuiDivider-root">
+							</div>
+							<!--Title Section-->
 							<div class="MuiFormControl-root MuiTextField-root" style="width:98%; margin:25px 10px;">
 								<span class="MuiTypography-root MuiTypography-caption">Title</span>
 							
@@ -1255,6 +1252,10 @@ if ($isEditor) {
 									"
 								><?php echo htmlspecialchars($mdArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
+							<div style="padding:0 15px;">
+								<hr class="MuiDivider-root">
+							</div>
+							<!--Notes Section-->
 							<div class="MuiFormControl-root MuiTextField-root" style="width:98%; margin:25px 10px;">
 								<label
 									class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined<?php echo !empty($mdArr['notes']) ? ' MuiInputLabel-shrink MuiFormLabel-filled' : ''; ?>"
@@ -1303,6 +1304,7 @@ if ($isEditor) {
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root">
 							</div>
+							<!--Description Section-->
 							<div style="margin:15px;">
 								<span class="MuiTypography-root MuiTypography-caption">Description</span>
 								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo $mdArr['description']; ?></textarea>

@@ -15,6 +15,7 @@ $datasetManager = new OccurrenceDataset();
 $dArr = $datasetManager->getPublicDatasetMetadata($datasetid);
 $rArr = $datasetManager->getRequestInquiryMetadata($datasetid);
 $aArr = $datasetManager->getAssociatedDatasets($datasetid);
+$mdArr = $datasetManager->getDatasetMetadata($datasetid);
 $pArr = $datasetManager->getPublicProjects();
 
 $assocDatasetIDs = array_column($aArr, 'datasetID');
@@ -34,14 +35,6 @@ usort($pArr, function ($a, $b) {
 });
 
 $searchUrl = '../../collections/list.php?datasetid=' . $datasetid;
-$tableUrl = '../../collections/listtabledisplay.php?datasetid=' . $datasetid;
-$taxaUrl = '../../collections/list.php?datasetid=' . $datasetid . '&tabindex=0';
-// $downloadUrl = '../../collections/download/index.php?datasetid='.$datasetid;
-
-
-$datasetManager = new OccurrenceDataset();
-
-$mdArr = $datasetManager->getDatasetMetadata($datasetid);
 
 // Dataset access levels:
 // 1 = Full Access: NEON Biorepository staff/editors who can manage all project information,
@@ -69,7 +62,6 @@ if (!empty($mdArr)) {
 	}
 }
 
-$ocArr = $datasetManager->getOccurrences($datasetid);
 ?>
 <style>
 	.request-meta {
@@ -227,13 +219,16 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 		background-color: #0073CF;
 		color: #fff;
 		font-weight: bold;
+        font-size: .7rem;
+        border-right: 1px solid lightgray;
 	}
 
 	.related-datasets-table td {
 		padding: 12px 15px;
 		text-align: left;
 		border-bottom: 1px solid #fff;
-		vertical-align: top;
+		vertical-align: middle;
+        border-right: 1px solid rgb(221, 221, 221);
 	}
 
 	.related-datasets-table tbody tr:hover {
@@ -242,12 +237,27 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 
 	.related-datasets-table a {
 		color: #0073CF;
-		text-decoration: none;
+		text-decoration: underline !important;
 	}
+    
+    .related-datasets-table tbody tr:nth-child(odd) {
+        background-color: #fff;
+    }
+    
+    .related-datasets-table tbody tr:nth-child(even) {
+        background-color: #f5f5f5;
+    }
+    
+    .related-datasets-table th:nth-child(1),
+    .related-datasets-table td:nth-child(1) {
+        width: 70%;
+    }
+    
+    .related-datasets-table th:nth-child(2),
+    .related-datasets-table td:nth-child(2) {
+        width: 30%;
+    }
 
-	.related-datasets-table a:hover {
-		text-decoration: underline;
-	}
 </style>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -325,7 +335,7 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 				); ?>;
 			</script>
 			<div id="sample-site-map"></div>
-			<!--List Associated Datasets in React Table-->
+			<!--List Associated Datasets-->
 			<?php if (!empty($pArr)) { ?>
 
 				<div>
@@ -333,43 +343,22 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 				</div>
 
 				<div style="overflow-x: auto;">
-					<table class="related-datasets-table">
-						<thead>
-							<tr>
-								<th>Title</th>
-								<th>PI Name</th>
-							</tr>
-						</thead>
-
-						<tbody>
-
-							<?php foreach ($pArr as $project) { ?>
-
-								<tr>
-
-									<td>
-										<a href="neonpublic.php?datasetid=<?php echo (int)$project['datasetid']; ?>">
-											<?php echo htmlspecialchars(
-												$project['name'] ?? '',
-												ENT_QUOTES,
-												$CHARSET
-											); ?>
-										</a>
-									</td>
-
-									<td>
-										<?php echo htmlspecialchars(
-											$project['researcherName'] ?? '',
-											ENT_QUOTES,
-											$CHARSET
-										); ?>
-									</td>
-
-								</tr>
-
-							<?php } ?>
-						</tbody>
-					</table>
+                    <table class="related-datasets-table">
+                        <thead>
+                            <tr>
+                                <th>TITLE</th>
+                                <th>PI NAME</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($pArr as $project) { ?>
+                                <tr>
+                                    <td><a href="neonpublic.php?datasetid=<?php echo (int)$project['datasetid']; ?>"><?php echo str_ireplace(['<div>', '</div>'], '', $project['name'] ?? ''); ?></a></td>
+                                    <td><?php echo htmlspecialchars($project['researcherName'] ?? '', ENT_QUOTES, $CHARSET); ?></td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
 				</div>
 			<?php } ?>
 		</div>
