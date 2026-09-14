@@ -138,7 +138,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 		<h1 class="page-heading">Sample Importer</h1>
 		<fieldset>
 			<legend><b>Instructions</b></legend>
-				<h4><b><u>Samples</u></b></h4>
+				<h4><b><u>Samples</u></b> <a target="_blank" rel="noopener noreferrer" href='https://docs.google.com/spreadsheets/d/18WaOklWSE-YH3n-9GByQad2qgFJfayfEn9BXWUt6fXw/'> TEMPLATE</a></h4>
 					<p style="margin-left:10%; margin-right:10%; font-size:15px"> Loaded samples (think at the level of a manifest record) will be added to the request indicated in the box below. 
 					<br><br>Each loaded sample must be associated with an identifier. This can include the occid (id field in download),catalogNumber, occurrenceID, or any otherCatalogNumber. However, sampleID/sampleTag or alternative sampleIDs are not recommended for use as these are not unique within the database and, thus, may correspond to multiple samples.
 					<br><br>Samples will be loaded with a "status" of <b> pending fulfillment</b>. If for any reason that is not the current status of the samples
@@ -210,7 +210,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 						</tr>
 					</table>
 				<br>
-				<h4><b><u>Material Samples</u></b></h4>
+				<h4><b><u>Material Samples</u></b> <a target="_blank" rel="noopener noreferrer" href='https://docs.google.com/spreadsheets/d/1yGTD-DGuy2WLYm5JSMBw18HXTTXCKEvKg_tMAG_bUvw'>TEMPLATE</a></h4>
 
 					<p style="margin-left:10%; margin-right:10%; font-size:15px"> Loaded material samples will be added to the request indicated in the box below. 
 					<br><br>Each loaded material sample must be associated with an identifier. This can include the material sample catalogNumber, materialSampleID (guid), primary key of the material samples table, or material sample recordID.
