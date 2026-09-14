@@ -723,7 +723,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $assignee  = !empty($assignee)  ? $assignee  : null;
 
       $dates = [
-          'sample use inquiry'    => $inquiryDate,
+          'sample inquiry'    => $inquiryDate,
           'pending funding'   => $pendingfunding,
           'not funded'        => $notfunded,
           'pending sample list'      => $pendinglist,
