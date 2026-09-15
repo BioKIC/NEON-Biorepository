@@ -824,6 +824,32 @@ class DwcArchiverCore extends Manager{
 	
 				return $archiveFile;
 			}
+			if($collid == 129){
+				$this->logOrEcho("Humboldt Bird Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
+	
+				$githubUrl = 'https://raw.githubusercontent.com/sunray1/NEONBirdstoHumboldt/master/outputs/zipped/DwC-A.zip';
+				$archiveFile = $this->targetPath . 'NEON-BIRD-H_DwC-A.zip';
+	
+				$this->logOrEcho("Downloading archive from: $githubUrl\n");
+				$this->logOrEcho("Saving to: $archiveFile\n");
+	
+				$data = file_get_contents($githubUrl);
+	
+				if($data === false){
+					$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
+					return '';
+				}
+	
+				if(file_put_contents($archiveFile, $data) === false){
+					$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
+					return '';
+				}
+	
+				$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
+				$this->logOrEcho("\n-----------------------------------------------------\n");
+	
+				return $archiveFile;
+			}
 		}
 		//end neon edit
 		if($fileName = $this->getFileName()){
