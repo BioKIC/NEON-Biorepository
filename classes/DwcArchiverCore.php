@@ -801,7 +801,7 @@ class DwcArchiverCore extends Manager{
 			if($collid == 117){
 				$this->logOrEcho("Humboldt Tick Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
 	
-				$githubUrl = 'https://raw.githubusercontent.com/sunray1/NEONTickstoHumboldt/master/outputs/zipped/DwC-A.zip';
+				$githubUrl = 'https://raw.githubusercontent.com/BioKIC/NEONTickstoHumboldt/master/outputs/zipped/DwC-A.zip';
 				$archiveFile = $this->targetPath . 'NEON-TICC-H_DwC-A.zip';
 	
 				$this->logOrEcho("Downloading archive from: $githubUrl\n");
@@ -827,7 +827,7 @@ class DwcArchiverCore extends Manager{
 			if($collid == 129){
 				$this->logOrEcho("Humboldt Bird Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
 	
-				$githubUrl = 'https://raw.githubusercontent.com/sunray1/NEONBirdstoHumboldt/master/outputs/zipped/DwC-A.zip';
+				$githubUrl = 'https://raw.githubusercontent.com/BioKIC/NEONBirdstoHumboldt/master/outputs/zipped/DwC-A.zip';
 				$archiveFile = $this->targetPath . 'NEON-BIRD-H_DwC-A.zip';
 	
 				$this->logOrEcho("Downloading archive from: $githubUrl\n");
