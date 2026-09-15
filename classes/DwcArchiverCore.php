@@ -827,7 +827,7 @@ class DwcArchiverCore extends Manager{
 			if($collid == 129){
 				$this->logOrEcho("Humboldt Bird Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
 	
-				$githubUrl = 'https://raw.githubusercontent.com/BioKIC/NEONBirdstoHumboldt/master/outputs/zipped/DwC-A.zip';
+				$githubUrl = 'https://github.com/BioKIC/NEONBirdstoHumboldt/raw/refs/heads/master/outputs/zipped/DwC-A.zip';
 				$archiveFile = $this->targetPath . 'NEON-BIRD-H_DwC-A.zip';
 	
 				$this->logOrEcho("Downloading archive from: $githubUrl\n");
