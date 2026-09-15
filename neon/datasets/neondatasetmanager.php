@@ -743,7 +743,20 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									</span>
 									<span class="MuiTouchRipple-root"></span>
 								</button>
-				
+								<button
+									aria-selected="<?php echo ($isEditor == 1 ? 'false' : 'true'); ?>"
+									class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary<?php echo ($isEditor == 1 ? '' : ' Mui-selected'); ?>"
+									role="tab"
+									tabindex="-1"
+									type="button"
+									data-tab="linkedtab"
+									onclick="switchDatasetTab(this)"
+								>
+									<span class="MuiTab-wrapper">
+										Related Datasets
+									</span>
+									<span class="MuiTouchRipple-root"></span>
+								</button>
 								<?php if ($isEditor < 3) { ?>
 									<button
 										aria-selected="false"
@@ -1103,111 +1116,6 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								<div style="color:#666; font-size:0.9em;">
 									Make this project visible to the public
 								</div>
-							</div>
-							
-							<!--Linked Datasets section-->
-							<div style="margin:15px; text-align:left;">
-								<input name="tabindex" type="hidden" value="0" />
-								<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
-								
-								<?php if (!empty($adArr)) { ?>
-									<div style="padding:0 15px;">
-										<hr class="MuiDivider-root">
-									</div>
-									<div style="font-weight:bold;margin-top: 20px;">
-										Linked Datasets
-									</div>
-
-									<div>
-										<ul class="MuiList-root MuiList-padding">
-											<?php foreach ($adArr as $ad) { ?>
-												<a href="../datasets/neonpublic.php?datasetid=<?php echo $ad['datasetID']; ?>"
-													class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-button"
-													style="text-decoration:none; color:inherit;">
-										
-													<div class="MuiListItemIcon-root">
-														<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24">
-															<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 1 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"></path>
-														</svg>
-													</div>
-										
-													<div class="MuiListItemText-root">
-														<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
-															<?php echo htmlspecialchars(strip_tags($ad['name'])); ?>
-														</span>
-													</div>
-										
-													<span class="MuiTouchRipple-root"></span>
-												</a>
-											<?php } ?>
-										</ul>
-									</div>
-
-								<?php } ?>
-
-								<?php if ($isEditor == 1) { ?>
-									<div style="padding:0 15px;">
-										<hr class="MuiDivider-root">
-									</div>
-									<form name="linkdatasetform" action="neondatasetmanager.php" method="post">
-										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>"/>
-											<div style="margin-top:15px;">
-												<div style="display:flex; align-items:center; gap:10px;">
-											
-													<div class="MuiFormControl-root">
-														<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled" data-shrink="true" style="background:#fff;">
-															Select Dataset
-														</label>
-											
-														<select class="MuiInputBase-input MuiOutlinedInput-input" name="associatedDatasetID" style="border:1px solid rgba(0, 0, 0, 0.23); outline:none; background:#fff; width:80%; max-width:700px;" onfocus="this.style.borderColor='#0073CF'; this.style.borderWidth='2px';" onblur="this.style.borderColor='rgba(0, 0, 0, 0.23)'; this.style.borderWidth='1px';">
-															<option value="">-----</option>
-											
-															<?php
-															if (!empty($datasetArr)) {
-															
-																usort($datasetArr, function ($a, $b) {
-																	return strcasecmp(strip_tags($a['name']), strip_tags($b['name']));
-																});
-															
-																foreach ($datasetArr as $dataset) {
-																	$assocDatasetID = (int)$dataset['datasetid'];
-																	$assocDatasetName = strip_tags($dataset['name']);
-															
-																	if ($assocDatasetID == $datasetId) continue;
-															
-																	$alreadyAssociated = false;
-															
-																	if (!empty($adArr)) {
-																		foreach ($adArr as $ad) {
-																			if ((int)$ad['datasetID'] == $assocDatasetID) {
-																				$alreadyAssociated = true;
-																				break;
-																			}
-																		}
-																	}
-															
-																	if (!$alreadyAssociated) {
-																		echo '<option value="' . $assocDatasetID . '">' . htmlspecialchars($assocDatasetName) . '</option>';
-																	}
-																}
-															}
-															?>
-														</select>
-													</div>
-											
-													<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium" tabindex="0" name="submitaction" type="submit" value="Link Dataset" style="font-size:.8rem;">
-														<span class="MuiButton-label">Link</span>
-														<span class="MuiTouchRipple-root"></span>
-													</button>
-											
-												</div>
-											
-												<p class="MuiFormHelperText-root MuiFormHelperText-contained">
-													Link associated datasets together
-												</p>
-											</div>
-									</form>
-								<?php } ?>
 							</div>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root">
@@ -1662,6 +1570,108 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							</div>
 						</div>
 					<?php } ?>
+					<div id="linkedtab" class="dataset-tab-content">
+						<!--Linked Datasets section-->
+						<div style="margin:15px; text-align:left;">
+							<input name="tabindex" type="hidden" value="0" />
+							<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
+								
+							<?php if (!empty($adArr)) { ?>
+								<div style="padding:0 15px;">
+									<hr class="MuiDivider-root">
+								</div>
+								<div style="font-weight:bold;margin-top: 20px;">
+									Linked Datasets
+								</div>
+
+								<div>
+									<ul class="MuiList-root MuiList-padding">
+										<?php foreach ($adArr as $ad) { ?>
+											<a href="../datasets/neonpublic.php?datasetid=<?php echo $ad['datasetID']; ?>"
+												class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-button"
+												style="text-decoration:none; color:inherit;">
+									
+											<div class="MuiListItemIcon-root">
+												<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24">
+													<path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 1 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"></path>
+													</svg>
+											</div>
+										
+												<div class="MuiListItemText-root">
+													<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
+														<?php echo htmlspecialchars(strip_tags($ad['name'])); ?>
+													</span>
+												</div>
+										
+												<span class="MuiTouchRipple-root"></span>
+											</a>
+										<?php } ?>
+									</ul>
+								</div>
+							<?php } ?>
+						<?php if ($isEditor == 1) { ?>
+								<div style="padding:0 15px;">
+								<form name="linkdatasetform" action="neondatasetmanager.php" method="post">
+									<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>"/>
+										<div style="margin-top:15px;">
+											<div style="display:flex; align-items:center; gap:10px;">
+										
+												<div class="MuiFormControl-root">
+													<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled" data-shrink="true" style="background:#fff;">
+														Select Dataset
+													</label>
+										
+													<select class="MuiInputBase-input MuiOutlinedInput-input" name="associatedDatasetID" style="border:1px solid rgba(0, 0, 0, 0.23); outline:none; background:#fff; width:80%; max-width:700px;" onfocus="this.style.borderColor='#0073CF'; this.style.borderWidth='2px';" onblur="this.style.borderColor='rgba(0, 0, 0, 0.23)'; this.style.borderWidth='1px';">
+															<option value="">-----</option>
+										
+														<?php
+															if (!empty($datasetArr)) {
+														
+															usort($datasetArr, function ($a, $b) {
+																return strcasecmp(strip_tags($a['name']), strip_tags($b['name']));
+															});
+														
+															foreach ($datasetArr as $dataset) {
+																$assocDatasetID = (int)$dataset['datasetid'];
+																$assocDatasetName = strip_tags($dataset['name']);
+															
+																if ($assocDatasetID == $datasetId) continue;
+														
+																$alreadyAssociated = false;
+														
+																if (!empty($adArr)) {
+																	foreach ($adArr as $ad) {
+																		if ((int)$ad['datasetID'] == $assocDatasetID) {
+																			$alreadyAssociated = true;
+																			break;
+																		}
+																	}
+																}
+														
+																if (!$alreadyAssociated) {
+																	echo '<option value="' . $assocDatasetID . '">' . htmlspecialchars($assocDatasetName) . '</option>';
+																}
+															}
+														}
+														?>
+														</select>
+													</div>
+											
+													<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium" tabindex="0" name="submitaction" type="submit" value="Link Dataset" style="font-size:.8rem;">
+														<span class="MuiButton-label">Link</span>
+														<span class="MuiTouchRipple-root"></span>
+													</button>
+											
+												</div>
+											
+												<p class="MuiFormHelperText-root MuiFormHelperText-contained">
+													Link associated datasets together
+												</p>
+											</div>
+									</form>
+							<?php } ?>
+						</div>
+					</div>
 				</div>
 			<?php
 			} else echo '<div style="margin:30px">' . $LANG['NOT_AUTH'] . '</div>';
