@@ -176,15 +176,24 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="fieldGroupDiv">
 						<div class="fieldDiv">
 							Target Error Group:
-							<select name="errorStr" >
+					
+							<input
+								type="text"
+								name="errorStr"
+								list="errorStrList"
+								value="<?= htmlspecialchars($errorStr) ?>"
+								style="width: 600px; max-width: 100%;"
+							>
+					
+							<datalist id="errorStrList">
 								<option value="nullError">NULL Error Message</option>
-								<option value="">---------------------</option>
+					
 								<?php
-								foreach($reportArr as $msg => $repCntArr){
-									echo '<option '.($errorStr==$msg?'selected':'').'>'.$msg.'</option>';
+								foreach ($reportArr as $msg => $repCntArr) {
+									echo '<option value="' . htmlspecialchars($msg) . '">';
 								}
 								?>
-							</select>
+							</datalist>
 						</div>
 					</div>
 					<div class="fieldGroupDiv">
