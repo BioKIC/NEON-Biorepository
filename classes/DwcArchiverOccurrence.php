@@ -388,7 +388,7 @@ class DwcArchiverOccurrence extends Manager{
 			$sql = 'SELECT identifierName, identifierValue FROM omoccuridentifiers WHERE occid = '.$occid.' ORDER BY sortBy';
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
-				if ($r->identifierName == 'NEON sampleID Hash' && !$GLOBALS['IS_ADMIN']) {
+				if ($r->identifierName == 'NEON sampleID Hash' && (!$GLOBALS['IS_ADMIN'] || $schemaType == 'dwc') ) {
 					$hideSampleID = true;
 					break;
 				}

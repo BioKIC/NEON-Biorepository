@@ -50,13 +50,13 @@ class DwcArchiverBaseManager extends Manager{
 		}
 	}
 // NEON customization
-		public function writeOutRecordBlockIdentifier($occidArr){
+	public function writeOutRecordBlockIdentifier($occidArr){
 		if($occidArr){
 			$sql = $this->sqlBase.' WHERE occid IN('.implode(',', $occidArr).') ';
 			if($rs = $this->conn->query($sql)){
 				$hideSampleIdOccids = [];
 
-				if (!$GLOBALS['IS_ADMIN']) {
+				if (!$GLOBALS['IS_ADMIN'] || $this->schemaType == 'dwc') {
 					$occidList = implode(',', array_map('intval', $occidArr));
 					$sqlHide = "SELECT DISTINCT occid FROM omoccuridentifiers 
 								WHERE identifierName = 'NEON sampleID Hash' 
@@ -73,7 +73,7 @@ class DwcArchiverBaseManager extends Manager{
 					if (
 						isset($r['identifierName']) &&
 						$r['identifierName'] === 'NEON sampleID' &&
-						!$GLOBALS['IS_ADMIN'] &&
+						(!$GLOBALS['IS_ADMIN'] || $this->schemaType == 'dwc') &&
 						isset($hideSampleIdOccids[$r['occid']])
 					) {
 						continue; // Skip when there is a hashed identifier
