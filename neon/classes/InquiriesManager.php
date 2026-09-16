@@ -2176,7 +2176,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
         }
         
         // Add occurrences to dataset
-        $sampsSql = "SELECT occid FROM neonsamplerequestlink WHERE requestID = $requestID";
+        $sampsSql = "SELECT DISTINCT(occid) FROM neonsamplerequestlink WHERE requestID = $requestID";
         $result = $this->conn->query($sampsSql);
         if (!$result) {
             $this->errorMessage = "Failed to fetch occurrences: " . $this->conn->error;
