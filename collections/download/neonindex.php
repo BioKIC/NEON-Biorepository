@@ -3,7 +3,7 @@ include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/DwcArchiverCore.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/download/index.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/download/index.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/download/index.en.php');
-include_once($SERVER_ROOT . '/config/auth_config.php');
+@include_once($SERVER_ROOT . '/config/auth_config.php');
 
 header("Content-Type: text/html; charset=".$CHARSET);
 
@@ -20,9 +20,9 @@ function getAccountStatus()
 		global $PROVIDER_URLS;
 		$accessToken = $_SESSION['ACCESS_TOKEN'];
 		$sub = $_SESSION['SUBSCRIBER'];
-	
+
 		$ch = curl_init();
-	
+
 		curl_setopt_array($ch, [
 			CURLOPT_URL => $PROVIDER_URLS['oid'] . "/api/v2/users/" . $sub,
 			CURLOPT_RETURNTRANSFER => true,
@@ -31,16 +31,16 @@ function getAccountStatus()
 			]
 		]);
 		$response = curl_exec($ch);
-	
+
 		if (curl_errno($ch)) {
 			throw new Exception(curl_error($ch));
 		}
-	
+
 		$statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
-		
+
 		$user = json_decode($response, true);
-		
+
 		if ($statusCode === 401) {
 			if (
 				isset($user['message']) &&
@@ -50,20 +50,20 @@ function getAccountStatus()
 					'expired'
 				];
 			}
-		
+
 			throw new Exception(
 				$user['message'] ?? 'Unauthorized'
 			);
 		}
-		
+
 		if ($statusCode !== 200) {
 			throw new Exception(
 				$user['message'] ?? "Unable to retrieve Auth0 user. HTTP {$statusCode}"
 			);
 		}
-	
+
 		$consentTimestamp = $user['user_metadata']['consent_timestamp'] ?? null;
-		
+
 		$validConsentTimestamp = false;
 		if (is_numeric($consentTimestamp)) {
 			$seconds = (int) floor($consentTimestamp / 1000);
@@ -73,16 +73,16 @@ function getAccountStatus()
 				(int) date('Y', $seconds)
 			);
 		}
-		
+
 		$step1Complete =
 			($user['user_metadata']['consent_given'] ?? false) === true &&
 			$validConsentTimestamp &&
 			($user['user_metadata']['has_signed_up'] ?? false) === true;
-	
+
 		$step2Complete =
 			$step1Complete &&
 			($user['email_verified'] ?? false) === true;
-	
+
 		$step3Complete =
 			$step2Complete &&
 			!empty($user['user_metadata']['first_name']) &&
@@ -100,13 +100,13 @@ function getAccountStatus()
 					!empty($user['user_metadata']['expertise_details'])
 				)
 			);
-	
+
 		$step = 0;
-	
+
 		if ($step1Complete) $step = 1;
 		if ($step2Complete) $step = 2;
 		if ($step3Complete) $step = 3;
-	
+
 		return [
 			'ready' => $step === 3,
 			'step' => $step,
@@ -317,7 +317,7 @@ function getAccountStatus()
 			padding: 8px 16px;
 			background-color: #0073cf;
 		}
-		
+
 		.account-validation-card {
 			color: rgba(0, 0, 0, 0.9);
 			font-size: 0.8rem;
@@ -329,13 +329,13 @@ function getAccountStatus()
 			overflow: hidden;
 			margin: 40px 0 0px;
 		}
-		
+
 		.account-validation-header {
 			display: flex;
 			align-items: center;
 			padding: 16px 20px 12px;
 		}
-		
+
 		.account-validation-header h6 {
 			flex-grow: 1;
 			margin: 0;
@@ -343,70 +343,70 @@ function getAccountStatus()
 			font-weight: 600;
 			text-transform: uppercase;
 		}
-		
+
 		.account-validation-icon-small,
 		.account-validation-icon-large {
 			fill: currentColor;
 			flex-shrink: 0;
 		}
-		
+
 		.account-validation-icon-small {
 			width: 1.25rem;
 			height: 1.25rem;
 			margin-right: 16px;
 		}
-		
+
 		.account-validation-icon-large {
 			width: 2.1875rem;
 			height: 2.1875rem;
 			color: #ffcb4f;
 			margin-left: 16px;
 		}
-		
+
 		.account-validation-body {
 			padding: 0 24px 24px;
 		}
-		
+
 		.account-validation-body p {
 			margin: 0;
 		}
-		
+
 		.account-validation-card hr {
 			border: none;
 			height: 1px;
 			background-color: rgba(0, 0, 0, 0.12);
 			margin: 0 0 16px;
 		}
-		
+
 		.validation-steps-container {
 			width: 100%;
 			margin-top: 16px;
 		}
-		
+
 		.validation-steps-container h6 {
 			margin: 0;
 			font-size: 0.875rem;
 			font-weight: 600;
 		}
-		
+
 		.validation-steps-container span {
 			font-size: 0.75rem;
 		}
-		
+
 		.validation-learn-more {
 			margin-top: 8px !important;
 		}
-		
+
 		.validation-learn-more a {
 			color: #0073cf;
 			text-decoration: underline;
 		}
-		
+
 		.validation-learn-more a:hover,
 		.validation-learn-more a:active {
 			color: #0092e2;
 		}
-		
+
 		.validation-stepper {
 			display: flex;
 			align-items: center;
@@ -414,7 +414,7 @@ function getAccountStatus()
 			padding: 24px 0;
 			background-color: transparent;
 		}
-		
+
 		.validation-step {
 			display: flex;
 			align-items: center;
@@ -422,13 +422,13 @@ function getAccountStatus()
 			color: rgba(0, 0, 0, 0.54);
 			cursor: pointer;
 		}
-		
+
 		.validation-step.complete,
 		.validation-step.active {
 			color: rgba(0, 0, 0, 0.9);
 			font-weight: 500;
 		}
-		
+
 		.step-icon {
 			display: inline-flex;
 			align-items: center;
@@ -442,21 +442,21 @@ function getAccountStatus()
 			font-size: 0.75rem;
 			font-weight: 600;
 		}
-		
+
 		.validation-step.complete .step-icon,
 		.validation-step.active .step-icon {
 			background-color: #0073cf;
 		}
-		
+
 		.step-label {
 			font-size: 0.8rem !important;
 		}
-		
+
 		.step-connector {
 			flex: 1 1 auto;
 			border-top: 1px solid #7c7f80;
 		}
-		
+
 		.validation-message {
 			margin-left: 32px;
 		}
@@ -482,8 +482,8 @@ function getAccountStatus()
 		$canDownload = false;
 		$showLoginRequired = false;
 		$showValidationRequired = false;
-		
-		if ($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT) {
+
+		if (!empty($OVERRIDE_DOWNLOAD_LOGIN_REQUIREMENT)) {
 			$canDownload = true;
 		}
 		elseif (!$SYMB_UID) {
@@ -542,7 +542,7 @@ function getAccountStatus()
 		?>
 			<script>
 				const accountStep = <?= $accountStatus['step'] ?>;
-				
+
 				const messages = {
 					1: {
 						complete: `
@@ -578,13 +578,13 @@ function getAccountStatus()
 						`
 					}
 				};
-				
+
 				$(document).ready(function() {
 					document.querySelectorAll('.validation-step').forEach(step => {
 						step.addEventListener('click', function () {
 							const stepNumber = parseInt(this.dataset.step);
 							const complete = stepNumber <= accountStep;
-				
+
 							document.getElementById('validation-message').innerHTML =
 								complete
 									? messages[stepNumber].complete
@@ -593,7 +593,7 @@ function getAccountStatus()
 					});
 					const selectedStep = Math.min(accountStep + 1, 3);
 					document.querySelector(`.validation-step[data-step="${selectedStep}"]`).click();
-				
+
 				});
 			</script>
 			<div class="account-validation-card">
@@ -601,30 +601,30 @@ function getAccountStatus()
 					<svg class="account-validation-icon-small" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
 						<path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
 					</svg>
-			
+
 					<h6>Account Validation</h6>
-			
+
 					<svg class="account-validation-icon-large" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
 						<path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
 					</svg>
 				</div>
-			
+
 				<div class="account-validation-body">
 					<hr>
-			
+
 					<p class="Mui">Validate your account to gain access to data and all of the features of the NEON Data Portal.</p class="Mui>
-			
+
 					<div class="validation-steps-container">
 						<h5 style="margin-bottom: unset;">Account Validation Steps</h5>
 						<span><?= $step ?> of 3 completed</span>
-			
+
 						<p class="validation-learn-more Mui" style="margin-bottom: 8px;">
 							<a target="_blank" href="https://www.neonscience.org/about/user-accounts">Learn</a>
 							about account validation.
 						</p>
-			
+
 						<hr>
-			
+
 						<div class="validation-stepper">
 							<div class="validation-step <?= $step >= 1 ? 'complete' : 'active' ?>" data-step="1">
 								<span class="step-icon">
@@ -632,18 +632,18 @@ function getAccountStatus()
 								</span>
 								<span class="step-label">Sign In</span>
 							</div>
-							
+
 							<div class="step-connector <?= $step >= 2 ? 'complete' : '' ?>"></div>
-							
+
 							<div class="validation-step <?= $step >= 2 ? 'complete' : ($step == 1 ? 'active' : '') ?>" data-step="2">
 								<span class="step-icon">
 									<?= $step >= 2 ? '✓' : '2' ?>
 								</span>
 								<span class="step-label">Verify Email</span>
 							</div>
-							
+
 							<div class="step-connector <?= $step >= 3 ? 'complete' : '' ?>"></div>
-							
+
 							<div class="validation-step <?= $step == 3 ? 'active' : '' ?>" data-step="3">
 								<span class="step-icon">
 									<?= $step >= 3 ? '✓' : '3' ?>
@@ -651,9 +651,9 @@ function getAccountStatus()
 								<span class="step-label">Validate Account</span>
 							</div>
 						</div>
-			
+
 						<hr>
-			
+
 						<div id="validation-message" class="validation-message">
 						</div>
 					</div>
