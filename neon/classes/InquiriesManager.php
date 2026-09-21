@@ -561,7 +561,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       }
 
       $stmt->bind_param(
-          "iissssssssssssssssi",
+          "iisssssssssssssssi",
           $collectionManager,
           $researcherID,
           $title,
