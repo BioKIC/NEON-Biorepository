@@ -688,7 +688,30 @@ class OccurrenceDataset{
 		$sql = "INSERT INTO omoccurdatasetassociations (datasetID, associatedDatasetID)
 			VALUES ($datasetID, $associatedDatasetID)";
 
-		return $this->conn->query($sql);
+		if (!$this->conn->query($sql)) {
+			return false;
+		}
+
+		$associatedDatasets = $this->getAssociatedDatasets($datasetID);
+
+		foreach ($associatedDatasets as $row) {
+
+			$existingDatasetID = (int)$row['datasetID'];
+
+			if ($existingDatasetID == $associatedDatasetID) {
+				continue;
+			}
+
+			$sql = "INSERT INTO omoccurdatasetassociations
+					(datasetID, associatedDatasetID)
+					VALUES ($existingDatasetID, $associatedDatasetID)";
+
+			if (!$this->conn->query($sql)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 	// end NEON function
 
