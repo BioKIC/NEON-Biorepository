@@ -858,6 +858,7 @@ if(!$isEditor) {
 									<button name="submitButton" type="submit"><?php echo 'Update Status' ?></button>
 									<input type="hidden" name="tabindex" value="1" />
 								</div>
+								<br>
 						</form>
 					</div>
 					<div id="samples" style="">
