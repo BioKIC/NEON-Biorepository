@@ -217,6 +217,96 @@
     { "name": "Research Project", "href": "../../neon/datasets/neonpublic.php?datasetid=#" },
     { "name": "Manage Project" }
     ],
+  "/neon/requests/newinquiry.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Create Inquiry" }
+    ],
+  "/neon/requests/index.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Inquiry List" }
+    ],
+  "/neon/requests/neonrequestsearch.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Inquiry Search" }
+    ],
+    "/neon/requests/inquiryresults.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Inquiry Search", "href": "../neonrequestsearch.php" },
+    { "name": "Search Results" }
+    ],    
+  "/neon/requests/inquiryform.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Inquiry List", "href": "index.php" },
+    { "name": "View and Edit Inquiry" }
+    ],  
+  "/neon/editor/neoneditor.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "NEON Extended Data Editor" }
+    ],
+  "/neon/editor/neonnomenclaturaladjustments.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "NEON Nomenclatural Adjustments" }
+    ],
+  "/neon/editor/neonnomenclaturaladjustments.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "NEON Nomenclatural Adjustments" }
+    ],
+  "/neon/neonreports/sampledashboard.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Sample Dashboard" }
+    ],
+  "/neon/neonreports/monthlyreportactions.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Monthly Reports" }
+    ],
+  "/neon/neonreports/monthlyreport.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Monthly Reports", "href": "monthlyreportactions.php"},
+    { "name": "View Monthly Report" }
+    ],
+  "/neon/neonreports/quarterlyreportactions.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Quarterly Reports" }
+    ],
+  "/neon/neonreports/quarterlyreport.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Quarterly Reports", "href": "quarterlyreportactions.php"},
+    { "name": "View Quarterly Report" }
+    ],
+  "/neon/requests/requestreport.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Requests Report" }
+    ],
+  "/neon/neonreports/sowreportactions.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "SOW Report" }
+    ],
+  "/neon/neonreports/sowreport.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "SOW Reports", "href": "sowreportactions.php" },
+    { "name": "SOW Report"}
+    ],
+  "/neon/neonreports/archiveupload.php": [
+    { "name": "Samples & Specimens", "href": "../../index.php" },
+    { "name": "Management Tools", "href": "../index.php" },
+    { "name": "Archive Upload" }
+    ],
   "/profile/usermanagement.php": [
     { "name": "User Management" }
     ],
@@ -286,5 +376,5 @@
   "/taxa/index.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Taxon Page" }
-    ]  
+    ] 
 }
