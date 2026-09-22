@@ -697,7 +697,10 @@ if(!$isEditor) {
    						 			<div class="fieldDiv">
        										<label for="inqdrive"><strong><?php echo 'Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
 											<i>Place inquiry folder within <a href='https://drive.google.com/drive/folders/18dxKEfUd6V7IpUEUi6dkQoOLzm9gyy-3?usp=drive_link'>Researcher Requests and Agreements</a></i><br>
-        									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo $inquirydata['folderName']; ?>" />
+        									<input name="inqdrive" id="inqdrive" type="text" style="width:700px;" value="<?php echo $inquirydata['folderName']; ?>" />
+											<?php if ($inquirydata['folderName'] && str_contains($inquirydata['folderName'],"drive.google")) {
+												echo '<a href=' . $inquirydata['folderName'] . ' target="_blank" rel="noopener noreferrer">Link to Folder</a>';
+											} ?>
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:8px;float:left;">
@@ -772,8 +775,12 @@ if(!$isEditor) {
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
-										<strong>Link to Signed Sample Use Agreement:</strong></br><i>Use NA for internal requests (or similar) that do not require an agreement.</i></br>
-										<input name="inqsualink" type="text" style = 'width:800px' value="<?php echo $inquirydata['sampleUseAgreementLink']; ?>" />
+										<strong>Link to Signed Sample Use Agreement:</strong>
+										</br><i>Use NA for internal requests (or similar) that do not require an agreement.</i></br>
+										<input name="inqsualink" type="text" style = 'width:700px' value="<?php echo $inquirydata['sampleUseAgreementLink']; ?>" />
+										<?php if ($inquirydata['sampleUseAgreementLink'] && str_contains($inquirydata['sampleUseAgreementLink'],"drive.google")) {
+											echo '<a href=' . $inquirydata['sampleUseAgreementLink'] . ' target="_blank" rel="noopener noreferrer">Link to Agreement</a>';
+										} ?>
 									</div>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
@@ -784,8 +791,11 @@ if(!$isEditor) {
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldDiv">
-										<strong><?php echo 'Link to Signed Confirmation of Sample Receipt: '?></strong>
-										<input name="inqcsrlink" type="text" style = 'width:400px' value="<?php echo $inquirydata['confirmationOfReceiptLink']; ?>" />
+										<strong><?php echo 'Link to Signed Confirmation of Sample Receipt: '?></strong></br>
+										<input name="inqcsrlink" type="text" style = 'width:700px' value="<?php echo $inquirydata['confirmationOfReceiptLink']; ?>" />
+										<?php if ($inquirydata['confirmationOfReceiptLink'] && str_contains($inquirydata['confirmationOfReceiptLink'],"drive.google")) {
+											echo '<a href=' . $inquirydata['confirmationOfReceiptLink'] . ' target="_blank" rel="noopener noreferrer">Link to Agreement</a>';
+										} ?>
 									</div>
 								</div>
 							</fieldset>
