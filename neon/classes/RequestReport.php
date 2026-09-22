@@ -53,7 +53,7 @@
     if($result = $this->conn->query($sql)){
       while($row = $result->fetch_assoc()){
         $dataArr[] = array(
-          'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'">'.$row['id'].'</a>',
+          'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'" target="_blank">'.$row['id'].'</a>',
           'researcher' => is_null($row['researcher'])?'<span style="color:lightgray;">NULL</span>':$row['researcher'],
           'date' => is_null($row['date'])?'<span style="color:lightgray;">NULL</span>':$row['date'],
           'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
@@ -424,7 +424,7 @@
     while ($row = $result->fetch_assoc()) {
         $dataArr[] = array(
             'requestid' => $row['id'],
-            'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'">'.$row['id'].'</a>',
+            'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'" target="_blank">'.$row['id'].'</a>',
             'researcher' => is_null($row['name'])?'<span style="color:lightgray;">NULL</span>':$row['name'],
             'date' => is_null($row['inquiryDate'])?'<span style="color:lightgray;">NULL</span>':$row['inquiryDate'],
             'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
