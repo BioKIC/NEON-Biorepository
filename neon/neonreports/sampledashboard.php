@@ -40,10 +40,10 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 if ($isEditor) {
 ?>
 	<div class="section-nav">
-		<a href="#cumulativeSamplesSection">Samples Received</a> |
-		<a href="#cumulativeShipmentsSection">Shipments Received</a> |
-		<a href="#cumulativeCheckinSection">Sample Check In</a> |
-		<a href="#cumulativeRecordsSection">Occurrence Records</a>
+		<a href="#cumulativeSamplesSection">Samples Received</a>|
+		<a href="#cumulativeShipmentsSection">Shipments Received</a>|
+		<a href="#cumulativeCheckinSection">Sample Check In</a>|
+		<a href="#cumulativeRecordsSection">Occurrence Records</a>|
         <a href="#cumulativeTaxaSection">Taxa</a>
 	</div>
 	<h1>NEON Sample Dashboard: <?php echo date('Y-m-d H:i:s'); ?></h1>
