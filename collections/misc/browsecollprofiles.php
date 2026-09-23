@@ -36,6 +36,8 @@ if ($SYMB_UID) {
 	<meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
 	<meta http-equiv="Pragma" content="no-cache">
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
+	<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
@@ -45,6 +47,28 @@ if ($SYMB_UID) {
 
 <body>
 	<div id="innertext">
+		<section>
+			<div style="border-bottom-width:2px;border-color:#0472cf;border-left-width:20px;border-right-width:2px;border-style:solid;border-top-width:2px;padding:10px;">
+				<p>Our downloadable table contains a wealth of information about all NEON sample types, including associated protocols and data products, links to sample type descriptions, summary statistics, and more:</p>
+				<span>
+					<form class="button-form" action="../download/downloadsampletypes.php" method="post">
+						<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
+						<span class="MuiButton-label" style="font-size: 0.55rem;">
+							<i class="fa-solid fa-download" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
+								Download Sample Type Summary Table (CSV)
+							<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+								<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
+							</span>
+						</span>
+						<span class="MuiTouchRipple-root"></span>
+							</button>
+							<input name="searchvar" type="hidden" value="<?= $searchVar ?>" />
+							<input name="dltype" type="hidden" value="specimen" />
+					</form>
+				</span>
+			</div>
+		</section>
+		<br>
 		<div id="biorepo-collections-content"></div>
 	</div>
 </body>
