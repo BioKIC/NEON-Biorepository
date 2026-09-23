@@ -56,8 +56,8 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 if ($isEditor) {
 ?>
     <div class="section-nav">
-		<a href="#unsubmitted">Unsubmitted Samples</a> |
-		<a href="#potentialnew">Potential New Samples</a> |
+		<a href="#unsubmitted">Unsubmitted Samples</a>|
+		<a href="#potentialnew">Potential New Samples</a>|
 		<a href="#submitted">Submitted Samples</a>
 	</div>
 	<h1>NEON Archive Upload Data</h1>
