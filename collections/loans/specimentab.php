@@ -321,6 +321,25 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 					<span class="radio-span"><input name="targetidentifier" type="radio" value="catnum" checked /> <?php echo $LANG['CATNO']; ?></span>
 					<span class="radio-span"><input name="targetidentifier" type="radio" value="other" /> <?php echo $LANG['OTHER_CATNUMS']; ?></span>
 				</div>
+				<!-- start NEON customization -->
+				<span>
+					<strong> Sample Type: </strong>
+				</span><br />
+				<span>
+					<select name="sampletype">
+						<option value="">All Sample Types</option>
+						<?php
+							$sampleTypeArr = $loanManager->getSampleTypes($specList);
+
+							foreach($sampleTypeArr as $row){
+								echo '<option value="' . $row['collID'] . '">'
+									. htmlspecialchars($row['collectionName'])
+									. '</option>';
+							}
+						?>
+					</select>
+				</span>
+				<!-- end NEON customization -->
 				<div class="field-div">
 					<input name="collid" type="hidden" value="<?php echo $collid; ?>" />
 					<input name="loanid" type="hidden" value="<?php echo $loanId; ?>" />

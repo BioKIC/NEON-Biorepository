@@ -654,12 +654,28 @@ class OccurrenceLoans extends Manager{
 		if($this->collid && is_numeric($postArr['loanid'])){
 			if($postArr['catalogNumbers']){
 				$mode = $postArr['processmode'];
+				// start NEON addition
+				$sampleType = isset($postArr['sampletype']) ? (int)$postArr['sampletype'] : 0;
+				// end NEON addition
 				$catNumStr = str_replace(array("\n", "\r\n", ";"), ",", $postArr['catalogNumbers']);
 				$catArr = array_unique(explode(',',$catNumStr));
 				foreach($catArr as $catStr){
 					$catStr = trim($catStr);
 					if($catStr){
 						if($occArr = $this->getOccid($catStr, $postArr['targetidentifier'])){
+
+							// start NEON addition - Filter occurrences by sample type if one was selected
+							if($sampleType){
+								$filteredOccArr = [];
+							 	$filteredOccArr = $this->filterBySampleType($occArr,$sampleType);
+								$occArr = $filteredOccArr;
+							}
+
+							if(empty($occArr)){
+								$this->warningArr['missing'][] = $catStr;
+								continue;
+							}
+							// End NEON addition
 							if(count($occArr) > 1) $this->warningArr['multiple'][] = $catStr;
 							if($mode == 'link'){
 								foreach($occArr as $occid){
@@ -962,6 +978,67 @@ class OccurrenceLoans extends Manager{
 		}
 		return $retArr;
 	}
+
+	// start NEON addition
+	public function getSampleTypes(){
+		$retArr = [];
+		$sql = "SELECT collID, collectionName
+				FROM omcollections
+				ORDER BY collectionName";
+		$stmt = $this->conn->prepare($sql);
+		if (!$stmt) {
+			$this->errorMessage = "Database error: " . $this->conn->error;
+			return $retArr;
+		}
+		$stmt->execute();
+		$result = $stmt->get_result();
+		while($row = $result->fetch_assoc()){
+			$retArr[] = $row;
+		}
+		$stmt->close();
+		return $retArr;
+	}
+
+	public function filterBySampleType($occids, $sampleType){
+		$retArr = [];
+		$sampleType = (int)$sampleType;
+
+		if(empty($occids)){
+			return $retArr;
+		}
+
+		$occids = array_map('intval', $occids);
+		$placeholders = implode(',', array_fill(0, count($occids), '?'));
+
+		$sql = "SELECT occid
+				FROM omoccurrences
+				WHERE collid = ?
+				AND occid IN ($placeholders)";
+
+		$stmt = $this->conn->prepare($sql);
+
+		if (!$stmt) {
+			$this->errorMessage = "Database error: " . $this->conn->error;
+			return $retArr;
+		}
+
+		$types = 'i' . str_repeat('i', count($occids));
+
+		$params = array_merge([$sampleType], $occids);
+		$stmt->bind_param($types, ...$params);
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+
+		while ($row = $result->fetch_assoc()) {
+			$retArr[] = $row['occid'];
+		}
+
+		$stmt->close();
+
+		return $retArr;
+	}
+	// end NEON addition
 
 	// General AJAX functions
 	public function identifierExists($identifier,$idType){
