@@ -20,6 +20,11 @@ $collid = $loanManager->sanitizeInt($collid);
 $loanId = $loanManager->sanitizeInt($loanId);
 $tabIndex = $loanManager->sanitizeInt($tabIndex);
 
+// start NEON addition
+$sampletype = isset($_REQUEST['sampletype']) ? (int)$_REQUEST['sampletype'] : 0;
+$sampletype = $loanManager->sanitizeInt($sampletype);
+// end NEON addition
+
 $isEditor = 0;
 if($SYMB_UID && $collid){
 	if($IS_ADMIN || (array_key_exists('CollAdmin',$USER_RIGHTS) && in_array($collid,$USER_RIGHTS['CollAdmin']))
