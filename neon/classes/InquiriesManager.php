@@ -1305,7 +1305,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
 				$available = isset($postArr['available'])&&$postArr['available']?$postArr['available']:NULL;
 				$substanceProvided = isset($postArr['substanceprovided'])&&$postArr['substanceprovided']?$postArr['substanceprovided']:NULL;
 				$notes = isset($postArr['notes'])&&$postArr['notes']?$postArr['notes']:NULL;
-                if (array_key_exists('shipmentid', $postArr) && trim($postArr['shipmentid']) !== '') {
+                if (array_key_exists('shipmentid', $postArr) && trim((string)$postArr['shipmentid']) !== '') {
                     $shipmentID = (int)$postArr['shipmentid'];
                 } else {
                     $shipmentID = null;
