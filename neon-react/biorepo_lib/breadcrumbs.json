@@ -176,7 +176,7 @@
   "/neon/loans.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
     { "name": "Management Tools", "href": "index.php" },
-    { "name": "Loans Reports" }
+    { "name": "Loan Report" }
     ],
   "/neon/shipment/prepreports.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },

@@ -474,6 +474,10 @@ if($isEditor){
 			?>
 			<!--neon edit-->
 			<div id="admincollection">
+				<h3>Quick Search by Sample Identifier<h3>
+					<form name="sampleQuickSearchFrom" action="<?php echo $CLIENT_ROOT; ?>/neon/loans.php" method="post" style="display: inline" >
+						<input name="quicksearch" type="text" value="" onchange="this.form.submit()" style="width:400px;" />
+					</form>
 				<h3>Summary Report</h3>
 				<div>
 					<ul>
