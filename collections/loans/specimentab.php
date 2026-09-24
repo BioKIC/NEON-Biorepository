@@ -11,6 +11,9 @@ if(!$SYMB_UID) header('Location: ' . $CLIENT_ROOT . '/profile/index.php?refurl=.
 $collid = $_REQUEST['collid'];
 $loanId = $_REQUEST['loanid'];
 $sortTag = (isset($_REQUEST['sortTag']) ? $_REQUEST['sortTag'] : '');
+// start NEON addition
+$sampletype = (isset($_REQUEST['sampletype']) ? $_REQUEST['sampletype'] : '');
+// end NEON addition
 
 $loanManager = new OccurrenceLoans();
 
@@ -327,12 +330,16 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 				</span><br />
 				<span>
 					<select name="sampletype">
-						<option value="">All Sample Types</option>
+						<option value="" <?php echo ($sampletype === '' ? 'selected' : ''); ?>>
+							All Sample Types
+						</option>
 						<?php
 							$sampleTypeArr = $loanManager->getSampleTypes($specList);
 
 							foreach($sampleTypeArr as $row){
-								echo '<option value="' . $row['collID'] . '">'
+								echo '<option value="' . $row['collID'] . '" '
+									. ($sampletype == $row['collID'] ? 'selected' : '')
+									. '>'
 									. htmlspecialchars($row['collectionName'])
 									. '</option>';
 							}

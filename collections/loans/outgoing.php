@@ -188,7 +188,10 @@ $specimenTotal = $loanManager->getSpecimenTotal($loanId);
 			<div id="tabs" style="margin:0px;">
 			  <ul>
 					<li><a href="#outloandetaildiv"><span><?= $LANG['LOAN_DETAILS'] ?></span></a></li>
-					<li><a href="specimentab.php?collid=<?= $collid . '&loanid=' . $loanId . '&sortTag=' . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>"><span><?= $LANG['CAP_SPECIMENS'] ?></span></a></li>
+					<a href="specimentab.php?collid=<?= $collid
+						. '&loanid=' . $loanId
+						. '&sortTag=' . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
+						. '&sampletype=' . $sampletype ?>">
 					<li><a href="#outloandeldiv"><span><?= $LANG['ADMIN'] ?></span></a></li>
 				</ul>
 				<div id="outloandetaildiv">
