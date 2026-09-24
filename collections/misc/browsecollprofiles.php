@@ -49,7 +49,7 @@ if ($SYMB_UID) {
 	<div id="innertext">
 		<section>
 			<div style="border-bottom-width:2px;border-color:#0472cf;border-left-width:20px;border-right-width:2px;border-style:solid;border-top-width:2px;padding:10px;">
-				<p>Our downloadable table contains a wealth of information about all NEON sample types, including associated protocols and data products, links to sample type descriptions, summary statistics, and more:</p>
+				<p>Our downloadable table contains a wealth of information about all sample types held at the NEON Biorepository, including associated protocols and data products, links to sample type descriptions, summary statistics, and more:</p>
 				<span>
 					<form class="button-form" action="../download/downloadsampletypes.php" method="post">
 						<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
