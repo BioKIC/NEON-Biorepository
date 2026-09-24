@@ -198,7 +198,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$errorMessage[] = 'Pending Fulfillment Date cannot be before Inquiry Date';
 		}
 	}
-	if (!empty($fulfillment) && empty($suaLink)) {
+	if (!empty($active) && empty($suaLink)) {
 		$errorMessage[] = 'A sample use agreement is required in order to fulfill a request. Put in NA for internal requests (or similar) that do not require an agreement.';
 	}	
 	if (!empty($followUpType) && $followUpType != 'none' && empty($assignee)) {
