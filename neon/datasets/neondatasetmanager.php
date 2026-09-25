@@ -410,6 +410,14 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		}
 	});
 
+	function copyUrl(url) {
+		navigator.clipboard.writeText(url).then(function() {
+			console.log('URL copied to clipboard');
+		}).catch(function(err) {
+			console.error('Could not copy URL:', err);
+		});
+	};
+
 	</script>
 	<style>
 
@@ -628,7 +636,8 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		<?php
 		if ($mdArr['category'] == "Request") { 
 			$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
-			if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {							?>
+			if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {
+				?>
 				<a
 					href="<?php echo htmlspecialchars($rArr['sampleUseAgreementLink'], ENT_QUOTES, $CHARSET); ?>"
 					target="_blank"
@@ -654,6 +663,16 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			} else 	echo '<h5 class="MuiTypography-root MuiTypography-h5" style="color:red; padding:16px 0; margin-left:10px;">No Sample Use Agreement exists for this project.</h5>';
 			if ($rArr['id'] && $isEditor == 1) {
 			?>
+				<span>
+					<button type="button"
+						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeMedium"
+        				onclick="copyUrl(window.location.origin + '/NEON/neon/datasets/neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>')"
+						style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
+						aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
+						title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
+						Copy Dataset Url
+					</button>
+				</span>
 				<a
 					href="../requests/inquiryform.php?id=<?php echo urlencode($rArr['id']); ?>"
 					target="_blank"
