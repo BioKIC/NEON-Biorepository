@@ -513,7 +513,6 @@ public function exportInquiryList($ids){
         r.description,
         r.dataProduced,
         r.howFoundUs,
-        r.existingSamples,
         r.futureSamples,
         r.generatingSamples,
         r.folderName,
