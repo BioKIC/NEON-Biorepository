@@ -180,8 +180,8 @@ if($formSubmit == 'editStatus' && $isEditor){
 			$errorMessage[] = 'Active Date cannot be before Pending Fulfillment Date';
 		}
 	}
-	if ((!empty($pendingfunding) || !empty($active)) && !empty($notfunded) && (empty($followUpDate) || empty($followUpType))) {
-			$errorMessage[] = 'Follow Up Type and Date are required for active projects and inquiries pending funding.';
+	if ((empty($complete) && empty($notfunded) && empty($cut))  && (empty($followUpDate) || empty($followUpType))) {
+			$errorMessage[] = 'Follow Up Type and Date are required for any pending or active projects.';
 	}
 	if (!empty($fulfillment) && !empty($pendinglist)) {
 		if (strtotime($fulfillment) < strtotime($pendinglist)) {
