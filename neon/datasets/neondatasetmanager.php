@@ -633,71 +633,71 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		?>
 
 		<div>
-		<?php
-		if ($mdArr['category'] == "Request") {
-			$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
-			if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {
-				?>
-				<a
-					href="<?php echo htmlspecialchars($rArr['sampleUseAgreementLink'], ENT_QUOTES, $CHARSET); ?>"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeMedium"
-					style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
-				>
-					<span class="MuiButton-label">
-						View Sample Use Agreement
-						<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-							<svg
-								aria-hidden="true"
-								class="MuiSvgIcon-root"
-								focusable="false"
-								viewBox="0 0 24 24"
-							>
-								<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-							</svg>
-						</span>
-					</span>
-				</a>
-		<?php
-			} else 	echo '<h5 class="MuiTypography-root MuiTypography-h5" style="color:red; padding:16px 0; margin-left:10px;">No Sample Use Agreement exists for this project.</h5>';
-			if ($rArr['id'] && $isEditor == 1) {
-			?>
-				<span>
-					<button type="button"
+			<?php
+			if ($mdArr['category'] == "Request") {
+				$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
+				if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {
+					?>
+					<a
+						href="<?php echo htmlspecialchars($rArr['sampleUseAgreementLink'], ENT_QUOTES, $CHARSET); ?>"
+						target="_blank"
+						rel="noopener noreferrer"
 						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeMedium"
-        				onclick="copyUrl(window.location.origin + '/NEON/neon/datasets/neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>')"
 						style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
-						aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
-						title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
-						Copy Dataset Url
-					</button>
-				</span>
-				<a
-					href="../requests/inquiryform.php?id=<?php echo urlencode($rArr['id']); ?>"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeMedium MuiButton-sizeMedium"
-					style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
-				>
-					<span class="MuiButton-label">
-						Manage Request
-						<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-							<svg
-								aria-hidden="true"
-								class="MuiSvgIcon-root"
-								focusable="false"
-								viewBox="0 0 24 24"
-							>
-								<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-							</svg>
+					>
+						<span class="MuiButton-label">
+							View Sample Use Agreement
+							<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+								<svg
+									aria-hidden="true"
+									class="MuiSvgIcon-root"
+									focusable="false"
+									viewBox="0 0 24 24"
+								>
+									<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+								</svg>
+							</span>
 						</span>
+					</a>
+					<?php
+				} else 	echo '<h5 class="MuiTypography-root MuiTypography-h5" style="color:red; padding:16px 0; margin-left:10px;">No Sample Use Agreement exists for this project.</h5>';
+				if ($rArr['id'] && $isEditor == 1) {
+					?>
+					<span>
+						<button type="button"
+							class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeMedium"
+	        				onclick="copyUrl(window.location.origin + '/NEON/neon/datasets/neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>')"
+							style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
+							aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
+							title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
+							Copy Dataset Url
+						</button>
 					</span>
-				</a>
-		<?php
+					<a
+						href="../requests/inquiryform.php?id=<?php echo urlencode($rArr['id']); ?>"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeMedium MuiButton-sizeMedium"
+						style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
+					>
+						<span class="MuiButton-label">
+							Manage Request
+							<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+								<svg
+									aria-hidden="true"
+									class="MuiSvgIcon-root"
+									focusable="false"
+									viewBox="0 0 24 24"
+								>
+									<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+								</svg>
+							</span>
+						</span>
+					</a>
+					<?php
+				}
 			}
-		}
-		?>
+			?>
 		</div>
 		<div style="padding:0 15px;">
 			<hr class="MuiDivider-root">
@@ -714,7 +714,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		}
 		if ($datasetId) {
 			if ($isEditor) {
-		?>
+				?>
 				<div id="tabs" style="margin:10px;padding:0;border:1px solid #e6e6e6;">
 
 					<div class="MuiTabs-root">
@@ -776,7 +776,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									</span>
 									<span class="MuiTouchRipple-root"></span>
 								</button>
-								<?php if ($isEditor < 3) { ?>
+								<?php
+								if ($isEditor < 3) {
+									?>
 									<button
 										aria-selected="false"
 										class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
@@ -791,7 +793,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										</span>
 										<span class="MuiTouchRipple-root"></span>
 									</button>
-								<?php } ?>
+									<?php
+								}
+								?>
 
 							</div>
 
@@ -802,173 +806,175 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 						<?php
 						if ($occArr = $datasetManager->neonGetOccurrences($datasetId)) {
 							$headerArr = ['occid','Domain', 'State','Site','Sample ID','Sample Code','IGSN ID','Scientific Name'];
-						?>
-								<form name="occurform"
-									action="neondatasetmanager.php"
-									method="post"
-									onsubmit="return validateOccurForm(this)">
+							?>
+							<form name="occurform"
+								action="neondatasetmanager.php"
+								method="post"
+								onsubmit="return validateOccurForm(this)">
 
-									<div class="section" style="margin:15px;">
-										<p class="MuiTypography-root MuiTypography-body1" style="margin-right:10px;">
-											<?php echo $LANG['COUNT'] . ': ' . count($occArr) . ' ' . $LANG['RECORDS']; ?>
-										</p>
+								<div class="section" style="margin:15px;">
+									<p class="MuiTypography-root MuiTypography-body1" style="margin-right:10px;">
+										<?php echo $LANG['COUNT'] . ': ' . count($occArr) . ' ' . $LANG['RECORDS']; ?>
+									</p>
+									<div
+										style="
+											display:flex;
+											align-items:flex-start;
+											gap:16px;
+											margin:15px 0;
+											padding:18px 20px;
+											background:#f3f8fd;
+											border:1px solid #c5ddf4;
+										"
+									>
+										<div
+											style="
+												flex:0 0 auto;
+												width:28px;
+												height:28px;
+												border-radius:50%;
+												background:#0073CF;
+												color:#fff;
+												display:flex;
+												align-items:center;
+												justify-content:center;
+												font-weight:bold;
+												font-family:serif;
+												font-size:20px;
+												line-height:1;
+											"
+											aria-hidden="true"
+										>
+											i
+										</div>
+
 										<div
 											style="
 												display:flex;
-												align-items:flex-start;
-												gap:16px;
-												margin:15px 0;
-												padding:18px 20px;
-												background:#f3f8fd;
-												border:1px solid #c5ddf4;
+												align-items:center;
+												justify-content:space-between;
+												gap:30px;
+												flex:1;
+												min-width:0;
 											"
 										>
-											<div
-												style="
-													flex:0 0 auto;
-													width:28px;
-													height:28px;
-													border-radius:50%;
-													background:#0073CF;
-													color:#fff;
-													display:flex;
-													align-items:center;
-													justify-content:center;
-													font-weight:bold;
-													font-family:serif;
-													font-size:20px;
-													line-height:1;
-												"
-												aria-hidden="true"
+											<p
+												class="MuiTypography-root MuiTypography-body1"
+												style="margin:0; line-height:1.6; flex:1;"
 											>
-												i
-											</div>
+												Samples that will not be used for this project may be removed from the list.
+												If additional samples need to be added, please contact the NEON Biorepository. The request will need to be reviewed and the Sample Use Agreement updated before additional samples can be added.
+											</p>
 
-											<div
-												style="
-													display:flex;
-													align-items:center;
-													justify-content:space-between;
-													gap:30px;
-													flex:1;
-													min-width:0;
-												"
-											>
-												<p
-													class="MuiTypography-root MuiTypography-body1"
-													style="margin:0; line-height:1.6; flex:1;"
-												>
-													Samples that will not be used for this project may be removed from the list.
-													If additional samples need to be added, please contact the NEON Biorepository. The request will need to be reviewed and the Sample Use Agreement updated before additional samples can be added.
-												</p>
+											<div style="flex-shrink:0;">
+												<input
+													name="datasetid"
+													type="hidden"
+													value="<?php echo $datasetId; ?>"
+												/>
 
-												<div style="flex-shrink:0;">
-													<input
-														name="datasetid"
-														type="hidden"
-														value="<?php echo $datasetId; ?>"
-													/>
+												<?php
+												if ($occArr && $isEditor < 3) {
+													?>
+													<button
+														class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeLarge"
+														type="submit"
+														name="submitaction"
+														value="Remove Selected Samples"
+														style="font-size:0.7em;"
+													>
+														<span class="MuiButton-label">
+															<?php echo $LANG['REM_SEL_OCCS']; ?>
+														</span>
 
-													<?php if ($occArr && $isEditor < 3) { ?>
-														<button
-															class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeLarge"
-															type="submit"
-															name="submitaction"
-															value="Remove Selected Samples"
-															style="font-size:0.7em;"
-														>
-															<span class="MuiButton-label">
-																<?php echo $LANG['REM_SEL_OCCS']; ?>
-															</span>
-
-															<span class="MuiTouchRipple-root"></span>
-														</button>
-													<?php } ?>
-												</div>
+														<span class="MuiTouchRipple-root"></span>
+													</button>
+													<?php
+												}
+												?>
 											</div>
 										</div>
-										<div style="padding:0 15px;">
-											<hr class="MuiDivider-root">
-										</div>
-										<div class="view-samples-container">
-											<a
-												class="Mui view-samples-button"
-												href="../../collections/list.php?datasetid=<?php echo $datasetId; ?>"
-												target="_blank"
-											>
-												<span class="button-text">Explore Samples</span>
-												<span class="button-arrow">›</span>
-											</a>
-										</div>
-										<table id="sampleTable" class="Mui sample-table">
-											<thead>
-												<tr>
-													<th>
-														<input
-															type="checkbox"
-															onclick="selectAll(this);"
-															title="<?php echo $LANG['SEL_DESEL_SPCS']; ?>"
-														>
-													</th>
-													<th>occid</th>
-													<th>Domain</th>
-													<th>State</th>
-													<th>Site</th>
-													<th>Sample ID</th>
-													<th>Sample Code</th>
-													<th>IGSN ID</th>
-													<th>Scientific Name</th>
-												</tr>
-											</thead>
-
-											<tbody>
-											<?php
-											$i = 0;
-											foreach ($occArr as $row) {
-												$i++;
-											?>
-												<tr>
-													<td>
-														<input
-															type="checkbox"
-															name="occid[]"
-															value="<?php echo $row['occid']; ?>"
-														>
-													</td>
-
-													<td>
-														<a href="#" onclick="openIndPopup(<?php echo $row['occid']; ?>); return false;">
-															<?php echo $row['occid']; ?>
-														</a>
-													</td>
-
-													<td><?php echo htmlspecialchars($row['domain'] ?? ''); ?></td>
-													<td><?php echo htmlspecialchars($row['stateProvince'] ?? ''); ?></td>
-													<td><?php echo htmlspecialchars($row['siteID'] ?? ''); ?></td>
-													<td><?php echo htmlspecialchars($row['sampleID'] ?? ''); ?></td>
-													<td><?php echo htmlspecialchars($row['barcode'] ?? ''); ?></td>
-
-													<td>
-														<a href="<?php echo htmlspecialchars($row['IGSN_ID']); ?>" target="_blank">
-															<?php echo htmlspecialchars($row['IGSN']); ?>
-														</a>
-													</td>
-
-													<td><?php echo htmlspecialchars($row['scientificName']); ?></td>
-												</tr>
-											<?php } ?>
-											</tbody>
-										</table>
 									</div>
+									<div style="padding:0 15px;">
+										<hr class="MuiDivider-root">
+									</div>
+									<div class="view-samples-container">
+										<a
+											class="Mui view-samples-button"
+											href="../../collections/list.php?datasetid=<?php echo $datasetId; ?>"
+											target="_blank"
+										>
+											<span class="button-text">Explore Samples</span>
+											<span class="button-arrow">›</span>
+										</a>
+									</div>
+									<table id="sampleTable" class="Mui sample-table">
+										<thead>
+											<tr>
+												<th>
+													<input
+														type="checkbox"
+														onclick="selectAll(this);"
+														title="<?php echo $LANG['SEL_DESEL_SPCS']; ?>"
+													>
+												</th>
+												<th>occid</th>
+												<th>Domain</th>
+												<th>State</th>
+												<th>Site</th>
+												<th>Sample ID</th>
+												<th>Sample Code</th>
+												<th>IGSN ID</th>
+												<th>Scientific Name</th>
+											</tr>
+										</thead>
 
+										<tbody>
+										<?php
+										$i = 0;
+										foreach ($occArr as $row) {
+											$i++;
+											?>
+											<tr>
+												<td>
+													<input
+														type="checkbox"
+														name="occid[]"
+														value="<?php echo $row['occid']; ?>"
+													>
+												</td>
 
-								</form>
+												<td>
+													<a href="#" onclick="openIndPopup(<?php echo $row['occid']; ?>); return false;">
+														<?php echo $row['occid']; ?>
+													</a>
+												</td>
+
+												<td><?php echo htmlspecialchars($row['domain'] ?? ''); ?></td>
+												<td><?php echo htmlspecialchars($row['stateProvince'] ?? ''); ?></td>
+												<td><?php echo htmlspecialchars($row['siteID'] ?? ''); ?></td>
+												<td><?php echo htmlspecialchars($row['sampleID'] ?? ''); ?></td>
+												<td><?php echo htmlspecialchars($row['barcode'] ?? ''); ?></td>
+
+												<td>
+													<a href="<?php echo htmlspecialchars($row['IGSN_ID']); ?>" target="_blank">
+														<?php echo htmlspecialchars($row['IGSN']); ?>
+													</a>
+												</td>
+
+												<td><?php echo htmlspecialchars($row['scientificName']); ?></td>
+											</tr>
+										<?php } ?>
+										</tbody>
+									</table>
+								</div>
+							</form>
 							<?php
 						} else {
-						?>
+							?>
 							<div style="font-weight:bold; margin:15px"><?php echo $LANG['NO_OCCS_DS']; ?></div>
 							<div style="margin:15px"><?php echo $LANG['LINK_OCCS_VIA'] . ' <a href="../index.php">' . htmlspecialchars($LANG['OCC_SEARCH'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a> ' . htmlspecialchars($LANG['OR_VIA_OCC_PROF'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></div>
-						<?php
+							<?php
 						}
 						?>
 					</div>
@@ -1025,11 +1031,14 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 						<div style="padding:0 15px;">
 							<hr class="MuiDivider-root">
 						</div>
-						<?php if ($mdArr['category'] == "Request") {
+						<?php
+						if ($mdArr['category'] == "Request") {
 							?>
 							<div style="margin:15px;">
-							<?php $type = 'dataset'; ?>
-							<?php $pubID = $datasetId; ?>
+							<?php
+							$type = 'dataset';
+							$pubID = $datasetId;
+							?>
 							<form action="<?php echo $CLIENT_ROOT; ?>/neon/requests/exporthandler.php" method="post">
 								<input type="hidden" name="pubID" value="<?php echo $pubID; ?>" />
 								<input type="hidden" name="type" value="<?php echo $type; ?>" />
@@ -1053,7 +1062,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								</button>
 							</form>
 							</div>
-						<?php
+							<?php
 						};
 						?>
 						<div style="padding:0 15px;">
@@ -1240,7 +1249,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								<input name="tabindex" type="hidden" value="0" />
 								<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
 
-								<?php if ($isEditor < 3) { ?>
+								<?php
+								if ($isEditor < 3) {
+									?>
 
 									<button
 										class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeMedium MuiButton-sizeMedium"
@@ -1263,7 +1274,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										<span class="MuiTouchRipple-root"></span>
 									</button>
 
-								<?php } ?>
+									<?php
+								}
+								?>
 							</div>
 						</form>
 						<!--<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return confirm('<?php echo $LANG['SURE_DEL_DS_PERM']; ?>')">-->
@@ -1274,7 +1287,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 						<!--	</div>-->
 						<!--</form>-->
 					</div>
-					<?php if ($isEditor < 3) { ?>
+					<?php
+					if ($isEditor < 3) {
+						?>
 						<div id="accesstab" class="dataset-tab-content">
 							<div style="padding:15px;">
 								<?php
@@ -1288,9 +1303,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								?>
 
 								<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-bottom:25px;">
-
-									<?php foreach ($roleArr as $roleStr => $labelStr) { ?>
-
+									<?php
+									foreach ($roleArr as $roleStr => $labelStr) {
+										?>
 										<div
 											class="MuiPaper-root MuiCard-root MuiPaper-outlined MuiPaper-rounded"
 											style="padding:18px;"
@@ -1304,13 +1319,17 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 											<hr class="MuiDivider-root" style="margin-bottom:12px;">
 
-											<?php if (array_key_exists($roleStr, $userArr)) { ?>
+											<?php
+											if (array_key_exists($roleStr, $userArr)) {
+												?>
 
 												<ul
 													class="MuiList-root"
 													style="margin:0; padding:0; list-style:none;"
 												>
-													<?php foreach ($userArr[$roleStr] as $uid => $name) { ?>
+													<?php
+													foreach ($userArr[$roleStr] as $uid => $name) {
+														?>
 
 														<li
 															class="MuiListItem-root"
@@ -1324,7 +1343,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 															<span class="MuiTypography-root MuiTypography-body1">
 																<?php echo htmlspecialchars($name); ?>
 															</span>
-															<?php if ($isEditor == 1) { ?>
+															<?php
+															if ($isEditor == 1) {
+																?>
 																<form
 																	name="deluserform"
 																	method="post"
@@ -1357,29 +1378,31 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 																		<span class="MuiTouchRipple-root"></span>
 																	</button>
 																</form>
-															<?php } ?>
+																<?php
+															}
+															?>
 														</li>
-
-													<?php } ?>
+														<?php
+													}
+													?>
 												</ul>
-
-											<?php } else { ?>
-
+												<?php
+											} else {
+												?>
 												<p
 													class="MuiTypography-root MuiTypography-body1"
 													style="margin:0; color:#666;"
 												>
 													<?php echo $LANG['NONE_ASSIGNED']; ?>
 												</p>
-
-											<?php } ?>
-
+												<?php
+											}
+											?>
 										</div>
-
-									<?php } ?>
-
+										<?php
+									}
+									?>
 								</div>
-
 
 								<div
 									style="
@@ -1426,7 +1449,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										to authorize additional users.
 									</p>
 								</div>
-								<?php if ($isEditor == 1) { ?>
+								<?php
+								if ($isEditor == 1) {
+									?>
 									<div>
 										<div
 											class="MuiTypography-root MuiTypography-body1"
@@ -1585,17 +1610,23 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 										</form>
 									</div>
-								<?php } ?>
+									<?php
+								}
+								?>
 							</div>
 						</div>
-					<?php } ?>
+						<?php
+					}
+					?>
 					<div id="linkedtab" class="dataset-tab-content">
 						<!--Linked Datasets section-->
 						<div style="margin:15px; text-align:left;">
 							<input name="tabindex" type="hidden" value="0" />
 							<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />
 
-							<?php if (!empty($adArr)) { ?>
+							<?php
+							if (!empty($adArr)) {
+								?>
 								<div style="padding:0 15px;">
 									<hr class="MuiDivider-root">
 								</div>
@@ -1627,11 +1658,13 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										<?php } ?>
 									</ul>
 								</div>
-							<?php } ?>
-						<?php if ($isEditor == 1) { ?>
+								<?php
+							}
+							if ($isEditor == 1) {
+								?>
 								<div style="padding:0 15px;">
-								<form name="linkdatasetform" action="neondatasetmanager.php" method="post">
-									<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>"/>
+									<form name="linkdatasetform" action="neondatasetmanager.php" method="post">
+										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>"/>
 										<div style="margin-top:15px;">
 											<div style="display:flex; align-items:center; gap:10px;">
 
@@ -1641,10 +1674,10 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 													</label>
 
 													<select class="MuiInputBase-input MuiOutlinedInput-input" name="associatedDatasetID" style="border:1px solid rgba(0, 0, 0, 0.23); outline:none; background:#fff; width:80%; max-width:700px;" onfocus="this.style.borderColor='#0073CF'; this.style.borderWidth='2px';" onblur="this.style.borderColor='rgba(0, 0, 0, 0.23)'; this.style.borderWidth='1px';">
-															<option value="">-----</option>
+														<option value="">-----</option>
 
 														<?php
-															if (!empty($datasetArr)) {
+														if (!empty($datasetArr)) {
 
 															usort($datasetArr, function ($a, $b) {
 																return strcasecmp(strip_tags($a['name']), strip_tags($b['name']));
@@ -1673,26 +1706,29 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 															}
 														}
 														?>
-														</select>
-													</div>
-
-													<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium" tabindex="0" name="submitaction" type="submit" value="Link Dataset" style="font-size:.8rem;">
-														<span class="MuiButton-label">Link</span>
-														<span class="MuiTouchRipple-root"></span>
-													</button>
-
+													</select>
 												</div>
 
-												<p class="MuiFormHelperText-root MuiFormHelperText-contained">
-													Link associated datasets together
-												</p>
+												<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium" tabindex="0" name="submitaction" type="submit" value="Link Dataset" style="font-size:.8rem;">
+													<span class="MuiButton-label">Link</span>
+													<span class="MuiTouchRipple-root"></span>
+												</button>
+
 											</div>
+
+											<p class="MuiFormHelperText-root MuiFormHelperText-contained">
+												Link associated datasets together
+											</p>
+										</div>
 									</form>
-							<?php } ?>
+								</div>
+								<?php
+							}
+							?>
 						</div>
 					</div>
 				</div>
-			<?php
+				<?php
 			} else echo '<div style="margin:30px">' . $LANG['NOT_AUTH'] . '</div>';
 		} else echo '<div><b>' . $LANG['DS_NOT_IDENTIFIED'] . '</b></div>';
 		?>
