@@ -219,13 +219,6 @@ if($IS_ADMIN) $isEditor = true;
 $displayLeftMenu = false;
 include($SERVER_ROOT.'/includes/header.php');
 ?>
-<div class="navpath">
-	<a href="../../index.php">Home</a> &gt;&gt;
-	<a href="../../neon/index.php">Management Tools</a> &gt;&gt;
-	<a href="../../neon/requests/inquiries.php">Inquiry List</a> &gt;&gt;
-	<a href="inquiryform.php?id=<?php echo $requestID; ?>">Inquiry Record</a> &gt;&gt;
-	<b>Sample List</b>
-</div>
 <div id="innertext">
 	<?php
 	if($isEditor){
@@ -238,7 +231,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv">
 						<b>Request ID:</b> <?php echo $requestID; ?>
 						<a href="<?php echo $CLIENT_ROOT . '/neon/requests/inquiryform.php?id=' . $requestID; ?>">
-							Edit request
+							<strong>Back to Inquiry Record</strong>
 						</a>
 					</div>
 					<div class="displayFieldDiv"><b>Title:</b> <?php echo $reqArr['title']; ?></div>

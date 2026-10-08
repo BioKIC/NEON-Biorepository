@@ -55,7 +55,8 @@ class DwcArchiverOccurrence extends Manager{
 		$this->occurDefArr['terms']['family'] = 'http://rs.tdwg.org/dwc/terms/family';
 		$this->occurDefArr['fields']['family'] = 'o.family';
 		$this->occurDefArr['terms']['scientificName'] = 'http://rs.tdwg.org/dwc/terms/scientificName';
-		$this->occurDefArr['fields']['scientificName'] = 'o.sciname AS scientificName';
+		//neon edit; change Bulk Canopy Foliage to Plantae
+		$this->occurDefArr['fields']['scientificName'] = 'IF(o.sciname = "Bulk Canopy Foliage", "Plantae", o.sciname) AS scientificName';
 		//$this->occurDefArr['terms']['verbatimScientificName'] = 'https://symbiota.org/terms/verbatimScientificName';
 		//$this->occurDefArr['fields']['verbatimScientificName'] = 'o.scientificname AS verbatimScientificName';
 		$this->occurDefArr['terms']['taxonID'] = 'http://rs.tdwg.org/dwc/terms/taxonID';
@@ -387,7 +388,7 @@ class DwcArchiverOccurrence extends Manager{
 			$sql = 'SELECT identifierName, identifierValue FROM omoccuridentifiers WHERE occid = '.$occid.' ORDER BY sortBy';
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
-				if ($r->identifierName == 'NEON sampleID Hash' && !$GLOBALS['IS_ADMIN']) {
+				if ($r->identifierName == 'NEON sampleID Hash' && (!$GLOBALS['IS_ADMIN'] || $schemaType == 'dwc') ) {
 					$hideSampleID = true;
 					break;
 				}

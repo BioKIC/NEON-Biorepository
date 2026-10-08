@@ -24,7 +24,6 @@ $dataproduced = '';
 $fundingsource = '';
 $description = '';
 $drivefolder = '';
-$existing = '';
 $future = '';
 $new = '';
 
@@ -46,7 +45,6 @@ if($formSubmit == 'createInquiry' && $isEditor){
 	$description = trim($_POST['inqdescription'] ?? '');
 	$howfound = $_POST['inqhowfound'] ?? '';
 	$dataproduced = trim($_POST['inqdata'] ?? '');
-	$existing = $_POST['inqexist'] ?? '';
 	$future = $_POST['inqfuture'] ?? '';
 	$new = $_POST['inqnew'] ?? '';
 	$processing = $_POST['inqprocess'] ?? '';
@@ -62,7 +60,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
     if(!$collectionManager || !$researcherID || !$inquiryDate || !$title || !$collections || !$field || !$funded || !$fundingsource || !$description || !$howfound || !$dataproduced || empty($additionalresearchers) || !$drivefolder || !$aiml || !$internal || !$outreach || !$processing){
         $statusStr = '<span style="color:red;">Missing required fields.</span>';
     } else {
-        $insertId = $inquiryManager->addInquiry($collectionManager, $researcherID, $inquiryDate, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $existing, $future, $new, $additionalresearchers, $drivefolder, $aiml, $internal, $outreach, $processing);
+        $insertId = $inquiryManager->addInquiry($collectionManager, $researcherID, $inquiryDate, $title, $collections, $field, $secondaryfields, $funded, $fundingsource, $description, $howfound, $dataproduced, $future, $new, $additionalresearchers, $drivefolder, $aiml, $internal, $outreach, $processing);
 	 if ($insertId) {
         header("Location: inquiryform.php?id=" . $insertId);
         exit();
@@ -231,7 +229,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'Primary Contact (will need email and ORCID)'; ?>:</strong>
+										<strong>Primary Contact</strong><br><i>Note: the primary contact must have an associated email and ORCID before receiving samples.</i><br>
 									</span>
 										<input type="text"
 											id="researcherSearch"
@@ -249,7 +247,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 									<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-       								<strong><?php echo 'Additional Researchers (select all)'; ?>:</strong>
+								<strong>Additional Researchers (select all)</strong><br/><i>Choose none for rare cases in which there are no collaborators.</i>
 									</span><br />
 										<input type="text"
 											id="additionalResearcherSearch"
@@ -267,7 +265,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 								<div class="fieldDiv">
-									<label for="inqtitle"><strong><?php echo 'Title'; ?>:</strong></label><br>
+									<label for="inqtitle"><strong><?php echo 'Public Title'; ?>:</strong></label><br>
 									<input name="inqtitle" id="inqtitle" type="text" style="width:800px;" 
 										value="<?php echo htmlspecialchars($title ?? '', ENT_QUOTES); ?>" />
 								</div>
@@ -388,7 +386,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 										<option value="">------------------------------------------</option>
 										<?php
 										$fundingArr = array(
-											'Already externally funded OR Internal/institutional support',
+											'Already externally funded OR Internal/institutional support OR not requiring funding',
 											'Proposal pending funding',
 											'Proposal in development',
 											'Proposal in preparation',
@@ -404,14 +402,14 @@ if($formSubmit == 'createInquiry' && $isEditor){
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
-       										<label for="inqfundingsource"><strong><?php echo 'Funding Source'; ?>:</strong></label><br>
+       										<label for="inqfundingsource"><strong><?php echo 'Funding Source'; ?>:</strong><br><i>"Internal" if no external funder exists.</i></label><br>
         									<input name="inqfundingsource" id="inqfundingsource" type="text" style="width:400px;" value="<?php echo htmlspecialchars($fundingsource ?? '', ENT_QUOTES); ?>" />
    								 	</div>
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
 										<div class="fieldDiv">
-											<label for="inqdescription"><strong><?php echo 'Project Description'; ?>:</strong></label><br>
+											<label for="inqdescription"><strong><?php echo 'Public Project Description'; ?>:</strong></label><br>
 											<textarea name="inqdescription" id="inqdescription" style="width:1000px; height:150px;"><?php echo htmlspecialchars($description ?? '', ENT_QUOTES); ?></textarea>
 										</div>
 									</div>
@@ -432,11 +430,6 @@ if($formSubmit == 'createInquiry' && $isEditor){
 											?>
 										</select>
 									</span>
-								</div>
-								<div style="clear:both;padding-top:6px;float:left;">
-									<label for="inqexist"><strong><?php echo 'May use existing samples?' ?></strong></label>
-									<input type="hidden" name="inqexist" value="no" />
-									<input type="checkbox" id="inqexist" name="inqexist" value="yes" <?php echo (!empty($existing) && $existing === 'yes') ? 'checked' : ''; ?> />
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<label for="inqfuture"><strong><?php echo 'May use future samples not yet at the Biorepository?' ?></strong></label>
@@ -469,6 +462,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
        										<label for="inqdrive"><strong><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
+											<i>Place inquiry folder within <a href='https://drive.google.com/drive/folders/18dxKEfUd6V7IpUEUi6dkQoOLzm9gyy-3?usp=drive_link'>Researcher Requests and Agreements</a></i><br>
         									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo htmlspecialchars($drivefolder ?? '', ENT_QUOTES); ?>" />
    								 	</div>
 								</div>

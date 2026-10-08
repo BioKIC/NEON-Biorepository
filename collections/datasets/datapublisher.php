@@ -308,7 +308,10 @@ if ($isEditor) {
 					echo '</ul>';
 					if ($publishGBIF) {
 						echo '<ul>';
-						$collManager->triggerGBIFCrawl($collArr['dwcaurl'], $collid, $collArr['collectionname']);
+						//neon edit; don't run if on localhost
+						if ($_SERVER['HTTP_HOST'] !== 'localhost') $collManager->triggerGBIFCrawl($collArr['dwcaurl'], $collid, $collArr['collectionname']);
+						else echo 'Skipping GBIF crawl on localhost';
+						//end neon edit
 						echo '</ul>';
 					}
 				}
@@ -580,11 +583,24 @@ if ($isEditor) {
 						<th><?php echo $LANG['CODE']; ?></th>
 						<th><?php echo $LANG['COL_NAME']; ?></th>
 						<th><?php echo $LANG['DWCA']; ?></th>
+						<!--neon edit; add gbif column-->
+						<th>Published to GBIF</th>
+						<!--end neon edit-->
 						<th><?php echo $LANG['METADATA']; ?></th>
 						<th><?php echo $LANG['PUB_DATE']; ?></th>
 					</tr>
 					<?php
 					foreach ($dwcaArr as $k => $v) {
+						//neon edit; add gbif column
+						$gbifCollManager = new OccurrenceCollectionProfile();
+						$gbifCollManager->setCollid($v['collid']);
+					
+						$gbifMetadata = current($gbifCollManager->getCollectionMetadata());
+					
+						$publishesToGbif =
+							isset($gbifMetadata['publishtogbif']) &&
+							$gbifMetadata['publishtogbif'] == 1;
+						//end neon edit
 						?>
 						<tr>
 							<td><?php echo '<a href="../misc/collprofiles.php?collid=' . $v['collid'] . '">' . htmlspecialchars(str_replace(' DwC-Archive', '', $v['title']), ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a>'; ?></td>
@@ -602,6 +618,9 @@ if ($isEditor) {
 								}
 								?>
 							</td>
+							<!--neon edit; add gbif column-->
+							<td><?php echo $publishesToGbif ? 'Yes' : 'No'; ?></td>
+							<!--end neon edit-->
 							<td>
 								<?php
 								echo '<a href="' . $urlPrefix . 'collections/datasets/emlhandler.php?collid=' . $v['collid'] . '">EML</a>';

@@ -536,13 +536,11 @@ $_SESSION['citationvar'] = $searchVar;
 									
 										$sampleDisplayArr = [];
 									
-										foreach($materialSampleArr[$occid] as $sample){
-											$sampleDisplayArr[] =
-												"'" .
-												htmlspecialchars($sample['sampleType'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
-												. "' (" .
-												htmlspecialchars($sample['disposition'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
-												. ')';
+										foreach ($materialSampleArr[$occid] as $sample) {
+											$sampleType = htmlspecialchars($sample['sampleType'] ?? '',ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
+											$disposition = htmlspecialchars($sample['disposition'] ?? '',ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
+
+											$sampleDisplayArr[] = $disposition ? "'{$sampleType}' ({$disposition})" : "'{$sampleType}'";
 										}
 									
 										echo implode(', ', array_unique($sampleDisplayArr));

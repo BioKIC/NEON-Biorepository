@@ -801,8 +801,34 @@ class DwcArchiverCore extends Manager{
 			if($collid == 117){
 				$this->logOrEcho("Humboldt Tick Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
 	
-				$githubUrl = 'https://raw.githubusercontent.com/sunray1/NEONTickstoHumboldt/master/outputs/zipped/DwC-A.zip';
+				$githubUrl = 'https://raw.githubusercontent.com/BioKIC/NEONTickstoHumboldt/master/outputs/zipped/DwC-A.zip';
 				$archiveFile = $this->targetPath . 'NEON-TICC-H_DwC-A.zip';
+	
+				$this->logOrEcho("Downloading archive from: $githubUrl\n");
+				$this->logOrEcho("Saving to: $archiveFile\n");
+	
+				$data = file_get_contents($githubUrl);
+	
+				if($data === false){
+					$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
+					return '';
+				}
+	
+				if(file_put_contents($archiveFile, $data) === false){
+					$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
+					return '';
+				}
+	
+				$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
+				$this->logOrEcho("\n-----------------------------------------------------\n");
+	
+				return $archiveFile;
+			}
+			if($collid == 129){
+				$this->logOrEcho("Humboldt Bird Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
+	
+				$githubUrl = 'https://github.com/BioKIC/NEONBirdstoHumboldt/raw/refs/heads/master/outputs/zipped/DwC-A.zip';
+				$archiveFile = $this->targetPath . 'NEON-BIRD-H_DwC-A.zip';
 	
 				$this->logOrEcho("Downloading archive from: $githubUrl\n");
 				$this->logOrEcho("Saving to: $archiveFile\n");
@@ -1923,7 +1949,14 @@ class DwcArchiverCore extends Manager{
 				}
 				//$dwcOccurManager->appendUpperTaxonomy($r);
 				$dwcOccurManager->appendUpperTaxonomy2($r);
-				if ($rankStr = $dwcOccurManager->getTaxonRank($r['rankid'])) $r['t_taxonRank'] = $rankStr;
+				//neon edit; set taxonRank to Kingdom for Bulk Canopy Foliage
+				if ($r['scientificName'] === 'Plantae') {
+					$rankStr = 'Kingdom';
+				} else {
+					$rankStr = $dwcOccurManager->getTaxonRank($r['rankid']);
+				}
+				
+				if ($rankStr) $r['t_taxonRank'] = $rankStr;
 				unset($r['rankid']);
 
 				// if(isset($r['dynamicProperties'])) {

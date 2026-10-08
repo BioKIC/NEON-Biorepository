@@ -11,6 +11,9 @@ if(!$SYMB_UID) header('Location: ' . $CLIENT_ROOT . '/profile/index.php?refurl=.
 $collid = $_REQUEST['collid'];
 $loanId = $_REQUEST['loanid'];
 $sortTag = (isset($_REQUEST['sortTag']) ? $_REQUEST['sortTag'] : '');
+// start NEON addition
+$sampletype = (isset($_REQUEST['sampletype']) ? $_REQUEST['sampletype'] : '');
+// end NEON addition
 
 $loanManager = new OccurrenceLoans();
 
@@ -321,6 +324,29 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 					<span class="radio-span"><input name="targetidentifier" type="radio" value="catnum" checked /> <?php echo $LANG['CATNO']; ?></span>
 					<span class="radio-span"><input name="targetidentifier" type="radio" value="other" /> <?php echo $LANG['OTHER_CATNUMS']; ?></span>
 				</div>
+				<!-- start NEON customization -->
+				<span>
+					<strong> Sample Type: </strong>
+				</span><br />
+				<span>
+					<select name="sampletype">
+						<option value="" <?php echo ($sampletype === '' ? 'selected' : ''); ?>>
+							All Sample Types
+						</option>
+						<?php
+							$sampleTypeArr = $loanManager->getSampleTypes($specList);
+
+							foreach($sampleTypeArr as $row){
+								echo '<option value="' . $row['collID'] . '" '
+									. ($sampletype == $row['collID'] ? 'selected' : '')
+									. '>'
+									. htmlspecialchars($row['collectionName'])
+									. '</option>';
+							}
+						?>
+					</select>
+				</span>
+				<!-- end NEON customization -->
 				<div class="field-div">
 					<input name="collid" type="hidden" value="<?php echo $collid; ?>" />
 					<input name="loanid" type="hidden" value="<?php echo $loanId; ?>" />

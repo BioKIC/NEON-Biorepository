@@ -205,6 +205,11 @@
             "id": 25,
             "name": "Beetles (Carabids) Pinned Specimens",
             "collid": 39
+          },
+          {
+            "id": 73,
+            "name": "Insect Taxonomic Reference Collection",
+            "collid": 4
           }
         ]
       },
@@ -563,11 +568,6 @@
     "id": 72,
     "name": "Other",
     "children": [
-      {
-        "id": 73,
-        "name": "Insect Taxonomic Reference Collection",
-        "collid": 4
-      },
       {
         "id": 74,
         "name": "Legacy and Prototype Samples",

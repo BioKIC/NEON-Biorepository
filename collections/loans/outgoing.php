@@ -20,6 +20,11 @@ $collid = $loanManager->sanitizeInt($collid);
 $loanId = $loanManager->sanitizeInt($loanId);
 $tabIndex = $loanManager->sanitizeInt($tabIndex);
 
+// start NEON addition
+$sampletype = isset($_REQUEST['sampletype']) ? (int)$_REQUEST['sampletype'] : 0;
+$sampletype = $loanManager->sanitizeInt($sampletype);
+// end NEON addition
+
 $isEditor = 0;
 if($SYMB_UID && $collid){
 	if($IS_ADMIN || (array_key_exists('CollAdmin',$USER_RIGHTS) && in_array($collid,$USER_RIGHTS['CollAdmin']))
@@ -183,7 +188,14 @@ $specimenTotal = $loanManager->getSpecimenTotal($loanId);
 			<div id="tabs" style="margin:0px;">
 			  <ul>
 					<li><a href="#outloandetaildiv"><span><?= $LANG['LOAN_DETAILS'] ?></span></a></li>
-					<li><a href="specimentab.php?collid=<?= $collid . '&loanid=' . $loanId . '&sortTag=' . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>"><span><?= $LANG['CAP_SPECIMENS'] ?></span></a></li>
+					<li>
+						<a href="specimentab.php?collid=<?= $collid
+							. '&loanid=' . $loanId
+							. '&sortTag=' . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
+							. '&sampletype=' . $sampletype ?>">
+							<span><?= $LANG['SPECIMENS'] ?></span>
+						</a>
+					</li>
 					<li><a href="#outloandeldiv"><span><?= $LANG['ADMIN'] ?></span></a></li>
 				</ul>
 				<div id="outloandetaildiv">

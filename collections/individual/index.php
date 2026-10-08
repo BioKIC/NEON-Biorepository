@@ -414,12 +414,12 @@ $traitArr = $indManager->getTraitArr();
 									echo $occArr['catalognumber'];
 								}
 								// Get GBIF recordID using GBIF API
-								if ($collMetadata['publishtogbif'] == 1 && !empty($occArr['catalognumber'])) {
+								if ($collMetadata['publishtogbif'] == 1 && !empty($occArr['occurrenceid'])) {
 									$aggkeys = json_decode(html_entity_decode($collMetadata['aggkeysstr']));
-									if (isset($aggkeys->datasetKey) && !empty($occArr['catalognumber'])) {
+									if (isset($aggkeys->datasetKey)) {
 										$gbifApiUrl = 'https://api.gbif.org/v1/occurrence/search?' . http_build_query([
 											'datasetKey' => $aggkeys->datasetKey,
-											'occurrenceID' => $occArr['catalognumber']
+											'occurrenceID' => $occArr['occurrenceid']
 										]);
 										$ch = curl_init($gbifApiUrl);
 										curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 5, CURLOPT_USERAGENT => 'NEON Portal/1.0']);
@@ -443,20 +443,22 @@ $traitArr = $indManager->getTraitArr();
 						if($occArr['occurrenceid']){
 							?>
 							<div id="occurrenceid-div" class="bottom-breathing-room-rel-sm">
-							<?php
-							echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
-							$resolvableGuid = false;
-							if(substr($occArr['occurrenceid'],0,4) == 'http') $resolvableGuid = true;
-							if($resolvableGuid) echo '<a href="' . $occArr['occurrenceid'] . '" target="_blank">';
-							if(isset($occArr['occurrenceid'])){
-								echo $occArr['occurrenceid'];
-							}
-							if($resolvableGuid) {
-							?>
-								</a>
+								<?php
+								echo '<label>'.$LANG['OCCURRENCE_ID'].': </label>';
+								$resolvableGuid = false;
+								if(substr($occArr['occurrenceid'],0,4) == 'http') $resolvableGuid = true;
+								if($resolvableGuid) echo '<a href="' . $occArr['occurrenceid'] . '" target="_blank">';
+								if(isset($occArr['occurrenceid'])){
+									echo $occArr['occurrenceid'];
+								}
+								if($resolvableGuid) {
+									?>
+									</a>
+									<?php
+								}
+								?>
 							</div>
-							<?php
-							}
+						<?php
 						}
 						// End NEON Customization
 						if($occArr['othercatalognumbers']){

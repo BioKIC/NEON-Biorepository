@@ -50,13 +50,13 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 if ($isEditor) {
 ?>
 	<div class="section-nav">
-		<a href="#requestsbystatus">Requests by Status Comparisons by AY</a> |
-		<a href="#researcherrequestsbystatus">Researchers and Requests by Status</a> |
-		<a href="#bysampletype">Researchers and Samples by Sample Type</a> |
-		<a href="#byusetype">Samples By Use Type</a> |
-		<a href="#byfield">Samples By Research Field</a> |
-		<a href="#discongen">Samples Distributed, Consumed, and Generated</a> |
-		<a href="#updates">Data Updates</a> |
+		<a href="#requestsbystatus">Requests by Status Comparisons by AY</a>|
+		<a href="#researcherrequestsbystatus">Researchers and Requests by Status</a>|
+		<a href="#bysampletype">Researchers and Samples by Sample Type</a>|
+		<a href="#byusetype">Samples By Use Type</a>|
+		<a href="#byfield">Samples By Research Field</a>|
+		<a href="#discongen">Samples Distributed, Consumed, and Generated</a>|
+		<a href="#updates">Data Updates</a>|
 		<a href="#plots">Plots</a> 
 	</div>
 	<h1>NEON Quarterly Sample Use Report: <?php echo htmlspecialchars($quarter); ?></h1>
