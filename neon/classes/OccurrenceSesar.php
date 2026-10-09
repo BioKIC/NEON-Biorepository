@@ -1181,10 +1181,16 @@ class OccurrenceSesar extends Manager {
 	
 		$retArr['retStr'] = curl_exec($ch);
 		$retArr['retCode'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	
-		if ($retArr['retCode'] != 200) {
-			$this->errorMessage = 'FATAL CURL ERROR: ' . curl_error($ch) . ' (#' . curl_errno($ch) . ')';
+		
+		if ($retArr['retCode'] === 302) {
+			$redirectUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
+			$this->logOrEcho('GeoSamples redirect URL: '.$redirectUrl, 1);
 		}
+		
+		if (curl_errno($ch)) {
+			$this->logOrEcho('FATAL CURL ERROR: '.curl_error($ch).' (#'.curl_errno($ch).')', 1);
+		}
+		
 	
 		curl_close($ch);
 		return $retArr;
