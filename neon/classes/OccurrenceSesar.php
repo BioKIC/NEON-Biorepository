@@ -574,7 +574,7 @@ class OccurrenceSesar extends Manager {
 		];
 	
 		#$this->logOrEcho('GeoSamples request URL: '.$baseUrl, 1);
-		$this->logOrEcho('GeoSamples request body: '.$postData, 1);
+		#$this->logOrEcho('GeoSamples request body: '.$postData, 1);
 		
 		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
 	
@@ -590,7 +590,7 @@ class OccurrenceSesar extends Manager {
 			return false;
 		}
 	
-		$this->logOrEcho('GeoSamples registration successful: ' . json_encode($response), 2);
+		#$this->logOrEcho('GeoSamples registration successful: ' . json_encode($response), 2);
 		
 		$occid = $this->fieldMap['occid']['value'];
 		
