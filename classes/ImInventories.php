@@ -169,7 +169,7 @@ class ImInventories extends Manager{
 	private function setChecklistFieldMap(){
 		$this->fieldMap = array('name' => 's', 'authors' => 's', 'type' => 's', 'locality' => 's', 'publication' => 's', 'abstract' => 's', 'notes' => 's',
 			'latCentroid' => 'd', 'longCentroid' => 'd', 'pointRadiusMeters' => 'i', 'access' => 's', 'defaultSettings' => 's', 'dynamicSql' => 's',
-			'dynamicProperties' => 's', 'uid' => 'i', 'footprintWkt' => 's', 'sortSequence' => 'i');
+			'dynamicProperties' => 's', 'uid' => 'i', 'footprintWkt' => 's', 'footprintgeoJson' => 's', 'sortSequence' => 'i');
 	}
 
 	public function deleteChecklist(){
@@ -738,7 +738,7 @@ class ImInventories extends Manager{
 	public function insertChecklistProjectLink($clid){
 		$status = true;
 		if(is_numeric($clid)){
-			$sql = 'INSERT INTO fmchklstprojlink(pid,clid) VALUES('.$this->pid.', '.$clid.') ';
+			$sql = 'INSERT IGNORE INTO fmchklstprojlink(pid,clid) VALUES('.$this->pid.', '.$clid.') ';
 			if(!$this->conn->query($sql)){
 				$this->errorMessage = 'ERROR adding checklist to project: '.$this->conn->error;
 			}

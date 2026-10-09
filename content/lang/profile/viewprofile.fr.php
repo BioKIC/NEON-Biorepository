@@ -21,10 +21,12 @@ $LANG['CONTACT_ADMIN'] = "Veuillez contacter l'administrateur système.";
 $LANG['HOME'] = 'Accueil';
 $LANG['MY_PROFILE'] = 'Mon profil';
 $LANG['VIEW_PROFILE'] = "Afficher Profil de l'Utilisateur";
-$LANG['SPEC_CHECKLIST'] = "Listes d'Espèces";
+$LANG['SPECIES_INVENTORIES'] = 'Inventaires des espèces';
+$LANG['ADMIN'] = 'Admin';
 $LANG['OCC_MGMNT'] = 'Gestion des Occurrences';
 $LANG['USER_PROFILE'] = "Profil de l'Utilisateur";
 $LANG['IDS_NEEDED'] = 'Identifications Nécessaires';
 $LANG['IMAGES_ID'] = "Images d'Identification";
+$LANG['ADMIN_MENU'] = 'Menu du super-administrateur';
 
 ?>

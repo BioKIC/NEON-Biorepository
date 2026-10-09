@@ -9,10 +9,10 @@ if (empty($NEON_DEV_MODE) || $NEON_DEV_MODE == 1) {
 //End NEON edits
 
 include_once($SERVER_ROOT . '/classes/DwcArchiverCore.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/profile/personalspecbackup.' . $LANG_TAG . '.php'))
-	include_once($SERVER_ROOT.'/content/lang/profile/personalspecbackup.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/profile/personalspecbackup.en.php');
+Language::load('profile/personalspecbackup');
+
 header('Content-Type: text/html; charset=' . $CHARSET);
 
 $collid = filter_var($_REQUEST['collid'], FILTER_SANITIZE_NUMBER_INT);
