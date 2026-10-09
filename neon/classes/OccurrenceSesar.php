@@ -571,6 +571,9 @@ class OccurrenceSesar extends Manager {
 			'Accept: application/json'
 		];
 	
+		$this->logOrEcho('GeoSamples request URL: '.$baseUrl, 1);
+		$this->logOrEcho('GeoSamples request body: '.$postData, 1);
+		
 		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
 	
 		if ($resArr['retCode'] < 200 || $resArr['retCode'] >= 300) {
