@@ -73,12 +73,12 @@ class IgsnManager{
 				INNER JOIN omoccurrences o ON o.occid = s.occid
 				SET s.igsnPushedToNEON = 1
 				WHERE o.occurrenceID LIKE "https://doi.org/10.58052/NEON%" 
-				AND o.collid IN(44,74,78,79,80,82,83,95,97,4,85,96,81,115)';
+				AND o.collid IN(44,74,78,79,80,82,83,95,97,85,96,81,115)';
 		$this->conn->query($sql);
 		$retArr = array();
 		$sql = 'SELECT IFNULL(s.igsnPushedToNEON,"x") as igsnPushedToNEON, COUNT(s.samplePK) as cnt
 			FROM omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid
-			WHERE o.occurrenceID LIKE "https://doi.org/10.58052/NEON%" AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) GROUP BY s.igsnPushedToNEON';
+			WHERE o.occurrenceID LIKE "https://doi.org/10.58052/NEON%" AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,81,85,93,96,84,115) GROUP BY s.igsnPushedToNEON';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
 			$code = $r->igsnPushedToNEON;
@@ -110,7 +110,7 @@ class IgsnManager{
 		//Build SQL
 		$sql = 'SELECT o.occid, o.occurrenceID, s.sampleCode, s.sampleUuid, s.sampleID, s.sampleClass, s.igsnPushedToNEON
 			FROM omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid
-			WHERE (o.occurrenceID LIKE "https://doi.org/10.58052/NEON%") AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) ';
+			WHERE (o.occurrenceID LIKE "https://doi.org/10.58052/NEON%") AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,81,85,93,96,84,115) ';
 		if($recTarget == 'unsynchronized'){
 			$sql .= 'AND (s.igsnPushedToNEON = 0) ';
 		}
@@ -236,7 +236,7 @@ class IgsnManager{
 		);
 		$sql = 'SELECT o.occid, '.implode(', ',$fieldMap).'
 			FROM omoccurrences o INNER JOIN NeonSample s ON o.occid = s.occid INNER JOIN omcollections c ON c.collid = o.collid
-			WHERE (o.occurrenceID LIKE "https://doi.org/10.58052/NEON%") AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115) ';
+			WHERE (o.occurrenceID LIKE "https://doi.org/10.58052/NEON%") AND o.collid NOT IN(44,74,78,79,80,82,83,95,97,81,85,93,96,84,115) ';
 		if($startIndex){
 			$sql .= 'AND (o.occurrenceID > ?) ';
 		}

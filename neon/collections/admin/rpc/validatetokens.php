@@ -9,25 +9,9 @@ $refreshToken = $_POST['refreshToken'] ?? '';
 
 $message = '';
 
-$accessTokenValid = false;
-if ($accessToken) {
-	$url = 'https://app.geosamples.org/webservices/credentials_service_v2.php';
-	if(!$guidManager->getProductionMode()) $url = 'https://app-sandbox.geosamples.org/webservices/credentials_service_v2.php';
-
-	$ch = curl_init($url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, [
-		'Authorization: Bearer ' . $accessToken
-	]);
-	curl_exec($ch);
-	$result = curl_exec($ch);
-	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	curl_close($ch);
-
-	if ($httpCode === 200) {
-		$accessTokenValid = true;
-	}
-}
+$accessTokenValid = $accessToken
+	? $guidManager->isAccessTokenValid($accessToken, null)
+	: false;
 
 $message = $accessTokenValid
 	? 'Both tokens are valid.'
