@@ -141,8 +141,8 @@ class OccurrenceSesar extends Manager {
 		}
 	
 		$url = $this->getProductionMode()
-			? 'https://app.geosamples.org/webservices/credentials_service_v2.php'
-			: 'https://app-sandbox.geosamples.org/webservices/credentials_service_v2.php';
+			? 'https://api.geosamples.org/api/users/me/'
+			: 'https://api-sandbox.geosamples.org/api/users/me/';
 	
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -158,18 +158,18 @@ class OccurrenceSesar extends Manager {
 			curl_close($ch);
 			return false;
 		}
-		$result = curl_exec($ch);
+
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 	
-		logMessage("Raw response: " . ($result ?: 'NULL'), $logFH);
-	
+		if ($logFH) $this->logOrEcho("Raw response: " . ($response ?: 'NULL'), 2);
+		
 		if ($httpCode !== 200) {
-			logMessage("Access token validation failed", $logFH);
+			if ($logFH) $this->logOrEcho("Access token validation failed", 1);
 			return false;
 		}
-	
-		logMessage("Access token is valid", $logFH);
+		
+		if ($logFH) $this->logOrEcho("Access token is valid", 2);
 		return true;
 	}
 
@@ -181,17 +181,19 @@ class OccurrenceSesar extends Manager {
 		}
 	
 		$url = $this->getProductionMode()
-			? 'https://app.geosamples.org/webservices/refresh_token.php'
-			: 'https://app-sandbox.geosamples.org/webservices/refresh_token.php';
+			? 'https://api.geosamples.org/api/auth/token/refresh/'
+			: 'https://api-sandbox.geosamples.org/api/auth/token/refresh/';
 	
-		$data = http_build_query(['refresh' => $refreshToken]);
+		$data = json_encode([
+			'refresh' => $refreshToken
+		]);
 	
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, [
-			'Content-Type: application/x-www-form-urlencoded'
+			'Content-Type: application/json'
 		]);
 	
 		$result = curl_exec($ch);
@@ -205,16 +207,19 @@ class OccurrenceSesar extends Manager {
 	
 		if ($httpCode === 200 && $result) {
 			$response = json_decode($result, true);
-			if (isset($response['access']) && isset($response['refresh'])) {
-				$newAccessToken = $response['access'];
-				$newRefreshToken = $response['refresh'];
+			if (isset($response['data']['access']) && isset($response['data']['refresh'])) {
+				$newAccessToken = $response['data']['access'];
+				$newRefreshToken = $response['data']['refresh'];
 	
 				if ($symbUid) {
 					$this->saveTokens($symbUid, $newAccessToken, $newRefreshToken);
 				}
 	
 				if ($logFH) logMessage("Access token refresh successful.", $logFH);
-				return $newAccessToken;
+				return [
+					'access' => $newAccessToken,
+					'refresh' => $newRefreshToken
+				];
 			} else {
 				if ($logFH) logMessage("Invalid response structure: " . json_encode($response), $logFH);
 			}
@@ -425,97 +430,163 @@ class OccurrenceSesar extends Manager {
 		//$this->fieldMap['parentOccurrenceID']['sesar'] = 'parent_igsn';
 		//$this->fieldMap['parentOccurrenceID']['sql'] = ' AS parentOccurrenceID';
 	}
-
-	// SESAR web service calls (http://www.geosamples.org/interop)
-	// End point: https://app.geosamples.org/webservices/
-	// Test end point: https://app-sandbox.geosamples.org/webservices/
-	public function validateUser() {
-		global $SYMB_UID;
-		
-		$userCodeArr = array();
-		$baseUrl = 'https://app.geosamples.org/webservices/credentials_service_v2.php';
-		$accessToken = $this->getAccessToken($SYMB_UID);
-		if (!$this->productionMode) {
-			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/credentials_service_v2.php';
-			$accessToken = $this->getDevelopmentAccessToken($SYMB_UID);
-		}
-
-		if (!$accessToken) {
-			$this->errorMessage = 'Fatal Error validating user: Access token not set';
+	
+	private function createRelatedResource($url, $accessToken) {
+		$baseUrl = $this->productionMode
+			? 'https://api.geosamples.org/api/related-resources/'
+			: 'https://api-sandbox.geosamples.org/api/related-resources/';
+	
+		$data = [
+			'label' => $url,
+			'description' => 'Source Reference URL',
+			'related_resource_type' => 'Other',
+			'uri' => $url,
+			'uri_type' => 'regular URL'
+		];
+	
+		$headers = [
+			'Authorization: Bearer ' . $accessToken,
+			'Content-Type: application/json',
+			'Accept: application/json'
+		];
+	
+		$resArr = $this->getSesarApiData($baseUrl, 'post', json_encode($data), $headers);
+	
+		if ($resArr['retCode'] != 201) {
+			$this->errorMessage = 'Failed to create related resource (HTTP ' . $resArr['retCode'] . '): ' . $resArr['retStr'];
+			$this->logOrEcho($this->errorMessage, 1);
 			return false;
 		}
 	
-		$headers = [
-			'Authorization: Bearer ' . $accessToken
-		];
-		
-		$resArr = $this->getSesarApiData($baseUrl, 'get', null, $headers);
+		$response = json_decode($resArr['retStr'], true);
+		return $response['data']['id'] ?? false;
+	}
 	
-		if (isset($resArr['retStr']) && $resArr['retStr']) {
-			$dom = new DOMDocument('1.0','UTF-8');
-			if ($dom->loadXML($resArr['retStr'])) {
-				$validElemList = $dom->getElementsByTagName('valid');
-				if ($validElemList[0]->nodeValue == 'yes') {
-					$userCodeList = $dom->getElementsByTagName('user_code');
-					foreach ($userCodeList as $UserCodeElem) {
-						$userCodeArr[] = $UserCodeElem->nodeValue;
-					}
-				} else {
-					$errCodeList = $dom->getElementsByTagName('error');
-					$this->logOrEcho('Fatal Error validating user: ' . $errCodeList[0]->nodeValue);
-					$userCodeArr = false;
-				}
-			} else {
-				$this->logOrEcho('FATAL ERROR parsing response XML (validateUser): ' . htmlentities($resArr['retStr']));
-				$userCodeArr = false;
+	private function buildSampleJson() {
+		$sampleData = [
+			'sesar_code' => 'NEO',
+			'name' => $this->fieldMap['catalogNumber']['value'],
+			'object_type' => 'Individual sample',
+			'general_material_type' => 'Biological material',
+			'material_types' => ['Biological material'],
+			'sampling_method' => 'Manual'
+		];
+	
+		$map = [
+			'sciname' => 'field_name',
+			'verbatimAttributes' => 'sample_description',
+			'country' => 'country',
+			'stateProvince' => 'province',
+			'county' => 'county',
+			'locality' => 'locality',
+			'basisOfRecord' => 'sampling_method_detail'
+		];
+	
+		foreach ($map as $field => $key) {
+			if (!empty($this->fieldMap[$field]['value'])) {
+				$sampleData[$key] = $this->fieldMap[$field]['value'];
 			}
-		} else {
-			$this->logOrEcho($this->errorMessage);
-			$userCodeArr = false;
 		}
 	
-		return $userCodeArr;
+		foreach (['decimalLatitude' => 'latitude', 'decimalLongitude' => 'longitude', 'minimumElevationInMeters' => 'elevation'] as $field => $key) {
+			if (isset($this->fieldMap[$field]['value']) && $this->fieldMap[$field]['value'] !== '') {
+				$sampleData[$key] = (string)$this->fieldMap[$field]['value'];
+			}
+		}
+	
+		if (isset($sampleData['elevation'])) {
+			$sampleData['elevation_unit'] = 'meters';
+		}
+	
+		if (!empty($this->fieldMap['eventDate']['value'])) {
+			$sampleData['sampling_start_date'] = $this->fieldMap['eventDate']['value'];
+			$sampleData['sampling_date_precision'] = 'day';
+		}
+	
+		if (!empty($this->fieldMap['recordedBy']['value'])) {
+			$sampleData['collectors'] = [[
+				'individual' => ['label' => $this->fieldMap['recordedBy']['value']]
+			]];
+		}
+	
+		if (!empty($this->collArr['collectionName'])) {
+			$sampleData['current_archive'] = ['label' => $this->collArr['collectionName']];
+		}
+	
+		$sampleData['current_archive_contact'] = 'NEON Biorepository (biorepo@asu.edu)';
+	
+		if (!empty($this->otherNames)) {
+			$sampleData['other_names'] = array_values($this->otherNames);
+		}
+	
+		return $sampleData;
+	}
+
+	public function validateUser() {
+		global $SYMB_UID;
+	
+		$accessToken = $this->productionMode
+			? $this->getAccessToken($SYMB_UID)
+			: $this->getDevelopmentAccessToken($SYMB_UID);
+	
+		return $this->isAccessTokenValid($accessToken, $this->logFH);
 	}
 
 	private function registerIdentifiersViaApi($retryCount = 0) {
-		$status = false;
-	
 		global $SYMB_UID;
-		$baseUrl = 'https://app.geosamples.org/webservices/upload.php';
-		$accessToken = $this->getAccessToken($SYMB_UID);
-		if (!$this->productionMode) {
-			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/upload.php';
-			$accessToken = $this->getDevelopmentAccessToken($SYMB_UID);
-		}
 	
-		
+		$baseUrl = $this->productionMode
+			? 'https://api.geosamples.org/api/samples/'
+			: 'https://api-sandbox.geosamples.org/api/samples/';
+	
+		$accessToken = $this->productionMode
+			? $this->getAccessToken($SYMB_UID)
+			: $this->getDevelopmentAccessToken($SYMB_UID);
+	
 		if (!$accessToken) {
-			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
+			$this->errorMessage = 'Fatal Error submitting to GeoSamples: Access token not found';
 			return false;
 		}
-		$xmldata = $this->igsnDom->saveXML();
-		$postData = http_build_query([
-			'content' => $this->igsnDom->saveXML()
-		]);
+	
+		$sampleData = $this->buildSampleJson();
+		
+		if ($this->productionMode) {
+			$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/');
+			$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+		
+			$resourceId = $this->createRelatedResource($url, $accessToken);
+			if ($resourceId) $sampleData['related_resources'] = [$resourceId];
+		}
+		
+		$postData = json_encode($sampleData);
+		
+		if ($postData === false) {
+			$this->logOrEcho('Fatal Error encoding GeoSamples JSON: '.json_last_error_msg(), 1);
+			return false;
+		}
 	
 		$headers = [
-			'Content-Type: application/x-www-form-urlencoded',
-			'Authorization: Bearer ' . $accessToken
+			'Authorization: Bearer ' . $accessToken,
+			'Content-Type: application/json',
+			'Accept: application/json'
 		];
-
+	
 		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
-		if ($retryCount >= 3) {
-			$this->logOrEcho('Retry limit reached. Not retrying.');
-			$status = false;
-		} else {
-			if (isset($resArr['retStr']) && $resArr['retStr']) {
-				$status = $this->processRegistrationResponse($resArr['retStr'], $retryCount);
-				if ($status) {
-					$status = $this->updateSqlSesarDate();
-				}
-			}
+	
+		if ($resArr['retCode'] < 200 || $resArr['retCode'] >= 300) {
+			$this->errorMessage = 'GeoSamples registration failed (HTTP ' . $resArr['retCode'] . '): ' . $resArr['retStr'];
+			$this->logOrEcho($this->errorMessage, 1);
+			return false;
 		}
-		return $status;
+	
+		$response = json_decode($resArr['retStr'], true);
+		if (!is_array($response)) {
+			$this->logOrEcho('Invalid JSON response from GeoSamples: ' . $resArr['retStr'], 1);
+			return false;
+		}
+	
+		$this->logOrEcho('GeoSamples registration successful: ' . json_encode($response), 2);
+		return true;
 	}
 
 	private function updateMetadataViaApi($retryCount = 0) {
@@ -1168,8 +1239,8 @@ class OccurrenceSesar extends Manager {
 		$sqlBase = 'FROM omoccurrences o 
 			INNER JOIN omcollections c ON o.collid = c.collid
 			INNER JOIN NeonSample s ON o.occid = s.occid
-			WHERE c.institutionCode = "NEON"
-			AND c.collid NOT IN (44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115)
+			WHERE c.institutionCode IN ("NEON","ASU")
+			AND c.collid NOT IN (44,74,78,79,80,82,83,95,97,81,85,93,96,84,115)
 			AND s.sampleReceived = 1
 			AND o.dateLastModified > IFNULL(s.sampleLastUpdatedSESAR, "1900-01-01") ';
 	
