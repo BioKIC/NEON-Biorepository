@@ -666,7 +666,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 					<span>
 						<button type="button"
 							class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeMedium"
-	        				onclick="copyUrl(window.location.origin + '/NEON/neon/datasets/neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>')"
+	        				onclick="copyUrl(window.location.origin + '/portal/neon/datasets/neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>')"
 							style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
 							aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
 							title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
