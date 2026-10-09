@@ -464,6 +464,7 @@ class OccurrenceSesar extends Manager {
 	
 	private function buildSampleJson() {
 		$sampleData = [
+			'igsn' => '10.58052/'.$this->igsnSeed,
 			'sesar_code' => 'NEO',
 			'name' => $this->fieldMap['catalogNumber']['value'],
 			'object_type' => 'Individual sample',
@@ -550,13 +551,14 @@ class OccurrenceSesar extends Manager {
 	
 		$sampleData = $this->buildSampleJson();
 		
-		if ($this->productionMode) {
-			$sourceBaseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/');
-			$sourceUrl = $sourceBaseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+		$sourceBaseUrl = $this->productionMode
+			? $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/')
+			: 'https://biorepo.neonscience.org/portal/';
 		
-			$resourceId = $this->createRelatedResource($sourceUrl, $accessToken);
-			if ($resourceId) $sampleData['related_resources'] = [$resourceId];
-		}
+		$sourceUrl = $sourceBaseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+		
+		$resourceId = $this->createRelatedResource($sourceUrl, $accessToken);
+		if ($resourceId) $sampleData['related_resources'] = [$resourceId];
 		
 		$postData = json_encode($sampleData);
 		
@@ -571,8 +573,8 @@ class OccurrenceSesar extends Manager {
 			'Accept: application/json'
 		];
 	
-		$this->logOrEcho('GeoSamples request URL: '.$baseUrl, 1);
-		$this->logOrEcho('GeoSamples request body: '.$postData, 1);
+		#$this->logOrEcho('GeoSamples request URL: '.$baseUrl, 1);
+		#$this->logOrEcho('GeoSamples request body: '.$postData, 1);
 		
 		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
 	
