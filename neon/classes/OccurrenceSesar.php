@@ -551,10 +551,10 @@ class OccurrenceSesar extends Manager {
 		$sampleData = $this->buildSampleJson();
 		
 		if ($this->productionMode) {
-			$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/');
-			$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+			$sourceBaseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/');
+			$sourceUrl = $sourceBaseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
 		
-			$resourceId = $this->createRelatedResource($url, $accessToken);
+			$resourceId = $this->createRelatedResource($sourceUrl, $accessToken);
 			if ($resourceId) $sampleData['related_resources'] = [$resourceId];
 		}
 		
