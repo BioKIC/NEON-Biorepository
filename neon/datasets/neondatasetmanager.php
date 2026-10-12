@@ -641,8 +641,6 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			<?php
 			if ($mdArr['category'] == "Request") {
 				$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
-							print_r($rArr);
-
 				if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {
 					?>
 					<a
