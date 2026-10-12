@@ -1,9 +1,10 @@
 <?php
 include_once('config/symbini.php');
 include_once($SERVER_ROOT . '/classes/SiteMapManager.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/sitemap.' . $LANG_TAG . '.php'))
-	include_once($SERVER_ROOT.'/content/lang/sitemap.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT.'/content/lang/sitemap.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('sitemap');
+
 header('Content-Type: text/html; charset=' . $CHARSET);
 
 $smManager = new SiteMapManager();
@@ -23,7 +24,7 @@ if(!$schemaVersion){
 	include_once($SERVER_ROOT.'/includes/head.php');
 	include_once($SERVER_ROOT.'/includes/googleanalytics.php');
 	?>
-	<link href="<?= $CSS_BASE_PATH ?>/symbiota/sitemap.css" type="text/css" rel="stylesheet">
+	<link href="<?= $CSS_BASE_PATH ?>/symbiota/sitemap.css?ver=1" type="text/css" rel="stylesheet">
 	<script type="text/javascript" src="js/symb/shared.js"></script>
 	<style>
 		.nested-li {
@@ -60,35 +61,28 @@ if(!$schemaVersion){
 				<li><?= $LANG['DATA_PUBLISHING'] ?></li>
 				<li class="nested-li"><a href="collections/datasets/rsshandler.php" target="_blank"><?= $LANG['COLLECTIONS_RSS'] ?></a></li>
 				<li class="nested-li"><a href="collections/datasets/datapublisher.php"><?= $LANG['DARWINCORE'] ?></a> - <?= $LANG['PUBDATA'] ?></li>
-				<li style="margin-left:15px;"><a href="<?= $CLIENT_ROOT ?>/content/dwca/rss.xml" target="_blank"><?= $LANG['RSS'] ?></a></li>
-				<!--neon edit-->
-				<!--<li><a href="collections/misc/protectedspecies.php"><?= $LANG['PROTECTED_SPECIES'] ?></a> - <?= $LANG['LISTOFTAXA'] ?></li>-->
-				<!--end neon edit-->
+				<li class="nested-li"><a href="<?= $CLIENT_ROOT ?>/content/dwca/rss.xml" target="_blank"><?= $LANG['RSS'] ?></a></li>
+				<!-- NEON edit <li><a href="collections/misc/protectedspecies.php"><?= $LANG['PROTECTED_SPECIES'] ?></a> - <?= $LANG['LISTOFTAXA'] ?></li> -->
 			</ul>
 			<div id="imglib">
 				<h2><?= $LANG['IMGLIB'] ?></h2>
 			</div>
 			<ul>
-				<!--neon edit-->
-				<!--<li><a href="imagelib/index.php"><?= $LANG['IMGLIB'] ?></a></li>-->
-				<!--end neon edit-->
+				<!-- NEON edit <li><a href="imagelib/index.php"><?= $LANG['IMGLIB'] ?></a></li> -->
 				<li><a href="imagelib/search.php"><?= $LANG['IMAGE_SEARCH'] ?></a></li>
 				<li><a href="imagelib/contributors.php"><?= $LANG['CONTRIB'] ?></a></li>
-				<!--neon edit-->
-				<!--<li><a href="includes/usagepolicy.php"><?= $LANG['USAGEPOLICY'] ?></a></li>-->
-				<!--end neon edit-->
+				<!-- NEON edit <li><a href="includes/usagepolicy.php"><?= $LANG['USAGEPOLICY'] ?></a></li> -->
 			</ul>
 
 			<div id="resources">
 				<h2><?= $LANG['ADDITIONAL_RESOURCES'] ?></h2>
 			</div>
 			<ul>
+				<li><a href="<?= $CLIENT_ROOT ?>/geothesaurus/index.php"><?= $LANG['GEOTHESAURUS'] ?></a></li>
 				<?php
 				if($smManager->hasGlossary()){
 					?>
-					<!--neon edit-->
-					<!--<li><a href="glossary/index.php"><?= $LANG['GLOSSARY'] ?></a></li>-->
-					<!--end neon edit-->
+					<!-- NEON edit <li><a href="glossary/index.php"><?= $LANG['GLOSSARY'] ?></a></li> -->
 					<?php
 				}
 				?>
@@ -102,45 +96,48 @@ if(!$schemaVersion){
 			if($clList && isset($USER_RIGHTS['ClAdmin'])){
 				$clAdmin = array_intersect_key($clList,array_flip($USER_RIGHTS['ClAdmin']));
 			}
+			/*
 			?>
-			<!--neon edit-->
-			<!--<div id="bioinventory">-->
-			<!--	<h2><?= $LANG['BIOTIC_INVENTORIES'] ?></h2>-->
-			<!--</div>-->
-			<!--<ul>-->
-			<!--	<?php-->
-			<!--	$projList = $smManager->getProjectList();-->
-			<!--	if($projList){-->
-			<!--		foreach($projList as $pid => $pArr){-->
-			<!--			echo "<li><a href='projects/index.php?pid=" . $pid . "'>" . $pArr["name"] . "</a></li>\n";-->
-			<!--			echo "<li class='nested-li'>Manager: " . $pArr["managers"] . "</li>\n";-->
-			<!--		}-->
-			<!--	}-->
-			<!--	?>-->
-			<!--	<li><a href="checklists/index.php"><?= $LANG['ALL_CHECKLISTS']  ?></a></li>-->
-			<!--</ul>-->
-			<!--end neon edit-->
+			<div id="bioinventory">
+				<h2><?= $LANG['BIOTIC_INVENTORIES'] ?></h2>
+			</div>
+			<ul>
+				<?php
+				$projList = $smManager->getProjectList();
+				if($projList){
+					foreach($projList as $pid => $pArr){
+						echo "<li><a href='projects/index.php?pid=" . $pid . "'>" . $pArr["name"] . "</a></li>\n";
+						echo "<li class='nested-li'>Manager: " . $pArr["managers"] . "</li>\n";
+					}
+				}
+				?>
+				<li><a href="checklists/index.php"><?= $LANG['ALL_CHECKLISTS']  ?></a></li>
+			</ul>
+			 * NEON edit end
+			 */
+			?>
 			<div id="datasets">
 				<h2><?= $LANG['DATASETS'] ?></h2>
 			</div>
 			<ul>
 				<li><a href="collections/datasets/publiclist.php"><?= $LANG['ALLPUBDAT'] ?></a></li>
 			</ul>
-			<!--<div id="dynamiclists"><h2><?= $LANG['DYNAMIC'] ?></h2></div>-->
-			<!--<ul>-->
-			<!--	<li>-->
-			<!--		<a href="checklists/dynamicmap.php?interface=checklist">-->
-			<!--			<?= $LANG['CHECKLIST'] ?>-->
-			<!--		</a> - <?= $LANG['BUILDCHECK'] ?>-->
-			<!--	</li>-->
-			<!--	<li>-->
-			<!--		<a href="checklists/dynamicmap.php?interface=key">-->
-			<!--			<?= $LANG['DYNAMICKEY'] ?>-->
-			<!--		</a> - <?= $LANG['BUILDDKEY'] ?>-->
-			<!--	</li>-->
-			<!--</ul>-->
-
-			<section id="admin" class="fieldset-like" style="padding: 0 0 0 0">
+			<!-- NEON edit start
+			<div id="dynamiclists"><h2><?= $LANG['DYNAMIC'] ?></h2></div>
+			<ul>
+				<li>
+					<a href="checklists/dynamicmap.php?interface=checklist">
+						<?= $LANG['CHECKLIST'] ?>
+					</a> - <?= $LANG['BUILDCHECK'] ?>
+				</li>
+				<li>
+					<a href="checklists/dynamicmap.php?interface=key">
+						<?= $LANG['DYNAMICKEY'] ?>
+					</a> - <?= $LANG['BUILDDKEY'] ?>
+				</li>
+			</ul>
+			NEON edit end -->
+			<section id="admin" class="fieldset-like" style="padding: 1.6rem 0 0 0">
 				<h1>
 					<span>
 						<?= $LANG['MANAGTOOL'] ?>
@@ -150,68 +147,9 @@ if(!$schemaVersion){
 				if($SYMB_UID){
 					if($IS_ADMIN){
 						?>
-						<h2 class="subheader">
-							<span>
-								<?= $LANG['ADMIN'] ?>
-							</span>
-						</h2>
-						<ul>
-							<li>
-								<a href="profile/usermanagement.php"><?= $LANG['USERPERM'] ?></a>
-							</li>
-						<?php // TODO: Identification Editor features need to be reviewed and refactored
-						/*
-							<li>
-								<a href="profile/usertaxonomymanager.php"><?= $LANG['TAXINTER'] ?></a>
-							</li>
-						*/
-						?>
-							<li>
-								<a href="<?= $CLIENT_ROOT ?>/collections/misc/collmetadata.php">
-									<?= $LANG['CREATENEWCOLL'] ?>
-								</a>
-							</li>
-							<!--neon edit-->
-							<!--<li>-->
-							<!--	<a href="<?= $CLIENT_ROOT ?>/geothesaurus/index.php">-->
-							<!--		<?= $LANG['GEOTHESAURUS']  ?>-->
-							<!--	</a>-->
-							<!--</li>-->
-							<!--end neon edit-->
-							<!--
-							<li>
-								<a href="<?= $CLIENT_ROOT ?>/collections/cleaning/coordinatevalidator.php">
-									<?= $LANG['COORDVALIDATOR'] ?>
-								</a>
-							</li>
-							-->
-							<!--neon edit-->
-							<!--<li>-->
-							<!--	<a href="<?= $CLIENT_ROOT ?>/imagelib/admin/thumbnailbuilder.php">-->
-							<!--		<?= $LANG['THUMBNAIL_BUILDER'] ?>-->
-							<!--	</a>-->
-							<!--</li>-->
-							<!--<li>-->
-							<!--	<a href="<?= $CLIENT_ROOT ?>/collections/admin/guidmapper.php">-->
-							<!--		<?= $LANG['GUIDMAP'] ?>-->
-							<!--	</a>-->
-							<!--</li>-->
-							<!--<li>-->
-							<!--	<a href="<?= $CLIENT_ROOT ?>/collections/specprocessor/salix/salixhandler.php">-->
-							<!--		<?= $LANG['SALIX'] ?>-->
-							<!--	</a>-->
-							<!--</li>-->
-							<!--<li>-->
-							<!--	<a href="<?= $CLIENT_ROOT ?>/glossary/index.php">-->
-							<!--		<?= $LANG['GLOSSARY']  ?>-->
-							<!--	</a>-->
-							<!--</li>-->
-							<!--<li>-->
-							<!--	<a href="collections/map/staticmaphandler.php"><?= $LANG['MANAGE_TAXON_THUMBNAILS'] ?></a>-->
-							<!--</li>-->
-							<!--end neon edit-->
-						</ul>
+						<h2 class="subheader"><span><?= $LANG['ADMIN_MENU']; ?></span></h2>
 						<?php
+						include('profile/adminmenu.php');
 					}
 					if($KEY_MOD_IS_ACTIVE || array_key_exists("KeyAdmin",$USER_RIGHTS)){
 						echo '<h2 class="subheader"><span>' . $LANG['IDKEYS'] . '<span></h2>';
@@ -258,65 +196,67 @@ if(!$schemaVersion){
 						<?php
 					}
 					?>
-					<!--<h2 class="subheader">-->
-					<!--	<span>-->
-					<!--		<?= $LANG['IMAGES'] ?>-->
-					<!--	</span>-->
-					<!--</h2>-->
-					<!--<div id="images">-->
-					<!--	<p class="description">-->
-					<!--		<?= $LANG['SEESYMBDOC'] ?>-->
-					<!--		<a href="https://docs.symbiota.org/Collection_Manager_Guide/Images" target="_blank"><?= $LANG['IMGSUB'] ?></a>-->
-					<!--		<?= $LANG['FORANOVERVIEW'] ?>-->
-					<!--	</p>-->
-					<!--</div>-->
-					<!--<ul>-->
-					<!--	<?php-->
-					<!--	if($IS_ADMIN || array_key_exists('TaxonProfile',$USER_RIGHTS)){-->
-					<!--		?>-->
-					<!--		<li>-->
-					<!--			<a href="taxa/profile/tpeditor.php?tabindex=1" target="_blank">-->
-					<!--				<?= $LANG['BASICFIELD'] ?>-->
-					<!--			</a>-->
-					<!--		</li>-->
-					<!--		<?php-->
-					<!--	}-->
-					<!--	if($IS_ADMIN || array_key_exists("CollAdmin",$USER_RIGHTS) || array_key_exists("CollEditor",$USER_RIGHTS)){-->
-					<!--		?>-->
-					<!--		<li>-->
-					<!--			<a href="collections/editor/observationsubmit.php">-->
-					<!--				<?= $LANG['IMGOBSER'] ?>-->
-					<!--			</a>-->
-					<!--		</li>-->
-					<!--		<?php-->
-					<!--	}-->
-					<!--	?>-->
-					<!--</ul>-->
-					<!--<h2 class="subheader">-->
-					<!--	<span>-->
-					<!--		<?= $LANG['BIOTIC_INVENTORIES'] ?>-->
-					<!--	</span>-->
-					<!--</h2>-->
-					<!--<ul>-->
-					<!--	<?php-->
-					<!--	if($IS_ADMIN){-->
-					<!--		echo '<li><a href="projects/index.php?newproj=1">' . $LANG['ADDNEWPROJ'] . '</a></li>';-->
-					<!--		if($projList){-->
-					<!--			echo '<li><b>' . $LANG['LISTOFCURR'] . '</b> ' . $LANG['CLICKEDIT'] . '</li>';-->
-					<!--			foreach($projList as $pid => $pArr){-->
-					<!--				echo '<li class="nested-li"><a href="' . $CLIENT_ROOT . '/projects/index.php?pid=' . $pid . '&emode=1">' . htmlspecialchars($pArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a></li>';-->
-					<!--			}-->
-					<!--		}-->
-					<!--		else{-->
-					<!--			echo '<li>'.$LANG['NOPROJ'].'</li>';-->
-					<!--		}-->
-					<!--	}-->
-					<!--	else{-->
-					<!--		echo '<li>'.$LANG['NOTEDITPROJ'].'</li>';-->
-					<!--	}-->
-					<!--	?>-->
-					<!--</ul>-->
-					<!--end neon edit-->
+					<!-- NEON edit start
+					<h2 class="subheader">
+						<span>
+							<?= $LANG['IMAGES'] ?>
+						</span>
+					</h2>
+					<div id="images">
+						<p class="description">
+							<?= $LANG['SEESYMBDOC'] ?>
+							<a href="https://docs.symbiota.org/Collection_Manager_Guide/Images" target="_blank"><?= $LANG['IMGSUB'] ?></a>
+							<?= $LANG['FORANOVERVIEW'] ?>
+						</p>
+					</div>
+					<ul>
+						<?php
+						if($IS_ADMIN || array_key_exists('TaxonProfile',$USER_RIGHTS)){
+							?>
+							<li>
+								<a href="taxa/profile/tpeditor.php?tabindex=1" target="_blank">
+									<?= $LANG['BASICFIELD'] ?>
+								</a>
+							</li>
+							<?php
+						}
+						if($IS_ADMIN || array_key_exists("CollAdmin",$USER_RIGHTS) || array_key_exists("CollEditor",$USER_RIGHTS)){
+							?>
+							<li>
+								<a href="collections/editor/observationsubmit.php">
+									<?= $LANG['IMGOBSER'] ?>
+								</a>
+							</li>
+							<?php
+						}
+						?>
+					</ul>
+					NEON edit end -->
+					<h2 class="subheader">
+						<span>
+							<?= $LANG['BIOTIC_INVENTORIES'] ?>
+						</span>
+					</h2>
+					<ul>
+						<?php
+						if($IS_ADMIN){
+							echo '<li><a href="projects/index.php?newproj=1">' . $LANG['ADDNEWPROJ'] . '</a></li>';
+							if($projList){
+								echo '<li><b>' . $LANG['LISTOFCURR'] . '</b> ' . $LANG['CLICKEDIT'] . '</li>';
+								foreach($projList as $pid => $pArr){
+									echo '<li class="nested-li"><a href="' . $CLIENT_ROOT . '/projects/index.php?pid=' . $pid . '&emode=1">' . htmlspecialchars($pArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a></li>';
+								}
+							}
+							else{
+								echo '<li>'.$LANG['NOPROJ'].'</li>';
+							}
+						}
+						else{
+							echo '<li>'.$LANG['NOTEDITPROJ'].'</li>';
+						}
+						?>
+					</ul>
+					NEON edit end -->
 					<h2 class="subheader">
 						<span>
 							<?= $LANG['DATASETS'] ?>
@@ -335,9 +275,9 @@ if(!$schemaVersion){
 						?>
 						<p class="description">
 							<?= $LANG['THEFOLLOWINGSPEC'] ?>
-					</p>
+						</p>
 						<ul>
-							<li><a href="taxa/profile/tpeditor.php?taxon="><?= $LANG['SYN_COM'] ?></a></li>
+							<li><a href="taxa/profile/tpeditor.php?taxon="><?= $LANG['VERNAC_COM'] ?></a></li>
 							<li><a href="taxa/profile/tpeditor.php?taxon=&tabindex=4"><?= $LANG['TEXTDESC'] ?></a></li>
 							<li><a href="taxa/profile/tpeditor.php?taxon=&tabindex=1"><?= $LANG['EDITIMG'] ?></a></li>
 							<li class="nested-li"><a href="taxa/profile/tpeditor.php?taxon=&category=imagequicksort&tabindex=2"><?= $LANG['IMGSORTORD'] ?></a></li>
@@ -364,15 +304,15 @@ if(!$schemaVersion){
 							?>
 							<li><?= $LANG['EDITTAXPL'] ?> <a href="taxa/taxonomy/taxonomydisplay.php"><?= $LANG['TAXTREEVIEW'] ?></a></li>
 							<li><a href="taxa/taxonomy/taxonomyloader.php"><?= $LANG['ADDTAXANAME'] ?></a></li>
-							<!--neon edit-->
-							<!--<li><a href="taxa/taxonomy/batchloader.php"><?= $LANG['BATCHTAXA'] ?></a></li>-->
+							<!-- NEON edit<li><a href="taxa/taxonomy/batchloader.php"><?= $LANG['BATCHTAXA'] ?></a></li>-->
 							<?php
-							//if($IS_ADMIN || array_key_exists("Taxonomy",$USER_RIGHTS)){
+							if($IS_ADMIN || array_key_exists("Taxonomy",$USER_RIGHTS)){
+								/* NEON edit start
 								?>
-								<!--<li><a href="taxa/profile/eolmapper.php"><?= $LANG['EOLLINK'] ?></a></li>-->
+								<li><a href="taxa/profile/eolmapper.php"><?= $LANG['EOLLINK'] ?></a></li>
 								<?php
-							//}
-							//end neon edit
+								NEON edit end */
+							}
 						}
 						else{
 							echo '<li>' . $LANG['NOTEDITTAXA'] . '</li>';
@@ -399,23 +339,22 @@ if(!$schemaVersion){
 						}
 						?>
 					</ul>
-					<!--neon edit-->
 					<?php
-					//if(isset($ACTIVATE_EXSICCATI) && $ACTIVATE_EXSICCATI){
+					if(isset($ACTIVATE_EXSICCATI) && $ACTIVATE_EXSICCATI){
 						?>
-						<!--<h2 class="subheader">-->
-						<!--	<span>-->
-						<!--		<?= $LANG['EXSICCATII'] ?>-->
-						<!--	</span>-->
-						<!--</h2>-->
-						<!--<p class="description">-->
-						<!--	<?= $LANG['ESCMOD'] ?>.-->
-						<!--</p>-->
-						<!--<ul>-->
-						<!--	<li><a href="collections/exsiccati/index.php"><?= $LANG['EXSICC'] ?></a></li>-->
-						<!--</ul>-->
+						<h2 class="subheader">
+							<span>
+								<?= $LANG['EXSICCATII'] ?>
+							</span>
+						</h2>
+						<p class="description">
+							<?= $LANG['ESCMOD'] ?>.
+						</p>
+						<ul>
+							<li><a href="collections/exsiccati/index.php"><?= $LANG['EXSICC'] ?></a></li>
+						</ul>
 						<?php
-					//}
+					}
 					?>
 					<!--end neon edit-->
 					<h2 class="subheader">
@@ -424,93 +363,44 @@ if(!$schemaVersion){
 						</span>
 					</h2>
 					<p class="description">
-						<?= $LANG['PARA1'] ?>
+						<?= $LANG['COLLECTION_DESCRIPTION'] ?>
+						<a href="https://docs.symbiota.org/Collector_Observer_Guide/" target="_blank"><?= $LANG['SYMBDOCU'] ?></a>.
 					</p>
-					<h3 class="subheader">
-						<span>
-							<?= $LANG['COLLLIST'] ?>
-						</span>
-					</h3>
 					<div>
-						<ul>
 						<?php
+						$collTypeArr = array('Preserved Specimens','Fossil Specimens','Observations','General Observations');
 						$collArr = $smManager->getCollectionList();
-						if(isset($collArr['s'])){
-							foreach($collArr['s'] as $k => $cArr){
-								echo '<li>';
-								echo '<a href="' . $CLIENT_ROOT . '/collections/misc/collprofiles.php?collid=' . $k . '&emode=1">';
-								echo $cArr['name'];
-								echo '</a>';
-								echo '</li>';
+						if($collArr){
+							foreach($collTypeArr as $collTypeStr){
+								if(isset($collArr[$collTypeStr])){
+									$headerStr = $collTypeStr;
+									$langKey = str_replace(' ', '_', strtoupper($headerStr));
+									if(isset($LANG[$langKey])) $headerStr = $LANG[$langKey];
+									echo '<h3 class="subheader"><span>' . $headerStr . '</span></h3>';
+									echo '<ul>';
+									foreach($collArr[$collTypeStr] as $collid => $collName){
+										echo '<li><a href="' . $CLIENT_ROOT . '/collections/misc/collprofiles.php?collid=' . $collid . '&emode=1" >' .$collName. '</a></li>';
+									}
+									echo '</ul>';
+								}
 							}
 						}
 						else{
-							echo "<li>".$LANG['NOEDITCOLL']."</li>";
+							echo '<li>' . $LANG['NOEDITCOLL'] . '</li>';
 						}
 						?>
-						</ul>
 					</div>
-					<!--neon edit-->
-					<!--<h2 class="subheader">-->
-					<!--	<span>-->
-					<!--		<?= $LANG['OBSERV'] ?>-->
-					<!--	</span>-->
-					<!--</h2>-->
-					<!--<p class="description">-->
-					<!--	<?= $LANG['PARA2'] ?>-->
-					<!--	<a href="https://docs.symbiota.org/Collector_Observer_Guide/" target="_blank"><?= $LANG['SYMBDOCU'] ?></a> <?= $LANG['FORMOREINFO'] ?>.-->
-					<!--<p class="description">-->
-					<!--<h3 class="subheader">-->
-					<!--	<span>-->
-					<!--		<?= $LANG['OIVS'] ?>-->
-					<!--	</span>-->
-					<!--</h3>-->
-					<!--<div>-->
-					<!--	<ul>-->
-					<!--		<?php-->
-					<!--		$obsManagementStr = '';-->
-					<!--		if(isset($collArr['o'])){-->
-					<!--			foreach($collArr['o'] as $k => $oArr){-->
-					<!--				?>-->
-					<!--				<li>-->
-					<!--					<a href="collections/editor/observationsubmit.php?collid=<?= $k ?>">-->
-					<!--						<?= $oArr['name'] ?>-->
-					<!--					</a>-->
-					<!--				</li>-->
-					<!--				<?php-->
-					<!--				if($oArr['isadmin']) $obsManagementStr .= '<li><a href="collections/misc/collprofiles.php?collid=' . $k . '&emode=1">' . htmlspecialchars($oArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . "</a></li>\n";-->
-					<!--			}-->
-					<!--		}-->
-					<!--		else{-->
-					<!--			echo '<li>' . $LANG['NOOBSPROJ'] . '</li>';-->
-					<!--		}-->
-					<!--		?>-->
-					<!--	</ul>-->
-					<!--	<?php-->
-					<!--	if($obsManagementStr){-->
-					<!--		?>-->
-					<!--		<h3 class="subheader">-->
-					<!--			<span>-->
-					<!--				<?= $LANG['OPM'] ?>-->
-					<!--			</span>-->
-					<!--		</h3>-->
-					<!--		<ul>-->
-					<!--			<?= $obsManagementStr ?>-->
-					<!--		</ul>-->
-					<!--	<?php-->
-					<!--	}-->
-					<!--?>-->
-					<!--</div>-->
-					<!--end neon edit-->
 					<?php
 				}
 				else{
 					echo $LANG['PLEASE'] . ' <a href="' . $CLIENT_ROOT . '/profile/index.php?refurl=../sitemap.php">' . $LANG['LOGIN'] . '</a> ' . $LANG['TOACCESS'] . '<br/>' . $LANG['CONTACTPORTAL'] . '.';
 				}
-			?>
+				?>
 			</section>
 			<div id="symbiotaschema">
-				<img style="height:1.85rem" src="https://img.shields.io/badge/Symbiota-v<?= $CODE_VERSION ?>-blue.svg" alt="a blue badge depicting Symbiota software version" />
+				<a href="https://github.com/Symbiota/Symbiota/releases/tag/v<?= $CODE_VERSION ?>" target="_blank">
+					<img style="height:1.85rem" src="https://img.shields.io/badge/Symbiota-v<?= $CODE_VERSION ?>-blue.svg" alt="a blue badge depicting Symbiota software version" />
+				</a>
 				<img style="height:1.85rem" src="https://img.shields.io/badge/Schema-v<?= $schemaVersion ?>-blue.svg" alt="a blue badge depicting Symbiota database schema version" />
 			</div>
 		</div>
