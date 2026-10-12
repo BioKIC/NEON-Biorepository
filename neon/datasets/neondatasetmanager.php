@@ -1243,7 +1243,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							<!--Description Section-->
 							<div style="margin:15px;">
 								<span class="MuiTypography-root MuiTypography-caption">Description</span>
-								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo $mdArr['description']; ?></textarea>
+								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo htmlspecialchars($mdArr['description'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="margin:15px; text-align:right;">
 								<input name="tabindex" type="hidden" value="0" />
