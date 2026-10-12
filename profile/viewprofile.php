@@ -10,14 +10,16 @@ if (empty($NEON_DEV_MODE) || $NEON_DEV_MODE == 1) {
 
 include_once($SERVER_ROOT.'/classes/ProfileManager.php');
 include_once($SERVER_ROOT.'/classes/Person.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/profile/viewprofile.' . $LANG_TAG . '.php'))
-	include_once($SERVER_ROOT.'/content/lang/profile/viewprofile.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/profile/viewprofile.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+include_once($SERVER_ROOT . '/classes/utilities/Sanitize.php');
+
+Language::load('profile/viewprofile');
+
 header('Content-Type: text/html; charset=' . $CHARSET);
 
-$userId = array_key_exists('userid', $_REQUEST) ? filter_var($_REQUEST['userid'], FILTER_SANITIZE_NUMBER_INT) : 0;
-$tabIndex = array_key_exists('tabindex',$_REQUEST) ? filter_var($_REQUEST['tabindex'], FILTER_SANITIZE_NUMBER_INT) : 0;
-$action = array_key_exists('action', $_REQUEST) ? htmlspecialchars($_REQUEST['action'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) : '';
+$userId = array_key_exists('userid', $_REQUEST) ? Sanitize::int($_REQUEST['userid']) : 0;
+$tabIndex = array_key_exists('tabindex',$_REQUEST) ? Sanitize::int($_REQUEST['tabindex']) : 0;
+$action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 
 $isSelf = 0;
 $isEditor = 0;
@@ -42,7 +44,7 @@ $person = null;
 if($isEditor){
 	if($action == 'Submit Edits'){
 		if(!$pHandler->updateProfile($_POST)){
-			$statusStr = (isset($LANG['FAILED'])?$LANG['FAILED']:'Profile update failed!');
+			$statusStr = $LANG['FAILED'];
 		}
 		$person = $pHandler->getPerson();
 		$tabIndex = 2;
@@ -118,6 +120,7 @@ if($isEditor){
 		$tabIndex = 2;
 	}
 
+	if($tabIndex == 2 && $IS_ADMIN) $tabIndex = 3;
 	if(!$person) $person = $pHandler->getPerson();
 }
 ?>
@@ -130,10 +133,10 @@ if($isEditor){
 	include_once($SERVER_ROOT.'/includes/head.php');
 	?>
 	<script type="text/javascript">
-		var tabIndex = <?= $tabIndex; ?>;
+		var tabIndex = <?= $tabIndex ?>;
 	</script>
-	<script src="<?= $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
-	<script src="<?= $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
+	<script src="<?= $CLIENT_ROOT ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="<?= $CLIENT_ROOT ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript" src="../js/symb/profile.viewprofile.js?ver=2"></script>
 	<script type="text/javascript" src="../js/symb/shared.js"></script>
 	<style>
@@ -159,24 +162,37 @@ if($isEditor){
 			?>
 			<div id="tabs" style="margin:10px;">
 				<ul>
+					<li><a href="occurrencemenu.php"><?= $LANG['OCC_MGMNT'] ?></a></li>
 					<?php
 					if($FLORA_MOD_IS_ACTIVE){
 						$excludeParent = 0;
 						if(!empty($_REQUEST['excludeparent'])) $excludeParent = $_REQUEST['excludeparent'];
 						?>
-						<li><a href="../checklists/checklistadminmeta.php?userid=<?= $userId . ($excludeParent ? '&excludeparent=' . $excludeParent : ''); ?>"><?= $LANG['SPEC_CHECKLIST'] ?></a></li>
+						<li><a href="../checklists/checklistadminmeta.php?userid=<?= $userId . ($excludeParent ? '&excludeparent=' . $excludeParent : ''); ?>"><?= $LANG['SPECIES_INVENTORIES'] ?></a></li>
+						<?php
+					}
+					if($IS_ADMIN){
+						?>
+						<li><a href="#admin-menu"><?= $LANG['ADMIN'] ?></a></li>
 						<?php
 					}
 					?>
-					<li><a href="occurrencemenu.php"><?= $LANG['OCC_MGMNT'] ?></a></li>
 					<li><a href="userprofile.php?userid=<?= $userId; ?>"><?= $LANG['USER_PROFILE'] ?></a></li>
 					<?php
 					if($person->getIsTaxonomyEditor()) {
-						echo '<li><a href="specimenstoid.php?userid='.$userId.'&action='.$action.'">'.(isset($LANG['IDS_NEEDED'])?$LANG['IDS_NEEDED']:'IDs Needed').'</a></li>';
-						echo '<li><a href="imagesforid.php">'.(isset($LANG['IMAGES_ID'])?$LANG['IMAGES_ID']:'Images for ID').'</a></li>';
+						echo '<li><a href="specimenstoid.php?userid=' . $userId . '&action=' . Sanitize::outString($action) . '">' . $LANG['IDS_NEEDED'] . '</a></li>';
+						echo '<li><a href="imagesforid.php">' . $LANG['IMAGES_ID'] . '</a></li>';
 					}
 					?>
 				</ul>
+				<div id="admin-menu">
+					<section class="fieldset-like">
+					<h2><span class="subheader"><?= $LANG['ADMIN_MENU']; ?></span></h2>
+					<?php
+					include('adminmenu.php');
+					?>
+					</section>
+				</div>
 			</div>
 			<?php
 		}

@@ -4,8 +4,10 @@ include_once('../config/symbini.php');
 header('Location: ../neon/search/index.php', true, 302);
 exit;
 include_once($SERVER_ROOT.'/classes/ImageLibraryBrowser.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/imagelib/index.'.$LANG_TAG.'.php')) include_once($SERVER_ROOT.'/content/lang/imagelib/index.'.$LANG_TAG.'.php');
-else include_once($SERVER_ROOT.'/content/lang/imagelib/index.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('imagelib/index');
+
 header("Content-Type: text/html; charset=".$CHARSET);
 
 $taxon = array_key_exists('taxon', $_REQUEST) ? $_REQUEST['taxon'] : '';
