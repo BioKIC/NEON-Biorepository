@@ -118,7 +118,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript" src="../../js/symb/shared.js"></script>
-	<script type="text/javascript" src="<?php echo $CLIENT_ROOT; ?>/neon/js/tinymce/tinymce.min.js"></script>
+	<script type="text/javascript" src="../../js/tinymce/tinymce.min.js"></script>
 	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
     <script src="../../js/datatables/datatables.js"></script>
 	<script type="text/javascript">
