@@ -477,7 +477,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			<?php
 		}
 		else{
-			echo '<h3>Please login with administrator permissions get access to this page.</h3>';
+			echo '<h3>Please login with administrator privileges to get access to this page.</h3>';
 		}
 		?>
 	</div>

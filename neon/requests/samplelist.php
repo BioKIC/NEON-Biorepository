@@ -527,7 +527,7 @@ include($SERVER_ROOT.'/includes/header.php');
 	else{
 		?>
 		<div style='font-weight:bold;margin:30px;'>
-		Please login with administrator permissions get access to this page.
+			Please login with administrator privileges to get access to this page.
 		</div>
 		<?php
 	}
