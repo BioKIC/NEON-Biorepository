@@ -982,9 +982,7 @@ class OccurrenceLoans extends Manager{
 	// start NEON addition
 	public function getSampleTypes(){
 		$retArr = [];
-		$sql = "SELECT collID, collectionName
-				FROM omcollections
-				ORDER BY collectionName";
+		$sql = 'SELECT collID, collectionName FROM omcollections ORDER BY collectionName';
 		$stmt = $this->conn->prepare($sql);
 		if (!$stmt) {
 			$this->errorMessage = "Database error: " . $this->conn->error;
@@ -1033,7 +1031,7 @@ class OccurrenceLoans extends Manager{
 		while ($row = $result->fetch_assoc()) {
 			$retArr[] = $row['occid'];
 		}
-
+		$result->free();
 		$stmt->close();
 
 		return $retArr;
