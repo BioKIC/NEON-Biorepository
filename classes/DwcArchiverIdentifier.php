@@ -59,7 +59,22 @@ class DwcArchiverIdentifier extends DwcArchiverBaseManager{
 			foreach($this->fieldArr['fields'] as $colName){
 				if($colName) $sqlFrag .= ', ' . $colName;
 			}
-			$this->sqlArr[] = 'SELECT ' . trim($sqlFrag, ', ') . ' FROM omoccuridentifiers i INNER JOIN omexportoccurrences e ON i.occid = e.occid WHERE (e.omExportID = ?) ';
+			//NEON edit start
+			//$this->sqlArr[] = 'SELECT ' . trim($sqlFrag, ', ') . ' FROM omoccuridentifiers i INNER JOIN omexportoccurrences e ON i.occid = e.occid WHERE (e.omExportID = ?) ';
+			$isAdmin = false;
+			if(!empty($GLOBALS['IS_ADMIN'])) $isAdmin = true;
+			elseif(!empty($GLOBALS['USER_RIGHTS']['CollAdmin'])) $isAdmin = true;
+			elseif(!empty($GLOBALS['USER_RIGHTS']['CollEditor'])) $isAdmin = true;
+			if($isAdmin){
+				$this->sqlArr[] = 'SELECT ' . trim($sqlFrag, ', ') . ' FROM omoccuridentifiers i INNER JOIN omexportoccurrences e ON i.occid = e.occid WHERE (e.omExportID = ?) ';
+			}
+			else{
+				$this->sqlArr[] = 'SELECT ' . trim($sqlFrag, ', ') . ' FROM omoccuridentifiers i INNER JOIN omexportoccurrences e ON i.occid = e.occid
+					WHERE i.identifierName != "NEON sampleID" AND (e.omExportID = ?) ';
+				$this->sqlArr[] = 'SELECT ' . trim($sqlFrag, ', ') . ' FROM omoccuridentifiers i INNER JOIN omexportoccurrences e ON i.occid = e.occid
+					WHERE i.identifierName = "NEON sampleID" AND occid NOT IN(SELECT occid FROM omoccuridentifiers WHERE identifierName = "NEON sampleID Hash") AND (e.omExportID = ?) ';
+			}
+			//NEON edit end
 		}
 	}
 }
