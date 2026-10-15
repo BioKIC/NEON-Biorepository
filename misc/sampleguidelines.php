@@ -126,9 +126,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<p><em>Last updated May 19, 2026</em></p>
 		</div>
 	</div>
-	<?php
-	include($SERVER_ROOT . '/includes/footer.php');
-	?>
+
 </body>
 
 </html>

@@ -362,8 +362,5 @@ if (!empty($mdArr)) {
 				</div>
 			<?php } ?>
 		</div>
-        <?php
-        include($SERVER_ROOT . '/includes/footer.php');
-        ?>
 	</body>
 </html>

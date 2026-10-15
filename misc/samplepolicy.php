@@ -59,16 +59,14 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 				<li><b>Upon receipt of samples, the researcher must review the shipment and sign and return a <a href="documents/sampleReceiptConfirmation.pdf" target="_blank">Sample Receipt Confirmation</a></b> acknowledging receipt of the materials and their condition. The researcher’s institution is responsible for proper handling, storage, and use of all samples while in their possession and for ensuring compliance with the Sample Use Agreement, including maintaining appropriate storage conditions and preventing loss or contamination. The NEON Biorepository must be notified promptly if samples are lost, damaged, or compromised while in the researcher’s possession.</li>
 			</ul>
 
-			<p><b><i>All requests require a mutually developed and signed <a href="sampleguidelines.php#sample-use-agreement">Sample Use Agreement</a> prior to sample processing and shipment.</i></b> The NEON Biorepository reserves the right to deny future sample requests from researchers who do not adhere to this Sample Use Policy or to the terms outlined in a signed Sample Use Agreement.</p>
+			<p><b><i>All requests require a mutually developed and signed <a href="sampleguidelines.php#sample-use-agreement">Sample Use Agreement </a> prior to sample processing and shipment.</i></b> The NEON Biorepository reserves the right to deny future sample requests from researchers who do not adhere to this Sample Use Policy or to the terms outlined in a signed Sample Use Agreement.</p>
 		</article>
 
 		<div style="margin-top: 70px;">
 			<p><em>Last updated June 9, 2026</em></p>
 		</div>
 	</div>
-	<?php
-	include($SERVER_ROOT . '/includes/footer.php');
-	?>
+
 </body>
 
 </html>

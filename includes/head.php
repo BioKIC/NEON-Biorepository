@@ -14,154 +14,14 @@ $isNeonEditor = false;
 if ($IS_ADMIN) $isNeonEditor = true;
 elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEditor', $USER_RIGHTS)) $isNeonEditor = true;
 ?>
-<script>
-  var TURBOPACK_CHUNK_BASE_PATH =
-    <?php echo json_encode(rtrim($CLIENT_ROOT, '/') . '/neon-react/core-components/_next/'); ?>;
-  window.NEON_CLIENT_ROOT = <?php echo json_encode($CLIENT_ROOT); ?>;
-</script>
-<!-- NEON REACT ASSETS START -->
-<!-- React last updated: 10/15/2026, 12:54:04 PM -->
-<meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ymln80vc0rl-.js"/><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0twqply_6k3_c.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2muonxtzu2a3r.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/turbopack-2sizzcrnxfbym.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ki981-5p5oto.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/40cx8dp4z2bqk.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0oxrt4rdhvasn.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/17xh38m6on6pa.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2dq_z_y8msev9.js" async=""></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1tgo-3ycgbx1f.js" async=""></script><link rel="preload" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css" as="style"/><link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style"/><title>NEON | Portal Core Components</title><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>
-              let gaInitialized = false;
-              let interactionTracked = false;
-              window.pendingGAEvents = [];
-        
-              function loadGAScript() {
-                return new Promise(resolve => {
-                  if (document.querySelector('script[data-ga-loader]')) {
-                    resolve();
-                    return;
-                  }
-        
-                  const s = document.createElement('script');
-                  s.async = true;
-                  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6M1F2QCBWJ';
-                  s.setAttribute('data-ga-loader', 'true');
-                  s.onload = resolve;
-        
-                  document.head.appendChild(s);
-                });
-              }
-        
-              async function initGA() {
-                if (gaInitialized) return;
-                gaInitialized = true;
-        
-                await loadGAScript();
-        
-                window.dataLayer = window.dataLayer || [];
-        
-                window.gtag = function () {
-                  window.dataLayer.push(arguments);
-                };
-        
-                gtag('js', new Date());
-        
-                gtag('config', 'G-6M1F2QCBWJ', {
-                  send_page_view: false
-                });
-        
-                gtag('event', 'page_view', {
-                  page_path: window.location.pathname,
-                  page_location: window.location.href,
-                  page_title: document.title
-                });
-        
-                window.pendingGAEvents.forEach(args => {
-                  gtag(...args);
-                });
-        
-                window.pendingGAEvents = [];
-        
-                document.addEventListener('click', e => {
-                  const el = e.target;
-        
-                  gtag('event', 'ui_click', {
-                    tag: el.tagName || '',
-                    text: (el.innerText || '').trim().substring(0, 100),
-                    id: el.id || '',
-                    page_path: window.location.pathname
-                  });
-                });
-        
-                document
-                  .querySelectorAll('.search-api-form form')
-                  .forEach(form => {
-                    form.addEventListener('submit', e => {
-                      const query = e.target.querySelector('[name="title"]')?.value?.trim();
-        
-                      if (!query) return;
-        
-                      gtag('event', 'neon-search', {
-                        search_term: query
-                      });
-                    });
-                  });
-              }
-        
-              async function trackInteraction(type) {
-                if (interactionTracked) return;
-        
-                interactionTracked = true;
-        
-                await initGA();
-        
-                gtag('event', 'interaction', {
-                  interaction_type: type
-                });
-              }
-        
-              window.addEventListener('click', () => {
-                trackInteraction('click');
-              }, { once: true });
-        
-              window.addEventListener('keydown', () => {
-                trackInteraction('keydown');
-              }, { once: true });
-        
-              window.addEventListener('touchstart', () => {
-                trackInteraction('touchstart');
-              }, { once: true });
-        
-              window.addEventListener('mousemove', () => {
-                trackInteraction('mousemove');
-              }, { once: true });
-            </script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0cz1d0mv5g_q7.js" noModule=""></script>
-<!-- NEON REACT ASSETS END -->
-<script>
-  (globalThis.TURBOPACK ||= []).push([
-    {
-      getAttribute(name) {
-        return name === 'src'
-          ? '/neon/neon-react/core-components/_next/static/chunks/php-bootstrap.js'
-          : null;
-      }
-    },
-    {
-    otherChunks: [
-      'static/chunks/1ymln80vc0rl-.js', // script in body
-      'static/chunks/1tgo-3ycgbx1f.js' //last script before drupal
-    ],
-      runtimeModuleIds: [94469] //number in script above by BIOREPO
-    }
-  ]);
-</script>
+
+<!--neon react links-->
+<!--React last updated: 8/25/2026, 11:28:36 AM-->
+<meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-fonts" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-fonts.css"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/assets/css/webpack-overrides.css"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>let gaInitialized=!1,interactionTracked=!1;function loadGAScript(){return new Promise((t=>{if(document.querySelector("script[data-ga-loader]"))return void t();const e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-6M1F2QCBWJ",e.setAttribute("data-ga-loader","true"),e.onload=t,document.head.appendChild(e)}))}async function initGA(){gaInitialized||(gaInitialized=!0,await loadGAScript(),window.dataLayer=window.dataLayer||[],window.gtag=function(){window.dataLayer.push(arguments)},gtag("js",new Date),gtag("config","G-6M1F2QCBWJ",{send_page_view:!1}),gtag("event","page_view",{page_path:window.location.pathname,page_location:window.location.href,page_title:document.title}),window.pendingGAEvents.forEach((t=>{gtag(...t)})),window.pendingGAEvents=[],document.addEventListener("click",(t=>{const e=t.target;gtag("event","ui_click",{tag:e.tagName||"",text:(e.innerText||"").trim().substring(0,100),id:e.id||"",page_path:window.location.pathname})})),document.querySelectorAll(".search-api-form form").forEach((t=>{t.addEventListener("submit",(t=>{const e=t.target.querySelector('[name="title"]')?.value?.trim();e&&gtag("event","neon-search",{search_term:e})}))})))}async function trackInteraction(t){interactionTracked||(interactionTracked=!0,await initGA(),gtag("event","interaction",{interaction_type:t}))}window.pendingGAEvents=[],window.addEventListener("click",(()=>{trackInteraction("click")}),{once:!0}),window.addEventListener("keydown",(()=>{trackInteraction("keydown")}),{once:!0}),window.addEventListener("touchstart",(()=>{trackInteraction("touchstart")}),{once:!0}),window.addEventListener("mousemove",(()=>{trackInteraction("mousemove")}),{once:!0})</script><script>window.NEON_SERVER_DATA="__NEON_SERVER_DATA__"</script><link href="<?php echo $CLIENT_ROOT; ?>/neon-react/static/css/main.dfee6011.css" rel="stylesheet">
+<!--end of neon react links-->
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Create biorepo-page div
-        // A page must have the innertext div
-        var biorepoPage = document.createElement("div");
-        biorepoPage.id = "biorepo-page";
-    
-        var innerText = document.getElementById("innertext");
-        if (innerText) {
-            innerText.parentNode.insertBefore(biorepoPage, innerText);
-        }
-    });
-
-    window.addEventListener('biorepo:neon-page-ready', function() {
-
         //this code happens after content but before header and sidebar
         // image resizings for homepage
         function updateElementWidth() {
@@ -215,9 +75,26 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
         waitForElement('.neon__sidebar-sticky', updateBreadcrumbHash);
         window.addEventListener('resize', updateElementWidth);
 
+        // Create biorepo-page div
+        // A page must have the innertext div
+        var biorepoPage = document.createElement("div");
+        biorepoPage.id = "biorepo-page";
+
+        var innerText = document.getElementById("innertext");
+        if (innerText) {
+            innerText.parentNode.insertBefore(biorepoPage, innerText);
+        }
+
 		<?php
 		if(empty($DEACTIVATE_REACT)){
 			?>
+            //javascript code created by React
+            var reactScript = document.createElement('script');
+            reactScript.src = '<?php echo $CLIENT_ROOT; ?>/neon-react/static/js/main.f17ff831.js';
+            reactScript.defer = true;
+
+            // this code happens after header is rendered but before sidebar
+            reactScript.onload = function() {
                 // edit home image link
                 var logoLink = document.getElementById("block-neon-site-branding");
                 if (logoLink) {
@@ -574,121 +451,14 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
                     EOL;
                 }
                 ?>
+            };
+
+            document.body.appendChild(reactScript);
             <?php
 		}
 		?>
     });
 </script>
-
-<script>
-(function () {
-  const muiStyles = new Map();
-  const muiSelector = '[class*="Mui"]';
-
-  function getMuiClasses(el) {
-    return [...el.classList]
-      .filter(c => c.startsWith("Mui"))
-      .sort();
-  }
-
-  function getKey(el) {
-    const classes = getMuiClasses(el);
-    return classes.length
-      ? el.tagName + "|" + classes.join("|")
-      : null;
-  }
-
-  function isReactElement(el) {
-    return Object.keys(el).some(key =>
-      key.startsWith("__reactFiber$") ||
-      key.startsWith("__reactInternalInstance$")
-    );
-  }
-
-  function collectStyles() {
-    document.querySelectorAll(muiSelector).forEach(el => {
-      if (!isReactElement(el)) return;
-
-      const key = getKey(el);
-      if (!key) return;
-
-      const cssClasses = [...el.classList]
-        .filter(c => c.startsWith("css-"));
-
-      if (!cssClasses.length) return;
-
-      const variables = {};
-
-      for (const property of el.style) {
-        if (property.startsWith("--")) {
-          variables[property] = el.style.getPropertyValue(property);
-        }
-      }
-
-      muiStyles.set(key, { cssClasses, variables });
-    });
-  }
-
-  function applyStyles() {
-    document.querySelectorAll(muiSelector).forEach(el => {
-      if (isReactElement(el)) return;
-
-      const key = getKey(el);
-      const styles = muiStyles.get(key);
-
-      if (!styles) return;
-
-      [...el.classList]
-        .filter(c => c.startsWith("css-"))
-        .forEach(c => el.classList.remove(c));
-
-      el.classList.add(...styles.cssClasses);
-
-      for (const [property, value] of Object.entries(styles.variables)) {
-        el.style.setProperty(property, value);
-      }
-    });
-  }
-
-  function updateStyles() {
-    collectStyles();
-    applyStyles();
-  }
-
-  function init() {
-    let scheduled = false;
-
-    const observer = new MutationObserver(() => {
-      if (scheduled) return;
-      scheduled = true;
-
-      requestAnimationFrame(() => {
-        scheduled = false;
-        observer.disconnect();
-        updateStyles();
-        observer.observe(document.documentElement, {
-          childList: true,
-          subtree: true
-        });
-      });
-    });
-
-    updateStyles();
-
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-})();
-</script>
-
 <!--end-->
 
 <?php
