@@ -1,4 +1,4 @@
 :HL["/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css","style"]
 :HL["/core-components/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css","style"]
 :HL["https://fonts.googleapis.com/icon?family=Material+Icons","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"Lxt6PChxtjwiqQw4B1r5w"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"/_not-found","param":null,"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"DGpxJao2AW_66rpb_t-om"}
