@@ -41,5 +41,8 @@ usort($pArr, function ($a, $b) {
 			</script>
             <div id="neon-project-table"></div>
 		</div>
+	<?php
+	include($SERVER_ROOT . '/includes/footer.php');
+	?>
 	</body>
 </html>

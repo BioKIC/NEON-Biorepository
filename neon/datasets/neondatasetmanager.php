@@ -309,50 +309,36 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			adjustPagination();
 		});
 
-	function switchDatasetTab(tab) {
-		var tabs = tab.closest('.MuiTabs-root');
-		var container = document.getElementById('tabs');
-		var buttons = tabs.querySelectorAll('.MuiTab-root');
-		var contents = container.querySelectorAll('.dataset-tab-content');
+	function switchDatasetTab(button) {
+		var tabs = button.closest('.MuiTabs-root');
+		var buttons = tabs.querySelectorAll('[role="tab"]');
+	
+		buttons.forEach(function(tab) {
+			var selected = tab === button;
+			tab.classList.toggle('Mui-selected', selected);
+			tab.setAttribute('aria-selected', String(selected));
+			tab.tabIndex = selected ? 0 : -1;
+		});
+	
+		document.querySelectorAll('.dataset-tab-content').forEach(function(panel) {
+			panel.style.display = panel.id === button.dataset.tab ? 'block' : 'none';
+		});
+	
 		var indicator = tabs.querySelector('.MuiTabs-indicator');
-
-		buttons.forEach(function(button) {
-			button.classList.remove('Mui-selected');
-			button.setAttribute('aria-selected', 'false');
-			button.setAttribute('tabindex', '-1');
-		});
-
-		contents.forEach(function(content) {
-			content.style.display = 'none';
-		});
-
-		tab.classList.add('Mui-selected');
-		tab.setAttribute('aria-selected', 'true');
-		tab.setAttribute('tabindex', '0');
-
-		var selectedContent = document.getElementById(tab.dataset.tab);
-
-		if (selectedContent) {
-			selectedContent.style.display = 'block';
-		}
-
-		indicator.style.left = tab.offsetLeft + 'px';
-		indicator.style.width = tab.offsetWidth + 'px';
+		var scroller = tabs.querySelector('.MuiTabs-scroller');
+		var tabRect = button.getBoundingClientRect();
+		var scrollerRect = scroller.getBoundingClientRect();
+	
+		indicator.style.left = (tabRect.left - scrollerRect.left + scroller.scrollLeft) + 'px';
+		indicator.style.width = tabRect.width + 'px';
 	}
 
-	document.addEventListener('DOMContentLoaded', function() {
-		var tabs = document.querySelector('#tabs .MuiTabs-root');
+    document.addEventListener('DOMContentLoaded', function() {
+        var active = document.querySelector('.MuiTabs-root [role="tab"].Mui-selected')
+            || document.querySelector('.MuiTabs-root [role="tab"]');
 
-		if (!tabs) {
-			return;
-		}
-
-		var selectedTab = tabs.querySelector('.MuiTab-root.Mui-selected');
-
-		if (selectedTab) {
-			switchDatasetTab(selectedTab);
-		}
-	});
+        if (active) switchDatasetTab(active);
+    });
 
 	function copyUrl(url) {
 		navigator.clipboard.writeText(url).then(function() {
@@ -643,69 +629,75 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 				$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
 				if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {
 					?>
-					<a
-						href="<?php echo htmlspecialchars($rArr['sampleUseAgreementLink'], ENT_QUOTES, $CHARSET); ?>"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeMedium"
-						style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
+					<button
+						type="button"
+						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+						onclick="window.open(<?= htmlspecialchars(json_encode($rArr['sampleUseAgreementLink'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, $CHARSET) ?>, '_blank', 'noopener,noreferrer')"
+						style="font-size: 1em; text-decoration: none; margin: 25px 10px; color: white; display: inline-flex; align-items: center; justify-content: center;"
 					>
-						<span class="MuiButton-label">
-							View Sample Use Agreement
-							<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-								<svg
-									aria-hidden="true"
-									class="MuiSvgIcon-root"
-									focusable="false"
-									viewBox="0 0 24 24"
-								>
-									<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-								</svg>
-							</span>
+						<span>View Sample Use Agreement</span>
+					
+						<span
+							class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeLarge"
+							style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
+						>
+							<svg
+								class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+								focusable="false"
+								aria-hidden="true"
+								viewBox="0 0 24 24"
+								style="display: block;"
+							>
+								<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+							</svg>
 						</span>
-					</a>
+					</button>
 					<?php
 				} else 	echo '<h5 class="MuiTypography-root MuiTypography-h5" style="color:red; padding:16px 0; margin-left:10px;">No Sample Use Agreement exists for this project.</h5>';
 				if ($rArr['id'] && $isEditor == 1) {
 					?>
 					<span>
-						<button type="button"
-							class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeMedium"
-	        				onclick="copyUrl(window.location.origin + '/portal/neon/datasets/neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>')"
-							style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
+						<button
+							type="button"
+							class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+							onclick="copyUrl(window.location.origin + '/portal/neon/datasets/neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>')"
+							style="font-size: 1em; text-decoration: none; margin: 25px 10px; color: white;"
 							aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
-							title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
+							title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
+						>
 							Copy Dataset Url
 						</button>
 					</span>
-					<a
-						href="../requests/inquiryform.php?id=<?php echo urlencode($rArr['id']); ?>"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeMedium MuiButton-sizeMedium"
-						style="font-size:1em; text-decoration:none; margin:25px 10px; color:white"
+					<button
+						type="button"
+						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary"
+						onclick="window.open('../requests/inquiryform.php?id=<?= urlencode($rArr['id']) ?>', '_blank', 'noopener,noreferrer')"
+						style="font-size: 1em; text-decoration: none; margin: 25px 10px; color: white; display: inline-flex; align-items: center; justify-content: center;"
 					>
-						<span class="MuiButton-label">
-							Manage Request
-							<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-								<svg
-									aria-hidden="true"
-									class="MuiSvgIcon-root"
-									focusable="false"
-									viewBox="0 0 24 24"
-								>
-									<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-								</svg>
-							</span>
+						<span>Manage Request</span>
+					
+						<span
+							class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"
+							style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
+						>
+							<svg
+								class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+								focusable="false"
+								aria-hidden="true"
+								viewBox="0 0 24 24"
+								style="display: block;"
+							>
+								<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+							</svg>
 						</span>
-					</a>
+					</button>
 					<?php
 				}
 			}
 			?>
 		</div>
 		<div style="padding:0 15px;">
-			<hr class="MuiDivider-root">
+			<hr class="MuiDivider-root MuiDivider-fullWidth" />
 		</div>
 		<?php
 		if ($statusStr) {
@@ -722,89 +714,46 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 				?>
 				<div id="tabs" style="margin:10px;padding:0;border:1px solid #e6e6e6;">
 
-					<div class="MuiTabs-root">
-						<div class="MuiTabs-scroller MuiTabs-fixed" style="overflow:hidden;">
-							<div class="MuiTabs-flexContainer" role="tablist" style="font-size:0.7rem;">
-								<button
-									aria-selected="true"
-									class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary Mui-selected"
-									role="tab"
-									tabindex="0"
-									type="button"
-									data-tab="admintab"
-									onclick="switchDatasetTab(this)"
-								>
-									<span class="MuiTab-wrapper">
-										Description
-									</span>
-									<span class="MuiTouchRipple-root"></span>
+					<!-- DATASET TABS -->
+					<div class="MuiTabs-root" style="position:relative;">
+						<div class="MuiTabs-scroller MuiTabs-fixed" style="overflow:hidden;margin-bottom:0;">
+							<div class="MuiTabs-list" role="tablist" aria-label="Dataset sections" style="display:flex;position:relative;">
+					
+								<button class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary Mui-selected"
+									type="button" role="tab" aria-selected="true" tabindex="0" data-tab="admintab"
+									onclick="switchDatasetTab(this)">
+									Description
 								</button>
-								<button
-									aria-selected="false"
-									class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
-									role="tab"
-									tabindex="-1"
-									type="button"
-									data-tab="citationtab"
-									onclick="switchDatasetTab(this)"
-								>
-									<span class="MuiTab-wrapper">
-										Citation
-									</span>
-									<span class="MuiTouchRipple-root"></span>
+					
+								<button class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
+									type="button" role="tab" aria-selected="false" tabindex="-1" data-tab="citationtab"
+									onclick="switchDatasetTab(this)">
+									Citation
 								</button>
-								<button
-									aria-selected="<?php echo ($isEditor == 1 ? 'false' : 'true'); ?>"
-									class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary<?php echo ($isEditor == 1 ? '' : ' Mui-selected'); ?>"
-									role="tab"
-									tabindex="-1"
-									type="button"
-									data-tab="occurtab"
-									onclick="switchDatasetTab(this)"
-								>
-									<span class="MuiTab-wrapper">
-										Samples
-									</span>
-									<span class="MuiTouchRipple-root"></span>
+					
+								<button class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
+									type="button" role="tab" aria-selected="false" tabindex="-1" data-tab="occurtab"
+									onclick="switchDatasetTab(this)">
+									Samples
 								</button>
-								<button
-									aria-selected="<?php echo ($isEditor == 1 ? 'false' : 'true'); ?>"
-									class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary<?php echo ($isEditor == 1 ? '' : ' Mui-selected'); ?>"
-									role="tab"
-									tabindex="-1"
-									type="button"
-									data-tab="linkedtab"
-									onclick="switchDatasetTab(this)"
-								>
-									<span class="MuiTab-wrapper">
-										Related Datasets
-									</span>
-									<span class="MuiTouchRipple-root"></span>
+					
+								<button class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
+									type="button" role="tab" aria-selected="false" tabindex="-1" data-tab="linkedtab"
+									onclick="switchDatasetTab(this)">
+									Related Datasets
 								</button>
-								<?php
-								if ($isEditor < 3) {
-									?>
-									<button
-										aria-selected="false"
-										class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
-										role="tab"
-										tabindex="-1"
-										type="button"
-										data-tab="accesstab"
-										onclick="switchDatasetTab(this)"
-									>
-										<span class="MuiTab-wrapper">
-											<?php echo htmlspecialchars($LANG['USER_ACCESS'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>
-										</span>
-										<span class="MuiTouchRipple-root"></span>
+					
+								<?php if ($isEditor < 3) { ?>
+									<button class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
+										type="button" role="tab" aria-selected="false" tabindex="-1" data-tab="accesstab"
+										onclick="switchDatasetTab(this)">
+										<?php echo htmlspecialchars($LANG['USER_ACCESS'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>
 									</button>
-									<?php
-								}
-								?>
-
+								<?php } ?>
+					
 							</div>
-
-							<span class="MuiTabs-indicator"></span>
+					
+							<span class="MuiTabs-indicator" style="position:absolute;bottom:0;left:0;width:0;transition:left 300ms ease,width 300ms ease;"></span>
 						</div>
 					</div>
 					<div id="occurtab" class="dataset-tab-content">
@@ -882,17 +831,13 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 												if ($occArr && $isEditor < 3) {
 													?>
 													<button
-														class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeLarge"
+														class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 														type="submit"
 														name="submitaction"
 														value="Remove Selected Samples"
-														style="font-size:0.7em;"
+														style="font-size: 0.7em; display: inline-flex; align-items: center; justify-content: center;"
 													>
-														<span class="MuiButton-label">
-															<?php echo $LANG['REM_SEL_OCCS']; ?>
-														</span>
-
-														<span class="MuiTouchRipple-root"></span>
+														<?php echo $LANG['REM_SEL_OCCS']; ?>
 													</button>
 													<?php
 												}
@@ -900,8 +845,8 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 											</div>
 										</div>
 									</div>
-									<div style="padding:0 15px;">
-										<hr class="MuiDivider-root">
+									<div style="padding: 0 15px;">
+										<hr class="MuiDivider-root MuiDivider-fullWidth" />
 									</div>
 									<div class="view-samples-container">
 										<a
@@ -1034,7 +979,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							</p>
 						</div>
 						<div style="padding:0 15px;">
-							<hr class="MuiDivider-root">
+							<hr class="MuiDivider-root MuiDivider-fullWidth" />
 						</div>
 						<?php
 						if ($mdArr['category'] == "Request") {
@@ -1049,21 +994,26 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								<input type="hidden" name="type" value="<?php echo $type; ?>" />
 								<input type="hidden" name="exportTask" value="pubtable" />
 								<button
-									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeLarge"
+									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 									type="submit"
-									style="font-size:0.7em;"
+									style="font-size: 0.7em; display: inline-flex; align-items: center; justify-content: center;"
 								>
-									<span class="MuiButton-label">
-										Download Physical Sample Citations Table
-
-										<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-											<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24">
-												<path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path>
-											</svg>
-										</span>
+									<span>Download Physical Sample Citations Table</span>
+								
+									<span
+										class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeLarge"
+										style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
+									>
+										<svg
+											class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+											focusable="false"
+											aria-hidden="true"
+											viewBox="0 0 24 24"
+											style="display: block;"
+										>
+											<path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path>
+										</svg>
 									</span>
-
-									<span class="MuiTouchRipple-root"></span>
 								</button>
 							</form>
 							</div>
@@ -1071,7 +1021,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 						};
 						?>
 						<div style="padding:0 15px;">
-							<hr class="MuiDivider-root">
+							<hr class="MuiDivider-root MuiDivider-fullWidth" />
 						</div>
 						<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
 							<div style="margin:15px;">
@@ -1091,58 +1041,70 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									Visibility
 								</div>
 
-								<div class="MuiToggleButtonGroup-root" role="group">
+								<div
+									class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal"
+									role="group"
+									aria-label="Dataset visibility"
+								>
 									<input
 										type="hidden"
 										name="ispublic"
 										id="ispublic"
 										value="<?php echo ($mdArr['ispublic'] ? '1' : '0'); ?>"
 									/>
-
+								
+									<!-- PUBLIC -->
 									<button
+										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-firstButton<?php echo ($mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
+										type="button"
+										value="1"
+										tabindex="<?php echo ($mdArr['ispublic'] ? '0' : '-1'); ?>"
 										aria-pressed="<?php echo ($mdArr['ispublic'] ? 'true' : 'false'); ?>"
-										class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-sizeMedium<?php echo ($mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
-										tabindex="0"
-										type="button"
-										style="font-size:0.7em; border-left: 1px solid;"
+										style="font-size: 0.7em;"
 										onclick="
 											var group = this.closest('.MuiToggleButtonGroup-root');
-
+								
 											group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
 												button.classList.remove('Mui-selected');
 												button.setAttribute('aria-pressed', 'false');
+												button.setAttribute('tabindex', '-1');
 											});
-
+								
 											this.classList.add('Mui-selected');
 											this.setAttribute('aria-pressed', 'true');
-											document.getElementById('ispublic').value = '1';
+											this.setAttribute('tabindex', '0');
+								
+											group.querySelector('input[name=ispublic]').value = '1';
 										"
 									>
-										<span class="MuiToggleButton-label">Public</span>
-										<span class="MuiTouchRipple-root"></span>
+										Public
 									</button>
-
+								
+									<!-- PRIVATE -->
 									<button
-										aria-pressed="<?php echo ($mdArr['ispublic'] ? 'false' : 'true'); ?>"
-										class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-sizeMedium<?php echo (!$mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
-										tabindex="0"
+										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-lastButton<?php echo (!$mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
 										type="button"
-										style="font-size:0.7em;"
+										value="0"
+										tabindex="<?php echo (!$mdArr['ispublic'] ? '0' : '-1'); ?>"
+										aria-pressed="<?php echo (!$mdArr['ispublic'] ? 'true' : 'false'); ?>"
+										style="font-size: 0.7em;"
 										onclick="
 											var group = this.closest('.MuiToggleButtonGroup-root');
-
+								
 											group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
 												button.classList.remove('Mui-selected');
 												button.setAttribute('aria-pressed', 'false');
+												button.setAttribute('tabindex', '-1');
 											});
-
+								
 											this.classList.add('Mui-selected');
 											this.setAttribute('aria-pressed', 'true');
-											document.getElementById('ispublic').value = '0';
+											this.setAttribute('tabindex', '0');
+								
+											group.querySelector('input[name=ispublic]').value = '0';
 										"
 									>
-										<span class="MuiToggleButton-label">Private</span>
-										<span class="MuiTouchRipple-root"></span>
+										Private
 									</button>
 								</div>
 
@@ -1151,7 +1113,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								</div>
 							</div>
 							<div style="padding:0 15px;">
-								<hr class="MuiDivider-root">
+								<hr class="MuiDivider-root MuiDivider-fullWidth" />
 							</div>
 							<!--Title Section-->
 							<div class="MuiFormControl-root MuiTextField-root" style="width:98%; margin:25px 10px;">
@@ -1194,7 +1156,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								><?php echo htmlspecialchars($mdArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="padding:0 15px;">
-								<hr class="MuiDivider-root">
+								<hr class="MuiDivider-root MuiDivider-fullWidth" />
 							</div>
 							<!--Notes Section-->
 							<div class="MuiFormControl-root MuiTextField-root" style="width:98%; margin:25px 10px;">
@@ -1243,7 +1205,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								><?php echo htmlspecialchars($mdArr['notes'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="padding:0 15px;">
-								<hr class="MuiDivider-root">
+								<hr class="MuiDivider-root MuiDivider-fullWidth" />
 							</div>
 							<!--Description Section-->
 							<div style="margin:15px;">
@@ -1259,24 +1221,29 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									?>
 
 									<button
-										class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeMedium MuiButton-sizeMedium"
+										class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary"
 										tabindex="0"
 										name="submitaction"
 										type="submit"
 										value="Save Edits"
-										style="font-size:0.7em;"
+										style="font-size: 0.7em; display: inline-flex; align-items: center; justify-content: center;"
 									>
-										<span class="MuiButton-label">
-											<?php echo $LANG['SAVE_EDITS']; ?>
-
-											<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-												<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-													<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-												</svg>
-											</span>
+										<span><?php echo $LANG['SAVE_EDITS']; ?></span>
+									
+										<span
+											class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"
+											style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
+										>
+											<svg
+												class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+												focusable="false"
+												aria-hidden="true"
+												viewBox="0 0 24 24"
+												style="display: block;"
+											>
+												<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+											</svg>
 										</span>
-
-										<span class="MuiTouchRipple-root"></span>
 									</button>
 
 									<?php
@@ -1322,7 +1289,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 												<?php echo $labelStr; ?>
 											</h5>
 
-											<hr class="MuiDivider-root" style="margin-bottom:12px;">
+											<hr class="MuiDivider-root uiDivider-fullWidth" style="margin-bottom:12px;">
 
 											<?php
 											if (array_key_exists($roleStr, $userArr)) {
@@ -1364,24 +1331,23 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 																	<input type="hidden" name="datasetid" value="<?php echo $datasetId; ?>" />
 																	<input type="hidden" name="tabindex" value="2" />
 
-																	<button
-																		type="submit"
-																		class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall"
-																		title="Remove Access"
-																		style="padding:4px;"
-																	>
-																		<span class="MuiIconButton-label">
-																			<svg
-																				aria-hidden="true"
-																				class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-																				focusable="false"
-																				viewBox="0 0 24 24"
-																			>
-																				<path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4z"></path>
-																			</svg>
-																		</span>
-																		<span class="MuiTouchRipple-root"></span>
-																	</button>
+<button
+    type="submit"
+    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall"
+    title="Remove Access"
+    aria-label="Remove Access"
+    style="padding: 8px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;"
+>
+    <svg
+        aria-hidden="true"
+        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+        focusable="false"
+        viewBox="0 0 24 24"
+        style="display: block;"
+    >
+        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5-1-1h-5l-1 1H5v2h14V4z"></path>
+    </svg>
+</button>
 																</form>
 																<?php
 															}
@@ -1507,77 +1473,215 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 												<div style="width:60%;">
 													<div class="MuiFormControl-root MuiTextField-root" style="width:100%; position:relative;">
-														<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined" data-shrink="false" style="transform:translate(14px, 11px) scale(1);">
+														<label for="userinput" id="userinput-label"
+															class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary"
+															data-shrink="false"
+															style="position:absolute; top:0; left:0; z-index:1; pointer-events:none; transform:translate(14px,16px) scale(1); transform-origin:top left; transition:transform 200ms ease;">
 															User Name
 														</label>
-
-														<input
-															id="userinput"
-															type="text"
-															aria-label="User"
-															class="MuiInputBase-input MuiOutlinedInput-input"
-															style="border:1px solid rgba(0, 0, 0, 0.23); outline:none; width:100%; box-sizing:border-box; padding:18.5px 14px;"
-															onfocus="
-																var label = this.previousElementSibling;
-																label.classList.add('MuiInputLabel-shrink', 'Mui-focused');
-																label.setAttribute('data-shrink', 'true');
-																label.style.backgroundColor = '#fff';
-																label.style.transform = 'translate(14px, -6px) scale(0.75)';
-																this.style.borderColor = '#0073CF';
-																this.style.borderWidth = '2px';
-															"
-															onblur="
-																var label = this.previousElementSibling;
-																label.classList.remove('Mui-focused');
-																this.style.borderColor = 'rgba(0, 0, 0, 0.23)';
-																this.style.borderWidth = '1px';
-
-																if (this.value !== '') {
-																	label.classList.add('MuiInputLabel-shrink', 'MuiFormLabel-filled');
-																	label.setAttribute('data-shrink', 'true');
-																	label.style.backgroundColor = '#fff';
-																	label.style.transform = 'translate(14px, -6px) scale(0.75)';
-																} else {
-																	label.classList.remove('MuiInputLabel-shrink', 'MuiFormLabel-filled');
-																	label.setAttribute('data-shrink', 'false');
-																	label.style.backgroundColor = '';
-																	label.style.transform = 'translate(14px, 11px) scale(1)';
-																}
-															"
-														/>
-
+												
+														<div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl" style="position:relative;">
+															<input id="userinput" type="text" aria-labelledby="userinput-label"
+																class="MuiInputBase-input MuiOutlinedInput-input"
+																onfocus="
+																	var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+																	root.classList.add('Mui-focused');
+																	label.classList.add('Mui-focused','MuiInputLabel-shrink');
+																	label.setAttribute('data-shrink','true');
+																	label.style.transform='translate(14px,-9px) scale(0.75)';
+																	legend.style.maxWidth='100%';
+																"
+																onblur="
+																	var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+																	root.classList.remove('Mui-focused');
+																	label.classList.remove('Mui-focused');
+																	if (!this.value.trim()) {
+																		label.classList.remove('MuiInputLabel-shrink');
+																		label.setAttribute('data-shrink','false');
+																		label.style.transform='translate(14px,16px) scale(1)';
+																		legend.style.maxWidth='0.01px';
+																	}
+																"
+															/>
+															<fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+																<legend style="float:unset; width:auto; overflow:hidden; display:block; height:11px; padding:0; font-size:0.75em; visibility:hidden; white-space:nowrap; max-width:0.01px; transition:max-width 200ms ease;">
+																	<span style="padding:0 5px; display:inline-block; opacity:0;">User Name</span>
+																</legend>
+															</fieldset>
+														</div>
+												
 														<input id="uid-add" name="uid" type="hidden" value="" />
 													</div>
 												</div>
 
-												<div>
-													<div class="MuiFormControl-root">
-														<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled" data-shrink="true" style="background:#fff;">
-															<?php echo $LANG['ROLE']; ?>
-														</label>
+												<div style="width:35%; min-width:220px;">
+<!-- ROLE DROPDOWN -->
+<div class="MuiFormControl-root" style="width:100%; min-width:220px; position:relative;">
 
-														<select
-															name="role"
-															id="role"
-															class="MuiInputBase-input MuiOutlinedInput-input"
-															style="
-																border:1px solid rgba(0, 0, 0, 0.23);
-																outline:none;
-																background:#fff;
-																width:100%;
-																box-sizing:border-box;
-																height:40px;
-																padding:0 14px;
-															"
-															onfocus="this.style.borderColor='#0073CF'; this.style.borderWidth='2px';"
-															onblur="this.style.borderColor='rgba(0, 0, 0, 0.23)'; this.style.borderWidth='1px';"
-														>
-															<option value="">Select a role</option>
-															<option value="DatasetAdmin"><?php echo $LANG['FULL_ACCESS']; ?></option>
-															<option value="DatasetEditor"><?php echo $LANG['READ_WRITE_ACCESS']; ?></option>
-															<option value="DatasetReader"><?php echo $LANG['READ_ACCESS']; ?></option>
-														</select>
-													</div>
+    <label id="role-label"
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary"
+        data-shrink="false"
+        style="position:absolute; top:0; left:0; z-index:1; pointer-events:none; transform:translate(14px,16px) scale(1); transform-origin:top left; transition:transform 200ms ease;">
+        <?php echo $LANG['ROLE']; ?>
+    </label>
+
+    <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiSelect-root"
+        style="position:relative; width:100%; min-width:220px; height:56px; box-sizing:border-box;">
+
+        <div class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
+            tabindex="0"
+            role="combobox"
+            aria-labelledby="role-label"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            style="display:flex; align-items:center; width:100%; min-height:56px; box-sizing:border-box; padding:0 32px 0 14px; cursor:pointer;"
+
+            onclick="
+                var root=this.parentElement,
+                    group=root.parentElement,
+                    label=group.querySelector('label'),
+                    menu=group.querySelector('[role=listbox]'),
+                    legend=root.querySelector('legend'),
+                    input=group.querySelector('input[name=role]');
+
+                var open=this.getAttribute('aria-expanded')!=='true';
+                var shrink=open || !!input.value;
+
+                this.setAttribute('aria-expanded',String(open));
+
+                menu.style.opacity=open?'1':'0';
+                menu.style.visibility=open?'visible':'hidden';
+                menu.style.transform=open?'scaleY(1)':'scaleY(0.92)';
+                menu.style.pointerEvents=open?'auto':'none';
+
+                root.classList.toggle('Mui-focused',open);
+                label.classList.toggle('Mui-focused',open);
+                label.classList.toggle('MuiInputLabel-shrink',shrink);
+                label.setAttribute('data-shrink',String(shrink));
+                label.style.transform=shrink
+                    ?'translate(14px,-9px) scale(0.75)'
+                    :'translate(14px,16px) scale(1)';
+                legend.style.maxWidth=shrink?'100%':'0.01px';
+            "
+
+            onkeydown="
+                if(event.key==='Enter' || event.key===' '){
+                    event.preventDefault();
+                    this.click();
+                }
+                if(event.key==='Escape' && this.getAttribute('aria-expanded')==='true'){
+                    event.preventDefault();
+                    this.click();
+                }
+            "
+        ><span class="notranslate" aria-hidden="true">&#8203;</span></div>
+
+        <input type="hidden" name="role" id="role" class="MuiSelect-nativeInput" value="" />
+
+        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon"
+            focusable="false"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            style="pointer-events:none; transition:transform 180ms ease;">
+            <path d="M7 10l5 5 5-5z"></path>
+        </svg>
+
+        <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+            <legend style="float:unset; width:auto; overflow:hidden; display:block; height:11px; padding:0; font-size:0.75em; visibility:hidden; white-space:nowrap; max-width:0.01px; transition:max-width 200ms ease;">
+                <span style="padding:0 5px; display:inline-block; opacity:0;">
+                    <?php echo $LANG['ROLE']; ?>
+                </span>
+            </legend>
+        </fieldset>
+    </div>
+
+    <!-- DROPDOWN MENU -->
+    <div role="listbox"
+        aria-labelledby="role-label"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiMenu-paper MuiPopover-paper"
+        style="
+            display:block;
+            position:absolute;
+            top:100%;
+            left:0;
+            width:100%;
+            z-index:1300;
+            background:#fff;
+            box-shadow:0 5px 15px rgba(0,0,0,0.2);
+            border-radius:4px;
+            max-height:300px;
+            overflow-y:auto;
+            opacity:0;
+            visibility:hidden;
+            transform:scaleY(0.92);
+            transform-origin:top center;
+            transition:opacity 180ms ease, transform 180ms ease, visibility 180ms;
+            pointer-events:none;
+        ">
+
+        <ul class="MuiList-root MuiList-padding MuiMenu-list"
+            style="list-style:none; margin:0; padding:8px 0;">
+
+            <?php
+            $roles = [
+                'DatasetAdmin'  => $LANG['FULL_ACCESS'],
+                'DatasetEditor' => $LANG['READ_WRITE_ACCESS'],
+                'DatasetReader' => $LANG['READ_ACCESS']
+            ];
+
+            foreach ($roles as $value => $text):
+            ?>
+                <li class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters"
+                    role="option"
+                    aria-selected="false"
+                    tabindex="-1"
+                    data-value="<?php echo htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>"
+                    style="cursor:pointer; padding:6px 16px; min-height:36px;"
+
+                    onmouseenter="this.style.background='rgba(0,0,0,0.04)'"
+                    onmouseleave="this.style.background=''"
+
+                    onclick="
+                        var group=this.closest('.MuiFormControl-root'),
+                            root=group.querySelector('.MuiSelect-root'),
+                            select=root.querySelector('[role=combobox]'),
+                            input=group.querySelector('input[name=role]'),
+                            label=group.querySelector('label'),
+                            menu=group.querySelector('[role=listbox]');
+
+                        input.value=this.dataset.value;
+                        select.textContent=this.textContent.trim();
+                        select.setAttribute('aria-expanded','false');
+
+                        menu.style.opacity='0';
+                        menu.style.visibility='hidden';
+                        menu.style.transform='scaleY(0.92)';
+                        menu.style.pointerEvents='none';
+
+                        root.classList.remove('Mui-focused');
+                        label.classList.remove('Mui-focused');
+                        label.classList.add('MuiInputLabel-shrink');
+                        label.setAttribute('data-shrink','true');
+                        label.style.transform='translate(14px,-9px) scale(0.75)';
+                        root.querySelector('legend').style.maxWidth='100%';
+
+                        menu.querySelectorAll('[role=option]').forEach(function(option){
+                            option.classList.remove('Mui-selected');
+                            option.setAttribute('aria-selected','false');
+                        });
+
+                        this.classList.add('Mui-selected');
+                        this.setAttribute('aria-selected','true');
+
+                        input.dispatchEvent(new Event('change',{bubbles:true}));
+                        select.focus();
+                    "
+                ><?php echo htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); ?></li>
+            <?php endforeach; ?>
+
+        </ul>
+    </div>
+</div>
 												</div>
 
 											</div>
@@ -1588,28 +1692,28 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 												<input type="hidden" name="datasetid" value="<?php echo $datasetId; ?>" />
 
 												<button
-													class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeLarge"
+													class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 													type="submit"
 													name="submitaction"
 													value="addUser"
-													style="font-size:0.7em;"
+													style="font-size: 0.7em; display: inline-flex; align-items: center; justify-content: center;"
 												>
-													<span class="MuiButton-label">
-														<?php echo $LANG['ADD_USER']; ?>
-
-														<span class="MuiButton-endIcon MuiButton-iconSizeLarge">
-															<svg
-																aria-hidden="true"
-																class="MuiSvgIcon-root"
-																focusable="false"
-																viewBox="0 0 24 24"
-															>
-																<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-															</svg>
-														</span>
+													<span><?php echo $LANG['ADD_USER']; ?></span>
+												
+													<span
+														class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeLarge"
+														style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
+													>
+														<svg
+															class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+															focusable="false"
+															aria-hidden="true"
+															viewBox="0 0 24 24"
+															style="display: block;"
+														>
+															<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+														</svg>
 													</span>
-
-													<span class="MuiTouchRipple-root"></span>
 												</button>
 											</div>
 
@@ -1633,7 +1737,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							if (!empty($adArr)) {
 								?>
 								<div style="padding:0 15px;">
-									<hr class="MuiDivider-root">
+									<hr class="MuiDivider-root MuiDivider-fullWidth" />
 								</div>
 								<div style="font-weight:bold;margin-top: 20px;">
 									Linked Datasets
@@ -1671,52 +1775,101 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									<form name="linkdatasetform" action="neondatasetmanager.php" method="post">
 										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>"/>
 										<div style="margin-top:15px;">
-											<div style="display:flex; align-items:center; gap:10px;">
+											<div style="display:flex; align-items:center; gap:10px; width:100%;">
 
-												<div class="MuiFormControl-root">
-													<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled" data-shrink="true" style="background:#fff;">
-														Select Dataset
-													</label>
-
-													<select class="MuiInputBase-input MuiOutlinedInput-input" name="associatedDatasetID" style="border:1px solid rgba(0, 0, 0, 0.23); outline:none; background:#fff; width:80%; max-width:700px;" onfocus="this.style.borderColor='#0073CF'; this.style.borderWidth='2px';" onblur="this.style.borderColor='rgba(0, 0, 0, 0.23)'; this.style.borderWidth='1px';">
-														<option value="">-----</option>
-
-														<?php
-														if (!empty($datasetArr)) {
-
-															usort($datasetArr, function ($a, $b) {
-																return strcasecmp(strip_tags($a['name']), strip_tags($b['name']));
-															});
-
-															foreach ($datasetArr as $dataset) {
-																$assocDatasetID = (int)$dataset['datasetid'];
-																$assocDatasetName = strip_tags($dataset['name']);
-
-																if ($assocDatasetID == $datasetId) continue;
-
-																$alreadyAssociated = false;
-
-																if (!empty($adArr)) {
-																	foreach ($adArr as $ad) {
-																		if ((int)$ad['datasetID'] == $assocDatasetID) {
-																			$alreadyAssociated = true;
-																			break;
+												<!-- SELECT DATASET -->
+												<div class="MuiFormControl-root" style="width:80%;max-width:700px;min-width:220px;position:relative;">
+													<label id="associated-dataset-label" class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary" data-shrink="false"
+														style="position:absolute;top:0;left:0;z-index:1;pointer-events:none;transform:translate(14px,16px) scale(1);transform-origin:top left;transition:transform 200ms ease;">Select Dataset</label>
+												
+													<div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiSelect-root" style="position:relative;width:100%;height:56px;box-sizing:border-box;">
+														<div class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input" tabindex="0" role="combobox" aria-labelledby="associated-dataset-label" aria-expanded="false" aria-haspopup="listbox" aria-controls="associated-dataset-menu"
+															style="display:flex;align-items:center;width:100%;min-height:56px;box-sizing:border-box;padding:0 32px 0 14px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;"
+															onclick="
+																var root=this.parentElement,group=root.parentElement,label=group.querySelector('label'),menu=group.querySelector('[role=listbox]'),legend=root.querySelector('legend'),input=group.querySelector('input[name=associatedDatasetID]');
+																var open=this.getAttribute('aria-expanded')!=='true',shrink=open||!!input.value;
+																this.setAttribute('aria-expanded',String(open));
+																menu.style.opacity=open?'1':'0';menu.style.visibility=open?'visible':'hidden';menu.style.transform=open?'scaleY(1)':'scaleY(0.92)';menu.style.pointerEvents=open?'auto':'none';
+																root.classList.toggle('Mui-focused',open);label.classList.toggle('Mui-focused',open);label.classList.toggle('MuiInputLabel-shrink',shrink);
+																label.setAttribute('data-shrink',String(shrink));label.style.transform=shrink?'translate(14px,-9px) scale(0.75)':'translate(14px,16px) scale(1)';legend.style.maxWidth=shrink?'100%':'0.01px';
+															"
+															onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}if(event.key==='Escape'&&this.getAttribute('aria-expanded')==='true'){event.preventDefault();this.click();}"
+														><span class="notranslate" aria-hidden="true">&#8203;</span></div>
+												
+														<input type="hidden" name="associatedDatasetID" id="associatedDatasetID" class="MuiSelect-nativeInput" value="">
+														<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon" focusable="false" aria-hidden="true" viewBox="0 0 24 24" style="pointer-events:none;"><path d="M7 10l5 5 5-5z"></path></svg>
+														<fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+															<legend style="float:unset;width:auto;overflow:hidden;display:block;height:11px;padding:0;font-size:0.75em;visibility:hidden;white-space:nowrap;max-width:0.01px;transition:max-width 200ms ease;">
+																<span style="padding:0 5px;display:inline-block;opacity:0;">Select Dataset</span>
+															</legend>
+														</fieldset>
+													</div>
+												
+													<div id="associated-dataset-menu" role="listbox" aria-labelledby="associated-dataset-label" class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiMenu-paper MuiPopover-paper"
+														style="display:block;position:absolute;top:56px;left:0;width:100%;z-index:1300;background:#fff;box-shadow:0 5px 15px rgba(0,0,0,.2);border-radius:4px;max-height:300px;overflow-y:auto;opacity:0;visibility:hidden;transform:scaleY(.92);transform-origin:top center;transition:opacity 180ms ease,transform 180ms ease,visibility 180ms;pointer-events:none;">
+												
+														<ul class="MuiList-root MuiList-padding MuiMenu-list" style="list-style:none;margin:0;padding:8px 0;"
+															onclick="
+																var item=event.target.closest('[role=option]');if(!item)return;
+																var group=this.closest('.MuiFormControl-root'),root=group.querySelector('.MuiSelect-root'),select=root.querySelector('[role=combobox]'),input=group.querySelector('input[name=associatedDatasetID]'),label=group.querySelector('label'),menu=group.querySelector('[role=listbox]');
+																var selected=!!item.dataset.value;
+																input.value=item.dataset.value;
+																select.textContent=selected?item.textContent.trim():'';
+																if(!selected)select.innerHTML='<span class=&quot;notranslate&quot; aria-hidden=&quot;true&quot;>&#8203;</span>';
+																select.setAttribute('aria-expanded','false');
+																menu.style.opacity='0';menu.style.visibility='hidden';menu.style.transform='scaleY(0.92)';menu.style.pointerEvents='none';
+																root.classList.remove('Mui-focused');label.classList.remove('Mui-focused');label.classList.toggle('MuiInputLabel-shrink',selected);
+																label.setAttribute('data-shrink',String(selected));label.style.transform=selected?'translate(14px,-9px) scale(0.75)':'translate(14px,16px) scale(1)';
+																root.querySelector('legend').style.maxWidth=selected?'100%':'0.01px';
+																this.querySelectorAll('[role=option]').forEach(function(o){o.classList.toggle('Mui-selected',o===item);o.setAttribute('aria-selected',String(o===item));});
+																input.dispatchEvent(new Event('change',{bubbles:true}));select.focus();
+															">
+															<li class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters" role="option" aria-selected="true" data-value=""
+																style="cursor:pointer;padding:6px 16px;min-height:36px;" onmouseenter="this.style.background='rgba(0,0,0,.04)'" onmouseleave="this.style.background=''">-----</li>
+												
+															<?php
+															if (!empty($datasetArr)) {
+																usort($datasetArr, function ($a, $b) {
+																	return strcasecmp(strip_tags($a['name']), strip_tags($b['name']));
+																});
+												
+																foreach ($datasetArr as $dataset) {
+																	$assocDatasetID = (int)$dataset['datasetid'];
+																	$assocDatasetName = strip_tags($dataset['name']);
+																	if ($assocDatasetID == $datasetId) continue;
+												
+																	$alreadyAssociated = false;
+																	if (!empty($adArr)) {
+																		foreach ($adArr as $ad) {
+																			if ((int)$ad['datasetID'] == $assocDatasetID) {
+																				$alreadyAssociated = true;
+																				break;
+																			}
 																		}
 																	}
-																}
-
-																if (!$alreadyAssociated) {
-																	echo '<option value="' . $assocDatasetID . '">' . htmlspecialchars($assocDatasetName) . '</option>';
+																	if ($alreadyAssociated) continue;
+																	?>
+																	<li class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters" role="option" aria-selected="false"
+																		data-value="<?php echo $assocDatasetID; ?>"
+																		style="cursor:pointer;padding:6px 16px;min-height:36px;"
+																		onmouseenter="this.style.background='rgba(0,0,0,.04)'" onmouseleave="this.style.background=''"><?php echo htmlspecialchars($assocDatasetName, ENT_QUOTES, 'UTF-8'); ?></li>
+																	<?php
 																}
 															}
-														}
-														?>
-													</select>
+															?>
+														</ul>
+													</div>
 												</div>
 
-												<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium" tabindex="0" name="submitaction" type="submit" value="Link Dataset" style="font-size:.8rem;">
-													<span class="MuiButton-label">Link</span>
-													<span class="MuiTouchRipple-root"></span>
+												<button
+													class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeMedium MuiButton-colorPrimary"
+													tabindex="0"
+													name="submitaction"
+													type="submit"
+													value="Link Dataset"
+													style="font-size:0.8rem; display:inline-flex; align-items:center; justify-content:center; margin-left:auto; flex-shrink:0;"
+												>
+													Link
 												</button>
 
 											</div>

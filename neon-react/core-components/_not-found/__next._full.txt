@@ -1,0 +1,129 @@
+1:"$Sreact.fragment"
+8:I[63491,["/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js","/neon-react/core-components/_next/static/chunks/1ki981-5p5oto.js","/neon-react/core-components/_next/static/chunks/40cx8dp4z2bqk.js","/neon-react/core-components/_next/static/chunks/0oxrt4rdhvasn.js","/neon-react/core-components/_next/static/chunks/17xh38m6on6pa.js","/neon-react/core-components/_next/static/chunks/2dq_z_y8msev9.js"],"default"]
+:HL["/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css","style"]
+:HL["/core-components/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css","style"]
+:HL["https://fonts.googleapis.com/icon?family=Material+Icons","style"]
+2:Tdf8,
+              let gaInitialized = false;
+              let interactionTracked = false;
+              window.pendingGAEvents = [];
+        
+              function loadGAScript() {
+                return new Promise(resolve => {
+                  if (document.querySelector('script[data-ga-loader]')) {
+                    resolve();
+                    return;
+                  }
+        
+                  const s = document.createElement('script');
+                  s.async = true;
+                  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-6M1F2QCBWJ';
+                  s.setAttribute('data-ga-loader', 'true');
+                  s.onload = resolve;
+        
+                  document.head.appendChild(s);
+                });
+              }
+        
+              async function initGA() {
+                if (gaInitialized) return;
+                gaInitialized = true;
+        
+                await loadGAScript();
+        
+                window.dataLayer = window.dataLayer || [];
+        
+                window.gtag = function () {
+                  window.dataLayer.push(arguments);
+                };
+        
+                gtag('js', new Date());
+        
+                gtag('config', 'G-6M1F2QCBWJ', {
+                  send_page_view: false
+                });
+        
+                gtag('event', 'page_view', {
+                  page_path: window.location.pathname,
+                  page_location: window.location.href,
+                  page_title: document.title
+                });
+        
+                window.pendingGAEvents.forEach(args => {
+                  gtag(...args);
+                });
+        
+                window.pendingGAEvents = [];
+        
+                document.addEventListener('click', e => {
+                  const el = e.target;
+        
+                  gtag('event', 'ui_click', {
+                    tag: el.tagName || '',
+                    text: (el.innerText || '').trim().substring(0, 100),
+                    id: el.id || '',
+                    page_path: window.location.pathname
+                  });
+                });
+        
+                document
+                  .querySelectorAll('.search-api-form form')
+                  .forEach(form => {
+                    form.addEventListener('submit', e => {
+                      const query = e.target.querySelector('[name="title"]')?.value?.trim();
+        
+                      if (!query) return;
+        
+                      gtag('event', 'neon-search', {
+                        search_term: query
+                      });
+                    });
+                  });
+              }
+        
+              async function trackInteraction(type) {
+                if (interactionTracked) return;
+        
+                interactionTracked = true;
+        
+                await initGA();
+        
+                gtag('event', 'interaction', {
+                  interaction_type: type
+                });
+              }
+        
+              window.addEventListener('click', () => {
+                trackInteraction('click');
+              }, { once: true });
+        
+              window.addEventListener('keydown', () => {
+                trackInteraction('keydown');
+              }, { once: true });
+        
+              window.addEventListener('touchstart', () => {
+                trackInteraction('touchstart');
+              }, { once: true });
+        
+              window.addEventListener('mousemove', () => {
+                trackInteraction('mousemove');
+              }, { once: true });
+            6:X
+0:{"P":null,"c":["","_not-found"],"q":"","i":false,"f":[[["",{"children":["/_not-found",{"children":["__PAGE__",{},"$undefined","$undefined",4608]},"$undefined","$undefined",4608]},"$undefined","$undefined",4624],[["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","children":[["$","head",null,{"children":[["$","meta",null,{"name":"theme-color","content":"#000000"}],["$","link",null,{"rel":"manifest","href":"/core-components/manifest.json"}],["$","link",null,{"rel":"shortcut icon","href":"/core-components/favicon.ico?v=201912"}],["$","link",null,{"rel":"preconnect","href":"https://www.neonscience.org","crossOrigin":"anonymous"}],["$","link",null,{"rel":"stylesheet","data-meta":"drupal-theme","href":"/core-components/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"}],["$","link",null,{"rel":"stylesheet","href":"https://fonts.googleapis.com/icon?family=Material+Icons"}],["$","script",null,{"src":"https://code.jquery.com/jquery-3.7.1.min.js","integrity":"sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=","crossOrigin":"anonymous"}],["$","script",null,{"dangerouslySetInnerHTML":{"__html":"$2"}}]]}],"$L3"]}]]}],{"children":["$L4",{"children":["$L5",{},null,false,null]},null,false,"$6"]},null,false,null],"$L7",false]],"m":"$undefined","G":["$8",["$L9"]],"S":true,"h":null,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"Js7hfDA93sd9ze4-TpNUX"}
+c:I[39756,["/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"],"default"]
+d:I[37457,["/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"],"default"]
+e:I[97367,["/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"],"OutletBoundary"]
+f:"$Sreact.suspense"
+11:I[97367,["/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"],"ViewportBoundary"]
+13:I[97367,["/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"],"MetadataBoundary"]
+a:" You need to enable JavaScript to run this app. "
+b:["$","iframe",null,{"title":"GTM JavaScript Required","src":"https://www.googletagmanager.com/ns.html?id=GTM-K4S83R2","height":"0","width":"0","style":{"display":"none","visibility":"hidden"}}]
+3:["$","body",null,{"children":[["$","noscript",null,{"children":" You need to enable JavaScript to run this app. "}],["$","noscript",null,{"children":"$b"}],["$","div",null,{"id":"biorepo-page","children":["$","$Lc",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$Ld",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]}]]}]
+4:["$","$1","c",{"children":[null,["$","$Lc",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$Ld",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}]
+5:["$","$1","c",{"children":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":"$3:props:children:2:props:children:props:notFound:0:1:props:style","children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":"$3:props:children:2:props:children:props:notFound:0:1:props:children:props:children:1:props:style","children":404}],["$","div",null,{"style":"$3:props:children:2:props:children:props:notFound:0:1:props:children:props:children:2:props:style","children":["$","h2",null,{"style":"$3:props:children:2:props:children:props:notFound:0:1:props:children:props:children:2:props:children:props:style","children":"This page could not be found."}]}]]}]}]],null,["$","$Le",null,{"children":["$","$f",null,{"name":"Next.MetadataOutlet","children":"$@10"}]}]]}]
+7:["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L11",null,{"children":"$L12"}],["$","div",null,{"hidden":true,"children":["$","$L13",null,{"children":["$","$f",null,{"name":"Next.Metadata","children":"$L14"}]}]}],null]}]
+9:["$","link","0",{"rel":"stylesheet","href":"/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]
+6:C
+12:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+10:null
+14:[["$","title","0",{"children":"NEON | Portal Core Components"}]]
