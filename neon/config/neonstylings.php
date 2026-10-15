@@ -508,30 +508,46 @@ $icon_buttons = <<<'HTML'
 HTML;
 
 $toggle_buttons = <<<'HTML'
-<!-- SMALL TOGGLE BUTTON GROUP -->
-<div role="group" class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal">
-  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
-          tabindex="0" type="button" value="one" aria-pressed="true">One</button>
-  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
-          tabindex="-1" type="button" value="two" aria-pressed="false">Two</button>
+<!-- SMALL -->
+<div class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal" role="group">
+    <button type="button" value="one" tabindex="0" aria-pressed="true"
+        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
+        onclick="var g=this.closest('.MuiToggleButtonGroup-root');g.querySelectorAll('.MuiToggleButton-root').forEach(function(b){b.classList.remove('Mui-selected');b.setAttribute('aria-pressed','false');b.tabIndex=-1;});this.classList.add('Mui-selected');this.setAttribute('aria-pressed','true');this.tabIndex=0;">
+        One
+    </button>
+    <button type="button" value="two" tabindex="-1" aria-pressed="false"
+        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
+        onclick="var g=this.closest('.MuiToggleButtonGroup-root');g.querySelectorAll('.MuiToggleButton-root').forEach(function(b){b.classList.remove('Mui-selected');b.setAttribute('aria-pressed','false');b.tabIndex=-1;});this.classList.add('Mui-selected');this.setAttribute('aria-pressed','true');this.tabIndex=0;">
+        Two
+    </button>
 </div>
 
-
-<!-- MEDIUM TOGGLE BUTTON GROUP -->
-<div role="group" class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal">
-  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
-          tabindex="0" type="button" value="one" aria-pressed="true">One</button>
-  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
-          tabindex="-1" type="button" value="two" aria-pressed="false">Two</button>
+<!-- MEDIUM -->
+<div class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal" role="group">
+    <button type="button" value="one" tabindex="0" aria-pressed="true"
+        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
+        onclick="var g=this.closest('.MuiToggleButtonGroup-root');g.querySelectorAll('.MuiToggleButton-root').forEach(function(b){b.classList.remove('Mui-selected');b.setAttribute('aria-pressed','false');b.tabIndex=-1;});this.classList.add('Mui-selected');this.setAttribute('aria-pressed','true');this.tabIndex=0;">
+        One
+    </button>
+    <button type="button" value="two" tabindex="-1" aria-pressed="false"
+        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
+        onclick="var g=this.closest('.MuiToggleButtonGroup-root');g.querySelectorAll('.MuiToggleButton-root').forEach(function(b){b.classList.remove('Mui-selected');b.setAttribute('aria-pressed','false');b.tabIndex=-1;});this.classList.add('Mui-selected');this.setAttribute('aria-pressed','true');this.tabIndex=0;">
+        Two
+    </button>
 </div>
 
-
-<!-- LARGE TOGGLE BUTTON GROUP -->
-<div role="group" class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal">
-  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeLarge MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
-          tabindex="0" type="button" value="one" aria-pressed="true">One</button>
-  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeLarge MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
-          tabindex="-1" type="button" value="two" aria-pressed="false">Two</button>
+<!-- LARGE -->
+<div class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal" role="group">
+    <button type="button" value="one" tabindex="0" aria-pressed="true"
+        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeLarge MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
+        onclick="var g=this.closest('.MuiToggleButtonGroup-root');g.querySelectorAll('.MuiToggleButton-root').forEach(function(b){b.classList.remove('Mui-selected');b.setAttribute('aria-pressed','false');b.tabIndex=-1;});this.classList.add('Mui-selected');this.setAttribute('aria-pressed','true');this.tabIndex=0;">
+        One
+    </button>
+    <button type="button" value="two" tabindex="-1" aria-pressed="false"
+        class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeLarge MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
+        onclick="var g=this.closest('.MuiToggleButtonGroup-root');g.querySelectorAll('.MuiToggleButton-root').forEach(function(b){b.classList.remove('Mui-selected');b.setAttribute('aria-pressed','false');b.tabIndex=-1;});this.classList.add('Mui-selected');this.setAttribute('aria-pressed','true');this.tabIndex=0;">
+        Two
+    </button>
 </div>
 HTML;
 

@@ -1041,69 +1041,53 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									Visibility
 								</div>
 
-								<div
-									class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal"
-									role="group"
-									aria-label="Dataset visibility"
-								>
-									<input
-										type="hidden"
-										name="ispublic"
-										id="ispublic"
-										value="<?php echo ($mdArr['ispublic'] ? '1' : '0'); ?>"
-									/>
+								<div class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal"
+									 role="group" aria-label="Dataset visibility">
+								
+									<input type="hidden" name="ispublic" id="ispublic"
+										   value="<?php echo ($mdArr['ispublic'] ? '1' : '0'); ?>" />
 								
 									<!-- PUBLIC -->
 									<button
-										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-firstButton<?php echo ($mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
-										type="button"
-										value="1"
+										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton<?php echo ($mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
+										type="button" value="1"
 										tabindex="<?php echo ($mdArr['ispublic'] ? '0' : '-1'); ?>"
 										aria-pressed="<?php echo ($mdArr['ispublic'] ? 'true' : 'false'); ?>"
-										style="font-size: 0.7em;"
+										style="font-size:0.7em;"
 										onclick="
-											var group = this.closest('.MuiToggleButtonGroup-root');
-								
-											group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
-												button.classList.remove('Mui-selected');
-												button.setAttribute('aria-pressed', 'false');
-												button.setAttribute('tabindex', '-1');
+											var group=this.closest('.MuiToggleButtonGroup-root');
+											group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
+												b.classList.remove('Mui-selected');
+												b.setAttribute('aria-pressed','false');
+												b.setAttribute('tabindex','-1');
 											});
-								
 											this.classList.add('Mui-selected');
-											this.setAttribute('aria-pressed', 'true');
-											this.setAttribute('tabindex', '0');
-								
-											group.querySelector('input[name=ispublic]').value = '1';
-										"
-									>
+											this.setAttribute('aria-pressed','true');
+											this.setAttribute('tabindex','0');
+											group.querySelector('input[name=ispublic]').value=this.value;
+										">
 										Public
 									</button>
 								
 									<!-- PRIVATE -->
 									<button
-										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-lastButton<?php echo (!$mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
-										type="button"
-										value="0"
+										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton<?php echo (!$mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
+										type="button" value="0"
 										tabindex="<?php echo (!$mdArr['ispublic'] ? '0' : '-1'); ?>"
 										aria-pressed="<?php echo (!$mdArr['ispublic'] ? 'true' : 'false'); ?>"
-										style="font-size: 0.7em;"
+										style="font-size:0.7em;"
 										onclick="
-											var group = this.closest('.MuiToggleButtonGroup-root');
-								
-											group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
-												button.classList.remove('Mui-selected');
-												button.setAttribute('aria-pressed', 'false');
-												button.setAttribute('tabindex', '-1');
+											var group=this.closest('.MuiToggleButtonGroup-root');
+											group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
+												b.classList.remove('Mui-selected');
+												b.setAttribute('aria-pressed','false');
+												b.setAttribute('tabindex','-1');
 											});
-								
 											this.classList.add('Mui-selected');
-											this.setAttribute('aria-pressed', 'true');
-											this.setAttribute('tabindex', '0');
-								
-											group.querySelector('input[name=ispublic]').value = '0';
-										"
-									>
+											this.setAttribute('aria-pressed','true');
+											this.setAttribute('tabindex','0');
+											group.querySelector('input[name=ispublic]').value=this.value;
+										">
 										Private
 									</button>
 								</div>
