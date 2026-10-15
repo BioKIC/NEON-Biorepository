@@ -122,63 +122,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
     <script src="../../js/datatables/datatables.js"></script>
 	<script type="text/javascript">
-		// Adds WYSIWYG editor to fields
-		tinymce.init({
-			selector: '#description',
-			height: 300,
-			plugins: 'link lists image code',
-			menubar: '',
-			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | bullist numlist | indent outdent | blockquote | code'],
-			branding: false,
-			default_link_target: "_blank",
-			forced_root_block: 'div',
-			paste_as_text: true,
-			invalid_styles: {
-				'*': 'font-family'
-			},
-			setup: function(editor) {
-				editor.on('init', function() {
-					var container = editor.getContainer();
 
-					container.querySelectorAll('button').forEach(function(button) {
-						button.classList.add('Mui');
-						button.style.filter = 'none';
-
-						button.querySelectorAll('*').forEach(function(element) {
-							element.style.filter = 'none';
-						});
-					});
-				});
-			}
-		});
-		tinymce.init({
-			selector: '#name',
-			height: 300,
-			plugins: 'link lists image code',
-			menubar: '',
-			toolbar: ['undo redo | bold italic underline | code'],
-			branding: false,
-			forced_root_block: 'div',
-			default_link_target: "_blank",
-			paste_as_text: true,
-			invalid_styles: {
-				'*': 'font-family'
-			},
-			setup: function(editor) {
-				editor.on('init', function() {
-					var container = editor.getContainer();
-
-					container.querySelectorAll('button').forEach(function(button) {
-						button.classList.add('Mui');
-						button.style.filter = 'none';
-
-						button.querySelectorAll('*').forEach(function(element) {
-							element.style.filter = 'none';
-						});
-					});
-				});
-			}
-		});
 		$(document).ready(function () {
 			$('#sampleTable').DataTable({
 				pageLength: 25,
@@ -403,6 +347,67 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			console.error('Could not copy URL:', err);
 		});
 	};
+
+			// Adds WYSIWYG editor to fields
+		window.addEventListener('load', function () {
+
+			tinymce.init({
+				selector: '#description',
+				height: 300,
+				plugins: 'link lists image code',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | bullist numlist | indent outdent | blockquote | code'],
+				branding: false,
+				default_link_target: "_blank",
+				forced_root_block: 'div',
+				paste_as_text: true,
+				invalid_styles: {
+					'*': 'font-family'
+				},
+				setup: function(editor) {
+					editor.on('init', function() {
+						var container = editor.getContainer();
+
+						container.querySelectorAll('button').forEach(function(button) {
+							button.classList.add('Mui');
+							button.style.filter = 'none';
+
+							button.querySelectorAll('*').forEach(function(element) {
+								element.style.filter = 'none';
+							});
+						});
+					});
+				}
+			});
+			tinymce.init({
+				selector: '#name',
+				height: 300,
+				plugins: 'link lists image code',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | code'],
+				branding: false,
+				forced_root_block: 'div',
+				default_link_target: "_blank",
+				paste_as_text: true,
+				invalid_styles: {
+					'*': 'font-family'
+				},
+				setup: function(editor) {
+					editor.on('init', function() {
+						var container = editor.getContainer();
+
+						container.querySelectorAll('button').forEach(function(button) {
+							button.classList.add('Mui');
+							button.style.filter = 'none';
+
+							button.querySelectorAll('*').forEach(function(element) {
+								element.style.filter = 'none';
+							});
+						});
+					});
+				}
+			});
+		});
 
 	</script>
 	<style>
@@ -1205,7 +1210,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							<!--Description Section-->
 							<div style="margin:15px;">
 								<span class="MuiTypography-root MuiTypography-caption">Description</span>
-								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo $mdArr['description']; ?></textarea>
+								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo htmlspecialchars($mdArr['description'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="margin:15px; text-align:right;">
 								<input name="tabindex" type="hidden" value="0" />
