@@ -582,6 +582,7 @@ $collManager = new OccurrenceManager();
 	<?php
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
+
 </body>
 <script src="js/searchform.js?ver=<?= date('Y-m-d H:i:s') ?>" type="text/javascript"></script>
 <script> window.addEventListener('load', updateChip);</script>

@@ -117,1031 +117,994 @@ function renderComponentExample($title, $description, $html) {
 }
 
 $accordion = <<<'HTML'
-<div class="MuiPaper-root MuiAccordion-root MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded">
-	<div
-		aria-disabled="false"
-		aria-expanded="false"
-		class="MuiButtonBase-root MuiAccordionSummary-root"
-		role="button"
-		tabindex="0"
-		onclick="
-			var accordion = this.closest('.MuiAccordion-root');
-			var content = accordion.querySelector('.accordion-content');
-			var icon = accordion.querySelector('.MuiAccordionSummary-expandIcon');
-			var isExpanded = this.getAttribute('aria-expanded') === 'true';
+<div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded MuiAccordion-gutters">
 
-			this.setAttribute('aria-expanded', isExpanded ? 'false' : 'true');
+  <h3 class="MuiAccordion-heading">
+    <button
+      class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-gutters"
+      tabindex="0"
+      type="button"
+      aria-expanded="false"
+      onclick="
+        var accordion = this.closest('.MuiAccordion-root');
+        var content = accordion.querySelector('.accordion-content');
+        var icon = this.querySelector('.MuiAccordionSummary-expandIconWrapper');
+        var summaryContent = this.querySelector('.MuiAccordionSummary-content');
+        var isExpanded = this.getAttribute('aria-expanded') === 'true';
 
-			if (isExpanded) {
-				content.style.maxHeight = '0';
-			} else {
-				content.style.maxHeight = content.scrollHeight + 'px';
-			}
+        this.setAttribute('aria-expanded', String(!isExpanded));
 
-			icon.style.transform = isExpanded ? '' : 'rotate(180deg)';
+        accordion.classList.toggle('Mui-expanded', !isExpanded);
+        this.classList.toggle('Mui-expanded', !isExpanded);
+        summaryContent.classList.toggle('Mui-expanded', !isExpanded);
+        icon.classList.toggle('Mui-expanded', !isExpanded);
 
-			this.classList.toggle('Mui-expanded', !isExpanded);
-			accordion.classList.toggle('Mui-expanded', !isExpanded);
-			icon.classList.toggle('Mui-expanded', !isExpanded);
-		"
-	>
-		<div class="MuiAccordionSummary-content">
-			Basic Accordion
-		</div>
+        content.style.maxHeight = isExpanded ? '0px' : content.scrollHeight + 'px';
+        icon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+      ">
 
-		<div
-			aria-disabled="false"
-			aria-hidden="true"
-			class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiIconButton-colorPrimary MuiIconButton-edgeEnd"
-			style="transition: transform 0.25s ease;"
-		>
-			<span class="MuiIconButton-label">
-				<svg
-					aria-hidden="true"
-					class="MuiSvgIcon-root"
-					focusable="false"
-					viewbox="0 0 24 24"
-				>
-					<path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z">
-					</path>
-				</svg>
-			</span>
+      <span class="MuiAccordionSummary-content">
+        Basic Accordion
+      </span>
 
-			<span class="MuiTouchRipple-root">
-			</span>
-		</div>
-	</div>
+      <span
+        class="MuiAccordionSummary-expandIconWrapper"
+        style="transition: transform 0.25s ease;">
+        <svg
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+          focusable="false"
+          aria-hidden="true"
+          viewBox="0 0 24 24">
+          <path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"></path>
+        </svg>
+      </span>
 
-	<div
-		class="accordion-content"
-		style="
-			max-height: 0;
-			overflow: hidden;
-			transition: max-height 0.25s ease;
-		"
-	>
-		<div role="region">
-			<div class="MuiAccordionDetails-root">
-				<p class="MuiTypography-root MuiTypography-body1">
-					Accordion Details
-				</p>
-			</div>
+    </button>
+  </h3>
 
-			<div class="MuiAccordionActions-root MuiAccordionActions-spacing">
-				<button
-					class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary"
-					tabindex="0"
-					type="button"
-				>
-					<span class="MuiButton-label">
-						Cancel
-					</span>
+  <div
+    class="accordion-content"
+    style="max-height: 0px; overflow: hidden; transition: max-height 0.25s ease;">
 
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
+    <div role="region" class="MuiAccordion-region">
 
-				<button
-					class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary"
-					tabindex="0"
-					type="button"
-				>
-					<span class="MuiButton-label">
-						Action
-					</span>
+      <div class="MuiAccordionDetails-root">
+        <p class="MuiTypography-root MuiTypography-body1">
+          Accordion Details
+        </p>
+      </div>
 
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-			</div>
-		</div>
-	</div>
+      <div class="MuiAccordionActions-root MuiAccordionActions-spacing">
+
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary"
+          tabindex="0"
+          type="button">
+          Cancel
+        </button>
+
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary"
+          tabindex="0"
+          type="button">
+          Action
+        </button>
+
+      </div>
+    </div>
+  </div>
 </div>
 HTML;
 
 $buttons = <<<'HTML'
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-textSizeSmall MuiButton-sizeSmall" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					Text
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					Text
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-textSizeLarge MuiButton-sizeLarge" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					Text
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-textSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Text
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Text
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-textSizeLarge MuiButton-sizeLarge Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Text
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeSmall MuiButton-sizeSmall" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					<span class="MuiButton-startIcon MuiButton-iconSizeSmall">
-						<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-							<path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z">
-							</path>
-						</svg>
-					</span>
-					Outlined
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					<span class="MuiButton-startIcon MuiButton-iconSizeMedium">
-						<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-							<path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z">
-							</path>
-						</svg>
-					</span>
-					Outlined
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeLarge MuiButton-sizeLarge" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					<span class="MuiButton-startIcon MuiButton-iconSizeLarge">
-						<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-							<path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z">
-							</path>
-						</svg>
-					</span>
-					Outlined
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Outlined
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Outlined
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeLarge MuiButton-sizeLarge Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Outlined
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeSmall MuiButton-sizeSmall" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					Contained
-					<span class="MuiButton-endIcon MuiButton-iconSizeSmall">
-						<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-							<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z">
-							</path>
-						</svg>
-					</span>
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					Contained
-					<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-						<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-							<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z">
-							</path>
-						</svg>
-					</span>
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeLarge" tabindex="0" type="button">
-				<span class="MuiButton-label">
-					Contained
-					<span class="MuiButton-endIcon MuiButton-iconSizeLarge">
-						<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-							<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z">
-							</path>
-						</svg>
-					</span>
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeSmall MuiButton-sizeSmall Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Contained
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Contained
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-containedSizeLarge MuiButton-sizeLarge Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiButton-label">
-					Contained
-				</span>
-			</button>
+<!-- TEXT BUTTONS -->
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary" tabindex="0" type="button">Text</button>
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary" tabindex="0" type="button">Text</button>
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeLarge MuiButton-colorPrimary" tabindex="0" type="button">Text</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Text</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Text</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-sizeLarge MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Text</button>
+
+
+<!-- OUTLINED BUTTONS -->
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeSmall MuiButton-colorPrimary" tabindex="0" type="button">
+  <span class="MuiButton-icon MuiButton-startIcon">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+    </svg>
+  </span>
+  Outlined
+</button>
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeMedium MuiButton-colorPrimary" tabindex="0" type="button">
+  <span class="MuiButton-icon MuiButton-startIcon">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+    </svg>
+  </span>
+  Outlined
+</button>
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeLarge MuiButton-colorPrimary" tabindex="0" type="button">
+  <span class="MuiButton-icon MuiButton-startIcon">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+    </svg>
+  </span>
+  Outlined
+</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-outlined MuiButton-sizeSmall MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Outlined</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-outlined MuiButton-sizeMedium MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Outlined</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-outlined MuiButton-sizeLarge MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Outlined</button>
+
+
+<!-- CONTAINED BUTTONS -->
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary" tabindex="0" type="button">
+  Contained
+  <span class="MuiButton-icon MuiButton-endIcon">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+    </svg>
+  </span>
+</button>
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary" tabindex="0" type="button">
+  Contained
+  <span class="MuiButton-icon MuiButton-endIcon">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+    </svg>
+  </span>
+</button>
+
+<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary" tabindex="0" type="button">
+  Contained
+  <span class="MuiButton-icon MuiButton-endIcon">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+    </svg>
+  </span>
+</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Contained</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Contained</button>
+
+<button class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary" tabindex="-1" type="button" disabled>Contained</button>
 HTML;
 
 $button_groups = <<<'HTML'
-			<div class="MuiButtonGroup-root" role="group">
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlinedPrimary MuiButton-outlinedPrimary MuiButton-outlinedSizeSmall MuiButton-sizeSmall" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						One
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlinedPrimary MuiButton-outlinedPrimary MuiButton-outlinedSizeSmall MuiButton-sizeSmall" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						Two
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-			</div>
-			<div class="MuiButtonGroup-root" role="group">
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlinedPrimary MuiButton-outlinedPrimary" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						One
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlinedPrimary MuiButton-outlinedPrimary" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						Two
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-			</div>
-			<div class="MuiButtonGroup-root" role="group">
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlinedPrimary MuiButton-outlinedPrimary MuiButton-outlinedSizeLarge MuiButton-sizeLarge" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						One
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedOutlined MuiButtonGroup-groupedOutlinedHorizontal MuiButtonGroup-groupedOutlinedPrimary MuiButton-outlinedPrimary MuiButton-outlinedSizeLarge MuiButton-sizeLarge" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						Two
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-			</div>
-			<div class="MuiButtonGroup-root" role="group">
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedText MuiButtonGroup-groupedTextHorizontal MuiButtonGroup-groupedTextPrimary MuiButton-textPrimary MuiButton-textSizeSmall MuiButton-sizeSmall" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						One
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedText MuiButtonGroup-groupedTextHorizontal MuiButtonGroup-groupedTextPrimary MuiButton-textPrimary MuiButton-textSizeSmall MuiButton-sizeSmall" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						Two
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-			</div>
-			<div class="MuiButtonGroup-root" role="group">
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedText MuiButtonGroup-groupedTextHorizontal MuiButtonGroup-groupedTextPrimary MuiButton-textPrimary" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						One
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedText MuiButtonGroup-groupedTextHorizontal MuiButtonGroup-groupedTextPrimary MuiButton-textPrimary" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						Two
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-			</div>
-			<div class="MuiButtonGroup-root" role="group">
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedText MuiButtonGroup-groupedTextHorizontal MuiButtonGroup-groupedTextPrimary MuiButton-textPrimary MuiButton-textSizeLarge MuiButton-sizeLarge" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						One
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-				<button class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButtonGroup-grouped MuiButtonGroup-groupedHorizontal MuiButtonGroup-groupedText MuiButtonGroup-groupedTextHorizontal MuiButtonGroup-groupedTextPrimary MuiButton-textPrimary MuiButton-textSizeLarge MuiButton-sizeLarge" tabindex="0" type="button">
-					<span class="MuiButton-label">
-						Two
-					</span>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</button>
-			</div>
+<!-- OUTLINED BUTTON GROUPS -->
+
+<!-- Small -->
+<div role="group" class="MuiButtonGroup-root MuiButtonGroup-outlined MuiButtonGroup-horizontal MuiButtonGroup-colorPrimary">
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-outlined MuiButton-sizeSmall MuiButton-colorPrimary MuiButtonGroup-firstButton" tabindex="0" type="button">One</button>
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-outlined MuiButton-sizeSmall MuiButton-colorPrimary MuiButtonGroup-lastButton" tabindex="0" type="button">Two</button>
+</div>
+
+<!-- Medium -->
+<div role="group" class="MuiButtonGroup-root MuiButtonGroup-outlined MuiButtonGroup-horizontal MuiButtonGroup-colorPrimary">
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-outlined MuiButton-sizeMedium MuiButton-colorPrimary MuiButtonGroup-firstButton" tabindex="0" type="button">One</button>
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-outlined MuiButton-sizeMedium MuiButton-colorPrimary MuiButtonGroup-lastButton" tabindex="0" type="button">Two</button>
+</div>
+
+<!-- Large -->
+<div role="group" class="MuiButtonGroup-root MuiButtonGroup-outlined MuiButtonGroup-horizontal MuiButtonGroup-colorPrimary">
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-outlined MuiButton-sizeLarge MuiButton-colorPrimary MuiButtonGroup-firstButton" tabindex="0" type="button">One</button>
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-outlined MuiButton-sizeLarge MuiButton-colorPrimary MuiButtonGroup-lastButton" tabindex="0" type="button">Two</button>
+</div>
+
+
+<!-- TEXT BUTTON GROUPS -->
+
+<!-- Small -->
+<div role="group" class="MuiButtonGroup-root MuiButtonGroup-text MuiButtonGroup-horizontal MuiButtonGroup-colorPrimary">
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary MuiButtonGroup-firstButton" tabindex="0" type="button">One</button>
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary MuiButtonGroup-lastButton" tabindex="0" type="button">Two</button>
+</div>
+
+<!-- Medium -->
+<div role="group" class="MuiButtonGroup-root MuiButtonGroup-text MuiButtonGroup-horizontal MuiButtonGroup-colorPrimary">
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary MuiButtonGroup-firstButton" tabindex="0" type="button">One</button>
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-text MuiButton-sizeMedium MuiButton-colorPrimary MuiButtonGroup-lastButton" tabindex="0" type="button">Two</button>
+</div>
+
+<!-- Large -->
+<div role="group" class="MuiButtonGroup-root MuiButtonGroup-text MuiButtonGroup-horizontal MuiButtonGroup-colorPrimary">
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-text MuiButton-sizeLarge MuiButton-colorPrimary MuiButtonGroup-firstButton" tabindex="0" type="button">One</button>
+  <button class="MuiButtonBase-root MuiButtonGroup-grouped MuiButton-root MuiButton-text MuiButton-sizeLarge MuiButton-colorPrimary MuiButtonGroup-lastButton" tabindex="0" type="button">Two</button>
+</div>
 HTML;
 
 $card = <<<'HTML'
-			<div class="MuiPaper-root MuiCard-root MuiPaper-outlined MuiPaper-rounded">
-				<div class="MuiCardContent-root">
-					<h2 class="MuiTypography-root MuiTypography-h5">
-						Card
-					</h2>
-					<p class="MuiTypography-root MuiTypography-body2 MuiTypography-colorTextSecondary">
-						Card content
-					</p>
-				</div>
-				<div class="MuiCardActions-root MuiCardActions-spacing">
-					<button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
-						<span class="MuiButton-label">
-							Action
-						</span>
-						<span class="MuiTouchRipple-root">
-						</span>
-					</button>
-				</div>
-			</div>
+<div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root">
+  <div class="MuiCardContent-root">
+    <h2 class="MuiTypography-root MuiTypography-h5">Card</h2>
+    <p class="MuiTypography-root MuiTypography-body2">Card content</p>
+  </div>
+  <div class="MuiCardActions-root MuiCardActions-spacing">
+    <button class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeMedium MuiButton-colorPrimary" tabindex="0" type="button">
+      Action
+    </button>
+  </div>
+</div>
 HTML;
 
 $checkboxes = <<<'HTML'
-<label class="MuiFormControlLabel-root">
-	<span aria-disabled="false" class="MuiButtonBase-root MuiIconButton-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiIconButton-colorPrimary">
-		<span class="MuiIconButton-label">
-			<input
-				data-indeterminate="false"
-				type="checkbox"
-				value=""
-				style="position:absolute; opacity:0; width:100%; height:100%; top:0; left:0; margin:0; cursor:inherit;"
-				onchange="
-					var root = this.closest('.MuiCheckbox-root');
-					var path = root.querySelector('path');
-
-					if (this.checked) {
-						root.classList.add('Mui-checked');
-						path.setAttribute('d', 'M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z');
-					} else {
-						root.classList.remove('Mui-checked');
-						path.setAttribute('d', 'M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z');
-					}
-				"
-			/>
-			<svg aria-hidden="true" class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewbox="0 0 24 24">
-				<path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z">
-				</path>
-			</svg>
-		</span>
-		<span class="MuiTouchRipple-root">
-		</span>
-	</span>
-	<span class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1">
-		Checkbox
-	</span>
+<!-- UNCHECKED CHECKBOX -->
+<label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root">
+    <input data-indeterminate="false" class="PrivateSwitchBase-input" type="checkbox">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
+    </svg>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Checkbox</span>
 </label>
 
-<label class="MuiFormControlLabel-root Mui-disabled">
-	<span aria-disabled="true" class="MuiButtonBase-root MuiIconButton-root MuiCheckbox-root MuiCheckbox-colorPrimary Mui-disabled MuiIconButton-colorPrimary Mui-disabled Mui-disabled" tabindex="-1">
-		<span class="MuiIconButton-label">
-			<input
-				data-indeterminate="false"
-				disabled=""
-				type="checkbox"
-				value=""
-				style="position:absolute; opacity:0; width:100%; height:100%; top:0; left:0; margin:0;"
-			/>
-			<svg aria-hidden="true" class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewbox="0 0 24 24">
-				<path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z">
-				</path>
-			</svg>
-		</span>
-	</span>
-	<span class="MuiTypography-root MuiFormControlLabel-label Mui-disabled MuiTypography-body1">
-		Checkbox
-	</span>
+
+<!-- CHECKED CHECKBOX -->
+<label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root Mui-checked">
+    <input data-indeterminate="false" class="PrivateSwitchBase-input" type="checkbox" checked>
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+    </svg>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Checkbox</span>
+</label>
+
+
+<!-- DISABLED CHECKBOX -->
+<label class="MuiFormControlLabel-root Mui-disabled MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root Mui-disabled">
+    <input disabled data-indeterminate="false" class="PrivateSwitchBase-input" type="checkbox">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
+    </svg>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Checkbox</span>
 </label>
 HTML;
 
 $radio_buttons = <<<'HTML'
-<label class="MuiFormControlLabel-root">
-	<span aria-disabled="false" class="MuiButtonBase-root MuiIconButton-root MuiRadio-root MuiRadio-colorPrimary MuiIconButton-colorPrimary">
-		<span class="MuiIconButton-label">
-			<input
-				type="radio"
-				value=""
-				style="position:absolute; opacity:0; width:100%; height:100%; top:0; left:0; margin:0; cursor:inherit;"
-				onclick="
-					var root = this.closest('.MuiRadio-root');
-					var dot = root.querySelector('.radio-dot');
-
-					if (this.checked && !root.classList.contains('Mui-checked')) {
-						root.classList.add('Mui-checked');
-						dot.style.transform = 'scale(1)';
-					} else {
-						this.checked = false;
-						root.classList.remove('Mui-checked');
-						dot.style.transform = 'scale(0)';
-					}
-				"
-			/>
-			<div style="position:relative; display:flex;">
-				<svg aria-hidden="true" class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewbox="0 0 24 24">
-					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z">
-					</path>
-				</svg>
-				<svg
-					aria-hidden="true"
-					class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall radio-dot"
-					focusable="false"
-					viewbox="0 0 24 24"
-					style="position:absolute; left:0; transform:scale(0); transition:transform 150ms cubic-bezier(0.4, 0, 0.2, 1);"
-				>
-					<path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z">
-					</path>
-				</svg>
-			</div>
-		</span>
-		<span class="MuiTouchRipple-root">
-		</span>
-	</span>
-	<span class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1">
-		Radio
-	</span>
+<!-- UNCHECKED RADIO -->
+<label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root">
+    <input class="PrivateSwitchBase-input" type="radio" name="radio-example">
+    <span>
+      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
+      </svg>
+      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
+      </svg>
+    </span>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Radio</span>
 </label>
 
-<label class="MuiFormControlLabel-root Mui-disabled">
-	<span aria-disabled="true" class="MuiButtonBase-root MuiIconButton-root MuiRadio-root MuiRadio-colorPrimary Mui-disabled MuiIconButton-colorPrimary Mui-disabled Mui-disabled" tabindex="-1">
-		<span class="MuiIconButton-label">
-			<input
-				disabled=""
-				type="radio"
-				value=""
-				style="position:absolute; opacity:0; width:100%; height:100%; top:0; left:0; margin:0;"
-			/>
-			<div style="position:relative; display:flex;">
-				<svg aria-hidden="true" class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewbox="0 0 24 24">
-					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z">
-					</path>
-				</svg>
-				<svg
-					aria-hidden="true"
-					class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-					focusable="false"
-					viewbox="0 0 24 24"
-					style="position:absolute; left:0; transform:scale(0);"
-				>
-					<path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z">
-					</path>
-				</svg>
-			</div>
-		</span>
-	</span>
-	<span class="MuiTypography-root MuiFormControlLabel-label Mui-disabled MuiTypography-body1">
-		Radio
-	</span>
+
+<!-- CHECKED RADIO -->
+<label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root Mui-checked">
+    <input class="PrivateSwitchBase-input" type="radio" name="radio-example" checked>
+    <span>
+      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
+      </svg>
+      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
+      </svg>
+    </span>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Radio</span>
+</label>
+
+
+<!-- DISABLED RADIO -->
+<label class="MuiFormControlLabel-root Mui-disabled MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root Mui-disabled">
+    <input disabled class="PrivateSwitchBase-input" type="radio" name="radio-example">
+    <span>
+      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
+      </svg>
+      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
+      </svg>
+    </span>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Radio</span>
 </label>
 HTML;
 
 $switches = <<<'HTML'
-<label class="MuiFormControlLabel-root">
-	<span class="MuiSwitch-root MuiSwitch-sizeSmall">
-		<span aria-disabled="false" class="MuiButtonBase-root MuiIconButton-root MuiSwitch-switchBase MuiSwitch-colorPrimary MuiIconButton-colorPrimary">
-			<span class="MuiIconButton-label">
-				<input
-					class="MuiSwitch-input"
-					type="checkbox"
-					value=""
-					style="position:absolute; opacity:0; width:100%; height:100%; top:0; left:0; margin:0; cursor:inherit;"
-					onchange="
-						var switchBase = this.closest('.MuiSwitch-switchBase');
-
-						if (this.checked) {
-							switchBase.classList.add('Mui-checked');
-						} else {
-							switchBase.classList.remove('Mui-checked');
-						}
-					"
-				/>
-				<span class="MuiSwitch-thumb">
-				</span>
-			</span>
-			<span class="MuiTouchRipple-root">
-			</span>
-		</span>
-		<span class="MuiSwitch-track">
-		</span>
-	</span>
-	<span class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1">
-		Switch
-	</span>
+<!-- UNCHECKED SWITCH -->
+<label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiSwitch-root MuiSwitch-sizeMedium">
+    <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root">
+      <input role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox">
+      <span class="MuiSwitch-thumb"></span>
+    </span>
+    <span class="MuiSwitch-track"></span>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Switch</span>
 </label>
 
-<label class="MuiFormControlLabel-root Mui-disabled">
-	<span class="MuiSwitch-root MuiSwitch-sizeSmall">
-		<span aria-disabled="true" class="MuiButtonBase-root MuiIconButton-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-disabled MuiIconButton-colorPrimary Mui-disabled Mui-disabled" tabindex="-1">
-			<span class="MuiIconButton-label">
-				<input
-					class="MuiSwitch-input"
-					disabled=""
-					type="checkbox"
-					value=""
-					style="position:absolute; opacity:0; width:100%; height:100%; top:0; left:0; margin:0;"
-				/>
-				<span class="MuiSwitch-thumb">
-				</span>
-			</span>
-		</span>
-		<span class="MuiSwitch-track">
-		</span>
-	</span>
-	<span class="MuiTypography-root MuiFormControlLabel-label Mui-disabled MuiTypography-body1">
-		Switch
-	</span>
+
+<!-- CHECKED SWITCH -->
+<label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiSwitch-root MuiSwitch-sizeMedium">
+    <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-checked PrivateSwitchBase-root">
+      <input role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox" checked>
+      <span class="MuiSwitch-thumb"></span>
+    </span>
+    <span class="MuiSwitch-track"></span>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Switch</span>
+</label>
+
+
+<!-- DISABLED SWITCH -->
+<label class="MuiFormControlLabel-root Mui-disabled MuiFormControlLabel-labelPlacementEnd">
+  <span class="MuiSwitch-root MuiSwitch-sizeMedium">
+    <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-disabled PrivateSwitchBase-root">
+      <input disabled role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox">
+      <span class="MuiSwitch-thumb"></span>
+    </span>
+    <span class="MuiSwitch-track"></span>
+  </span>
+  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Switch</span>
 </label>
 HTML;
 
 $icon_buttons = <<<'HTML'
-			<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall" tabindex="0" type="button">
-				<span class="MuiIconButton-label">
-					<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-						<path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z">
-						</path>
-					</svg>
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium"" tabindex="0" type="button">
-				<span class="MuiIconButton-label">
-					<svg aria-hidden="true" class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" viewbox="0 0 24 24">
-						<path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z">
-						</path>
-					</svg>
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeLarge" tabindex="0" type="button">
-				<span class="MuiIconButton-label">
-					<svg aria-hidden="true" class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge" focusable="false" viewbox="0 0 24 24">
-						<path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z">
-						</path>
-					</svg>
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-			<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary Mui-disabled Mui-disabled" disabled="" tabindex="-1" type="button">
-				<span class="MuiIconButton-label">
-					<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-						<path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z">
-						</path>
-					</svg>
-				</span>
-			</button>
+<!-- SMALL ICON BUTTON -->
+<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall" tabindex="0" type="button">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path>
+    </svg>
+</button>
+
+<!-- MEDIUM ICON BUTTON WITH SMALL ICON -->
+<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium" tabindex="0" type="button">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path>
+    </svg>
+</button>
+
+<!-- MEDIUM ICON BUTTON WITH MEDIUM ICON -->
+<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium" tabindex="0" type="button">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path>
+    </svg>
+</button>
+
+<!-- MEDIUM ICON BUTTON WITH LARGE ICON -->
+<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium" tabindex="0" type="button">
+    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeLarge" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path>
+    </svg>
+</button>
+
+<!-- DISABLED ICON BUTTON -->
+<button class="MuiButtonBase-root Mui-disabled MuiIconButton-root MuiIconButton-sizeMedium" tabindex="-1" type="button" disabled>
+  <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+    <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path>
+  </svg>
+</button>
 HTML;
 
 $toggle_buttons = <<<'HTML'
-<div class="MuiToggleButtonGroup-root" role="group">
-	<button
-		aria-pressed="true"
-		class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-selected MuiToggleButton-sizeSmall"
-		tabindex="0"
-		type="button"
-		value="one"
-		onclick="
-			var group = this.closest('.MuiToggleButtonGroup-root');
-			group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
-				button.classList.remove('Mui-selected');
-				button.setAttribute('aria-pressed', 'false');
-			});
-			this.classList.add('Mui-selected');
-			this.setAttribute('aria-pressed', 'true');
-		"
-	>
-		<span class="MuiToggleButton-label">
-			One
-		</span>
-		<span class="MuiTouchRipple-root">
-		</span>
-	</button>
-
-	<button
-		aria-pressed="false"
-		class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-sizeSmall"
-		tabindex="0"
-		type="button"
-		value="two"
-		onclick="
-			var group = this.closest('.MuiToggleButtonGroup-root');
-			group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
-				button.classList.remove('Mui-selected');
-				button.setAttribute('aria-pressed', 'false');
-			});
-			this.classList.add('Mui-selected');
-			this.setAttribute('aria-pressed', 'true');
-		"
-	>
-		<span class="MuiToggleButton-label">
-			Two
-		</span>
-		<span class="MuiTouchRipple-root">
-		</span>
-	</button>
+<!-- SMALL TOGGLE BUTTON GROUP -->
+<div role="group" class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal">
+  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
+          tabindex="0" type="button" value="one" aria-pressed="true">One</button>
+  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeSmall MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
+          tabindex="-1" type="button" value="two" aria-pressed="false">Two</button>
 </div>
 
-<div class="MuiToggleButtonGroup-root" role="group">
-	<button
-		aria-pressed="true"
-		class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-selected"
-		tabindex="0"
-		type="button"
-		value="one"
-		onclick="
-			var group = this.closest('.MuiToggleButtonGroup-root');
-			group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
-				button.classList.remove('Mui-selected');
-				button.setAttribute('aria-pressed', 'false');
-			});
-			this.classList.add('Mui-selected');
-			this.setAttribute('aria-pressed', 'true');
-		"
-	>
-		<span class="MuiToggleButton-label">
-			One
-		</span>
-		<span class="MuiTouchRipple-root">
-		</span>
-	</button>
 
-	<button
-		aria-pressed="false"
-		class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
-		tabindex="0"
-		type="button"
-		value="two"
-		onclick="
-			var group = this.closest('.MuiToggleButtonGroup-root');
-			group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
-				button.classList.remove('Mui-selected');
-				button.setAttribute('aria-pressed', 'false');
-			});
-			this.classList.add('Mui-selected');
-			this.setAttribute('aria-pressed', 'true');
-		"
-	>
-		<span class="MuiToggleButton-label">
-			Two
-		</span>
-		<span class="MuiTouchRipple-root">
-		</span>
-	</button>
+<!-- MEDIUM TOGGLE BUTTON GROUP -->
+<div role="group" class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal">
+  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
+          tabindex="0" type="button" value="one" aria-pressed="true">One</button>
+  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
+          tabindex="-1" type="button" value="two" aria-pressed="false">Two</button>
 </div>
 
-<div class="MuiToggleButtonGroup-root" role="group">
-	<button
-		aria-pressed="true"
-		class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal Mui-selected MuiToggleButton-sizeLarge"
-		tabindex="0"
-		type="button"
-		value="one"
-		onclick="
-			var group = this.closest('.MuiToggleButtonGroup-root');
-			group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
-				button.classList.remove('Mui-selected');
-				button.setAttribute('aria-pressed', 'false');
-			});
-			this.classList.add('Mui-selected');
-			this.setAttribute('aria-pressed', 'true');
-		"
-	>
-		<span class="MuiToggleButton-label">
-			One
-		</span>
-		<span class="MuiTouchRipple-root">
-		</span>
-	</button>
 
-	<button
-		aria-pressed="false"
-		class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-sizeLarge"
-		tabindex="0"
-		type="button"
-		value="two"
-		onclick="
-			var group = this.closest('.MuiToggleButtonGroup-root');
-			group.querySelectorAll('.MuiToggleButton-root').forEach(function(button) {
-				button.classList.remove('Mui-selected');
-				button.setAttribute('aria-pressed', 'false');
-			});
-			this.classList.add('Mui-selected');
-			this.setAttribute('aria-pressed', 'true');
-		"
-	>
-		<span class="MuiToggleButton-label">
-			Two
-		</span>
-		<span class="MuiTouchRipple-root">
-		</span>
-	</button>
+<!-- LARGE TOGGLE BUTTON GROUP -->
+<div role="group" class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal">
+  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root Mui-selected MuiToggleButton-sizeLarge MuiToggleButton-standard MuiToggleButtonGroup-firstButton"
+          tabindex="0" type="button" value="one" aria-pressed="true">One</button>
+  <button class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeLarge MuiToggleButton-standard MuiToggleButtonGroup-lastButton"
+          tabindex="-1" type="button" value="two" aria-pressed="false">Two</button>
 </div>
 HTML;
 
 $tooltip = <<<'HTML'
-			<button aria-label="tooltip" class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary" tabindex="0" title="A basic tooltip" type="button">
-				<span class="MuiIconButton-label">
-					<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-						<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z">
-						</path>
-					</svg>
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
+<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium"
+        tabindex="0"
+        type="button"
+        aria-label="tooltip">
+  <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+       focusable="false"
+       aria-hidden="true"
+       viewBox="0 0 24 24">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-6h2zm0-8h-2V7h2z"></path>
+  </svg>
+</button>
 HTML;
 
 $link = <<<'HTML'
-			<a class="MuiTypography-root MuiLink-root MuiLink-underlineAlways MuiTypography-colorPrimary" href="#">
-				Link
-			</a>
+<a class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways" href="#">Link</a>
 HTML;
 
 $divider = <<<'HTML'
-			<hr class="MuiDivider-root"/>
+<hr class="MuiDivider-root MuiDivider-fullWidth">
 HTML;
 
 $typography = <<<'HTML'
-			<h1 class="MuiTypography-root MuiTypography-h1">
-				h1 Heading
-			</h1>
-			<h2 class="MuiTypography-root MuiTypography-h2">
-				h2 Heading
-			</h2>
-			<h3 class="MuiTypography-root MuiTypography-h3">
-				h3 Heading
-			</h3>
-			<h4 class="MuiTypography-root MuiTypography-h4">
-				h4 Heading
-			</h4>
-			<h5 class="MuiTypography-root MuiTypography-h5">
-				h5 Heading
-			</h5>
-			<h6 class="MuiTypography-root MuiTypography-h6">
-				h6 Heading
-			</h6>
-			<h6 class="MuiTypography-root MuiTypography-subtitle1">
-				Subtitle1
-			</h6>
-			<h6 class="MuiTypography-root MuiTypography-subtitle2">
-				Subtitle2
-			</h6>
-			<p class="MuiTypography-root MuiTypography-body1">
-				Body1
-			</p>
-			<p class="MuiTypography-root MuiTypography-body2">
-				Body2
-			</p>
-			<span class="MuiTypography-root MuiTypography-button">
-				Button Text
-			</span>
-			<span class="MuiTypography-root MuiTypography-caption">
-				Caption
-			</span>
-			<span class="MuiTypography-root MuiTypography-overline">
-				Overline
-			</span>
+<!-- HEADINGS -->
+<h1 class="MuiTypography-root MuiTypography-h1">Heading</h1>
+<h2 class="MuiTypography-root MuiTypography-h2">Heading</h2>
+<h3 class="MuiTypography-root MuiTypography-h3">Heading</h3>
+<h4 class="MuiTypography-root MuiTypography-h4">Heading</h4>
+<h5 class="MuiTypography-root MuiTypography-h5">Heading</h5>
+<h6 class="MuiTypography-root MuiTypography-h6">Heading</h6>
+
+<!-- SUBTITLES -->
+<h6 class="MuiTypography-root MuiTypography-subtitle1">Subtitle</h6>
+<h6 class="MuiTypography-root MuiTypography-subtitle2">Subtitle</h6>
+
+<!-- BODY TEXT -->
+<p class="MuiTypography-root MuiTypography-body1">Body</p>
+<p class="MuiTypography-root MuiTypography-body2">Body</p>
+
+<!-- BUTTON TEXT -->
+<span class="MuiTypography-root MuiTypography-button">Button Text</span>
+
+<!-- CAPTION -->
+<span class="MuiTypography-root MuiTypography-caption">Caption</span>
+
+<!-- OVERLINE -->
+<span class="MuiTypography-root MuiTypography-overline">Overline</span>
 HTML;
 
 $tabs = <<<'HTML'
-<div class="MuiTabs-root">
-	<div class="MuiTabs-scroller MuiTabs-fixed" style="overflow: hidden;">
-		<div class="MuiTabs-flexContainer" role="tablist">
-			<button
-				aria-selected="true"
-				class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary Mui-selected"
-				role="tab"
-				tabindex="0"
-				type="button"
-				onclick="
-					var tabs = this.closest('.MuiTabs-root');
-					var buttons = tabs.querySelectorAll('.MuiTab-root:not(.Mui-disabled)');
-					var indicator = tabs.querySelector('.MuiTabs-indicator');
+<div class="MuiTabs-root" style="position:relative;">
+    <div class="MuiTabs-scroller MuiTabs-fixed" style="overflow:hidden;margin-bottom:0;position:relative;">
+        <div role="tablist" class="MuiTabs-list" style="display:flex;position:relative;">
 
-					buttons.forEach(function(button) {
-						button.classList.remove('Mui-selected');
-						button.setAttribute('aria-selected', 'false');
-						button.setAttribute('tabindex', '-1');
-					});
+            <button class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary Mui-selected"
+                tabindex="0" type="button" role="tab" aria-selected="true"
+                onclick="
+                    var root=this.closest('.MuiTabs-root'),tabs=root.querySelectorAll('[role=tab]'),indicator=root.querySelector('.MuiTabs-indicator'),scroller=root.querySelector('.MuiTabs-scroller');
+                    tabs.forEach(function(tab){tab.classList.toggle('Mui-selected',tab===event.currentTarget);tab.setAttribute('aria-selected',String(tab===event.currentTarget));tab.tabIndex=tab===event.currentTarget?0:-1;},this);
+                    indicator.style.left=(this.getBoundingClientRect().left-scroller.getBoundingClientRect().left+scroller.scrollLeft)+'px';
+                    indicator.style.width=this.getBoundingClientRect().width+'px';
+                ">
+                Tab One
+            </button>
 
-					this.classList.add('Mui-selected');
-					this.setAttribute('aria-selected', 'true');
-					this.setAttribute('tabindex', '0');
+            <button class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
+                tabindex="-1" type="button" role="tab" aria-selected="false"
+                onclick="
+                    var root=this.closest('.MuiTabs-root'),tabs=root.querySelectorAll('[role=tab]'),indicator=root.querySelector('.MuiTabs-indicator'),scroller=root.querySelector('.MuiTabs-scroller'),selected=this;
+                    tabs.forEach(function(tab){tab.classList.toggle('Mui-selected',tab===selected);tab.setAttribute('aria-selected',String(tab===selected));tab.tabIndex=tab===selected?0:-1;});
+                    indicator.style.left=(this.getBoundingClientRect().left-scroller.getBoundingClientRect().left+scroller.scrollLeft)+'px';
+                    indicator.style.width=this.getBoundingClientRect().width+'px';
+                ">
+                Tab Two
+            </button>
 
-					indicator.style.left = this.offsetLeft + 'px';
-					indicator.style.width = this.offsetWidth + 'px';
-				"
-			>
-				<span class="MuiTab-wrapper">
-					Tab One
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
+            <button class="MuiButtonBase-root Mui-disabled MuiTab-root MuiTab-textColorPrimary"
+                tabindex="-1" type="button" disabled role="tab" aria-selected="false">
+                Disabled
+            </button>
+        </div>
 
-			<button
-				aria-selected="false"
-				class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary"
-				role="tab"
-				tabindex="-1"
-				type="button"
-				onclick="
-					var tabs = this.closest('.MuiTabs-root');
-					var buttons = tabs.querySelectorAll('.MuiTab-root:not(.Mui-disabled)');
-					var indicator = tabs.querySelector('.MuiTabs-indicator');
-
-					buttons.forEach(function(button) {
-						button.classList.remove('Mui-selected');
-						button.setAttribute('aria-selected', 'false');
-						button.setAttribute('tabindex', '-1');
-					});
-
-					this.classList.add('Mui-selected');
-					this.setAttribute('aria-selected', 'true');
-					this.setAttribute('tabindex', '0');
-
-					indicator.style.left = this.offsetLeft + 'px';
-					indicator.style.width = this.offsetWidth + 'px';
-				"
-			>
-				<span class="MuiTab-wrapper">
-					Tab Two
-				</span>
-				<span class="MuiTouchRipple-root">
-				</span>
-			</button>
-
-			<button
-				aria-selected="false"
-				class="MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary Mui-disabled Mui-disabled"
-				disabled=""
-				role="tab"
-				tabindex="-1"
-				type="button"
-			>
-				<span class="MuiTab-wrapper">
-					Disabled
-				</span>
-			</button>
-		</div>
-
-		<span class="MuiTabs-indicator" style="left: 0px; width: 160px;">
-		</span>
-	</div>
+        <span class="MuiTabs-indicator" style="position:absolute;bottom:0;left:0;width:0;transition:left 300ms ease,width 300ms ease;"></span>
+    </div>
 </div>
+
+<script>
+(function(){
+    var root=document.currentScript.previousElementSibling;
+    var active=root.querySelector('[role=tab].Mui-selected');
+    var indicator=root.querySelector('.MuiTabs-indicator');
+    var scroller=root.querySelector('.MuiTabs-scroller');
+    if(active){
+        indicator.style.transition='none';
+        indicator.style.left=(active.getBoundingClientRect().left-scroller.getBoundingClientRect().left+scroller.scrollLeft)+'px';
+        indicator.style.width=active.getBoundingClientRect().width+'px';
+        requestAnimationFrame(function(){indicator.style.transition='left 300ms ease,width 300ms ease';});
+    }
+})();
+</script>
 HTML;
 
 $lists = <<<'HTML'
-			<ul class="MuiList-root MuiList-padding">
-				<li class="MuiListItem-root MuiListItem-gutters">
-					<div class="MuiListItemText-root MuiListItemText-multiline">
-						<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
-							List Item
-						</span>
-						<p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">
-							Secondary text
-						</p>
-					</div>
-				</li>
-				<div aria-disabled="false" class="MuiButtonBase-root MuiListItem-root MuiListItem-gutters MuiListItem-button" role="button" tabindex="0">
-					<div class="MuiListItemIcon-root">
-						<svg aria-hidden="true" class="MuiSvgIcon-root" focusable="false" viewbox="0 0 24 24">
-							<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z">
-							</path>
-						</svg>
-					</div>
-					<div class="MuiListItemText-root">
-						<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
-							Clickable List Item
-						</span>
-					</div>
-					<span class="MuiTouchRipple-root">
-					</span>
-				</div>
-				<li class="MuiListItem-root MuiListItem-gutters Mui-disabled" disabled="">
-					<div class="MuiListItemText-root">
-						<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
-							Disabled List Item
-						</span>
-					</div>
-				</li>
-			</ul>
+<ul class="MuiList-root MuiList-padding">
+
+  <!-- LIST ITEM WITH SECONDARY TEXT -->
+  <li class="MuiListItem-root MuiListItem-gutters MuiListItem-padding">
+    <div class="MuiListItemText-root MuiListItemText-multiline">
+      <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary">
+        List Item
+      </span>
+      <p class="MuiTypography-root MuiTypography-body2 MuiListItemText-secondary">
+        Secondary text
+      </p>
+    </div>
+  </li>
+
+  <!-- LIST ITEM WITH ICON -->
+  <li class="MuiListItem-root MuiListItem-gutters MuiListItem-padding">
+    <div class="MuiListItemIcon-root">
+      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
+           focusable="false"
+           aria-hidden="true"
+           viewBox="0 0 24 24">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+      </svg>
+    </div>
+    <div class="MuiListItemText-root">
+      <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary">
+        Clickable List Item
+      </span>
+    </div>
+  </li>
+
+  <!-- DISABLED LIST ITEM -->
+  <li disabled class="MuiListItem-root MuiListItem-gutters MuiListItem-padding">
+    <div class="MuiListItemText-root">
+      <span class="MuiTypography-root MuiTypography-body1 MuiListItemText-primary">
+        Disabled List Item
+      </span>
+    </div>
+  </li>
+
+</ul>
 HTML;
 
 $text_fields = <<<'HTML'
+<!-- STANDARD TEXT FIELD -->
+<!-- STANDARD TEXT FIELD -->
+<div class="MuiFormControl-root MuiTextField-root" style="position:relative;">
+    <label
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary"
+        data-shrink="false"
+        for="static-text-field"
+        id="static-text-field-label"
+        style="position:absolute; top:0; left:0; z-index:1; pointer-events:none; transform:translate(14px,16px) scale(1); transform-origin:top left; transition:transform 200ms ease;">
+        Text Field
+    </label>
+
+    <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl" style="position:relative;">
+        <input
+            aria-invalid="false"
+            id="static-text-field"
+            class="MuiInputBase-input MuiOutlinedInput-input"
+            type="text"
+            aria-labelledby="static-text-field-label"
+            onfocus="
+                var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+                root.classList.add('Mui-focused');
+                label.classList.add('Mui-focused','MuiInputLabel-shrink');
+                label.setAttribute('data-shrink','true');
+                label.style.transform='translate(14px,-9px) scale(0.75)';
+                legend.style.maxWidth='100%';
+            "
+            onblur="
+                var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+                root.classList.remove('Mui-focused');
+                label.classList.remove('Mui-focused');
+                if (!this.value.trim()) {
+                    label.classList.remove('MuiInputLabel-shrink');
+                    label.setAttribute('data-shrink','false');
+                    label.style.transform='translate(14px,16px) scale(1)';
+                    legend.style.maxWidth='0.01px';
+                }
+            "
+        />
+
+        <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+            <legend style="float:unset; width:auto; overflow:hidden; display:block; height:11px; padding:0; font-size:0.75em; visibility:hidden; white-space:nowrap; max-width:0.01px; transition:max-width 200ms ease;">
+                <span style="padding:0 5px; display:inline-block; opacity:0;">Text Field</span>
+            </legend>
+        </fieldset>
+    </div>
+</div>
+
+
+<!-- DISABLED TEXT FIELD -->
 <div class="MuiFormControl-root MuiTextField-root">
-	<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined" data-shrink="false">
-		Text Field
-	</label>
+  <label
+    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled"
+    data-shrink="false"
+    for="static-disabled-field"
+    id="static-disabled-field-label">
+    Disabled Field
+  </label>
 
-	<input
-		aria-invalid="false"
-		class="MuiInputBase-input MuiOutlinedInput-input"
-		type="text"
-		value=""
-		style="border: 1px solid rgba(0, 0, 0, 0.23); outline: none;"
-		onfocus="
-			var label = this.previousElementSibling;
+  <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-formControl">
+    <input
+      aria-invalid="false"
+      disabled
+      id="static-disabled-field"
+      class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled"
+      type="text">
 
-			label.classList.add('MuiInputLabel-shrink', 'Mui-focused');
-			label.setAttribute('data-shrink', 'true');
-			label.style.backgroundColor = '#fff';
+    <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+      <legend>
+        <span>Disabled Field</span>
+      </legend>
+    </fieldset>
+  </div>
+</div>
 
-			this.style.borderColor = '#0073CF';
-			this.style.borderWidth = '2px';
-		"
-		onblur="
-			var label = this.previousElementSibling;
+<!-- ERROR TEXT FIELD -->
+<div class="MuiFormControl-root MuiTextField-root" style="position:relative;">
+    <label
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-error"
+        data-shrink="false"
+        for="static-error-field"
+        id="static-error-field-label"
+        style="position:absolute; top:0; left:0; z-index:1; pointer-events:none; transform:translate(14px,16px) scale(1); transform-origin:top left; transition:transform 200ms ease;">
+        Error Field
+    </label>
 
-			label.classList.remove('Mui-focused');
+    <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-error MuiInputBase-formControl" style="position:relative;">
+        <input
+            aria-invalid="true"
+            aria-describedby="static-error-field-helper-text"
+            aria-labelledby="static-error-field-label"
+            id="static-error-field"
+            class="MuiInputBase-input MuiOutlinedInput-input"
+            type="text"
+            onfocus="
+                var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+                root.classList.add('Mui-focused');
+                label.classList.add('Mui-focused','MuiInputLabel-shrink');
+                label.setAttribute('data-shrink','true');
+                label.style.transform='translate(14px,-9px) scale(0.75)';
+                legend.style.maxWidth='100%';
+            "
+            onblur="
+                var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+                root.classList.remove('Mui-focused');
+                label.classList.remove('Mui-focused');
+                if (!this.value.trim()) {
+                    label.classList.remove('MuiInputLabel-shrink');
+                    label.setAttribute('data-shrink','false');
+                    label.style.transform='translate(14px,16px) scale(1)';
+                    legend.style.maxWidth='0.01px';
+                }
+            "
+        />
 
-			this.style.borderColor = 'rgba(0, 0, 0, 0.23)';
-			this.style.borderWidth = '1px';
+        <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+            <legend style="float:unset; width:auto; overflow:hidden; display:block; height:11px; padding:0; font-size:0.75em; visibility:hidden; white-space:nowrap; max-width:0.01px; transition:max-width 200ms ease;">
+                <span style="padding:0 5px; display:inline-block; opacity:0;">Error Field</span>
+            </legend>
+        </fieldset>
+    </div>
 
-			if (this.value !== '') {
-				label.classList.add('MuiInputLabel-shrink', 'MuiFormLabel-filled');
-				label.setAttribute('data-shrink', 'true');
-			} else {
-				label.classList.remove('MuiInputLabel-shrink', 'MuiFormLabel-filled');
-				label.setAttribute('data-shrink', 'false');
-				label.style.backgroundColor = '';
-			}
-		"
-	/>
+    <p class="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained" id="static-error-field-helper-text">
+        There is an error.
+    </p>
+</div>
+
+<!-- MULTILINE TEXT FIELD -->
+<div class="MuiFormControl-root MuiTextField-root" style="position:relative;">
+    <label
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary"
+        data-shrink="false"
+        for="static-multiline-field"
+        id="static-multiline-field-label"
+        style="position:absolute; top:0; left:0; z-index:1; pointer-events:none; transform:translate(14px,16px) scale(1); transform-origin:top left; transition:transform 200ms ease;">
+        Multiline Field
+    </label>
+
+    <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-multiline" style="position:relative;">
+        <textarea
+            rows="3"
+            aria-invalid="false"
+            aria-labelledby="static-multiline-field-label"
+            id="static-multiline-field"
+            class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMultiline"
+            style="height:84px; resize:vertical;"
+            onfocus="
+                var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+                root.classList.add('Mui-focused');
+                label.classList.add('Mui-focused','MuiInputLabel-shrink');
+                label.setAttribute('data-shrink','true');
+                label.style.transform='translate(14px,-9px) scale(0.75)';
+                legend.style.maxWidth='100%';
+            "
+            onblur="
+                var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+                root.classList.remove('Mui-focused');
+                label.classList.remove('Mui-focused');
+                if (!this.value.trim()) {
+                    label.classList.remove('MuiInputLabel-shrink');
+                    label.setAttribute('data-shrink','false');
+                    label.style.transform='translate(14px,16px) scale(1)';
+                    legend.style.maxWidth='0.01px';
+                }
+            "
+        ></textarea>
+
+        <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+            <legend style="float:unset; width:auto; overflow:hidden; display:block; height:11px; padding:0; font-size:0.75em; visibility:hidden; white-space:nowrap; max-width:0.01px; transition:max-width 200ms ease;">
+                <span style="padding:0 5px; display:inline-block; opacity:0;">Multiline Field</span>
+            </legend>
+        </fieldset>
+    </div>
 </div>
 HTML;
 
 $select = <<<'HTML'
-<div class="MuiFormControl-root">
-	<label class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled" data-shrink="true" style="background:#fff;">
-		Sample Type
-	</label>
+<!-- SELECT FIELD -->
+<div class="MuiFormControl-root" style="width:100%; min-width:220px; position:relative;">
 
-	<select
-		class="MuiInputBase-input MuiOutlinedInput-input"
-		style="border:1px solid rgba(0, 0, 0, 0.23); outline:none; background:#fff;"
-		onfocus="this.style.borderColor='#0073CF'; this.style.borderWidth='2px';"
-		onblur="this.style.borderColor='rgba(0, 0, 0, 0.23)'; this.style.borderWidth='1px';"
-	>
-		<option value="">Select a sample type</option>
-		<option value="soil">Soil</option>
-		<option value="plant">Plant Tissue</option>
-		<option value="aquatic">Aquatic</option>
-	</select>
+    <label id="static-sample-type-label"
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary"
+        data-shrink="false"
+        style="position:absolute; top:0; left:0; z-index:1; pointer-events:none; transform:translate(14px,16px) scale(1); transform-origin:top left; transition:transform 200ms ease;">
+        Sample Type
+    </label>
 
-	<p class="MuiFormHelperText-root MuiFormHelperText-contained">
-		Select a sample type
-	</p>
+    <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiSelect-root"
+        style="position:relative; width:100%; min-width:220px; height:56px; box-sizing:border-box;">
+
+        <div class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
+            tabindex="0"
+            role="combobox"
+            aria-labelledby="static-sample-type-label"
+            aria-expanded="false"
+            aria-haspopup="listbox"
+            aria-controls="static-sample-type-menu"
+            style="display:flex; align-items:center; width:100%; min-height:56px; box-sizing:border-box; padding:0 32px 0 14px; cursor:pointer;"
+
+            onclick="
+                var root=this.parentElement,
+                    group=root.parentElement,
+                    label=group.querySelector('label'),
+                    menu=group.querySelector('[role=listbox]'),
+                    legend=root.querySelector('legend'),
+                    input=group.querySelector('input[id=static-sample-type]');
+
+                var open=this.getAttribute('aria-expanded')!=='true';
+                var shrink=open || !!input.value;
+
+                this.setAttribute('aria-expanded',String(open));
+
+                menu.style.opacity=open?'1':'0';
+                menu.style.visibility=open?'visible':'hidden';
+                menu.style.transform=open?'scaleY(1)':'scaleY(0.92)';
+                menu.style.pointerEvents=open?'auto':'none';
+
+                root.classList.toggle('Mui-focused',open);
+                label.classList.toggle('Mui-focused',open);
+                label.classList.toggle('MuiInputLabel-shrink',shrink);
+                label.setAttribute('data-shrink',String(shrink));
+                label.style.transform=shrink
+                    ?'translate(14px,-9px) scale(0.75)'
+                    :'translate(14px,16px) scale(1)';
+                legend.style.maxWidth=shrink?'100%':'0.01px';
+            "
+
+            onkeydown="
+                if(event.key==='Enter' || event.key===' '){
+                    event.preventDefault();
+                    this.click();
+                }
+                if(event.key==='Escape' && this.getAttribute('aria-expanded')==='true'){
+                    event.preventDefault();
+                    this.click();
+                }
+            "
+        ><span class="notranslate" aria-hidden="true">&#8203;</span></div>
+
+        <input
+            type="hidden"
+            name="sampleType"
+            id="static-sample-type"
+            class="MuiSelect-nativeInput"
+            value=""
+        />
+
+        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon"
+            focusable="false"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            style="pointer-events:none; transition:transform 180ms ease;">
+            <path d="M7 10l5 5 5-5z"></path>
+        </svg>
+
+        <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+            <legend style="float:unset; width:auto; overflow:hidden; display:block; height:11px; padding:0; font-size:0.75em; visibility:hidden; white-space:nowrap; max-width:0.01px; transition:max-width 200ms ease;">
+                <span style="padding:0 5px; display:inline-block; opacity:0;">Sample Type</span>
+            </legend>
+        </fieldset>
+    </div>
+
+    <!-- DROPDOWN MENU -->
+    <div id="static-sample-type-menu"
+        role="listbox"
+        aria-labelledby="static-sample-type-label"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiMenu-paper MuiPopover-paper"
+        style="
+            display:block;
+            position:absolute;
+            top:56px;
+            left:0;
+            width:100%;
+            z-index:1300;
+            background:#fff;
+            box-shadow:0 5px 15px rgba(0,0,0,0.2);
+            border-radius:4px;
+            max-height:300px;
+            overflow-y:auto;
+            opacity:0;
+            visibility:hidden;
+            transform:scaleY(0.92);
+            transform-origin:top center;
+            transition:opacity 180ms ease, transform 180ms ease, visibility 180ms;
+            pointer-events:none;
+        ">
+
+        <ul class="MuiList-root MuiList-padding MuiMenu-list"
+            style="list-style:none; margin:0; padding:8px 0;">
+
+            <li class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters"
+                role="option" aria-selected="false" tabindex="-1" data-value="TypeA"
+                style="cursor:pointer; padding:6px 16px; min-height:36px;"
+                onmouseenter="this.style.background='rgba(0,0,0,0.04)'"
+                onmouseleave="this.style.background=''"
+                onclick="
+                    var group=this.closest('.MuiFormControl-root'),
+                        root=group.querySelector('.MuiSelect-root'),
+                        select=root.querySelector('[role=combobox]'),
+                        input=group.querySelector('#static-sample-type'),
+                        label=group.querySelector('label'),
+                        menu=group.querySelector('[role=listbox]');
+                    input.value=this.dataset.value;
+                    select.textContent=this.textContent.trim();
+                    select.setAttribute('aria-expanded','false');
+                    menu.style.opacity='0';
+                    menu.style.visibility='hidden';
+                    menu.style.transform='scaleY(0.92)';
+                    menu.style.pointerEvents='none';
+                    root.classList.remove('Mui-focused');
+                    label.classList.remove('Mui-focused');
+                    label.classList.add('MuiInputLabel-shrink');
+                    label.setAttribute('data-shrink','true');
+                    label.style.transform='translate(14px,-9px) scale(0.75)';
+                    root.querySelector('legend').style.maxWidth='100%';
+                    menu.querySelectorAll('[role=option]').forEach(function(option){
+                        option.classList.remove('Mui-selected');
+                        option.setAttribute('aria-selected','false');
+                    });
+                    this.classList.add('Mui-selected');
+                    this.setAttribute('aria-selected','true');
+                    input.dispatchEvent(new Event('change',{bubbles:true}));
+                    select.focus();
+                "
+            >Type A</li>
+
+            <li class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters"
+                role="option" aria-selected="false" tabindex="-1" data-value="TypeB"
+                style="cursor:pointer; padding:6px 16px; min-height:36px;"
+                onmouseenter="this.style.background='rgba(0,0,0,0.04)'"
+                onmouseleave="this.style.background=''"
+                onclick="
+                    var group=this.closest('.MuiFormControl-root'),
+                        root=group.querySelector('.MuiSelect-root'),
+                        select=root.querySelector('[role=combobox]'),
+                        input=group.querySelector('#static-sample-type'),
+                        label=group.querySelector('label'),
+                        menu=group.querySelector('[role=listbox]');
+                    input.value=this.dataset.value;
+                    select.textContent=this.textContent.trim();
+                    select.setAttribute('aria-expanded','false');
+                    menu.style.opacity='0';
+                    menu.style.visibility='hidden';
+                    menu.style.transform='scaleY(0.92)';
+                    menu.style.pointerEvents='none';
+                    root.classList.remove('Mui-focused');
+                    label.classList.remove('Mui-focused');
+                    label.classList.add('MuiInputLabel-shrink');
+                    label.setAttribute('data-shrink','true');
+                    label.style.transform='translate(14px,-9px) scale(0.75)';
+                    root.querySelector('legend').style.maxWidth='100%';
+                    menu.querySelectorAll('[role=option]').forEach(function(option){
+                        option.classList.remove('Mui-selected');
+                        option.setAttribute('aria-selected','false');
+                    });
+                    this.classList.add('Mui-selected');
+                    this.setAttribute('aria-selected','true');
+                    input.dispatchEvent(new Event('change',{bubbles:true}));
+                    select.focus();
+                "
+            >Type B</li>
+
+            <li class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters"
+                role="option" aria-selected="false" tabindex="-1" data-value="TypeC"
+                style="cursor:pointer; padding:6px 16px; min-height:36px;"
+                onmouseenter="this.style.background='rgba(0,0,0,0.04)'"
+                onmouseleave="this.style.background=''"
+                onclick="
+                    var group=this.closest('.MuiFormControl-root'),
+                        root=group.querySelector('.MuiSelect-root'),
+                        select=root.querySelector('[role=combobox]'),
+                        input=group.querySelector('#static-sample-type'),
+                        label=group.querySelector('label'),
+                        menu=group.querySelector('[role=listbox]');
+                    input.value=this.dataset.value;
+                    select.textContent=this.textContent.trim();
+                    select.setAttribute('aria-expanded','false');
+                    menu.style.opacity='0';
+                    menu.style.visibility='hidden';
+                    menu.style.transform='scaleY(0.92)';
+                    menu.style.pointerEvents='none';
+                    root.classList.remove('Mui-focused');
+                    label.classList.remove('Mui-focused');
+                    label.classList.add('MuiInputLabel-shrink');
+                    label.setAttribute('data-shrink','true');
+                    label.style.transform='translate(14px,-9px) scale(0.75)';
+                    root.querySelector('legend').style.maxWidth='100%';
+                    menu.querySelectorAll('[role=option]').forEach(function(option){
+                        option.classList.remove('Mui-selected');
+                        option.setAttribute('aria-selected','false');
+                    });
+                    this.classList.add('Mui-selected');
+                    this.setAttribute('aria-selected','true');
+                    input.dispatchEvent(new Event('change',{bubbles:true}));
+                    select.focus();
+                "
+            >Type C</li>
+        </ul>
+    </div>
+
+    <p class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained">
+        Select a sample type
+    </p>
 </div>
 HTML;
 
 $chips = <<<'HTML'
-			<div class="MuiChip-root">
-				<span class="MuiChip-label">
-					Default Chip
-				</span>
-			</div>
-			<div class="MuiChip-root MuiChip-colorPrimary">
-				<span class="MuiChip-label">
-					Primary Chip
-				</span>
-			</div>
-			<div class="MuiChip-root MuiChip-colorPrimary MuiChip-outlined MuiChip-outlinedPrimary">
-				<span class="MuiChip-label">
-					Outlined Chip
-				</span>
-			</div>
+<!-- DEFAULT CHIP -->
+<div class="MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorDefault">
+  <span class="MuiChip-label">Default Chip</span>
+</div>
+
+
+<!-- PRIMARY CHIP -->
+<div class="MuiChip-root MuiChip-filled MuiChip-sizeMedium MuiChip-colorPrimary">
+  <span class="MuiChip-label">Primary Chip</span>
+</div>
+
+
+<!-- OUTLINED CHIP -->
+<div class="MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorPrimary">
+  <span class="MuiChip-label">Outlined Chip</span>
+</div>
 HTML;
 
 ?>
@@ -1240,5 +1203,8 @@ HTML;
 			renderComponentExample('Chips', 'Default, primary, and outlined chips.', $chips);
 			?>
 		</div>
+		<?php
+		include($SERVER_ROOT . '/includes/footer.php');
+		?>
 	</body>
 </html>

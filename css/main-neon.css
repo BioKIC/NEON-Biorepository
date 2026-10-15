@@ -56,6 +56,10 @@
 
 /******* 1. GENERAL ********/
 
+body {
+  margin: 0;
+}
+
 html:not([class^="Mui"]):not([class*=" Mui"]) {
   font-size: 1.2em;
   font-weight: 400;

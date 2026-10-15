@@ -263,30 +263,34 @@ $_SESSION['citationvar'] = $searchVar;
 						if ($SYMB_UID) {
 						?>
 							<span style="margin-right: 8px">
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" onclick="displayDatasetTools()" type="button">
-									<span class="MuiButton-label" style="font-size: 0.55rem;">
-										<i class="fa-solid fa-table-cells-large" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
-										Dataset Management
-										<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-											<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
-										</span>
+								<button
+									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+									type="button"
+									onclick="displayDatasetTools()"
+									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+								>
+									<i class="fa-solid fa-table-cells-large" style="font-size:0.75rem;margin-right:12px;"></i>
+									Dataset Management
+									<span class="MuiButton-endIcon MuiButton-iconSizeLarge" style="display:inline-flex;align-items:center;justify-content:center;margin-left:12px;">
+										<i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
 									</span>
-									<span class="MuiTouchRipple-root"></span>
 								</button>
 							</span>
 						<?php
 						}
 						?>
 						<span style="margin-right: 8px">
-							<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="button" onclick="toggleElement('#sort-div', 'block')">
-								<span class="MuiButton-label" style="font-size: 0.55rem;">
-									<i class="fa-solid fa-sort" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
-									Sort
-									<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-										<i class="fa-solid fa-chevron-down" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
-									</span>
+							<button
+								class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+								type="button"
+								onclick="toggleElement('#sort-div', 'block')"
+								style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+							>
+								<i class="fa-solid fa-sort" style="font-size:0.75rem;margin-right:12px;"></i>
+								Sort
+								<span class="MuiButton-endIcon MuiButton-iconSizeLarge" style="display:inline-flex;align-items:center;justify-content:center;margin-left:12px;">
+									<i class="fa-solid fa-chevron-down" style="font-size:0.65rem;"></i>
 								</span>
-								<span class="MuiTouchRipple-root"></span>
 							</button>
 						</span>
 						<span style="margin-right: 8px">
@@ -296,15 +300,16 @@ $_SESSION['citationvar'] = $searchVar;
 								<input name="sortfield2" type="hidden" value="<?= htmlspecialchars($sortField2, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortorder" type="hidden" value="<?= $sortOrder ?>" />
 								<input name="searchvar" type="hidden" value="<?php echo $searchVar ?>" />
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
-									<span class="MuiButton-label" style="font-size: 0.55rem;">
-										<i class="fa-solid fa-table" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
-										Table Display
-										<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-											<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
-										</span>
+								<button
+									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+									type="submit"
+									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+								>
+									<i class="fa-solid fa-table" style="font-size:0.75rem;margin-right:12px;"></i>
+									Table Display
+									<span class="MuiButton-endIcon MuiButton-iconSizeLarge" style="display:inline-flex;align-items:center;justify-content:center;margin-left:12px;">
+										<i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
 									</span>
-									<span class="MuiTouchRipple-root"></span>
 								</button>
 							</form>
 						</span>
@@ -312,15 +317,16 @@ $_SESSION['citationvar'] = $searchVar;
 							<!--neon edit-->
 							<form class="button-form" action="download/neonindex.php" method="post" onsubmit="targetPopup(this)">
 							<!--end neon edit-->
-								<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
-									<span class="MuiButton-label" style="font-size: 0.55rem;">
-										<i class="fa-solid fa-download" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
-										Download Records
-										<span class="MuiButton-endIcon MuiButton-iconSizeMedium">
-											<i class="fa-solid fa-chevron-right" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
-										</span>
+								<button
+									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+									type="submit"
+									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+								>
+									<i class="fa-solid fa-download" style="font-size:0.75rem;margin-right:12px;"></i>
+									Download Records
+									<span class="MuiButton-endIcon MuiButton-iconSizeLarge" style="display:inline-flex;align-items:center;justify-content:center;margin-left:12px;">
+										<i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
 									</span>
-									<span class="MuiTouchRipple-root"></span>
 								</button>
 								<input name="searchvar" type="hidden" value="<?= $searchVar ?>" />
 								<input name="dltype" type="hidden" value="specimen" />
@@ -382,11 +388,13 @@ $_SESSION['citationvar'] = $searchVar;
 									</div>
 									<div>
 										<input name="searchvar" type="hidden" value="<?= $searchVar ?>">
-										<button name="formsubmit" class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
-											<span class="MuiButton-label" style="font-size: 0.55rem;">
-												Sort
-											</span>
-											<span class="MuiTouchRipple-root"></span>
+										<button
+											name="formsubmit"
+											class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+											type="submit"
+											style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+										>
+											Sort
 										</button>
 									</div>
 								</div>
