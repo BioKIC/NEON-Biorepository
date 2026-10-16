@@ -448,7 +448,7 @@ class OccurrenceSesar extends Manager {
 	
 		$response = json_decode($resArr['retStr'], true);
 		if ($resArr['retCode'] == 400 && strpos($response['message'] ?? '', 'already exists') !== false) {
-			$this->logOrEcho('Resource already exists, looking up ID: '.$url, 2);
+			$this->logOrEcho('Resource already exists, looking up ID', 2);
 			$lookupUrl = $baseUrl.'?search='.urlencode($url);
 			$page = 0;
 	
