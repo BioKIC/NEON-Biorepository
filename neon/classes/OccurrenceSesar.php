@@ -162,7 +162,7 @@ class OccurrenceSesar extends Manager {
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 	
-		if ($logFH) $this->logOrEcho("Raw response: " . ($response ?: 'NULL'), 2);
+		//if ($logFH) $this->logOrEcho("Raw response: " . ($response ?: 'NULL'), 2);
 		
 		if ($httpCode !== 200) {
 			if ($logFH) $this->logOrEcho("Access token validation failed", 1);
@@ -312,7 +312,7 @@ class OccurrenceSesar extends Manager {
 
 			if(!$this->igsnExists($igsn)) $this->setSampleXmlNode($igsn, "new");
 			//$this->logOrEcho('#'.$increment.': IGSN created for <a href="../editor/occurrenceeditor.php?occid='.$this->fieldMap['occid']['value'].'" target="_blank">'.$this->fieldMap['catalogNumber']['value'].'</a>',1);
-			if($this->registerIdentifiersViaApi()){
+			if($this->registerIdentifiersViaApi($igsn)){
 				//this link won't work when called by igsnhandler.php, only igsnmapper.php
 				$this->logOrEcho('#'.$increment.': IGSN registered: <a href="../../../collections/editor/occurrenceeditor.php?occid='.$r['occid'].'" target="_blank">'.$igsn.'</a>',1);
 			}
@@ -432,39 +432,59 @@ class OccurrenceSesar extends Manager {
 	}
 	
 	private function createRelatedResource($url, $accessToken) {
-		$baseUrl = $this->productionMode
-			? 'https://api.geosamples.org/api/related-resources/'
-			: 'https://api-sandbox.geosamples.org/api/related-resources/';
-	
-		$data = [
-			'label' => $url,
-			'description' => 'Source Reference URL',
-			'related_resource_type' => 'Other',
-			'uri' => $url,
-			'uri_type' => 'regular URL'
-		];
-	
-		$headers = [
-			'Authorization: Bearer ' . $accessToken,
-			'Content-Type: application/json',
-			'Accept: application/json'
-		];
-	
+		$baseUrl = $this->productionMode ? 'https://api.geosamples.org/api/related-resources/' : 'https://api-sandbox.geosamples.org/api/related-resources/';
+		$data = ['label' => $url, 'description' => 'Source Reference URL', 'related_resource_type' => 'Other', 'uri' => $url, 'uri_type' => 'regular URL'];
+		$headers = ['Authorization: Bearer '.$accessToken, 'Content-Type: application/json', 'Accept: application/json'];
+
+		$this->logOrEcho('Creating related resource: '.$url, 1);	
 		$resArr = $this->getSesarApiData($baseUrl, 'post', json_encode($data), $headers);
 	
-		if ($resArr['retCode'] != 201) {
-			$this->errorMessage = 'Failed to create related resource (HTTP ' . $resArr['retCode'] . '): ' . $resArr['retStr'];
-			$this->logOrEcho($this->errorMessage, 1);
-			return false;
+		if ($resArr['retCode'] == 201) {
+			$response = json_decode($resArr['retStr'], true);
+			$resourceId = $response['data']['id'] ?? false;
+			$this->logOrEcho('Created related resource ID: '.($resourceId ?: 'MISSING'), 2);
+			return $resourceId;
 		}
 	
 		$response = json_decode($resArr['retStr'], true);
-		return $response['data']['id'] ?? false;
+		if ($resArr['retCode'] == 400 && strpos($response['message'] ?? '', 'already exists') !== false) {
+			$this->logOrEcho('Resource already exists, looking up ID: '.$url, 2);
+			$lookupUrl = $baseUrl.'?search='.urlencode($url);
+			$page = 0;
+	
+			do {
+				$lookup = $this->getSesarApiData($lookupUrl, 'get', null, $headers);
+	
+				if ($lookup['retCode'] != 200) {
+					break;
+				}
+	
+				$results = json_decode($lookup['retStr'], true);
+				$resources = $results['data'] ?? [];
+	
+				foreach ($resources as $resource) {
+					if (($resource['uri'] ?? '') === $url) {
+						$resourceId = $resource['id'] ?? false;
+						$this->logOrEcho('Found existing related resource ID: '.($resourceId ?: 'MISSING'), 2);
+						return $resourceId;
+					}
+				}
+	
+				$lookupUrl = $results['next'] ?? null;
+			} while ($lookupUrl);
+	
+			$this->logOrEcho('Existing related resource ID not found: '.$url, 2);
+			return false;
+		}
+	
+		$this->errorMessage = 'Failed to create related resource (HTTP '.$resArr['retCode'].'): '.$resArr['retStr'];
+		$this->logOrEcho($this->errorMessage, 2);
+		return false;
 	}
 	
-	private function buildSampleJson() {
+	private function buildSampleJson($igsn) {
 		$sampleData = [
-			'igsn' => '10.58052/'.$this->igsnSeed,
+			'igsn' => '10.58052/'.$igsn,
 			'sesar_code' => 'NEO',
 			'name' => $this->fieldMap['catalogNumber']['value'],
 			'object_type' => 'Individual sample',
@@ -533,7 +553,7 @@ class OccurrenceSesar extends Manager {
 		return $this->isAccessTokenValid($accessToken, $this->logFH);
 	}
 
-	private function registerIdentifiersViaApi($retryCount = 0) {
+	private function registerIdentifiersViaApi($igsn, $retryCount = 0) {
 		global $SYMB_UID;
 	
 		$baseUrl = $this->productionMode
@@ -549,7 +569,7 @@ class OccurrenceSesar extends Manager {
 			return false;
 		}
 	
-		$sampleData = $this->buildSampleJson();
+		$sampleData = $this->buildSampleJson($igsn);
 		
 		$sourceBaseUrl = $this->productionMode
 			? $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/')
@@ -594,8 +614,8 @@ class OccurrenceSesar extends Manager {
 		
 		$occid = $this->fieldMap['occid']['value'];
 		
-		if (!$this->updateOccurrenceID($this->igsnSeed, $occid)) {
-			$this->logOrEcho('Failed to save occurrenceID '.$this->igsnSeed.' for occid '.$occid, 1);
+		if (!$this->updateOccurrenceID($igsn, $occid)) {
+			$this->logOrEcho('Failed to save occurrenceID '.$igsn.' for occid '.$occid, 1);
 			return false;
 		}
 		
