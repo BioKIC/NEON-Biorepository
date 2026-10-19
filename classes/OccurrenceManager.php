@@ -4,11 +4,14 @@ include_once($SERVER_ROOT . '/classes/ChecklistVoucherAdmin.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceTaxaManager.php');
 include_once($SERVER_ROOT . '/classes/AssociationManager.php');
 include_once($SERVER_ROOT . '/classes/utilities/OccurrenceUtil.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+Language::load('classes/OccurrenceManager');
 
 class OccurrenceManager extends OccurrenceTaxaManager {
 
 	protected $searchTermArr = Array();
 	protected $sqlWhere;
+	protected $paleoSqlWith;
 	protected $displaySearchArr = Array();
 	protected $reset = 0;
 	protected $voucherManager;
@@ -17,19 +20,16 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 	protected $errorMessage;
 	private $LANG;
 	protected $associationManager=null;
+	private $applyFullProtections = true;
+	protected $fullTextMinTokenLength = 3; //default for MariaDB. TODO: make this configurable at runtime.
 
 	public function __construct($type='readonly'){
 		parent::__construct($type);
  		if(array_key_exists('reset',$_REQUEST) && $_REQUEST['reset'])  $this->reset();
 		$this->associationManager = new AssociationManager();
 		$this->readRequestVariables();
-		$langTag = '';
-		$LANG = array();
-		if(!empty($GLOBALS['LANG_TAG'])) $langTag = $GLOBALS['LANG_TAG'];
-		if($langTag != 'en' && file_exists($GLOBALS['SERVER_ROOT'] . '/content/lang/classes/OccurrenceManager.' . $langTag . '.php'))
-			include_once($GLOBALS['SERVER_ROOT'] . '/content/lang/classes/OccurrenceManager.' . $langTag . '.php');
-		else include_once($GLOBALS['SERVER_ROOT'] . '/content/lang/classes/OccurrenceManager.en.php');
-		$this->LANG = $LANG;
+
+		$this->LANG = $GLOBALS['LANG'];
  	}
 
 	public function __destruct(){
@@ -57,6 +57,11 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 	public function getSqlWhere(){
 		if(!$this->sqlWhere) $this->setSqlWhere();
 		return $this->sqlWhere;
+	}
+
+	public function getPaleoSqlWith(){
+		if(!$this->paleoSqlWith) $this->setPaleoSqlWith();
+		return $this->paleoSqlWith;
 	}
 
 	protected function setSqlWhere(){
@@ -109,13 +114,15 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		elseif(array_key_exists('clid',$this->searchTermArr) && preg_match('/^[0-9,]+$/', $this->searchTermArr['clid'])){
 			$clidStr = $this->getClidStrWithChildren($this->searchTermArr['clid']);
-			//neon edit
-			//if(isset($this->searchTermArr['cltype']) && $this->searchTermArr['cltype'] == 'all'){
-			//	$sqlWhere .= 'AND (cl.clid IN(' . $clidStr . ')) ';
-			//}
-			//else{
-			//	$sqlWhere .= 'AND (ctl.clid IN(' . $clidStr . ')) ';
-			//}
+			//NEON edit start
+			/*
+			if(isset($this->searchTermArr['cltype']) && $this->searchTermArr['cltype'] == 'all'){
+				$sqlWhere .= 'AND (cl.clid IN(' . $clidStr . ')) ';
+			}
+			else{
+				$sqlWhere .= 'AND (ctl.clid IN(' . $clidStr . ')) ';
+			}
+			*/
 			if(!$this->voucherManager){
 				$this->setChecklistVariables($this->searchTermArr['clid']);
 			}
@@ -124,16 +131,16 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$datasetIDs = array_map('intval', $props['datasetIDs'] ?? []);
 			$collids = array_map('intval', $props['collids'] ?? []);
 			$parentTids = array_map('intval', $props['tids'] ?? []);
-	
+
 			if (empty($datasetIDs)) {
 				$this->basicSql = 'SELECT NULL WHERE 1=0';
 				return;
 			}
-	
+
 			$datasetStr = implode(',', $datasetIDs);
 			$collidFilter = !empty($collids) ? 'o.collid IN (' . implode(',', $collids) . ')' : '1=0';
-			$tidFilter = '1=0';		
-			
+			$tidFilter = '1=0';
+
 			if (!empty($parentTids)) {
 				$tidStr = implode(',', $parentTids);
 				$tidFilter = "o.tidInterpreted IN (
@@ -143,24 +150,33 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			}
 			$sqlWhere .= ' AND ((dl.datasetid IN (' . $datasetStr . ') AND ' . $collidFilter . ') OR (dl.datasetid IN (' . $datasetStr . ') AND ' . $tidFilter . ')) ';
 			$this->displaySearchArr[] = 'Checklist: ' . $this->voucherManager->getClName();
-			//end neon edit
+			//NEON edit end
 		}
 		elseif(array_key_exists('db',$this->searchTermArr)){
-			//neon edit
+			//NEON edit start
+			/*
+			$pattern1 = '/[^\d,]/';
+			$pattern2 = '/^all(spec|obs)$/';
+			if (preg_match($pattern1, $this->searchTermArr['db'])==0 || preg_match($pattern2, $this->searchTermArr['db'])==1) {
+				$sqlWhere .= OccurrenceSearchSupport::getDbWhereFrag($this->cleanInStr($this->searchTermArr['db']));
+			}
+			*/
+
 			$pattern = '/^(all(,\d+)*|\d+(,\d+)*)$/';
-			
+
 			if (preg_match($pattern, $this->searchTermArr['db'])) {
 				$this->searchTermArr['db'] = $this->cleanInStr($this->searchTermArr['db']);
 				$sqlWhere .= OccurrenceSearchSupport::getDbWhereFrag($this->searchTermArr);
-				//end neon edit
 			}
+			//NEON edit end
 		}
 		if(array_key_exists('datasetid',$this->searchTermArr)){
 
 			$sqlWhere .= 'AND (ds.datasetid IN('.$this->searchTermArr['datasetid'].')) ';
-			//neon edit
+			//NEON edit start
+			//$this->displaySearchArr[] = $this->LANG['DATASETS'] . ': ' . $this->getDatasetTitle($this->searchTermArr['datasetid']);
 			$this->displaySearchArr[] = 'Domain/Site(s): ' . $this->getDatasetTitle($this->searchTermArr['datasetid']);
-			//end neon edit
+			//NEON edit end
 		}
 		$sqlWhere .= $this->getTaxonWhereFrag();
 		$hasValidRelationship = isset($this->associationArr['relationship']) && $this->associationArr['relationship']!=='none';
@@ -168,6 +184,12 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$sqlWhere = substr_replace($sqlWhere,'',-1);
 			$sqlWhere .= $this->associationManager->getAssociatedRecords($this->associationArr) . ')';
 		}
+		$hasValidRelationshipFromSearchTermArr = isset($this->searchTermArr['association-type']) && $this->searchTermArr['association-type']!=='none' && !$hasValidRelationship;
+		if($hasValidRelationshipFromSearchTermArr){
+			$sqlWhere = substr_replace($sqlWhere,'',-1);
+			$sqlWhere .= $this->associationManager->getAssociatedRecords($this->searchTermArr, 'association-type') . ')';
+		}
+
 
 		//Country term
 		//Note: $this->displaySearchArr is set within the readRequestVariables function
@@ -237,7 +259,15 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				else{
 					//$tempSqlArr[] = '(o.municipality LIKE "'.$value.'%")';
 					if(strpos($value, ' ')){
-						$tempSqlArr[] = '(MATCH(o.locality) AGAINST("+'.str_replace(' ', ' +', $value).'" IN BOOLEAN MODE) AND o.locality LIKE "%'.$value.'%")';
+						//BUGFIX: MySQL fullltext index does not include strings shorter than a configurable length (likely < 3)  Need to remove these sub strings from the AGAINST clause
+						$against_values  = preg_replace('/\b[\w]{1,' . ($this->fullTextMinTokenLength-1) . '}\b/u', ' ', $value);
+						$against_values  = trim(preg_replace('/\s+/', ' ', $against_values));
+						if($against_values){
+							$tempSqlArr[] = '(MATCH(o.locality) AGAINST("+' . str_replace(' ', ' +', $against_values) . '" IN BOOLEAN MODE) AND o.locality LIKE "%' . $value . '%")';
+						}
+						else{
+							$tempSqlArr[] = '(o.locality LIKE "%' . $value . '%")';
+						}
 					}
 					else{
 						$singleWords[] = $value;
@@ -245,6 +275,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 					$tempTermArr[] = $value;
 				}
 			}
+			//TODO: should we handle single words that are 2 characters or less
 			if($singleWords) $tempSqlArr[] = '(MATCH(o.locality) AGAINST("'.implode(' ', $singleWords).'"))';
 			$sqlWhere .= 'AND ('.implode(' OR ', $tempSqlArr).') ';
 			if($tempTermArr) $this->displaySearchArr[] = implode(' OR ', $tempTermArr);
@@ -307,14 +338,23 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			else{
 				$singleWordArr = array();
 				foreach($collectorArr as $value){
-					$value = $this->cleanInStr(str_replace(array('"', '+', '%'), '', $value));
+					$value = $this->cleanInStr(str_replace(array('"', '+'), '', $value));
 					if($value == 'NULL'){
 						$tempCollSqlArr[] = '(o.recordedby IS NULL)';
 						$tempCollTextArr[] = 'Collector IS NULL';
 					}
 					else{
 						if(strpos($value, ' ')){
-							$tempCollSqlArr[] = '(MATCH(o.recordedby) AGAINST("+'.str_replace(' ', ' +', $value).'" IN BOOLEAN MODE) AND o.recordedby LIKE "%'.$value.'%")';
+							$againstValueArr = explode(' ', $value);
+							foreach($againstValueArr as $k => $v){
+								if(!$v || strpos($v, '.') || strlen($v) < $this->fullTextMinTokenLength) unset($againstValueArr[$k]);
+							}
+							if($againstValueArr){
+								$tempCollSqlArr[] = '(MATCH(o.recordedby) AGAINST("+' . implode(' +', $againstValueArr) . '" IN BOOLEAN MODE) AND o.recordedby LIKE "%' . $value . '%")';
+							}
+							else{
+								$tempSqlArr[] = '(o.recordedby LIKE "%' . $value . '%")';
+							}
 						}
 						else{
 							if(strlen($value) < 3) $singleWordArr['sm'][] = $value;
@@ -410,6 +450,37 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				$this->displaySearchArr[] = $this->searchTermArr['eventdate1'].(isset($this->searchTermArr['eventdate2'])?' - '.$this->searchTermArr['eventdate2']:'');
 			}
 		}
+		if(array_key_exists('recordenteredby', $this->searchTermArr)) {
+			$enterBy = $this->cleanInStr($this->searchTermArr['recordenteredby']);
+			if($enterBy) {
+				$sqlWhere .= ' AND (o.recordEnteredBy LIKE "%' . $enterBy . '%") ';
+			}
+		}
+		if(array_key_exists('dateentered', $this->searchTermArr)) {
+			$dateEntered = $this->cleanInStr($this->searchTermArr['dateentered']);
+			if($dateEntered) {
+				$sqlWhere .= ' AND (DATE(o.dateentered) ="' . $dateEntered . '") ';
+			}
+		}
+		if(array_key_exists('datelastmodified', $this->searchTermArr)) {
+			$dateLastModified = $this->cleanInStr($this->searchTermArr['datelastmodified']);
+			if($dateLastModified) {
+				$sqlWhere .= ' AND (DATE(o.datelastmodified) ="' . $dateLastModified . '") ';
+			}
+		}
+		if(array_key_exists('processingstatus', $this->searchTermArr)) {
+			$processingstatus = $this->cleanInStr($this->searchTermArr['processingstatus']);
+			if($processingstatus) {
+				$sqlWhere .= ' AND (o.processingStatus = "' . $processingstatus . '") ';
+			}
+		}
+		if(array_key_exists('exsiccatiid', $this->searchTermArr)) {
+			$exsiccatiId = $this->cleanInStr($this->searchTermArr['exsiccatiid']);
+			if($exsiccatiId) {
+				$sqlWhere .= ' AND (o.occid IN( SELECT occid FROM omexsiccatiocclink exlink JOIN omexsiccatinumbers exnums ON exnums.omenid = exlink.omenid JOIN omexsiccatititles extitles ON extitles.ometid = exnums.ometid WHERE extitles.ometid = ' . $exsiccatiId . ')) ';
+			}
+		}
+
 		if(array_key_exists('catnum',$this->searchTermArr)){
 			$catStr = $this->cleanInStr($this->searchTermArr['catnum']);
 			$includeOtherCatNum = array_key_exists('includeothercatnum',$this->searchTermArr)?true:false;
@@ -423,15 +494,15 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			foreach($catArr as $v){
 				// Begin NEON customization
 				$vStr = trim($v);
-				
+
 				if($vStr !== ''){
 					// Wildcard search support
 					if(strpos($vStr, '*') !== false){
 						$likeStr = str_replace('*', '%', $vStr);
-					
+
 						$wildcardFrag[] = 'o.catalogNumber LIKE "' . $likeStr . '"';
 						$wildcardFrag[] = 'o.occid IN(
-							SELECT DISTINCT occid 
+							SELECT DISTINCT occid
 							FROM omoccuridentifiers
 							WHERE identifiervalue LIKE "' . $likeStr . '"
 							AND identifierName NOT IN ("NEON sampleUUID", "NEON sampleID Hash")
@@ -439,37 +510,24 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 					}
 					else{
 						$inFrag[] = $vStr;
-				
+
 						if(is_numeric($vStr) && substr($vStr,0,1) == '0'){
 							$inFrag[] = ltrim($vStr, '0');
 						}
 					}
 				}
-			}
-			// remove range searching
-				/*
+				/* comment out orginal code
 				if($p = strpos($v,' - ')){
 					$term1 = trim(substr($v,0,$p));
 					$term2 = trim(substr($v,$p+3));
 					if(is_numeric($term1) && is_numeric($term2)){
 						$betweenFrag[] = '(o.catalogNumber BETWEEN '.$term1.' AND '.$term2.')';
 						if($includeOtherCatNum){
-
-							$betweenFrag[] .= '(o.occid BETWEEN '.$term1.' AND '.$term2.')';	// NEON addition
-							/* NEON customization - commented out
 							$betweenFrag[] = '(o.othercatalognumbers BETWEEN '.$term1.' AND '.$term2.')';
 							//$betweenFrag[] = '(oi.identifiervalue BETWEEN '.$term1.' AND '.$term2.')';
 							$identFrag[] = '(identifiervalue BETWEEN '.$term1.' AND '.$term2.')';
-
 						}
-
-						/* NEON customization - addition, but commented out
-						if($includeMaterialSample){
-							$matSampleFrag[] = '(catalogNumber BETWEEN '.$term1.' AND '.$term2.')';
-						}
-
 					}
-
 					else{
 						$catTerm = 'o.catalogNumber BETWEEN "'.$term1.'" AND "'.$term2.'"';
 						if(strlen($term1) == strlen($term2)) $catTerm .= ' AND length(o.catalogNumber) = '.strlen($term2);
@@ -480,7 +538,6 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 							$identFrag[] = '(identifiervalue BETWEEN "'.$term1.'" AND "'.$term2.'")';
 						}
 					}
-
 				}
 				else{
 					$vStr = trim($v);
@@ -489,8 +546,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 						$inFrag[] = ltrim($vStr,0);
 					}
 				}
+				*/
 			}
-			 End of NEON customizaton */
+			//NEON edit end
 
 			$catWhere = '';
 			if($betweenFrag){
@@ -499,7 +557,6 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			if($inFrag){
 				$catWhere .= 'OR (o.catalogNumber IN("'.implode('","',$inFrag).'")) ';
 				if($includeOtherCatNum){
-					$catWhere .='OR (o.occid IN("'.implode('","',$inFrag).'")) ';
 					$catWhere .= 'OR (o.othercatalognumbers IN("'.implode('","',$inFrag).'")) ';
 					$catWhere .= 'OR (o.occurrenceID IN("'.implode('","',$inFrag).'")) ';
 					$catWhere .= 'OR (o.recordID IN("'.implode('","',$inFrag).'")) ';
@@ -524,7 +581,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			if($wildcardFrag){
 				$catWhere .= 'AND ('.implode(' OR ', $wildcardFrag).') ';
 			}
-			
+
 			if($matSampleFrag){
 				$occidList = $this->getMaterialSampleIdentifiers($matSampleFrag);
 				if($occidList) $catWhere .= 'OR (o.occid IN('.implode(',',$occidList).')) ';
@@ -537,7 +594,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		//neon edit - make materialsampletype an array
 		if(!empty($this->searchTermArr['materialsampletype'])){
 			$sampleTypes = $this->cleanInStr($this->searchTermArr['materialsampletype']);
-		
+
 			if(!empty($sampleTypes)){
 				$sqlWhere .= 'AND (o.occid IN(
 					SELECT occid
@@ -546,15 +603,19 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				)) ';
 			}
 		}
-		//neon neon edit
+		//neon edit end
 		if(array_key_exists('typestatus', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.typestatus IS NOT NULL) ';
 			$this->displaySearchArr[] = $this->LANG['IS_TYPE'];
 		}
-		// START NEON customization
 		if(array_key_exists('hasimages', $this->searchTermArr)){
-			$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM media where mediaType = "image")) ';
-			$this->displaySearchArr[] = "Has images";
+			if($this->searchTermArr['hasimages']) {
+				$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM media where mediaType = "image")) ';
+
+			} else {
+				$sqlWhere .= 'AND (o.occid NOT IN(SELECT occid FROM media where mediaType = "image" and occid IS NOT NULL)) ';
+			}
+			$this->displaySearchArr[] = $this->LANG['HAS_IMAGES'];
 		}
 		if(array_key_exists('hasaudio', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM media where mediaType = "audio")) ';
@@ -562,8 +623,12 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		if(array_key_exists('hasgenetic', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM omoccurgenetic)) ';
-			$this->displaySearchArr[] = "Has published genetic data";
+			// START NEON customization
+			//$this->displaySearchArr[] = "Has published genetic data";
+			$this->displaySearchArr[] = $this->LANG['HAS_GENETIC_DATA'];
+			// END NEON customization
 		}
+		// START NEON customization
 		if(array_key_exists('availableforloan', $this->searchTermArr)){
 			$sqlWhere .= 'AND (o.availability = 1) ';
 			$this->displaySearchArr[] = "Available for loan";
@@ -573,6 +638,29 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$sqlWhere .= 'AND (o.decimalLatitude IS NOT NULL) ';
 			$this->displaySearchArr[] = $this->LANG['HAS_COORDINATES'];
 		}
+		// Geological Context
+		if(array_key_exists('formation', $this->searchTermArr)){
+			$sqlWhere .= 'AND paleo.formation LIKE "' . $this->cleanInStr($this->searchTermArr["formation"]) . '%" ';
+			$this->displaySearchArr[] = $this->searchTermArr["formation"];
+		}
+		if(array_key_exists('member', $this->searchTermArr)){
+			$sqlWhere .= 'AND paleo.member LIKE "' . $this->cleanInStr($this->searchTermArr["member"]) . '%" ';
+			$this->displaySearchArr[] = $this->searchTermArr["member"];
+		}
+		if(array_key_exists('bed', $this->searchTermArr)){
+			$sqlWhere .= 'AND paleo.bed LIKE "' . $this->cleanInStr($this->searchTermArr["bed"]) . '%" ';
+			$this->displaySearchArr[] = $this->searchTermArr["bed"];
+		}
+		if(array_key_exists('lithogroup', $this->searchTermArr)){
+			$sqlWhere .= 'AND paleo.lithogroup LIKE "' . $this->cleanInStr($this->searchTermArr["lithogroup"]) . '%" ';
+			$this->displaySearchArr[] = $this->searchTermArr["lithogroup"];
+		}
+		if(array_key_exists('earlyInterval', $this->searchTermArr) || array_key_exists('lateInterval', $this->searchTermArr)) {
+			$sqlWhere .= 'AND ((early.myaStart > search.searchEnd AND early.myaStart <= search.searchStart AND late.myaEnd >= search.searchEnd AND late.myaEnd < search.searchStart) ';
+			$sqlWhere .= 'OR (early.myaStart > search.searchStart AND late.myaEnd >= search.searchEnd AND late.myaEnd < search.searchStart) ';
+			$sqlWhere .= 'OR (early.myaStart <= search.searchStart AND early.myaStart > search.searchEnd AND late.myaEnd < search.searchEnd) OR (early.myaStart > search.searchStart AND late.myaEnd < search.searchEnd)) ';
+		}
+
 		if($sqlWhere){
 			if(!array_key_exists('includecult', $this->searchTermArr)){
 				$sqlWhere .= 'AND (o.cultivationStatus IS NULL OR o.cultivationStatus = 0) ';
@@ -605,6 +693,56 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$sqlWhere .= 'AND (o.occid IN(SELECT occid FROM tmattributes WHERE stateid IN(' . $this->searchTermArr['attr'] . '))) ';
 		}
 
+		if(array_key_exists('characters',$this->searchTermArr)){
+			$characters = $_REQUEST['characters'];
+			$joins = [];
+			$andClauses = [];
+			$i = 1;
+
+			$charPairs = [];
+
+			foreach ($characters as $pair) {
+				if (strpos($pair, ':') === false) continue;
+
+				list($cid, $cs) = explode(':', $pair, 2);
+				$cid = intval($cid);
+				$cs = $this->conn->real_escape_string($cs);
+
+				$charPairs[$cid][] = $cs;
+			}
+
+			foreach ($charPairs as $cid => $csArray) {
+				if (empty($csArray)) continue;
+
+				$alias = "d{$i}";
+				$joins[] = "INNER JOIN kmdescr $alias ON t.tid = $alias.tid";
+
+				$csList = "'" . implode("','", $csArray) . "'";
+				$andClauses[] = "$alias.cid = $cid AND $alias.cs IN ($csList)";
+				$i++;
+			}
+
+			if (!empty($joins)) {
+				$subquery = "
+					SELECT DISTINCT t.tid
+					FROM taxa t
+					" . implode(" ", $joins) . "
+					WHERE t.rankid > 219
+					AND " . implode(" AND ", $andClauses) . "
+				";
+
+				$subquery = preg_replace('/\s+/', ' ', $subquery);
+				$sqlWhere .= 'AND o.tidinterpreted IN (' . $subquery . ') ';
+			}
+		}
+
+		if(!empty($this->searchTermArr['polygons'])){
+			$sqlWhere .= 'AND gth.isSearchable = 1 ';
+			$sqlWhere .= 'AND MBRContains(gpoly.footprintPolygon, p.lngLatPoint) ';
+			$sqlWhere .= 'AND ST_Contains(gpoly.footprintPolygon, p.lngLatPoint) ';
+		}
+
+		//NEON edit start
 		$customKeys = array_filter(array_keys($this->searchTermArr), function($key) {
 			return strpos($key, 'custom') !== false;
 		});
@@ -612,9 +750,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		if (!empty($filteredArray)) {
 			$this->setAdvancedsqlWhere($filteredArray, $sqlWhere);
 		}
+		//NEON edit end
 
 		if($sqlWhere){
-			$sqlWhere .= OccurrenceUtil::appendFullProtectionSQL();
+			if($this->applyFullProtections) $sqlWhere .= OccurrenceUtil::appendFullProtectionSQL();
 			$this->sqlWhere = 'WHERE '.substr($sqlWhere,4);
 		}
 		else{
@@ -683,6 +822,32 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		$sqlWhere .= 'AND (' . trim($conditionGroup) . ') ';
 		$this->displaySearchArr[] = 'advanced search: '.trim($conditionGroup);
 	}
+
+	protected function setPaleoSqlWith() {
+		$paleoSqlWith = '';
+		if (array_key_exists("earlyInterval",$this->searchTermArr) || array_key_exists("lateInterval",$this->searchTermArr)) {
+			$paleoSqlWith .= "WITH searchRange AS (SELECT COALESCE((SELECT myaStart FROM omoccurpaleogts WHERE gtsterm = '"  . ($this->searchTermArr["earlyInterval"] ?? '') . "'), 5000) AS searchStart, ";
+			$paleoSqlWith .= "COALESCE((SELECT myaEnd FROM omoccurpaleogts WHERE gtsterm = '" . ($this->searchTermArr["lateInterval"] ?? '') ."'), 0) AS searchEnd) ";
+			$this->paleoSqlWith = $paleoSqlWith;
+		}
+	}
+
+	public function getSearchablePolygons(){
+        $sql = "SELECT geoThesID, geoterm
+                FROM geographicthesaurus
+                WHERE geoLevel = 110
+                  AND isSearchable = 1
+                ORDER BY geoterm";
+        $rs = $this->conn->query($sql);
+
+        $results = [];
+        if($rs){
+            while($row = $rs->fetch_assoc()){
+                $results[] = $row;
+            }
+        }
+        return $results;
+    }
 
 	private function getAdditionIdentifiers($identFrag){
 		$retArr = array();
@@ -765,22 +930,67 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			if(strpos($sqlWhere,'ds.datasetid')){
 				$sqlJoin .= 'INNER JOIN omoccurdatasetlink ds ON o.occid = ds.occid ';
 			}
-			if(array_key_exists('footprintGeoJson',$this->searchTermArr) || strpos($sqlWhere,'p.lngLatPoint')){
+			if(array_key_exists('footprintGeoJson',$this->searchTermArr) || strpos($sqlWhere,'p.lngLatPoint') || array_key_exists('polygons',$this->searchTermArr)){
 				$sqlJoin .= 'INNER JOIN omoccurpoints p ON o.occid = p.occid ';
 			}
+			if(array_key_exists('polygons',$this->searchTermArr)){
+				$polygonIDs = $this->searchTermArr['polygons'];
+				if (is_string($polygonIDs))
+					$polygonIDs = explode(',', $polygonIDs);
+				$polygonIDs = array_map('intval', $polygonIDs);
+				$sqlJoin .= 'INNER JOIN geographicpolygon gpoly ON gpoly.geothesid IN (' . implode(',', $polygonIDs) . ') ';
+				$sqlJoin .= 'INNER JOIN geographicthesaurus gth ON gpoly.geothesid = gth.geothesid ';
+			}
+			if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
+				$sqlJoin .= 'LEFT JOIN omoccurpaleo paleo ON o.occid = paleo.occid ';
+				if (!empty($this->searchTermArr['earlyInterval']) || !empty($this->searchTermArr['lateInterval'])) {
+					$sqlJoin .= 'JOIN omoccurpaleogts early ON paleo.earlyInterval = early.gtsterm ';
+					$sqlJoin .= 'JOIN omoccurpaleogts late ON paleo.lateInterval = late.gtsterm ';
+					$sqlJoin .= 'CROSS JOIN searchRange search ';
+				}
+			}
+			/*
+			if(array_key_exists('includeothercatnum',$this->searchTermArr)){
+				$sqlJoin .= 'LEFT JOIN omoccuridentifiers oi ON o.occid = oi.occid ';
+			}
+			*/
 		}
 		return $sqlJoin;
+	}
+
+	public function getPaleoGtsTerms(){
+		$retArr = array();
+		if(!empty($GLOBALS['ACTIVATE_PALEO'])){
+			$sql = 'SELECT gtsterm, rankid FROM omoccurpaleogts ';
+			$rs = $this->conn->query($sql);
+			while($r = $rs->fetch_object()){
+				$retArr[$r->gtsterm] = $r->rankid;
+			}
+			$rs->free();
+			ksort($retArr);
+		}
+		return $retArr;
+	}
+
+	public function getPaleoTimes(){
+		$paleoTimes = [];
+		if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
+			$sql = "SELECT gtsterm, myaStart, myaEnd FROM omoccurpaleogts";
+			$rs = $this->conn->query($sql);
+			while ($r = $rs->fetch_object()) {
+				$paleoTimes[$r->gtsterm] = [
+					'myaStart' => floatval($r->myaStart),
+					'myaEnd' => floatval($r->myaEnd)
+				];
+			}
+		}
+		return $paleoTimes;
 	}
 
 	public function getFullCollectionList($catId = ''){
 		if(!$this->searchSupportManager) $this->searchSupportManager = new OccurrenceSearchSupport($this->conn);
 		if(isset($this->searchTermArr['db'])) $this->searchSupportManager->setCollidStr($this->searchTermArr['db']);
 		return $this->searchSupportManager->getFullCollectionList($catId);
-	}
-
-	public function outputFullCollArr($collGrpArr, $targetCatID = 0, $displayIcons = true, $displaySearchButtons = true, $collTypeLabel = '', $uniqGrouping=''){
-		if(!$this->searchSupportManager) $this->searchSupportManager = new OccurrenceSearchSupport($this->conn);
-		$this->searchSupportManager->outputFullCollArr($collGrpArr, $targetCatID, $displayIcons, $displaySearchButtons, $collTypeLabel, $uniqGrouping);
 	}
 
 	public function getOccurVoucherProjects(){
@@ -804,66 +1014,58 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 	}
 
 	public function getCollectionSearchStr(){
-		$retStr ="";
-		///neon edit
+		$retStr = 'ALL_COLLECTIONS';	//Defaults to all collections if db variable is not set or db variable contains "all" or other non-numeric variables
+		///NEON edit start
 		if(!array_key_exists('db',$this->searchTermArr)){
 			$retStr = "All Sample Types";
 		}
 		elseif(strpos($this->searchTermArr['db'], 'all') !== false){
-		
+
 			$retStr = "All Sample Types";
 			$dbParts = explode(',', $this->cleanInStr($this->searchTermArr['db']));
 			$extraIds = [];
-		
+
 			foreach($dbParts as $part){
 				if(is_numeric($part)){
 					$extraIds[] = (int)$part;
 				}
 			}
-		
+
 			if($extraIds){
 				$sql = 'SELECT collid, collectionName as instcode '.
 					'FROM omcollections WHERE collid IN('.implode(',', $extraIds).') '.
 					'ORDER BY institutioncode,collectioncode';
-		
+
 				$rs = $this->conn->query($sql);
-		
+
 				while($r = $rs->fetch_object()){
 					$retStr .= '; '.$r->instcode;
 				}
-		
+
 				$rs->free();
 			}
 		}
-		//end neon edit
+		//NEON edit end
 		elseif($this->searchTermArr['db'] == 'allspec'){
-			$retStr = "All Specimen Collections";
+			$retStr = 'ALL_SPECIMEN_COLLECTIONS';
 		}
 		elseif($this->searchTermArr['db'] == 'allobs'){
-			$retStr = "All Observation Projects";
+			$retStr = 'ALL_OBSERVATION_COLLECTIONS';
 		}
-		else{
-			$cArr = explode(';',$this->cleanInStr($this->searchTermArr['db']));
+		elseif(preg_match('/^[0-9;,]+$/', $this->searchTermArr['db'])){
+			$cArr = explode(';', $this->cleanInStr($this->searchTermArr['db']));
 			if($cArr[0]){
-				$sql = 'SELECT collid, collectionName as instcode '.
-					'FROM omcollections WHERE collid IN('.$cArr[0].') ORDER BY institutioncode,collectioncode';
+				$retStr = '';
+				$sql = 'SELECT collid, institutionCode, collectionCode FROM omcollections WHERE collid IN(' . $cArr[0] . ') ORDER BY institutioncode,collectioncode';
 				$rs = $this->conn->query($sql);
 				while($r = $rs->fetch_object()){
-					$retStr .= '; '.$r->instcode;
+					$code = $r->institutionCode;
+					if($r->collectionCode) $code .= '-' . $r->collectionCode;
+					$retStr .= '; ' . $code;
 				}
 				$rs->free();
 			}
-			/*
-			if(isset($cArr[1]) && $cArr[1]){
-				$sql = 'SELECT ccpk, category FROM omcollcategories WHERE ccpk IN('.$cArr[1].') ORDER BY category';
-				$rs = $this->conn->query($sql);
-				while($r = $rs->fetch_object()){
-					$retStr .= '; '.$r->category;
-				}
-				$rs->free();
-			}
-			*/
-			$retStr = substr($retStr,2);
+			$retStr = trim($retStr, '; ');
 		}
 		return $retStr;
 	}
@@ -877,9 +1079,17 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		$this->searchTermArr[$this->cleanInputStr($termKey)] = $this->cleanInputStr($termValue);
 	}
 
-	public function getSearchTerm($k){
+	public function getSearchTerm($k, $currentPage = null){
 		if($k && isset($this->searchTermArr[$k])){
-			return $this->cleanOutStr(trim($this->searchTermArr[$k],' ;'));
+			if(is_array($this->searchTermArr[$k])) {
+				return $this->cleanOutArray($this->searchTermArr[$k]);
+			} else {
+				return $this->cleanOutStr(trim($this->searchTermArr[$k],' ;'));
+			}
+		}
+		if($k === 'db'){
+			$sessionKey = 'query' . $currentPage . '/db';
+			return $_SESSION[$sessionKey] ?? 'all';
 		}
 		return '';
 	}
@@ -981,20 +1191,21 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 
 	private function getDatasetTitle($dsIdStr){
 		$retStr = '';
-		$sql = 'SELECT name FROM omoccurdatasets WHERE datasetid IN('.$dsIdStr.')';
+		$sql = 'SELECT IFNULL(datasetName, name) as datasetName FROM omoccurdatasets WHERE datasetid IN('.$dsIdStr.')';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
-			$retStr .= ', '.$r->name;
+			$retStr .= ', '.$r->datasetName;
 		}
 		$rs->free();
 		return trim($retStr,', ');
 	}
-	
+
 	protected function readRequestVariables(){
 		if(array_key_exists('searchvar',$_REQUEST)){
 			$parsedArr = array();
 			$taxaArr = array();
 			$searchVar = str_replace('&amp;', '&', $_REQUEST['searchvar']);
+
 			parse_str($searchVar, $parsedArr);
 
 			if(isset($parsedArr['taxa'])){
@@ -1012,10 +1223,11 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			}
 			foreach($parsedArr as $k => $v){
 				$k = $this->cleanInputStr($k);
-				$v = $this->cleanInputStr($v);
+				$v = is_array($v)? array_map(fn($av) => $this->cleanInputStr($av), $v): $this->cleanInputStr($v);
 				if($k) $this->searchTermArr[$k] = $v;
 			}
 		}
+
 		//Search will be confinded to a clid vouchers, collid, catid, or will remain open to all collection
 		if(array_key_exists('targetclid',$_REQUEST) && is_numeric($_REQUEST['targetclid'])){
 			$this->searchTermArr['targetclid'] = $_REQUEST['targetclid'];
@@ -1033,12 +1245,17 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$this->setChecklistVariables($clidStr);
 			$this->searchTermArr['clid'] = $clidStr;
 		}
+		elseif(array_key_exists('clid', $this->searchTermArr)){
+			$this->setChecklistVariables($this->searchTermArr['clid']);
+		}
 		elseif(array_key_exists('db',$_REQUEST) && $_REQUEST['db']){
 			$dbStr = $this->cleanInputStr(OccurrenceSearchSupport::getDbRequestVariable());
+
 			//neon edit
 			if (preg_match('/^(all(,\d+)*)|([0-9,;]+)$/', $dbStr)) {
 				$this->searchTermArr['db'] = $dbStr;
 			}
+			//if(preg_match('/^[a-zA-Z0-9,;]+$/', $dbStr)) $this->searchTermArr['db'] = $dbStr;
 			//end neon edit
 		}
 		if(array_key_exists('datasetid',$_REQUEST) && $_REQUEST['datasetid']){
@@ -1051,7 +1268,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		if(array_key_exists('taxa',$_REQUEST) && $_REQUEST['taxa']){
 			$this->setTaxonRequestVariable();
 		}
-		
+
 		$this->setAssociationRequestVariable($this->searchTermArr ?? null);
 		$country = '';
 		if (!empty($_REQUEST['country']))
@@ -1154,7 +1371,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		}
 		if(array_key_exists('collector',$_REQUEST)){
 			$collector = $this->cleanInputStr($_REQUEST['collector']);
-			$collector = str_replace('%', '', $collector);
+			//$collector = str_replace('%', '', $collector);
 			if($collector){
 				$str = str_replace(',',';',$collector);
 				$this->searchTermArr['collector'] = $str;
@@ -1252,27 +1469,27 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		$llPattern = '-?\d+\.{0,1}\d*';
 		if(array_key_exists('upperlat',$_REQUEST)){
 			$upperLat = ''; $bottomlat = ''; $leftLong = ''; $rightlong = '';
-			if(preg_match('/('.$llPattern.')/', trim($_REQUEST['upperlat']), $m1)){
+			if(array_key_exists('upperlat',$_REQUEST) && preg_match('/('.$llPattern.')/', trim($_REQUEST['upperlat']), $m1)){
 				$upperLat = round($m1[1],5);
 				$uLatDir = (isset($_REQUEST['upperlat_NS'])?strtoupper($_REQUEST['upperlat_NS']):'');
 				if(($uLatDir == 'N' && $upperLat < 0) || ($uLatDir == 'S' && $upperLat > 0)) $upperLat *= -1;
 			}
 
-			if(preg_match('/('.$llPattern.')/', trim($_REQUEST['bottomlat']), $m2)){
+			if(array_key_exists('bottomlat',$_REQUEST) && preg_match('/('.$llPattern.')/', trim($_REQUEST['bottomlat']), $m2)){
 				$bottomlat = round($m2[1],5);
-				$bLatDir = (isset($_REQUEST['bottomlat_NS'])?strtoupper($_REQUEST['bottomlat_NS']):'');
+				$bLatDir = (array_key_exists('bottomlat_NS', $_REQUEST) && isset($_REQUEST['bottomlat_NS']) ? strtoupper($_REQUEST['bottomlat_NS']) : '');
 				if(($bLatDir == 'N' && $bottomlat < 0) || ($bLatDir == 'S' && $bottomlat > 0)) $bottomlat *= -1;
 			}
 
-			if(preg_match('/('.$llPattern.')/', trim($_REQUEST['leftlong']), $m3)){
+			if(array_key_exists('leftlong',$_REQUEST) && preg_match('/('.$llPattern.')/', trim($_REQUEST['leftlong']), $m3)){
 				$leftLong = round($m3[1],5);
-				$lLngDir = (isset($_REQUEST['leftlong_EW'])?strtoupper($_REQUEST['leftlong_EW']):'');
+				$lLngDir = (array_key_exists('leftlong_EW', $_REQUEST) && isset($_REQUEST['leftlong_EW']) ? strtoupper($_REQUEST['leftlong_EW']) : '');
 				if(($lLngDir == 'E' && $leftLong < 0) || ($lLngDir == 'W' && $leftLong > 0)) $leftLong *= -1;
 			}
 
-			if(preg_match('/('.$llPattern.')/', trim($_REQUEST['rightlong']), $m4)){
+			if(array_key_exists('rightlong',$_REQUEST) && preg_match('/('.$llPattern.')/', trim($_REQUEST['rightlong']), $m4)){
 				$rightlong = round($m4[1],5);
-				$rLngDir = (isset($_REQUEST['rightlong_EW'])?strtoupper($_REQUEST['rightlong_EW']):'');
+				$rLngDir = ((array_key_exists('rightlong_EW', $_REQUEST) && isset($_REQUEST['rightlong_EW'])) ? strtoupper($_REQUEST['rightlong_EW']) : '');
 				if(($rLngDir == 'E' && $rightlong < 0) || ($rLngDir == 'W' && $rightlong > 0)) $rightlong *= -1;
 			}
 
@@ -1325,6 +1542,42 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			$this->searchTermArr['footprintGeoJson'] = $this->cleanInputStr($_REQUEST['footprintGeoJson']);
 		}
 
+		if(array_key_exists('characters',$_REQUEST)){
+			if($_REQUEST['characters']) $this->searchTermArr['characters'] = $_REQUEST['characters'];
+			else unset($this->searchTermArr['characters']);
+		}
+		if(array_key_exists('polygons',$_REQUEST)){
+			$polygons = $_REQUEST['polygons'];
+			if (!is_array($polygons))
+				$polygons = [$polygons];
+			$polygons = array_filter($polygons, function($val) {
+				return trim($val) !== '';
+			});
+			if (!empty($polygons))
+				$this->searchTermArr['polygons'] = $polygons;
+			else
+				unset($this->searchTermArr['polygons']);
+		}
+		if(!empty($_REQUEST['earlyInterval'])){
+			$this->searchTermArr['earlyInterval'] =  $this->cleanInputStr($_REQUEST['earlyInterval']);
+		}
+		if(!empty($_REQUEST['lateInterval'])){
+			$this->searchTermArr['lateInterval'] =  $this->cleanInputStr($_REQUEST['lateInterval']);
+		}
+		if(!empty($_REQUEST['lithogroup'])){
+			$this->searchTermArr['lithogroup'] =  $this->cleanInputStr($_REQUEST['lithogroup']);
+		}
+		if(!empty($_REQUEST['formation'])){
+			$this->searchTermArr['formation'] =  $this->cleanInputStr($_REQUEST['formation']);
+		}
+		if(!empty($_REQUEST['member'])){
+			$this->searchTermArr['member'] =  $this->cleanInputStr($_REQUEST['member']);
+		}
+		if(!empty($_REQUEST['bed'])){
+			$this->searchTermArr['bed'] =  $this->cleanInputStr($_REQUEST['bed']);
+		}
+
+		//NEON edit start
 		$customKeys = array_filter(array_keys($_REQUEST), function($key) {
 			return strpos($key, 'custom') !== false;
 		});
@@ -1336,6 +1589,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 				unset($this->searchTermArr[$customKey]);
 			}
 		}
+		//NEON edit end
 	}
 
 	private function setChecklistVariables($clid){
@@ -1357,12 +1611,59 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		return $retArr;
 	}
 
+	public function getCharacters(){
+		$characters = [];
+		$searchableCharacters = isset($GLOBALS['SEARCHABLE_CHARACTERS']) ? $GLOBALS['SEARCHABLE_CHARACTERS'] : '';
+
+		//convert string to array
+		if (!empty($searchableCharacters)) {
+			$searchableCharacters = array_filter(
+				array_map('intval', array_map('trim', explode(',', $searchableCharacters)))
+			);
+		} else
+			$searchableCharacters = [];
+
+		$sql = "SELECT h.hid, h.headingName, c.cid, c.charName, c.charType, c.sortSequence, cs.cs, cs.charStateName, cs.stateID
+				FROM kmcharacters c
+				INNER JOIN kmcs cs ON c.cid = cs.cid
+				LEFT JOIN kmcharheading h ON c.hid = h.hid
+				WHERE (h.langID = 1 OR h.langID IS NULL)
+				ORDER BY c.sortSequence, cs.charStateName";
+		$rs = $this->conn->query($sql);
+
+		while ($row = $rs->fetch_assoc()) {
+			$charName = $row['charName'];
+			$charStateName = $row['charStateName'];
+			$cid = $row['cid'];
+
+			//check if the character is allowed
+			if (empty($searchableCharacters) || !in_array($cid, $searchableCharacters))
+				continue;
+
+			$cid = $row['cid'];
+			if (!isset($characters[$cid])) {
+				$characters[$cid] = [
+					'charName' => $charName,
+					'charType' => $row['charType'],
+					'states' => [],
+					'heading' => $row['headingName'] ?? ''
+				];
+			}
+			$characters[$cid]['states'][] = [
+				'cs' => $row['cs'],
+				'charStateName' => $charStateName
+			];
+		}
+		return $characters;
+	}
+
 	//Setters and getters
 	public function getClName(){
 		if(!$this->voucherManager) return false;
 		return $this->voucherManager->getClName();
 	}
-	//neon edit	
+
+	//neon edit start
 	public function getClMetadata() {
 		if (!$this->clMetadata) {
 			return false;
@@ -1370,12 +1671,18 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		return $this->clMetadata;
 	}
 	//end neon edit
+
 	public function getTaxaArr(){
 		return $this->taxaArr;
 	}
 
 	public function getErrorMessage(){
 		return $this->errorMessage;
+	}
+
+	public function setApplyFullProtections($bool){
+		if($bool) $this->applyFullProtections = true;
+		else $this->applyFullProtections = false;
 	}
 }
 ?>
