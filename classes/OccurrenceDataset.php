@@ -20,18 +20,8 @@ class OccurrenceDataset{
 	}
 
 	public function getPublicDatasets() {
-		// Tests if field `category` exists in table
-		$sqlFields = 'SHOW COLUMNS FROM omoccurdatasets LIKE "category"';
-		$fields = $this->conn->query($sqlFields);
-		$catExists = $fields->num_rows ? TRUE : FALSE;
-		$fields->free();
 		$retArr = array();
-		$sql = '';
-		if ($catExists) {
-			$sql = 'SELECT datasetid, category, name, notes, description, uid, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE ispublic=1 ORDER BY category,name';
-		} else {
-			$sql = 'SELECT datasetid, name, notes, description, uid, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE ispublic=1 ORDER BY name';
-		}
+		$sql = 'SELECT datasetid, category, IFNULL(datasetName, name) as name, notes, description, uid, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE ispublic=1 ORDER BY category,name';
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_assoc()) {
 			$retArr[] = $r;
@@ -44,11 +34,15 @@ class OccurrenceDataset{
 		$retArr = array();
 		if ($dsid) {
 			//Get and return individual dataset
-			//neon edit, remove isPublic requirement since this is managed in the list
-			$sql = 'SELECT datasetid, name, notes, description, bibliographicCitation, uid, dynamicProperties, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ')';
+
+			//NEON edit start, remove isPublic requirement since this is managed in the list
+			//$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, notes, description, uid, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') AND ispublic=1';
+			$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, notes, description, uid, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ')';
+			//NEON edit end
+
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
-				$retArr['name'] = $r->name;
+				$retArr['name'] = $r->datasetName;
 				$retArr['notes'] = $r->notes;
 				$retArr['description'] = $r->description;
 				$retArr['bibliographicCitation'] = $r->bibliographicCitation;
@@ -58,8 +52,8 @@ class OccurrenceDataset{
 				$retArr['ts'] = $r->initialtimestamp;
 			}
 			$rs->free();
-	
-			//neon edit - Get sample types
+
+			//NEON edit start - Get sample types
 			$retArr['sampleTypes'] = array();
 			$sql = 'SELECT c.collid, c.publicName, COUNT(*) AS sampleCount FROM omoccurdatasetlink odl INNER JOIN omoccurrences o ON odl.occid = o.occid INNER JOIN omcollections c ON o.collid = c.collid WHERE odl.datasetid = ' . $dsid . ' GROUP BY c.collid, c.publicName ORDER BY c.publicName';
 			$rs = $this->conn->query($sql);
@@ -81,12 +75,48 @@ class OccurrenceDataset{
 				$retArr['sites'][] = $r->name;
 			}
 			$rs->free();
-			//end neon edit
+			//NEON edit end
 		}
 		return $retArr;
 	}
-	
-	//neon edit
+
+	public function getDatasetMetadata($dsid) {
+		$retArr = array();
+		$dsid = (int)$dsid;
+		if ($GLOBALS['SYMB_UID'] && $dsid) {
+			//Get and return individual dataset
+			// NEON edit start - to include dynamicProperties
+			//$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, notes, description, uid, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') ';
+			$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, notes, description, category, bibliographicCitation, uid, sortsequence, initialtimestamp, ispublic, dynamicProperties FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') ';
+			//NEON edit end
+			$rs = $this->conn->query($sql);
+			while ($r = $rs->fetch_object()) {
+				$retArr['name'] = $r->datasetName;
+				$retArr['notes'] = $r->notes;
+				$retArr['description'] = $r->description;
+				// NEON edit start
+				$retArr['category'] = $r->category;
+				$retArr['bibliographicCitation'] = $r->bibliographicCitation;
+				$retArr['dynamicProperties'] = $r->dynamicProperties;
+				//NEON edit end
+				$retArr['uid'] = $r->uid;
+				$retArr['sort'] = $r->sortsequence;
+				$retArr['ts'] = $r->initialtimestamp;
+				$retArr['ispublic'] = $r->ispublic;
+			}
+			$rs->free();
+			//Get roles for current user
+			$sql1 = 'SELECT role FROM userroles WHERE (tablename = "omoccurdatasets") AND (tablepk = ' . $dsid . ') AND (uid = ' . $GLOBALS['SYMB_UID'] . ') ';
+			$rs1 = $this->conn->query($sql1);
+			while ($r1 = $rs1->fetch_object()) {
+				$retArr['roles'][] = $r1->role;
+			}
+			$rs1->free();
+		}
+		return $retArr;
+	}
+
+	//NEON edit start - neon specific functions
 	public function getRequestInquiryMetadata($dsid) {
 		$retArr = array();
 		if ($dsid) {
@@ -105,18 +135,18 @@ class OccurrenceDataset{
 		}
 		return $retArr;
 	}
-	
+
 	public function getPublicProjects() {
 		$retArr = array();
-	
+
 		$sql = "SELECT od.datasetid, od.name, od.notes, od.description, r.name AS researcherName, r.institution, nr.activeDate, nr.completeDate FROM omoccurdatasets od LEFT JOIN neonrequest nr ON od.datasetid = nr.datasetID LEFT JOIN neonresearcher r ON nr.researcherID = r.researcherID WHERE od.ispublic = 1 AND od.category = 'Request' AND nr.activeDate IS NOT NULL ORDER BY od.name";
 		$rs = $this->conn->query($sql);
-	
+
 		$datasetIds = array();
-	
+
 		while ($r = $rs->fetch_object()) {
 			$datasetIds[] = (int)$r->datasetid;
-	
+
 			$retArr[$r->datasetid] = array(
 				'datasetid' => (int)$r->datasetid,
 				'name' => $r->name,
@@ -130,15 +160,15 @@ class OccurrenceDataset{
 				'sites' => array()
 			);
 		}
-	
+
 		$rs->free();
-	
+
 		if ($datasetIds) {
 			$idStr = implode(',', $datasetIds);
-	
+
 			$sql = 'SELECT odl.datasetid, c.collid, c.publicName, COUNT(*) AS sampleCount FROM omoccurdatasetlink odl INNER JOIN omoccurrences o ON odl.occid = o.occid INNER JOIN omcollections c ON o.collid = c.collid WHERE odl.datasetid IN (' . $idStr . ') GROUP BY odl.datasetid, c.collid, c.publicName ORDER BY c.publicName';
 			$rs = $this->conn->query($sql);
-	
+
 			while ($r = $rs->fetch_object()) {
 				$retArr[$r->datasetid]['sampleTypes'][] = array(
 					'sampleType' => array(
@@ -148,57 +178,22 @@ class OccurrenceDataset{
 					'sampleCount' => (int)$r->sampleCount
 				);
 			}
-	
+
 			$rs->free();
-	
+
 			$sql = 'SELECT DISTINCT odl.datasetid, site.name FROM omoccurdatasetlink odl INNER JOIN omoccurdatasetlink siteLink ON odl.occid = siteLink.occid INNER JOIN omoccurdatasets site ON siteLink.datasetid = site.datasetid WHERE odl.datasetid IN (' . $idStr . ') AND site.notes = "NEON Site" ORDER BY site.name';
 			$rs = $this->conn->query($sql);
-	
+
 			while ($r = $rs->fetch_object()) {
 				$retArr[$r->datasetid]['sites'][] = $r->name;
 			}
-	
+
 			$rs->free();
 		}
-	
+
 		return array_values($retArr);
 	}
-	//end neon edit
 
-// NEON edit to include dynamicProperties
-	public function getDatasetMetadata($dsid) {
-		$retArr = array();
-		$dsid = (int)$dsid;
-		if ($GLOBALS['SYMB_UID'] && $dsid) {
-			//Get and return individual dataset
-			$sql = 'SELECT datasetid, name, notes, description, category, bibliographicCitation, uid, sortsequence, initialtimestamp, ispublic, dynamicProperties FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') ';
-			$rs = $this->conn->query($sql);
-			while ($r = $rs->fetch_object()) {
-				$retArr['name'] = $r->name;
-				$retArr['notes'] = $r->notes;
-				$retArr['description'] = $r->description;
-				$retArr['bibliographicCitation'] = $r->bibliographicCitation;
-				$retArr['category'] = $r->category;
-				$retArr['uid'] = $r->uid;
-				$retArr['sort'] = $r->sortsequence;
-				$retArr['ts'] = $r->initialtimestamp;
-				$retArr['ispublic'] = $r->ispublic;
-				$retArr['dynamicProperties'] = $r->dynamicProperties;
-			}
-			$rs->free();
-			//Get roles for current user
-			$sql1 = 'SELECT role FROM userroles WHERE (tablename = "omoccurdatasets") AND (tablepk = ' . $dsid . ') AND (uid = ' . $GLOBALS['SYMB_UID'] . ') ';
-			$rs1 = $this->conn->query($sql1);
-			while ($r1 = $rs1->fetch_object()) {
-				$retArr['roles'][] = $r1->role;
-			}
-			$rs1->free();
-		}
-		return $retArr;
-	}
-	// NEON edit to include dynamicProperties
-
-	// NEON specific function
 	public function getAssociatedDatasets($dsid) {
 		$retArr = array();
 		$dsid = (int)$dsid;
@@ -222,8 +217,8 @@ class OccurrenceDataset{
 
 		while ($r = $rs->fetch_object()) {
 			$retArr[] = array(
-				'datasetID' => $r->assocDatasetID,
-				'name' => $r->name
+					'datasetID' => $r->assocDatasetID,
+					'name' => $r->name
 			);
 		}
 
@@ -231,15 +226,15 @@ class OccurrenceDataset{
 
 		return $retArr;
 	}
-	// end NEON function
+	//NEON edit end
 
 	public function getDatasetArr() {
 		$retArr = array();
 		if ($GLOBALS['SYMB_UID']) {
-			$sql = 'SELECT datasetid, name, notes, description, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE (uid = ' . $GLOBALS['SYMB_UID'] . ') ORDER BY sortsequence,name';
+			$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, notes, description, sortsequence, initialtimestamp, ispublic FROM omoccurdatasets WHERE (uid = ' . $GLOBALS['SYMB_UID'] . ') ORDER BY sortsequence,name';
 			$rs = $this->conn->query($sql);
 			while ($r = $rs->fetch_object()) {
-				$retArr['owner'][$r->datasetid]['name'] = $r->name;
+				$retArr['owner'][$r->datasetid]['name'] = $r->datasetName;
 				$retArr['owner'][$r->datasetid]['notes'] = $r->notes;
 				$retArr['owner'][$r->datasetid]['description'] = $r->description;
 				$retArr['owner'][$r->datasetid]['sort'] = $r->sortsequence;
@@ -249,14 +244,14 @@ class OccurrenceDataset{
 			$rs->free();
 
 			//Get shared datasets
-			$sql1 = 'SELECT d.datasetid, d.name, d.notes, d.description, d.sortsequence, d.ispublic, d.initialtimestamp, r.role ' .
+			$sql1 = 'SELECT d.datasetid, IFNULL(d.datasetName, d.name) as datasetName, d.notes, d.description, d.sortsequence, d.ispublic, d.initialtimestamp, r.role ' .
 				'FROM omoccurdatasets d INNER JOIN userroles r ON d.datasetid = r.tablepk ' .
 				'WHERE (r.uid = ' . $GLOBALS['SYMB_UID'] . ') AND (r.role IN("DatasetAdmin","DatasetEditor","DatasetReader")) ' .
 				'ORDER BY sortsequence,name';
 			//echo $sql1;
 			$rs1 = $this->conn->query($sql1);
 			while ($r1 = $rs1->fetch_object()) {
-				$retArr['other'][$r1->datasetid]['name'] = $r1->name;
+				$retArr['other'][$r1->datasetid]['name'] = $r1->datasetName;
 				$retArr['other'][$r1->datasetid]['role'] = $r1->role;
 				$retArr['other'][$r1->datasetid]['notes'] = $r1->notes;
 				$retArr['other'][$r1->datasetid]['description'] = $r1->description;
@@ -269,13 +264,13 @@ class OccurrenceDataset{
 		return $retArr;
 	}
 
-	//  NEON edit to add citation, clean input
+	//  NEON edit start - add citation, clean input
 	public function editDataset($datasetID, $name, $notes, $description, $ispublic) {
 		$datasetID = intval($datasetID);
 		$ispublic = intval($ispublic);
 
 		$sql = "UPDATE omoccurdatasets
-				SET name = ?,
+				SET datasetName = ?,
 					notes = ?,
 					description = ?,
 					ispublic = ?
@@ -307,11 +302,11 @@ class OccurrenceDataset{
 
 		return true;
 	}
-	//  end NEON edit
+	// NEON edit end
 
 	public function createDataset($name, $notes, $description, $ispublic, $uid) {
-		$sql = 'INSERT INTO omoccurdatasets (name,notes,description,ispublic,uid)
-			VALUES("' . $this->cleanInStr($name) . '",' . ($notes ? '"' . $this->cleanInStr($notes) . '"' : 'NULL') . ',' . ($description ? '"' . $this->cleanInStr($description) . '"' : 'NULL') . ',' . ($ispublic ? '"' . $this->cleanInStr($ispublic) . '"' : '"0"') . ',' . $uid . ') ';
+		$sql = 'INSERT INTO omoccurdatasets (datasetName,name,notes,description,ispublic,uid)
+			VALUES("' . $this->cleanInStr($name) . '","' . $this->cleanInStr($name) . '",' . ($notes ? '"' . $this->cleanInStr($notes) . '"' : 'NULL') . ',' . ($description ? '"' . $this->cleanInStr($description) . '"' : 'NULL') . ',' . ($ispublic ? '"' . $this->cleanInStr($ispublic) . '"' : '"0"') . ',' . $uid . ') ';
 		if ($this->conn->query($sql)) {
 			$this->datasetId = $this->conn->insert_id;
 		} else {
@@ -324,7 +319,7 @@ class OccurrenceDataset{
 	public function mergeDatasets($targetArr) {
 		$targetDsid = array_shift($targetArr);
 		//Rename target
-		$sql1 = 'UPDATE omoccurdatasets SET name = CONCAT(name," (merged)") WHERE datasetid = ' . $targetDsid;
+		$sql1 = 'UPDATE omoccurdatasets SET datasetName = CONCAT(datasetName," (merged)"), name = CONCAT(name," (merged)") WHERE datasetid = ' . $targetDsid;
 		if ($this->conn->query($sql1)) {
 			//Push occurrences to target
 			$sql2 = 'UPDATE IGNORE omoccurdatasetlink SET datasetid = ' . $targetDsid . ' WHERE datasetid IN(' . implode(',', $targetArr) . ')';
@@ -348,11 +343,11 @@ class OccurrenceDataset{
 
 	public function cloneDatasets($targetArr, $uid) {
 		$status = true;
-		$sql = 'SELECT datasetid, name, notes, description, sortsequence FROM omoccurdatasets WHERE datasetid IN(' . implode(',', $targetArr) . ')';
+		$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, name, notes, description, sortsequence FROM omoccurdatasets WHERE datasetid IN(' . implode(',', $targetArr) . ')';
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_object()) {
 			//Create new name and ensure it doesn't already exist for owner
-			$newName = $r->name . ' - Copy';
+			$newName = $r->datasetName . ' - Copy';
 			$newNameTemp = $newName;
 			$cnt = 1;
 			do {
@@ -368,7 +363,8 @@ class OccurrenceDataset{
 			} while ($nameExists);
 			$newName = $newNameTemp;
 			//Add to database
-			$sql2 = 'INSERT INTO omoccurdatasets(name, notes, description, sortsequence, uid) VALUES("' . $newName . '","' . $r->notes . '","' . $r->description . '",' . ($r->sortsequence ? $r->sortsequence : '""') . ',' . $uid . ')';
+			$sql2 = 'INSERT INTO omoccurdatasets(datasetName, name, notes, description, sortsequence, uid)
+				VALUES("' . $newName . '","' . $r->name . '","' . $r->notes . '","' . $r->description . '",' . ($r->sortsequence ? $r->sortsequence : '""') . ',' . $uid . ')';
 			if ($this->conn->query($sql2)) {
 				$this->datasetId = $this->conn->insert_id;
 				//Duplicate all records wtihin new dataset
@@ -396,8 +392,7 @@ class OccurrenceDataset{
 			return false;
 		}
 
-		// NEON edit
-
+		// NEON edit start
 		//Delete dataset records
 		$sql2 = 'DELETE FROM omoccurdatasetlink WHERE datasetid = ' . $dsid;
 		if (!$this->conn->query($sql2)) {
@@ -419,22 +414,19 @@ class OccurrenceDataset{
 			return false;
 		}
 
-		$sql5 = 'UPDATE neonrequest
-				SET datasetID = NULL
-				WHERE datasetID = ' . $dsid;
+		$sql5 = 'UPDATE neonrequest SET datasetID = NULL WHERE datasetID = ' . $dsid;
 		if (!$this->conn->query($sql5)) {
-			$this->errorArr[] = 'ERROR: Unable to delete link to request database: ' . $this->conn->error;
+			$this->errorArr[] = 'ERROR: Unable to delete neon request datasets: ' . $this->conn->error;
 			return false;
 		}
-
-		// End NEON edit
+		// NEON edit end
 
 		return true;
 	}
 
 	public function getUsers($datasetId) {
 		$retArr = array();
-		//neon edit - pull email username if full name is empty
+		//NEON edit start - pull email username if full name is empty
 		$sql = 'SELECT u.uid, r.role,
 				CASE
 					WHEN u.firstname IS NULL AND u.lastname IS NULL
@@ -446,7 +438,7 @@ class OccurrenceDataset{
 			WHERE r.role IN("DatasetAdmin","DatasetEditor","DatasetReader")
 			AND r.tablename = "omoccurdatasets"
 			AND r.tablepk = ' . $datasetId;
-		//end neon edit
+		//NEON edit end
 		//echo $sql;
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_object()) {
@@ -519,35 +511,33 @@ class OccurrenceDataset{
 				FROM omoccurrences o INNER JOIN omoccurdatasetlink dl ON o.occid = dl.occid
 				WHERE dl.datasetid = ? ';
 			$sql .= OccurrenceUtil::appendFullProtectionSQL();
+			if($retLimit) $sql .= 'LIMIT '. (($pageNumber - 1) * $retLimit) . ',' . $retLimit;
 			$params[] = $datasetId;
 			try {
 				$result = QueryUtil::executeQuery($this->conn, $sql, $params);
 			} catch (\Throwable  $e) {
 				error_log('ERROR fetching count for dataset: ' . $datasetId);
 			}
-			$recordCount = 0;
+			$recordCount = 1;
 			while ($r = $result->fetch_object()) {
-				$recordCount++;
-				if (!$retLimit || ($recordCount >= (($pageNumber - 1) * $retLimit) && $recordCount <= ($pageNumber) * $retLimit)) {
-					if ($r->catalognumber) $retArr[$r->occid]['catnum'] = $r->catalognumber;
-					elseif ($r->occurrenceid) $retArr[$r->occid]['catnum'] = $r->occurrenceid;
-					elseif ($r->othercatalognumbers) $retArr[$r->occid]['catnum'] = $r->othercatalognumbers;
-					else $retArr[$r->occid]['catnum'] = '';
-					$sciname = $r->sciname;
-					if ($r->family) $sciname .= ' (' . $r->family . ')';
-					$retArr[$r->occid]['sciname'] = $sciname;
-					$collStr = $r->recordedby . ' ' . $r->recordnumber;
-					if ($r->eventdate) $collStr .= ' [' . $r->eventdate . ']';
-					$retArr[$r->occid]['coll'] = $collStr;
-					$retArr[$r->occid]['loc'] = trim($r->country . ', ' . $r->stateprovince . ', ' . $r->county . ', ' . $r->locality, ', ');
-				}
+				if ($r->catalognumber) $retArr[$r->occid]['catnum'] = $r->catalognumber;
+				elseif ($r->occurrenceid) $retArr[$r->occid]['catnum'] = $r->occurrenceid;
+				elseif ($r->othercatalognumbers) $retArr[$r->occid]['catnum'] = $r->othercatalognumbers;
+				else $retArr[$r->occid]['catnum'] = '';
+				$sciname = $r->sciname;
+				if ($r->family) $sciname .= ' (' . $r->family . ')';
+				$retArr[$r->occid]['sciname'] = $sciname;
+				$collStr = $r->recordedby . ' ' . $r->recordnumber;
+				if ($r->eventdate) $collStr .= ' [' . $r->eventdate . ']';
+				$retArr[$r->occid]['coll'] = $collStr;
+				$retArr[$r->occid]['loc'] = trim($r->country . ', ' . $r->stateprovince . ', ' . $r->county . ', ' . $r->locality, ', ');
 			}
 			$result->free();
 		}
 		return $retArr;
 	}
-	// NEON addition
 
+	// NEON edit start - custom function
 	public function neonGetOccurrences($datasetId) {
 		$retArr = array();
 
@@ -605,7 +595,7 @@ class OccurrenceDataset{
 
 		return $retArr;
 	}
-	// end NEON edit
+	//NEON edit end
 
 	public function removeSelectedOccurrences($datasetId, $occArr) {
 		$status = true;
@@ -638,40 +628,39 @@ class OccurrenceDataset{
 		return $status;
 	}
 
-	//neon edit - remove font families from html, which mess up the rendering
+	//NEON edit start - custom funcionts
+	//remove font families from html, which mess up the rendering
 	public function removeFontFamily($html) {
 		$dom = new DOMDocument();
-	
+
 		libxml_use_internal_errors(true);
 		$dom->loadHTML('<?xml encoding="utf-8" ?>' . $html,
 			LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 		libxml_clear_errors();
-	
+
 		$xpath = new DOMXPath($dom);
-	
+
 		foreach ($xpath->query('//*[@style]') as $node) {
 			$style = $node->getAttribute('style');
-	
+
 			$style = preg_replace(
 				'/(?:^|;)\s*font-family\s*:\s*[^;]+;?/i',
 				'',
 				$style
 			);
-	
+
 			$style = trim($style, '; ');
-	
+
 			if ($style) {
 				$node->setAttribute('style', $style);
 			} else {
 				$node->removeAttribute('style');
 			}
 		}
-	
+
 		return $dom->saveHTML();
 	}
-	//end neon edit
 
-	// NEON function
 	public function addDatasetAssociation($datasetID, $associatedDatasetID) {
 
 		$datasetID = (int)$datasetID;
@@ -713,7 +702,7 @@ class OccurrenceDataset{
 
 		return true;
 	}
-	// end NEON function
+	//NEON edit end - custom functions
 
 	//General setters and getters
 	public function getUserList($term) {

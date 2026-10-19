@@ -111,13 +111,13 @@ $linkedCollections = $collManager->getLinkedCollections();
 			<?php
 		}
 		?>
-		
+
 		function downloadBib() {
 		   const citationText = document.getElementById('citation').innerText;
 
 		   const citationRegex = /(.+?)\s\((\d{4})\)\.\s(?:NEON Biorepository\s)?(.+?)\.\sOccurrence dataset\s(.+?)\saccessed\svia\sthe\s(.+?),\s(.+?)\son\s(\d{4}-\d{2}-\d{2})\./;
 		   const match = citationText.match(citationRegex);
-	   
+
 		   if (match) {
 			   const author = match[1];
 			   const year = match[2];
@@ -126,7 +126,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 			   const portalName = match[5];
 			   const portalUrl = match[6];
 			   const accessDate = match[7];
-	   
+
 			   const bibtexEntry = `
 @misc{${title.toLowerCase().replace(/\s+/g, '')}${accessDate},
 	doi = {${doi}},
@@ -149,14 +149,14 @@ $linkedCollections = $collManager->getLinkedCollections();
 			   document.body.removeChild(link);
 		   }
         }
-		
+
 		function downloadRis() {
 		   const citationText = document.getElementById('citation').innerText;
 		   const abstractText = document.querySelector('#fulldescription-container p').innerText;
 
 		   const citationRegex = /(.+?)\s\((\d{4})\)\.\s(?:NEON Biorepository\s)?(.+?)\.\sOccurrence dataset\s(.+?)\saccessed\svia\sthe\s(.+?),\s(.+?)\son\s(\d{4}-\d{2}-\d{2})\./;
 		   const match = citationText.match(citationRegex);
-	   
+
 		   if (match) {
 			   const author = match[1];
 			   const year = match[2];
@@ -165,7 +165,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 			   const portalName = match[5];
 			   const portalUrl = match[6];
 			   const accessDate = match[7];
-	   
+
 				const risEntry = `
 TY  - DATA
 T1  - ${title}
@@ -189,7 +189,7 @@ ER  -
 			   document.body.removeChild(link);
 		   }
         }
-		
+
 		document.addEventListener("DOMContentLoaded", function () {
 			// Show tooltip
 			function showTooltip(event) {
@@ -197,21 +197,21 @@ ER  -
 				const tooltip = document.getElementById(tooltipId);
 				tooltip.style.display = "block";
 			}
-		
+
 			// Hide tooltip
 			function hideTooltip(event) {
 				const tooltipId = event.currentTarget.getAttribute("data-tooltip-id");
 				const tooltip = document.getElementById(tooltipId);
 				tooltip.style.display = "none";
 			}
-		
+
 			// Attach event listeners to all buttons with the class 'tooltip-button'
 			const tooltipButtons = document.querySelectorAll(".tooltip-button");
 			tooltipButtons.forEach(button => {
 				button.addEventListener("mouseover", showTooltip);
 				button.addEventListener("mouseout", hideTooltip);
 			});
-			
+
 			let descriptionContainer = document.getElementById('fulldescription-container');
 			let imgElements = descriptionContainer.querySelectorAll('img');
 			let collimagesContainer = document.getElementById('collimages');
@@ -229,7 +229,7 @@ ER  -
 		.label {
 			font-weight: bold;
 		}
-		
+
 		#collimages {
 			max-height: 800px;
 			display: flex;
@@ -608,7 +608,7 @@ ER  -
 					$title = !empty($collData['publicname'])
 							? $collData['publicname']
 							: $collData['collectionname'];
-					
+
 					echo '<h1 class="font-bold text-left mb-4" style="font-size: 2.1rem;">' . $title . '</h1>';
 				?>
 				<div class="flex justify-between items-center">
@@ -624,7 +624,7 @@ ER  -
 										<span class="MuiButton-label">Search this Sample Type</span>
 										<span class="MuiTouchRipple-root"></span>
 								</button>
-						</a>						
+						</a>
 					</div>
 					<div class="flex justify-right space-x-3 mt-4">
 						<?php
@@ -648,22 +648,22 @@ ER  -
 					</div>
 				</div>
 			</div>
-			
+
 			<?php if (!empty($collData['identificationcollids'])): ?>
-			
+
 			<div class="mb-6 border-l-4 border-[#0073cf] bg-[#f4f9ff] p-4">
 				<div class="flex items-start">
 						<i class="fas fa-info-circle text-[#0073cf] text-lg mt-1 mr-3"></i>
-				
+
 						<div>
 								<div class="font-semibold text-gray-900">
 										Looking for a specific taxon?
 								</div>
-				
+
 								<div class="text-gray-700">
 										Taxonomic identifications derived from these samples are available through a related sample type.
 								</div>
-				
+
 								<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/neoncollprofiles.php?collid=<?php echo $collData['identificationcollids']; ?>"
 									 class="inline-block mt-2 text-[#0073cf] font-semibold hover:underline">
 										Browse Identifications →
@@ -671,9 +671,9 @@ ER  -
 						</div>
 				</div>
 			</div>
-			
+
 			<?php endif; ?>
-			
+
 			<div class="grid grid-cols-1 gap-4 mb-6">
 				<div id="fulldescription-container">
 					<h2 class="font-semibold mb-2" style="font-size: 1.7rem;">About</h2>
@@ -682,7 +682,7 @@ ER  -
 					?>
 				</div>
 			</div>
-	
+
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 				<div id="collimages" class="lg:col-span-1">
 				</div>
@@ -749,12 +749,12 @@ ER  -
 							echo '</div>';
 						?>
 							<div class="flex space-x-2">
-								<button id="copyButton" data-tooltip-id="tooltip-copy" 
-								  onclick="copyCitation()" 
+								<button id="copyButton" data-tooltip-id="tooltip-copy"
+								  onclick="copyCitation()"
 								  class="Mui tooltip-button bg-white-300 text-[#0073cf] py-2 px-4 rounded-[2px] inline-flex items-center border-2 border-[#0073cf] font-[600] leading-[1.75] tracking-[0.06em]">
 								  <i class="fas fa-copy mr-2"></i>
 								  <span>COPY</span>
-								  <span id="tooltip-copy" style="display:none; width:20rem; transform: translate(-15px, 65px);" 
+								  <span id="tooltip-copy" style="display:none; width:20rem; transform: translate(-15px, 65px);"
 									class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base font-normal">
 									Click to copy the above plain text citation to the clipboard
 								  </span>
@@ -778,47 +778,47 @@ ER  -
 					</div>
 				</div>
 			</div>
-			
+
 			<?php if (!empty($linkedCollections)): ?>
-		
+
 			<div class="border-t-2 border-gray-200 mt-6 pt-4">
 					<h2 class="text-xl mb-2">Related Sample Types</h2>
-			
+
 					<?php foreach ($linkedCollections as $collid => $collectionName):
 							$collid = (int)$collid;
 							$collectionName = htmlspecialchars($collectionName);
-					
+
 							$url = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid;
 							?>
-			
+
 							<div class="MuiListItem-container">
 									<div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">
-			
+
 											<div class="MuiListItemIcon-root" style="min-width: 40px">
 													<i class="fas fa-flask fa-lg"></i>
 											</div>
-			
+
 											<div class="MuiListItemText-root MuiListItemText-multiline">
 													<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
 															<?= $collectionName ?>
 													</span>
 											</div>
-			
+
 									</div>
-			
+
 									<div class="MuiListItemSecondaryAction-root">
 											<a href="<?= htmlspecialchars($url) ?>"
 												 target="_blank"
 												 rel="noopener noreferrer"
 												 class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">
-			
+
 													<span class="MuiButton-label">Explore</span>
 											</a>
 									</div>
 							</div>
-			
+
 					<?php endforeach; ?>
-			
+
 			</div>
 			<?php endif; ?>
 
@@ -829,12 +829,12 @@ ER  -
 				if (isset($collData['resourcejson'])) {
 					if ($resourceArr = json_decode($collData['resourcejson'], true)) {
 						echo '<div class="mb-4">';
-				
+
 						foreach ($resourceArr as $rArr) {
 							$title = $rArr['title'][$LANG_TAG] ?? "No Title Available";
 							$url = htmlspecialchars($rArr['url']);
 							$fileNumber = basename($rArr['url']);
-				
+
 							echo '<div class="MuiListItem-container">';
 							echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">';
 							echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
@@ -880,7 +880,7 @@ ER  -
 							echo '    </div>';
 							echo '</div>';
 						}
-				
+
 						echo '</div>';
 					}
 				}
@@ -894,7 +894,7 @@ ER  -
 						$dwcaUrl = htmlspecialchars($collData['dwcaurl']);
 						$dwcaLabel = isset($LANG['DWCA_PUB']) ? $LANG['DWCA_PUB'] : 'DwC-Archive';
 						$dwcFile = basename($dwcaUrl);
-					
+
 						echo '<div class="MuiListItem-container">';
 						echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
 						echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
@@ -905,7 +905,7 @@ ER  -
 						echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
 						echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($dwcaLabel) . '</span>';
 						echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-						echo '                <span title="file type: Darwin Core Archive (DwC-A)">Darwin Core Archive (DwC-A)</span>';					
+						echo '                <span title="file type: Darwin Core Archive (DwC-A)">Darwin Core Archive (DwC-A)</span>';
 						echo '                <span style="margin: 0px 16px;">|</span>';
 						echo '                <span title="' . htmlspecialchars($dwcFile) . '" style="white-space: break-spaces;">' . htmlspecialchars($dwcFile) . '</span>';
 						echo '            </p>';
@@ -928,11 +928,11 @@ ER  -
 						echo '    </div>';
 						echo '</div>';
 					}
-					
+
 					// Digital Metadata (EML File)
 					$emlUrl = "../datasets/emlhandler.php?collid=" . htmlspecialchars($collData['collid']);
 					$emlLabel = isset($LANG['DIGITAL_METADATA']) ? $LANG['DIGITAL_METADATA'] : 'Digital Metadata';
-					
+
 					echo '<div class="MuiListItem-container">';
 					echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
 					echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
@@ -970,12 +970,12 @@ ER  -
 					echo '        </a>';
 					echo '    </div>';
 					echo '</div>';
-					
+
 					// GBIF Dataset Page
 					if (!empty($collData['publishtogbif']) && !empty($datasetKey)) {
 						$gbifUrl = "http://www.gbif.org/dataset/" . htmlspecialchars($datasetKey);
 						$gbifLabel = isset($LANG['GBIF_DATASET']) ? $LANG['GBIF_DATASET'] : 'GBIF Dataset Page';
-					
+
 						echo '<div class="MuiListItem-container">';
 						echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
 						echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
@@ -1014,7 +1014,7 @@ ER  -
 						echo '    </div>';
 						echo '</div>';
 					}
-					
+
 					// EDI Dataset Page
 					if (!empty($collData['dynamicproperties'])) {
 						$dynamicProps = json_decode($collData['dynamicproperties'], true);
@@ -1063,7 +1063,7 @@ ER  -
 							echo '</div>';
 						}
 					}
-					
+
 					// iDigBio Dataset Page
 					if (!empty($collData['publishtoidigbio'])) {
 						$idigbioKey = $collManager->getIdigbioKey();
@@ -1073,7 +1073,7 @@ ER  -
 						if ($idigbioKey) {
 							$idigbioUrl = "https://www.idigbio.org/portal/recordsets/" . htmlspecialchars($idigbioKey);
 							$idigbioLabel = isset($LANG['IDIGBIO_DATASET']) ? $LANG['IDIGBIO_DATASET'] : 'iDigBio Dataset Page';
-					
+
 							echo '<div class="MuiListItem-container">';
 							echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
 							echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';

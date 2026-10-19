@@ -96,6 +96,7 @@ if(!$schemaVersion){
 			if($clList && isset($USER_RIGHTS['ClAdmin'])){
 				$clAdmin = array_intersect_key($clList,array_flip($USER_RIGHTS['ClAdmin']));
 			}
+			$projList = $smManager->getProjectList();	//NEON edit
 			/*
 			?>
 			<div id="bioinventory">
@@ -256,7 +257,6 @@ if(!$schemaVersion){
 						}
 						?>
 					</ul>
-					NEON edit end -->
 					<h2 class="subheader">
 						<span>
 							<?= $LANG['DATASETS'] ?>
