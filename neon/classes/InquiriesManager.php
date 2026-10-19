@@ -1686,8 +1686,14 @@ public function addCollectionInquiryLink($requestID, $collections) {
                     throw new Exception("Sample #$id not found.");
                 }
                 $newData = array_merge($sample, $updates, ['id' => $id]);
-                $needsShipment = in_array($newData['status'], ["current","completed","loaned, not used"]);
-                $hasShipment = array_key_exists('shipmentID', $updates)? !empty($newData['shipmentID']): !empty($sample['shipmentID']);
+								$isDigital = in_array($newData['substanceProvided'], ['image', 'data']);
+								
+								$needsShipment = in_array(
+										$newData['status'],
+										['current', 'completed', 'loaned, not used']
+								) && !$isDigital;
+								
+								$hasShipment = !empty($newData['shipmentID']);
                 if($needsShipment && !$hasShipment){
                     throw new Exception("Sample #$id: A shipment must be assigned if status is {$newData['status']}.");
                 }
