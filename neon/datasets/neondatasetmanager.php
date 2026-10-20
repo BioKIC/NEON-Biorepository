@@ -1091,10 +1091,23 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										Private
 									</button>
 								</div>
+								<?php
+								if ($mdArr['ispublic'] == 0) {
+								?>
+									<div style="color:#666; font-size:0.9em;">
+										Make this project visible to the public
+									</div>
+								<?php
+								} 
+								elseif ($mdArr['ispublic'] == 1) {
+								?>
+									<a href="<?php echo $CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . $datasetId; ?>"
+									 	target="_blank"
+										><strong>View public dataset page.</strong></a>
+								<?php
+								} 
+								?>
 
-								<div style="color:#666; font-size:0.9em;">
-									Make this project visible to the public
-								</div>
 							</div>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root MuiDivider-fullWidth" />
