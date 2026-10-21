@@ -83,6 +83,7 @@ if ($isEditor) {
 					break;
 				case 'analytics':
 					$analytics[] = $row;
+					break;
 				case 'sample':
 					$sample[] = $row;
 					break;
@@ -125,7 +126,7 @@ if ($isEditor) {
 		if ($analytics) {
 			echo "<div class='section' id='analytics'>";
 			echo '<h2>Google Analytics Summary</h2>';
-			$headerArr = ['Statistic', 'Past 30 days','Prior 30 days'];
+			$headerArr = ['Statistic', 'Past 30 days','Change'];
 			echo $utilities->htmlTable($analytics, $headerArr);
 		}
 
