@@ -225,7 +225,8 @@ button { cursor:pointer; }
             >        
         </div>
         <div class="fieldDiv">
-            <label><b>Shipment:</b> (edit request to add new shipment)</label>
+            <label><b>Shipment:</b>
+            <strong>(return to material sample list to create new shipment or pseudoshipment)</strong>
             <select name="shipmentID" required>
                 <option value="<?= BATCH_NOCHANGE ?>" selected>-- do not change --</option>
 

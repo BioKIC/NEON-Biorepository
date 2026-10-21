@@ -246,9 +246,7 @@ button { cursor:pointer; }
         </div>
         <div class="fieldDiv">
             <label><b>Shipment:</b>						
-                <a href="<?php echo $CLIENT_ROOT . '/neon/requests/inquiryform.php?id=' . $requestID; ?>">
-							<strong>(return to request to add shipment or pseudoshipment)</strong>
-						</a></label>
+				<strong>(return to sample list to create new shipment or pseudoshipment)</strong>
             <select name="shipmentID" required>
                 <option value="<?= BATCH_NOCHANGE ?>" selected>-- do not change --</option>
 
