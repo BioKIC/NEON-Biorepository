@@ -52,7 +52,8 @@ if ($isEditor) {
 	<div class="section-nav">
 		<a href="#stats">General Statistics</a>|
 		<a href="#requests">Request Summary</a>|
-		<a href="#samples">Samples Received by Class To Date</a>
+		<a href="#analytics">Google Analytics Summary</a>|
+		<a href="#samples">Samples Received by Class</a>
 	</div>
 	<h1>NEON Monthly Report: <?php echo htmlspecialchars($month); ?></h1>
  <?php
