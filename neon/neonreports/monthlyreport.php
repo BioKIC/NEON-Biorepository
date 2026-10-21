@@ -70,6 +70,7 @@ if ($isEditor) {
 
 		$general = [];
 		$request = [];
+		$analytics = [];
 		$sample  = [];
 
 		foreach ($reportsArr as $row) {
