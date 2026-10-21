@@ -81,6 +81,8 @@ if ($isEditor) {
 				case 'request':
 					$request[] = $row;
 					break;
+				case 'analytics':
+					$analytics[] = $row;
 				case 'sample':
 					$sample[] = $row;
 					break;
@@ -116,6 +118,22 @@ if ($isEditor) {
 			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="request">
 			<button type="submit">Export Request Summary</button>
+		</form>
+		</div>
+		<?php
+
+		if ($analytics) {
+			echo "<div class='section' id='analytics'>";
+			echo '<h2>Google Analytics Summary</h2>';
+			$headerArr = ['Statistic', 'Past 30 days','Prior 30 days'];
+			echo $utilities->htmlTable($analytics, $headerArr);
+		}
+
+		?>
+		<form method="post" action="exportmonthlyreporthandler.php">
+			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
+			<input type="hidden" name="type" value="analytics">
+			<button type="submit">Export Google Analytics Summary</button>
 		</form>
 		</div>
 		<?php

@@ -106,6 +106,7 @@
 
     }
 
+    // get google scholar stats
     function getScholarProfileStats() {
         $url = "https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en";
 
@@ -152,6 +153,27 @@
         }
 
         return $stats;
+    }
+
+    // Get google analytics stats
+    public function getGoogleAnalytics(){
+        
+        $users = 1;
+        $time = 1;
+        $pages = 1;
+        $searches = 1;
+        $downloads = 1;
+
+        $googleAnalytics = array(
+            'users' => $users,
+            'average time spent on site (s)' => $time,
+            'average pages visited' => $pages,
+            'unique searches' => $searches,
+            'downloads' => $downloads
+        );
+
+        return $googleAnalytics;
+
     }
 
 
@@ -220,6 +242,7 @@
 
         $type = 'general';
 
+        // insert general and request statistics
         foreach ($dataArr as $statName => $statValue) {
 
             if ($statName === 'active use') {
@@ -236,6 +259,24 @@
             }
         }
 
+        // insert google analytics stats
+        $googleAnalytics = $this->getGoogleAnalytics();
+
+        foreach ($googleAnalytics as $statName => $statValue) {
+
+            $ins = $this->conn->prepare(
+                "INSERT INTO neonmonthlyreport (`name`, `type`, `statistic`, `statValue`, `date`) 
+                VALUES (?, 'analytics', ?, ?, ?)");
+
+            $ins->bind_param('ssss', $name, $statName, $statValue, $reportDate);
+            $ins->execute();
+
+            if ($ins->error) {
+                error_log("Insert error for $statName: " . $ins->error);
+            }
+        }
+
+        // insert sample class stats
         $samplesql = "SELECT sampleClass, COUNT(*) AS count FROM NeonSample GROUP BY sampleClass";
 
         $result = $this->conn->query($samplesql);
