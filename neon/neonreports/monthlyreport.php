@@ -125,20 +125,20 @@ if ($isEditor) {
 		</div>
 		<?php
 
-		if ($analytics) {
-			echo "<div class='section' id='analytics'>";
-			echo '<h2>Google Analytics Summary</h2>';
-			$headerArr = ['Statistic', 'Past 30 days','Change'];
-			echo $utilities->htmlTable($analytics, $headerArr);
-		}
+		// if ($analytics) {
+		// 	echo "<div class='section' id='analytics'>";
+		// 	echo '<h2>Google Analytics Summary</h2>';
+		// 	$headerArr = ['Statistic', 'Past 30 days','Change'];
+		// 	echo $utilities->htmlTable($analytics, $headerArr);
+		// }
 
 		?>
-		<form method="post" action="exportmonthlyreporthandler.php">
+		<!-- <form method="post" action="exportmonthlyreporthandler.php">
 			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="analytics">
 			<button type="submit">Export Google Analytics Summary</button>
 		</form>
-		</div>
+		</div> -->
 		<?php
 
 		if ($sample) {
