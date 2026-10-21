@@ -156,26 +156,74 @@
     }
 
     // Get google analytics stats
-    public function getGoogleAnalytics(){
-        
-        $users = 1;
-        $time = 1;
-        $pages = 1;
-        $searches = 1;
-        $downloads = 1;
+    public function getGoogleAnalytics() {
 
-        $googleAnalytics = array(
-            'users' => $users,
-            'average time spent on site (s)' => $time,
-            'average pages visited' => $pages,
-            'unique searches' => $searches,
-            'downloads' => $downloads
-        );
+        $googleAnalytics = [
+            'users' => 0,
+            'average time spent on site (s)' => 0,
+            'average pages visited' => 0,
+            'unique searches' => 0, // Ignored for now
+            'downloads' => 0
+        ];
+
+        try {
+            $client = new \Google\Analytics\Data\V1beta\Client\BetaAnalyticsDataClient();
+
+            $propertyId = '363291564';
+
+            $request = new \Google\Analytics\Data\V1beta\RunReportRequest([
+                'property' => 'properties/' . $propertyId,
+                'date_ranges' => [
+                    new \Google\Analytics\Data\V1beta\DateRange([
+                        'start_date' => '30daysAgo',
+                        'end_date' => 'yesterday'
+                    ])
+                ],
+                'metrics' => [
+                    new \Google\Analytics\Data\V1beta\Metric([
+                        'name' => 'activeUsers'
+                    ]),
+                    new \Google\Analytics\Data\V1beta\Metric([
+                        'name' => 'averageSessionDuration'
+                    ]),
+                    new \Google\Analytics\Data\V1beta\Metric([
+                        'name' => 'screenPageViewsPerUser'
+                    ]),
+                    new \Google\Analytics\Data\V1beta\Metric([
+                        'name' => 'keyEvents:data_download'
+                    ])
+                ],
+                'metric_aggregations' => [
+                    \Google\Analytics\Data\V1beta\MetricAggregation::TOTAL
+                ]
+            ]);
+
+            $response = $client->runReport($request);
+
+            foreach ($response->getRows() as $row) {
+                $values = $row->getMetricValues();
+
+                if (count($values) >= 4) {
+                    $googleAnalytics['users'] =
+                        (int) $values[0]->getValue();
+
+                    $googleAnalytics['average time spent on site (s)'] =
+                        (float) $values[1]->getValue();
+
+                    $googleAnalytics['average pages visited'] =
+                        (float) $values[2]->getValue();
+
+                    $googleAnalytics['downloads'] =
+                        (int) $values[3]->getValue();
+                }
+            }
+
+        } catch (\Throwable $e) {
+            error_log('Google Analytics API error: ' . $e->getMessage());
+        }
 
         return $googleAnalytics;
-
     }
-
 
     // Generates data for Monthly Report 
     public function generateMonthlyReport() {
