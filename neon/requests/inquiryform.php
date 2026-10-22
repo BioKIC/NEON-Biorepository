@@ -406,7 +406,7 @@ if(!$isEditor) {
 
 					You have unsaved changes. Click the Update button on the relevant tab to save them.
 
-				</div>
+			</div>
 			<div id="tabs" style="margin:0px;">
 			    <ul>
 					<li><a href="#editinqdiv"><span><?php echo 'Inquiry Info'; ?></span></a></li>
@@ -864,39 +864,32 @@ if(!$isEditor) {
 					<div id="samples" style="">
 						<fieldset>
 							<legend><?php echo 'Samples'; ?></legend>		
-							<?php if(in_array($inquirydata['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed'))) { ?> 
-								<div style="clear:both;padding-top:8px;float:left;">
-									<button type="button" onclick="window.location.href='importrequestsample.php?id=<?php echo $requestID; ?>'">
-										Batch Load Samples
-									</button>
-								</div>
-							<?php } ?>									
+							<div style="clear:both;padding-top:8px;float:left;">
+								<button type="button" onclick="window.location.href='importrequestsample.php?id=<?php echo $requestID; ?>'">
+									Batch Load Samples
+								</button>
+							</div>
 							<div style="clear:both;padding-top:8px;float:left;">
 								<button type="button" onclick = "window.location.href='samplelist.php?id=<?php echo $requestID; ?>'">
 									View and Modify Sample List
 								</button>
 							</div>
-								<?php 
-								if($sampledata) {
-								?>
-									<div style="clear:both;padding:10px 0;">
-										<div style="float:left;">
+							<?php
+							if($sampledata) {
+							?>
+								<div style="clear:both;padding:10px 0;">
+									<div style="float:left;">
 										<button type="button" onclick="handleDataset(<?= $requestID ?>)">
 											Dataset Management
 										</button>
 									</div>
-								<?php 
+								</div>
+							<?php 
+								foreach ($sampledata as &$row) {
+									$row['occid'] = '<a href="https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=' . htmlspecialchars($row['occid']) . '" target="_blank" rel="noopener noreferrer">'
+												. htmlspecialchars($row['occid'])
+												. '</a>';
 								}
-								?>
-							</div>
-							<div style="clear:both;padding-top:8px;float:left;">
-								<?php
-								if (!empty($sampledata)) {
-									foreach ($sampledata as &$row) {
-										$row['occid'] = '<a href="https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=' . htmlspecialchars($row['occid']) . '" target="_blank" rel="noopener noreferrer">'
-													. htmlspecialchars($row['occid'])
-													. '</a>';
-									}
 									echo str_replace(
 										'<table',
 										'<table id="sampleTable"',
@@ -905,120 +898,106 @@ if(!$isEditor) {
 											['occid', 'sampleID', 'sampleCode', 'status', 'use type', 'substance']
 										)
 									);
-								}
-								?>
-							</div>
+							}
+							?>
 						</fieldset>
 					</div>
 					<div id="materialsamples" style="">
-							<fieldset>
-								<legend><?php echo 'Material Samples'; ?></legend>		
-								<h4>Note that material samples cannot be added until the associated parent samples are linked.</h4>	
-								<?php if(in_array($inquirydata['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed'))) { ?> 
-									<div style="clear:both;padding-top:8px;float:left;">
-										<button type="button" onclick="window.location.href='importrequestsample.php?id=<?php echo $requestID; ?>'">
-											Batch Load Material Samples
-										</button>
-								<?php } ?>						
+						<fieldset>
+							<legend><?php echo 'Material Samples'; ?></legend>		
+							<h4>Note that material samples cannot be added until the associated parent samples are linked.</h4>	
+							<?php 
+							if(in_array($inquirydata['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed')) && !empty($sampledata)) { 
+							?> 
 								<div style="clear:both;padding-top:8px;float:left;">
-									<button type="button" onclick="window.location.href='materialsamplelist.php?id=<?php echo $requestID; ?>'">
-									View and Modify Material Sample List
+									<button type="button" onclick="window.location.href='importrequestsample.php?id=<?php echo $requestID; ?>'">
+										Batch Load Material Samples
 									</button>
 								</div>
-								<div style="clear:both;padding-top:8px;float:left;">
+							<?php } ?>						
+							<div style="clear:both;padding-top:8px;float:left;">
+								<button type="button" onclick="window.location.href='materialsamplelist.php?id=<?php echo $requestID; ?>'">
+									View and Modify Material Sample List
+								</button>
+							</div>
+							<?php
+							if (!empty($materialsampledata)) { 
+							?>
+							<div style="clear:both;padding-top:8px;float:left;">
 								<?php
-								if (!empty($materialsampledata)) {
-									foreach ($materialsampledata as &$row) {
-										$row['occid'] = '<a href="https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=' . htmlspecialchars($row['occid']) . '" target="_blank" rel="noopener noreferrer">'
-													. htmlspecialchars($row['occid'])
-													. '</a>';
-									}
-									echo str_replace(
-										'<table',
-										'<table id="materialSampleTable"',
-										$utilities->htmlTable(
-											$materialsampledata,
-											['PK','occid','ms catalog number','status','use type','sample type']
-										)
-									);
+								foreach ($materialsampledata as &$row) {
+									$row['occid'] = '<a href="https://biorepo.neonscience.org/portal/collections/individual/index.php?occid=' . htmlspecialchars($row['occid']) . '" target="_blank" rel="noopener noreferrer">'
+												. htmlspecialchars($row['occid'])
+												. '</a>';
 								}
+								echo str_replace(
+									'<table',
+									'<table id="materialSampleTable"',
+									$utilities->htmlTable(
+										$materialsampledata,
+										['PK','occid','ms catalog number','status','use type','sample type']
+									)
+								);
 								?>
 							</div>
+							<?php } ?>
+						</fieldset>
+					</div>
+					<div id="shipments" style="">
+						<?php
+						$selectedShipments = $inquiryManager->getShipmentByID($requestID);
+						if ($pc['contactEmail'] && $pc['orcid']) {
+						?>
+							<fieldset>
+								<legend><?php echo 'Shipments'; ?></legend>
+								<div style="clear:both;padding:10px 0;">
+									<div style="float:left;">
+										<button type="button"
+												class="addShipmentButton"
+												data-target="primary">
+											Create New Shipment
+										</button>
+									</div>
+								</div>
+								<form method="post"
+									action="inquiryform.php?id=<?php echo $requestID; ?>">
+									<div style="clear:both;padding-top:6px;float:left;">
+
+										<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
+
+										<input type="text"
+											id="shipmentSearch"
+											placeholder="Search and add shipments..."
+											style="width:400px;">
+										<input type="hidden"
+											name="inqshipmentids"
+											id="inqshipmentids">
+										<br>
+										<fieldset>
+											<div id="shipmentList"
+												style="margin-top:10px;"></div>
+										</fieldset>
+									</div>
+									<div style="clear:both;padding-top:8px;float:left;">
+										<input name="formsubmit"
+											type="hidden"
+											value="editShipment" />
+										<button name="submitButton"
+												type="submit">
+											<?php echo 'Update Shipments' ?>
+										</button>
+									</div>
+								</form>
 							</fieldset>
+						<?php
+						}
+						else echo 'Primary contact must have a NEON account and ORCID before shipments can be added';
+						?>
+					</div>
 				</div>
-				<div id="saveNotice"
-					style="display:none;
-							background:#fff3cd;
-							color:#856404;
-							border:1px solid #ffeeba;
-							padding:10px;
-							margin-bottom:10px;
-							border-radius:4px;">
-
-					You have unsaved changes. Click the Update on the relevant tab to save them.
-
-				</div>
-			<div id="shipments" style="">
-				<?php
-				$selectedShipments = $inquiryManager->getShipmentByID($requestID);
-				if ($pc['contactEmail'] && $pc['orcid']) {
-				?>
-					<fieldset>
-						<legend><?php echo 'Shipments'; ?></legend>
-
-						<div style="clear:both;padding:10px 0;">
-							<div style="float:left;">
-								<button type="button"
-										class="addShipmentButton"
-										data-target="primary">
-									Create New Shipment
-								</button>
-							</div>
-						</div>
-						<form method="post"
-							action="inquiryform.php?id=<?php echo $requestID; ?>">
-
-							<div style="clear:both;padding-top:6px;float:left;">
-
-								<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
-
-								<input type="text"
-									id="shipmentSearch"
-									placeholder="Search and add shipments..."
-									style="width:400px;">
-
-								<input type="hidden"
-									name="inqshipmentids"
-									id="inqshipmentids">
-								<br>
-								<fieldset>
-									<div id="shipmentList"
-										style="margin-top:10px;"></div>
-								</fieldset>
-							</div>
-
-							<div style="clear:both;padding-top:8px;float:left;">
-								<input name="formsubmit"
-									type="hidden"
-									value="editShipment" />
-
-								<button name="submitButton"
-										type="submit">
-									<?php echo 'Update Shipments' ?>
-								</button>
-							</div>
-
-						</form>
-
-					</fieldset>
-				<?php
-				}
-				else echo 'Primary contact must have a NEON account and ORCID before shipments can be added';
-				?>
-			</div>
 			</div>
 
-					<div style="clear:both;">&nbsp;</div>
+			<div style="clear:both;">&nbsp;</div>
 			</div>
 			<?php
 		}
