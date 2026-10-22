@@ -227,7 +227,7 @@ include($SERVER_ROOT.'/includes/header.php');
 			?>
 			<fieldset style="margin-top:30px">
 				<legend>Material Samples Associated with Request</legend>
-				<div style="float:left;margin-right:40px;width:1000px;">
+				<div style="float:left;margin-right:40px;box-sizing:border-box;">
 					<div class="displayFieldDiv">
 						<b>Request ID:</b> <?php echo $requestID; ?>
 						<a href="<?php echo $CLIENT_ROOT . '/neon/requests/inquiryform.php?id=' . $requestID; ?>">
@@ -237,60 +237,52 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv"><b>Title:</b> <?php echo $reqArr['title']; ?></div>
 					<div class="displayFieldDiv"><b>Primary Contact:</b> <?php echo $reqArr['name']; ?></div>
 					<div class="displayFieldDiv"><b>Status:</b> <?php echo $reqArr['status']; ?></div>
-					<div class="displayFieldDiv"><b>Number of Material Samples Linked:</b> <?php echo $matSampleCnt; ?></div>
-				</div>
-				<?php
-				if(in_array($reqArr['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed')) && !$matSampleCnt && $sampleCnt){
-				?>
-					<div style="clear:both;padding:10px 0;">
-						<div style="float:left;">
-							<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $requestID; ?>">
-								<button type="button">Load Material Samples</button>
-							</a>
+					<div class="displayFieldDiv"><b>Number of Material Samples Linked:</b> <?php echo $matSampleCnt; ?>
+					<?php
+					if(!$sampleCnt){
+					?>
+						<div style='font-weight:bold;margin:30px;color:red;'>
+							Add parent samples to request before adding material samples
+						</div>
+					<?php
+					}
+					?>
+						<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $requestID; ?>">
+								<strong>Batch Load Material Samples</strong>
+						</a>
 					</div>
+				</div>
+				<!-- <div style="float:left;margin-right:10px;">
+					<a href="#" onclick="return addSample(<?php echo $requestID; ?>);">
+						<button type="button">Add New Sample</button>
+					</a>
+				</div> -->
 				<?php
-				}
-				elseif(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding','pending fulfillment')) && $matSampleCnt){
+				if(in_array($reqArr['status'],array('pending sample list','active use','completed','pending funding','pending fulfillment')) && $matSampleCnt){
 					$materialSampleList = $inquiryManager->getMaterialSamplesByID($requestID, $sampleFilter);
 					?>
-					<div style="clear:both;padding:10px 0;">
-						<!-- <div style="float:left;margin-right:10px;">
-							<a href="#" onclick="return addSample(<?php echo $requestID; ?>);">
-								<button type="button">Add New Sample</button>
-							</a>
-						</div> -->
-						<div style="float:left;">
-							<form name="exportMaterialSampleListForm" action="exporthandler.php" method="post">
-								<input type="hidden" name="requestID" value="<?php echo $requestID; ?>" />
-								<input type="hidden" name="exportTask" value="materialsamplesrequest" />
-								<button type="submit" name="action" value="exportMaterialSampleList">
-									Export Material Samples
-								</button>
+					<div style="clear:both; padding:10px 0; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+						<b>Export as:</b>
+						<form name="exportMaterialSampleListForm" action="exporthandler.php" method="post" style="margin:0;">
+							<input type="hidden" name="requestID" value="<?php echo $requestID; ?>" />
+							<input type="hidden" name="exportTask" value="materialsamplesrequest" />
+							<button type="submit" name="action" value="exportMaterialSampleList">
+								Export Material Samples
+							</button>
 							</form>
-						</div>
-					</div>
-					<div style="clear:both;padding:10px 0;">
-						<div style="float:left;">
-							<form name="exportMaterialTableForm" action="exporthandler.php" method="post">
-								<input type="hidden" name="requestID" value="<?php echo $requestID; ?>" />
-								<input type="hidden" name="exportTask" value="materialsamplestable" />
-								<button type="submit" name="action" value="exportMaterialSampleTable">
-									Export Material Sample Occurrence Table
-								</button>
-							</form>
-						</div>
+							<form name="exportMaterialTableForm" action="exporthandler.php" method="post" style="margin:0;">
+							<input type="hidden" name="requestID" value="<?php echo $requestID; ?>" />
+							<input type="hidden" name="exportTask" value="materialsamplestable" />
+							<button type="submit" name="action" value="exportMaterialSampleTable">
+								Export Material Sample Occurrence Table
+							</button>
+						</form>
 					</div>
 					<div style="clear:both;padding:10px 0;">
 						<div style="float:left;">
 							<div style="float:left;">
 								<button type="button" onclick="openMaterialSampleBatchEditor()">Batch Edit Selected Material Samples</button>
 							</div>
-					</div>
-					<div style="clear:both;padding:10px 0;">
-						<div style="float:left;">
-						<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $requestID; ?>">
-							<button type="button">Load Material Samples</button>
-						</a>
 					</div>
 					<div style="clear:both;padding-top:30px;">
 						<fieldset id="samplePanel">
