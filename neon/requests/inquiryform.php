@@ -863,11 +863,19 @@ if(!$isEditor) {
 					</div>
 					<div id="samples" style="">
 						<fieldset>
-							<legend><?php echo 'Samples'; ?></legend>									
+							<legend><?php echo 'Samples'; ?></legend>		
+							<?php if(in_array($inquirydata['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed'))) { ?> 
+								<div style="clear:both;padding-top:8px;float:left;">
+									<button type="button" onclick="window.location.href='importrequestsample.php?id=<?php echo $requestID; ?>'">
+										Batch Load Samples
+									</button>
+								</div>
+							<?php } ?>									
 							<div style="clear:both;padding-top:8px;float:left;">
 								<button type="button" onclick = "window.location.href='samplelist.php?id=<?php echo $requestID; ?>'">
 									View and Modify Sample List
 								</button>
+							</div>
 								<?php 
 								if($sampledata) {
 								?>
@@ -905,7 +913,13 @@ if(!$isEditor) {
 					<div id="materialsamples" style="">
 							<fieldset>
 								<legend><?php echo 'Material Samples'; ?></legend>		
-								<h4>Note that material samples cannot be edited until the associated parent samples have been added.</h4>							
+								<h4>Note that material samples cannot be added until the associated parent samples are linked.</h4>	
+								<?php if(in_array($inquirydata['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed'))) { ?> 
+									<div style="clear:both;padding-top:8px;float:left;">
+										<button type="button" onclick="window.location.href='importrequestsample.php?id=<?php echo $requestID; ?>'">
+											Batch Load Material Samples
+										</button>
+								<?php } ?>						
 								<div style="clear:both;padding-top:8px;float:left;">
 									<button type="button" onclick="window.location.href='materialsamplelist.php?id=<?php echo $requestID; ?>'">
 									View and Modify Material Sample List
