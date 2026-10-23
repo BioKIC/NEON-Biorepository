@@ -333,7 +333,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="displayFieldDiv"><b>Number of Samples Linked:</b> <?php echo $sampleCnt; ?>
 					<?php if(in_array($reqArr['status'],array('pending funding','pending sample list','pending fulfillment','active use','completed'))){ ?> 
 						<a href="<?php echo $CLIENT_ROOT . '/neon/requests/importrequestsample.php?id=' . $requestID; ?>">
-								<strong>Batch Load Samples</strong>
+							<strong>Batch Load Samples</strong>
 						</a>
 					<?php } ?>
 					</div>
