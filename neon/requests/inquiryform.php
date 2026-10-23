@@ -1387,6 +1387,7 @@ function renderAdditionalResearchers(){
 function removeResearcher(index){
     window.selectedResearchers.splice(index,1);
     renderAdditionalResearchers();
+    markPendingChanges();
 }
 
 window.selectedCollections = [
