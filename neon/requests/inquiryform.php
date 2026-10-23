@@ -121,7 +121,10 @@ if($formSubmit == 'editInquiry' && $isEditor){
 		);
 
 		if ($updatedrequestid) {
-			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success&tabindex=" . $tabIndex);
+			header(
+				"Location: inquiryform.php?id=" . (int)$requestID .
+				"&status=success&tabindex=" . (int)$tabIndex
+			);
 			exit();
 		} else {
 			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
@@ -168,7 +171,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 	if (!empty($complete) && empty($active)) $errorMessage[] = 'Active Date required when complete date present.';
 	if (!empty($active) && empty($fulfillment)) $errorMessage[] = 'Pending Fulfillment Date required when active date present.';
 	if (!empty($fulfillment) && empty($pendinglist) && !empty($pendingfunding)) $errorMessage[] = 'Proposals must have a Funded Date in order to have a Pending Fulfillment Date.';
-	if (!empty($fulfillment) && !empty($notfunded)) $errorMessage[] = 'Unfunded proposal cannot be fulfilled (Create new Inquiry Record).';
+	if (!empty($fulfillment) && !empty($notfunded)) $errorMessage[] = 'Unfunded proposal cannot be fulfilled (Create a new Inquiry Record).';
 	if (!empty($notfunded) && !empty($pendinglist)) $errorMessage[] = 'Cannot have both funded and not funded date.';
 	if (!empty($complete) && !empty($active)) {
 		if (strtotime($complete) <= strtotime($active)) {
@@ -207,7 +210,14 @@ if($formSubmit == 'editStatus' && $isEditor){
 	if(!empty($active) && empty($sampledata)) $errorMessage[] = 'Must link samples to request before setting Active Date.';
 
 	if (!empty($errorMessage)) {
-		$statusStr = '<span style="color:red;">' . implode(', ', $errorMessage) . '</span>';
+		$statusStr = '<div style="color:red;">';
+		$statusStr .= '<strong>Error saving edits</strong>';
+		$statusStr .= '<ul style="margin-top:5px; color:red;">';
+		foreach ($errorMessage as $error) {
+			$statusStr .= '<li>' . htmlspecialchars($error, ENT_QUOTES, 'UTF-8') . '</li>';
+		}
+		$statusStr .= '</ul>';
+		$statusStr .= '</div>';
 	} else {
 		$updatedrequestid = $inquiryManager->editStatus(
 			$requestID,
@@ -229,7 +239,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 		);
 
 		if ($updatedrequestid) {
-			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success&tabindex=" . $tabIndex);
+			header("Location: inquiryform.php?id=" . $requestID . "&status=success&tabindex=" . $tabIndex);
 			exit();
 		} else {
 			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
@@ -237,25 +247,46 @@ if($formSubmit == 'editStatus' && $isEditor){
 		}
 }
 
-	if($formSubmit == 'editShipment' && $isEditor){
+
+	if ($formSubmit == 'editShipment' && $isEditor) {
+		$postedRequestID = filter_input(
+			INPUT_POST,
+			FILTER_VALIDATE_INT
+		);
+		$linkRequestID = ($postedRequestID && $postedRequestID > 0)
+			? $postedRequestID
+			: $requestID;
 
 		$shipmentIDs = [];
 
-		if(!empty($_POST['inqshipmentids'])){
-			$shipmentIDs = explode(',', $_POST['inqshipmentids']);
+		if (!empty($_POST['inqshipmentids'])) {
+			$shipmentIDs = array_filter(
+				array_map(
+					'intval',
+					explode(',', $_POST['inqshipmentids'])
+				),
+				function ($id) {
+					return $id > 0;
+				}
+			);
 		}
 
-		$updatedRequestID = $inquiryManager->editShipment(
+		$updatedrequestid = $inquiryManager->editShipment(
 			$shipmentIDs,
 			$SYMB_UID,
-			$requestID  
+			$linkRequestID
 		);
 
-		if ($updatedRequestID) {
-			header("Location: inquiryform.php?id=" . $updatedrequestid . "&status=success&tabindex=" . $tabIndex);			
+		if ($updatedrequestid) {
+			header(
+				'Location: inquiryform.php?id=' . (int)$linkRequestID .
+				'&status=success&tabindex=' . (int)$tabIndex
+			);
 			exit();
 		} else {
-			$statusStr = '<span style="color:red;">Error saving inquiry edits: ' . htmlspecialchars($inquiryManager->getErrorStr()) . '</span>';
+			$statusStr = '<span style="color:red;">Error saving shipment links: ' .
+				htmlspecialchars($inquiryManager->getErrorStr()) .
+				'</span>';
 		}
 	}
 
@@ -281,13 +312,19 @@ if(!$isEditor) {
 
 	<script>
 
-	var tabIndex = <?php echo $tabIndex; ?>;
-	$(function() {
-    $("#tabs").tabs({
-        active: tabIndex
-    });
-	});
 
+	var tabIndex = <?php echo (int)$tabIndex; ?>;
+
+	$(function() {
+		$("#tabs").tabs({
+			active: tabIndex,
+			activate: function(event, ui) {
+				tabIndex = $("#tabs").tabs("option", "active");
+
+				$('input[name="tabindex"]').val(tabIndex);
+			}
+		});
+	});
 
 	function verifyInquiryEditForm(f) {
 		if (f.inqresearcher.value === "") {
@@ -446,7 +483,17 @@ if(!$isEditor) {
 								</div>
 								<div style="clear:both;padding-top:6px;float:left;">
 									<span>
-										<strong>Primary Contact</strong><br><i>Note: the primary contact must have an associated email and ORCID before receiving samples.</i><br>
+										<strong>Primary Contact</strong>
+										<a href="#"
+										class="addResearcherBtn"
+										data-target="primary"
+										style="margin-left:10px;">
+											Create New Researcher
+										</a>
+										<br>
+										<i>Note: the primary contact must have an associated email and ORCID before receiving samples.</i>
+										<br>
+
 										<input type="text"
 											id="researcherSearch"
 											placeholder="Search researcher..."
@@ -457,35 +504,40 @@ if(!$isEditor) {
 											name="inqresearcher"
 											id="inqresearcher"
 											value="<?php echo $pc['researcherID']; ?>">
-											<button type="button"
-													id="editResearcherBtn"
-													data-researcherid="<?php echo $pc['researcherID']; ?>">
-												Edit Researcher Contact Info
-											</button>
-										<button type="button"
-											class="addResearcherBtn"
-											data-target="primary">
-											Create New Researcher
-										</button>
+
+										<a href="#"
+										id="editResearcherBtn"
+										data-researcherid="<?php echo $pc['researcherID']; ?>"
+										style="margin-left:8px;">
+											Edit Researcher Contact Info
+										</a>
 									</span>
 								</div>
+
 								<div style="clear:both;padding-top:6px;float:left;">
-								<strong>Additional Researchers (select all)</strong><br/><i>Choose none for rare cases in which there are no collaborators.</i><br>
-								<span>
-									<input type="text"
-										id="additionalResearcherSearch"
-										placeholder="Search and add researchers..."
-										style="width:400px;">
+									<strong>Additional Researchers (select all)</strong>
+									<a href="#"
+									class="addResearcherBtn"
+									data-target="additional"
+									style="margin-left:10px;">
+										Create New Researcher
+									</a>
+									<br>
 
-									<input type="hidden"
-										name="inqadditionalresearcher"
-										id="inqadditionalresearcher">
+									<i>Choose none for rare cases in which there are no collaborators.</i>
+									<br>
 
-									<div id="additionalResearcherList" style="margin-top:10px;"></div>
-								</span>
 									<span>
-											<button type="button" class="addResearcherBtn" data-target="additional">Create New Researcher</button>
-											</button>									
+										<input type="text"
+											id="additionalResearcherSearch"
+											placeholder="Search and add researchers..."
+											style="width:400px;">
+
+										<input type="hidden"
+											name="inqadditionalresearcher"
+											id="inqadditionalresearcher">
+
+										<div id="additionalResearcherList" style="margin-top:10px;"></div>
 									</span>
 								</div>
 								<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
@@ -696,7 +748,7 @@ if(!$isEditor) {
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
        										<label for="inqdrive"><strong><?php echo 'Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
-											<i>Place inquiry folder within <a href='https://drive.google.com/drive/folders/18dxKEfUd6V7IpUEUi6dkQoOLzm9gyy-3?usp=drive_link'>Researcher Requests and Agreements</a></i><br>
+											<i>Place inquiry folder within <a href='https://drive.google.com/drive/folders/18dxKEfUd6V7IpUEUi6dkQoOLzm9gyy-3?usp=drive_link' target = '_blank'>Researcher Requests and Agreements</a></i><br>
         									<input name="inqdrive" id="inqdrive" type="text" style="width:700px;" value="<?php echo $inquirydata['folderName']; ?>" />
 											<?php if ($inquirydata['folderName'] && str_contains($inquirydata['folderName'],"drive.google")) {
 												echo '<a href=' . $inquirydata['folderName'] . ' target="_blank" rel="noopener noreferrer">Link to Folder</a>';
@@ -778,7 +830,7 @@ if(!$isEditor) {
 										<strong>Link to Signed Sample Use Agreement:</strong>
 										</br><i>Use NA for internal requests (or similar) that do not require an agreement.</i></br>
 										<input name="inqsualink" type="text" style = 'width:700px' value="<?php echo $inquirydata['sampleUseAgreementLink']; ?>" />
-										<?php if ($inquirydata['sampleUseAgreementLink'] && str_contains($inquirydata['sampleUseAgreementLink'],"drive.google")) {
+										<?php if ($inquirydata['sampleUseAgreementLink'] && str_contains($inquirydata['sampleUseAgreementLink'],"google")) {
 											echo '<a href=' . $inquirydata['sampleUseAgreementLink'] . ' target="_blank" rel="noopener noreferrer">Link to Agreement</a>';
 										} ?>
 									</div>
@@ -793,8 +845,8 @@ if(!$isEditor) {
 									<div class="fieldDiv">
 										<strong><?php echo 'Link to Signed Confirmation of Sample Receipt: '?></strong></br>
 										<input name="inqcsrlink" type="text" style = 'width:700px' value="<?php echo $inquirydata['confirmationOfReceiptLink']; ?>" />
-										<?php if ($inquirydata['confirmationOfReceiptLink'] && str_contains($inquirydata['confirmationOfReceiptLink'],"drive.google")) {
-											echo '<a href=' . $inquirydata['confirmationOfReceiptLink'] . ' target="_blank" rel="noopener noreferrer">Link to Agreement</a>';
+										<?php if ($inquirydata['confirmationOfReceiptLink'] && str_contains($inquirydata['confirmationOfReceiptLink'],"google")) {
+											echo '<a href=' . $inquirydata['confirmationOfReceiptLink'] . ' target="_blank" rel="noopener noreferrer">Link to Receipt</a>';
 										} ?>
 									</div>
 								</div>
@@ -955,16 +1007,14 @@ if(!$isEditor) {
 										<button type="button"
 												class="addShipmentButton"
 												data-target="primary">
-											Create New Shipment
+											Create New Shipment/Pseudoshipment
 										</button>
 									</div>
 								</div>
 								<form method="post"
 									action="inquiryform.php?id=<?php echo $requestID; ?>">
 									<div style="clear:both;padding-top:6px;float:left;">
-
 										<strong><?php echo 'Shipments (select all)'; ?>:</strong><br />
-
 										<input type="text"
 											id="shipmentSearch"
 											placeholder="Search and add shipments..."
@@ -982,6 +1032,10 @@ if(!$isEditor) {
 										<input name="formsubmit"
 											type="hidden"
 											value="editShipment" />
+										<input type="hidden" name="requestID"
+       										value="<?php echo (int)$requestID; ?>">
+										<input type="hidden" name="tabindex"
+											value="<?php echo (int)$tabIndex; ?>">
 										<button name="submitButton"
 												type="submit">
 											<?php echo 'Update Shipments' ?>
@@ -991,7 +1045,7 @@ if(!$isEditor) {
 							</fieldset>
 						<?php
 						}
-						else echo 'Primary contact must have a NEON account and ORCID before shipments can be added';
+						else echo 'Primary contact must have a NEON account and ORCID before a shipment or pseudoshipment can be added';
 						?>
 					</div>
 				</div>
@@ -1046,9 +1100,9 @@ if(!$isEditor) {
 	<div id="shipmentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
 		background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
 		<div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
-			<h2>Add New Shipment</h2>
+			<h2>Add New Shipment or Pseudoshipment</h2>
 			<form id="shipmentform">
-				<label><b>Shipped to:</b> (if researcher is not present, go back to request editor to link researcher to the request)</label>
+				<label><b>Recipient:</b> (if recipient is not present, link researcher to the request on the Inquiry Info tab)</label>
 				<select name="researcherid" required style="width:100%; margin-bottom:15px;">
 					<option value="">-- Select Researcher --</option>
 					<?php 
@@ -1060,13 +1114,13 @@ if(!$isEditor) {
 					<?php endforeach; ?>
 				</select>
 				
-				<label><b>Shipment Date:</b></label>
+				<label><b>Date of Shipment or Data/Image Transfer:</b></label>
 				<input type="date" name="shipdate" required style="width:100%;"><br><br>
 
-				<label><b>Address:</b></label>
+				<label><b>Address: (input "NA" if data/image transfer only)</b></label>
 				<input type="text" name="address" required style="width:100%;"><br><br>
 
-				<label><b>Shipped By:</b></label>
+				<label><b>Person who shipped samples or transferred data/images:</b></label>
 				<select name="shippedby" required style="width:100%; margin-bottom:15px;">
 					<option value="">-- Select Manager --</option>
 					<?php foreach($managerArr as $id => $name): ?>
@@ -1075,6 +1129,7 @@ if(!$isEditor) {
 						</option>
 					<?php endforeach; ?>
 				</select>
+				<input type="hidden" name="requestID" value="<?php echo (int)$requestID; ?>">
 				<button type="submit">Save</button>
 				<button type="button" id="closeShipmentModal">Cancel</button>
 			</form>
@@ -1264,7 +1319,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 
 			console.log("Posting shipment form:", ...formData.entries());
 
-			fetch('../../neon/requests/add_shipment.php', {
+			fetch('../../neon/requests/add_shipment.php?id=<?php echo (int)$requestID; ?>', {
 				method: 'POST',
 				body: formData
 			})
@@ -1273,7 +1328,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 				if (data.success) {
 					modal.style.display = 'none';
 					shipmentForm.reset();
-					alert('Shipment added successfully.');
+					alert('Shipment created successfully. You can now link it to the request.');
 				} else {
 					alert('Error: ' + data.message);
 				}
@@ -1652,7 +1707,10 @@ $(document).ready(function(){
 		}
 	});
 
-	$("form").on("submit", function(){
+	$("form").on("submit", function() {
+		var activeTabIndex = $("#tabs").tabs("option", "active");
+
+		$('input[name="tabindex"]').val(activeTabIndex);
 
 		clearPendingChanges();
 	});
