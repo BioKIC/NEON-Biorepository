@@ -251,6 +251,7 @@ if($formSubmit == 'editStatus' && $isEditor){
 	if ($formSubmit == 'editShipment' && $isEditor) {
 		$postedRequestID = filter_input(
 			INPUT_POST,
+			'requestID',
 			FILTER_VALIDATE_INT
 		);
 		$linkRequestID = ($postedRequestID && $postedRequestID > 0)
