@@ -533,10 +533,212 @@ include($SERVER_ROOT.'/includes/header.php');
 </div>
 
 
+	<div id="researcherModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+		<div style="background:#fff; padding:20px; border-radius:6px; width:400px; max-width:90%; position:relative;">
+			<h2>Edit Researcher</h2>
+
+			<form id="researcherForm">
+				<input type="hidden" name="researcherID" id="researcherID">
+
+				<label>Name*:</label>
+				<input type="text" name="name" required readonly style="width:100%;"><br><br>
+
+				<label>Institution*:</label>
+				<input type="text" name="institution" required style="width:100%;"><br><br>
+
+				<label>Email:</label>
+				<input type="text" name="contactEmail" style="width:100%;"><br><br>
+
+				<label>ORCID:</label>
+				<input type="text" name="orcid" style="width:100%;"><br><br>
+
+				<label>Address:</label>
+				<input type="text" name="address" style="width:100%;"><br><br>
+
+				<label>Phone:</label>
+				<input type="text" name="phone" style="width:100%;"><br><br>
+
+				<button type="submit">Save</button>
+				<button type="button" id="closeResearcherModal">Cancel</button>
+			</form>
+		</div>
+	</div>
+
+	<div id="shipmentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+		background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+		<div style="background:#fff; padding:20px; border-radius:6px; width:400px; position:relative;">
+			<h2>Add New Shipment or Pseudoshipment</h2>
+			<form id="shipmentform">
+				<label><b>Recipient:</b> (if recipient is not present, link researcher to the request on the Inquiry Info tab)</label>
+				<select name="researcherid" required style="width:100%; margin-bottom:15px;">
+					<option value="">-- Select Researcher --</option>
+					<?php 
+					$researchers = $inquiryManager->getResearchersByID($requestID); 
+					foreach($researchers as $id => $name): ?>
+						<option value="<?= htmlspecialchars($id) ?>">
+							<?= htmlspecialchars($name) ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				
+				<label><b>Date of Shipment or Data/Image Transfer:</b></label>
+				<input type="date" name="shipdate" required style="width:100%;"><br><br>
+
+				<label><b>Address: (input "NA" if data/image transfer only)</b></label>
+				<input type="text" name="address" required style="width:100%;"><br><br>
+
+				<label><b>Person who shipped samples or transferred data/images:</b></label>
+				<select name="shippedby" required style="width:100%; margin-bottom:15px;">
+					<option value="">-- Select Manager --</option>
+					<?php foreach($managers as $id => $name): ?>
+						<option value="<?= htmlspecialchars($id) ?>">
+							<?= htmlspecialchars($name) ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+				<input type="hidden" name="requestID" value="<?php echo (int)$requestID; ?>">
+				<button type="submit">Save</button>
+				<button type="button" id="closeShipmentModal">Cancel</button>
+			</form>
+		</div>
+	</div>
+
 <?php
 include($SERVER_ROOT.'/includes/footer.php');
 ?>
 
+<script>
+
+	$("#editResearcherBtn").on("click", function() {
+
+		$("#researcherID").val("<?php echo $pc['researcherID']; ?>");
+
+		$("[name=name]").val(<?php echo json_encode($pc['name']); ?>);
+		$("[name=institution]").val(<?php echo json_encode($pc['institution']); ?>);
+		$("[name=contactEmail]").val(<?php echo json_encode($pc['contactEmail']); ?>);
+		$("[name=orcid]").val(<?php echo json_encode($pc['orcid']); ?>);
+		$("[name=address]").val(<?php echo json_encode($pc['address']); ?>);
+		$("[name=phone]").val(<?php echo json_encode($pc['phone']); ?>);
+
+		$("[name=name]").prop("readonly", true);
+
+		$("#researcherModal h2").text("Edit Researcher");
+
+		$("#researcherModal").css("display", "flex");
+	});
+
+	document.getElementById('closeResearcherModal').addEventListener('click', function(){
+		document.getElementById('researcherModal').style.display = 'none';
+	});
+
+	document.getElementById('closeShipmentModal').addEventListener('click', function(){
+		document.getElementById('shipmentModal').style.display = 'none';
+	});
+
+	document.getElementById('researcherForm').addEventListener('submit', function(e){
+		e.preventDefault();
+		let formData = new FormData(this);
+
+		fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
+		.then(res => res.json())
+		.then(data => {
+			if(data.success){
+				const label = data.name + ' (' + data.institution + ')';
+
+				if(document.getElementById('researcherModal').dataset.source === 'primary') {
+
+					$("#researcherSearch").val(label);
+					$("#inqresearcher").val(data.researcherID);
+				}
+
+				if(document.getElementById('researcherModal').dataset.source === 'additional') {
+
+					if(!window.selectedResearchers.find(r => r.id == data.researcherID)) {
+
+						window.selectedResearchers.push({
+							id: data.researcherID,
+							label: label
+						});
+
+						renderAdditionalResearchers();
+						markPendingChanges();
+					}
+				}
+
+				document.getElementById('researcherModal').style.display = 'none';
+				document.getElementById('researcherForm').reset();
+
+				alert('Researcher added or edited successfully.');
+			} else {
+				alert('Error: ' + data.message);
+			}
+		})
+		.catch(err => alert('Request failed'));
+	});
+
+	document.addEventListener('DOMContentLoaded', function() {
+		const modal = document.getElementById('shipmentModal');
+		const shipmentForm = document.getElementById('shipmentform');
+
+		if (!shipmentForm) {
+			console.error('shipmentForm not found in DOM!');
+			return;
+		}
+
+		document.querySelectorAll('.addShipmentButton').forEach(btn => {
+			btn.addEventListener('click', function() {
+				modal.dataset.source = btn.dataset.target || '';
+				modal.style.display = 'flex';
+			});
+		});
+
+		document.getElementById('closeShipmentModal').addEventListener('click', function() {
+			modal.style.display = 'none';
+			shipmentForm.reset(); 
+		});
+		
+		document.getElementById('closeResearcherModal').addEventListener('click', function() {
+			modal.style.display = 'none';
+			shipmentForm.reset(); 
+		});
+
+
+		modal.addEventListener('click', function(e) {
+			if (e.target === modal) {
+				modal.style.display = 'none';
+				shipmentForm.reset();
+			}
+		});
+
+		shipmentForm.addEventListener('submit', function(e) {
+			e.preventDefault();
+			const formData = new FormData(shipmentForm);
+
+			console.log("Posting shipment form:", ...formData.entries());
+
+			fetch('../../neon/requests/add_shipment.php?id=<?php echo (int)$requestID; ?>', {
+				method: 'POST',
+				body: formData
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (data.success) {
+					modal.style.display = 'none';
+					shipmentForm.reset();
+					alert('Shipment created successfully. You can now link it to the request.');
+				} else {
+					alert('Error: ' + data.message);
+				}
+			})
+			.catch(err => {
+				console.error(err);
+				alert('Request failed: ' + err);
+			});
+		});
+	});
+
+
+</script>
 
 </body>
 </html>
