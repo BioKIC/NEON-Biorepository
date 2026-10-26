@@ -1181,104 +1181,104 @@ if(!$isEditor) {
 			}
 		}
 
-let hasPendingChanges = false;
+	let hasPendingChanges = false;
 
-function markPendingChanges() {
+	function markPendingChanges() {
 
-    hasPendingChanges = true;
+		hasPendingChanges = true;
 
-    $("#saveNotice").show();
-}
+		$("#saveNotice").show();
+	}
 
-function clearPendingChanges() {
+	function clearPendingChanges() {
 
-    hasPendingChanges = false;
+		hasPendingChanges = false;
 
-    $("#saveNotice").hide();
-}
+		$("#saveNotice").hide();
+	}
 
-document.querySelectorAll('.addResearcherBtn').forEach(btn => {
-    btn.addEventListener('click', function() {
+	document.querySelectorAll('.addResearcherBtn').forEach(btn => {
+		btn.addEventListener('click', function() {
 
-        $("#researcherID").val("");
+			$("#researcherID").val("");
 
-        $("#researcherForm")[0].reset();
+			$("#researcherForm")[0].reset();
 
-        $("[name=name]").prop("readonly", false);
+			$("[name=name]").prop("readonly", false);
 
-        $("#researcherModal h2").text("Add New Researcher");
+			$("#researcherModal h2").text("Add New Researcher");
 
-        document.getElementById('researcherModal').dataset.source = btn.dataset.target;
-        document.getElementById('researcherModal').style.display = 'flex';
-    });
-});
+			document.getElementById('researcherModal').dataset.source = btn.dataset.target;
+			document.getElementById('researcherModal').style.display = 'flex';
+		});
+	});
 
-$("#editResearcherBtn").on("click", function() {
+	$("#editResearcherBtn").on("click", function() {
 
-    $("#researcherID").val("<?php echo $pc['researcherID']; ?>");
+		$("#researcherID").val("<?php echo $pc['researcherID']; ?>");
 
-    $("[name=name]").val(<?php echo json_encode($pc['name']); ?>);
-    $("[name=institution]").val(<?php echo json_encode($pc['institution']); ?>);
-    $("[name=contactEmail]").val(<?php echo json_encode($pc['contactEmail']); ?>);
-    $("[name=orcid]").val(<?php echo json_encode($pc['orcid']); ?>);
-    $("[name=address]").val(<?php echo json_encode($pc['address']); ?>);
-    $("[name=phone]").val(<?php echo json_encode($pc['phone']); ?>);
+		$("[name=name]").val(<?php echo json_encode($pc['name']); ?>);
+		$("[name=institution]").val(<?php echo json_encode($pc['institution']); ?>);
+		$("[name=contactEmail]").val(<?php echo json_encode($pc['contactEmail']); ?>);
+		$("[name=orcid]").val(<?php echo json_encode($pc['orcid']); ?>);
+		$("[name=address]").val(<?php echo json_encode($pc['address']); ?>);
+		$("[name=phone]").val(<?php echo json_encode($pc['phone']); ?>);
 
-    $("[name=name]").prop("readonly", true);
+		$("[name=name]").prop("readonly", true);
 
-    $("#researcherModal h2").text("Edit Researcher");
+		$("#researcherModal h2").text("Edit Researcher");
 
-    $("#researcherModal").css("display", "flex");
-});
+		$("#researcherModal").css("display", "flex");
+	});
 
-document.getElementById('closeResearcherModal').addEventListener('click', function(){
-    document.getElementById('researcherModal').style.display = 'none';
-});
+	document.getElementById('closeResearcherModal').addEventListener('click', function(){
+		document.getElementById('researcherModal').style.display = 'none';
+	});
 
-document.getElementById('closeShipmentModal').addEventListener('click', function(){
-    document.getElementById('shipmentModal').style.display = 'none';
-});
+	document.getElementById('closeShipmentModal').addEventListener('click', function(){
+		document.getElementById('shipmentModal').style.display = 'none';
+	});
 
-document.getElementById('researcherForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    let formData = new FormData(this);
+	document.getElementById('researcherForm').addEventListener('submit', function(e){
+		e.preventDefault();
+		let formData = new FormData(this);
 
-    fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success){
-			const label = data.name + ' (' + data.institution + ')';
+		fetch('../../neon/requests/add_researcher.php', { method: 'POST', body: formData })
+		.then(res => res.json())
+		.then(data => {
+			if(data.success){
+				const label = data.name + ' (' + data.institution + ')';
 
-			if(document.getElementById('researcherModal').dataset.source === 'primary') {
+				if(document.getElementById('researcherModal').dataset.source === 'primary') {
 
-				$("#researcherSearch").val(label);
-				$("#inqresearcher").val(data.researcherID);
-			}
-
-			if(document.getElementById('researcherModal').dataset.source === 'additional') {
-
-				if(!window.selectedResearchers.find(r => r.id == data.researcherID)) {
-
-					window.selectedResearchers.push({
-						id: data.researcherID,
-						label: label
-					});
-
-					renderAdditionalResearchers();
-					markPendingChanges();
+					$("#researcherSearch").val(label);
+					$("#inqresearcher").val(data.researcherID);
 				}
+
+				if(document.getElementById('researcherModal').dataset.source === 'additional') {
+
+					if(!window.selectedResearchers.find(r => r.id == data.researcherID)) {
+
+						window.selectedResearchers.push({
+							id: data.researcherID,
+							label: label
+						});
+
+						renderAdditionalResearchers();
+						markPendingChanges();
+					}
+				}
+
+				document.getElementById('researcherModal').style.display = 'none';
+				document.getElementById('researcherForm').reset();
+
+				alert('Researcher added or edited successfully.');
+			} else {
+				alert('Error: ' + data.message);
 			}
-
-            document.getElementById('researcherModal').style.display = 'none';
-            document.getElementById('researcherForm').reset();
-
-            alert('Researcher added or edited successfully.');
-        } else {
-            alert('Error: ' + data.message);
-        }
-    })
-    .catch(err => alert('Request failed'));
-});
+		})
+		.catch(err => alert('Request failed'));
+	});
 
 	document.addEventListener('DOMContentLoaded', function() {
 		const modal = document.getElementById('shipmentModal');
@@ -1329,7 +1329,7 @@ document.getElementById('researcherForm').addEventListener('submit', function(e)
 				if (data.success) {
 					modal.style.display = 'none';
 					shipmentForm.reset();
-					alert('Shipment created successfully. You can now link it to the request.');
+					alert('Shipment created successfully and linked successfully. Refresh to see the linked shipment');
 				} else {
 					alert('Error: ' + data.message);
 				}

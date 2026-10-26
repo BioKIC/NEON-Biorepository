@@ -725,7 +725,7 @@ include($SERVER_ROOT.'/includes/footer.php');
 				if (data.success) {
 					modal.style.display = 'none';
 					shipmentForm.reset();
-					alert('Shipment created successfully. You can now link it to the request.');
+					alert('Shipment created successfully. You can now link it to samples within the request.');
 				} else {
 					alert('Error: ' + data.message);
 				}
