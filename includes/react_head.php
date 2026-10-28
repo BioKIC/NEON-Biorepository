@@ -311,24 +311,26 @@ if ($isNeonEditor) {
 
     const addHeaderButtons = () => {
         const container = byId('header__authentication-ui');
-        const headerRight = $('.header__right');
-        if (!container || !headerRight) return;
+        const actions = $('.header__right .header__actions');
+        const hamburger = actions?.querySelector('.nav__hamburger');
+        if (!container || !actions || !hamburger) return;
     
-        headerRight.append(container);
-        headerRight.style.position = 'relative';
+        hamburger.before(container);
+    
+        Object.assign(actions.style, {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end'
+        });
     
         Object.assign(container.style, {
-            position: 'absolute',
-            top: '0',
-            right: '0',
-            bottom: 'auto',
-            left: 'auto',
+            position: 'static',
             margin: '0',
             padding: '0',
             display: 'flex',
             alignItems: 'center',
             gap: '0',
-            zIndex: '1000'
+            zIndex: 'auto'
         });
     
         const buttons = <?= json_encode($headerButtons, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
