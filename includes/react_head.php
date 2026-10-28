@@ -291,7 +291,8 @@ if ($isNeonEditor) {
         color: '#0073cf', fontSize: '0.55rem', fontWeight: '600',
         lineHeight: '1.75', whiteSpace: 'nowrap', textTransform: 'uppercase',
         borderWidth: '1px', borderStyle: 'solid', borderRadius: '0',
-        borderColor: '#0073cf', padding: '5px 10px', display: 'inline'
+        borderColor: '#0073cf', padding: '5px 10px', display: 'inline-flex',
+        alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box'
     };
 
     const createHeaderButton = ([label, url]) => {
@@ -319,7 +320,7 @@ if ($isNeonEditor) {
     
         Object.assign(actions.style, {
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'stretch',
             justifyContent: 'flex-end'
         });
     
