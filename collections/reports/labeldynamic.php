@@ -294,8 +294,14 @@ if($SYMB_UID){
 		if(substr($jsPath,0,1) == '/' && !file_exists($jsPath)){
 			if(file_exists($SERVER_ROOT.$targetLabelFormatArr['customJS'])) $jsPath = $CLIENT_ROOT.$targetLabelFormatArr['customJS'];
 		}
-		echo '<script src="'.$jsPath.'"></script>'."\n";
+		$versionedJsPath = $jsPath
+			. (strpos($jsPath, '?') === false ? '?' : '&')
+			. 'v=' . date('Ymd');
+		
+		echo '<script src="'
+			. htmlspecialchars($versionedJsPath, ENT_QUOTES, 'UTF-8')
+			. '"></script>' . "\n";
 	}
 	?>
-	<script src="../../js/symb/collections.labeldynamic.js"></script>
+	<script src="../../js/symb/collections.labeldynamic.js?v=<?php echo date('Ymd'); ?>"></script>
 </html>
