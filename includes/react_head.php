@@ -329,7 +329,7 @@ if ($isNeonEditor) {
             margin: '0',
             padding: '0',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'stretch',
             gap: '0',
             zIndex: 'auto'
         });
