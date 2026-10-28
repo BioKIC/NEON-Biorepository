@@ -17,7 +17,7 @@ elseif (array_key_exists('CollAdmin', $USER_RIGHTS) || array_key_exists('CollEdi
 //react code
 include($SERVER_ROOT . '/includes/react_head.php');
 
-$CSS_VERSION = '20261028';
+$CSS_VERSION = '20261028-2';
 ?>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- UNIVERSAL CSS –––––––––––––––––––––––––––––––––––––––––––––––––– -->
