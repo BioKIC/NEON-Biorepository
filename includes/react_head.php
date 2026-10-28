@@ -316,13 +316,20 @@ if ($isNeonEditor) {
     
         headerRight.append(container);
     
+        Object.assign(header.style, {
+            position: 'relative'
+        });
+    
         Object.assign(container.style, {
-            position: 'static',
+            position: 'absolute',
+            top: '0',
+            right: '0',
             margin: '0',
             padding: '0',
             display: 'flex',
             alignItems: 'center',
-            gap: '0'
+            gap: '0',
+            zIndex: '1000'
         });
     
         const buttons = <?= json_encode($headerButtons, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
