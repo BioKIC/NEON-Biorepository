@@ -239,8 +239,6 @@ li:not([class^="Mui"]):not([class*=" Mui"]):not([class^="ui-"]) {
 
 @media (min-width: 1025px) {
   #header {
-    background: linear-gradient(to bottom, #006bcd 0%, #014089 100%);
-    border-top: 1px solid #004e9f;
     border-bottom: none !important;
     padding: 0;
     padding-top: 0 !important;
@@ -312,7 +310,6 @@ li:not([class^="Mui"]):not([class*=" Mui"]):not([class^="ui-"]) {
     top: 0;
     border-bottom: 1px solid rgba(208, 208, 208, 0.6);
     box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.25);
-    background: linear-gradient(to bottom, #006bcd 0%, #014089 100%);
   }
   .front #header #branding .branding-link {
     background-image: url(..neon/images/logo-mobile.svg);
