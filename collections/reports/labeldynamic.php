@@ -226,7 +226,7 @@ if($SYMB_UID){
 						if($useBarcode && $occArr['catalognumber']){
 							?>
 							<div class="cn-barcode">
-								<img src="getBarcode.php?bcheight=40&bctext=<?php echo $occArr['catalognumber']; ?>" />
+								<img src="getBarcode128.php?bcheight=40&amp;bctext=<?php echo rawurlencode($occArr['catalognumber']); ?>" />
 							</div>
 							<?php
 							if($occArr['othercatalognumbers']){
@@ -258,7 +258,7 @@ if($SYMB_UID){
 							?>
 							<hr style="border:dashed;" />
 							<div class="symb-barcode">
-								<img src="getBarcode.php?bcheight=40&bctext=<?php echo $occid; ?>" />
+								<img src="getBarcode128.php?bcheight=40&amp;bctext=<?php echo rawurlencode($occid); ?>" />
 							</div>
 							<?php
 							if($occArr['catalognumber']){
