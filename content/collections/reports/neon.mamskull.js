@@ -1,101 +1,99 @@
 /***
  * NEON Mammals Skull Vials Labels Custom Styles
- * Author: Laura Rocha Prado
- * Version: April 2023
  *
- * Features:
- * - Replaces standard Symbiota barcode with custom (using NEON barcode instead of catalogNumber)
- * - Barcodes courtesy of barcode.tec-it.com
- * - Removes orcid from recordedby
+ * - Uses local Code128 generation for NEON barcodes
+ * - Moves collection name into the label header
+ * - Removes ORCID from recordedby
  * - Removes NEON UUID
- * - Gets `preparedBy` and `preparedDate` field from `dynamicProperties` if available
+ * - Displays prepared_by from dynamicProperties
  */
 
-let labels = document.querySelectorAll('.label');
-labels.forEach((label) => {
-  // Moves collection name to label top div
-  let coll = label.querySelector('.col-title');
-  let header = label.querySelector('.label-header');
-  header.appendChild(coll);
-  let catNums = label.querySelector('.other-catalog-numbers');
-  let cArr = catNums.innerText.split(';');
-  let newCatNum = '';
-  let hasBc = '';
-  cArr.forEach((catNum) => {
-    // Skip if it's a NEON UUID
-    if (catNum.includes('sampleUUID')) {
-      return;
-    } else {
-      // Skips adding barcode to 'other-catalog-numbers' because it's
-      // displayed in actual barcode image
-      let bcSrc = label.querySelector('.cn-barcode img');
-      if (bcSrc) {
-        if (catNum.includes('barcode')) {
-          let barcode = catNum.match(/(?<=barcode\): ).*/)[0].trim();
-          // bcSrc.src = 'getBarcode.php?bcheight=60&bctext=' + barcode;
-          //bcSrc.src =
-          //  'https://barcode.tec-it.com/barcode.ashx?data=' +
-          //  barcode +
-          //  '&code=Code128&hidehrt=False';
-          bcSrc.src =
-            'https://barcodeapi.org/api/128/' +
-            barcode +
-            '?&height=18&qz=0';
-          hasBc = 'true';
-          return hasBc;
-        } else {
-          let sIdPrefix = 'NEON sampleID: ';
-          let sId = catNum.slice(sIdPrefix.length);
-          newCatNum += `<span class="block">${sId.trim()}</span>`;
+(() => {
+  const labels = document.querySelectorAll('.label');
+
+  labels.forEach((label) => {
+    // Move collection name into the label header.
+    const coll = label.querySelector('.col-title');
+    const header = label.querySelector('.label-header');
+
+    if (coll && header) {
+      header.appendChild(coll);
+    }
+
+    const catNums = label.querySelector('.other-catalog-numbers');
+    const barcodeImage = label.querySelector('.cn-barcode img');
+
+    if (catNums) {
+      const entries = catNums.innerText.split(';');
+      const remainingEntries = document.createDocumentFragment();
+      let neonBarcode = '';
+
+      entries.forEach((entry) => {
+        const catNum = entry.trim();
+
+        if (!catNum || catNum.includes('sampleUUID')) {
+          return;
         }
 
-        if (hasBc != 'true') {
-          // if there is no NEON barcode, uses the IGSN (catalogNumber instead)
-          //bcSrc.src =
-          //  'https://barcode.tec-it.com/barcode.ashx?data=' +
-          //  label.querySelector('.catalognumber').innerText +
-          //  '&code=Code128&hidehrt=False';
-          bcSrc.src =
-            'https://barcodeapi.org/api/128/' +
-            label.querySelector('.catalognumber').innerText +
-            '?&height=18&qz=0';
+        const barcodeMatch = catNum.match(/barcode\):\s*(.+)$/i);
+
+        if (barcodeMatch && barcodeImage) {
+          neonBarcode = barcodeMatch[1].trim();
+          return;
         }
-      }
-    }
-  });
-  catNums.innerHTML = newCatNum;
-  catNums.classList.add('mt-2');
-  // Removes ORCID from recordedby
-  let recordedBy = label.querySelector('.recordedby');
 
-  if (recordedBy) {
-    let orcid = recordedBy.innerText.indexOf(' (ORCID');
-    if (orcid != -1) {
-      let newRecordedBy = recordedBy.innerText.slice(0, orcid);
-      recordedBy.innerText = newRecordedBy;
-    }
-  }
-  // Gets `preparedBy` field from `dynamicProperties` if available
-  let dynProps = label.querySelector('.dynamicproperties');
-  if (dynProps) {
-    let prepBy = '';
-    try {
-      const obj = JSON.parse(dynProps.innerText.trim());
-      if (obj.prepared_by) {
-        prepBy = obj.prepared_by;
+        // Remove the sampleID prefix, retaining other entry text.
+        const displayText = catNum.replace(/^NEON sampleID:\s*/i, '');
+
+        const span = document.createElement('span');
+        span.className = 'block';
+        span.textContent = displayText;
+        remainingEntries.appendChild(span);
+      });
+
+      // Replace the image only when a NEON barcode is available.
+      // Otherwise, retain the original catalog-number barcode.
+      if (barcodeImage && neonBarcode) {
+        barcodeImage.src =
+          'getBarcode128.php?bcheight=40&bctext=' +
+          encodeURIComponent(neonBarcode);
       }
-    } catch (e) {
-      console.error('Invalid JSON:', e);
+
+      catNums.replaceChildren(remainingEntries);
+      catNums.classList.add('mt-2');
     }
 
-  dynProps.innerText = 'Prep. by: ' + (prepBy || '');
-  } else {
-    // Create 'Prep. by:' when no dynProps are found, after collector div (only if collector exists)
+    // Remove the parenthesized ORCID, preserving other collector text.
+    const recordedBy = label.querySelector('.recordedby');
+
     if (recordedBy) {
-      let prepBy = document.createElement('span');
+      recordedBy.innerText = recordedBy.innerText
+        .replace(/\s*\(ORCID[^)]*\)/gi, '')
+        .trim();
+    }
+
+    // Display prepared_by from dynamicProperties.
+    const dynProps = label.querySelector('.dynamicproperties');
+
+    if (dynProps) {
+      let prepBy = '';
+
+      try {
+        const obj = JSON.parse(dynProps.innerText.trim());
+
+        if (obj && obj.prepared_by) {
+          prepBy = obj.prepared_by;
+        }
+      } catch (error) {
+        console.error('Invalid dynamicProperties JSON:', error);
+      }
+
+      dynProps.innerText = 'Prep. by: ' + prepBy;
+    } else if (recordedBy) {
+      const prepBy = document.createElement('span');
       prepBy.className = 'dynamicproperties block';
       prepBy.innerText = 'Prep. by: ';
       recordedBy.parentNode.appendChild(prepBy);
     }
-  }
-});
+  });
+})();
