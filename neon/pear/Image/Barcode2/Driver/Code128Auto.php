@@ -137,7 +137,7 @@ class Image_Barcode2_Driver_Code128Auto extends Image_Barcode2_Common implements
 
         // Same Roboto font path used by your original driver.
         $fontFile = __DIR__ . '/../../../fonts/Roboto-Regular.ttf';
-        $fontSize = 16;
+        $fontSize = 12;
         $textGap = 6;
         $bottomMargin = 6;
         $imageHeight = $barHeight + $bottomMargin;
