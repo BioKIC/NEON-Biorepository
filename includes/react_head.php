@@ -315,15 +315,14 @@ if ($isNeonEditor) {
         if (!container || !headerRight) return;
     
         headerRight.append(container);
-    
-        Object.assign(header.style, {
-            position: 'relative'
-        });
+        headerRight.style.position = 'relative';
     
         Object.assign(container.style, {
             position: 'absolute',
             top: '0',
             right: '0',
+            bottom: 'auto',
+            left: 'auto',
             margin: '0',
             padding: '0',
             display: 'flex',
