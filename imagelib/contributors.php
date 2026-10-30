@@ -1,8 +1,10 @@
 <?php
 include_once('../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/ImageLibraryBrowser.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/imagelib/contributors.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/imagelib/contributors.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/imagelib/contributors.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('imagelib/contributors');
+
 header("Content-Type: text/html; charset=".$CHARSET);
 
 $imgManager = new ImageLibraryBrowser();
@@ -58,7 +60,7 @@ $imgManager = new ImageLibraryBrowser();
 				echo '<div style="margin-left:15px;margin-bottom:20px">';
 				foreach($specList as $k => $cArr){
 					echo '<div>';
-					$phLink = 'search.php?taxontype=2&imagecount=all&imagetype=all&submitaction=search&db[]='.$k;
+					$phLink = 'search.php?taxontype=2&imagecount=all&imagetype=1&submitaction=search&db[]='.$k;
 					echo '<a href="' . htmlspecialchars($phLink, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . htmlspecialchars($cArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a> (' . htmlspecialchars($cArr['imgcnt'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . ')</div>';
 				}
 				echo '</div>';
@@ -70,7 +72,7 @@ $imgManager = new ImageLibraryBrowser();
 				echo '<div style="margin-left:15px">';
 				foreach($obsList as $k => $cArr){
 					echo '<div>';
-					$phLink = 'search.php?taxontype=2&imagecount=all&imagetype=all&submitaction=search&db[]='.$k;
+					$phLink = 'search.php?taxontype=2&imagecount=all&imagetype=1&submitaction=search&db[]='.$k;
 					echo '<a href="' . htmlspecialchars($phLink, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . htmlspecialchars($cArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a> (' . htmlspecialchars($cArr['imgcnt'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . ')</div>';
 				}
 				echo '</div>';
