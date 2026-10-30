@@ -12,7 +12,12 @@ header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename=neon_monthly_report_' . $type . '_' . $month . '.csv');
 
 $output = fopen('php://output', 'w');
-fputcsv($output, ['Statistic', 'Current', 'Change']);
+if ($type == 'request') {
+    fputcsv($output, ['Request Status', 'Current', 'Change']);
+} elseif ($type == 'sample') {
+    fputcsv($output, ['Sample Class', 'Current', 'Change']);
+}
+else fputcsv($output, ['Statistic', 'Current', 'Change']);
 
 foreach ($reportsArr as $row) {
     if ($row[0] === $type) {

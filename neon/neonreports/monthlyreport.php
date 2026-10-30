@@ -52,22 +52,43 @@ if ($isEditor) {
 	<div class="section-nav">
 		<a href="#stats">General Statistics</a>|
 		<a href="#requests">Request Summary</a>|
-		<a href="#analytics">Google Analytics Summary</a>|
+		<a href="#analytics">Google Analytics Report</a>|
 		<a href="#samples">Samples Received by Class</a>
 	</div>
 	<h1>NEON Monthly Report: <?php echo htmlspecialchars($month); ?></h1>
- <?php
-
+ 	
+	<?php
 	if ($reportDate) {
 		echo '<p><strong>Report generated: </strong> ' . htmlspecialchars($reportDate) . '</p>';
 	}
 
 	if (!empty($reportsArr)) {
-		
-		echo '<h4><a href=https://www.gbif.org/publisher/e794e60e-e558-4549-99f8-cfb241cdce24>GBIF Publisher Homepage</a></h4>';
-		echo '<h4><a href=https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en>Google Scholar Profile</a></h4>';
-		echo '<h4><a href=https://biorepo.neonscience.org/portal/neon/shipment/harvesterreports.php>Occurrence Harvester Error Report</a></h4>';
+	?>
+		<button type="button"
+			class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary"
+			onclick="window.open('https://www.gbif.org/publisher/e794e60e-e558-4549-99f8-cfb241cdce24', '_blank', 'noopener,noreferrer')"
+			style="font-size: 1em; padding: 4px 8px; margin: 5px; color: white; display: inline-flex; align-items: center; white-space: nowrap;">
+			<span>GBIF Publisher Homepage</span>
+			<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeSmall" style="display: inline-flex; margin-left: 4px;"></span>
+		</button>
 
+		<button type="button"
+			class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary"
+			onclick="window.open('https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en', '_blank', 'noopener,noreferrer')"
+			style="font-size: 1em; padding: 4px 8px; margin: 5px; color: white; display: inline-flex; align-items: center; white-space: nowrap;">
+			<span>Google Scholar Profile</span>
+			<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeSmall" style="display: inline-flex; margin-left: 4px;"></span>
+		</button>
+
+		<button type="button"
+			class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary"
+			onclick="window.open('https://biorepo.neonscience.org/portal/neon/shipment/harvesterreports.php', '_blank', 'noopener,noreferrer')"
+			style="font-size: 1em; padding: 4px 8px; margin: 5px; color: white; display: inline-flex; align-items: center; white-space: nowrap;">
+			<span>Occurrence Harvester Error Report</span>
+			<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeSmall" style="display: inline-flex; margin-left: 4px;"></span>
+		</button>
+	
+	<?php
 		$general = [];
 		$request = [];
 		$analytics = [];
@@ -104,7 +125,11 @@ if ($isEditor) {
 		<form method="post" action="exportmonthlyreporthandler.php">
 			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="general">
-			<button type="submit">Export General Statistics Report</button>
+			<button type="submit"
+				class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary"
+				style="font-size: 1em; padding: 4px 8px; margin: 5px; color: white; display: inline-flex; align-items: center; white-space: nowrap;">
+				Export General Statistics Report
+			</button>		
 		</form>
 		</div>
 		<?php
@@ -120,26 +145,26 @@ if ($isEditor) {
 		<form method="post" action="exportmonthlyreporthandler.php">
 			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="request">
-			<button type="submit">Export Request Summary</button>
+			<button type="submit"
+				class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary"
+				style="font-size: 1em; padding: 4px 8px; margin: 5px; color: white; display: inline-flex; align-items: center; white-space: nowrap;">
+				Export Request Summary
+			</button>	
 		</form>
 		</div>
 		<?php
 
-		// if ($analytics) {
-		// 	echo "<div class='section' id='analytics'>";
-		// 	echo '<h2>Google Analytics Summary</h2>';
-		// 	$headerArr = ['Statistic', 'Past 30 days','Change'];
-		// 	echo $utilities->htmlTable($analytics, $headerArr);
-		// }
-
-		?>
-		<!-- <form method="post" action="exportmonthlyreporthandler.php">
-			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
-			<input type="hidden" name="type" value="analytics">
-			<button type="submit">Export Google Analytics Summary</button>
-		</form>
-		</div> -->
-		<?php
+		if ($analytics) {
+			?>
+			<div class='section' id='analytics'>
+			<h2>Google Analytics Report</h2>
+			<iframe width="900" height="650" 
+				src="https://datastudio.google.com/embed/reporting/68defb19-cd1c-4141-8e1a-dea7eae3de69/page/i9SCG" 
+				frameborder="0" style="border:0" 
+				allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+			</iframe>
+		<?php 
+		} 
 
 		if ($sample) {
 						
@@ -163,8 +188,12 @@ if ($isEditor) {
 		<form method="post" action="exportmonthlyreporthandler.php">
 			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
 			<input type="hidden" name="type" value="sample">
-			<button type="submit">Export Samples Received</button>
-		</form>
+			<button type="submit"
+				class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary"
+				style="font-size: 1em; padding: 4px 8px; margin: 5px; color: white; display: inline-flex; align-items: center; white-space: nowrap;">
+				Export Samples Received
+			</button>	
+			</form>
 		</div>
 		<?php
 
@@ -335,6 +364,13 @@ else {
 	.section {
 		scroll-margin-top: 120px;
 	}
+
+	.section table thead th {
+		background-color: #0056b3;
+		color: white;
+		font-weight: bold;
+	}
+
 	</style>
 
 </html>
