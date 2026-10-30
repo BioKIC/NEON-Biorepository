@@ -91,7 +91,6 @@ if ($isEditor) {
 	<?php
 		$general = [];
 		$request = [];
-		$analytics = [];
 		$sample  = [];
 
 		foreach ($reportsArr as $row) {
@@ -103,9 +102,6 @@ if ($isEditor) {
 					break;
 				case 'request':
 					$request[] = $row;
-					break;
-				case 'analytics':
-					$analytics[] = $row;
 					break;
 				case 'sample':
 					$sample[] = $row;
@@ -154,17 +150,15 @@ if ($isEditor) {
 		</div>
 		<?php
 
-		if ($analytics) {
-			?>
-			<div class='section' id='analytics'>
-			<h2>Google Analytics Report</h2>
-			<iframe width="900" height="650" 
-				src="https://datastudio.google.com/embed/reporting/68defb19-cd1c-4141-8e1a-dea7eae3de69/page/i9SCG" 
-				frameborder="0" style="border:0" 
-				allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
-			</iframe>
+		?>
+		<div class='section' id='analytics'>
+		<h2>Google Analytics Report</h2>
+		<iframe width="900" height="650" 
+			src="https://datastudio.google.com/embed/reporting/68defb19-cd1c-4141-8e1a-dea7eae3de69/page/i9SCG" 
+			frameborder="0" style="border:0" 
+			allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+		</iframe>
 		<?php 
-		} 
 
 		if ($sample) {
 						

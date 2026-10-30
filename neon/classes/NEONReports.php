@@ -155,28 +155,6 @@
         return $stats;
     }
 
-    // Get google analytics stats
-    public function getGoogleAnalytics(){
-        
-        $users = 1;
-        $time = 1;
-        $pages = 1;
-        $searches = 1;
-        $downloads = 1;
-
-        $googleAnalytics = array(
-            'users' => $users,
-            'average time spent on site (s)' => $time,
-            'average pages visited' => $pages,
-            'unique searches' => $searches,
-            'downloads' => $downloads
-        );
-
-        return $googleAnalytics;
-
-    }
-
-
     // Generates data for Monthly Report 
     public function generateMonthlyReport() {
         $dataArr = [];
@@ -252,23 +230,6 @@
             $ins = $this->conn->prepare("INSERT INTO neonmonthlyreport (`name`, `type`, `statistic`, `statValue`, `date`) VALUES (?, ?, ?, ?, ?)");
 
             $ins->bind_param('sssss', $name, $type, $statName, $statValue, $reportDate);
-            $ins->execute();
-
-            if ($ins->error) {
-                error_log("Insert error for $statName: " . $ins->error);
-            }
-        }
-
-        // insert google analytics stats
-        $googleAnalytics = $this->getGoogleAnalytics();
-
-        foreach ($googleAnalytics as $statName => $statValue) {
-
-            $ins = $this->conn->prepare(
-                "INSERT INTO neonmonthlyreport (`name`, `type`, `statistic`, `statValue`, `date`) 
-                VALUES (?, 'analytics', ?, ?, ?)");
-
-            $ins->bind_param('ssss', $name, $statName, $statValue, $reportDate);
             $ins->execute();
 
             if ($ins->error) {
