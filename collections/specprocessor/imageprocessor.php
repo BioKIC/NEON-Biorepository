@@ -641,16 +641,18 @@ if($spprid) $specManager->setProjVariables($spprid);
 											<label>Cleaning Mode:</label>
 											<div style="float:left;">
 												<?php
-													$mode = $specManager->getCleaningMode();
+												echo str_replace(' ', '&lt;space&gt;', $specManager->getReplaceStr() ?? '');
+												$mode = $specManager->getCleaningMode();
 										
-													if ($mode === 'ai') {
-														echo 'AI';
-													} elseif ($mode === 'regex') {
-														echo 'Regex';
-													} else {
-														echo $mode;
-													}
-												?>
+												if ($mode === 'ai') {
+													echo 'AI';
+												} elseif ($mode === 'regex') {
+													echo 'Regex';
+												} else {
+													echo $mode;
+												}
+
+                        ?>
 											</div>
 										</div>
 										<?php if($cleaningMode === 'regex'){ ?>
