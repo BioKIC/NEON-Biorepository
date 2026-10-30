@@ -23,18 +23,24 @@ if(!$limit) $limit = 400;
 elseif($limit > 1000) $limit = 1000;
 
 $isEditor = 0;
+if ($collid === 'all') {
+	$isEditor = 1;
+}
+elseif (
+	$IS_ADMIN ||
+	(array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"])) ||
+	(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"]))
+) {
+	$isEditor = 1;
+}
+
 $occArr = array();
-if($IS_ADMIN || (array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollAdmin"]))){
-	$isEditor = 1;
-}
-elseif(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($collid,$USER_RIGHTS["CollEditor"])){
-	$isEditor = 1;
-}
 if($isEditor){
 	if($action == 'filterRecords'){
 		$occArr = $labelManager->queryOccurrences($_POST, $limit);
 	}
 }
+//end neon edits
 $labelFormatArr = $labelManager->getLabelFormatArr(true);
 ?>
 <!DOCTYPE html>
@@ -195,7 +201,12 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 		<?php
 		if($isEditor){
 			$isGeneralObservation = (($labelManager->getMetaDataTerm('colltype') == 'General Observations')?true:false);
-			echo '<h2>'.$labelManager->getCollName().'</h2>';
+			if ($collid === 'all') {
+				echo '<h2>All Collections</h2>';
+			}
+			elseif ($collid) {
+				echo '<h2>' . $labelManager->getCollName() . '</h2>';
+			}
 			?>
 			<div>
 				<form name="datasetqueryform" action="labelmanager.php" method="post" onsubmit="return validateQueryForm(this)">
@@ -216,11 +227,13 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								<label for="recordnumber"><?= $LANG['REC_NUM'] ?></label>
 								<input type="text" name="recordnumber" id="recordnumber" style="width:150px;" value="<?= !empty($_REQUEST['recordnumber']) ? Sanitize::outString($_REQUEST['recordnumber']) : '' ?>" />
 							</div>
-							<div style="float:left;margin-left:10px;" title="<?= $LANG['SEPARATE_TERMS'] ?>">
-								<label for="identifier"><?= $LANG['CAT_NUM'] ?></label>
-								<input type="text" name="identifier" id="identifier" style="width:150px;" value="<?= !empty($_REQUEST['identifier']) ? Sanitize::outString($_REQUEST['identifier']) : '' ?>" />
-							</div>
 						</div>
+						<!-- Start NEON customization -->
+						<div style="margin-top:10px;clear:both;" title="Separate multiple terms by comma, semicolon, or new line">
+							Catalog Number(s): <br>
+   							<textarea name="identifier" style="width:700px; height:80px;"><?= !empty($_REQUEST['identifier']) ? Sanitize::outString($_REQUEST['identifier']) : '' ?></textarea>
+						</div>
+						<!-- End NEON customization -->
 						<div style="margin:3px;clear:both;">
 							<div style="float:left;">
 								<label for="recordenteredby"> <?= $LANG['ENTER_BY'] ?> </label>
@@ -240,6 +253,7 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 							</div>
 						</div>
 						<div style="margin:3px;clear:both;">
+							<!-- NEON edit start
 							<label for="labelproject"> <?= $LANG['LABEL_PROJ'] ?></label>
 							<select name="labelproject" id="labelproject">
 								<option value=""> <?= $LANG['ALL_PROJ'] ?> </option>
@@ -253,6 +267,7 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								}
 								?>
 							</select>
+							NEON edit end -->
 							<!--
 							Dataset Projects:
 							<select name="datasetproject" >
@@ -277,6 +292,12 @@ $labelFormatArr = $labelManager->getLabelFormatArr(true);
 								else echo $LANG['SEARCH_IN'];
 								?>
 							</label>
+							<?php
+							// NEON edit start
+							echo '<span><input name="excludesubsamples" type="checkbox" value="1" ' . (!isset($_POST['excludesubsamples']) || $_POST['excludesubsamples'] ? 'checked' : '') . ' /></span>';
+							echo ' Exclude subsamples';
+							// NEON edit end
+							?>
 						</div>
 						<div style="clear:both;">
 							<div style="float:left;">

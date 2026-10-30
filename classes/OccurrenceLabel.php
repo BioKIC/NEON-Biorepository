@@ -33,9 +33,11 @@ class OccurrenceLabel {
 			if ($postArr['taxa']) {
 				$sqlWhere .= 'AND (o.sciname LIKE "' . $this->cleanInStr($postArr['taxa']) . '%") ';
 			}
+			/* NEON edit start
 			if ($postArr['labelproject']) {
 				$sqlWhere .= 'AND (o.labelproject = "' . $this->cleanInStr($postArr['labelproject']) . '") ';
 			}
+			NEON edit end   */
 			if ($postArr['recordenteredby']) {
 				$sqlWhere .= 'AND (o.recordenteredby = "' . $this->cleanInStr($postArr['recordenteredby']) . '") ';
 			}
@@ -84,8 +86,11 @@ class OccurrenceLabel {
 				$recordedBy = $this->cleanInStr($postArr['recordedby']);
 				$sqlWhere .= 'AND (MATCH(o.recordedby) AGAINST("' . $recordedBy . '" IN BOOLEAN MODE)) ';
 			}
-			if ($postArr['identifier']) {
-				$iArr = explode(',', $this->cleanInStr($postArr['identifier']));
+			if($postArr['identifier']){
+				// NEON edit start
+				$catNum = $this->cleanInStr(str_replace(array(',', "\n", "\r\n", "\r", ' '), ';', $postArr['identifier']));
+				$iArr = array_filter(array_map('trim', explode(';', $catNum)));
+				// NEON edit end
 				$iBetweenFrag = array();
 				$iInFrag = array();
 				foreach ($iArr as $v) {
@@ -110,12 +115,31 @@ class OccurrenceLabel {
 				$sqlWhere .= 'AND (' . substr($iWhere, 3) . ') ';
 				$sqlOrderBy .= ',i.identifiervalue,o.catalogNumber,o.otherCatalogNumbers';
 			}
+			// NEON edit start
+			else{
+				if(array_key_exists('extendedsearch', $postArr)){
+					if(array_key_exists('excludesubsamples', $postArr)){
+						$sqlWhere .= 'AND (o.collid NOT BETWEEN 100 AND 111) ';
+					}
+				} else {
+					if(array_key_exists('excludesubsamples', $postArr) && $this->collid >= 100 && $this->collid <= 111){
+						$sqlWhere .= 'AND (1=0) ';
+					} else {
+						$sqlWhere .= 'AND (o.collid = '.$this->collid.') ';
+					}
+				}
+			}
+			/*
 			if ($this->collArr['colltype'] == 'General Observations') {
 				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
 				if (!array_key_exists('extendedsearch', $postArr)) $sqlWhere .= ' AND (o.observeruid = ' . $GLOBALS['SYMB_UID'] . ') ';
-			} elseif (!array_key_exists('extendedsearch', $postArr)) {
+			}
+			elseif (!array_key_exists('extendedsearch', $postArr)) {
 				$sqlWhere .= 'AND (o.collid = ' . $this->collid . ') ';
 			}
+			*/
+			// End NEON customization
+
 			$sql = 'SELECT DISTINCT o.occid, o.collid, IFNULL(o.duplicatequantity,1) AS q, CONCAT_WS(" ",o.recordedby,IFNULL(o.recordnumber,o.eventdate)) AS collector, o.observeruid,
 				o.family, o.sciname, CONCAT_WS("; ",o.country, o.stateProvince, o.county, o.locality) AS locality, IFNULL(o.recordSecurity,0) AS recordSecurity
 				FROM omoccurrences o ';
@@ -262,6 +286,37 @@ class OccurrenceLabel {
 						}
 					}
 				}
+				// NEON edit start
+				// get identifiers of associate occurrence records
+				$sql = 'SELECT oa.occid, oa.occidAssociate, oi.identifiername, oi.identifiervalue
+					FROM omoccurassociations oa
+					LEFT JOIN omoccuridentifiers oi ON oa.occidAssociate = oi.occid
+					WHERE oa.occid IN(' . implode(',', array_keys($retArr)) . ')
+					ORDER BY oi.sortBy';
+
+				if ($rs = $this->conn->query($sql)) {
+					$assocArr = array();
+					while ($r = $rs->fetch_object()) {
+						$assocArr[$r->occid][] = array(
+							'n' => $r->identifiername ?? '',
+							'v' => $r->identifiervalue,
+							'associd' => $r->occidAssociate
+						);
+					}
+					$rs->free();
+
+					foreach ($assocArr as $occid => $idArrs) {
+						$assocStr = '';
+						foreach ($idArrs as $idArr) {
+							$assocStr .= '; ' . ($idArr['n'] ? $idArr['n'] . ': ' : '') . $idArr['v'];
+						}
+						$assocStr = trim($assocStr, ';,: ');
+
+						// store in retArr under a new key
+						$retArr[$occid]['associateidentifiers'] = $assocStr;
+					}
+				}
+				//NEON edit end
 			}
 		}
 	}
@@ -344,6 +399,9 @@ class OccurrenceLabel {
 				'recordNumber'=>'o.recordnumber',
 				'associatedCollectors' => 'o.associatedcollectors',
 				'eventDate' => 'DATE_FORMAT(o.eventdate,"%e %M %Y") AS eventdate',
+				//NEON edit
+				'eventDate2' => 'DATE_FORMAT(o.eventdate2,"%e %M %Y") AS eventdate2',
+				//end NEON edit
 				'year' => 'o.year',
 				'month' => 'o.month',
 				'day' => 'o.day',
@@ -908,8 +966,13 @@ class OccurrenceLabel {
 
 	//General setters and getters
 	public function setCollid($collid) {
+		if ($collid === 'all') {
+			$this->collid = 'all';
+			return;
+		}
+
 		if (is_numeric($collid)) {
-			$this->collid = $collid;
+			$this->collid = (int)$collid;
 			$this->setCollMetadata();
 		}
 	}

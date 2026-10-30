@@ -186,7 +186,20 @@ class TaxonProfile extends Manager {
 			*/
 			echo '</a></div>';
 			echo '<div class="creator">';
-			if($imgObj['creator']) echo $imgObj['creator'];
+			// START NEON CUSTOMIZATION //
+			if($imgObj['creator']) {
+				if (!empty($imgObj['owner'])){
+					echo $imgObj['creator'], ', ', $imgObj['owner'];
+				}
+				else {
+					echo $imgObj['creator'];
+				}
+			}
+			elseif($imgObj['owner']) {
+				echo $imgObj['owner'];
+
+			}
+			// END NEON CUSTOMIZATION //
 			echo '</div>';
 			echo '</div>';
 			$status = true;
@@ -210,7 +223,8 @@ class TaxonProfile extends Manager {
 			$tidStr = implode(",",$tidArr);
 			$sortSequnceLimit = 500;
 			if($this->rankId < 220 && count($tidArr) > 50) $sortSequnceLimit = 20;
-			$sql = 'SELECT t.sciname, m.mediaID, m.mediaType, m.format, m.url, m.thumbnailurl, m.originalurl, m.caption, m.occid, m.creator, CONCAT_WS(" ",u.firstname,u.lastname) AS creatorLinked
+			// NEON customization to SQL: owner added
+			$sql = 'SELECT t.sciname, m.mediaID, m.mediaType, m.format, m.url, m.thumbnailurl, m.originalurl, m.caption, m.occid, m.owner, m.creator, CONCAT_WS(" ",u.firstname,u.lastname) AS creatorLinked
 				FROM media m LEFT JOIN users u ON m.creatorUid = u.uid
 				INNER JOIN taxstatus ts ON m.tid = ts.tid
 				INNER JOIN taxa t ON m.tid = t.tid
@@ -233,6 +247,9 @@ class TaxonProfile extends Manager {
 				if(!$imgUrl) continue;
 				$this->imageArr[$row->mediaID]['url'] = $imgUrl;
 				$this->imageArr[$row->mediaID]['thumbnailurl'] = $row->thumbnailurl;
+				// START NEON CUSTOMIZATION //
+				$this->imageArr[$row->mediaID]['owner'] = $row->owner;
+				// END NEON CUSTOMIZATION //
 				if($row->creatorLinked) $this->imageArr[$row->mediaID]['creator'] = $row->creatorLinked;
 				else $this->imageArr[$row->mediaID]['creator'] = $row->creator;
 				$this->imageArr[$row->mediaID]['caption'] = $row->caption;
@@ -878,7 +895,9 @@ class TaxonProfile extends Manager {
 	*/
 	public function getOccTaxonInDbCnt($limitRank = 170, $collidStr = 'all'){
 		$count = -1;
-		if ($this->rankId >= $limitRank) {
+		//neon edit, add unranked nodes
+		if ($this->rankId >= $limitRank || (int)$this->rankId === 12) {
+		//end neon edit
 			//$sql = 'SELECT COUNT(o.occid) as cnt FROM omoccurrences o JOIN (SELECT DISTINCT e.tid, t.sciname FROM taxaenumtree e JOIN taxa t ON e.tid = t.tid WHERE parenttid = '.$this->tid.' OR e.tid = '.$this->tid.') AS parentAndChildren ON o.tidinterpreted = parentAndChildren.tid ';
 			$sql = 'SELECT COUNT(o.occid) as cnt
 				FROM omoccurrences o JOIN (SELECT DISTINCT ts.tid FROM taxaenumtree e JOIN taxa t ON e.tid = t.tid INNER JOIN taxstatus ts ON e.tid = ts.tidaccepted
@@ -907,7 +926,7 @@ class TaxonProfile extends Manager {
 		if ((1 <= $numOccs) && ($numOccs <= $limitOccs)) {
 			$occSrcUrl = '../collections/list.php?usethes=1&taxa='.$this->tid;
 			if($collidStr != 'all') $occSrcUrl .= '&db='.$collidStr;
-			$occMsg = '<a class="btn" href="' . htmlspecialchars($occSrcUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank">Explore ' . htmlspecialchars(number_format($numOccs), ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . ' occurrences</a>';
+			$occMsg = '<a class="btn" href="' . htmlspecialchars($occSrcUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '" target="_blank">Explore ' . htmlspecialchars(number_format($numOccs), ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . ' NEON Biorepository occurrences</a>';
 		} elseif ($numOccs > $limitOccs) {
 			$occMsg = number_format($numOccs).' occurrences';
 		} elseif ($numOccs == 0) {
@@ -920,7 +939,7 @@ class TaxonProfile extends Manager {
 
 	private function getNeonCollidArr(){
 		$retStr = array();
-		$sql = 'SELECT GROUP_CONCAT(collid) as collidStr FROM omcollections WHERE institutionCode = "NEON"';
+		$sql = 'SELECT GROUP_CONCAT(collid) as collidStr FROM omcollections WHERE institutionCode IN ("NEON","ASU")';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
 			$retStr = $r->collidStr;

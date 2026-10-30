@@ -7,17 +7,17 @@ $sitemapPath = $SERVER_ROOT . '/content/sitemaps/sitemap.xml';
 $message = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if ($sitemapManager->generateSitemap()) {
-        $message = "Sitemap generated and saved!";
-    } else {
-        $message = "Error: " . $sitemapManager->getSitemapMessage();
-    }
+	if ($sitemapManager->generateSitemap()) {
+		$message = "Sitemap generated and saved!";
+	} else {
+		$message = "Error: " . $sitemapManager->getSitemapMessage();
+	}
 }
 
 // check if sitemap.xml already exists and display the date last modified
 if (file_exists($sitemapPath)) {
-    $lastModified = date("Y-m-d", filemtime($sitemapPath));
-    $sitemapExist = "There is an existing sitemap (Last generated: {$lastModified})";
+	$lastModified = date("Y-m-d", filemtime($sitemapPath));
+	$sitemapExist = "There is an existing sitemap (Last generated: {$lastModified})";
 }
 ?>
 

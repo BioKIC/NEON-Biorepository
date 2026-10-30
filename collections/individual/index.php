@@ -160,7 +160,13 @@ if($SYMB_UID){
 }
 
 $displayMap = false;
-if($occArr && is_numeric($occArr['decimallatitude']) && is_numeric($occArr['decimallongitude'])) $displayMap = true;
+if($occArr && is_numeric($occArr['decimallatitude']) && is_numeric($occArr['decimallongitude'])){
+	if($occArr['decimallatitude'] <= 90 && $occArr['decimallatitude'] >= -90){
+		if($occArr['decimallongitude'] <= 180 && $occArr['decimallongitude'] >= -180){
+			$displayMap = true;
+		}
+	}
+}
 $dupClusterArr = $indManager->getDuplicateArr();
 $commentArr = $indManager->getCommentArr($isEditor);
 $traitArr = $indManager->getTraitArr();
@@ -172,6 +178,7 @@ $traitArr = $indManager->getTraitArr();
 	<meta http-equiv="Content-Type" content="text/html; charset=<?= $CHARSET; ?>">
 	<link href="<?= $CSS_BASE_PATH ?>/jquery-ui.css" type="text/css" rel="stylesheet">
 	<?php
+	$DEACTIVATE_REACT = true;		//NEON customization
 	include_once($SERVER_ROOT.'/includes/head.php');
 	include_once($SERVER_ROOT.'/includes/leafletMap.php');
 	include_once($SERVER_ROOT.'/includes/googleanalytics.php');
@@ -184,18 +191,9 @@ $traitArr = $indManager->getTraitArr();
 	<script src="<?= $CLIENT_ROOT; ?>/js/symb/domManipulationUtils.js" type="text/javascript"></script>
 	<script type="text/javascript">
 		var tabIndex = <?= $tabIndex; ?>;
-		var map;
-		var mapInit = false;
 
 		$(document).ready(function() {
 			$('#tabs-div').tabs({
-				beforeActivate: function(event, ui) {
-					if(document.getElementById("map_canvas") && ui.newTab.index() == 1 && !mapInit){
-						mapInit = true;
-						initializeMap();
-					}
-					return true;
-				},
 				active: tabIndex
 			});
 		});
@@ -258,68 +256,6 @@ $traitArr = $indManager->getTraitArr();
 			occWindow=open("index.php?occid="+target,"occdisplay","resizable=1,scrollbars=1,toolbar=0,width=900,height=600,left=20,top=20");
 			if (occWindow.opener == null) occWindow.opener = self;
 		}
-
-		<?php
-		if($displayMap){
-			if(!empty($occArr['coordinateuncertaintyinmeters'])) {
-				echo 'const coordError = ' . $occArr['coordinateuncertaintyinmeters'] . ';';
-			} else {
-				echo 'const coordError = 0;';
-			}
-			?>
-			function googleInit() {
-				var mLatLng = new google.maps.LatLng(<?php echo $occArr['decimallatitude'] . ',' . $occArr['decimallongitude']; ?>);
-				var dmOptions = {
-					zoom: 8,
-					center: mLatLng,
-					marker: mLatLng,
-					mapTypeId: google.maps.MapTypeId.TERRAIN,
-					scaleControl: true
-				};
-				map = new google.maps.Map(document.getElementById("map_canvas"), dmOptions);
-				//Add marker
-				var marker = new google.maps.Marker({
-					position: mLatLng,
-					map: map
-			});
-
-			if(coordError > 0) {
-			   new google.maps.Circle({
-				  center: mLatLng,
-				  radius: coordError,
-				  map: map
-			   })
-			}
-			}
-
-			function leafletInit() {
-				let mLatLng = [<?php echo $occArr['decimallatitude'].",".$occArr['decimallongitude']; ?>];
-
-            map = new LeafletMap("map_canvas", {
-               center: mLatLng,
-               zoom: 8,
-			},
-				JSON.parse(`<?= json_encode($GEO_JSON_LAYERS ?? []) ?>`)
-			);
-
-			if(coordError > 0) {
-			   map.enableDrawing({...map.DEFAULT_DRAW_OPTIONS, control: false})
-			   map.drawShape({type: "circle", radius: coordError, latlng: mLatLng})
-			}
-				const marker = L.marker(mLatLng).addTo(map.mapLayer);
-			map.mapLayer.setZoom(8)
-			}
-
-			function initializeMap(){
-				<?php if(empty($GOOGLE_MAP_KEY)): ?>
-					leafletInit();
-				<?php else: ?>
-					googleInit();
-				<?php endif ?>
-			}
-			<?php
-		}
-		?>
 	</script>
 	<style>
 		.top-light-margin {
@@ -375,9 +311,11 @@ $traitArr = $indManager->getTraitArr();
 				<ul>
 					<li><a href="#occurtab"><span><?php echo (isset($LANG['DETAILS']) ? $LANG['DETAILS'] : 'Details'); ?></span></a></li>
 					<?php
-					if($displayMap) echo '<li><a href="#maptab"><span>' . (isset($LANG['MAP']) ? $LANG['MAP'] : 'Map') . '</span></a></li>';
+					if($displayMap) echo '<li><a href="maptab.php?declat=' . $occArr['decimallatitude'] . '&declng=' . $occArr['decimallongitude'] . '&coorderror=' . $occArr['coordinateuncertaintyinmeters'] . '"><span>Map</span></a></li>';
 					if($genticArr) echo '<li><a href="#genetictab"><span>' . (isset($LANG['GENETIC']) ? $LANG['GENETIC'] : 'Genetic') . '</span></a></li>';
 					if($dupClusterArr) echo '<li><a href="#dupestab-div"><span>' . (isset($LANG['DUPLICATES']) ? $LANG['DUPLICATES'] : 'Duplicates') . '</span></a></li>';
+
+					/* NEON edit start
 					?>
 					<li><a href="#commenttab"><span><?php echo ($commentArr?count($commentArr).' ':''); echo (isset($LANG['COMMENTS']) ? $LANG['COMMENTS'] : 'Comments'); ?></span></a></li>
 					<li>
@@ -387,6 +325,8 @@ $traitArr = $indManager->getTraitArr();
 					</li>
 					<?php
 					if($traitArr) echo '<li><a href="#traittab"><span>' . (isset($LANG['TRAITS'])?$LANG['TRAITS']:'Traits') . '</span></a></li>';
+					end NEON edit */
+
 					if($isEditor) echo '<li><a href="#edittab"><span>' . $LANG['EDIT_HISTORY'] . '</span></a></li>';
 					?>
 				</ul>
@@ -405,18 +345,29 @@ $traitArr = $indManager->getTraitArr();
 					if($collMetadata['collectioncode']) $instCode .= ':'.$collMetadata['collectioncode'];
 					?>
 					<div id="title1-div" class="title1-div">
-						<?php echo $collMetadata['collectionname'].' ('.$instCode.')'; ?>
+						<?php echo $collMetadata['publicname']; ?>
 					</div>
 					<div  id="occur-div">
-						<?php
-						if(array_key_exists('loan',$occArr)){
-							?>
-							<div id="loan-div" title="<?php echo 'Loan #'.$occArr['loan']['identifier']; ?>">
-								<?php echo $LANG['ON_LOAN']; ?>
-								<?php echo $occArr['loan']['code']; ?>
-							</div>
+						<!-- NEON customization -->
+						<div id="availability-div">
 							<?php
-						}
+							if (in_array($occArr['collid'], array(44,74,79,80,82,83,95,97,115))){
+								echo "<strong><span style='color:green;'>Contact holding institution for information about loans</span></strong>";
+							}
+							elseif (array_key_exists('loan', $occArr)) {
+								echo "<strong><span style='color:red;'>Currently on loan to </span></strong>";
+								echo "<strong><span style='color:red;'>" . $occArr['loan']['code']. "</span></strong>";
+							}
+							elseif ($occArr['availability'] == 1 ) {
+								echo "<strong><span style='color:green;'>This sample is available for loan</span></strong>";
+							}
+							 else {
+								echo "<strong><span style='color:red;'>This sample is NOT available for loan</span></strong>";
+							}
+							?>
+						</div>
+						<!-- End of NEON customization -->
+						<?php
 						if(array_key_exists('relation',$occArr)){
 							?>
 								<fieldset id="association-div" class="top-light-margin">
@@ -432,8 +383,14 @@ $traitArr = $indManager->getTraitArr();
 										echo '<div>';
 										echo $assocArr['relationship'];
 										if($assocArr['subtype']) echo ' ('.$assocArr['subtype'].')';
-										echo ': ';
+										// Start NEON customization
+										$coll = $assocArr['collectionCode'];
+										echo ' (' . $coll . '): ';
 										$relID = $assocArr['objectID'];
+										if (strpos($relID, ':') !== false && substr($relID, strpos($relID, ':') + 1) === '') {
+											$relID .= $assocArr['occidassoc'];
+										}
+										// End NEON custom addition
 										$relUrl = $assocArr['resourceurl'];
 										if(!$relUrl && $assocArr['occidassoc']) $relUrl = $GLOBALS['CLIENT_ROOT'].'/collections/individual/index.php?occid='.$assocArr['occidassoc'];
 										if($relUrl) $relID = '<a href="' . $relUrl . '" target="_blank">' . ($relID ? $relID : $relUrl) . '</a>';
@@ -447,16 +404,48 @@ $traitArr = $indManager->getTraitArr();
 								</fieldset>
 							<?php
 						}
+						// Start NEON Customization
 						if($occArr['catalognumber']){
 							?>
 							<div id="cat-div" class="bottom-breathing-room-rel-sm">
 								<?php
-								echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
-								echo $occArr['catalognumber'];
+								// Check if catalogNumber is an IGSN
+								if(preg_match('/^NEON[a-zA-Z0-9]{5}$/', $occArr['catalognumber'])) {
+									echo '<label>'.$LANG['ARCHIVE_GUID'].': </label>';
+									echo $occArr['catalognumber'];
+								}
+								else{
+									echo '<label>'.(isset($LANG['CATALOG_NUMBER'])?$LANG['CATALOG_NUMBER']:'Catalog #').': </label>';
+									echo $occArr['catalognumber'];
+								}
+								// Get GBIF recordID using GBIF API
+								if ($collMetadata['publishtogbif'] == 1 && !empty($occArr['occurrenceid'])) {
+									$aggkeys = json_decode(html_entity_decode($collMetadata['aggkeysstr']));
+									if (isset($aggkeys->datasetKey)) {
+										$gbifApiUrl = 'https://api.gbif.org/v1/occurrence/search?' . http_build_query([
+											'datasetKey' => $aggkeys->datasetKey,
+											'occurrenceID' => $occArr['occurrenceid']
+										]);
+										$ch = curl_init($gbifApiUrl);
+										curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 5, CURLOPT_USERAGENT => 'NEON Portal/1.0']);
+										$response = curl_exec($ch);
+										$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+										curl_close($ch);
+
+										if ($httpCode == 200 && $response) {
+											$data = json_decode($response, true);
+											if (($data['count'] ?? 0) == 1 && isset($data['results'][0]['key'])) {
+												$gbifUrl = 'https://www.gbif.org/occurrence/' . $data['results'][0]['key'];
+												echo '<span style="margin-left:10px"><a href="' . $gbifUrl . '" target="_blank">GBIF Record</a></span>';
+											}
+										}
+									}
+								}
 								?>
 							</div>
 							<?php
 						}
+						// End NEON Customization
 						?>
 						<div id="occurrenceid-div" class="bottom-breathing-room-rel-sm">
 							<?php
@@ -475,16 +464,51 @@ $traitArr = $indManager->getTraitArr();
 							?>
 							<div id="assoccatnum-div" class="assoccatnum-div bottom-breathing-room-rel-sm">
 								<?php
-								foreach($occArr['othercatalognumbers'] as $catValueArr){
-									$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
-									if(!empty($catValueArr['name'])) $catTag = $catValueArr['name'];
-									echo '<div><label>'.$catTag.':</label> ' . $catValueArr['value'] . '</div>';
+								// Start NEON customization
+								$hideSampleID = false;
+								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
+									if (isset($catValueArr['name']) && $catValueArr['name'] === 'NEON sampleID Hash' && !$GLOBALS['IS_ADMIN']) {
+										$hideSampleID = true;
+										break;
+									}
 								}
+								foreach ($occArr['othercatalognumbers'] as $catValueArr) {
+									$catTag = $LANG['OTHER_CATALOG_NUMBERS'];
+									if (!empty($catValueArr['name'])) {
+										$catTag = $catValueArr['name'];
+									}
+									if ($catTag === 'NEON sampleID' && $hideSampleID) {
+										continue;
+									}
+
+									if ($catTag === 'NEON sampleID') {
+										$catTag = 'Sample Tag (sampleID)';
+									} elseif ($catTag === 'NEON sampleCode (barcode)') {
+										$catTag = 'Barcode (sampleCode)';
+									} elseif ($catTag === 'NEON sampleUUID') {
+										$catTag = 'SampleUuid';
+									}
+									echo '<div><label>' . htmlspecialchars($catTag) . ':</label> ' . htmlspecialchars($catValueArr['value']);
+									if ($IS_ADMIN && ($catTag == 'Barcode (sampleCode)' || $catTag == 'Sample Tag (sampleID)')) {
+										echo ' <span style="margin-left: 10px"><a href="../../neon/shipment/manifestviewer.php?quicksearch=' . $occid . '" target="_blank">Go to Manifest</a></span>';
+									}
+									echo '</div>';
+								}
+								//End NEON customization
 								?>
 							</div>
 							<?php
 						}
-						if($occArr['sciname']){
+						if($occArr['sciname'] ){
+							// NEON customization - show correct determinations for secured reader
+							foreach ($occArr['dets'] as $key => $det) {
+								if (!$isSecuredReader) {
+									if ($det['securitystatus'] == 1) {
+										unset($occArr['dets'][$key]);
+									}
+								}
+							}
+							// End NEON customization
 							?>
 							<div id="sciname-div" class="sciname-div bottom-breathing-room-rel-sm">
 								<?php
@@ -636,6 +660,13 @@ $traitArr = $indManager->getTraitArr();
 								?>
 							</div>
 							<?php
+						}
+						if($occArr['recordsecurity'] == 2){
+							echo '<div style="margin-left:10px"><span class="notice-span">'.$LANG['PROTECTED'].':<span> ';
+							if($occArr['securityreason'] && substr($occArr['securityreason'],0,1) != '<') echo $occArr['securityreason'];
+							else echo $LANG['PROTECTED_REASON'];
+							if($isSecuredReader) echo '<br/>'.(isset($LANG['ACCESS_GRANTED'])?$LANG['ACCESS_GRANTED']:'Current user has been granted access');
+							echo '</div>';
 						}
 						if($occArr['eventid']){
 							?>
@@ -1038,14 +1069,24 @@ $traitArr = $indManager->getTraitArr();
 									echo '<div id="thumbnail-div" class="thumbnail-div">';
 									echo Media::render_media_item($imgArr);
 									if($imgArr['caption']) echo '<div><i>'.$imgArr['caption'].'</i></div>';
-									if($imgArr['creator']) echo '<div>'.(isset($LANG['AUTHOR'])?$LANG['AUTHOR']:'Author').': '.$imgArr['creator'].'</div>';
+										// START NEON CUSTOMIZATION //
+										if($imgArr['creator']) {
+											if($imgArr['owner']){
+												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</br></b> '.$imgArr['owner'].'</div>';
+											}
+											else {
+												echo '<div><b> Creator: </b>'.$imgArr['creator'].'</div>';
+											}
+										}
+										elseif($imgArr['owner']) echo '<div>' . $imgArr['owner'].'</div>';
+									if($imgArr['rights']) echo '<div><b> License: </b>'.$imgArr['rights'].'</div>';
+									else echo '<div><b> License: </b>CC BY-SA (Attribution-ShareAlike)</div>';
 									if($imgArr['url'] && substr($thumbUrl,0,7)!='process' && $imgArr['url'] != $imgArr['lgurl']) echo '<div><a href="' . $imgArr['url'] . '" target="_blank">' . $LANG['OPEN_MEDIUM'] . '</a></div>';
 									if($imgArr['lgurl']) echo '<div><a href="' . $imgArr['lgurl'] . '" target="_blank">' . $LANG['OPEN_LARGE'] . '</a></div>';
 									if($imgArr['sourceurl']) echo '<div><a href="' . $imgArr['sourceurl'] . '" target="_blank">' . $LANG['OPEN_SOURCE'] . '</a></div>';
-									//Use image rights settings as the default for current record
-									if($imgArr['rights']) $collMetadata['rights'] = $imgArr['rights'];
 									if($imgArr['copyright']) $collMetadata['rightsholder'] = $imgArr['copyright'];
 									if($imgArr['accessrights']) $collMetadata['accessrights'] = $imgArr['accessrights'];
+										// END NEON CUSTOMIZATION //
 									echo '</div>';
 								}
 								?>
@@ -1085,23 +1126,34 @@ $traitArr = $indManager->getTraitArr();
 								<legend><?= $LANG['SOURCE_RECORD'] ?></legend>
 								<div>
 									<?php
+									// NEON customization
 									if(!empty($occArr['source']['sourceName'])){
+										if($occArr['source']['sourceName']=='NEON Sample Viewer'){
+										?>
+										<div>
+											<a href="<?= $occArr['source']['url'] ?>" target="_blank"><strong>NEON Sample Viewer</strong></a>
+										</div>
+										<?php
+										}
+										else {
 										?>
 										<div><label><?= $LANG['DATA_SOURCE'] ?>:</label> <?= $occArr['source']['sourceName'] ?></div>
 										<?php
-									}
-									if(!empty($occArr['source']['sourceID'])){
+										if(!empty($occArr['source']['sourceID'])){
+											?>
+											<div><label><?= $LANG['SOURCE_ID'] ?>:</label> <?= $occArr['source']['sourceID'] ?></div>
+											<?php
+										}
 										?>
-										<div><label><?= $LANG['SOURCE_ID'] ?>:</label> <?= $occArr['source']['sourceID'] ?></div>
+										<div>
+											<label><?= $LANG['SOURCE_URL'] ?>:</label>
+											<a href="<?= $occArr['source']['url'] ?>" target="_blank"><?= $occArr['source']['url'] ?></a>
+										</div>
+										<div><label><?= $LANG['SOURCE_MANAGEMENT'] ?>:</label> <?= $sourceManagement ?></div>
 										<?php
+										}
 									}
-									?>
-									<div>
-										<label><?= $LANG['SOURCE_URL'] ?>:</label>
-										<a href="<?= $occArr['source']['url'] ?>" target="_blank"><?=  $occArr['source']['url'] ?></a>
-									</div>
-									<div><label><?= $LANG['SOURCE_MANAGEMENT'] ?>:</label> <?= $sourceManagement ?></div>
-									<?php
+									// End NEON customization
 									$dateLastModified = $occArr['source']['refreshTimestamp'];
 									if(array_key_exists('fieldsModified', $_POST)){
 										//Input from refersh event
@@ -1151,6 +1203,7 @@ $traitArr = $indManager->getTraitArr();
 						?>
 						<div id="contact-div">
 							<?php
+							/* NEON edit start
 							if($collMetadata['contact']){
 								echo $LANG['ADDITIONAL_INFO'].': '.$collMetadata['contact'];
 								if($collMetadata['email']){
@@ -1168,6 +1221,12 @@ $traitArr = $indManager->getTraitArr();
 									echo ' (<a href="mailto:' . $collMetadata['email'] . '?' . $emailRef . '">' . $collMetadata['email'] . '</a>)';
 								}
 							}
+							 */
+							if($collMetadata['contact']){
+								echo "For additional information about this specimen, please contact the ";
+								echo '<a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank">NEON Biorepository</a>';
+							}
+							//NEON edit end
 							?>
 						</div>
 						<?php
@@ -1213,13 +1272,6 @@ $traitArr = $indManager->getTraitArr();
 					</div>
 				</div>
 				<?php
-				if($displayMap){
-					?>
-					<div id="maptab">
-						<div id='map_canvas' style='width:100%;height:600px;'></div>
-					</div>
-					<?php
-				}
 				if($genticArr){
 					?>
 					<div id="genetictab">
@@ -1294,6 +1346,7 @@ $traitArr = $indManager->getTraitArr();
 					</div>
 					<?php
 				}
+				/* NEON end start - comment out following section
 				?>
 				<div id="commenttab">
 					<?php
@@ -1387,12 +1440,13 @@ $traitArr = $indManager->getTraitArr();
 					</div>
 					<?php
 				}
+				NEON edit end - commenting out stop */
 				if($isEditor){
 					?>
 					<div id="edittab">
 						<div style="padding:15px;">
 							<?php
-							/*
+							/* NEON edit start
 							 if($USER_RIGHTS && array_key_exists('CollAdmin',$USER_RIGHTS) && in_array($collid,$USER_RIGHTS['CollAdmin'])){
 								?>
 								<div style="float:right;" title="Manage Edits">
@@ -1400,7 +1454,7 @@ $traitArr = $indManager->getTraitArr();
 								</div>
 								<?php
 							}
-							*/
+							NEON Edit end */
 							echo '<div style="margin:20px 0px 30px 0px;">';
 							echo '<label>'.$LANG['ENTERED_BY'].':</label> '.($occArr['recordenteredby']?$occArr['recordenteredby']:'not recorded').'<br/>';
 							echo '<label>'.$LANG['DATE_ENTERED'].':</label> '.($occArr['dateentered']?$occArr['dateentered']:'not recorded').'<br/>';

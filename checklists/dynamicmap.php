@@ -1,5 +1,7 @@
 <?php
 include_once('../config/symbini.php');
+header('Location: ../', true, 302);
+exit;
 //include_once($SERVER_ROOT.'/classes/DynamicChecklistManager.php');
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 

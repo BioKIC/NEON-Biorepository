@@ -88,6 +88,24 @@ class OmDeterminations extends Manager{
 						if($stmt->affected_rows || !$stmt->error){
 							$this->detID = $stmt->insert_id;
 							$status = true;
+
+							// Start NEON Customization
+							if (!empty($inputArr['isCurrent']) && intval($inputArr['isCurrent']) === 1) {
+                            $updateSql = 'UPDATE omoccurdeterminations 
+                                          SET isCurrent = 0 
+                                          WHERE occid = ? AND detid != ? AND isCurrent = 1';
+                            if ($updateStmt = $this->conn->prepare($updateSql)) {
+                                $updateStmt->bind_param('ii', $this->occid, $this->detID);
+                                if (!$updateStmt->execute()) {
+                                    $this->errorMessage = 'ERROR updating isCurrent value: ' . $updateStmt->error;
+                                }
+                                $updateStmt->close();
+                            } else {
+                                $this->errorMessage = 'ERROR preparing isCurrent query: ' . $this->conn->error;
+                            }
+							// End NEON customization
+                        }
+
 						}
 						else $this->errorMessage = 'ERROR inserting omoccurdeterminations record (2): '.$stmt->error;
 					}
@@ -139,7 +157,10 @@ class OmDeterminations extends Manager{
 			elseif(isset($inputArr[strtolower($field)])) $postField = strtolower($field);
 			if($postField){
 				$value = trim($inputArr[$postField]);
-				if($value){
+				// NEON custom adjustment
+				//if($value){
+				if($value !== null && $value !== ''){
+				// END NEON custom adjustment
 					$postField = strtolower($postField);
 					if($postField == 'establisheddate') $value = OccurrenceUtil::formatDate($value);
 					if($postField == 'modifieduid') $value = OccurrenceUtil::verifyUser($value, $this->conn);
@@ -192,5 +213,206 @@ class OmDeterminations extends Manager{
 	public function getSchemaMap(){
 		return $this->schemaMap;
 	}
+
+	// NEON specific functions
+
+	public function insertAndPropagateNEONDetermination($occid, $inputArr) {
+		$results = []; 
+		$occidList = [];
+
+		$sql = 'SELECT occid, occidAssociate 
+				FROM omoccurassociations 
+				WHERE (occid = ? OR occidAssociate = ?) 
+				AND relationship = "derivedFromSameIndividual"';
+
+		if ($stmt = $this->conn->prepare($sql)) {
+			$stmt->bind_param('ii', $occid, $occid);
+			if ($stmt->execute()) {
+				$result = $stmt->get_result();
+				while ($row = $result->fetch_assoc()) {
+					if (!empty($row['occid'])) $occidList[$row['occid']] = true;
+					if (!empty($row['occidAssociate'])) $occidList[$row['occidAssociate']] = true;
+				}
+			} else {
+				$this->errorMessage = 'ERROR executing association query: ' . $stmt->error;
+				return false;
+			}
+			$stmt->close();
+		} else {
+			$this->errorMessage = 'ERROR preparing association query: ' . $this->conn->error;
+			return false;
+		}
+
+		$occidList[$occid] = true;
+
+		foreach (array_keys($occidList) as $assocOccid) {
+			$this->occid = $assocOccid;
+			if ($this->insertNEONDetermination($inputArr)) {
+				$results[$assocOccid] = ['success' => true, 'message' => 'Inserted successfully'];
+			} else {
+				$results[$assocOccid] = [
+					'success' => false,
+					'message' => $this->errorMessage ?: 'Unknown error during insert'
+				];
+			}
+		}
+
+		return $results;
+	}
+
+	public function insertNEONDetermination($inputArr){
+		$status = false;
+		if($this->occid){
+			if(!isset($inputArr['createdUid'])) $inputArr['createdUid'] = $GLOBALS['SYMB_UID'];
+
+			// insert determination
+			$sql = 'INSERT INTO omoccurdeterminations(occid, recordID, createdUid';
+			$sqlValues = '?, ?, ?, ';
+			$paramArr = [$this->occid, UuidFactory::getUuidV4(), $inputArr['createdUid']];
+			$this->typeStr = 'isi'; 
+
+			$this->setParameterArr($inputArr);
+			foreach($this->parameterArr as $fieldName => $value){
+				$sql .= ', '.$fieldName;
+				$sqlValues .= '?, ';
+				$paramArr[] = $value;
+			}
+			$sql .= ') VALUES('.trim($sqlValues, ', ').')';
+
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param($this->typeStr, ...$paramArr);
+
+				try {
+					if($stmt->execute()){
+						$this->detID = $stmt->insert_id;
+						$status = true;
+
+
+						// tid lookup
+						try {
+							$tid = null;
+
+							$taxSql = 'SELECT t.tid, s.family, t.author
+									FROM taxa t
+									LEFT JOIN taxstatus s
+									ON t.tid = s.tid
+									WHERE t.sciName = ?
+									LIMIT 2';
+
+							if($taxStmt = $this->conn->prepare($taxSql)){
+								$taxStmt->bind_param('s', $inputArr['sciname']);
+
+								if($taxStmt->execute()){
+									$result = $taxStmt->get_result();
+
+									if($result->num_rows === 1){
+										$row = $result->fetch_assoc();
+
+										$tid = (int)$row['tid'];
+
+										if(empty($inputArr['family'])){
+											$inputArr['family'] = $row['family'];
+										}
+
+										if(empty($inputArr['scientificNameAuthorship'])){
+											$inputArr['scientificNameAuthorship'] = $row['author'];
+										}
+
+										$updateSql = 'UPDATE omoccurdeterminations
+													SET tidInterpreted = ?,
+														family = ?,
+														scientificNameAuthorship = ?
+													WHERE detID = ?';
+
+										if($updateStmt = $this->conn->prepare($updateSql)){
+											$updateStmt->bind_param(
+												'issi',
+												$tid,
+												$inputArr['family'],
+												$inputArr['scientificNameAuthorship'],
+												$this->detID
+											);
+											$updateStmt->execute();
+											$updateStmt->close();
+										} else $this->errorMessage .= ' ERROR preparing tid update: '.$this->conn->error;
+									} elseif ($result->num_rows > 1){
+										$this->errorMessage .= ' Multiple taxa found for sciname.';
+									} else {
+										$this->errorMessage .= ' No tid found for sciname.';
+									}
+								}
+								else{
+									$this->errorMessage .= ' ERROR executing taxa lookup: '.$taxStmt->error;
+								}
+
+								$taxStmt->close();
+							}
+							else{
+								$this->errorMessage .= ' ERROR preparing taxa lookup: '.$this->conn->error;
+							}
+						}
+						catch(Exception $e){
+							$this->errorMessage .= ' Taxa lookup exception: '.$e->getMessage();
+						}
+
+						if(!empty($inputArr['isCurrent']) && intval($inputArr['isCurrent']) === 1){
+							try {
+								// if current determination,set all others to isCurrent = 0 
+								$updateSql = 'UPDATE omoccurdeterminations 
+											SET isCurrent = 0 
+											WHERE occid = ? AND detid != ? AND isCurrent = 1';
+								if ($updateStmt = $this->conn->prepare($updateSql)){
+									$updateStmt->bind_param('ii', $this->occid, $this->detID);
+									$updateStmt->execute();
+									$updateStmt->close();
+								} else $this->errorMessage .= ' ERROR preparing isCurrent clear query: '.$this->conn->error;
+
+								// Update occurrence for current determination
+								$occUpdateSql = 'UPDATE omoccurrences o
+									JOIN omoccurdeterminations d ON o.occid = d.occid
+									SET 
+										o.identifiedBy = d.identifiedBy,
+										o.dateIdentified = d.dateIdentified,
+										o.family = d.family,
+										o.sciname = d.sciname,
+										o.scientificName = d.sciname,
+										o.scientificNameAuthorship = d.scientificNameAuthorship,
+										o.tidInterpreted = d.tidInterpreted,
+										o.identificationQualifier = d.identificationQualifier,
+										o.identificationReferences = d.identificationReferences,
+										o.identificationRemarks = d.identificationRemarks,
+										o.genus = d.genus,
+										o.taxonRemarks = d.taxonRemarks,
+										o.specificEpithet = d.specificEpithet,
+										o.infraspecificEpithet = d.infraspecificEpithet,
+										o.taxonRank = d.taxonRank
+									WHERE d.detID = ?
+									AND d.isCurrent = 1';
+
+								if($occStmt = $this->conn->prepare($occUpdateSql)){
+									$occStmt->bind_param('i', $this->detID);
+									$occStmt->execute();
+									$occStmt->close();
+								} else $this->errorMessage .= ' ERROR preparing omoccurrences update query: '.$this->conn->error;
+							} catch(Exception $e){
+								$this->errorMessage .= ' Omoccurrences update exception: '.$e->getMessage();
+							}
+						}
+
+					} else $this->errorMessage .= ' ERROR inserting determination: '.$stmt->error;
+				} catch (mysqli_sql_exception $e){
+					if(in_array($e->getCode(), [1062, 1406])) $this->errorMessage .= ' '.$e->getMessage();
+					else throw $e;
+				}
+				$stmt->close();
+			} else $this->errorMessage .= ' ERROR preparing insert: '.$this->conn->error;
+		}
+
+		return $status; 
+	}
+
+
+
+
 }
 ?>

@@ -34,6 +34,7 @@ class OccurrenceEditorManager {
 			$this->conn = $conn;
 			$this->isShareConn = true;
 		} else $this->conn = MySQLiConnectionFactory::getCon("write");
+
 		$this->fieldArr['omoccurrences'] = array('basisofrecord' => 's','catalognumber' => 's','othercatalognumbers' => 's','occurrenceid' => 's','ownerinstitutioncode' => 's',
 			'institutioncode' => 's','collectioncode' => 's','eventid' => 's','family' => 's','sciname' => 's','tidinterpreted' => 'n','scientificnameauthorship' => 's','identifiedby' => 's',
 			'dateidentified' => 's','identificationreferences' => 's','identificationremarks' => 's','taxonremarks' => 's','identificationqualifier' => 's','typestatus' => 's',
@@ -47,6 +48,11 @@ class OccurrenceEditorManager {
 			'georeferenceremarks' => 's','minimumelevationinmeters' => 'n','maximumelevationinmeters' => 'n','verbatimelevation' => 's','minimumdepthinmeters' => 'n','maximumdepthinmeters' => 'n',
 			'verbatimdepth' => 's','storagelocation' => 's','disposition' => 's','language' => 's','duplicatequantity' => 'n','labelproject' => 's','processingstatus' => 's',
 			'recordenteredby' => 's','observeruid' => 'n','dateentered' => 'd');
+
+		//NEON edit start
+		$this->fieldArr['omoccurrences']['availability'] = 'n';
+		//NEON edit stop
+
 		$this->fieldArr['omoccurpaleo'] = array('eon','era','period','epoch','earlyInterval','lateInterval','absoluteAge','stage','localStage','biota','biostratigraphy',
 			'lithogroup','formation','taxonEnvironment','member','bed','lithology','stratRemarks','element','slideProperties','geologicalContextID');
 		$this->fieldArr['omoccuridentifiers'] = array('idname', 'idvalue');
@@ -1302,6 +1308,9 @@ class OccurrenceEditorManager {
 		if ($postArr) {
 			$postArr = array_merge($postArr, $this->getDatefields($postArr));
 			$guid = UuidFactory::getUuidV4();
+			// NEON customization
+			$guid = "uuid:".$guid;
+			// end NEON customization
 			$sql = 'INSERT IGNORE INTO omoccurrences(collid, recordID, ' . implode(',', array_keys($this->fieldArr['omoccurrences'])) . ') VALUES (' . $postArr['collid'] . ', "' . $guid . '"';
 			if (!isset($postArr['dateentered']) || !$postArr['dateentered']) $postArr['dateentered'] = date('Y-m-d H:i:s');
 			if (!isset($postArr['basisofrecord']) || !$postArr['basisofrecord']) {
@@ -1815,7 +1824,7 @@ class OccurrenceEditorManager {
 
 				$parameters = str_repeat('?,', count($currentDeterminations) - 1) . '?';
 				$sql = <<<"SQL"
-				UPDATE omoccurdeterminations 
+				UPDATE omoccurdeterminations
 				SET isCurrent = 0
 				WHERE occid = ? AND isCurrent = 1 AND detid NOT IN ($parameters);
 				SQL;
@@ -2798,14 +2807,22 @@ class OccurrenceEditorManager {
 	public function getCollectionList($limitToUser = true) {
 		$retArr = array();
 		$sql = 'SELECT collid, collectionname FROM omcollections ';
+
+		//neon edit
 		if ($limitToUser) {
 			$collArr = array('0');
-			if (isset($GLOBALS['USER_RIGHTS']['CollAdmin'])) $collArr = $GLOBALS['USER_RIGHTS']['CollAdmin'];
-			$sql .= 'WHERE (collid IN(' . implode(',', $collArr) . ')) ';
+
 			if (isset($GLOBALS['USER_RIGHTS']['CollEditor'])) {
-				$sql .= 'OR (collid IN(' . implode(',', $GLOBALS['USER_RIGHTS']['CollEditor']) . ') AND colltype = "General Observations")';
+				$collArr = $GLOBALS['USER_RIGHTS']['CollEditor'];
 			}
+
+			if (isset($GLOBALS['USER_RIGHTS']['CollAdmin'])) {
+				$collArr = array_merge($collArr, $GLOBALS['USER_RIGHTS']['CollAdmin']);
+			}
+
+			$sql .= 'WHERE (collid IN(' . implode(',', $collArr) . ')) ';
 		}
+		//end neon edit
 		$rs = $this->conn->query($sql);
 		while ($r = $rs->fetch_object()) {
 			$retArr[$r->collid] = $r->collectionname;

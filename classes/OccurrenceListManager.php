@@ -1,6 +1,7 @@
 <?php
-include_once("OccurrenceManager.php");
-include_once("OccurrenceAccessStats.php");
+include_once('OccurrenceManager.php');
+include_once('OccurrenceAccessStats.php');
+include_once('OmDeterminations.php');
 
 class OccurrenceListManager extends OccurrenceManager{
 
@@ -85,14 +86,14 @@ class OccurrenceListManager extends OccurrenceManager{
 					$retArr[$row->occid]['formation'] = $this->cleanOutStr($row->formation);
 				}
 				/*
-				if(isset($row->scinameprotected) && $row->scinameprotected && !$securityClearance){
-					$retArr[$row->occid]['taxonsecure'] = 1;
-					$retArr[$row->occid]['sciname'] = $this->cleanOutStr($row->scinameprotected);
-					$retArr[$row->occid]['author'] = '';
-					$retArr[$row->occid]['family'] = $row->familyprotected;
-					$retArr[$row->occid]['tid'] = $row->tidprotected;
-				}
-				*/
+				 if(isset($row->scinameprotected) && $row->scinameprotected && !$securityClearance){
+				 $retArr[$row->occid]['taxonsecure'] = 1;
+				 $retArr[$row->occid]['sciname'] = $this->cleanOutStr($row->scinameprotected);
+				 $retArr[$row->occid]['author'] = '';
+				 $retArr[$row->occid]['family'] = $row->familyprotected;
+				 $retArr[$row->occid]['tid'] = $row->tidprotected;
+				 }
+				 */
 				$retArr[$row->occid]['collector'] = $this->cleanOutStr($row->recordedby);
 				$retArr[$row->occid]['country'] = $this->cleanOutStr($row->country);
 				$retArr[$row->occid]['state'] = $this->cleanOutStr($row->stateprovince);
@@ -117,6 +118,10 @@ class OccurrenceListManager extends OccurrenceManager{
 				else{
 					$retArr[$row->occid]['locality'] = 'PROTECTED';
 				}
+				//neon edit
+				$retArr[$row->occid]['sampleID'] = null;
+				$retArr[$row->occid]['sampleCode'] = null;
+				//end neon edit
 			}
 			$result->free();
 		}
@@ -125,6 +130,11 @@ class OccurrenceListManager extends OccurrenceManager{
 			$statsManager = new OccurrenceAccessStats();
 			$statsManager->recordAccessEventByArr($occArr,'list');
 		}
+		//NEON edit
+		if($retArr){
+			$this->setIdentifiers(array_keys($retArr), $retArr);
+		}
+		//end NEON edit
 		return $retArr;
 	}
 
@@ -183,6 +193,40 @@ class OccurrenceListManager extends OccurrenceManager{
 			$this->sortArr[] = $this->cleanInStr($field) . ($direction ? ' desc' : '');
 		}
 	}
+
+	//NEON edit start - NEON specific function
+	private function setIdentifiers($occArr, &$retArr): void {
+		$isAdmin = (
+			!empty($GLOBALS['IS_ADMIN']) ||
+			!empty($GLOBALS['USER_RIGHTS']['CollAdmin']) ||
+			!empty($GLOBALS['USER_RIGHTS']['CollEditor'])
+		);
+
+		$sql = 'SELECT occid, identifierName, identifierValue
+				FROM omoccuridentifiers
+				WHERE occid IN('.implode(',', $occArr).') AND identifierName IN("NEON sampleID", "NEON sampleID Hash", "NEON sampleCode (barcode)")';
+		$rs = $this->conn->query($sql);
+
+		while($r = $rs->fetch_object()){
+			$occid = $r->occid;
+			if($r->identifierName === 'NEON sampleID'){
+				if(!isset($retArr[$occid]['sampleID'])){
+					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
+				}
+			}
+			elseif($r->identifierName === 'NEON sampleID Hash'){
+				if(!$isAdmin){
+					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
+				}
+			}
+			elseif($r->identifierName === 'NEON sampleCode (barcode)'){
+				$retArr[$occid]['sampleCode'] = $this->cleanOutStr($r->identifierValue);
+			}
+		}
+
+		$rs->free();
+	}
+	//NEON edit end
 
 	//Misc support functions
 	public function getDatasetArr(){

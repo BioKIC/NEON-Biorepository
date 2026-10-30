@@ -117,6 +117,13 @@
     document.optionform.action = action;
     document.optionform.target = target;
   }
+  
+  //NEON edit
+   function changeDownloadFormAction(action, target) {
+    document.downloadform.action = action;
+    document.downloadform.target = target;
+  }
+  //end NEON edit
 
   //Misc functions
   Array.prototype.unique = function () {

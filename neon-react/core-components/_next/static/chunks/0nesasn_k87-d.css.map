@@ -1,0 +1,1 @@
+{"version":3,"sources":["turbopack:///[project]/src/lib_components/components/NeonPage/styles.css"],"sourcesContent":[".neon__sidebar-sticky {\n  position: -webkit-sticky;\n  position: sticky;\n}\n"],"names":[],"mappings":"AAAA"}

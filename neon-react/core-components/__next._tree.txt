@@ -1,0 +1,4 @@
+:HL["/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css","style"]
+:HL["/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css","style"]
+:HL["https://fonts.googleapis.com/icon?family=Material+Icons","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4112,"slots":{"children":{"name":"slug","param":{"type":"oc","key":"","siblings":["assets"]},"prefetchHints":4160,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}}}},"staleTime":300,"buildId":"WZvnSYc5FfzSP6OuK9yW6"}

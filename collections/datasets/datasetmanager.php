@@ -113,13 +113,27 @@ if ($isEditor) {
 		// Adds WYSIWYG editor to description field
 		tinymce.init({
 			selector: '#description',
+			plugins: 'link lists image code',
+			menubar: '',
+			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code'],
+			branding: false,
+			default_link_target: "_blank",
+			paste_as_text: true,
+			invalid_styles: {
+				'*': 'font-family'
+			}
+		});
+		//NEON edit start
+		tinymce.init({
+			selector: '#citation',
 			plugins: 'link lists image',
 			menubar: '',
-			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image'],
+			toolbar: ['undo redo | bold italic underline | link '],
 			branding: false,
 			default_link_target: "_blank",
 			paste_as_text: true
 		});
+		//NEON edit end
 	</script>
 	<script type="text/javascript">
 		var isDownloadAction = false;
@@ -318,6 +332,9 @@ if ($isEditor) {
 			echo '</div>';
 		}
 		if ($datasetId) {
+			# NEON edit
+			echo "<a href='../datasets/public.php?datasetid=" . $datasetId . "'>View Dataset</a>";
+			# End NEON edit
 			echo '<div style="margin:10px 0px 5px 20px;font-weight:bold;font-size:130%;">' . $mdArr['name'] . '</div>';
 			if ($role) echo '<div style="margin-left:20px" title="' . $LANG['ROLE'] . '"' . $roleLabel . '>' . $LANG['ROLE'] . ': ' . $role . '</div>';
 			if ($isEditor) {
@@ -489,11 +506,34 @@ if ($isEditor) {
 										<textarea name="description" id="description" cols="100" rows="10" style="width: 70%;" aria-label="<?= $LANG['DESCRIPTION'] ?>"><?= $mdArr['description'] ?></textarea>
 									</div>
 									<div style="margin:15px;">
+										<label for="citation"><?php echo 'Citation<br>'; ?></label>
+										<textarea name="citation" id="citation" cols="100" rows="10" style="width: 70%;" aria-label="<?php echo 'Citation'; ?>"><?php echo $mdArr['bibliographicCitation']; ?></textarea>
+									</div>
+									<div style="margin:15px;">
 										<input name="tabindex" type="hidden" value="1" />
 										<input name="datasetid" type="hidden" value="<?= $datasetId ?>" />
 										<button name="submitaction" type="submit" value="Save Edits"><?= $LANG['SAVE_EDITS'] ?></button>
 									</div>
 								</form>
+								<!--- NEON Addition -->
+									<?php if ($mdArr['category'] == "Request") {
+										?>
+										<div style="margin:15px;">
+										<?php $type = 'dataset'; ?>
+										<?php $pubID = $datasetId; ?>
+										<form action="<?php echo $CLIENT_ROOT; ?>/neon/requests/exporthandler.php" method="post">
+											<input type="hidden" name="pubID" value="<?php echo $pubID; ?>" />
+											<input type="hidden" name="type" value="<?php echo $type; ?>" />
+											<input type="hidden" name="exportTask" value="pubtable" />
+											<button type="submit">
+												Export Publication-Ready Table
+											</button>
+										</form>
+										</div>
+									<?php
+									};
+									?>
+								<!--- END NEON Addition -->
 							</section>
 							<section class="fieldset-like">
 								<h2><span><b><?= $LANG['DEL_DS'] ?></b></span></h2>

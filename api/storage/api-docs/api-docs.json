@@ -50,6 +50,24 @@
                         }
                     },
                     {
+                        "name": "datasetID",
+                        "in": "query",
+                        "description": "associated NEON sampleClasses",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "productID",
+                        "in": "query",
+                        "description": "associated NEON product IDs",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "limit",
                         "in": "query",
                         "description": "Controls the number of results per page",
@@ -586,39 +604,17 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Pagination parameter: maximum number of records per page",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 100
-                        }
-                    },
-                    {
-                        "name": "offset",
-                        "in": "query",
-                        "description": "Pagination parameter: page number",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 0
-                        }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Returns list of occurrences associated with an installations",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
+                    "201": {
+                        "description": "Success: Registration of event was successful"
                     },
                     "400": {
-                        "description": "Error: Bad request. Identifier of remote installation is required."
+                        "description": "Error: Bad request."
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -660,6 +656,9 @@
                     },
                     "400": {
                         "description": "Error: Bad request. Identifier of remote installation is required."
+                    },
+                    "422": {
+                        "description": "Error: Bad request."
                     }
                 }
             }
@@ -2579,6 +2578,37 @@
                         }
                     },
                     {
+                        "name": "taxonGroup",
+                        "in": "query",
+                        "description": "Search term for NEON defined Taxon Group",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ALGAE",
+                                "BEETLE",
+                                "BIRD",
+                                "FISH",
+                                "HERPETOLOGY",
+                                "MACROINVERTEBRATE",
+                                "MOSQUITO",
+                                "MOSQUITO_PATHOGENS",
+                                "PLANT",
+                                "SMALL_MAMMAL",
+                                "TICK"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "taxonCode",
+                        "in": "query",
+                        "description": "Search term for NEON defined Taxon Code",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name": "limit",
                         "in": "query",
                         "description": "Controls the number of results in the page.",
@@ -2820,99 +2850,6 @@
                     },
                     "400": {
                         "description": "Error: Bad request. Taxonomy identifier is required."
-                    }
-                }
-            }
-        },
-        "/api/v2/taxonomy/{identifier}/description": {
-            "get": {
-                "tags": [
-                    "Taxonomy"
-                ],
-                "operationId": "/api/v2/taxonomy/identifier/description",
-                "parameters": [
-                    {
-                        "name": "identifier",
-                        "in": "path",
-                        "description": "PK, GUID, or recordID associated with target taxonomic unit",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Controls the number of results in the page.",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 100
-                        }
-                    },
-                    {
-                        "name": "offset",
-                        "in": "query",
-                        "description": "Determines the starting point for the search results. A limit of 100 and offset of 200, will display 100 records starting the 200th record.",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 0
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Returns list of taxonomic descriptions for a given taxon",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error: Bad request. "
-                    }
-                }
-            }
-        },
-        "/api/v2/taxonomy/{identifier}/description/{identifier}": {
-            "get": {
-                "tags": [
-                    "Taxonomy"
-                ],
-                "operationId": "/api/v2/taxonomy/identifier/description/identifier",
-                "parameters": [
-                    {
-                        "name": "identifier",
-                        "in": "path",
-                        "description": "PK, GUID, or recordID associated with target taxonomic unit",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "identifier",
-                        "in": "path",
-                        "description": "Identifier (PK, tdbid) associated with taxonomic description",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Returns metabase on inventory registered within system with matching ID",
-                        "content": {
-                            "application/json": {
-                                "schema": {}
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error: Bad request. Inventory identifier is required."
                     }
                 }
             }

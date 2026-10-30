@@ -24,7 +24,10 @@ if($SYMB_UID){
 		}
 		$datasetID = Sanitize::int($datasetID);
 		if($datasetID){
-			$targetLink = 'datasetmanager.php?datasetid=' . $datasetID;
+			//NEON edit start
+			//$targetLink = 'datasetmanager.php?datasetid=' . $datasetID;
+			$targetLink = '../../neon/datasets/neondatasetmanager.php?datasetid='.$datasetID;
+			//NEON edit end
 			if($sourcePage == 'individual') $targetLink = '../individual/index.php?occid=' . Sanitize::int($occid);
 			if($action == 'addSelectedToDataset'){
 				if($occid){

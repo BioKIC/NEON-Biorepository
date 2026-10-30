@@ -58,12 +58,45 @@ else{
 
 $targetLabelFormatArr = $labelManager->getLabelFormatByID($labelCat,$labelIndex);
 
+//neon edit
 $isEditor = 0;
 if($SYMB_UID){
-	if($IS_ADMIN) $isEditor = 1;
+	if($IS_ADMIN){
+		$isEditor = 1;
+	}
+	elseif($labelManager->getCollid() === 'all'){
+		$missing = [];
+
+		foreach($labelManager->getLabelArray($_POST['occid']) as $row){
+			if(!isset($row['collid'])) continue;
+
+			$cid = $row['collid'];
+
+			if(
+				!(isset($USER_RIGHTS['CollAdmin'])  && in_array($cid,$USER_RIGHTS['CollAdmin'])) &&
+				!(isset($USER_RIGHTS['CollEditor']) && in_array($cid,$USER_RIGHTS['CollEditor']))
+			){
+				$missing[$cid] = $cid; // de-dupe
+			}
+		}
+
+		if(empty($missing)){
+			$isEditor = 1;
+		}
+		else{
+			$isEditor = 0;
+			$links = array_map(function($cid){
+				return '<a href="../misc/neoncollprofiles.php?collid='.$cid.'" target="_blank">'.$cid.'</a>';
+			}, $missing);
+			
+			echo 'Missing permissions for collid(s): '.implode(', ', $links);
+
+		}
+	}
 	elseif(array_key_exists("CollAdmin",$USER_RIGHTS) && in_array($labelManager->getCollid(),$USER_RIGHTS["CollAdmin"])) $isEditor = 1;
 	elseif(array_key_exists("CollEditor",$USER_RIGHTS) && in_array($labelManager->getCollid(),$USER_RIGHTS["CollEditor"])) $isEditor = 1;
 }
+//end neon edit
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -191,7 +224,7 @@ if($SYMB_UID){
 						if($useBarcode && $occArr['catalognumber']){
 							?>
 							<div class="cn-barcode">
-								<img src="getBarcode.php?bcheight=40&bctext=<?php echo $occArr['catalognumber']; ?>" />
+								<img src="getBarcode128.php?bcheight=40&amp;bctext=<?php echo rawurlencode($occArr['catalognumber']); ?>" />
 							</div>
 							<?php
 							if($occArr['othercatalognumbers']){
@@ -223,7 +256,7 @@ if($SYMB_UID){
 							?>
 							<hr style="border:dashed;" />
 							<div class="symb-barcode">
-								<img src="getBarcode.php?bcheight=40&bctext=<?php echo $occid; ?>" />
+								<img src="getBarcode128.php?bcheight=40&amp;bctext=<?php echo rawurlencode($occid); ?>" />
 							</div>
 							<?php
 							if($occArr['catalognumber']){
@@ -259,8 +292,14 @@ if($SYMB_UID){
 		if(substr($jsPath,0,1) == '/' && !file_exists($jsPath)){
 			if(file_exists($SERVER_ROOT.$targetLabelFormatArr['customJS'])) $jsPath = $CLIENT_ROOT.$targetLabelFormatArr['customJS'];
 		}
-		echo '<script src="'.$jsPath.'"></script>'."\n";
+		$versionedJsPath = $jsPath
+			. (strpos($jsPath, '?') === false ? '?' : '&')
+			. 'v=' . date('Ymd');
+		
+		echo '<script src="'
+			. htmlspecialchars($versionedJsPath, ENT_QUOTES, 'UTF-8')
+			. '"></script>' . "\n";
 	}
 	?>
-	<script src="../../js/symb/collections.labeldynamic.js"></script>
+	<script src="../../js/symb/collections.labeldynamic.js?v=<?php echo date('Ymd'); ?>"></script>
 </html>

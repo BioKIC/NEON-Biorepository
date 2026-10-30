@@ -20,7 +20,6 @@ class OccurrenceLoans extends Manager{
 		$retArr = array();
 		$extLoanArr = array();
 		//Get loans that are assigned to other collections but have linked occurrences from this collection (NEON Biorepo portal issue)
-		/*
 		$sql = 'SELECT DISTINCT l.loanid, o.collid '.
 			'FROM omoccurloans l INNER JOIN omoccurloanslink ll ON l.loanid = ll.loanid '.
 			'INNER JOIN omoccurrences o ON ll.occid = o.occid '.
@@ -31,7 +30,6 @@ class OccurrenceLoans extends Manager{
 			}
 			$rs->free();
 		}
-		*/
 
 		//Get loan details
 		$sql = 'SELECT l.loanid, l.datesent, l.loanidentifierown, l.loanidentifierborr, i.institutioncode AS instcode1, c.institutioncode AS instcode2, i.institutionname, l.forwhom, l.dateclosed, l.datedue '.
@@ -656,12 +654,28 @@ class OccurrenceLoans extends Manager{
 		if($this->collid && is_numeric($postArr['loanid'])){
 			if($postArr['catalogNumbers']){
 				$mode = $postArr['processmode'];
+				// start NEON addition
+				$sampleType = isset($postArr['sampletype']) ? (int)$postArr['sampletype'] : 0;
+				// end NEON addition
 				$catNumStr = str_replace(array("\n", "\r\n", ";"), ",", $postArr['catalogNumbers']);
 				$catArr = array_unique(explode(',',$catNumStr));
 				foreach($catArr as $catStr){
 					$catStr = trim($catStr);
 					if($catStr){
 						if($occArr = $this->getOccid($catStr, $postArr['targetidentifier'])){
+
+							// start NEON addition - Filter occurrences by sample type if one was selected
+							if($sampleType){
+								$filteredOccArr = [];
+							 	$filteredOccArr = $this->filterBySampleType($occArr,$sampleType);
+								$occArr = $filteredOccArr;
+							}
+
+							if(empty($occArr)){
+								$this->warningArr['missing'][] = $catStr;
+								continue;
+							}
+							// End NEON addition
 							if(count($occArr) > 1) $this->warningArr['multiple'][] = $catStr;
 							if($mode == 'link'){
 								foreach($occArr as $occid){
@@ -699,7 +713,7 @@ class OccurrenceLoans extends Manager{
 		if($method == 'allid' || $method == 'catnum') $sqlWhere .= 'OR (o.catalognumber = "'.$this->cleanInStr($catNum).'") ';
 		if($sqlWhere){
 			$sql .= 'WHERE ('.substr($sqlWhere,2).') ';
-			if($this->collid) $sql .= 'AND (o.collid = '.$this->collid.')';
+			//if($this->collid) $sql .= 'AND (o.collid = '.$this->collid.')';
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()) {
 				$occArr[] = $r->occid;
@@ -717,6 +731,7 @@ class OccurrenceLoans extends Manager{
 			try{
 				if($stmt->execute()){
 					$status = true;
+					$this->updateAvailability(0, $occid);		//This line is a NEON customization
 				}
 			} catch (mysqli_sql_exception $e){
 				$this->errorMessage = $stmt->error;
@@ -734,14 +749,14 @@ class OccurrenceLoans extends Manager{
 			$sql = 'SELECT returndate, notes FROM omoccurloanslink WHERE loanid = ? AND occid = ?';
 			if($stmt = $this->conn->prepare($sql)){
 				$stmt->bind_param('ii', $loanId, $occid);
-					$stmt->execute();
-					if($rs = $stmt->get_result()){
-						While($r = $rs->fetch_object()){
-							$retArr['returnDate'] = $r->returndate;
-							$retArr['notes'] = $r->notes;
-						}
-						$rs->free();
+        $stmt->execute();
+				if($rs = $stmt->get_result()){
+					While($r = $rs->fetch_object()){
+						$retArr['returnDate'] = $r->returndate;
+						$retArr['notes'] = $r->notes;
 					}
+					$rs->free();
+				}
 				$stmt->close();
 			}
 		}
@@ -758,6 +773,10 @@ class OccurrenceLoans extends Manager{
 				try{
 					if($stmt->execute()){
 						$status = true;
+						//Start of NEON customization
+						if($returnDate) $this->updateAvailability(1, $occid);
+						else $this->updateAvailability(0, $occid);
+						//End of NEON customization
 					}
 				} catch (mysqli_sql_exception $e){
 					$this->errorMessage = $stmt->error;
@@ -782,6 +801,7 @@ class OccurrenceLoans extends Manager{
 				try{
 					if($stmt->execute()){
 						$status = $this->conn->affected_rows;
+						$this->updateAvailability(1, $occidStr);		//This line is a NEON customization
 					}
 				} catch (mysqli_sql_exception $e){
 					$this->errorMessage = $stmt->error;
@@ -793,6 +813,28 @@ class OccurrenceLoans extends Manager{
 		}
 		return $status;
 	}
+
+	//Start of NEON customization
+	private function updateAvailability($value, $occidInput){
+		$status = false;
+		//$occidInput might be an int (single occurrence) or a string of multiple occurrences
+		if(preg_match('/^[\d,]+$/', $occidInput)){
+			$sql = 'UPDATE omoccurrences SET availability = ? WHERE occid IN(' . $occidInput . ')';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('i', $value);
+				try{
+					if($stmt->execute()) $status = true;
+				} catch (mysqli_sql_exception $e){
+					$this->errorMessage = $stmt->error;
+				} catch (Exception $e){
+					$this->errorMessage = 'unknown error';
+				}
+				$stmt->close();
+			}
+		}
+		return $status;
+	}
+	//End of NEON customization
 
 	public function deleteSpecimens($occidArr, $loanID){
 		$status = false;
@@ -936,6 +978,65 @@ class OccurrenceLoans extends Manager{
 		}
 		return $retArr;
 	}
+
+	// start NEON addition
+	public function getSampleTypes(){
+		$retArr = [];
+		$sql = 'SELECT collID, collectionName FROM omcollections ORDER BY collectionName';
+		$stmt = $this->conn->prepare($sql);
+		if (!$stmt) {
+			$this->errorMessage = "Database error: " . $this->conn->error;
+			return $retArr;
+		}
+		$stmt->execute();
+		$result = $stmt->get_result();
+		while($row = $result->fetch_assoc()){
+			$retArr[] = $row;
+		}
+		$stmt->close();
+		return $retArr;
+	}
+
+	public function filterBySampleType($occids, $sampleType){
+		$retArr = [];
+		$sampleType = (int)$sampleType;
+
+		if(empty($occids)){
+			return $retArr;
+		}
+
+		$occids = array_map('intval', $occids);
+		$placeholders = implode(',', array_fill(0, count($occids), '?'));
+
+		$sql = "SELECT occid
+				FROM omoccurrences
+				WHERE collid = ?
+				AND occid IN ($placeholders)";
+
+		$stmt = $this->conn->prepare($sql);
+
+		if (!$stmt) {
+			$this->errorMessage = "Database error: " . $this->conn->error;
+			return $retArr;
+		}
+
+		$types = 'i' . str_repeat('i', count($occids));
+
+		$params = array_merge([$sampleType], $occids);
+		$stmt->bind_param($types, ...$params);
+
+		$stmt->execute();
+		$result = $stmt->get_result();
+
+		while ($row = $result->fetch_assoc()) {
+			$retArr[] = $row['occid'];
+		}
+		$result->free();
+		$stmt->close();
+
+		return $retArr;
+	}
+	// end NEON addition
 
 	// General AJAX functions
 	public function identifierExists($identifier,$idType){

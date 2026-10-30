@@ -1,5 +1,10 @@
 <?php
+//NEON edit start
 include_once('../../config/symbini.php');
+header('Location: neonindex.php', true, 302);
+exit;
+//NEON edit end
+
 include_once($SERVER_ROOT.'/classes/DwcArchiverCore.php');
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 

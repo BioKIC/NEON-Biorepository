@@ -1,4 +1,6 @@
 <?php
+header("Location: ../../", true, 302);
+exit;
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceProtectedSpecies.php');
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');

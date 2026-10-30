@@ -154,7 +154,10 @@ class DwcArchiverMedia extends DwcArchiverBaseManager{
 									}
 								}
 							}
-							if (empty($r['UsageTerms'])) $r['UsageTerms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
+							// NEON edits - start
+							//if (empty($r['UsageTerms'])) $r['UsageTerms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
+							if (empty($r['usageterms'])) $r['usageterms'] = 'CC BY-SA (Attribution-ShareAlike)';
+							// NEON edits - end
 						}
 						$r['providerManagedID'] = 'urn:uuid:' . $r['providerManagedID'];
 						$r['associatedSpecimenReference'] = $urlPathPrefix . 'collections/individual/index.php?occid=' . $r['occid'];

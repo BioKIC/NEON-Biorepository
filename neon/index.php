@@ -1,0 +1,113 @@
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+include_once('../config/symbini.php');
+header("Content-Type: text/html; charset=".$CHARSET);
+if(!$SYMB_UID) header('Location: ../profile/index.php?refurl='.$CLIENT_ROOT.'/neon/index.php?'.$_SERVER['QUERY_STRING']);
+
+$action = array_key_exists("action",$_REQUEST)?$_REQUEST["action"]:"";
+
+$isEditor = false;
+if($IS_ADMIN) $isEditor = true;
+elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEditor',$USER_RIGHTS)) $isEditor = true;
+?>
+<html>
+<head>
+	<title><?php echo $DEFAULT_TITLE; ?> NEON Management Tools</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
+	<?php
+	include_once($SERVER_ROOT.'/includes/head.php');
+	?>
+	<script src="../js/jquery-3.7.1.min.js" type="text/javascript"></script>
+	<script src="../js/jquery-ui.min.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	</script>
+	<style type="text/css">
+		.nps-report { margin-left:15px; display:none; }
+		.workingSpan { display:none; margin-left:5px; }
+	</style>
+</head>
+<body>
+<?php
+$displayLeftMenu = false;
+include($SERVER_ROOT.'/includes/header.php');
+
+if($isEditor){
+	?>
+	<div id="innertext">
+		<fieldset style="padding:10px;">
+			<legend><b>Management Tools</b></legend>
+			<label>Quick search:</label>
+					<form name="sampleQuickSearchFrom" action="shipment/manifestviewer.php" method="post" style="display: inline" >
+						<input name="quicksearch" type="text" value="" onchange="this.form.submit()" style="width:400px;" />
+					</form>
+			<h3>Sample Management</h3>
+			<ul>
+				<li><a href="shipment/manifestloader.php">Submit New Manifests</a></li>
+				<li><a href="shipment/manifestsearch.php">Manifest Search</a></li>
+				<li><a href="../collections/loans/index.php">Loan Management</a></li>
+				<li><a href="../collections/reports/labelmanager.php">Label Printing</a></li>
+				<li><a href="editor/annotationdashboard.php">Annotation Label Dashboard</a></li>
+			</ul>
+			<h3>Data Management</h3>
+			<ul>
+				<li><a href="search/index.php">Sample Search</a></li>
+				<li><a href="occurrenceharvester.php">Batch Occurrence Harvester</a></li>
+				<li><a href="datasets/neonpubliclist.php">Research Datasets</a></li>
+				<?php
+				if($IS_ADMIN){
+					?>
+					<li><a href="igsncontrol.php">NEON IGSN Control Panel</a></li>
+					<li><a href="editor/neoneditor.php">NEON Occurrence and Extended Data Editor</a></li>
+					<li><a href="editor/neonnomenclaturaladjustments.php">NEON Nomenclatural Adjustment</a></li>
+					<?php
+				}
+				?>
+			</ul>
+			<h3>Sample Use</h3>
+			<ul>
+				<li><a href="requests/newinquiry.php">Create New Inquiry</a></li>
+				<li><a href="requests/index.php">Sample Use Inquiry List</a></li>
+				<li><a href="requests/neonrequestsearch.php">Sample Use Search</a></li>
+				<li><a href="https://asu.co1.qualtrics.com/jfe/form/SV_3mDAqC10lcVtLTw">Sample Use Request Form</a></li>
+				<li><a href="https://biorepo.neonscience.org/portal/misc/documents/NEONBiorepositorySampleUseAgreement.pdf">Sample Use Agreement Template</a></li>
+				<li><a href="https://docs.google.com/document/d/1z9yHLh6GPagrI3lqdk2Cf87KXaQGt7Nc/">Confirmation of Sample Receipt Template</a></li>
+				<?php
+				?>
+			</ul>
+			<h3>Reporting</h3>
+			<ul>
+				<li><a href="neonreports/sampledashboard.php">Sample Dashboard</a></li>
+				<li><a href="neonreports/monthlyreportactions.php">Monthly Reports</a></li>
+				<li><a href="neonreports/quarterlyreportactions.php">Quarterly Sample Use Reports</a></li>
+				<li><a href="requests/requestreport.php">Requests By Current Status</a></li>
+				<li><a href="neonreports/sowreportactions.php">SOW Report</a></li>
+				<li><a href="neonreports/archiveupload.php">Archive Upload</a></li>
+				<!-- <li><a href="#" onclick="$('.nps-report').show();return false">NPS Year End Reports</a></li>
+				<li class="nps-report"><a href="npsReportHandler.php?dsid=110&year=2020" onclick="$('#BLDE20-working').show();">BLDE - 2020</a><span id="BLDE20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
+				<li class="nps-report"><a href="npsReportHandler.php?dsid=40&year=2020" onclick="$('#GRSM20-working').show();">GRSM - 2020</a><span id="GRSM20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
+				<li class="nps-report"><a href="npsReportHandler.php?dsid=99&year=2020" onclick="$('#LECO20-working').show();">LECO - 2020</a><span id="LECO20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
+				<li class="nps-report"><a href="npsReportHandler.php?dsid=131&year=2020" onclick="$('#YELL20-working').show();">YELL - 2020</a><span id="YELL20-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
+				<li class="nps-report"><a href="npsReportHandler.php?dsid=110&year=2019" onclick="$('#BLDE19-working').show();">BLDE - 2019</a><span id="BLDE19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
+				<li class="nps-report"><a href="npsReportHandler.php?dsid=40&year=2019" onclick="$('#GRSM19-working').show();">GRSM - 2019</a><span id="GRSM19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
+				<li class="nps-report"><a href="npsReportHandler.php?dsid=99&year=2019" onclick="$('#LECO19-working').show();">LECO - 2019</a><span id="LECO19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li>
+				<li class="nps-report"><a href="npsReportHandler.php?dsid=131&year=2019" onclick="$('#YELL19-working').show();">YELL - 2019</a><span id="YELL19-working" class="workingSpan"><img src="../images/workingcircle.gif" /></span></li> -->
+				<li><a href="loans.php">Loans Report</a></li>
+				<li><a href="shipment/prepreports.php">Preparations Report</a></li>
+				<li><a href="shipment/harvesterreports.php">Occurrence Harvester Error Reports</a></li>
+			</ul>
+		</fieldset>
+	</div>
+	<?php
+}
+else{
+	?>
+	<div style='font-weight:bold;margin:30px;'>
+		You do not have permissions to access shipment managment tools
+	</div>
+	<?php
+}
+include($SERVER_ROOT.'/includes/footer.php');
+?>
+</body>
+</html>

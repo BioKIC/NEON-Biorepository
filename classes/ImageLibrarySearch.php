@@ -39,9 +39,12 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 		$retArr = Array();
 		$this->setSqlWhere();
 		$this->setRecordCnt();
-		$sql = 'SELECT m.mediaID, m.tid, t.sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType ';
+		// Begin NEON customization
+		//$sql = 'SELECT m.mediaID, m.tid, IFNULL(t.sciname,o.sciname) as sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType ';
+		$sql = 'SELECT m.mediaID, m.tid, t.sciname, m.url, m.thumbnailurl, m.originalurl, m.creatorUid, m.caption, m.occid, m.mediaType, m.owner ';
+		// End NEON customization
 		$sqlWhere = $this->sqlWhere;
-		if($this->imageCount == 1) $sqlWhere .= 'GROUP BY m.tid ';
+		if($this->imageCount == 1) $sqlWhere .= 'GROUP BY sciname ';
 		elseif($this->imageCount == 2) $sqlWhere .= 'GROUP BY m.occid ';
 		$sql .= $this->getSqlBase() . $sqlWhere;
 		if($this->sortBy == 'sciname') $sql .= 'ORDER BY t.sciname ';
@@ -65,6 +68,9 @@ class ImageLibrarySearch extends OccurrenceTaxaManager{
 					$retArr[$imgId]['caption'] = $r->caption;
 					$retArr[$imgId]['occid'] = $r->occid;
 					$retArr[$imgId]['mediaType'] = $r->mediaType;
+					// NEON edit start
+					$retArr[$imgId]['owner'] = $r->owner;
+					// NEON edit end
 					if($r->occid) $occArr[$r->occid] = $r->occid;
 				}
 				$result->free();

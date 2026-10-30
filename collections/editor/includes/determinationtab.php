@@ -157,14 +157,20 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 						}
 						?>
 						<div style='margin:3px;'>
+							<b><?php echo $LANG['SCI_NAME']; ?>:</b>
+							<input type="text" id="dafsciname" name="sciname" style="background-color:lightyellow;width:350px;" onfocus="initDetAutocomplete(this.form)" />
+							<input type="hidden" id="daftidtoadd" name="tidtoadd" value="" />
+						</div>
+						<div style='margin:3px;'>
 							<b><?php echo $LANG['ID_QUALIFIER']; ?>:</b>
 							<input type="text" name="identificationqualifier" title="e.g. cf, aff, etc" />
 						</div>
 						<div style='margin:3px;'>
+							<b><?php echo $LANG['FAMILY']; ?>:</b>
+							<input type="text" name="family" style="width:200px;" />
 							<label for="dafsciname"><b><?= $LANG['SCI_NAME']; ?></b></label>:
 							<input type="text" id="dafsciname" name="sciname" required style="width:350px;" onfocus="initDetAutocomplete(this.form)" />
 							<input type="hidden" id="daftidtoadd" name="tidtoadd" value="" />
-							<input type="hidden" name="family" value="" />
 						</div>
 						<div style='margin:3px;'>
 							<label for="add_scientificnameauthorship"><b><?= $LANG['AUTHOR']; ?></b></label>:
@@ -187,12 +193,16 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 							<input id="add_dateidentified" type="text" name="dateidentified" required onchange="detDateChanged(this.form);" />
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['REFERENCE']; ?>:</b>
+							<b><?php echo $LANG['ID_REFERENCES']; ?>:</b>
 							<input type="text" name="identificationreferences" style="width:350px;" />
 						</div>
 						<div style='margin:3px;'>
-							<b><?php echo $LANG['NOTES']; ?>:</b>
+							<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
 							<input type="text" name="identificationremarks" style="width:350px;" />
+						</div>
+						<div style='margin:3px;'>
+							<b><?php echo $LANG['TAXON_REMARKS']; ?>:</b>
+							<input type="text" name="taxonremarks" style="width:350px;" />
 						</div>
 						<div style='margin:3px;'>
 							<input type="checkbox" name="makecurrent" value="1" /> <?php echo $LANG['MAKE_THIS_CURRENT']; ?>
@@ -224,11 +234,10 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 				<div id="detdiv-<?php echo $detId;?>">
 					<div>
 						<?php
-						if($detRec['identificationqualifier']) echo $detRec['identificationqualifier'].' ';
-							$nonItalicized = ' ';
-							if (!empty($detRec['nonItalicized']))
-								$nonItalicized .= $detRec['nonItalicized'];
-							echo '<b><i>' . $detRec['sciname'] . '</i>' . $nonItalicized .'</b> ' . $detRec['scientificnameauthorship'];
+						$nonItalicized = ' ';
+						if (!empty($detRec['nonItalicized']))
+							$nonItalicized .= $detRec['nonItalicized'];
+						echo '<b><i>' . $detRec['sciname'] . '</i>' . $nonItalicized .'</b> ' . $detRec['scientificnameauthorship'];
 						if($detRec['iscurrent']){
 							if($detRec['appliedstatus']){
 								echo '<span style="margin-left:10px;color:red;">'.$LANG['CURRENT_DET'].'</span>';
@@ -249,23 +258,30 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 						?>
 					</div>
 					<div style='margin:3px 0px 0px 15px;'>
-						<b><?php echo $LANG['DETERMINER']; ?>:</b> <?php echo $detRec['identifiedby']; ?>
+						<b><?php echo $LANG['IDENTIFIED_BY']; ?>:</b> <?php echo $detRec['identifiedby']; ?>
 						<span style="margin-left:40px;">
-							<b><?php echo $LANG['DATE']; ?>:</b> <?php echo $detRec['dateidentified']; ?>
+							<b><?php echo $LANG['DATE_IDENTIFIED']; ?>:</b> <?php echo $detRec['dateidentified']; ?>
 						</span>
 					</div>
 					<?php
 					if($detRec['identificationreferences']){
 						?>
 						<div style='margin:3px 0px 0px 15px;'>
-							<b><?php echo $LANG['REFERENCE']; ?>:</b> <?php echo $detRec['identificationreferences']; ?>
+							<b><?php echo $LANG['ID_REFERENCES']; ?>:</b> <?php echo $detRec['identificationreferences']; ?>
 						</div>
 						<?php
 					}
 					if($detRec['identificationremarks']){
 						?>
 						<div style='margin:3px 0px 0px 15px;'>
-							<b><?php echo $LANG['NOTES']; ?>:</b> <?php echo $detRec['identificationremarks']; ?>
+							<b><?php echo $LANG['ID_REMARKS']; ?>:</b> <?php echo $detRec['identificationremarks']; ?>
+						</div>
+						<?php
+					}
+					if($detRec['taxonremarks']){
+						?>
+						<div style='margin:3px 0px 0px 15px;'>
+							<b><?php echo $LANG['TAXON_REMARKS']; ?>:</b> <?php echo $detRec['taxonremarks']; ?>
 						</div>
 						<?php
 					}
@@ -286,14 +302,20 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 							<legend><b><?php echo $LANG['EDIT_DET']; ?></b></legend>
 							<form name="deteditform" action="occurrenceeditor.php" method="post" onsubmit="return verifyDetForm(this);">
 								<div style='margin:3px;'>
+									<b><?php echo $LANG['SCI_NAME']; ?>:</b>
+									<input type="text" id="defsciname-<?php echo $detId;?>" name="sciname" value="<?php echo $detRec['sciname']; ?>" style="background-color:lightyellow;width:350px;" onfocus="initDetAutocomplete(this.form)" />
+									<input type="hidden" id="deftidtoadd" name="tidtoadd" value="" />
+								</div>
+								<div style='margin:3px;'>
 									<b><?php echo $LANG['ID_QUALIFIER']; ?>:</b>
 									<input type="text" name="identificationqualifier" value="<?php echo $detRec['identificationqualifier']; ?>" title="e.g. cf, aff, etc" />
 								</div>
 								<div style='margin:3px;'>
+									<b><?php echo $LANG['FAMILY']; ?>:</b>
+									<input type="text" name="family" value="<?php echo $detRec['family']; ?>" style="width:200px;" />
 									<label for="defsciname"><b><?= $LANG['SCI_NAME']; ?></b></label>:
 									<input type="text" id="defsciname-<?php echo $detId;?>" name="sciname" value="<?php echo $detRec['sciname']; ?>" required style="width:350px;" onfocus="initDetAutocomplete(this.form)" />
 									<input type="hidden" id="deftidtoadd" name="tidtoadd" value="" />
-									<input type="hidden" name="family" value="" />
 								</div>
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['AUTHOR']; ?>:</b>
@@ -308,13 +330,19 @@ $specImgArr = $occManager->getImageMap();  // find out if there are images in or
 									<input id="edit_identifiedby" type="text" name="dateidentified" value="<?php echo $detRec['dateidentified']; ?>" required />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['REFERENCE']; ?>:</b>
+									<b><?php echo $LANG['ID_REFERENCES']; ?>:</b>
 									<input type="text" name="identificationreferences" value="<?php echo $detRec['identificationreferences']; ?>" style="width:350px;" />
 								</div>
 								<div style='margin:3px;'>
-									<b><?php echo $LANG['NOTES']; ?>:</b>
+									<b><?php echo $LANG['ID_REMARKS']; ?>:</b>
 									<input type="text" name="identificationremarks" value="<?php echo $detRec['identificationremarks']; ?>" style="width:350px;" />
 								</div>
+								<!-- START NEON Customization
+								<div style='margin:3px;'>
+									<b><?php echo $LANG['TAXON_REMARKS']; ?>:</b>
+									<input type="text" name="taxonremarks" value="<?php echo $detRec['taxonremarks']; ?>" style="width:350px;" />
+								</div>
+								END NEON customization -->
 								<div style='margin:3px;'>
 									<b><?php echo $LANG['SORT_SEQUENCE']; ?>:</b>
 									<input type="text" name="sortsequence" value="<?php echo $detRec['sortsequence']; ?>" style="width:40px;" />

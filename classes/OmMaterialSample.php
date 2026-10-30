@@ -45,10 +45,15 @@ class OmMaterialSample{
 	public function insertMaterialSample($inputArr){
 		$status = false;
 		if($this->occid && $this->conn){
+			// START NEON Customization
+			$newUuid = UuidFactory::getUuidV4();
 			$sql = 'INSERT INTO ommaterialsample(occid, recordID';
 			$sqlValues = '?, ?, ';
-			$paramArr = array($this->occid);
-			$paramArr[] = UuidFactory::getUuidV4();
+			$paramArr = array($this->occid,$newUuid);
+			// End NEON Customization
+			if(empty($inputArr['guid'])){
+				$inputArr['guid'] = $newUuid;
+			}
 			$this->typeStr = 'is';
 			$this->setParameterArr($inputArr);
 			foreach($this->parameterArr as $fieldName => $value){
@@ -192,38 +197,95 @@ class OmMaterialSample{
 		global $LANG;
 		Language::load('collections/fieldterms/materialSampleVars');
 		return [
-			'sampleType' => $LANG['SAMPLE_TYPE'],
-			'catalogNumber' => $LANG['CATALOG_NUMBER'],
-			'guid' => $LANG['GUID'],
-			'sampleCondition' => $LANG['SAMPLE_CONDITION'],
-			'disposition' => $LANG['DISPOSITION'],
-			'preservationType' => $LANG['PRESERVATION_TYPE'],
-			'preparationDetails' => $LANG['PREPARATION DETAILS'],
-			'preparationDate' => $LANG['PREPARATION_DATE'],
-			'preparedBy' => $LANG['PREPARED_BY'],
-			'individualCount' => $LANG['INDIVIDUAL COUNT'],
-			'sampleSize' => $LANG['SAMPLE_SIZE'],
-			'storageLocation' => $LANG['STORAGE_LOCATION'],
-			'remarks' => $LANG['REMARKS'],
-			'concentration' => $LANG['CONCENTRATION'],
-			'concentrationUnit' => $LANG['CONCENTRATION_UNIT'],
-			'ratioOfAbsorbance260/230' => $LANG['RATIO_OF_ABSORBANCE_260/230'],
-			'ratioOfAbsorbance260/230' => $LANG['RATIO_OF_ABSORBANCE_260/280'],
-			'volume' => $LANG['VOLUME'],
-			'weight' => $LANG['WEIGHT'],
-			'weightMethod' => $LANG['WEIGHT_METHOD'],
-			'purification Method' => $LANG['PURIFICATION_METHOD'],
-			'quality' => $LANG['QUALITY'],
-			'qualityRemarks' => $LANG['QUALITY_REMARKS'],
-			'qualityCheckDate' => $LANG['QUALITY_CHECK_DATE'],
-			'sampleSize' => $LANG['SAMPLE_SIZE'],
-			'sieving' => $LANG['SIEVING'],
-			'dnaHybridization' => $LANG['DNA_HYBRIDIZATION'],
-			'dnaMeltingPoint' => $LANG['DNA_MELTING_POINT'],
-			'estimatedSize' => $LANG['ESTIMATED_SIZE'],
-			'poolDnaExtracts' => $LANG['POOL_DNA_EXTRACTS'],
-			'sampleDesignation' => $LANG['SAMPLE_DESIGNATION']
+				'sampleType' => $LANG['SAMPLE_TYPE'],
+				'catalogNumber' => $LANG['CATALOG_NUMBER'],
+				'guid' => $LANG['GUID'],
+				'sampleCondition' => $LANG['SAMPLE_CONDITION'],
+				'disposition' => $LANG['DISPOSITION'],
+				'preservationType' => $LANG['PRESERVATION_TYPE'],
+				'preparationDetails' => $LANG['PREPARATION DETAILS'],
+				'preparationDate' => $LANG['PREPARATION_DATE'],
+				'preparedBy' => $LANG['PREPARED_BY'],
+				'individualCount' => $LANG['INDIVIDUAL COUNT'],
+				'sampleSize' => $LANG['SAMPLE_SIZE'],
+				'storageLocation' => $LANG['STORAGE_LOCATION'],
+				'remarks' => $LANG['REMARKS'],
+				'concentration' => $LANG['CONCENTRATION'],
+				'concentrationUnit' => $LANG['CONCENTRATION_UNIT'],
+				'ratioOfAbsorbance260/230' => $LANG['RATIO_OF_ABSORBANCE_260/230'],
+				'ratioOfAbsorbance260/230' => $LANG['RATIO_OF_ABSORBANCE_260/280'],
+				'volume' => $LANG['VOLUME'],
+				'weight' => $LANG['WEIGHT'],
+				'weightMethod' => $LANG['WEIGHT_METHOD'],
+				'purification Method' => $LANG['PURIFICATION_METHOD'],
+				'quality' => $LANG['QUALITY'],
+				'qualityRemarks' => $LANG['QUALITY_REMARKS'],
+				'qualityCheckDate' => $LANG['QUALITY_CHECK_DATE'],
+				'sampleSize' => $LANG['SAMPLE_SIZE'],
+				'sieving' => $LANG['SIEVING'],
+				'dnaHybridization' => $LANG['DNA_HYBRIDIZATION'],
+				'dnaMeltingPoint' => $LANG['DNA_MELTING_POINT'],
+				'estimatedSize' => $LANG['ESTIMATED_SIZE'],
+				'poolDnaExtracts' => $LANG['POOL_DNA_EXTRACTS'],
+				'sampleDesignation' => $LANG['SAMPLE_DESIGNATION']
 		];
-	 }
+	}
+	// START NEON specific functions
+	public function getMatSampleIdByOccidAndCatalogNumber($occid, $catalogNumber) {
+		$occid = intval($occid);
+		$catalogNumber = $this->conn->real_escape_string($catalogNumber);
+
+		$sql = 'SELECT matSampleID
+				FROM ommaterialsample
+				WHERE occid = ' . $occid . '
+				AND catalogNumber = "' . $catalogNumber . '"
+				LIMIT 1';
+
+		if ($rs = $this->conn->query($sql)) {
+			if ($row = $rs->fetch_assoc()) {
+				return $row['matSampleID'];
+			}
+		}
+		return null;
+	}
+
+	public function getMatSampleIdByGuid($guid) {
+		$sql = 'SELECT matSampleID
+				FROM ommaterialsample
+				WHERE (guid = ? OR recordID = ?)
+				LIMIT 1';
+
+		$stmt = $this->conn->prepare($sql);
+		$stmt->bind_param('ss', $guid, $guid);
+		$stmt->execute();
+		$stmt->bind_result($matSampleID);
+
+		if ($stmt->fetch()) {
+			$stmt->close();
+			return $matSampleID;
+		}
+
+		$stmt->close();
+		return false;
+	}
+
+	public function getMatSampleIdByCatalogNumber($catalogNumber){
+		$sql = 'SELECT occid
+				FROM ommaterialsample
+				WHERE catalogNumber = ?
+				LIMIT 1';
+
+		$stmt = $this->conn->prepare($sql);
+		$stmt->bind_param('s', $catalogNumber);
+		$stmt->execute();
+		$stmt->bind_result($occid);
+
+		if($stmt->fetch()){
+			return $occid;
+		}
+
+		return false;
+	}
+	// END NEON specific Function
 }
 ?>

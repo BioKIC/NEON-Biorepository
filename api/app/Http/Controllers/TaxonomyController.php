@@ -43,6 +43,23 @@ class TaxonomyController extends Controller {
 	 *		)
 	 *	 ),
 	 *	 @OA\Parameter(
+	 *		 name="taxonGroup",
+	 *		 in="query",
+	 *		 description="Search term for NEON defined Taxon Group",
+	 *		 required=false,
+	 *		 @OA\Schema(
+	 *			type="string",
+	 *			enum={"ALGAE","BEETLE","BIRD","FISH","HERPETOLOGY","MACROINVERTEBRATE","MOSQUITO","MOSQUITO_PATHOGENS","PLANT","SMALL_MAMMAL","TICK"}
+	 *		)
+	 *	 ),
+	 *	 @OA\Parameter(
+	 *		 name="taxonCode",
+	 *		 in="query",
+	 *		 description="Search term for NEON defined Taxon Code",
+	 *		 required=false,
+	 *		 @OA\Schema(type="string")
+	 *	 ),
+	 *	 @OA\Parameter(
 	 *		 name="limit",
 	 *		 in="query",
 	 *		 description="Controls the number of results in the page.",
@@ -69,6 +86,8 @@ class TaxonomyController extends Controller {
 	 */
 	public function showAllTaxaSearch(Request $request) {
 		$this->validate($request, [
+			'type' => 'in:EXACT,exact,START,start,WHOLEWORD,wholeword,WILD,wild',
+			'taxonGroup' => 'in:ALGAE,BEETLE,BIRD,FISH,HERPETOLOGY,MACROINVERTEBRATE,MOSQUITO,MOSQUITO_PATHOGENS,PLANT,SMALL_MAMMAL,TICK',
 			'limit' => 'integer',
 			'offset' => 'integer'
 		]);
@@ -77,8 +96,8 @@ class TaxonomyController extends Controller {
 
 		$type = $request->input('type', 'EXACT');
 
+		$taxaModel = Taxonomy::with('taxonCodes');
 		if($request->taxon){
-			$taxaModel = Taxonomy::query();
 			if ($type == 'START') {
 				$taxaModel->where('sciname', 'LIKE', $request->taxon . '%');
 			} elseif ($type == 'WILD') {
@@ -92,16 +111,29 @@ class TaxonomyController extends Controller {
 				$taxaModel->where('sciname', $request->taxon);
 			}
 
-			$fullCnt = $taxaModel->count();
-			$result = $taxaModel->skip($offset)->take($limit)->get()->transform(function($taxon){
-				return $taxon->makeHidden('sciName');
-			});
-		}else{
-			$fullCnt = Taxonomy::count();
-			$result = Taxonomy::skip($offset)->take($limit)->get()->transform(function($taxon){
-				return $taxon->makeHidden('sciName');
+		}
+
+		//taxonGroup search term submit
+		if($request->taxonGroup){
+			$searchTerm = $request->taxonGroup;
+			$taxaModel->whereHas('taxonCodes', function ($query) use ($searchTerm) {
+				$query->where('taxonGroup', "{$searchTerm}");
 			});
 		}
+
+		//taxonCode search term submit
+		if($request->taxonCode){
+			$searchTerm = $request->taxonCode;
+			$taxaModel->whereHas('taxonCodes', function ($query) use ($searchTerm) {
+				$query->where('taxonCode', "{$searchTerm}");
+			});
+		}
+
+		//Prepare output
+		$fullCnt = $taxaModel->count();
+		$result = $taxaModel->skip($offset)->take($limit)->get()->transform(function($taxon){
+			return $taxon->makeHidden('sciName');
+		});
 
 		$eor = false;
 		$retObj = [
@@ -178,7 +210,9 @@ class TaxonomyController extends Controller {
 		$parStatusResult = $parStatus->get();
 		$taxonObj->classification = $parStatusResult;
 
-		if (!$taxonObj->count()) $taxonObj = ['status' => false, 'error' => 'Unable to locate inventory based on identifier'];
+		$taxonObj->taxonCodes;
+
+		if(!$taxonObj->count()) $taxonObj = ['status' =>false, 'error' => 'Unable to locate inventory based on identifier'];
 		return response()->json($taxonObj);
 	}
 

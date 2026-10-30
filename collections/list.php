@@ -8,6 +8,12 @@ Language::load('collections/list');
 
 header("Content-Type: text/html; charset=" . $CHARSET);
 
+//NEON edit start - add custom functions
+include_once($SERVER_ROOT . '/neon/classes/OccurrenceListFunctions.php');
+$occurrenceListFunctions = new OccurrenceListFunctions();
+$imagePageNumber = array_key_exists('imagepage', $_REQUEST) ? filter_var($_REQUEST['imagepage'], FILTER_SANITIZE_NUMBER_INT) : 1;
+//NEON edit end
+
 $taxonFilter = array_key_exists('taxonfilter', $_REQUEST) ? filter_var($_REQUEST['taxonfilter'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $targetTid = array_key_exists('targettid', $_REQUEST) ? filter_var($_REQUEST['targettid'], FILTER_SANITIZE_NUMBER_INT) : '';
 $tabIndex = array_key_exists('tabindex', $_REQUEST) ? filter_var($_REQUEST['tabindex'], FILTER_SANITIZE_NUMBER_INT) : 1;
@@ -28,7 +34,11 @@ $_SESSION['datasetid'] = $datasetid;
 $collManager = new OccurrenceListManager();
 $searchVar = $collManager->getQueryTermStr();
 if ($targetTid && array_key_exists('mode', $_REQUEST)) $searchVar .= '&mode=voucher&targettid=' . $targetTid;
-$searchVar .= '&comingFrom=' . $comingFrom;
+
+//NEON edit start
+//$searchVar .= '&comingFrom=' . $comingFrom;
+//NEON edit end
+
 if ($sortField1) {
 	$searchVar .= '&sortfield1=' . htmlspecialchars($sortField1, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&sortorder=' . $sortOrder;
 	if ($sortField2) {
@@ -39,6 +49,34 @@ if ($sortField1) {
 }
 
 $occurArr = $collManager->getSpecimenMap($pageNumber, $cntPerPage);
+
+//NEON edit start - sample type summary
+$biorepoAvailabilitySiteCodes = $occurrenceListFunctions->getNeonAvailabilitySiteCodes();
+$collectionTypeSummary = $occurrenceListFunctions->getCollectionTypeSummary();
+$additionalCollectionTypeSummary = $occurrenceListFunctions->getAdditionalCollectionTypeSummary();
+
+$combinedCollectionFamilies = array_merge(
+	$collectionTypeSummary['families'] ?? [],
+	$additionalCollectionTypeSummary['families'] ?? []
+);
+
+foreach($combinedCollectionFamilies as &$family){
+	$family['percent'] = round(
+		($family['total'] / $collectionTypeSummary['totalRecords']) * 100,
+		1
+	);
+}
+unset($family);
+
+//gets material sample information for display
+$materialSampleArr = [];
+$dbSearchTerm = $collManager->getSearchTerm('db');
+
+if($dbSearchTerm){
+    $dbArr = explode(',', $dbSearchTerm);
+	$materialSampleArr = $occurrenceListFunctions->getMaterialSampleTypes(array_keys($occurArr));
+}
+//NEON edit end
 
 $_SESSION['citationvar'] = $searchVar;
 
@@ -52,9 +90,59 @@ $_SESSION['citationvar'] = $searchVar;
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	include_once($SERVER_ROOT . '/includes/googleanalytics.php');
+
+	//NEON edit start
+	parse_str($searchVar, $params);
+	$encodedSearchVar = json_encode($searchVar, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+	//NEON edit end
 	?>
-	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=1" type="text/css" rel="stylesheet" />
+
+	<!-- NEON edit start -->
+	<script>
+		window.biorepoAvailabilitySiteCodes = <?php echo json_encode(
+			$biorepoAvailabilitySiteCodes ?? [],
+			JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+		); ?>;
+
+		window.biorepoCollectionTypeSummary = <?php echo json_encode(
+			$combinedCollectionFamilies,
+			JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+		); ?>;
+
+		window.biorepoCollectionTypeSummaryTotal = <?php echo json_encode(
+			$collectionTypeSummary['totalRecords'],
+			JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+		); ?>;
+
+		const params = <?php echo json_encode($params, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+		const rawSearchVar = <?php echo $encodedSearchVar; ?>;
+
+		const eventParams = {};
+
+		Object.keys(params).forEach(key => {
+			eventParams[key] = Array.isArray(params[key])
+				? params[key].join(',')
+				: params[key];
+		});
+
+		eventParams.rawSearchVar = rawSearchVar;
+
+		window.pendingGAEvents.push([
+			'event',
+			'search_query',
+			{
+				event_category: 'Search',
+				event_label: 'Search Parameters',
+				...eventParams
+			}
+		]);
+	</script>
+	<!-- NEON edit end -->
+
+	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=<?= date('YmdHis'); ?>" type="text/css" rel="stylesheet" />
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.min.css" type="text/css" rel="stylesheet">
+	<link rel="stylesheet"
+		  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript">
@@ -104,7 +192,6 @@ $_SESSION['citationvar'] = $searchVar;
 	<script src="../js/symb/collections.list.js?ver=5" type="text/javascript"></script>
 	<script src="../js/symb/shared.js?ver=1" type="text/javascript"></script>
 </head>
-
 <body>
 	<div id="all_collections_parent_container" data-config='<?= json_encode(['CURRENT_URL' => Sanitize::outString($_SERVER['REQUEST_URI'])]) ?>'></div>
 	<div id="service-container" data-search-var="<?= $searchVar; ?>"></div>
@@ -126,7 +213,7 @@ $_SESSION['citationvar'] = $searchVar;
 			echo '<a href="index.php">' . $LANG['NAV_COLLECTIONS'] . '</a> &gt;&gt; ';
 			echo '<a href="' . $CLIENT_ROOT . '/collections/harvestparams.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
 		} else {
-			echo '<a href="' . $CLIENT_ROOT . '/collections/search/index.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
+			echo '<a href="' . $CLIENT_ROOT . '/neon/search/index.php">' . $LANG['NAV_SEARCH'] . '</a> &gt;&gt; ';
 		}
 		echo '<b>' . $LANG['NAV_SPECIMEN_LIST'] . '</b>';
 		echo '</div>';
@@ -139,66 +226,116 @@ $_SESSION['citationvar'] = $searchVar;
 			<ul>
 				<li>
 					<a id="taxatablink" href="<?= 'checklist.php?' . $searchVar . '&taxonfilter=' . $taxonFilter ?>">
-						<span><?php echo $LANG['TAB_CHECKLIST']; ?></span>
+						<span>Taxa</span>
 					</a>
 				</li>
 				<li>
 					<a href="#speclist">
-						<span><?php echo $LANG['TAB_OCCURRENCES']; ?></span>
+						<span>Records</span>
 					</a>
 				</li>
 				<li>
-					<a href="#maps">
-						<span><?php echo $LANG['TAB_MAP']; ?></span>
+					<!-- NEON edit start: convert map to JSON tab thus reducing load on this page -->
+					<a id="maptablink" href="maptab.php?<?= $searchVar ?>">
+						<span>Map</span>
+					</a>
+					<!-- NEON edit end -->
+				</li>
+				<!-- NEON edit start: Add new Image tab -->
+				<li>
+					<a id="imagesdiv" href="imagetab.php?<?= $searchVar . '&imagepage=' . $imagePageNumber ?>">
+						<span>Gallery</span>
 					</a>
 				</li>
+				<!-- NEON edit end -->
+				<!-- NEON edit start: Add new Metrics tab -->
+				<li>
+					<a href="#metricsdiv">
+						<span id="metricstab">Metrics</span>
+					</a>
+				</li>
+				<!-- NEON edit end -->
 			</ul>
 			<div id="speclist">
+				<div id="biorepo-coll-type"></div>
 				<div id="queryrecords">
-					<div style="float:right;">
+					<div style="display:flex; justify-content: flex-end; margin-top:16px;"> <!--buttons div-->
 						<?php
 						if ($SYMB_UID) {
 						?>
-							<span>
-								<button class="icon-button" onclick="displayDatasetTools()" aria-label="<?= $LANG['DATASET_MANAGEMENT'] ?>" title="<?= $LANG['DATASET_MANAGEMENT'] ?>">
-									<svg style="width:1.3em;height:1.3em;" alt="<?php echo $LANG['IMG_DATASET_MANAGEMENT']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-										<path d="M280-280h160v-160H280v160Zm240 0h160v-160H520v160ZM280-520h160v-160H280v160Zm240 0h160v-160H520v160ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z" />
-									</svg>
+							<span style="margin-right: 8px">
+								<button
+									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+									type="button"
+									onclick="displayDatasetTools()"
+									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+								>
+									<i class="fa-solid fa-table-cells-large" style="font-size:0.75rem;margin-right:12px;"></i>
+									Dataset Management
+									<span class="MuiButton-endIcon MuiButton-iconSizeLarge" style="display:inline-flex;align-items:center;justify-content:center;margin-left:12px;">
+										<i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+									</span>
 								</button>
 							</span>
 						<?php
 						}
 						?>
-						<span>
-							<button class="icon-button" onclick="toggleElement('#sort-div', 'block')" title="<?= $LANG['DISPLAY_SORT'] ?>" aria-label="<?= $LANG['DISPLAY_SORT'] ?>">
-								<img src="<?= $CLIENT_ROOT ?>/images/sort-cream.svg" style="width:1.3em;height:1.3em" alt="<?= $LANG['DISPLAY_SORT'] ?>">
+						<span style="margin-right: 8px">
+							<button
+								class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+								type="button"
+								onclick="toggleElement('#sort-div', 'block')"
+								style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+							>
+								<i class="fa-solid fa-sort" style="font-size:0.75rem;margin-right:12px;"></i>
+								Sort
+								<span class="MuiButton-endIcon MuiButton-iconSizeLarge" style="display:inline-flex;align-items:center;justify-content:center;margin-left:12px;">
+									<i class="fa-solid fa-chevron-down" style="font-size:0.65rem;"></i>
+								</span>
 							</button>
 						</span>
-						<span>
+						<span style="margin-right: 8px">
 							<form class="button-form" action="listtabledisplay.php" method="post">
 								<input name="comingFrom" type="hidden" value="<?= $comingFrom; ?>" />
 								<input name="sortfield1" type="hidden" value="<?= htmlspecialchars($sortField1, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortfield2" type="hidden" value="<?= htmlspecialchars($sortField2, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortorder" type="hidden" value="<?= $sortOrder ?>" />
 								<input name="searchvar" type="hidden" value="<?php echo $searchVar ?>" />
-								<button class="icon-button" aria-label="<?= $LANG['TABLE_DISPLAY'] ?>" title="<?= $LANG['TABLE_DISPLAY'] ?>">
-									<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_TABLE_DISPLAY'] ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-										<path d="M120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200Zm80-400h560v-160H200v160Zm213 200h134v-120H413v120Zm0 200h134v-120H413v120ZM200-400h133v-120H200v120Zm427 0h133v-120H627v120ZM200-200h133v-120H200v120Zm427 0h133v-120H627v120Z" />
-									</svg>
+								<button
+									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+									type="submit"
+									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+								>
+									<i class="fa-solid fa-table" style="font-size:0.75rem;margin-right:12px;"></i>
+									Table Display
+									<span class="MuiButton-endIcon MuiButton-iconSizeLarge" style="display:inline-flex;align-items:center;justify-content:center;margin-left:12px;">
+										<i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+									</span>
 								</button>
 							</form>
 						</span>
 						<span>
-							<form class="button-form" action="download/index.php" method="post" onsubmit="targetPopup(this)">
-								<button class="icon-button" aria-label="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>" title="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>">
-									<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_DWNL_DATA'] ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-										<path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-									</svg>
+							<!--NEON edit single line: modify action target -->
+							<form class="button-form" action="download/neonindex.php" method="post" onsubmit="targetPopup(this)">
+							<!--end neon edit-->
+								<button
+									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+									type="submit"
+									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+								>
+									<i class="fa-solid fa-download" style="font-size:0.75rem;margin-right:12px;"></i>
+									Download Records
+									<span class="MuiButton-endIcon MuiButton-iconSizeLarge" style="display:inline-flex;align-items:center;justify-content:center;margin-left:12px;">
+										<i class="fa-solid fa-chevron-right" style="font-size:0.65rem;"></i>
+									</span>
 								</button>
 								<input name="searchvar" type="hidden" value="<?= $searchVar ?>" />
 								<input name="dltype" type="hidden" value="specimen" />
 							</form>
 						</span>
+						<!-- NEON edit start - comment out copy url button
+						<span>
+							<button class="icon-button" onclick="copyUrl()" aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
 						<span>
 							<button class="icon-button" onclick="copyUrl('<?= htmlspecialchars($comingFrom, ENT_QUOTES, 'UTF-8'); ?>')" aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
 								<svg style="width:1.3em;height:1.3em" alt="<?= $LANG['IMG_COPY']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
@@ -206,6 +343,7 @@ $_SESSION['citationvar'] = $searchVar;
 								</svg>
 							</button>
 						</span>
+						NEON edit end -->
 					</div>
 					<div style="margin:5px;">
 						<?php
@@ -240,8 +378,7 @@ $_SESSION['citationvar'] = $searchVar;
 						?>
 					</div>
 					<div id="sort-div" style="display:<?= ($sortField1 ? 'block' : 'none') ?>">
-						<section class="fieldset-like">
-							<h3><span><?= $LANG['SORT'] ?></span></h3>
+						<section style="margin: 2rem 0 1rem 1rem;">
 							<form name="sortform" action="list.php" method="post">
 								<div id="sort-inner-div">
 									<div>
@@ -295,7 +432,15 @@ $_SESSION['citationvar'] = $searchVar;
 									</div>
 									<div>
 										<input name="searchvar" type="hidden" value="<?= $searchVar ?>">
-										<button name="formsubmit" type="submit"><?= $LANG['SORT'] ?></button>
+										<button
+											name="formsubmit"
+											class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+											type="submit"
+											style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+										>
+											Sort
+											<!-- NEON edit end -->
+										</button>
 									</div>
 								</div>
 							</form>
@@ -327,7 +472,7 @@ $_SESSION['citationvar'] = $searchVar;
 					$beginNum = ($pageNumber - 1) * $cntPerPage + 1;
 					$endNum = $beginNum + $cntPerPage - 1;
 					if ($endNum > $collManager->getRecordCnt()) $endNum = $collManager->getRecordCnt();
-					$pageBar .= $LANG['PAGINATION_PAGE'] . ' ' . $pageNumber . ', ' . $LANG['PAGINATION_RECORDS'] . ' ' . $beginNum . '-' . $endNum . ' ' . $LANG['PAGINATION_OF'] . ' ' . $collManager->getRecordCnt();
+					$pageBar .= $LANG['PAGINATION_PAGE'] . ' ' . $pageNumber . ', ' . $beginNum . '-' . $endNum . ' ' . $LANG['PAGINATION_OF'] . ' ' . $collManager->getRecordCnt();
 					$paginationStr .= $pageBar;
 					$paginationStr .= '</div><div style="clear:both;"><hr/></div></div>';
 					echo $paginationStr;
@@ -393,11 +538,13 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									if (isset($fieldArr['media']) && isset($fieldArr['media']['thumbnailurl'])) {
 										echo '<div style="float:right;margin:5px 25px;">';
-										echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
+										// NEON edit start
+										//echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
+										echo '<a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
+										// NEON edit end
 										echo '<img src="' . $fieldArr['media']['thumbnailurl'] . '" style="height:70px" alt="' . $LANG['IMG_OCC'] . '"/></a></div>';
 									}
 									echo '<div style="margin:4px;">';
-
 
 									if (isset($fieldArr['sciname'])) {
 										$sciStr = '<span style="font-style:italic;">' . $fieldArr['sciname'] . '</span>';
@@ -412,7 +559,16 @@ $_SESSION['citationvar'] = $searchVar;
 									echo '</div>';
 									echo '<div style="margin:4px">';
 									echo '<span style="width:150px;">' . $fieldArr["catnum"] . '</span>';
-									echo '<span style="width:200px;margin-left:30px;">' . $fieldArr["collector"] . '&nbsp;&nbsp;&nbsp;' . (isset($fieldArr["collnum"]) ? $fieldArr["collnum"] : '') . '</span>';
+									//NEON edit start
+									if (isset($fieldArr['sampleID'])) {
+										echo '<span style="width:150px;margin-left:30px;">' . $fieldArr["sampleID"] . '</span>';
+									}
+									if (isset($fieldArr['sampleCode'])) {
+										echo '<span style="width:150px;margin-left:30px;">' . $fieldArr["sampleCode"] . '</span>';
+									}
+									echo '</div><div style="margin:4px">';
+									echo '<span style="width:200px;">' . $fieldArr["collector"] . '&nbsp;&nbsp;&nbsp;' . (isset($fieldArr["collnum"]) ? $fieldArr["collnum"] : '') . '</span>';
+									//NEON edit end
 									if (isset($fieldArr["date"])) echo '<span style="margin-left:30px;">' . $fieldArr["date"] . '</span>';
 									echo '</div><div style="margin:4px">';
 									$localStr = '';
@@ -420,7 +576,7 @@ $_SESSION['citationvar'] = $searchVar;
 									if ($fieldArr["state"]) $localStr .= ', ' . $fieldArr["state"];
 									if ($fieldArr["county"]) $localStr .= ', ' . $fieldArr["county"];
 									if ($fieldArr['locality'] == 'PROTECTED') {
-										$localStr .= ', <span style="color:red;">' . $LANG['PROTECTED'] . '</span>';
+										$localStr .= ', <span class="protected-span">' . $LANG['PROTECTED'] . '</span>';
 									} else {
 										if ($fieldArr['locality']) $localStr .= ', ' . $fieldArr['locality'];
 										if ($fieldArr['declat']) $localStr .= ', ' . $fieldArr['declat'] . ' ' . $fieldArr['declong'];
@@ -444,6 +600,25 @@ $_SESSION['citationvar'] = $searchVar;
 										echo '</div>';
 									}
 									echo '<div style="margin:4px">';
+									//neon edit
+									if(!empty($materialSampleArr[$occid])){
+										echo '<div style="margin-top:4px;">';
+										echo '<strong>Material Samples:</strong> ';
+
+										$sampleDisplayArr = [];
+
+										foreach ($materialSampleArr[$occid] as $sample) {
+											$sampleType = htmlspecialchars($sample['sampleType'] ?? '',ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
+											$disposition = htmlspecialchars($sample['disposition'] ?? '',ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
+
+											$sampleDisplayArr[] = $disposition ? "'{$sampleType}' ({$disposition})" : "'{$sampleType}'";
+										}
+
+										echo implode(', ', array_unique($sampleDisplayArr));
+										echo '</div>';
+									}
+									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
+									//end edit
 									echo '<b><a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
 								}
@@ -481,101 +656,11 @@ $_SESSION['citationvar'] = $searchVar;
 					?>
 				</div>
 			</div>
-			<div id="maps" style="min-height:400px;margin-bottom:10px;">
-				<form action="download/index.php" method="post" style="float:right" onsubmit="targetPopup(this)">
-					<button class="icon-button" aria-label="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>" title="<?= $LANG['DOWNLOAD_SPECIMEN_DATA'] ?>">
-						<svg style="width:1.3em" alt="<?= $LANG['IMG_DWNL_DATA']; ?>" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
-							<path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z" />
-						</svg>
-					</button>
-					<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
-					<input name="dltype" type="hidden" value="georef" />
-				</form>
-
-				<div style='margin-top:10px;'>
-					<h2><?php echo $LANG['MAP_HEADER']; ?></h2>
-				</div>
-				<div>
-					<?php echo $LANG['MAP_DESCRIPTION']; ?>
-				</div>
-				<div style='margin-top:10px;'>
-						<button onclick="openMapPU('<?= $searchVar ?>');">
-						<?php echo $LANG['MAP_DISPLAY']; ?>
-					</button>
-				</div>
-				<div style='margin-top:10px;'>
-					<h2><?php echo $LANG['KML_HEADER']; ?></h2>
-				</div>
-				<form name="kmlform" action="map/kmlhandler.php" method="post">
-					<div>
-						<?php echo $LANG['KML_DESCRIPTION']; ?>
-					</div>
-					<div style="margin:10px 0;">
-						<input name="searchvar" type="hidden" value="<?php echo $searchVar; ?>" />
-						<button name="formsubmit" type="submit" value="createKML"><?php echo $LANG['CREATE_KML']; ?></button>
-					</div>
-					<div>
-						<a href="#" onclick="toggleFieldBox('fieldBox');">
-							<?php echo $LANG['KML_EXTRA']; ?>
-						</a>
-					</div>
-					<div id="fieldBox" style="display:none;">
-						<fieldset>
-							<?php
-							$occFieldArr = array(
-								'occurrenceid',
-								'identifiedby',
-								'dateidentified',
-								'identificationreferences',
-								'identificationremarks',
-								'taxonremarks',
-								'recordedby',
-								'recordnumber',
-								'associatedcollectors',
-								'eventdate',
-								'year',
-								'month',
-								'day',
-								'verbatimeventdate',
-								'habitat',
-								'substrate',
-								'occurrenceremarks',
-								'associatedtaxa',
-								'verbatimattributes',
-								'reproductivecondition',
-								'cultivationstatus',
-								'establishmentmeans',
-								'lifestage',
-								'sex',
-								'individualcount',
-								'samplingprotocol',
-								'preparations',
-								'country',
-								'stateprovince',
-								'county',
-								'municipality',
-								'locality',
-								'locationremarks',
-								'coordinateuncertaintyinmeters',
-								'verbatimcoordinates',
-								'georeferencedby',
-								'georeferenceprotocol',
-								'georeferencesources',
-								'georeferenceverificationstatus',
-								'georeferenceremarks',
-								'minimumelevationinmeters',
-								'maximumelevationinmeters',
-								'verbatimelevation'
-							);
-							foreach ($occFieldArr as $k => $v) {
-								echo '<div style="float:left;margin-right:5px;">';
-								echo '<input type="checkbox" name="kmlFields[]" value="' . $v . '" />' . $v . '</div>';
-							}
-							?>
-						</fieldset>
-					</div>
-				</form>
+			<!-- NEON edit start - remove map tab div and add metrics tab div -->
+			<div id="metricsdiv">
+				<div id="biorepo-search-metrics"></div>
 			</div>
+			<!-- NEON edit end -->
 		</div>
 	</div>
 	<?php

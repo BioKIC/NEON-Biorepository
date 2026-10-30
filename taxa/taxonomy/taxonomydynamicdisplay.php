@@ -138,7 +138,7 @@ reset($treePath);
 		?>
 		<div>
 			<?php
-			
+
 			if(count($taxMetaArr) > 1){
 				//echo '<div id="taxDetailDiv" class="tax-detail-div"><a href="#" onclick="displayTaxomonyMeta()">(more details)</a></div>';
 				echo '<div id="taxMetaDiv" class="tax-meta-div">';

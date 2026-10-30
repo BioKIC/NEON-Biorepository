@@ -13,6 +13,24 @@ Language::load('profile/index');
 
 header('Content-Type: text/html; charset=' . $CHARSET);
 
+//NEON edit start
+if (empty($SYMB_UID) && (empty($NEON_DEV_MODE) || $NEON_DEV_MODE == 1)) {
+	if (isset($_REQUEST['refurl']) && is_string($_REQUEST['refurl'])) {
+		$_SESSION['refurl'] = $_REQUEST['refurl'];
+	}
+
+	$target = $CLIENT_ROOT . '/profile/openIdAuth.php';
+
+	if (!empty($_SESSION['refurl'])) {
+		$glue = (strpos($target, '?') === false) ? '?' : '&';
+		$target .= $glue . 'refurl=' . rawurlencode($_SESSION['refurl']);
+	}
+
+	header('Location: ' . $target);
+	exit;
+}
+//NEON edit end
+
 $login = isset($_REQUEST['login']) ? $_REQUEST['login'] : '';
 $remMe = isset($_POST['remember']) ? 1 : 0;
 $emailAddr = isset($_POST['email']) ? $_POST['email'] : '';
@@ -66,9 +84,25 @@ if($action == 'logout'){
 	$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . '/index.php';
 	//check if using third party auth
 	if(array_key_exists('AUTH_PROVIDER', $_SESSION)){
-		$oidc = new OpenIDConnectClient($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], $CLIENT_IDS[$_SESSION['AUTH_PROVIDER']], $CLIENT_SECRETS[$_SESSION['AUTH_PROVIDER']], $PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']]);
-		$pHandler->reset();
-		$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
+
+		//NEON edit start
+		//$oidc = new OpenIDConnectClient($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], $CLIENT_IDS[$_SESSION['AUTH_PROVIDER']], $CLIENT_SECRETS[$_SESSION['AUTH_PROVIDER']], $PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']]);
+		//$pHandler->reset();
+		//$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
+
+		$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
+		$baseUrl = rtrim($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], '/');
+
+		$logoutUrl = sprintf(
+			'%s/v2/logout?returnTo=%s&client_id=%s',
+			$baseUrl,
+			urlencode($redirect),
+			$CLIENT_IDS[$_SESSION['AUTH_PROVIDER']]
+		);
+		header("Location: $logoutUrl");
+		exit;
+		//NEON edit end
+
 	}
 	else{
 		$pHandler->reset();
@@ -111,7 +145,7 @@ elseif($action == 'retrieveLogin'){
 }
 elseif($resetPwd){
 	if(!($email = $pHandler->resetPassword($login))){
-		
+
 		if($pHandler->getErrorMessage()) error_log('Password reset failed:' . '('.$pHandler->getErrorMessage().')');
 	}
 	$statusStr = $LANG['RETRIEVE_RESET_MSG'];

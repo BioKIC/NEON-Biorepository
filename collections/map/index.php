@@ -22,6 +22,10 @@ $catId = array_key_exists('catid',$_REQUEST) ? filter_var($_REQUEST['catid'], FI
 $tabIndex = array_key_exists('tabindex',$_REQUEST) ? filter_var($_REQUEST['tabindex'], FILTER_SANITIZE_NUMBER_INT) : 0;
 $submitForm = array_key_exists('submitform', $_REQUEST) ? $_REQUEST['submitform'] : '';
 
+//NEON edit start - never open search menu
+$menuClosed = true;
+//NEON edit end
+
 $shouldUseMinimalMapHeader = $SHOULD_USE_MINIMAL_MAP_HEADER ?? false;
 $topVal = $shouldUseMinimalMapHeader ? '6rem' : '0';
 $comingFrom =  (array_key_exists('comingFrom', $_REQUEST) ? $_REQUEST['comingFrom'] : '');
@@ -86,6 +90,8 @@ $serverHost = GeneralUtil::getDomain();
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title><?php echo $DEFAULT_TITLE . ' - ' . $LANG['MAP_INTERFACE'] ?></title>
 		<?php
+		//NEON edit - single line addition
+		$DEACTIVATE_REACT = true;
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
 		<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/listdisplay.css" type="text/css" rel="stylesheet" />
@@ -274,7 +280,7 @@ $serverHost = GeneralUtil::getDomain();
 
 		//Indciates if clustering should be drawn. Only comes into effect after redraw or refreshes
 		let clusteroff = true;
-		// Imported value of 
+		// Imported value of
 		let MAP_RECORD_LIMIT;
 
 		//Get paleo times
@@ -609,7 +615,7 @@ $serverHost = GeneralUtil::getDomain();
 			let map = new LeafletMap('map', {
 				lang: "<?= $LANG_TAG ?>",
 				default_bounds: [],
-			}, 
+			},
 				JSON.parse(`<?= json_encode($GEO_JSON_LAYERS ?? []) ?>`)
 			);
 
@@ -803,7 +809,10 @@ $serverHost = GeneralUtil::getDomain();
 								size: 28
 							})
 						}))
-					.bindTooltip(`<div style="font-size:1rem">${record.id}</div>`)
+					//NEON edit start
+					//.bindTooltip(`<div style="font-size:1rem">${record.id}</div>`)
+					.bindTooltip(`<div style="font-size:1rem">${record.sciname} - ${record.catalogNumber || ''}</div>`)
+					//NEON edit end
 
 					marker.record = record;
 
@@ -985,7 +994,7 @@ $serverHost = GeneralUtil::getDomain();
 				if(cluster_type === 'taxa') {
 					autoColorTaxa();
 				}
-				
+
 				drawPoints();
 				fitMap();
 				hideWorking();
@@ -1164,7 +1173,7 @@ $serverHost = GeneralUtil::getDomain();
 			}
 			fitMap();
 		}
-	
+
 		function googleInit() {
 			let map = new GoogleMap('map')
 
@@ -1322,7 +1331,12 @@ $serverHost = GeneralUtil::getDomain();
 
 					bounds.extend(marker.getPosition());
 
-					const infoWin = new google.maps.InfoWindow({content:`<div>${record.id}</div>`});
+					//NEON edit start
+					//const infoWin = new google.maps.InfoWindow({content:`<div>${record.id}</div>`});
+					const infoWin = new google.maps.InfoWindow({
+						content: `<div>${record.sciname} - ${record.eventdate || ''}</div>`
+					});
+					//NEON edit end
 
 					google.maps.event.addListener(marker, 'mouseover', function() {
 						infoWin.open(map.mapLayer, marker);
@@ -2113,6 +2127,7 @@ $serverHost = GeneralUtil::getDomain();
 		<script src="../../js/symb/api.taxonomy.taxasuggest.js?ver=4" type="text/javascript"></script>
 	</head>
 	<body style='width:100%;max-width:100%;min-width:500px;' <?php echo (!$activateGeolocation?'onload="initialize();"':''); ?>>
+	<!-- NEON edit - never allow search panel to be opened and displayed
 	<div>
 		<button id="search-panel-button" onclick="document.getElementById('defaultpanel').style.width='29rem'; document.getElementById('search-panel-button').style.display='none';" style="position:absolute;top:0;left:0;margin:0px;z-index:10; gap: 0.2rem<?= $menuClosed ? '' : '; display:none'?>">
 			<span style="padding-bottom:0.2rem">
@@ -2121,6 +2136,7 @@ $serverHost = GeneralUtil::getDomain();
 			<b><?= $LANG['OPEN_SEARCH_PANEL'] ?></b>
 		</button>
 	</div>
+	-->
 	<div style="width:100%; max-width:max-content;" role="main" id="innertext" class="inntertext-tab pin-things-here inner-search">
 		<div style="z-index:999;" id="error-msgs" class="errors"></div>
 		<?php
@@ -2411,7 +2427,7 @@ $serverHost = GeneralUtil::getDomain();
 										<legend><?= $LANG['CLUSTERING'] ?></legend>
 										<label><?= $LANG['TURN_OFF_CLUSTERING'] ?>:</label>
 										<input data-role="none" type="checkbox" id="clusteroff" name="clusteroff" value='1' <?= ($mapManager->getSearchTerm('clusterSwitch') == "y"? 'checked':'') ?>/>
-	
+
 										<span style="display: flex; align-items:center">
 											<label for="cluster-radius"><?= $LANG['CLUSTER_RADIUS'] ?>: 1 </label>
 											<input style="margin: 0 1rem;"type="range" value="1" id="cluster-radius" name="cluster-radius" min="1" max="100">100
@@ -2427,10 +2443,10 @@ $serverHost = GeneralUtil::getDomain();
 											<label for="heat-radius"><?= $LANG['HEAT_RADIUS'] ?>: 10</label>
 											<input style="margin: 0 1rem;"type="range" value="20" id="heat-radius" name="heat-radius" min="10" max="100">100
 										</span>
-	
+
 										<label for="heat-min-density"><?= $LANG['MIN_DENSITY'] ?>: </label>
 										<input style="margin: 0 1rem; width: 5rem;" id="heat-min-density" name="heat-min-density">
-	
+
 										<br/>
 										<label for="heat-max-density"><?= $LANG['MAX_DENSITY'] ?>: </label>
 										<input style="margin: 0 1rem; width: 5rem;" id="heat-max-density" name="heat-max-density">

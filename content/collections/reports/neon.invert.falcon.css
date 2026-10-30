@@ -1,0 +1,58 @@
+/***
+ * NEON Invert Falcon Custom Styles (updated from Mammal (wet) by Chandra Earl, August 2025)
+ * Author: Laura Rocha Prado
+ * Version: March 2023
+ ***/
+
+.label-bottom {
+  display: none;
+}
+
+.cn-barcode {
+  grid-area: bc;
+  transform: rotate(90deg);
+  width: 4cm;
+  position: relative;
+}
+
+.cn-barcode img {
+  position: absolute;
+  right: 28px;
+  bottom: -13px;
+  width: 2.5cm;
+}
+
+.rotateimg180 {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.label {
+  display: grid;
+  grid-template-areas:
+    'h1 h1 h1 h1 h1 bc'
+    'bl bl bl bl bl bc'
+    'bl bl bl bl bl bc'
+    'bt bt bt bt bt bt';
+  flex-grow: 1;
+  flex-shrink: 0;
+  max-width: 45%;
+  font-size: 6pt;
+}
+
+.label-header {
+  grid-area: h1;
+  text-align: left;
+}
+
+.label-blocks {
+  grid-area: bl;
+}
+
+.other-catalog-numbers {
+  grid-area: bt;
+  font-size: 9pt;
+}

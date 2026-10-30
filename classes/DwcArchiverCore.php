@@ -669,6 +669,67 @@ class DwcArchiverCore extends Manager{
 	public function createDwcArchive(){
 		$status = false;
 		$archiveFile = '';
+
+		//NEON edit start
+		if(count($this->collArr) == 1 && strpos($this->targetPath,'/content/dwca') !== false){
+			//Only run alternative actions if full dataset is published to local dwc-a directory, which gets pushed to GBIF and other aggregators
+			$collid = key($this->collArr);
+
+			if($collid == 117){
+				$this->logOrEcho("Humboldt Tick Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
+
+				$githubUrl = 'https://raw.githubusercontent.com/BioKIC/NEONTickstoHumboldt/master/outputs/zipped/DwC-A.zip';
+				$archiveFile = $this->targetPath . 'NEON-TICC-H_DwC-A.zip';
+
+				$this->logOrEcho("Downloading archive from: $githubUrl\n");
+				$this->logOrEcho("Saving to: $archiveFile\n");
+
+				$data = file_get_contents($githubUrl);
+
+				if($data === false){
+					$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
+					return '';
+				}
+
+				if(file_put_contents($archiveFile, $data) === false){
+					$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
+					return '';
+				}
+
+				$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
+				$this->logOrEcho("\n-----------------------------------------------------\n");
+
+				return $archiveFile;
+			}
+			if($collid == 129){
+				$this->logOrEcho("Humboldt Bird Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
+
+				$githubUrl = 'https://github.com/BioKIC/NEONBirdstoHumboldt/raw/refs/heads/master/outputs/zipped/DwC-A.zip';
+				$archiveFile = $this->targetPath . 'NEON-BIRD-H_DwC-A.zip';
+
+				$this->logOrEcho("Downloading archive from: $githubUrl\n");
+				$this->logOrEcho("Saving to: $archiveFile\n");
+
+				$data = file_get_contents($githubUrl);
+
+				if($data === false){
+					$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
+					return '';
+				}
+
+				if(file_put_contents($archiveFile, $data) === false){
+					$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
+					return '';
+				}
+
+				$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
+				$this->logOrEcho("\n-----------------------------------------------------\n");
+
+				return $archiveFile;
+			}
+		}
+		//NEON edit end
+
 		if($fileName = $this->getFileName()){
 			$this->logOrEcho('Creating DwC-A file: ' . $fileName . "\n");
 
@@ -2077,6 +2138,8 @@ class DwcArchiverCore extends Manager{
 				break;
 		}
 
+		//NEON edit start
+		/*
 		$output = "This data package was downloaded from a " . $GLOBALS['DEFAULT_TITLE'] . " " . $citationPrefix . " on " . date('Y-m-d H:i:s') . ".\n\nPlease use the following format to cite this dataset:\n";
 
 		ob_start();
@@ -2087,6 +2150,50 @@ class DwcArchiverCore extends Manager{
 		}
 		$output .= ob_get_clean();
 		$output .= "\n\nFor more information on citation formats, please see the following page: " . GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/includes/usagepolicy.php";
+		*/
+		$output = "This data package was downloaded from the " . $GLOBALS['DEFAULT_TITLE'] . " on " . date('Y-m-d H:i:s') . ".\n\nPlease use the following to cite this dataset:\n";
+
+		ob_start();
+		include $GLOBALS['SERVER_ROOT'] . '/includes/citationneondownloadcollection.php';
+		$output .= ob_get_clean();
+		$output .= "\n\n";
+		$output .= "------------------------------------------------------------------\n";
+		$output .= "NEON BIOREPOSITORY CITATION GUIDANCE\n";
+		$output .= "------------------------------------------------------------------\n\n";
+
+		$output .= "NEON sample data are offered under the Creative Commons Attribution ";
+		$output .= "(CC BY 4.0) license. Attribution is required when using NEON data, ";
+		$output .= "including a link to the license and an indication of any changes made.\n\n";
+
+		$output .= "License: https://creativecommons.org/licenses/by/4.0/\n\n";
+
+		$output .= "Records in the NEON Biorepository Sample Portal are periodically ";
+		$output .= "updated and may include value-added data derived from additional ";
+		$output .= "analysis. Because these records are updated on a rolling basis and ";
+		$output .= "are not tied to a specific NEON data release, these data should be ";
+		$output .= "considered provisional and subject to change.\n\n";
+
+		$output .= "Recommended citation format:\n\n";
+
+		$output .= "NEON (National Ecological Observatory Network) Biorepository. ";
+		$output .= "[Collection Name]. Data accessed from ";
+		$output .= GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'];
+		$output .= "/collections/misc/neoncollprofiles.php?collid=[collid] ";
+		$output .= "on [date]. ";
+		$output .= "Licensed under CC BY 4.0 ";
+		$output .= "(https://creativecommons.org/licenses/by/4.0/).\n\n";
+
+		$output .= "If data were modified, filtered, or reformatted for analysis, ";
+		$output .= "please indicate those changes in your citation.\n\n";
+
+		$output .= "If additional data were obtained directly from the NEON Data Portal, ";
+		$output .= "the relevant NEON Data Product(s) should also be cited according to ";
+		$output .= "NEON data citation guidance.\n\n";
+
+		$output .= "For more information on citation requirements, please see:\n";
+		$output .= GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . "/misc/cite.php";
+		//NEON edit end
+
 
 		fwrite($fh, $output);
 

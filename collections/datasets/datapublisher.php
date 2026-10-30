@@ -179,6 +179,7 @@ if ($isEditor) {
 			}
 		}
 
+		/* NEON edit start
 		function checkAllColl(cb) {
 			var boxesChecked = true;
 			if (!cb.checked) {
@@ -195,6 +196,24 @@ if ($isEditor) {
 				}
 			}
 		}
+		*/
+		function checkAllColl(cb) {
+
+    		const boxes = document.getElementsByName("coll[]");
+
+			for (let i = 0; i < boxes.length; i++) {
+
+				const box = boxes[i];
+
+				if (box.disabled) continue;
+
+				if (box.dataset.default === "1") {
+					box.checked = cb.checked;
+				}
+
+			}
+		}
+		// NEON edit end
 	</script>
 </head>
 
@@ -293,7 +312,10 @@ if ($isEditor) {
 					echo '</ul>';
 					if ($publishGBIF) {
 						echo '<ul>';
-						$collManager->triggerGBIFCrawl($collArr['dwcaurl'], $collid, $collArr['collectionname']);
+						//NEON edit start; don't run if on localhost
+						if ($_SERVER['HTTP_HOST'] !== 'localhost') $collManager->triggerGBIFCrawl($collArr['dwcaurl'], $collid, $collArr['collectionname']);
+						else echo 'Skipping GBIF crawl on localhost';
+						//NEON edit end
 						echo '</ul>';
 					}
 				}
@@ -506,7 +528,10 @@ if ($isEditor) {
 									}
 									$inputAttr = '';
 									if ($errMsg) $inputAttr = 'DISABLED';
-									elseif ($v['url']) $inputAttr = 'CHECKED';
+									// NEON customization
+									//elseif ($v['url']) $inputAttr = 'CHECKED';
+									elseif ($v['url']) $inputAttr = 'CHECKED data-default="1"';
+									// END NEON customization
 									echo '<div class="bottom-breathing-room">';
 									echo '<input class="margin-rt-rel" name="coll[]" type="checkbox" value="' . $k . '" ' . $inputAttr . ' />';
 									echo '<a href="../misc/collprofiles.php?collid=' . $k . '" target="_blank">' . htmlspecialchars($v['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a> ';
@@ -549,10 +574,16 @@ if ($isEditor) {
 						<th><?php echo $LANG['CODE']; ?></th>
 						<th><?php echo $LANG['COL_NAME']; ?></th>
 						<th><?php echo $LANG['DWCA']; ?></th>
+						<!-- NEON edit start; add gbif column -->
+						<th>Published to GBIF</th>
+						<!-- NEON edit end -->
 						<th><?php echo $LANG['METADATA']; ?></th>
 						<th><?php echo $LANG['PUB_DATE']; ?></th>
 					</tr>
 					<?php
+					//NEON edit start
+					$collectionMedtadata = $collManager->getCollectionMetadata();
+					//NEON edit end
 					foreach ($dwcaArr as $k => $v) {
 						$title = htmlspecialchars($v['title'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
 						$link = htmlspecialchars($v['link'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
@@ -573,6 +604,9 @@ if ($isEditor) {
 								}
 								?>
 							</td>
+							<!--NEON edit start; add gbif column-->
+							<td><?= empty($collectionMedtadata[$v['collid']]['publishtogbif']) ? 'No' : 'Yes'; ?></td>
+							<!--NEON edit end-->
 							<td>
 								<?php
 								echo '<a href="' . $urlPrefix . 'collections/datasets/emlhandler.php?collid=' . $v['collid'] . '">EML</a>';

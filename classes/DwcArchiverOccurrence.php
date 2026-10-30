@@ -21,6 +21,20 @@ class DwcArchiverOccurrence extends Manager{
 	}
 
 	public function getOccurrenceArr(){
+
+		if($this->schemaType === 'symbiota'){
+			$newFields = [];
+			foreach($this->occurrenceFieldArr['fields'] as $key => $val){
+				$newFields[$key] = $val;
+				if($key === 'catalogNumber'){
+					$newFields['sampleID'] = 'ids.sampleID';
+					$newFields['sampleCode'] = 'ids.sampleCode';
+				}
+			}
+			$this->occurrenceFieldArr['fields'] = $newFields;
+		}
+
+
 		if($this->schemaType == 'pensoft') $this->occurDefArr['fields']['Taxon_Local_ID'] = 'ctl.tid AS Taxon_Local_ID';
 		else $this->occurDefArr['fields']['id'] = 'o.occid';
 		$this->occurDefArr['terms']['institutionCode'] = 'http://rs.tdwg.org/dwc/terms/institutionCode';
@@ -37,6 +51,12 @@ class DwcArchiverOccurrence extends Manager{
 		$this->occurDefArr['fields']['occurrenceID'] = 'o.occurrenceID';
 		$this->occurDefArr['terms']['catalogNumber'] = 'http://rs.tdwg.org/dwc/terms/catalogNumber';
 		$this->occurDefArr['fields']['catalogNumber'] = 'o.catalogNumber';
+		//NEON edit start
+		$this->occurDefArr['terms']['sampleID'] = 'https://symbiota.org/terms/sampleID';
+		$this->occurDefArr['fields']['sampleID'] = 'x.sampleID';
+		$this->occurDefArr['terms']['sampleCode'] = 'https://symbiota.org/terms/sampleCode';
+		$this->occurDefArr['fields']['sampleCode'] = 'x.sampleCode';
+		//NEON edit end
 		$this->occurDefArr['terms']['otherCatalogNumbers'] = 'http://rs.tdwg.org/dwc/terms/otherCatalogNumbers';
 		$this->occurDefArr['fields']['otherCatalogNumbers'] = 'x.otherCatalogNumbers';
 		$this->occurDefArr['terms']['higherClassification'] = 'http://rs.tdwg.org/dwc/terms/higherClassification';
@@ -52,7 +72,10 @@ class DwcArchiverOccurrence extends Manager{
 		$this->occurDefArr['terms']['family'] = 'http://rs.tdwg.org/dwc/terms/family';
 		$this->occurDefArr['fields']['family'] = 'x.family';
 		$this->occurDefArr['terms']['scientificName'] = 'http://rs.tdwg.org/dwc/terms/scientificName';
-		$this->occurDefArr['fields']['scientificName'] = 'o.sciname AS scientificName';
+		//NEON edit - sart: change Bulk Canopy Foliage to Plantae
+		//$this->occurDefArr['fields']['scientificName'] = 'o.sciname AS scientificName';
+		$this->occurDefArr['fields']['scientificName'] = 'IF(o.sciname = "Bulk Canopy Foliage", "Plantae", o.sciname) AS scientificName';
+		//NEON edit end
 		$this->occurDefArr['terms']['taxonID'] = 'http://rs.tdwg.org/dwc/terms/taxonID';
 		$this->occurDefArr['fields']['taxonID'] = 'o.tidinterpreted as taxonID';
 		$this->occurDefArr['terms']['scientificNameAuthorship'] = 'http://rs.tdwg.org/dwc/terms/scientificNameAuthorship';
@@ -347,6 +370,14 @@ class DwcArchiverOccurrence extends Manager{
 		if($this->schemaType != 'backup'){
 			$trimArr[] = 'storageLocation';
 		}
+
+		//NEON edit start
+		if($this->schemaType != 'symbiota'){
+			$trimArr[] = 'sampleID';
+			$trimArr[] = 'sampleCode';
+		}
+		//NEON edit end
+
 		if($trimArr){
 			$this->occurDefArr['terms'] = array_diff_key($this->occurDefArr['terms'], array_flip($trimArr));
 			$this->occurDefArr['fields'] = array_diff_key($this->occurDefArr['fields'], array_flip($trimArr));
@@ -398,6 +429,8 @@ class DwcArchiverOccurrence extends Manager{
 	//Special functions for appending additional data
 	public function setOtherCatalogNumbers(){
 		$status = false;
+		//NEON edit start
+		/*
 		$sql = 'UPDATE omexportoccurrences e INNER JOIN
 			(SELECT i.occid, GROUP_CONCAT(CONCAT(i.identifierName, if(i.identifierName != "",": ",""), i.identifierValue) SEPARATOR "; ") as ocn
 			FROM omoccuridentifiers i INNER JOIN omexportoccurrences e2 ON i.occid = e2.occid
@@ -405,6 +438,16 @@ class DwcArchiverOccurrence extends Manager{
 			GROUP BY i.occid) intab ON e.occid = intab.occid
 			SET e.otherCatalogNumbers = intab.ocn
 			WHERE e.omExportID = ?';
+		*/
+		$sql = 'UPDATE omexportoccurrences e INNER JOIN
+			(SELECT i.occid, GROUP_CONCAT(CONCAT(i.identifierName, if(i.identifierName != "",": ",""), i.identifierValue) SEPARATOR "; ") as ocn
+			FROM omoccuridentifiers i INNER JOIN omexportoccurrences e2 ON i.occid = e2.occid
+			WHERE e2.omExportID = ? AND i.identifierName != "NEON sampleID"
+			GROUP BY i.occid) intab ON e.occid = intab.occid
+			SET e.otherCatalogNumbers = intab.ocn
+			WHERE e.omExportID = ?';
+		//NEON edit end
+
 		if($stmt = $this->conn->prepare($sql)){
 			$stmt->bind_param('ii', $this->exportID, $this->exportID);
 			if($stmt->execute()) $status = true;
@@ -415,6 +458,31 @@ class DwcArchiverOccurrence extends Manager{
 			$stmt->close();
 		}
 		else $this->errorMessage = $this->conn->error;
+
+		//NEON edit start - append protected sampleIDs
+		$isAdmin = false;
+		if(!empty($GLOBALS['IS_ADMIN'])) $isAdmin = true;
+		elseif(!empty($GLOBALS['USER_RIGHTS']['CollAdmin'])) $isAdmin = true;
+		elseif(!empty($GLOBALS['USER_RIGHTS']['CollEditor'])) $isAdmin = true;
+		if($isAdmin){
+			$sql = 'UPDATE omexportoccurrences e INNER JOIN omoccuridentifiers i ON e.occid = i.occid
+			SET e.otherCatalogNumbers = CONCAT_WS("; ", e.otherCatalogNumbers, CONCAT("NEON sampleID: ", i.identifierValue))
+			WHERE i.identifierName = "NEON sampleID" AND e.omExportID = ?';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('ii', $this->exportID, $this->exportID);
+				if($stmt->execute()) $status = true;
+				else{
+					$this->errorMessage = 'ERROR batch linking occurrences from download: ' . $stmt->error;
+					$this->logOrEcho($this->errorMessage);
+				}
+				$stmt->close();
+			}
+			else $this->errorMessage = $this->conn->error;
+		}
+		//NEON edit end
+
+
+
 		return $status;
 	}
 
@@ -464,6 +532,7 @@ class DwcArchiverOccurrence extends Manager{
 		$this->setSpeciesTaxonomy();
 		$this->setTaxonRank();
 		$this->setAcceptedTaxonomy();
+		$this->setNeonIdentifiers();
 	}
 
 	private function setUpperTaxonomy(){
@@ -569,6 +638,61 @@ class DwcArchiverOccurrence extends Manager{
 			}
 		}
 	}
+
+	//NEON specific functions - start
+	private function setNeonIdentifiers(){
+		if($this->schemaType === 'symbiota'){
+
+			//Update sampleID
+			$sql = 'UPDATE omexportoccurrences x INNER JOIN omoccuridentifiers i ON x.occid = i.occid
+				SET x.sampleID = i.identifierValue
+				WHERE i.identifierName = "NEON sampleID" AND x.omExportID = ?';
+			if($stmt = $this->conn->prepare($sql)){
+				try{
+					$stmt->bind_param('i', $this->exportID);
+					$stmt->execute();
+				} catch (mysqli_sql_exception $e){
+					$this->errorMessage = $stmt->error;
+				}
+				$stmt->close();
+			}
+
+			//Replace sampleIDs with hashed value if user does not have admin permissions
+			$isAdmin = false;
+			if(!empty($GLOBALS['IS_ADMIN'])) $isAdmin = true;
+			elseif(!empty($GLOBALS['USER_RIGHTS']['CollAdmin'])) $isAdmin = true;
+			elseif(!empty($GLOBALS['USER_RIGHTS']['CollEditor'])) $isAdmin = true;
+			if(!$isAdmin){
+				$sql = 'UPDATE omexportoccurrences x INNER JOIN omoccuridentifiers i ON x.occid = i.occid
+					SET x.sampleID = i.identifierValue
+					WHERE i.identifierName = "NEON sampleID Hash" AND x.omExportID = ?';
+				if($stmt = $this->conn->prepare($sql)){
+					try{
+						$stmt->bind_param('i', $this->exportID);
+						$stmt->execute();
+					} catch (mysqli_sql_exception $e){
+						$this->errorMessage = $stmt->error;
+					}
+					$stmt->close();
+				}
+			}
+
+			//Update sampleCode
+			$sql = 'UPDATE omexportoccurrences x INNER JOIN omoccuridentifiers i ON x.occid = i.occid
+				SET x.sampleCode = i.identifierValue
+				WHERE i.identifierName = "NEON sampleCode (barcode)" AND x.omExportID = ?';
+			if($stmt = $this->conn->prepare($sql)){
+				try{
+					$stmt->bind_param('i', $this->exportID);
+					$stmt->execute();
+				} catch (mysqli_sql_exception $e){
+					$this->errorMessage = $stmt->error;
+				}
+				$stmt->close();
+			}
+		}
+	}
+	//NEON specific functions - end
 
 	//Paleo data
 	public function appendPaleoTerms(&$r){

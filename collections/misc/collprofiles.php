@@ -1,5 +1,11 @@
 <?php
 include_once('../../config/symbini.php');
+//NEON edit start
+// Redirect all collprofiles.php requests to neoncollprofiles.php with the same collid parameter
+header('Location: neoncollprofiles.php?collid=' . (empty($_REQUEST['collid']) ? '' : $_REQUEST['collid']), true, 302);
+exit;
+//NEON edit end
+
 include_once($SERVER_ROOT . '/classes/OccurrenceCollectionProfile.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceEditorManager.php');
 include_once($SERVER_ROOT . '/classes/utilities/GeneralUtil.php');

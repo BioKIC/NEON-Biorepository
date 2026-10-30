@@ -36,6 +36,10 @@ class ChecklistManager extends Manager{
 	private $familyCount = 0;
 	private $genusCount = 0;
 	private $basicSql;
+	// NEON edit;
+	private $limitImagesToSite = false;
+	private $groupByRank = '';
+	// end NEON edit
 
 	function __construct() {
 		parent::__construct();
@@ -83,9 +87,9 @@ class ChecklistManager extends Manager{
 				'c.latcentroid, c.longcentroid, c.pointradiusmeters, c.footprintwkt, c.access, c.defaultSettings, '.
 				'c.dynamicsql, c.datelastmodified, c.dynamicProperties, c.uid, c.type, c.initialtimestamp '.
 				'FROM fmchecklists c WHERE (c.clid = '.$this->clid.')';
-		 	$result = $this->conn->query($sql);
+			$result = $this->conn->query($sql);
 			if($result){
-		 		if($row = $result->fetch_object()){
+				if($row = $result->fetch_object()){
 					$this->clName = $row->name;
 					$this->clMetadata["locality"] = $row->locality;
 					$this->clMetadata["notes"] = $row->notes;
@@ -151,7 +155,7 @@ class ChecklistManager extends Manager{
 
 	public function getAssociatedExternalService(){
 		$resp = false;
- 		if($this->clMetadata['dynamicProperties']){
+		if($this->clMetadata['dynamicProperties']){
 			$dynpropArr = json_decode($this->clMetadata['dynamicProperties'], true);
 			if(array_key_exists('externalservice', $dynpropArr)) {
 				$resp = $dynpropArr['externalservice'];
@@ -193,7 +197,7 @@ class ChecklistManager extends Manager{
 	public function getTaxonAuthorityList(){
 		$taxonAuthList = Array();
 		$sql = "SELECT ta.taxauthid, ta.name FROM taxauthority ta WHERE (ta.isactive <> 0)";
- 		$rs = $this->conn->query($sql);
+		$rs = $this->conn->query($sql);
 		while ($row = $rs->fetch_object()){
 			$taxonAuthList[$row->taxauthid] = $row->name;
 		}
@@ -218,6 +222,14 @@ class ChecklistManager extends Manager{
 			if($row->rankid > 140 && !$family) $family = 'Incertae Sedis';
 			$this->filterArr[$family] = '';
 			$taxonGroup = $family;
+			//NEON edit
+			$groupByRank = strtoupper($row->groupbyrank ?? '');
+			if ($row->rankid == 140 && !$family) $family = strtoupper($row->sciname);
+			if ($row->rankid == 180 && !$groupByRank && $this->groupByRank == 'genus') $groupByRank = strtoupper($row->sciname);
+			if ($row->rankid == 140 && !$groupByRank && $this->groupByRank == 'family') $groupByRank = strtoupper($row->sciname);
+			if ($row->rankid == 100 && !$groupByRank && $this->groupByRank == 'order') $groupByRank = strtoupper($row->sciname);
+			$taxonGroup = $groupByRank;
+			//edit NEON edit
 			if($this->showAlphaTaxa) $taxonGroup = $row->unitname1;
 			$tid = $row->tid;
 			$sciName = $this->cleanOutStr($row->sciname);
@@ -232,8 +244,11 @@ class ChecklistManager extends Manager{
 				$taxonTokens = $newArr;
 			}
 			if(!$retLimit || ($this->taxaCount >= (($pageNumber-1)*$retLimit) && $this->taxaCount <= ($pageNumber)*$retLimit)){
-			    if(isset($row->morphospecies) && $row->morphospecies) $sciName .= ' ' . $row->morphospecies;
+				if(isset($row->morphospecies) && $row->morphospecies) $sciName .= ' ' . $row->morphospecies;
 				elseif($row->rankid == 180) $sciName .= ' sp.';
+				// NEON edit start
+				elseif($row->rankid <= 180) $sciName .= " sp.";
+				// NEON edit end
 				if($row->rankid > 220 && $this->clMetadata['type'] != 'rarespp' && !array_key_exists($row->parenttid, $this->taxaList)){
 					$this->taxaList[$row->parenttid]['taxongroup'] = '<i>' . $taxonGroup . '</i>';
 					$this->taxaList[$row->parenttid]['family'] = $family;
@@ -306,7 +321,7 @@ class ChecklistManager extends Manager{
 				}
 				$vSql .= OccurrenceUtil::appendFullProtectionSQL();
 				$vSql .= 'ORDER BY o.collid';
-		 		$vResult = $this->conn->query($vSql);
+				$vResult = $this->conn->query($vSql);
 				while ($row = $vResult->fetch_object()){
 					$displayStr = '';
 					if($row->recordedby) $displayStr = $row->recordedby;
@@ -353,6 +368,20 @@ class ChecklistManager extends Manager{
 	private function setImages(){
 		if($this->taxaList){
 			$matchedArr = array();
+			//neon edit
+			if ($this->limitImagesToSite) {
+				$dp = json_decode($this->clMetadata['dynamicProperties'] ?? '{}', true);
+				$datasetIDs = !empty($dp['datasetIDs']) ? $dp['datasetIDs'] : [];
+				$datasetIdStr = $datasetIDs ? implode(',', array_map('intval', $datasetIDs)) : '0';
+				$sql = 'SELECT o.tidInterpreted as tid, MIN(m.url) AS url, MIN(m.thumbnailurl) AS thumbnailurl, MIN(m.originalurl) AS originalurl
+					FROM media m INNER JOIN omoccurrences o ON m.occid = o.occid
+					INNER JOIN omoccurdatasetlink dl ON o.occid = dl.occid
+					WHERE o.tidInterpreted IN('.implode(',', array_keys($this->taxaList)).') AND dl.datasetid IN ('.$datasetIdStr.')
+					GROUP BY o.tidInterpreted';
+				$matchedArr = $this->setImageSubset($sql);
+				return;
+			}
+			//end neon edit
 			if($this->limitImagesToVouchers){
 				$clidStr = $this->clid;
 				if($this->childClidArr){
@@ -454,15 +483,15 @@ class ChecklistManager extends Manager{
 		}
 	}
 
-  /**
-   * Gets all external vouchers, currently only supports iNaturalist.
-   * If given a $tid param then only get vouchers associated to that tid.
-   * Requires $taxaList be set or a $tid to be passed in.
-   *
-   * @param int|null $tid Optional Taxonomic id that will give only vouchers of the associated id
-   * @return array with the key structure of [ (tid) => [[ (clCoordID) => [ display => string, url => string, id => int|string] ]]]
-   **/
-  public function getExternalVoucherArr($tid = null) {
+	/**
+	 * Gets all external vouchers, currently only supports iNaturalist.
+	 * If given a $tid param then only get vouchers associated to that tid.
+	 * Requires $taxaList be set or a $tid to be passed in.
+	 *
+	 * @param int|null $tid Optional Taxonomic id that will give only vouchers of the associated id
+	 * @return array with the key structure of [ (tid) => [[ (clCoordID) => [ display => string, url => string, id => int|string] ]]]
+	 **/
+	public function getExternalVoucherArr($tid = null) {
 		$externalVoucherArr = array();
 
 		if((is_numeric($tid) || $this->taxaList) && $this->clid) {
@@ -564,18 +593,34 @@ class ChecklistManager extends Manager{
 		header ('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		header ('Content-Type: text/csv');
 		header ("Content-Disposition: attachment; filename=\"$fileName\"");
-		$this->showAuthors = 1;
+		//$this->showAuthors = 1;	//NEON edit
 		if($taxaArr = $this->getTaxaList(1,0)){
 			$fh = fopen('php://output', 'w');
 			$headerArr = array('Family','ScientificName','ScientificNameAuthorship');
+			//NEON edit
+			$headerArr = array(ucfirst($this->groupByRank), 'ScientificName');
+			if ($this->showAuthors) {
+				$headerArr[] = 'ScientificNameAuthorship';
+			}
+			if ($this->showSynonyms) {
+				$headerArr[] = 'Synonyms';
+			}
+			//end NEON edit
 			if($this->showCommon) $headerArr[] = 'CommonName';
 			$headerArr[] = 'Notes';
 			$headerArr[] = 'TaxonId';
 			fputcsv($fh,$headerArr);
 			foreach($taxaArr as $tid => $tArr){
-				$outArr = array($tArr['family']);
+
+				//NEON edit start
+				//$outArr = array($tArr['family']);
+				$outArr = array(ucfirst(strtolower(strip_tags($tArr['taxongroup']))));
 				$outArr[] = html_entity_decode($tArr['sciname'],ENT_QUOTES|ENT_XML1);
-				$outArr[] = html_entity_decode($tArr['author'],ENT_QUOTES|ENT_XML1);
+				//$outArr[] = html_entity_decode($tArr['author'],ENT_QUOTES|ENT_XML1);
+				if ($this->showAuthors) $outArr[] = (array_key_exists('author', $tArr) ? html_entity_decode($tArr['author'], ENT_QUOTES | ENT_XML1) : '');
+				if ($this->showSynonyms) $outArr[] = (array_key_exists('syn', $tArr) ? strip_tags($tArr['syn']) : '');
+				//NEON edit end
+
 				if($this->showCommon) $outArr[] = (array_key_exists('vern',$tArr)?html_entity_decode($tArr['vern'],ENT_QUOTES|ENT_XML1):'');
 				$outArr[] = (array_key_exists('notes',$tArr)?strip_tags(html_entity_decode($tArr['notes'],ENT_QUOTES|ENT_XML1)):'');
 				$outArr[] = $tid;
@@ -589,6 +634,56 @@ class ChecklistManager extends Manager{
 	}
 
 	private function setClSql(){
+		// NEON edit start
+		if ($this->clid && $this->clMetadata['type'] == 'dynamicdataset') {
+			$props = json_decode($this->clMetadata['dynamicProperties'], true);
+			$datasetIDs = array_map('intval', $props['datasetIDs'] ?? []);
+			$collids = array_map('intval', $props['collids'] ?? []);
+			$parentTids = array_map('intval', $props['tids'] ?? []);
+
+			if (empty($datasetIDs)) {
+				$this->basicSql = 'SELECT NULL WHERE 1=0';
+				return;
+			}
+
+			$datasetStr = implode(',', $datasetIDs);
+			$collidFilter = !empty($collids) ? 'o.collid IN (' . implode(',', $collids) . ')' : '1=0';
+			$tidFilter = '1=0';
+
+			if (!empty($parentTids)) {
+				$tidStr = implode(',', $parentTids);
+				$tidFilter = "o.tidInterpreted IN (
+					SELECT tid FROM taxaenumtree
+					WHERE parenttid IN ($tidStr))";
+			}
+
+			$this->basicSql = "SELECT DISTINCT t.tid, ".$this->clid." AS clid, t.sciname, t.author,
+					NULL AS morphospecies, t.unitname1, t.rankid,
+					NULL AS habitat, NULL AS abundance, NULL AS notes,
+					NULL AS source, ts.parenttid, ts.family AS family,
+					( SELECT tx.sciname
+						FROM taxaenumtree te2
+						JOIN taxa tx ON te2.parenttid = tx.tid
+						JOIN taxonunits tu ON tx.rankid = tu.rankid
+						WHERE te2.tid = t.tid AND tu.rankname = '".$this->groupByRank."'
+						LIMIT 1
+					) AS groupbyrank
+				FROM taxa t
+				JOIN taxstatus ts ON t.tid = ts.tid
+				WHERE t.tid IN (
+					SELECT DISTINCT te.tid FROM omoccurrences o
+					JOIN omoccurdatasetlink dl ON o.occid = dl.occid
+					JOIN taxaenumtree te ON o.tidInterpreted = te.tid
+					WHERE (dl.datasetid IN ($datasetStr)
+					AND $collidFilter)
+					OR (dl.datasetid IN ($datasetStr)
+					AND $tidFilter)
+				) ORDER BY sciname";
+			// echo $this->basicSql;
+			return;
+		}
+		// NEON edit end
+
 		if($this->clid){
 			$clidStr = $this->clid;
 			if($this->childClidArr){
@@ -604,14 +699,14 @@ class ChecklistManager extends Manager{
 			else{
 				$this->basicSql .= 'ts.parenttid, IFNULL(ctl.familyoverride,ts.family) AS family FROM taxa t INNER JOIN fmchklsttaxalink ctl ON t.tid = ctl.tid '.
 					'INNER JOIN taxstatus ts ON t.tid = ts.tid '.
-			  		'WHERE (ts.taxauthid = 1) AND (ctl.clid IN ('.$clidStr.')) ';
+					'WHERE (ts.taxauthid = 1) AND (ctl.clid IN ('.$clidStr.')) ';
 			}
 		}
 		else{
 			$this->basicSql = 'SELECT t.tid, ctl.dynclid as clid, ts.family, t.sciname, t.author, t.unitname1, t.rankid, ts.parenttid '.
 				'FROM taxa t INNER JOIN taxstatus ts ON t.tid = ts.tid '.
 				'INNER JOIN fmdyncltaxalink ctl ON t.tid = ctl.tid '.
-		  		'WHERE (ts.taxauthid = '.($this->thesFilter?$this->thesFilter:'1').') AND (ctl.dynclid = '.$this->dynClid.') ';
+				'WHERE (ts.taxauthid = '.($this->thesFilter?$this->thesFilter:'1').') AND (ctl.dynclid = '.$this->dynClid.') ';
 		}
 		if($this->taxonFilter){
 			if($this->searchCommon){
@@ -750,6 +845,20 @@ class ChecklistManager extends Manager{
 					'INNER JOIN taxa t ON e.parenttid = t.tid '.
 					'WHERE e.taxauthid = 1 AND t.sciname LIKE "'.$term.'%" AND cl.clid = '.$clid.')';
 			}
+
+			//NEON edit start
+			$sql = '(SELECT t.sciname
+				FROM taxa t INNER JOIN fmchklsttaxalink cl ON t.tid = cl.tid
+				WHERE t.sciname LIKE "'.$term.'%") ';
+			if($deep){
+				$sql .= 'UNION DISTINCT
+					(SELECT DISTINCT t.sciname
+					FROM fmchklsttaxalink cl INNER JOIN taxaenumtree e ON cl.tid = e.tid
+					INNER JOIN taxa t ON e.parenttid = t.tid
+					WHERE e.taxauthid = 1 AND t.sciname LIKE "'.$term.'%")';
+			}
+			//NEON edit end
+
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				$retArr[] = $r->sciname;
@@ -772,7 +881,7 @@ class ChecklistManager extends Manager{
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				$retArr[] = (object) [ 'value' => $r->sciname . ' ' . $r->author,
-				'id' => $r->tid];
+						'id' => $r->tid];
 			}
 			$rs->free();
 		}
@@ -851,6 +960,18 @@ class ChecklistManager extends Manager{
 	public function setSearchSynonyms($bool){
 		if($bool) $this->searchSynonyms = true;
 	}
+
+	// NEON edit
+	public function setLimitImagesToSite($bool){
+		if($bool) $this->limitImagesToSite = true;
+	}
+
+	public function setGroupByRank($rankName) {
+		if (!empty($rankName)) {
+			$this->groupByRank = $rankName;
+		}
+	}
+	// end NEON edit
 
 	public function getClid(){
 		return $this->clid;
