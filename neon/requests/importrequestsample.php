@@ -366,7 +366,7 @@ if ($IS_ADMIN || array_key_exists('SuperAdmin', $USER_RIGHTS)) {
 	<?php
 	}
 	else{
-		echo '<h3>Please login with administrator permissions get access to this page.</h3>';
+		echo '<h3>Please login with administrator privileges to get access to this page.</h3>';
 	}
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>

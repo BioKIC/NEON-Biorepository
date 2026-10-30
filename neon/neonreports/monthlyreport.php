@@ -52,7 +52,8 @@ if ($isEditor) {
 	<div class="section-nav">
 		<a href="#stats">General Statistics</a>|
 		<a href="#requests">Request Summary</a>|
-		<a href="#samples">Samples Received by Class To Date</a>
+		<a href="#analytics">Google Analytics Summary</a>|
+		<a href="#samples">Samples Received by Class</a>
 	</div>
 	<h1>NEON Monthly Report: <?php echo htmlspecialchars($month); ?></h1>
  <?php
@@ -69,6 +70,7 @@ if ($isEditor) {
 
 		$general = [];
 		$request = [];
+		$analytics = [];
 		$sample  = [];
 
 		foreach ($reportsArr as $row) {
@@ -80,6 +82,9 @@ if ($isEditor) {
 					break;
 				case 'request':
 					$request[] = $row;
+					break;
+				case 'analytics':
+					$analytics[] = $row;
 					break;
 				case 'sample':
 					$sample[] = $row;
@@ -120,6 +125,22 @@ if ($isEditor) {
 		</div>
 		<?php
 
+		// if ($analytics) {
+		// 	echo "<div class='section' id='analytics'>";
+		// 	echo '<h2>Google Analytics Summary</h2>';
+		// 	$headerArr = ['Statistic', 'Past 30 days','Change'];
+		// 	echo $utilities->htmlTable($analytics, $headerArr);
+		// }
+
+		?>
+		<!-- <form method="post" action="exportmonthlyreporthandler.php">
+			<input type="hidden" name="month" value="<?= htmlspecialchars($month, ENT_QUOTES) ?>">
+			<input type="hidden" name="type" value="analytics">
+			<button type="submit">Export Google Analytics Summary</button>
+		</form>
+		</div> -->
+		<?php
+
 		if ($sample) {
 						
 			?>
@@ -157,7 +178,7 @@ if ($isEditor) {
 <?php
 } 
 else {
-	echo '<h3>Please login with administrator permissions get access to this page.</h3>';
+	echo '<h3>Please login with administrator privileges to get access to this page.</h3>';
 }
 ?>
 		</div>

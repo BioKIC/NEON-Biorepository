@@ -10,7 +10,6 @@ $collData = new CollectionMetadata();
 $siteData = new DatasetsMetadata();
 $reportManager = new RequestReportManager();
 
-echo $CLIENT_ROOT;
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
 elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;

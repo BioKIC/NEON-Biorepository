@@ -462,7 +462,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 									<div class="fieldGroupDiv" style="clear:both;padding-top:6px;float:left;">
    						 			<div class="fieldDiv">
        										<label for="inqdrive"><strong><?php echo 'Name of Google Drive Folder for Inquiry Documents'; ?>:</strong></label><br>
-											<i>Place inquiry folder within <a href='https://drive.google.com/drive/folders/18dxKEfUd6V7IpUEUi6dkQoOLzm9gyy-3?usp=drive_link'>Researcher Requests and Agreements</a></i><br>
+											<i>Place inquiry folder within <a href='https://drive.google.com/drive/folders/18dxKEfUd6V7IpUEUi6dkQoOLzm9gyy-3?usp=drive_link' target = '_blank'>Researcher Requests and Agreements</a></i><br>
         									<input name="inqdrive" id="inqdrive" type="text" style="width:400px;" value="<?php echo htmlspecialchars($drivefolder ?? '', ENT_QUOTES); ?>" />
    								 	</div>
 								</div>
@@ -477,7 +477,7 @@ if($formSubmit == 'createInquiry' && $isEditor){
 			<?php
 		}
 		else{
-			echo '<h3>Please login with administrator permissions get access to this page.</h3>';
+			echo '<h3>Please login with administrator privileges to get access to this page.</h3>';
 		}
 		?>
 	</div>

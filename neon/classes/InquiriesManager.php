@@ -1870,8 +1870,31 @@ public function addCollectionInquiryLink($requestID, $collections) {
         return $requestID;
     }
 
+    // add link when new shipment 
+    public function linkNewShipment($requestID, $shipmentID) {
+        $requestID = (int)$requestID;
+        $shipmentID = (int)$shipmentID;
+        $sql = "INSERT INTO neonrequestshipmentrequestlink
+                (requestID, shipmentID)
+                VALUES (?, ?)";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database Error: " . $this->conn->error;
+            return false;
+        }
+        $stmt->bind_param("ii", $requestID, $shipmentID);
+        if (!$stmt->execute()) {
+            $this->errorMessage = "Database Error: " . $stmt->error;
+            $stmt->close();
+            return false;
+        }
+        $stmt->close();
+        return true;
+    }
+
           // Sample data for availability/disposition editor
-  public function getSampleAvailabilityForEditor($id){
+    public function getSampleAvailabilityForEditor($id){
       $retArr = [];
 
       $sql = "SELECT id,s.occid,n.sampleID,n.sampleCode,s.available,o.availability,o.disposition

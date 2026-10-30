@@ -47,6 +47,9 @@ if ($SYMB_UID) {
 	<div id="innertext">
 		<div id="biorepo-collections-content"></div>
 	</div>
+	<?php
+	include($SERVER_ROOT . '/includes/footer.php');
+	?>
 </body>
 
 </html>

@@ -217,10 +217,10 @@ include($SERVER_ROOT.'/includes/header.php');
 						<h4>How to Use the Token Tools</h4>
 						<ol>
 							<li>
-								<strong>Validate Access Token:</strong> Click <em>Validate Access Token</em> to check if your current access token is valid.
+								<strong>Validate Tokens:</strong> Click <em>Validate Tokens</em> to check if your current tokens are valid.
 							</li>
 							<li>
-								<strong>Refresh Tokens:</strong> If validation fails, click <em>Refresh Tokens</em> to use your refresh token to get a new access token. You will also get a new refresh token.
+								<strong>Refresh Tokens:</strong> If validation fails, click <em>Refresh Tokens</em> to use your refresh token to get new tokens. You will also get a new refresh token.
 								<ul>
 									<li>
 										If your refresh token has expired (after one year), visit the MySESAR
@@ -268,7 +268,7 @@ include($SERVER_ROOT.'/includes/header.php');
 					</p>
 					</div>
 					<div>
-						<button id="validate-button" type="button" onclick="validateTokens(this.form)">Validate Access Token</button>
+						<button id="validate-button" type="button" onclick="validateTokens(this.form)">Validate Tokens</button>
 						<button id="refresh-button" type="button" onclick="refreshTokens(this.form)">Refresh Tokens</button>
 						<button id="save-button" type="button" onclick="saveTokens(this.form)">Save Tokens</button>
 					</div>
