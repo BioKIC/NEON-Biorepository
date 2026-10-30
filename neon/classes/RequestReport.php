@@ -49,12 +49,21 @@
 
   public function getInquiriesOut(){
   	$dataArr = array();
-    $sql = 'SELECT r.id, p.name AS researcher, DATE(r.inquiryDate) AS date, r.title, r.status, COUNT(s.occid) AS samples, r.followUpType, r.followUpDate, r.assignee FROM neonrequest AS r LEFT JOIN neonresearcher AS p ON r.researcherID = p.researcherID LEFT JOIN neonsamplerequestlink AS s ON r.id = s.requestID GROUP BY r.id;';
+    $sql = 'SELECT r.id, p.name AS researcher, CONCAT(u.firstName," ",u.lastName) AS manager, DATE(r.inquiryDate) AS date, r.title, r.status, COUNT(s.occid) AS samples, r.followUpType, r.followUpDate, r.assignee 
+    FROM neonrequest AS r 
+    LEFT JOIN neonresearcher AS p 
+    ON r.researcherID = p.researcherID 
+    LEFT JOIN neonsamplerequestlink AS s 
+    ON r.id = s.requestID 
+    LEFT JOIN users AS u
+    ON r.collectionManager = u.uid
+    GROUP BY r.id;';
     if($result = $this->conn->query($sql)){
       while($row = $result->fetch_assoc()){
         $dataArr[] = array(
           'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'" target="_blank">'.$row['id'].'</a>',
           'researcher' => is_null($row['researcher'])?'<span style="color:lightgray;">NULL</span>':$row['researcher'],
+          'manager' => is_null($row['manager'])?'<span style="color:lightgray;">NULL</span>':$row['manager'],
           'date' => is_null($row['date'])?'<span style="color:lightgray;">NULL</span>':$row['date'],
           'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
           'status' => is_null($row['status'])?'<span style="color:lightgray;">NULL</span>':$row['status'],
@@ -220,6 +229,7 @@
     $sql = "SELECT DISTINCT
                 i.id,
                 r.name,
+                CONCAT(u.firstName,' ',u.lastName) as manager,
                 i.inquiryDate,
                 i.title,
                 i.status,
@@ -231,7 +241,9 @@
             LEFT JOIN neonsamplerequestlink s 
             ON s.requestID = i.id
             LEFT JOIN neonresearcher r 
-            ON i.researcherID = r.researcherID";
+            ON i.researcherID = r.researcherID
+            LEFT JOIN users u
+            ON i.collectionManager = u.uid";
 
     $where = [];
     $binds = [];
@@ -426,6 +438,7 @@
             'requestid' => $row['id'],
             'id' => '<a href="../requests/inquiryform.php?id='.$row['id'].'" target="_blank">'.$row['id'].'</a>',
             'researcher' => is_null($row['name'])?'<span style="color:lightgray;">NULL</span>':$row['name'],
+            'manager' => is_null($row['manager'])?'<span style="color:lightgray;">NULL</span>':$row['manager'],
             'date' => is_null($row['inquiryDate'])?'<span style="color:lightgray;">NULL</span>':$row['inquiryDate'],
             'title' => is_null($row['title'])?'<span style="color:lightgray;">NULL</span>':$row['title'],
             'status' => is_null($row['status'])?'<span style="color:lightgray;">NULL</span>':$row['status'],
