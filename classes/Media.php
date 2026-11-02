@@ -1039,15 +1039,8 @@ class Media {
 	}
 
 	private static function enough_memory_gd($x, $y, $rgb = 3) {
-		echo '<pre>';
-		print_r([
-			'memory_limit' => ini_get('memory_limit'),
-			'parsed_limit_bytes' => UploadUtil::size2Bytes(ini_get('memory_limit')),
-			'memory_used_bytes' => memory_get_usage(),
-			'estimated_required_bytes' => $x * $y * 1.7 * $rgb,
-		]);
-		echo '</pre>';
-		exit;
+		// 1.7 is some coef related to gd or overhead not entirely sure
+		return  ($x * $y * 1.7 * $rgb) < (UploadUtil::size2Bytes(ini_get('memory_limit')) - memory_get_usage());
 	}
 
 	/**
