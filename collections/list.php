@@ -617,9 +617,8 @@ $_SESSION['citationvar'] = $searchVar;
 										echo implode(', ', array_unique($sampleDisplayArr));
 										echo '</div>';
 									}
-									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
+									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" target="_blank">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									//end edit
-									echo '<b><a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
 								}
 								?>

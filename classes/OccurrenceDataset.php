@@ -37,7 +37,7 @@ class OccurrenceDataset{
 
 			//NEON edit start, remove isPublic requirement since this is managed in the list
 			//$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, notes, description, uid, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ') AND ispublic=1';
-			$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, notes, description, uid, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ')';
+			$sql = 'SELECT datasetid, IFNULL(datasetName, name) as datasetName, notes, description, bibliographicCitation, uid, dynamicProperties, sortsequence, initialtimestamp FROM omoccurdatasets WHERE (datasetid = ' . $dsid . ')';
 			//NEON edit end
 
 			$rs = $this->conn->query($sql);
@@ -61,7 +61,7 @@ class OccurrenceDataset{
 				$retArr['sampleTypes'][] = array(
 					'sampleType' => array(
 						'value' => $r->publicName,
-						'link' => 'https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=' . $r->collid
+						'link' => GeneralUtil::getDomain() . $CLIENT_ROOT . '/portal/collections/misc/neoncollprofiles.php?collid=' . $r->collid
 					),
 					'sampleCount' => (int)$r->sampleCount
 				);
@@ -173,7 +173,7 @@ class OccurrenceDataset{
 				$retArr[$r->datasetid]['sampleTypes'][] = array(
 					'sampleType' => array(
 						'value' => $r->publicName,
-						'link' => 'https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=' . $r->collid
+						'link' => GeneralUtil::getDomain() . $CLIENT_ROOT . '/portal/collections/misc/neoncollprofiles.php?collid=' . $r->collid
 					),
 					'sampleCount' => (int)$r->sampleCount
 				);

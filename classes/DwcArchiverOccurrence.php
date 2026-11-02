@@ -469,7 +469,7 @@ class DwcArchiverOccurrence extends Manager{
 			SET e.otherCatalogNumbers = CONCAT_WS("; ", e.otherCatalogNumbers, CONCAT("NEON sampleID: ", i.identifierValue))
 			WHERE i.identifierName = "NEON sampleID" AND e.omExportID = ?';
 			if($stmt = $this->conn->prepare($sql)){
-				$stmt->bind_param('ii', $this->exportID, $this->exportID);
+				$stmt->bind_param('i', $this->exportID);
 				if($stmt->execute()) $status = true;
 				else{
 					$this->errorMessage = 'ERROR batch linking occurrences from download: ' . $stmt->error;
