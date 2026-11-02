@@ -1039,8 +1039,24 @@ class Media {
 	}
 
 	private static function enough_memory_gd($x, $y, $rgb = 3) {
-		// 1.7 is some coef related to gd or overhead not entirely sure
-		return  ($x * $y * 1.7 * $rgb) < (UploadUtil::size2Bytes(ini_get('memory_limit')) - memory_get_usage());
+		$raw_limit = ini_get('memory_limit');
+		$limit = UploadUtil::size2Bytes($raw_limit);
+		$used = memory_get_usage();
+		$required = $x * $y * 1.7 * $rgb;
+		$available = $limit - $used;
+	
+		error_log(json_encode([
+			'width' => $x,
+			'height' => $y,
+			'raw_memory_limit' => $raw_limit,
+			'parsed_limit_bytes' => $limit,
+			'used_bytes' => $used,
+			'available_bytes' => $available,
+			'estimated_required_bytes' => $required,
+			'passes' => $required < $available,
+		]));
+	
+		return $required < $available;
 	}
 
 	/**
