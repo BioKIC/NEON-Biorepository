@@ -242,7 +242,9 @@ $linkedCollections = $collManager->getLinkedCollections();
 				'TY  - DATA',
 				'T1  - ' + singleLine(citation.title),
 				'AU  - ' + singleLine(citation.author),
+				'DO  -',
 				'UR  - ' + singleLine(citation.url),
+				'PB  - National Ecological Observatory Network (NEON)',
 				'Y2  - ' + citation.accessDate,
 				'LA  - en',
 				'N1  - ' + singleLine(citation.note)
