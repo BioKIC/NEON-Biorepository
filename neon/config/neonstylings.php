@@ -342,131 +342,143 @@ $card = <<<'HTML'
 HTML;
 
 $checkboxes = <<<'HTML'
-<!-- UNCHECKED CHECKBOX -->
+<!-- UNCHECKED -->
 <label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root">
-    <input data-indeterminate="false" class="PrivateSwitchBase-input" type="checkbox">
-    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
-    </svg>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Checkbox</span>
+    <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root" style="position:relative;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">
+        <input type="checkbox" class="PrivateSwitchBase-input" data-indeterminate="false"
+            style="position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1;"
+            onchange="var s=this.parentElement,p=s.querySelector('path');s.classList.toggle('Mui-checked',this.checked);p.setAttribute('d',this.checked?'M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z':'M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z');">
+        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
+        </svg>
+    </span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Checkbox</span>
 </label>
 
-
-<!-- CHECKED CHECKBOX -->
+<!-- CHECKED -->
 <label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root Mui-checked">
-    <input data-indeterminate="false" class="PrivateSwitchBase-input" type="checkbox" checked>
-    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
-    </svg>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Checkbox</span>
+    <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root Mui-checked" style="position:relative;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">
+        <input type="checkbox" class="PrivateSwitchBase-input" checked data-indeterminate="false"
+            style="position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1;"
+            onchange="var s=this.parentElement,p=s.querySelector('path');s.classList.toggle('Mui-checked',this.checked);p.setAttribute('d',this.checked?'M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z':'M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z');">
+        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path>
+        </svg>
+    </span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Checkbox</span>
 </label>
 
-
-<!-- DISABLED CHECKBOX -->
+<!-- DISABLED -->
 <label class="MuiFormControlLabel-root Mui-disabled MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root Mui-disabled">
-    <input disabled data-indeterminate="false" class="PrivateSwitchBase-input" type="checkbox">
-    <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-      <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
-    </svg>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Checkbox</span>
+    <span class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root Mui-disabled" style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
+        <input type="checkbox" class="PrivateSwitchBase-input" disabled data-indeterminate="false"
+            style="position:absolute;opacity:0;width:100%;height:100%;margin:0;">
+        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
+        </svg>
+    </span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Checkbox</span>
 </label>
 HTML;
 
 $radio_buttons = <<<'HTML'
-<!-- UNCHECKED RADIO -->
+<!-- UNCHECKED -->
 <label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root">
-    <input class="PrivateSwitchBase-input" type="radio" name="radio-example">
-    <span>
-      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
-      </svg>
-      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
-      </svg>
+    <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root" style="position:relative;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">
+        <input class="PrivateSwitchBase-input" type="radio" name="radio-example" value="one"
+            style="position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1;"
+            onchange="document.querySelectorAll('input[name='+this.name+']').forEach(function(r){r.parentElement.classList.toggle('Mui-checked',r.checked);r.parentElement.querySelectorAll('svg')[1].style.transform=r.checked?'scale(1)':'scale(0)';});">
+        <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
+            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
+            </svg>
+            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24"
+                style="position:absolute;left:0;top:0;transform:scale(0);transition:transform 150ms ease;">
+                <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
+            </svg>
+        </span>
     </span>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Radio</span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Radio</span>
 </label>
 
-
-<!-- CHECKED RADIO -->
+<!-- CHECKED -->
 <label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root Mui-checked">
-    <input class="PrivateSwitchBase-input" type="radio" name="radio-example" checked>
-    <span>
-      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
-      </svg>
-      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
-      </svg>
+    <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root Mui-checked" style="position:relative;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">
+        <input class="PrivateSwitchBase-input" type="radio" name="radio-example" value="two" checked
+            style="position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1;"
+            onchange="document.querySelectorAll('input[name='+this.name+']').forEach(function(r){r.parentElement.classList.toggle('Mui-checked',r.checked);r.parentElement.querySelectorAll('svg')[1].style.transform=r.checked?'scale(1)':'scale(0)';});">
+        <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
+            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
+            </svg>
+            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24"
+                style="position:absolute;left:0;top:0;transform:scale(1);transition:transform 150ms ease;">
+                <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
+            </svg>
+        </span>
     </span>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Radio</span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Radio</span>
 </label>
 
-
-<!-- DISABLED RADIO -->
+<!-- DISABLED -->
 <label class="MuiFormControlLabel-root Mui-disabled MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root Mui-disabled">
-    <input disabled class="PrivateSwitchBase-input" type="radio" name="radio-example">
-    <span>
-      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
-      </svg>
-      <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
-        <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
-      </svg>
+    <span class="MuiButtonBase-root MuiRadio-root MuiRadio-colorPrimary PrivateSwitchBase-root Mui-disabled" style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
+        <input class="PrivateSwitchBase-input" type="radio" name="radio-example" value="three" disabled
+            style="position:absolute;opacity:0;width:100%;height:100%;margin:0;">
+        <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
+            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"></path>
+            </svg>
+            <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium" focusable="false" aria-hidden="true" viewBox="0 0 24 24"
+                style="position:absolute;left:0;top:0;transform:scale(0);">
+                <path d="M8.465 8.465C9.37 7.56 10.62 7 12 7C14.76 7 17 9.24 17 12C17 13.38 16.44 14.63 15.535 15.535C14.63 16.44 13.38 17 12 17C9.24 17 7 14.76 7 12C7 10.62 7.56 9.37 8.465 8.465Z"></path>
+            </svg>
+        </span>
     </span>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Radio</span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Radio</span>
 </label>
 HTML;
 
 $switches = <<<'HTML'
-<!-- UNCHECKED SWITCH -->
+<!-- UNCHECKED -->
 <label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiSwitch-root MuiSwitch-sizeMedium">
-    <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root">
-      <input role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox">
-      <span class="MuiSwitch-thumb"></span>
+    <span class="MuiSwitch-root MuiSwitch-sizeMedium">
+        <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root" style="position:absolute;">
+            <input role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox"
+                style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;margin:0;cursor:pointer;z-index:1;"
+                onchange="this.parentElement.classList.toggle('Mui-checked',this.checked);">
+            <span class="MuiSwitch-thumb"></span>
+        </span>
+        <span class="MuiSwitch-track"></span>
     </span>
-    <span class="MuiSwitch-track"></span>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Switch</span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Switch</span>
 </label>
 
-
-<!-- CHECKED SWITCH -->
+<!-- CHECKED -->
 <label class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiSwitch-root MuiSwitch-sizeMedium">
-    <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-checked PrivateSwitchBase-root">
-      <input role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox" checked>
-      <span class="MuiSwitch-thumb"></span>
+    <span class="MuiSwitch-root MuiSwitch-sizeMedium">
+        <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-checked PrivateSwitchBase-root" style="position:absolute;">
+            <input role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox" checked
+                style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;margin:0;cursor:pointer;z-index:1;"
+                onchange="this.parentElement.classList.toggle('Mui-checked',this.checked);">
+            <span class="MuiSwitch-thumb"></span>
+        </span>
+        <span class="MuiSwitch-track"></span>
     </span>
-    <span class="MuiSwitch-track"></span>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Switch</span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Switch</span>
 </label>
 
-
-<!-- DISABLED SWITCH -->
+<!-- DISABLED -->
 <label class="MuiFormControlLabel-root Mui-disabled MuiFormControlLabel-labelPlacementEnd">
-  <span class="MuiSwitch-root MuiSwitch-sizeMedium">
-    <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-disabled PrivateSwitchBase-root">
-      <input disabled role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox">
-      <span class="MuiSwitch-thumb"></span>
+    <span class="MuiSwitch-root MuiSwitch-sizeMedium">
+        <span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary Mui-disabled PrivateSwitchBase-root" style="position:absolute;">
+            <input disabled role="switch" class="PrivateSwitchBase-input MuiSwitch-input" type="checkbox"
+                style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;margin:0;">
+            <span class="MuiSwitch-thumb"></span>
+        </span>
+        <span class="MuiSwitch-track"></span>
     </span>
-    <span class="MuiSwitch-track"></span>
-  </span>
-  <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Switch</span>
+    <span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label Mui-disabled">Switch</span>
 </label>
 HTML;
 
@@ -699,7 +711,6 @@ HTML;
 
 $text_fields = <<<'HTML'
 <!-- STANDARD TEXT FIELD -->
-<!-- STANDARD TEXT FIELD -->
 <div class="MuiFormControl-root MuiTextField-root" style="position:relative;">
     <label
         class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary"
@@ -748,29 +759,26 @@ $text_fields = <<<'HTML'
 
 
 <!-- DISABLED TEXT FIELD -->
-<div class="MuiFormControl-root MuiTextField-root">
-  <label
-    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled"
-    data-shrink="false"
-    for="static-disabled-field"
-    id="static-disabled-field-label">
-    Disabled Field
-  </label>
+<div class="MuiFormControl-root MuiTextField-root" style="position:relative;">
+    <label for="static-disabled-field" id="static-disabled-field-label"
+        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled"
+        data-shrink="false"
+        style="position:absolute;top:0;left:0;z-index:1;pointer-events:none;transform:translate(14px,16px) scale(1);transform-origin:top left;transition:transform 200ms ease;">
+        Disabled Field
+    </label>
 
-  <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-formControl">
-    <input
-      aria-invalid="false"
-      disabled
-      id="static-disabled-field"
-      class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled"
-      type="text">
+    <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-formControl"
+         style="position:relative;">
+        <input id="static-disabled-field" type="text" disabled
+            aria-invalid="false"
+            class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled">
 
-    <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
-      <legend>
-        <span>Disabled Field</span>
-      </legend>
-    </fieldset>
-  </div>
+        <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
+            <legend style="float:unset;width:auto;overflow:hidden;display:block;height:11px;padding:0;font-size:0.75em;visibility:hidden;white-space:nowrap;max-width:0.01px;">
+                <span style="padding:0 5px;display:inline-block;opacity:0;">Disabled Field</span>
+            </legend>
+        </fieldset>
+    </div>
 </div>
 
 <!-- ERROR TEXT FIELD -->
@@ -832,20 +840,22 @@ $text_fields = <<<'HTML'
         data-shrink="false"
         for="static-multiline-field"
         id="static-multiline-field-label"
-        style="position:absolute; top:0; left:0; z-index:1; pointer-events:none; transform:translate(14px,16px) scale(1); transform-origin:top left; transition:transform 200ms ease;">
+        style="position:absolute;top:0;left:0;z-index:1;pointer-events:none;transform:translate(14px,16px) scale(1);transform-origin:top left;transition:transform 200ms ease;">
         Multiline Field
     </label>
 
-    <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-multiline" style="position:relative;">
+    <div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-multiline"
+         style="position:relative;display:flex;align-items:flex-start;padding:16.5px 14px;box-sizing:border-box;">
+
         <textarea
             rows="3"
             aria-invalid="false"
             aria-labelledby="static-multiline-field-label"
             id="static-multiline-field"
             class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMultiline"
-            style="height:84px; resize:vertical;"
+            style="display:block;width:100%;height:84px;padding:0;margin:0;border:0;outline:0;background:transparent;box-shadow:none;resize:none;font:inherit;line-height:1.4375em;box-sizing:border-box;"
             onfocus="
-                var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+                var root=this.parentElement,label=root.previousElementSibling,legend=root.querySelector('legend');
                 root.classList.add('Mui-focused');
                 label.classList.add('Mui-focused','MuiInputLabel-shrink');
                 label.setAttribute('data-shrink','true');
@@ -853,10 +863,10 @@ $text_fields = <<<'HTML'
                 legend.style.maxWidth='100%';
             "
             onblur="
-                var root=this.parentElement, label=root.previousElementSibling, legend=root.querySelector('legend');
+                var root=this.parentElement,label=root.previousElementSibling,legend=root.querySelector('legend');
                 root.classList.remove('Mui-focused');
                 label.classList.remove('Mui-focused');
-                if (!this.value.trim()) {
+                if(!this.value.trim()){
                     label.classList.remove('MuiInputLabel-shrink');
                     label.setAttribute('data-shrink','false');
                     label.style.transform='translate(14px,16px) scale(1)';
@@ -866,8 +876,8 @@ $text_fields = <<<'HTML'
         ></textarea>
 
         <fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline">
-            <legend style="float:unset; width:auto; overflow:hidden; display:block; height:11px; padding:0; font-size:0.75em; visibility:hidden; white-space:nowrap; max-width:0.01px; transition:max-width 200ms ease;">
-                <span style="padding:0 5px; display:inline-block; opacity:0;">Multiline Field</span>
+            <legend style="float:unset;width:auto;overflow:hidden;display:block;height:11px;padding:0;font-size:0.75em;visibility:hidden;white-space:nowrap;max-width:0.01px;transition:max-width 200ms ease;">
+                <span style="padding:0 5px;display:inline-block;opacity:0;">Multiline Field</span>
             </legend>
         </fieldset>
     </div>

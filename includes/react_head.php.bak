@@ -4,8 +4,8 @@
   window.NEON_CLIENT_ROOT = <?php echo json_encode($CLIENT_ROOT); ?>;
 </script>
 <!-- NEON REACT ASSETS START -->
-<!-- React last updated: 10/19/2026, 2:25:49 PM -->
-<meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ymln80vc0rl-.js"/><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0twqply_6k3_c.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2muonxtzu2a3r.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/turbopack-2sizzcrnxfbym.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ki981-5p5oto.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/40cx8dp4z2bqk.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0oxrt4rdhvasn.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/17xh38m6on6pa.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2dq_z_y8msev9.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/36xre488do6jc.js"></script><link rel="preload" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css" as="style"/><link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style"/><title>NEON | Portal Core Components</title><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.c12ee9878c2546595e186d8f3917da9c.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>
+<!-- React last updated: 11/4/2026, 1:15:19 PM -->
+<meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ymln80vc0rl-.js"/><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0twqply_6k3_c.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2muonxtzu2a3r.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/turbopack-2sizzcrnxfbym.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ki981-5p5oto.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/40cx8dp4z2bqk.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0oxrt4rdhvasn.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/17xh38m6on6pa.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2dq_z_y8msev9.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1swdoalhvb_k8.js"></script><link rel="preload" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css" as="style"/><link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style"/><title>NEON | Portal Core Components</title><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>
               let gaInitialized = false;
               let interactionTracked = false;
               window.pendingGAEvents = [];
@@ -125,7 +125,7 @@
     {
     otherChunks: [
       'static/chunks/1ymln80vc0rl-.js', // script in body
-      'static/chunks/36xre488do6jc.js' // last script before Drupal CSS
+      'static/chunks/1swdoalhvb_k8.js' // last script before Drupal CSS
     ],
       runtimeModuleIds: [94469] //number in script above by BIOREPO
     }
@@ -291,7 +291,8 @@ if ($isNeonEditor) {
         color: '#0073cf', fontSize: '0.55rem', fontWeight: '600',
         lineHeight: '1.75', whiteSpace: 'nowrap', textTransform: 'uppercase',
         borderWidth: '1px', borderStyle: 'solid', borderRadius: '0',
-        borderColor: '#0073cf', padding: '5px 10px', display: 'inline'
+        borderColor: '#0073cf', padding: '5px 10px', display: 'inline-flex',
+        alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box'
     };
 
     const createHeaderButton = ([label, url]) => {
@@ -311,25 +312,26 @@ if ($isNeonEditor) {
 
     const addHeaderButtons = () => {
         const container = byId('header__authentication-ui');
-        const header = $('.header');
-        if (!container || !header) return;
+        const actions = $('.header__right .header__actions');
+        const hamburger = actions?.querySelector('.nav__hamburger');
+        if (!container || !actions || !hamburger) return;
     
-        header.append(container);
+        hamburger.before(container);
     
-        Object.assign(header.style, {
-            position: 'relative'
+        Object.assign(actions.style, {
+            display: 'flex',
+            alignItems: 'stretch',
+            justifyContent: 'flex-end'
         });
     
         Object.assign(container.style, {
-            position: 'absolute',
-            top: '0',
-            right: '0',
+            position: 'static',
             margin: '0',
             padding: '0',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'stretch',
             gap: '0',
-            zIndex: '1000'
+            zIndex: 'auto'
         });
     
         const buttons = <?= json_encode($headerButtons, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
