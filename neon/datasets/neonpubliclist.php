@@ -9,14 +9,29 @@ $pArr = $datasetManager->getPublicProjects();
 
 $totalProjects = count($pArr);
 $completedProjects = 0;
+$institutions = array();
+$sites = array();
 
 foreach ($pArr as $project) {
     if (!empty($project['completeDate'])) {
         $completedProjects++;
     }
+
+    // Ignore blanks and collapse spelling differences in case/whitespace.
+    $institution = trim(preg_replace('/\s+/', ' ', $project['institution'] ?? ''));
+    if ($institution !== '') {
+        $institutions[strtolower($institution)] = true;
+    }
+    foreach ($project['sites'] ?? array() as $site) {
+        $site = trim($site);
+        if ($site !== '') {
+            $sites[strtolower($site)] = true;
+        }
+    }
 }
 
 $ongoingProjects = $totalProjects - $completedProjects;
+$totalSpecimens = $datasetManager->getProjectSpecimenCount(array_column($pArr, 'datasetid'));
 
 usort($pArr, function ($a, $b) {
 	return strtotime($b['activeDate']) <=> strtotime($a['activeDate']);
@@ -31,54 +46,107 @@ usort($pArr, function ($a, $b) {
 		?>
         <style>
             #project-overview {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
                 margin: 0 0 30px;
-                padding: 24px 0;
+                padding: 24px;
                 background: #f5f6f7;
                 border-top: 3px solid #002d74;
                 font-family: 'Inter', Helvetica, Arial, sans-serif;
+                color: #565a5c;
             }
-
-            #project-overview > div {
+            #project-overview h4 {
+                margin: 0 0 24px;
+                color: #002d74;
+                font-size: 1.25rem;
+                font-weight: 600;
+                line-height: 1.4;
+            }
+            #project-overview .overview-metrics {
+                display: grid;
+                grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
+                margin: 0 0 28px;
+            }
+            #project-overview .overview-metric {
                 display: flex;
                 flex-direction: column;
+                min-width: 0;
                 padding: 0 24px;
             }
-
-            #project-overview > div + div {
+            #project-overview .overview-metric:first-child {
+                padding-left: 0;
+            }
+            #project-overview .overview-metric + .overview-metric {
                 border-left: 1px solid #d5d8da;
             }
-
             #project-overview dt {
-                color: #565a5c;
                 font-size: 0.875rem;
                 font-weight: 400;
             }
-
             #project-overview dd {
                 order: -1;
                 margin: 0 0 6px;
                 color: #002d74;
                 font-size: 2rem;
-                font-weight: 300;
+                font-weight: 600;
                 line-height: 1.2;
+                overflow-wrap: anywhere;
                 font-variant-numeric: tabular-nums;
             }
-
+            #project-overview .overview-metric:first-child dd {
+                font-size: 2.5rem;
+            }
+            #project-overview .overview-status-bar {
+                display: flex;
+                height: 14px;
+                margin-bottom: 12px;
+                background: #d5d8da;
+            }
+            #project-overview .overview-ongoing { background: #0073cf; }
+            #project-overview .overview-completed { background: #002d74; }
+            #project-overview .overview-legend {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px 28px;
+                font-size: 0.875rem;
+            }
+            #project-overview .overview-legend > span {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+            #project-overview .overview-swatch {
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                flex-shrink: 0;
+            }
+            #project-overview .overview-note {
+                margin: 16px 0 0;
+                font-size: 0.75rem;
+                line-height: 1.5;
+            }
+            @media (max-width: 900px) {
+                #project-overview .overview-metrics {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 24px 0;
+                }
+                #project-overview .overview-metric:nth-child(3) {
+                    border-left: 0;
+                    padding-left: 0;
+                }
+            }
             @media (max-width: 540px) {
-                #project-overview {
+                #project-overview { padding: 20px; }
+                #project-overview .overview-metrics {
                     grid-template-columns: 1fr;
-                    padding: 0 20px;
+                    gap: 16px;
                 }
-
-                #project-overview > div {
-                    padding: 16px 0;
+                #project-overview .overview-metric {
+                    padding: 0;
                 }
-
-                #project-overview > div + div {
+                #project-overview .overview-metric + .overview-metric {
                     border-left: 0;
                     border-top: 1px solid #d5d8da;
+                    padding: 16px 0 0;
                 }
             }
         </style>
@@ -96,20 +164,36 @@ usort($pArr, function ($a, $b) {
                 >NEON Biorepository</a>. These projects span a wide range of disciplines, sample types, and research questions, demonstrating the many ways NEON samples and specimens can support new discoveries and extend the scientific value of NEON data.
             </p>
             
-            <dl id="project-overview" aria-label="Public research project overview">
-                <div>
-                    <dt>Total projects</dt>
-                    <dd><?php echo number_format($totalProjects); ?></dd>
+            <section id="project-overview" aria-labelledby="project-overview-title">
+                <h4 id="project-overview-title">Research at a glance</h4>
+                <dl class="overview-metrics">
+                    <div class="overview-metric">
+                        <dt>Specimens</dt>
+                        <dd><?php echo $totalSpecimens === null ? 'Unavailable' : number_format($totalSpecimens); ?></dd>
+                    </div>
+                    <div class="overview-metric">
+                        <dt>Research projects</dt>
+                        <dd><?php echo number_format($totalProjects); ?></dd>
+                    </div>
+                    <div class="overview-metric">
+                        <dt>Institutions</dt>
+                        <dd><?php echo number_format(count($institutions)); ?></dd>
+                    </div>
+                    <div class="overview-metric">
+                        <dt>NEON sites</dt>
+                        <dd><?php echo number_format(count($sites)); ?></dd>
+                    </div>
+                </dl>
+                <div class="overview-status-bar" aria-hidden="true">
+                    <span class="overview-ongoing" style="flex: <?php echo $ongoingProjects; ?> 1 0;"></span>
+                    <span class="overview-completed" style="flex: <?php echo $completedProjects; ?> 1 0;"></span>
                 </div>
-                <div>
-                    <dt>Ongoing projects</dt>
-                    <dd><?php echo number_format($ongoingProjects); ?></dd>
+                <div class="overview-legend">
+                    <span><span class="overview-swatch overview-ongoing" aria-hidden="true"></span><?php echo number_format($ongoingProjects); ?> ongoing projects</span>
+                    <span><span class="overview-swatch overview-completed" aria-hidden="true"></span><?php echo number_format($completedProjects); ?> completed projects</span>
                 </div>
-                <div>
-                    <dt>Completed projects</dt>
-                    <dd><?php echo number_format($completedProjects); ?></dd>
-                </div>
-            </dl>
+                <p class="overview-note">Across all public projects listed below. Specimens are counted once, even when used in multiple projects.</p>
+            </section>
 
 			<!--List Projects in React Table-->
 			<script>
