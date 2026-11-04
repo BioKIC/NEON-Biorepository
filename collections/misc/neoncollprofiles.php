@@ -191,100 +191,64 @@ $linkedCollections = $collManager->getLinkedCollections();
 		}
 		?>
 		
-function downloadBib() {
-    const citationText = document.getElementById('citation').innerText;
+		function getCitationData() {
+			return JSON.parse(document.querySelector('#citation [data-neon-citation]').dataset.neonCitation);
+		}
 
-    console.log('Citation:', citationText);
+		function escapeBibtex(value) {
+			const escapes = {
+				'\\': '\\textbackslash{}', '{': '\\{', '}': '\\}',
+				'&': '\\&', '%': '\\%', '$': '\\$', '#': '\\#', '_': '\\_',
+				'~': '\\textasciitilde{}', '^': '\\textasciicircum{}'
+			};
+			return String(value).replace(/[\\{}&%$#_~^]/g, character => escapes[character]);
+		}
 
-    const citationRegex = /(.+?)\s\((\d{4})\)\.\s(?:NEON Biorepository\s)?(.+?)\.\sOccurrence dataset\s(.+?)\saccessed\svia\sthe\s(.+?),\s(.+?)\son\s(\d{4}-\d{2}-\d{2})\./;
-    const match = citationText.match(citationRegex);
+		function downloadCitation(content, extension, mimeType, citation) {
+			const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `NEON-${citation.title.replace(/[^a-zA-Z0-9]+/g, '-')}-${citation.accessDate}.${extension}`;
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+			// Allow the browser to start consuming the download before releasing it.
+			setTimeout(() => URL.revokeObjectURL(url), 1000);
+		}
 
-    console.log('Regex match:', match);
-
-    if (!match) {
-        console.error('Citation did not match the expected format.');
-        return;
-    }
-
-    const author = match[1];
-    const year = match[2];
-    const title = match[3];
-    const doi = match[4];
-    const portalName = match[5];
-    const portalUrl = match[6];
-    const accessDate = match[7];
-
-    const bibtexEntry = `
-@misc{${title.toLowerCase().replace(/\s+/g, '')}${accessDate},
-    doi = {${doi}},
-    author = {${author}},
+		function downloadBib() {
+			const citation = getCitationData();
+			const bibtexEntry = `@misc{NEON${citation.collectionId}_${citation.accessDate.replace(/-/g, '')},
+    author = {{${escapeBibtex(citation.author)}}},
+    title = {{${escapeBibtex(citation.title)}}},
+    url = {${escapeBibtex(citation.url)}},
+    urldate = {${citation.accessDate}},
     language = {en},
-    title = {${title}},
-    publisher = {National Ecological Observatory Network (NEON)},
-    year = {${year}},
-    note = {Accessed via ${portalName}, \\url{${portalUrl}}, on ${accessDate}},
-    copyright = {Creative Commons Zero v1.0 Universal}
-}
-    `.trim();
+    note = {${escapeBibtex(citation.note)}},
+    copyright = {${escapeBibtex(citation.license + ' (' + citation.licenseUrl + ')')}}
+}`;
+			downloadCitation(bibtexEntry, 'bib', 'application/x-bibtex', citation);
+		}
 
-    const blob = new Blob([bibtexEntry], {
-        type: 'application/x-bibtex;charset=utf-8'
-    });
-
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download =
-        `NEON-${title.replace(/[^a-zA-Z0-9]+/g, '-')}-${accessDate}.bib`;
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    URL.revokeObjectURL(url);
-}
-		
 		function downloadRis() {
-		   const citationText = document.getElementById('citation').innerText;
-		   const abstractText = document.querySelector('#fulldescription-container p').innerText;
+			const citation = getCitationData();
+			const singleLine = value => String(value).replace(/[\r\n]+/g, ' ');
+			const description = document.querySelector('#fulldescription-container p');
+			const lines = [
+				'TY  - DATA',
+				'T1  - ' + singleLine(citation.title),
+				'AU  - ' + singleLine(citation.author),
+				'UR  - ' + singleLine(citation.url),
+				'Y2  - ' + citation.accessDate,
+				'LA  - en',
+				'N1  - ' + singleLine(citation.note)
+			];
+			if (description && description.innerText.trim()) lines.push('AB  - ' + singleLine(description.innerText));
+			lines.push('ER  -');
+			downloadCitation(lines.join('\r\n') + '\r\n', 'ris', 'application/x-research-info-systems', citation);
+		}
 
-		   const citationRegex = /(.+?)\s\((\d{4})\)\.\s(?:NEON Biorepository\s)?(.+?)\.\sOccurrence dataset\s(.+?)\saccessed\svia\sthe\s(.+?),\s(.+?)\son\s(\d{4}-\d{2}-\d{2})\./;
-		   const match = citationText.match(citationRegex);
-	   
-		   if (match) {
-			   const author = match[1];
-			   const year = match[2];
-			   const title = match[3];
-			   const doi = match[4];
-			   const portalName = match[5];
-			   const portalUrl = match[6];
-			   const accessDate = match[7];
-	   
-				const risEntry = `
-TY  - DATA
-T1  - ${title}
-AU  - ${author}
-DO  - ${doi}
-AB  - ${abstractText}
-PY  - ${year}
-PB  - National Ecological Observatory Network (NEON)
-N1  - Accessed via ${portalName}, ${portalUrl}
-LA  - en
-DA  - ${accessDate}
-ER  -
-				`.trim();
-
-			   const blob = new Blob([risEntry], { type: 'text/plain' });
-			   const link = document.createElement('a');
-			   link.href = URL.createObjectURL(blob);
-			   link.download = `NEON-${title.replace(/[^a-zA-Z0-9]/g, '-')}-${accessDate}.ris`;
-			   document.body.appendChild(link);
-			   link.click();
-			   document.body.removeChild(link);
-		   }
-        }
-		
 		document.addEventListener("DOMContentLoaded", function () {
 			// Show tooltip
 			function showTooltip(event) {
@@ -838,7 +802,7 @@ ER  -
 						<h2 class="text-xl font-semibold mb-2">Citation</h2>
 						<p style="padding:16px"><strong>Please use the citation below when referencing this sample type. This citation is required for both data-only and physical sample use. Publications involving physical samples must also include the additional specimen citation requirements. See <a href="<?php echo $CLIENT_ROOT . '/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for full guidance.</strong></p>
 						<?php
-							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;"">
+							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;">
 							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">';
 							include($SERVER_ROOT . '/includes/citationneoncollection.php');
 							echo '</div>';
