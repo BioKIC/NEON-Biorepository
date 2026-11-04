@@ -244,7 +244,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 				'AU  - ' + singleLine(citation.author),
 				'DO  -',
 				'UR  - ' + singleLine(citation.url),
-				'PB  - National Ecological Observatory Network (NEON)',
+				'PB  - Biorepository',
 				'Y2  - ' + citation.accessDate,
 				'LA  - en',
 				'N1  - ' + singleLine(citation.note)
