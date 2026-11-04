@@ -227,7 +227,6 @@ $linkedCollections = $collManager->getLinkedCollections();
     language = {en},
     title = {{${escapeBibtex(citation.title)}}},
     publisher = {National Ecological Observatory Network (NEON)},
-    year = {${citation.accessDate.slice(0, 4)}},
     note = {${escapeBibtex(citation.note)}},
     urldate = {${citation.accessDate}},
     copyright = {${escapeBibtex(citation.license + ' (' + citation.licenseUrl + ')')}}
