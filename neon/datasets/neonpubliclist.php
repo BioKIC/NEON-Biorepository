@@ -7,6 +7,17 @@ header('Content-Type: text/html; charset='.$CHARSET);
 $datasetManager = new OccurrenceDataset();
 $pArr = $datasetManager->getPublicProjects();
 
+$totalProjects = count($pArr);
+$completedProjects = 0;
+
+foreach ($pArr as $project) {
+    if (!empty($project['completeDate'])) {
+        $completedProjects++;
+    }
+}
+
+$ongoingProjects = $totalProjects - $completedProjects;
+
 usort($pArr, function ($a, $b) {
 	return strtotime($b['activeDate']) <=> strtotime($a['activeDate']);
 });
@@ -18,6 +29,59 @@ usort($pArr, function ($a, $b) {
 		<?php
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
+        <style>
+            #project-overview {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                margin: 0 0 30px;
+                padding: 24px 0;
+                background: #f5f6f7;
+                border-top: 3px solid #002d74;
+                font-family: 'Inter', Helvetica, Arial, sans-serif;
+            }
+
+            #project-overview > div {
+                display: flex;
+                flex-direction: column;
+                padding: 0 24px;
+            }
+
+            #project-overview > div + div {
+                border-left: 1px solid #d5d8da;
+            }
+
+            #project-overview dt {
+                color: #565a5c;
+                font-size: 0.875rem;
+                font-weight: 400;
+            }
+
+            #project-overview dd {
+                order: -1;
+                margin: 0 0 6px;
+                color: #002d74;
+                font-size: 2rem;
+                font-weight: 300;
+                line-height: 1.2;
+                font-variant-numeric: tabular-nums;
+            }
+
+            @media (max-width: 540px) {
+                #project-overview {
+                    grid-template-columns: 1fr;
+                    padding: 0 20px;
+                }
+
+                #project-overview > div {
+                    padding: 16px 0;
+                }
+
+                #project-overview > div + div {
+                    border-left: 0;
+                    border-top: 1px solid #d5d8da;
+                }
+            }
+        </style>
 	</head>
 	<body>
 		<!-- This is inner text! -->
@@ -32,6 +96,21 @@ usort($pArr, function ($a, $b) {
                 >NEON Biorepository</a>. These projects span a wide range of disciplines, sample types, and research questions, demonstrating the many ways NEON samples and specimens can support new discoveries and extend the scientific value of NEON data.
             </p>
             
+            <dl id="project-overview" aria-label="Public research project overview">
+                <div>
+                    <dt>Total projects</dt>
+                    <dd><?php echo number_format($totalProjects); ?></dd>
+                </div>
+                <div>
+                    <dt>Ongoing projects</dt>
+                    <dd><?php echo number_format($ongoingProjects); ?></dd>
+                </div>
+                <div>
+                    <dt>Completed projects</dt>
+                    <dd><?php echo number_format($completedProjects); ?></dd>
+                </div>
+            </dl>
+
 			<!--List Projects in React Table-->
 			<script>
                 window.tableData = <?php echo json_encode(
