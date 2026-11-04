@@ -10,7 +10,7 @@ $pArr = $datasetManager->getPublicProjects();
 $totalProjects = count($pArr);
 $completedProjects = 0;
 $institutions = array();
-$sites = array();
+$sampleTypes = array();
 
 foreach ($pArr as $project) {
     if (!empty($project['completeDate'])) {
@@ -22,10 +22,10 @@ foreach ($pArr as $project) {
     if ($institution !== '') {
         $institutions[strtolower($institution)] = true;
     }
-    foreach ($project['sites'] ?? array() as $site) {
-        $site = trim($site);
-        if ($site !== '') {
-            $sites[strtolower($site)] = true;
+    foreach ($project['sampleTypes'] ?? array() as $sampleType) {
+        $sampleTypeName = trim(preg_replace('/\s+/', ' ', $sampleType['sampleType']['value'] ?? ''));
+        if ($sampleTypeName !== '') {
+            $sampleTypes[strtolower($sampleTypeName)] = true;
         }
     }
 }
@@ -179,8 +179,8 @@ usort($pArr, function ($a, $b) {
                         <dd><?php echo number_format(count($institutions)); ?></dd>
                     </div>
                     <div class="overview-metric">
-                        <dt>NEON sites</dt>
-                        <dd><?php echo number_format(count($sites)); ?></dd>
+                        <dt>Sample types</dt>
+                        <dd><?php echo number_format(count($sampleTypes)); ?></dd>
                     </div>
                 </dl>
                 <div class="overview-status-bar" aria-hidden="true">
