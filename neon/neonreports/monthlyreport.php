@@ -153,6 +153,7 @@ if ($isEditor) {
 		?>
 		<div class='section' id='analytics'>
 		<h2>Google Analytics Report</h2>
+		<h3 style = 'margin: 28px'><i>This is a live report. Most statistics default to the month prior to today's date. Use the date range control to matche any time period of interest. </i></h3>
 		<iframe width="900" height="650" 
 			src="https://datastudio.google.com/embed/reporting/68defb19-cd1c-4141-8e1a-dea7eae3de69/page/i9SCG" 
 			frameborder="0" style="border:0" 
