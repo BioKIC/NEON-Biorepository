@@ -3,6 +3,7 @@
 $neonCitation = array(
     'author' => 'NEON (National Ecological Observatory Network) Biorepository',
     'title' => $collData['collectionname'],
+    'collectionCode' => $collData['collectioncode'] ?? '',
     'collectionId' => (int) $collData['collid'],
     'url' => 'https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=' . (int) $collData['collid'],
     'accessDate' => date('Y-m-d'),

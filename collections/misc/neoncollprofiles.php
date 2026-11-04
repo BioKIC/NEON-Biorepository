@@ -219,14 +219,17 @@ $linkedCollections = $collManager->getLinkedCollections();
 
 		function downloadBib() {
 			const citation = getCitationData();
-			const bibtexEntry = `@misc{NEON${citation.collectionId}_${citation.accessDate.replace(/-/g, '')},
-    author = {{${escapeBibtex(citation.author)}}},
-    title = {{${escapeBibtex(citation.title)}}},
+			const citationKey = citation.collectionCode.replace(/[^a-zA-Z0-9._-]/g, '') || ('NEON' + citation.collectionId);
+			const bibtexEntry = `@misc{${citationKey}/provisional,
+    doi = {},
     url = {${escapeBibtex(citation.url)}},
-    urldate = {${citation.accessDate}},
+    author = {{${escapeBibtex(citation.author)}}},
     language = {en},
+    title = {{${escapeBibtex(citation.title)}}},
+    publisher = {National Ecological Observatory Network (NEON)},
+    year = {${citation.accessDate.slice(0, 4)}},
     note = {${escapeBibtex(citation.note)}},
-    copyright = {${escapeBibtex(citation.license + ' (' + citation.licenseUrl + ')')}}
+    urldate = {${citation.accessDate}}
 }`;
 			downloadCitation(bibtexEntry, 'bib', 'application/x-bibtex', citation);
 		}
