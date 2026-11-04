@@ -165,7 +165,6 @@ usort($pArr, function ($a, $b) {
             </p>
             
             <section id="project-overview" aria-labelledby="project-overview-title">
-                <h4 id="project-overview-title">Research at a glance</h4>
                 <dl class="overview-metrics">
                     <div class="overview-metric">
                         <dt>Specimens</dt>
@@ -192,7 +191,7 @@ usort($pArr, function ($a, $b) {
                     <span><span class="overview-swatch overview-ongoing" aria-hidden="true"></span><?php echo number_format($ongoingProjects); ?> ongoing projects</span>
                     <span><span class="overview-swatch overview-completed" aria-hidden="true"></span><?php echo number_format($completedProjects); ?> completed projects</span>
                 </div>
-                <p class="overview-note">Across all public projects listed below. Specimens are counted once, even when used in multiple projects.</p>
+                <p class="overview-note">Across all public projects listed below.</p>
             </section>
 
 			<!--List Projects in React Table-->
