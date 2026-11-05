@@ -1,0 +1,83 @@
+/* #start neon edits */
+#outloanspecdiv { padding: 16px; }
+#outloanspecdiv .loan-heading, #outloanspecdiv .loan-toolbar, #outloanspecdiv .loan-fields { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+#outloanspecdiv .loan-heading { justify-content: space-between; margin-bottom: 20px; }
+#outloanspecdiv h2, #outloanspecdiv h3 { margin: 0 0 12px; }
+#outloanspecdiv .loan-card { background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 24px; margin-bottom: 24px; }
+#outloanspecdiv p { line-height: 1.5; }
+#outloanspecdiv .loan-fields { align-items: flex-start; margin-bottom: 16px; }
+#outloanspecdiv .loan-fields label { flex: 1 1 200px; }
+#outloanspecdiv label { font-weight: 500; }
+#outloanspecdiv select, #outloanspecdiv textarea { display: block; width: 100%; box-sizing: border-box; border: 1px solid #999; border-radius: 4px; padding: 12px; font: inherit; background: #fff; color: inherit; margin: 6px 0 12px; }
+#outloanspecdiv textarea { resize: vertical; }
+#outloanspecdiv :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+#outloanspecdiv .loan-toolbar { margin: 12px 0; }
+#outloanspecdiv button:disabled { opacity: .5; cursor: default; }
+#outloanspecdiv .form-checkbox { display: table-cell; width: 32px; text-align: center; }
+#outloanspecdiv .loan-selected { background-color: rgba(0, 110, 125, .08); }
+#outloanspecdiv .icon-img { width: 16px; }
+#outloanspecdiv #loan-match-result { overflow-wrap: anywhere; }
+#outloanspecdiv #loanSpecimenTable { width: 100%; }
+#outloanspecdiv .dt-container { overflow-x: auto; }
+#outloanspecdiv #newdet-div fieldset { width: auto; margin: 0 0 24px; }
+@media (max-width: 600px) {
+	#outloanspecdiv { padding: 4px; }
+	#outloanspecdiv .loan-card { padding: 16px; }
+	#outloanspecdiv .loan-toolbar > button { width: 100%; }
+	#outloanspecdiv #newdet-div input { max-width: 100%; box-sizing: border-box; }
+}
+
+/* Keep the specimen table in view; bulk identifier entry is optional. */
+#outloanspecdiv .loan-heading { margin-bottom: 12px; }
+#outloanspecdiv .loan-heading h2 { margin: 0; }
+#outloanspecdiv .loan-entry { background: #fff; border: 0; border-radius: 4px; margin: 0 0 16px; padding: 16px; box-shadow: 0 2px 1px -1px rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 1px 3px 0 rgba(0,0,0,.12); }
+#outloanspecdiv .loan-entry h3 { font-weight: 400; margin: 0 0 16px; }
+#outloanspecdiv .loan-entry .loan-fields { margin-bottom: 4px; }
+#outloanspecdiv .loan-selection { margin-bottom: 12px; }
+#outloanspecdiv .loan-selection .loan-toolbar { margin: 6px 0; gap: 8px; }
+#outloanspecdiv #loan-match-result:empty { display: none; }
+#outloanspecdiv .loan-selection .MuiButton-root { padding: 4px 10px; }
+
+#outloanspecdiv .loan-selection { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; }
+#outloanspecdiv .loan-selection .loan-toolbar { margin: 0; gap: 8px; align-items: center; }
+#outloanspecdiv .loan-selection .loan-toolbar + .loan-toolbar { border-top: 1px solid #eee; padding-top: 8px; }
+#outloanspecdiv .loan-selection .MuiButton-root { font-size: 12px; line-height: 1.5; min-height: 30px; padding: 5px 10px; letter-spacing: 0; text-transform: none; width: auto; }
+#outloanspecdiv .loan-selection label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; margin: 0 0 0 8px; }
+#outloanspecdiv #loan-selection-count { font-size: 13px; min-width: 85px; font-weight: 500; }
+#outloanspecdiv button { transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, opacity 160ms ease; }
+@media (prefers-reduced-motion: reduce) { #outloanspecdiv button { transition: none; } }
+
+/* One compact type scale for identifier entry, selection and table controls. */
+#outloanspecdiv { font-size: 13px; }
+#outloanspecdiv .loan-entry p,
+#outloanspecdiv .loan-entry h3,
+#outloanspecdiv label,
+#outloanspecdiv select,
+#outloanspecdiv textarea,
+#outloanspecdiv .MuiButton-root,
+#outloanspecdiv .loan-selection label,
+#outloanspecdiv #loan-selection-count { font-size: 13px; line-height: 1.5; }
+#outloanspecdiv .MuiButton-root { min-height: 32px; padding: 5px 10px; letter-spacing: 0; text-transform: none; }
+#outloanspecdiv .loan-entry p { margin: 8px 0; }
+#outloanspecdiv .loan-fields { gap: 12px; margin: 8px 0 0; }
+#outloanspecdiv select, #outloanspecdiv textarea { padding: 6px 10px; margin: 4px 0 8px; min-height: 34px; }
+#outloanspecdiv textarea { min-height: 64px; }
+#outloanspecdiv .loan-selection { padding: 10px 16px; margin: 0 0 12px; background: #f7f9fa; border: 1px solid #dce2e6; border-top: 0; border-radius: 0 0 4px 4px; }
+#outloanspecdiv .loan-selection .loan-toolbar { gap: 8px; }
+#outloanspecdiv .loan-selection .loan-toolbar:last-child { border-top: 1px solid #e1e6e9; padding-top: 8px; }
+#outloanspecdiv .loan-selection label { margin-left: 4px; }
+#outloanspecdiv #loan-selection-count { min-width: 85px; }
+#outloanspecdiv #loan-clear-selection { border-color: transparent; }
+
+#outloanspecdiv #loan-scan-input { font: inherit; padding: 6px 10px; width: 100%; box-sizing: border-box; }
+#outloanspecdiv #loan-scan-history { max-height: 110px; overflow-y: auto; font-size: 13px; }
+
+#outloanspecdiv #loan-process-button,
+#outloanspecdiv #loan-scan-refresh,
+#outloanspecdiv #newdet-div button[type="submit"] { display: block; margin: 16px 8px 8px auto; }
+#outloanspecdiv #newdet-div div[style*="float:left"] { float: none !important; }
+#outloanspecdiv .dt-length { display: flex; align-items: center; gap: 8px; }
+#outloanspecdiv .dt-length select { display: inline-block; width: auto; margin: 0; }
+#outloanspecdiv .dt-length label { margin: 0; white-space: nowrap; }
+/* #end neon edits */
+
