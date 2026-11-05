@@ -1,7 +1,6 @@
 <?php
 include_once('../config/symbini.php');
 include_once('../classes/utilities/GeneralUtil.php');
-include_once('../profile/authUtil.php');
 
 if(!empty($THIRD_PARTY_OID_AUTH_ENABLED)){
 	include_once($SERVER_ROOT . '/config/auth_config.php');
@@ -97,36 +96,23 @@ if($action == 'logout'){
 		//$oidc->signOut($_SESSION['AUTH_CLIENT_ID'], $redirect);
 
 		//neon edit
-		$provider = $_SESSION['AUTH_PROVIDER'];
 		$redirect = GeneralUtil::getDomain() . $CLIENT_ROOT . $LOGOUT_REDIRECT;
+		$baseUrl = rtrim($PROVIDER_URLS[$_SESSION['AUTH_PROVIDER']], '/');
 
-		if (isset($PROVIDER_URLS[$provider], $CLIENT_IDS[$provider])) {
-			include_once($SERVER_ROOT . '/classes/OpenIdProfileManager.php');
-			$logoutManager = new OpenIdProfileManager();
-			neonAuthClearLocalSession($logoutManager);
-
-			$baseUrl = rtrim($PROVIDER_URLS[$provider], '/');
-			$logoutUrl = sprintf(
-				'%s/v2/logout?returnTo=%s&client_id=%s',
-				$baseUrl,
-				rawurlencode($redirect),
-				rawurlencode($CLIENT_IDS[$provider])
-			);
-			header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-			header('Location: ' . $logoutUrl);
-			exit;
-		}
-
-		neonAuthClearLocalSession($pHandler);
-		header('Location: ' . GeneralUtil::getDomain() . $CLIENT_ROOT . '/index.php');
+		$logoutUrl = sprintf(
+			'%s/v2/logout?returnTo=%s&client_id=%s',
+			$baseUrl,
+			urlencode($redirect),
+			$CLIENT_IDS[$_SESSION['AUTH_PROVIDER']]
+		);
+		header("Location: $logoutUrl");
 		exit;
 		//end neon edit
 
 	}
 	else{
-		neonAuthClearLocalSession($pHandler);
+		$pHandler->reset();
 		header('Location: ' . GeneralUtil::getDomain() . $CLIENT_ROOT . '/index.php');
-		exit;
 	}
 }
 elseif($action == 'login'){
