@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['logout_token'])) {
 		}
 		header('HTTP/1.1 200 OK');
 	}
-	catch (Exception $ex) {
+	catch (Throwable $ex) {
 		error_log('OIDC back-channel logout failed: ' . $ex->getMessage());
 		header('HTTP/1.1 400 Bad Request');
 	}
