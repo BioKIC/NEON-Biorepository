@@ -46,67 +46,65 @@ usort($pArr, function ($a, $b) {
 		?>
         <style>
             #project-overview {
-                margin: 0 0 30px;
-                padding: 24px;
-                background: #f5f6f7;
-                border-top: 3px solid #002d74;
+                margin: 0 0 40px;
+                padding: 32px 0 0;
+                background: #fff;
+                border-top: 2px dotted #8b9bb3;
                 font-family: 'Inter', Helvetica, Arial, sans-serif;
                 color: #565a5c;
             }
-            #project-overview h4 {
-                margin: 0 0 24px;
-                color: #002d74;
-                font-size: 1.25rem;
-                font-weight: 600;
-                line-height: 1.4;
-            }
             #project-overview .overview-metrics {
                 display: grid;
-                grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
-                margin: 0 0 28px;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                margin: 0 0 40px;
             }
             #project-overview .overview-metric {
                 display: flex;
                 flex-direction: column;
+                justify-content: center;
                 min-width: 0;
-                padding: 0 24px;
-            }
-            #project-overview .overview-metric:first-child {
-                padding-left: 0;
+                padding: 8px 16px;
+                text-align: center;
             }
             #project-overview .overview-metric + .overview-metric {
-                border-left: 1px solid #d5d8da;
+                border-left: 2px dotted #8b9bb3;
             }
             #project-overview dt {
-                font-size: 0.875rem;
+                font-size: 1rem;
                 font-weight: 400;
+                line-height: 1.5;
             }
             #project-overview dd {
                 order: -1;
-                margin: 0 0 6px;
-                color: #002d74;
-                font-size: 2rem;
+                margin: 0 0 8px;
+                color: #002c77;
+                font-size: 2.5rem;
                 font-weight: 600;
                 line-height: 1.2;
                 overflow-wrap: anywhere;
                 font-variant-numeric: tabular-nums;
             }
-            #project-overview .overview-metric:first-child dd {
-                font-size: 2.5rem;
-            }
             #project-overview .overview-status-bar {
                 display: flex;
-                height: 14px;
-                margin-bottom: 12px;
-                background: #d5d8da;
+                height: 8px;
+                margin-bottom: 16px;
+                background: #d7d9d9;
             }
             #project-overview .overview-ongoing { background: #0073cf; }
-            #project-overview .overview-completed { background: #002d74; }
+            #project-overview .overview-completed { background: #002c77; }
+            #project-overview .overview-footer {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 12px 24px;
+            }
             #project-overview .overview-legend {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 12px 28px;
                 font-size: 0.875rem;
+                line-height: 1.5;
             }
             #project-overview .overview-legend > span {
                 display: inline-flex;
@@ -120,7 +118,7 @@ usort($pArr, function ($a, $b) {
                 flex-shrink: 0;
             }
             #project-overview .overview-note {
-                margin: 16px 0 0;
+                margin: 0;
                 font-size: 0.75rem;
                 line-height: 1.5;
             }
@@ -131,23 +129,24 @@ usort($pArr, function ($a, $b) {
                 }
                 #project-overview .overview-metric:nth-child(3) {
                     border-left: 0;
-                    padding-left: 0;
                 }
             }
             @media (max-width: 540px) {
-                #project-overview { padding: 20px; }
+                #project-overview { padding-top: 24px; }
                 #project-overview .overview-metrics {
                     grid-template-columns: 1fr;
                     gap: 16px;
+                    margin-bottom: 24px;
                 }
                 #project-overview .overview-metric {
                     padding: 0;
                 }
                 #project-overview .overview-metric + .overview-metric {
                     border-left: 0;
-                    border-top: 1px solid #d5d8da;
-                    padding: 16px 0 0;
+                    border-top: 2px dotted #8b9bb3;
+                    padding-top: 16px;
                 }
+                #project-overview dd { font-size: 2.25rem; }
             }
         </style>
 	</head>
@@ -164,7 +163,7 @@ usort($pArr, function ($a, $b) {
                 >NEON Biorepository</a>. These projects span a wide range of disciplines, sample types, and research questions, demonstrating the many ways NEON samples and specimens can support new discoveries and extend the scientific value of NEON data.
             </p>
             
-            <section id="project-overview" aria-labelledby="project-overview-title">
+            <section id="project-overview" aria-label="Public research project overview">
                 <dl class="overview-metrics">
                     <div class="overview-metric">
                         <dt>Specimens</dt>
@@ -187,11 +186,13 @@ usort($pArr, function ($a, $b) {
                     <span class="overview-ongoing" style="flex: <?php echo $ongoingProjects; ?> 1 0;"></span>
                     <span class="overview-completed" style="flex: <?php echo $completedProjects; ?> 1 0;"></span>
                 </div>
-                <div class="overview-legend">
-                    <span><span class="overview-swatch overview-ongoing" aria-hidden="true"></span><?php echo number_format($ongoingProjects); ?> ongoing projects</span>
-                    <span><span class="overview-swatch overview-completed" aria-hidden="true"></span><?php echo number_format($completedProjects); ?> completed projects</span>
+                <div class="overview-footer">
+                    <div class="overview-legend">
+                        <span><span class="overview-swatch overview-ongoing" aria-hidden="true"></span><?php echo number_format($ongoingProjects); ?> ongoing projects</span>
+                        <span><span class="overview-swatch overview-completed" aria-hidden="true"></span><?php echo number_format($completedProjects); ?> completed projects</span>
+                    </div>
+                    <p class="overview-note">Across all public projects listed below.</p>
                 </div>
-                <p class="overview-note">Across all public projects listed below.</p>
             </section>
 
 			<!--List Projects in React Table-->
