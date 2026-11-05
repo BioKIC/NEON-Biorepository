@@ -1,3 +1,27 @@
+<?php if (empty($DEACTIVATE_REACT)): ?>
+<style>
+  html.biorepo-layout-pending #innertext,
+  html.biorepo-layout-pending #biorepo-page,
+  html.biorepo-layout-pending #top_navbar,
+  html.biorepo-layout-pending .navpath {
+    visibility: hidden !important;
+  }
+</style>
+<script>
+(() => {
+    // Keep elements measurable while preventing the legacy layout from flashing.
+    const root = document.documentElement;
+    root.classList.add('biorepo-layout-pending');
+    const timeout = window.setTimeout(() => {
+        root.classList.remove('biorepo-layout-pending');
+    }, 8000);
+    window.revealBiorepoLayout = () => {
+        window.clearTimeout(timeout);
+        root.classList.remove('biorepo-layout-pending');
+    };
+})();
+</script>
+<?php endif; ?>
 <script>
   var TURBOPACK_CHUNK_BASE_PATH =
     <?php echo json_encode(rtrim($CLIENT_ROOT, '/') . '/neon-react/core-components/_next/'); ?>;
@@ -170,19 +194,12 @@ if ($isNeonEditor) {
     const link = (href, children, attributes = {}) =>
         element('a', { href, ...attributes }, ...children);
 
-    // Preserve the original asynchronous wait behavior.
-    const waitForElement = (selector, callback) => {
-        const observer = new MutationObserver(() => {
-            if (!$(selector)) return;
-            observer.disconnect();
-            callback();
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-    };
-
     const createBiorepoPage = () => {
         const innerText = byId('innertext');
-        if (innerText) innerText.before(element('div', { id: 'biorepo-page' }));
+        if (innerText && !byId('biorepo-page')) {
+            innerText.before(element('div', { id: 'biorepo-page' }));
+        }
+        if (!innerText) window.revealBiorepoLayout?.();
     };
 
     const updateElementWidth = () => {
@@ -193,13 +210,14 @@ if ($isNeonEditor) {
         const container = $('div.MuiContainer-root');
         const innerText = byId('innertext');
         const stats = byId('statistics-container');
+        if (!content || !container || !innerText) return;
         const padding = parseFloat(getComputedStyle(content).paddingLeft);
         const margin = parseFloat(getComputedStyle(innerText).marginLeft);
         const rightMargin = parseFloat(getComputedStyle(container).marginRight);
         const right = `${padding + margin}px`;
 
         styles(blue, { width: `${content.offsetWidth + rightMargin}px`, right });
-        styles(stats, { width: `${content.offsetWidth - 2 * padding}px`, right });
+        if (stats) styles(stats, { width: `${content.offsetWidth - 2 * padding}px`, right });
     };
 
     const updateBreadcrumbHash = () => {
@@ -339,23 +357,38 @@ if ($isNeonEditor) {
         buttons.map(createHeaderButton).forEach(button => container.prepend(button));
     };
 
-    document.addEventListener('DOMContentLoaded', createBiorepoPage);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createBiorepoPage, { once: true });
+    } else {
+        createBiorepoPage();
+    }
 
     window.addEventListener('biorepo:neon-page-ready', () => {
-        waitForElement('.neon__sidebar-sticky', updateElementWidth);
-        waitForElement('.neon__sidebar-sticky', updateBreadcrumbHash);
-        window.addEventListener('resize', updateElementWidth);
+        try {
+            <?php if (empty($DEACTIVATE_REACT)): ?>
+            replaceLegacyLayout();
+            [
+                addFooterMessage,
+                addFooterLogos,
+                addNotificationBanner,
+                addHeaderButtons
+            ].forEach(action => action());
+            <?php endif; ?>
 
-        <?php if (empty($DEACTIVATE_REACT)): ?>
-        [
-            replaceLegacyLayout,
-            addFooterMessage,
-            addFooterLogos,
-            addNotificationBanner,
-            addHeaderButtons
-        ].forEach(action => action());
-        <?php endif; ?>
-    });
+            updateBreadcrumbHash();
+            updateElementWidth();
+            window.addEventListener('resize', updateElementWidth);
+            const content = $('div[data-selenium="neon-page.content"]');
+            if (content && typeof ResizeObserver !== 'undefined') {
+                new ResizeObserver(updateElementWidth).observe(content);
+            }
+        } finally {
+            // Let the style-seeding observer apply legacy MUI styles before reveal.
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                window.revealBiorepoLayout?.();
+            }));
+        }
+    }, { once: true });
 })();
 </script>
 
