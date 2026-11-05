@@ -73,6 +73,25 @@ function neonAuthClearFlowState()
 }
 
 /**
+ * Validate an OIDC error callback and clear the library's one-time state.
+ */
+function neonAuthValidateAndClearErrorState($requestState)
+{
+	$expectedState = $_SESSION['openid_connect_state'] ?? '';
+	$valid = is_string($requestState)
+		&& $requestState !== ''
+		&& is_string($expectedState)
+		&& $expectedState !== ''
+		&& hash_equals($expectedState, $requestState);
+
+	unset($_SESSION['openid_connect_state']);
+	unset($_SESSION['openid_connect_nonce']);
+	unset($_SESSION['openid_connect_code_verifier']);
+
+	return $valid;
+}
+
+/**
  * Complete a hidden-frame session check without exposing tokens or user data.
  */
 function neonAuthSendSyncResult($authenticated, $changed)
