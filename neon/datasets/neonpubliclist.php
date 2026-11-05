@@ -90,32 +90,12 @@ usort($pArr, function ($a, $b) {
                 margin-bottom: 16px;
                 background: #d7d9d9;
             }
-            #project-overview .overview-ongoing { background: #0073cf; }
-            #project-overview .overview-completed { background: #002c77; }
             #project-overview .overview-footer {
                 display: flex;
                 flex-wrap: wrap;
                 align-items: baseline;
                 justify-content: space-between;
                 gap: 12px 24px;
-            }
-            #project-overview .overview-legend {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 12px 28px;
-                font-size: 0.875rem;
-                line-height: 1.5;
-            }
-            #project-overview .overview-legend > span {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-            }
-            #project-overview .overview-swatch {
-                display: inline-block;
-                width: 12px;
-                height: 12px;
-                flex-shrink: 0;
             }
             #project-overview .overview-note {
                 margin: 0;
@@ -182,15 +162,7 @@ usort($pArr, function ($a, $b) {
                         <dd><?php echo number_format(count($sampleTypes)); ?></dd>
                     </div>
                 </dl>
-                <div class="overview-status-bar" aria-hidden="true">
-                    <span class="overview-ongoing" style="flex: <?php echo $ongoingProjects; ?> 1 0;"></span>
-                    <span class="overview-completed" style="flex: <?php echo $completedProjects; ?> 1 0;"></span>
-                </div>
                 <div class="overview-footer">
-                    <div class="overview-legend">
-                        <span><span class="overview-swatch overview-ongoing" aria-hidden="true"></span><?php echo number_format($ongoingProjects); ?> ongoing projects</span>
-                        <span><span class="overview-swatch overview-completed" aria-hidden="true"></span><?php echo number_format($completedProjects); ?> completed projects</span>
-                    </div>
                     <p class="overview-note">Across all public projects listed below.</p>
                 </div>
             </section>
