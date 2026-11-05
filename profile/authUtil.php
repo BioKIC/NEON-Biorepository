@@ -70,6 +70,7 @@ function neonAuthClearFlowState()
 {
 	unset($_SESSION['NEON_AUTH_FLOW_MODE']);
 	unset($_SESSION['NEON_AUTH_FLOW_WAS_AUTHENTICATED']);
+	unset($_SESSION['NEON_AUTH_RETURN_URL']);
 }
 
 /**
@@ -92,30 +93,20 @@ function neonAuthValidateAndClearErrorState($requestState)
 }
 
 /**
- * Complete a hidden-frame session check without exposing tokens or user data.
+ * Finish an authentication attempt and return to a previously validated URL.
  */
-function neonAuthSendSyncResult($authenticated, $changed)
+function neonAuthFinishFlow($returnUrl, $isSilent)
 {
-	neonAuthClearFlowState();
-	unset($_SESSION['refurl']);
-	$_SESSION['NEON_AUTH_LAST_SYNC'] = time();
-
-	$payload = json_encode([
-		'type' => 'neon-biorepo-auth-sync',
-		'authenticated' => (bool) $authenticated,
-		'changed' => (bool) $changed,
-	], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-
-	if (session_status() === PHP_SESSION_ACTIVE) {
-		session_write_close();
+	if ($isSilent) {
+		$_SESSION['NEON_AUTH_LAST_SYNC'] = time();
 	}
 
-	header('Content-Type: text/html; charset=UTF-8');
+	neonAuthClearFlowState();
+	unset($_SESSION['refurl']);
+
 	header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 	header('Pragma: no-cache');
-	echo '<!doctype html><html><head><meta charset="utf-8"><title>Authentication check</title></head><body>';
-	echo '<script>if(window.parent&&window.parent!==window){window.parent.postMessage(' . $payload . ',window.location.origin);}</script>';
-	echo '</body></html>';
+	header('Location: ' . $returnUrl);
 	exit;
 }
 
