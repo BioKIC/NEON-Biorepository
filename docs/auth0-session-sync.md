@@ -8,9 +8,10 @@ share the Auth0 session through the same issuer hostname.
 - Interactive sign-in uses the authorization-code flow without `prompt=login`.
   An existing Auth0 session therefore completes without another credential
   prompt.
-- The Biorepository performs a hidden `prompt=none` check at most once per
-  minute. A successful check creates the local Symbiota/PHP session. A
-  `login_required` response clears a stale local session.
+- The Biorepository performs a top-level `prompt=none` round trip when its
+  local Auth0 check is due. A successful check creates the local Symbiota/PHP
+  session and returns to the original page. A `login_required` response returns
+  anonymously and clears a stale local session.
 - Interactive sign-out clears the local session before redirecting through the
   Auth0 `/v2/logout` endpoint.
 - `profile/logout.php` also accepts and verifies an OIDC back-channel
@@ -38,8 +39,9 @@ still share tenant SSO.
 
 ## Smoke tests
 
-1. Log in to the main NEON site, then open the Biorepository. The page should
-   refresh once and show the local account as signed in.
+1. Log in to the main NEON site, then open the Biorepository. After a short
+   redirect round trip, the original page should show the local account as
+   signed in.
 2. Start signed out everywhere and open the Biorepository. It should remain
    anonymous without displaying Universal Login.
 3. Click Biorepository **Sign In** while signed out. Universal Login should be
