@@ -40,7 +40,79 @@ if ($SYMB_UID) {
 		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
 	); ?>;
 </script>
-
+<style>
+	.MuiButton-root {
+			position: relative;
+	}
+	
+	.MuiButton-root .tooltip {
+			position: absolute;
+			top: calc(100% + 6px);
+			left: 0;
+	
+			width: max-content;
+			max-width: min(16rem, calc(100vw - 24px));
+			padding: 6px 8px;
+	
+			background: #f3f4f6;
+			color: #000;
+			border: 1px solid #000;
+	
+			font-size: 0.75rem;
+			font-weight: 400;
+			line-height: 1.35;
+			text-align: left;
+			text-transform: none;
+			white-space: normal;
+	
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+	
+			transition: opacity 0.15s ease, visibility 0s linear 0.15s;
+			z-index: 1000;
+	}
+	
+	.MuiButton-root:hover .tooltip {
+			opacity: 1;
+			visibility: visible;
+			transition-delay: 0.2s;
+	}
+	
+	.copy-label {
+			position: relative;
+	}
+	
+	.copy-state,
+	.copied-state {
+			display: inline-flex;
+			align-items: center;
+			transition: opacity 0.2s ease, transform 0.2s ease;
+	}
+	
+	.copied-state {
+			position: absolute;
+			left: 50%;
+			transform: translateX(-50%) translateY(4px);
+			opacity: 0;
+			white-space: nowrap;
+	}
+	
+	.copy-state {
+			opacity: 1;
+			transform: translateY(0);
+	}
+	
+	#copyButton.copied .copy-state {
+			opacity: 0;
+			transform: translateY(-4px);
+	}
+	
+	#copyButton.copied .copied-state {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0);
+	}
+</style>
 <?php
 $collData = $collManager->getCollectionMetadata();
 
@@ -73,16 +145,23 @@ $linkedCollections = $collManager->getLinkedCollections();
 			}
 			return false;
 		}
-
-		function copyCitation() {
-			const citationText = document.getElementById("citation").innerText;
-			const tempTextarea = document.createElement("textarea");
-			tempTextarea.value = citationText;
-			document.body.appendChild(tempTextarea);
-			tempTextarea.select();
-			document.execCommand("copy");
-			document.body.removeChild(tempTextarea);
-
+		
+		async function copyCitation() {
+				const citationText = document.getElementById("citation").innerText;
+				const button = document.getElementById("copyButton");
+		
+				try {
+						await navigator.clipboard.writeText(citationText);
+		
+						button.classList.add("copied");
+		
+						setTimeout(() => {
+								button.classList.remove("copied");
+						}, 1500);
+		
+				} catch (err) {
+						console.error("Failed to copy citation:", err);
+				}
 		}
 
 		<?php
@@ -111,84 +190,69 @@ $linkedCollections = $collManager->getLinkedCollections();
 			<?php
 		}
 		?>
+		
+		function getCitationData() {
+			return JSON.parse(document.querySelector('#citation [data-neon-citation]').dataset.neonCitation);
+		}
+
+		function escapeBibtex(value) {
+			const escapes = {
+				'\\': '\\textbackslash{}', '{': '\\{', '}': '\\}',
+				'&': '\\&', '%': '\\%', '$': '\\$', '#': '\\#', '_': '\\_',
+				'~': '\\textasciitilde{}', '^': '\\textasciicircum{}'
+			};
+			return String(value).replace(/[\\{}&%$#_~^]/g, character => escapes[character]);
+		}
+
+		function downloadCitation(content, extension, mimeType, citation) {
+			const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `NEON-${citation.title.replace(/[^a-zA-Z0-9]+/g, '-')}-${citation.accessDate}.${extension}`;
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+			// Allow the browser to start consuming the download before releasing it.
+			setTimeout(() => URL.revokeObjectURL(url), 1000);
+		}
 
 		function downloadBib() {
-		   const citationText = document.getElementById('citation').innerText;
-
-		   const citationRegex = /(.+?)\s\((\d{4})\)\.\s(?:NEON Biorepository\s)?(.+?)\.\sOccurrence dataset\s(.+?)\saccessed\svia\sthe\s(.+?),\s(.+?)\son\s(\d{4}-\d{2}-\d{2})\./;
-		   const match = citationText.match(citationRegex);
-
-		   if (match) {
-			   const author = match[1];
-			   const year = match[2];
-			   const title = match[3];
-			   const doi = match[4];
-			   const portalName = match[5];
-			   const portalUrl = match[6];
-			   const accessDate = match[7];
-
-			   const bibtexEntry = `
-@misc{${title.toLowerCase().replace(/\s+/g, '')}${accessDate},
-	doi = {${doi}},
-	author = {${author}},
-	language = {en},
-	title = {${title}},
-	publisher = {National Ecological Observatory Network (NEON)},
-	year = {${year}},
-	note = {Accessed via ${portalName}, \\url{${portalUrl}}, on ${accessDate}},
-	copyright = {Creative Commons Zero v1.0 Universal}
-}
-			   `.trim();
-
-			   const blob = new Blob([bibtexEntry], { type: 'text/plain' });
-			   const link = document.createElement('a');
-			   link.href = URL.createObjectURL(blob);
-			   link.download = `NEON-${title.replace(/[^a-zA-Z0-9]/g, '-')}-${accessDate}.bib`;
-			   document.body.appendChild(link);
-			   link.click();
-			   document.body.removeChild(link);
-		   }
-        }
+			const citation = getCitationData();
+			const citationKey = citation.collectionCode.replace(/[^a-zA-Z0-9._-]/g, '') || ('NEON' + citation.collectionId);
+			const bibtexEntry = `@misc{${citationKey}/provisional,
+    doi = {},
+    url = {${escapeBibtex(citation.url)}},
+    author = {{${escapeBibtex(citation.author)}}},
+    language = {en},
+    title = {{${escapeBibtex(citation.title)}}},
+    publisher = {National Ecological Observatory Network (NEON)},
+    note = {${escapeBibtex(citation.note)}},
+    urldate = {${citation.accessDate}},
+    copyright = {${escapeBibtex(citation.license + ' (' + citation.licenseUrl + ')')}}
+}`;
+			downloadCitation(bibtexEntry, 'bib', 'application/x-bibtex', citation);
+		}
 
 		function downloadRis() {
-		   const citationText = document.getElementById('citation').innerText;
-		   const abstractText = document.querySelector('#fulldescription-container p').innerText;
-
-		   const citationRegex = /(.+?)\s\((\d{4})\)\.\s(?:NEON Biorepository\s)?(.+?)\.\sOccurrence dataset\s(.+?)\saccessed\svia\sthe\s(.+?),\s(.+?)\son\s(\d{4}-\d{2}-\d{2})\./;
-		   const match = citationText.match(citationRegex);
-
-		   if (match) {
-			   const author = match[1];
-			   const year = match[2];
-			   const title = match[3];
-			   const doi = match[4];
-			   const portalName = match[5];
-			   const portalUrl = match[6];
-			   const accessDate = match[7];
-
-				const risEntry = `
-TY  - DATA
-T1  - ${title}
-AU  - ${author}
-DO  - ${doi}
-AB  - ${abstractText}
-PY  - ${year}
-PB  - National Ecological Observatory Network (NEON)
-N1  - Accessed via ${portalName}, ${portalUrl}
-LA  - en
-DA  - ${accessDate}
-ER  -
-				`.trim();
-
-			   const blob = new Blob([risEntry], { type: 'text/plain' });
-			   const link = document.createElement('a');
-			   link.href = URL.createObjectURL(blob);
-			   link.download = `NEON-${title.replace(/[^a-zA-Z0-9]/g, '-')}-${accessDate}.ris`;
-			   document.body.appendChild(link);
-			   link.click();
-			   document.body.removeChild(link);
-		   }
-        }
+			const citation = getCitationData();
+			const singleLine = value => String(value).replace(/[\r\n]+/g, ' ');
+			const description = document.querySelector('#fulldescription-container p');
+			const lines = [
+				'TY  - DATA',
+				'T1  - ' + singleLine(citation.title),
+				'AU  - ' + singleLine(citation.author),
+				'DO  -',
+				'UR  - ' + singleLine(citation.url),
+				'PB  - NEON (National Ecological Observatory Network) Biorepository',
+				'Y2  - ' + citation.accessDate,
+				'LA  - en',
+				'N1  - ' + singleLine(citation.note)
+			];
+			if (description && description.innerText.trim()) lines.push('AB  - ' + singleLine(description.innerText));
+			lines.push('ER  -');
+			downloadCitation(lines.join('\r\n') + '\r\n', 'ris', 'application/x-research-info-systems', citation);
+		}
 
 		document.addEventListener("DOMContentLoaded", function () {
 			// Show tooltip
@@ -743,35 +807,76 @@ ER  -
 						<h2 class="text-xl font-semibold mb-2">Citation</h2>
 						<p style="padding:16px"><strong>Please use the citation below when referencing this sample type. This citation is required for both data-only and physical sample use. Publications involving physical samples must also include the additional specimen citation requirements. See <a href="<?php echo $CLIENT_ROOT . '/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for full guidance.</strong></p>
 						<?php
-							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;"">
+							echo '<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;">
 							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">';
 							include($SERVER_ROOT . '/includes/citationneoncollection.php');
 							echo '</div>';
 						?>
 							<div class="flex space-x-2">
-								<button id="copyButton" data-tooltip-id="tooltip-copy"
-								  onclick="copyCitation()"
-								  class="Mui tooltip-button bg-white-300 text-[#0073cf] py-2 px-4 rounded-[2px] inline-flex items-center border-2 border-[#0073cf] font-[600] leading-[1.75] tracking-[0.06em]">
-								  <i class="fas fa-copy mr-2"></i>
-								  <span>COPY</span>
-								  <span id="tooltip-copy" style="display:none; width:20rem; transform: translate(-15px, 65px);"
-									class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base font-normal">
-									Click to copy the above plain text citation to the clipboard
-								  </span>
+								<button id="copyButton"
+												data-tooltip-id="tooltip-copy"
+												onclick="copyCitation()"
+												class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
+												tabindex="0"
+												type="button">
+								
+										<span class="MuiButton-label copy-label">
+												<span class="copy-state">
+														<span class="MuiButton-startIcon MuiButton-iconSizeSmall">
+																<i class="fas fa-copy"></i>
+														</span>
+														COPY
+												</span>
+										
+												<span class="copied-state">
+														<span class="MuiButton-startIcon MuiButton-iconSizeSmall">
+																<i class="fas fa-check"></i>
+														</span>
+														COPIED!
+												</span>
+										</span>
+								
+										<span class="MuiTouchRipple-root"></span>
+								
+										<span class="tooltip">
+												Click to copy the above plain text citation to the clipboard
+										</span>
 								</button>
-								<button id="bibButton" data-tooltip-id="tooltip-bib" onclick="downloadBib()" class="Mui tooltip-button bg-white-300 text-[#0073cf] py-2 px-4 rounded-[2px] inline-flex items-center border-2 border-[#0073cf] font-[600] leading-[1.75] tracking-[0.06em]">
-									<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
-									<span>DOWNLOAD (BIBTEX)</span>
-									<span id="tooltip-bib" style="display:none; width:20rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base font-normal">
-										Click to download the citation as a file in BibTex format
-									</span>
+								<button id="bibButton"
+												data-tooltip-id="tooltip-bib"
+												onclick="downloadBib()"
+												class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
+												tabindex="0"
+												type="button">
+								
+										<span class="MuiButton-label">
+												<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
+												DOWNLOAD (BIBTEX)
+										</span>
+								
+										<span class="MuiTouchRipple-root"></span>
+								
+										<span class="tooltip">
+												Click to download the citation as a file in BibTex format
+										</span>
 								</button>
-								<button id="risButton" data-tooltip-id="tooltip-ris" onclick="downloadRis()" class="Mui tooltip-button bg-white-300 text-[#0073cf] py-2 px-4 rounded-[2px] inline-flex items-center border-2 border-[#0073cf] font-[600] leading-[1.75] tracking-[0.06em]">
-									<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
-									<span>DOWNLOAD (RIS)</span>
-									<span id="tooltip-ris" style="display:none; width:25rem; transform: translate(-15px, 65px);" class="tooltip absolute bg-gray-100 text-black border border-black p-2 rounded-none text-base font-normal">
-										Click to download the citation as a file in Research Information Systems (RIS) format
-									</span>
+								<button id="risButton"
+												data-tooltip-id="tooltip-ris"
+												onclick="downloadRis()"
+												class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
+												tabindex="0"
+												type="button">
+								
+										<span class="MuiButton-label">
+												<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
+												DOWNLOAD (RIS)
+										</span>
+								
+										<span class="MuiTouchRipple-root"></span>
+								
+										<span class="tooltip">
+												Click to download the citation as a file in Research Information Systems (RIS) format
+										</span>
 								</button>
 							</div>
 						</div>

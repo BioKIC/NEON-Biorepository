@@ -11,7 +11,7 @@ $utilities = new Utilities();
 $inquiriesArr = $reportManager->filterSearchInquiries($_POST);
 $ids = array_column($inquiriesArr, 'requestid');
 $idsString = implode(',', $ids ?: []);
-$headerArr = ['id','researcher','inquiry date','title','status','samples','follow up type','follow up date','assignee'];
+$headerArr = ['id','researcher','manager','inquiry date','title','status','samples','follow up type','follow up date','assignee'];
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
@@ -40,7 +40,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
         border-collapse: collapse;
         width: 100%;
         margin-top: 1em;
-        font-size: 0.95em;
+        font-size: 0.5em;
         background-color: #fff;
     }
 
@@ -74,11 +74,11 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
     }
 
     .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
     }
 
     .toolbar form {

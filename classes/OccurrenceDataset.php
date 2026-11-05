@@ -136,6 +136,33 @@ class OccurrenceDataset{
 		return $retArr;
 	}
 
+    // Count distinct specimens across the same projects shown on the public list.
+    public function getProjectSpecimenCount($datasetIds) {
+        $datasetIds = array_values(array_unique(array_filter(array_map('intval', $datasetIds), function ($id) {
+            return $id > 0;
+        })));
+        if (!$datasetIds) return 0;
+
+        $sql = 'SELECT COUNT(DISTINCT o.occid) AS specimenCount
+            FROM omoccurdatasetlink odl
+            INNER JOIN omoccurrences o ON odl.occid = o.occid
+            INNER JOIN omcollections c ON o.collid = c.collid
+            WHERE odl.datasetid IN (' . implode(',', $datasetIds) . ')';
+        try {
+            $rs = $this->conn->query($sql);
+            if (!$rs) {
+                error_log('Unable to count public project specimens.');
+                return null;
+            }
+            $row = $rs->fetch_assoc();
+            $rs->free();
+            return $row ? (int)$row['specimenCount'] : null;
+        } catch (\Throwable $e) {
+            error_log('Unable to count public project specimens.');
+            return null;
+        }
+  }
+
 	public function getPublicProjects() {
 		$retArr = array();
 
