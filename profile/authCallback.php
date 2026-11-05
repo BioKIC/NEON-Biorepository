@@ -35,6 +35,16 @@ if (isset($SHOULD_VERIFY_PEERS)) {
 
 if (!empty($_REQUEST['error'])) {
 	$errorCode = is_string($_REQUEST['error']) ? $_REQUEST['error'] : 'authentication_error';
+	$stateValid = neonAuthValidateAndClearErrorState($_REQUEST['state'] ?? '');
+	if (!$stateValid) {
+		error_log('OIDC error callback rejected because its state was invalid');
+		if ($isSilentAuth) {
+			neonAuthSendSyncResult($wasAuthenticated, false);
+		}
+		neonAuthClearFlowState();
+		header('HTTP/1.1 400 Bad Request');
+		exit;
+	}
 	if ($isSilentAuth) {
 		$changed = false;
 		$authenticated = $wasAuthenticated;
