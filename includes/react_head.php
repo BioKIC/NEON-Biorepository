@@ -22,12 +22,18 @@
 })();
 </script>
 <?php endif; ?>
+<?php
+$lastNeonAuthSync = (int) ($_SESSION['NEON_AUTH_LAST_SYNC'] ?? 0);
+$shouldNeonAuthSync = (time() - $lastNeonAuthSync) >= 60;
+?>
 <script>
   var TURBOPACK_CHUNK_BASE_PATH =
     <?php echo json_encode(rtrim($CLIENT_ROOT, '/') . '/neon-react/core-components/_next/'); ?>;
   window.NEON_CLIENT_ROOT = <?php echo json_encode($CLIENT_ROOT); ?>;
   window.NEON_BIOREPO_AUTH_SYNC_URL =
-    <?php echo json_encode(rtrim($CLIENT_ROOT, '/') . '/profile/openIdAuth.php?silent=1'); ?>;
+    <?php echo $shouldNeonAuthSync
+      ? json_encode(rtrim($CLIENT_ROOT, '/') . '/profile/openIdAuth.php?silent=1')
+      : 'null'; ?>;
 </script>
 <script src="<?php echo $CLIENT_ROOT; ?>/js/symb/neonAuthSync.js?ver=20261104-1"></script>
 <!-- NEON REACT ASSETS START -->
