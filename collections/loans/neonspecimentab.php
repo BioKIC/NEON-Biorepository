@@ -102,11 +102,10 @@ $specList = $loanManager->getSpecimenList($loanId, $sortTag);
 <link rel="stylesheet" href="../../css/loan-specimens.css" />
 <div id="outloanspecdiv">
 	<div class="loan-heading">
-		<h2>Loan specimens</h2>
+		<h2>Specimens</h2>
 		<a class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeMedium MuiButton-colorPrimary" href="outgoing.php?formsubmit=exportSpecimenList&amp;loanid=<?= $loanId ?>&amp;collid=<?= $collid ?>">Export specimens</a>
 	</div>
 	<section class="loan-entry">
-		<h3>Manage loan specimens</h3>
 		<form id="loan-entry-form" name="batchaddform" action="outgoing.php" method="post">
             <div class="loan-fields">
 				<label for="loan-process-mode">Action

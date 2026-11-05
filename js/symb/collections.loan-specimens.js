@@ -41,7 +41,7 @@
 		const removing = this.dataset.action === 'remove';
 		delete this.dataset.action;
 		if (!submitter && !removing) { event.preventDefault(); return; }
-		if (removing && !window.confirm('Remove ' + ids.length + ' specimens matching the entered identifiers from this loan? Specimen records will be kept.')) { event.preventDefault(); return; }
+		if (removing && !window.confirm('Remove ' + ids.length + ' specimens matching the entered identifiers from this loan?')) { event.preventDefault(); return; }
 		const inputs = root.find('#loan-action-inputs').empty();
 		if (removing) $('<input>', {type: 'hidden', name: 'formsubmit', value: 'deleteSpecimens'}).appendTo(inputs);
 		ids.forEach(function (id) { $('<input>', {type: 'hidden', name: 'occid[]', value: id}).appendTo(inputs); });

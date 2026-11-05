@@ -244,7 +244,7 @@ $specimenTotal = $loanManager->getSpecimenTotal($loanId);
 							. '&loanid=' . $loanId
 							. '&sortTag=' . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
 							. '&sampletype=' . $sampletype ?>">
-							<span><?= $LANG['SPECIMENS'] ?></span>
+							<span>Specimens</span>
 						</a>
 						<!-- #end neon edits -->
 					</li>
