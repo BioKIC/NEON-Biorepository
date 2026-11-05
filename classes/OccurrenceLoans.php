@@ -1342,5 +1342,7 @@ class OccurrenceLoans extends Manager{
 		return $this->specimenSortArr;
 	}
 }
-?>
+#start neon edits
+# Closing PHP tag intentionally omitted to prevent accidental output before headers.
+#end neon edits
 
