@@ -22,10 +22,42 @@
 })();
 </script>
 <?php endif; ?>
+<?php
+$lastNeonAuthSync = (int) ($_SESSION['NEON_AUTH_LAST_SYNC'] ?? 0);
+$neonAuthSyncInterval = !empty($SYMB_UID) ? 900 : 60;
+$isNeonAuthSyncEnabled = empty($NEON_DEV_MODE) || $NEON_DEV_MODE == 1;
+$shouldNeonAuthSync = $isNeonAuthSyncEnabled
+    && (time() - $lastNeonAuthSync) >= $neonAuthSyncInterval;
+?>
 <script>
   var TURBOPACK_CHUNK_BASE_PATH =
     <?php echo json_encode(rtrim($CLIENT_ROOT, '/') . '/neon-react/core-components/_next/'); ?>;
   window.NEON_CLIENT_ROOT = <?php echo json_encode($CLIENT_ROOT); ?>;
+  window.NEON_BIOREPO_AUTH_SYNC_URL =
+    <?php echo $shouldNeonAuthSync
+      ? json_encode(rtrim($CLIENT_ROOT, '/') . '/profile/openIdAuth.php?silent=1')
+      : 'null'; ?>;
+
+  (() => {
+    const syncUrl = window.NEON_BIOREPO_AUTH_SYNC_URL;
+    if (!syncUrl) return;
+
+    const guardKey = 'neon-biorepo-auth-sync-attempt';
+    const now = Date.now();
+
+    try {
+      const previousAttempt = Number(window.sessionStorage.getItem(guardKey) || 0);
+      if (previousAttempt && now - previousAttempt < 60000) return;
+      window.sessionStorage.setItem(guardKey, String(now));
+    } catch (error) {
+      // The server-side timestamp still prevents loops if storage is unavailable.
+    }
+
+    const separator = syncUrl.includes('?') ? '&' : '?';
+    window.location.replace(
+      syncUrl + separator + 'refurl=' + encodeURIComponent(window.location.href)
+    );
+  })();
 </script>
 <!-- NEON REACT ASSETS START -->
 <!-- React last updated: 11/4/2026, 9:48:24 PM -->
@@ -324,7 +356,9 @@ if ($isNeonEditor) {
 
         button.style.setProperty('font-family', '"Inter", Helvetica, Arial, sans-serif', 'important');
         button.style.setProperty('background-color', 'white', 'important');
-        button.addEventListener('click', () => { window.location.href = url; });
+        button.addEventListener('click', () => {
+            window.location.href = url;
+        });
         return button;
     };
 
