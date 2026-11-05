@@ -96,6 +96,8 @@ usort($pArr, function ($a, $b) {
                 align-items: baseline;
                 justify-content: space-between;
                 gap: 12px 24px;
+                border-top: 2px dotted #8b9bb3;
+                padding-top: 5px;
             }
             #project-overview .overview-note {
                 margin: 0;
