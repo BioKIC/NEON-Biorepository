@@ -201,18 +201,15 @@
     ],
   "/neon/datasets/neonpubliclist.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Biorepository Research Projects"}
     ],
   "/neon/datasets/neonpublic.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Biorepository Research Projects", "href": "neonpubliclist.php" },
     { "name": "Research Project" }
     ],
   "/neon/datasets/neondatasetmanager.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
-    { "name": "Requesting and Using Samples", "href": "https://www.neonscience.org/requesting-and-using-samples" },
     { "name": "Biorepository Research Projects", "href": "../../neon/datasets/neonpubliclist.php" },
     { "name": "Research Project", "href": "../../neon/datasets/neonpublic.php?datasetid=#" },
     { "name": "Manage Project" }

@@ -40,7 +40,7 @@ usort($pArr, function ($a, $b) {
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
 	<head>
-		<title>Published Sample Research Datasets</title>
+		<title>Biorepository Research Projects</title>
 		<?php
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
@@ -153,7 +153,7 @@ usort($pArr, function ($a, $b) {
 	<body>
 		<!-- This is inner text! -->
 		<div role="main" id="innertext">
-			<h3 class="MuiTypography-root MuiTypography-h3" style="font-weight: 300;">NEON Biorepository Research Projects</h3>
+			<h3 class="MuiTypography-root MuiTypography-h3" style="font-weight: 300;">Biorepository Research Projects</h3>
             <p class="MuiTypography-root MuiTypography-body1" style="margin:30px 0;">
                 Each project listed below highlights the breadth of scientific research supported by samples and specimens from the
                 <a
