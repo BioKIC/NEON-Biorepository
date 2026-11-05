@@ -58,12 +58,18 @@
             "misc/sampleguidelines.php",
             "misc/cite.php",
             "misc/samplepolicy.php",
-            "misc/samplerequests.php",
+            "misc/samplerequests.php"
+            ]
+        },
+        {
+          "name": "Biorepository Research Projects",
+          "hash": "https://biorepo.neonscience.org/portal/neon/datasets/neonpubliclist.php",
+          "match": [
             "neon/datasets/neonpublic.php",
             "neon/datasets/neonpubliclist.php",
             "neon/datasets/neondatasetmanager.php"
             ]
-        }
+        },
     ]
   }
 }
