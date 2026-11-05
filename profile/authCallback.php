@@ -17,7 +17,10 @@ $profManager = new OpenIdProfileManager();
 $AUTH_PROVIDER = $AUTH_PROVIDER ?? 'oid';
 $isSilentAuth = ($_SESSION['NEON_AUTH_FLOW_MODE'] ?? '') === 'silent';
 $wasAuthenticated = !empty($_SESSION['NEON_AUTH_FLOW_WAS_AUTHENTICATED']);
-$returnUrl = neonAuthGetSafeReturnUrl($_SESSION['refurl'] ?? '', $CLIENT_ROOT);
+$returnUrl = neonAuthGetSafeReturnUrl(
+	$_SESSION['NEON_AUTH_RETURN_URL'] ?? ($_SESSION['refurl'] ?? ''),
+	$CLIENT_ROOT
+);
 
 $oidc = new OpenIDConnectClient(
 	$PROVIDER_URLS[$AUTH_PROVIDER],
@@ -39,21 +42,18 @@ if (!empty($_REQUEST['error'])) {
 	if (!$stateValid) {
 		error_log('OIDC error callback rejected because its state was invalid');
 		if ($isSilentAuth) {
-			neonAuthSendSyncResult($wasAuthenticated, false);
+			neonAuthFinishFlow($returnUrl, true);
 		}
 		neonAuthClearFlowState();
-		header('HTTP/1.1 400 Bad Request');
+		$_SESSION['last_message'] = $LANG['AUTHENTICATION_FAILED'] . ' <ERR/>';
+		header('Location: ' . $CLIENT_ROOT . '/profile/index.php');
 		exit;
 	}
 	if ($isSilentAuth) {
-		$changed = false;
-		$authenticated = $wasAuthenticated;
 		if ($errorCode === 'login_required' && $wasAuthenticated) {
 			neonAuthClearLocalSession($profManager);
-			$authenticated = false;
-			$changed = true;
 		}
-		neonAuthSendSyncResult($authenticated, $changed);
+		neonAuthFinishFlow($returnUrl, true);
 	}
 
 	neonAuthClearFlowState();
@@ -64,9 +64,11 @@ if (!empty($_REQUEST['error'])) {
 
 if (empty($_REQUEST['code'])) {
 	if ($isSilentAuth) {
-		neonAuthSendSyncResult($wasAuthenticated, false);
+		neonAuthFinishFlow($returnUrl, true);
 	}
-	header('HTTP/1.1 400 Bad Request');
+	neonAuthClearFlowState();
+	$_SESSION['last_message'] = $LANG['AUTHENTICATION_FAILED'] . ' <ERR/>';
+	header('Location: ' . $CLIENT_ROOT . '/profile/index.php');
 	exit;
 }
 
@@ -75,10 +77,10 @@ try {
 	$claims = $oidc->getVerifiedClaims();
 	$sid = isset($claims->sid) ? $claims->sid : '';
 }
-catch (Exception $ex) {
+catch (Throwable $ex) {
 	if ($isSilentAuth) {
 		error_log('Silent OIDC authentication failed: ' . $ex->getMessage());
-		neonAuthSendSyncResult($wasAuthenticated, false);
+		neonAuthFinishFlow($returnUrl, true);
 	}
 	neonAuthClearFlowState();
 	$_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' ' . $ex->getMessage() . ' <ERR/>';
@@ -88,7 +90,7 @@ catch (Exception $ex) {
 
 if (!$status) {
 	if ($isSilentAuth) {
-		neonAuthSendSyncResult($wasAuthenticated, false);
+		neonAuthFinishFlow($returnUrl, true);
 	}
 	neonAuthClearFlowState();
 	$_SESSION['last_message'] = $LANG['AUTHENTICATION_FAILED'] . ' <ERR/>';
@@ -150,10 +152,10 @@ else {
 				$oidc->requestUserInfoByID($sub, 'user_metadata.orcid')
 			);
 		}
-		catch (Exception $ex) {
+		catch (Throwable $ex) {
 			if ($isSilentAuth) {
 				error_log('Silent OIDC user linking failed: ' . $ex->getMessage());
-				neonAuthSendSyncResult($wasAuthenticated, false);
+				neonAuthFinishFlow($returnUrl, true);
 			}
 			neonAuthClearFlowState();
 			$_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' ' . $ex->getMessage();
@@ -169,17 +171,11 @@ else {
 }
 
 if ($localAuthenticated) {
-	if ($isSilentAuth) {
-		neonAuthSendSyncResult(true, !$wasAuthenticated);
-	}
-	neonAuthClearFlowState();
-	unset($_SESSION['refurl']);
-	header('Location: ' . $returnUrl);
-	exit;
+	neonAuthFinishFlow($returnUrl, $isSilentAuth);
 }
 
 if ($isSilentAuth) {
-	neonAuthSendSyncResult($wasAuthenticated, false);
+	neonAuthFinishFlow($returnUrl, true);
 }
 
 neonAuthClearFlowState();
