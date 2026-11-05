@@ -496,6 +496,9 @@ class OccurrenceLoans extends Manager{
 					}
 					if($r->othercatalognumbers){
 						$retArr[$r->occid]['othercatalognumbers'][] = $r->othercatalognumbers;
+						#start neon edits
+						$retArr[$r->occid]['identifiermatches'][] = $r->othercatalognumbers;
+						#end neon edits
 						$this->idTagArr['2-othercatalognumbers'] = 'Other Catalog Numbers';
 					}
 					$retArr[$r->occid]['sciname'] = $r->sciname;
@@ -527,6 +530,9 @@ class OccurrenceLoans extends Manager{
 						}
 					}
 					$retArr[$r->occid]['othercatalognumbers'][] = $idValue;
+					#start neon edits
+					$retArr[$r->occid]['identifiermatches'][] = $r->identifierValue;
+					#end neon edits
 					if(!$idTag) $idTag = 'otherCatalogNumbers';
 					$this->idTagArr['3-'.strtolower($idTag)] = $idTag;
 					if($sortTag && $sortTag != 'catalognumber'){
@@ -616,10 +622,12 @@ class OccurrenceLoans extends Manager{
 	 * This method is used by the ajax script processLoanSpecimen.php
 	 * return: 0 = failed due to no records matching catalog number, 1 = success, 2 = failed due to multiple records found with catalog number, 3 = failed to link
 	 */
-	public function linkSpecimen($loanid, $catNum, $target){
+	#start neon edits
+	public function linkSpecimen($loanid, $catNum, $target, $sampleType = 0){
 		//This method is used by the ajax script processLoanSpecimen.php
 		if(is_numeric($loanid)){
 			$occArr = $this->getOccid($catNum, $target);
+			if($sampleType) $occArr = $this->filterBySampleType($occArr, $sampleType);
 			if(!$occArr) return 0;
 			elseif(count($occArr) > 1) return 2;
 			else{
@@ -629,14 +637,17 @@ class OccurrenceLoans extends Manager{
 		}
 		return 0;
 	}
+	#end neon edits
 
 	/*
 	 * This method is used by the ajax script processLoanSpecimen.php
 	 * return: 0 = failed due to no records matching catalog number, 1 = success, 2 = success, but multiple records check, 3 = failed to update record (not in loan or already checked-in)
 	 */
-	public function checkinSpecimen($loanid, $catNum, $target){
+	#start neon edits
+	public function checkinSpecimen($loanid, $catNum, $target, $sampleType = 0){
 		if(is_numeric($loanid)){
 			$occArr = $this->getOccid($catNum, $target);
+			if($sampleType) $occArr = $this->filterBySampleType($occArr, $sampleType);
 			if(!$occArr) return 0;
 			else{
 				if($status = $this->batchCheckinSpecimens($occArr, $loanid)){
@@ -648,6 +659,40 @@ class OccurrenceLoans extends Manager{
 		}
 		return 0;
 	}
+	#end neon edits
+
+	#start neon edits
+	/*
+	 * Removes one specimen matching a scanned identifier from a loan.
+	 * return: 0 = no identifier match, 1 = removed, 2 = multiple matches in this loan, 3 = not in loan or removal failed
+	 */
+	public function removeSpecimen($loanid, $catNum, $target, $sampleType = 0){
+		if(is_numeric($loanid)){
+			$occArr = $this->getOccid($catNum, $target);
+			if($sampleType) $occArr = $this->filterBySampleType($occArr, $sampleType);
+			if(!$occArr) return 0;
+
+			$loanOccArr = array();
+			$occidStr = implode(',', array_map('intval', $occArr));
+			$sql = 'SELECT occid FROM omoccurloanslink WHERE loanid = ? AND occid IN('.$occidStr.')';
+			if($stmt = $this->conn->prepare($sql)){
+				$stmt->bind_param('i', $loanid);
+				if($stmt->execute()){
+					if($rs = $stmt->get_result()){
+						while($r = $rs->fetch_object()) $loanOccArr[] = $r->occid;
+						$rs->free();
+					}
+				}
+				$stmt->close();
+			}
+			if(!$loanOccArr) return 3;
+			if(count($loanOccArr) > 1) return 2;
+			if($this->deleteSpecimens($loanOccArr, $loanid)) return 1;
+			return 3;
+		}
+		return 0;
+	}
+	#end neon edits
 
 	public function batchProcessSpecimens($postArr){
 		$cnt = 0;
@@ -687,7 +732,9 @@ class OccurrenceLoans extends Manager{
 								}
 							}
 							elseif($mode == 'checkin'){
-								if($status = $this->batchCheckinSpecimens($occArr, $postArr['loanid'])) $cnt++;
+								#start neon edits
+								if($status = $this->batchCheckinSpecimens($occArr, $postArr['loanid'])) $cnt += $status;
+								#end neon edits
 								elseif($status === 0) $this->warningArr['zeroMatch'][] = $catStr;
 								else $this->warningArr['error'][] = $this->errorMessage;
 							}
@@ -700,28 +747,30 @@ class OccurrenceLoans extends Manager{
 		return $cnt;
 	}
 
+	#start neon edits
 	private function getOccid($catNum, $method){
 		$occArr = array();
 		if(!$method || !in_array($method,array('allid','catnum','other'))) $method = 'allid';
-		$sql = 'SELECT DISTINCT o.occid FROM omoccurrences o ';
-		$sqlWhere = '';
-		if($method == 'allid' || $method == 'other'){
-			$sql .= 'LEFT JOIN omoccuridentifiers i ON o.occid = i.occid ';
-			$catNum = $this->cleanInStr($catNum);
-			$sqlWhere = 'OR (o.othercatalognumbers = "'.$catNum.'") OR (i.identifierValue = "'.$catNum.'") ';
+		$catNum = $this->cleanInStr($catNum);
+		$sqlParts = array();
+		if($method == 'allid' || $method == 'catnum'){
+			$sqlParts[] = 'SELECT occid FROM omoccurrences WHERE catalognumber = "'.$catNum.'"';
 		}
-		if($method == 'allid' || $method == 'catnum') $sqlWhere .= 'OR (o.catalognumber = "'.$this->cleanInStr($catNum).'") ';
-		if($sqlWhere){
-			$sql .= 'WHERE ('.substr($sqlWhere,2).') ';
-			//if($this->collid) $sql .= 'AND (o.collid = '.$this->collid.')';
-			$rs = $this->conn->query($sql);
-			while($r = $rs->fetch_object()) {
-				$occArr[] = $r->occid;
+		if($method == 'allid' || $method == 'other'){
+			$sqlParts[] = 'SELECT occid FROM omoccurrences WHERE othercatalognumbers = "'.$catNum.'"';
+			$sqlParts[] = 'SELECT occid FROM omoccuridentifiers WHERE identifierValue = "'.$catNum.'"';
+		}
+		if($sqlParts){
+			$sql = implode(' UNION ', $sqlParts);
+			if($rs = $this->conn->query($sql)){
+				while($r = $rs->fetch_object()) $occArr[] = $r->occid;
+				$rs->free();
 			}
-			$rs->free();
+			else $this->errorMessage = $this->conn->error;
 		}
 		return $occArr;
 	}
+	#end neon edits
 
 	private function addLoanSpecimen($loanid,$occid){
 		$status = false;

@@ -124,6 +124,9 @@ class OccurrenceEditorDeterminations extends OccurrenceEditorManager{
 		$isCurrent = 0;
 		if(!array_key_exists('makecurrent',$detArr)) $detArr['makecurrent'] = 0;
 		if(!array_key_exists('printqueue',$detArr)) $detArr['printqueue'] = 0;
+		#start neon edits
+		if(!array_key_exists('taxonremarks',$detArr)) $detArr['taxonremarks'] = '';
+		#end neon edits
 		if($detArr['makecurrent'] == 1 && $isEditor < 3){
 			$isCurrent = 1;
 		}
