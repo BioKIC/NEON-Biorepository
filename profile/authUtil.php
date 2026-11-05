@@ -98,6 +98,7 @@ function neonAuthSendSyncResult($authenticated, $changed)
 {
 	neonAuthClearFlowState();
 	unset($_SESSION['refurl']);
+	$_SESSION['NEON_AUTH_LAST_SYNC'] = time();
 
 	$payload = json_encode([
 		'type' => 'neon-biorepo-auth-sync',
