@@ -82,11 +82,13 @@ $searchVar .= '&comingFrom=' . $comingFrom;
 						<input name="searchvar" type="hidden" value="<?= $searchVar; ?>" />
 						<input name="dltype" type="hidden" value="specimen" />
 					</form>
+					<!-- NEON edit start - comment out copy url button
 					<div style="float:left">
 						<button class="icon-button" style="margin:5px;padding:5px;" onclick="copyUrl('<?= htmlspecialchars($comingFrom, ENT_QUOTES, 'UTF-8'); ?>')" title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>">
 							<svg xmlns="http://www.w3.org/2000/svg" style="width:1.3em;height:1.3em" alt="<?= $LANG['COPY_TO_CLIPBOARD'] ?>" height="24" viewBox="0 -960 960 960" width="24"> <path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></svg>
 						</button>
 					</div>
+					NEON edit end -->
 				</div>
 				<div id="sort-div" style="display:<?= ($sortField1?'block':'none') ?>">
 					<section class="fieldset-like" style="margin:0px">

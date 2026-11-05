@@ -245,6 +245,12 @@ ALTER TABLE `omexportoccurrences`
   ADD INDEX `IX_omexportoccur_initialTimestamp` (`initialTimestamp`);
 
 
+#NEON specific schema adjustment
+ALTER TABLE `omexportoccurrences` 
+  ADD COLUMN `sampleID` VARCHAR(75) NULL AFTER `collid`,
+  ADD COLUMN `sampleCode` VARCHAR(45) NULL AFTER `sampleID`;
+
+
 #Add update to omoccurdeterminations.dateLastModified tracked any update to the row
 ALTER TABLE omoccurdeterminations 
   MODIFY COLUMN dateLastModified timestamp DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP;

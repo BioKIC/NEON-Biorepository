@@ -21,20 +21,6 @@ class DwcArchiverOccurrence extends Manager{
 	}
 
 	public function getOccurrenceArr(){
-
-		if($this->schemaType === 'symbiota'){
-			$newFields = [];
-			foreach($this->occurrenceFieldArr['fields'] as $key => $val){
-				$newFields[$key] = $val;
-				if($key === 'catalogNumber'){
-					$newFields['sampleID'] = 'ids.sampleID';
-					$newFields['sampleCode'] = 'ids.sampleCode';
-				}
-			}
-			$this->occurrenceFieldArr['fields'] = $newFields;
-		}
-
-
 		if($this->schemaType == 'pensoft') $this->occurDefArr['fields']['Taxon_Local_ID'] = 'ctl.tid AS Taxon_Local_ID';
 		else $this->occurDefArr['fields']['id'] = 'o.occid';
 		$this->occurDefArr['terms']['institutionCode'] = 'http://rs.tdwg.org/dwc/terms/institutionCode';
@@ -52,9 +38,9 @@ class DwcArchiverOccurrence extends Manager{
 		$this->occurDefArr['terms']['catalogNumber'] = 'http://rs.tdwg.org/dwc/terms/catalogNumber';
 		$this->occurDefArr['fields']['catalogNumber'] = 'o.catalogNumber';
 		//NEON edit start
-		$this->occurDefArr['terms']['sampleID'] = 'https://symbiota.org/terms/sampleID';
+		$this->occurDefArr['terms']['sampleID'] = 'https://biorepo.neonscience.org/terms/sampleID';
 		$this->occurDefArr['fields']['sampleID'] = 'x.sampleID';
-		$this->occurDefArr['terms']['sampleCode'] = 'https://symbiota.org/terms/sampleCode';
+		$this->occurDefArr['terms']['sampleCode'] = 'https://biorepo.neonscience.org/terms/sampleCode';
 		$this->occurDefArr['fields']['sampleCode'] = 'x.sampleCode';
 		//NEON edit end
 		$this->occurDefArr['terms']['otherCatalogNumbers'] = 'http://rs.tdwg.org/dwc/terms/otherCatalogNumbers';

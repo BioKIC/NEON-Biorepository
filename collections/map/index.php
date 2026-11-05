@@ -2137,7 +2137,7 @@ $serverHost = GeneralUtil::getDomain();
 		</button>
 	</div>
 	-->
-	<div style="width:100%; max-width:max-content;" role="main" id="innertext" class="inntertext-tab pin-things-here inner-search">
+	<div style="width:100%; max-width:max-content;" role="main" class="inntertext-tab pin-things-here inner-search">
 		<div style="z-index:999;" id="error-msgs" class="errors"></div>
 		<?php
 		if($shouldUseMinimalMapHeader) include_once($SERVER_ROOT . '/includes/minimalheader.php');

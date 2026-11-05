@@ -670,67 +670,69 @@ class DwcArchiverCore extends Manager{
 		$status = false;
 		$archiveFile = '';
 
-		//NEON edit start
-		if(count($this->collArr) == 1 && strpos($this->targetPath,'/content/dwca') !== false){
-			//Only run alternative actions if full dataset is published to local dwc-a directory, which gets pushed to GBIF and other aggregators
-			$collid = key($this->collArr);
-
-			if($collid == 117){
-				$this->logOrEcho("Humboldt Tick Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
-
-				$githubUrl = 'https://raw.githubusercontent.com/BioKIC/NEONTickstoHumboldt/master/outputs/zipped/DwC-A.zip';
-				$archiveFile = $this->targetPath . 'NEON-TICC-H_DwC-A.zip';
-
-				$this->logOrEcho("Downloading archive from: $githubUrl\n");
-				$this->logOrEcho("Saving to: $archiveFile\n");
-
-				$data = file_get_contents($githubUrl);
-
-				if($data === false){
-					$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
-					return '';
-				}
-
-				if(file_put_contents($archiveFile, $data) === false){
-					$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
-					return '';
-				}
-
-				$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
-				$this->logOrEcho("\n-----------------------------------------------------\n");
-
-				return $archiveFile;
-			}
-			if($collid == 129){
-				$this->logOrEcho("Humboldt Bird Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
-
-				$githubUrl = 'https://github.com/BioKIC/NEONBirdstoHumboldt/raw/refs/heads/master/outputs/zipped/DwC-A.zip';
-				$archiveFile = $this->targetPath . 'NEON-BIRD-H_DwC-A.zip';
-
-				$this->logOrEcho("Downloading archive from: $githubUrl\n");
-				$this->logOrEcho("Saving to: $archiveFile\n");
-
-				$data = file_get_contents($githubUrl);
-
-				if($data === false){
-					$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
-					return '';
-				}
-
-				if(file_put_contents($archiveFile, $data) === false){
-					$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
-					return '';
-				}
-
-				$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
-				$this->logOrEcho("\n-----------------------------------------------------\n");
-
-				return $archiveFile;
-			}
-		}
-		//NEON edit end
-
 		if($fileName = $this->getFileName()){
+
+			//NEON edit start
+			if($this->collArr && count($this->collArr) == 1 && strpos($this->targetPath,'/content/dwca') !== false){
+				//Only run alternative actions if full dataset is published to local dwc-a directory, which gets pushed to GBIF and other aggregators
+				$collid = key($this->collArr);
+
+				if($collid == 117){
+					$this->logOrEcho("Humboldt Tick Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
+
+					$githubUrl = 'https://raw.githubusercontent.com/BioKIC/NEONTickstoHumboldt/master/outputs/zipped/DwC-A.zip';
+					$archiveFile = $this->targetPath . 'NEON-TICC-H_DwC-A.zip';
+
+					$this->logOrEcho("Downloading archive from: $githubUrl\n");
+					$this->logOrEcho("Saving to: $archiveFile\n");
+
+					$data = file_get_contents($githubUrl);
+
+					if($data === false){
+						$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
+						return '';
+					}
+
+					if(file_put_contents($archiveFile, $data) === false){
+						$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
+						return '';
+					}
+
+					$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
+					$this->logOrEcho("\n-----------------------------------------------------\n");
+
+					return $archiveFile;
+				}
+
+				if($collid == 129){
+					$this->logOrEcho("Humboldt Bird Dataset detected. Skipping local DwC-A creation and pulling archive from GitHub.\n");
+
+					$githubUrl = 'https://github.com/BioKIC/NEONBirdstoHumboldt/raw/refs/heads/master/outputs/zipped/DwC-A.zip';
+					$archiveFile = $this->targetPath . 'NEON-BIRD-H_DwC-A.zip';
+
+					$this->logOrEcho("Downloading archive from: $githubUrl\n");
+					$this->logOrEcho("Saving to: $archiveFile\n");
+
+					$data = file_get_contents($githubUrl);
+
+					if($data === false){
+						$this->logOrEcho("ERROR: Failed to download archive from GitHub\n");
+						return '';
+					}
+
+					if(file_put_contents($archiveFile, $data) === false){
+						$this->logOrEcho("ERROR: Failed to write archive to $archiveFile\n");
+						return '';
+					}
+
+					$this->logOrEcho("GitHub archive successfully downloaded and saved.\n");
+					$this->logOrEcho("\n-----------------------------------------------------\n");
+
+					return $archiveFile;
+				}
+			}
+			//NEON edit end
+
 			$this->logOrEcho('Creating DwC-A file: ' . $fileName . "\n");
 
 			if (!class_exists('ZipArchive')) {

@@ -156,7 +156,7 @@ class DwcArchiverMedia extends DwcArchiverBaseManager{
 							}
 							// NEON edits - start
 							//if (empty($r['UsageTerms'])) $r['UsageTerms'] = 'CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)';
-							if (empty($r['usageterms'])) $r['usageterms'] = 'CC BY-SA (Attribution-ShareAlike)';
+							if (empty($r['UsageTerms'])) $r['UsageTerms'] = 'CC BY-SA (Attribution-ShareAlike)';
 							// NEON edits - end
 						}
 						$r['providerManagedID'] = 'urn:uuid:' . $r['providerManagedID'];

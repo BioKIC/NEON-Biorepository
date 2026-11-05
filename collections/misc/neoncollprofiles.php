@@ -44,52 +44,52 @@ if ($SYMB_UID) {
 	.MuiButton-root {
 			position: relative;
 	}
-	
+
 	.MuiButton-root .tooltip {
 			position: absolute;
 			top: calc(100% + 6px);
 			left: 0;
-	
+
 			width: max-content;
 			max-width: min(16rem, calc(100vw - 24px));
 			padding: 6px 8px;
-	
+
 			background: #f3f4f6;
 			color: #000;
 			border: 1px solid #000;
-	
+
 			font-size: 0.75rem;
 			font-weight: 400;
 			line-height: 1.35;
 			text-align: left;
 			text-transform: none;
 			white-space: normal;
-	
+
 			opacity: 0;
 			visibility: hidden;
 			pointer-events: none;
-	
+
 			transition: opacity 0.15s ease, visibility 0s linear 0.15s;
 			z-index: 1000;
 	}
-	
+
 	.MuiButton-root:hover .tooltip {
 			opacity: 1;
 			visibility: visible;
 			transition-delay: 0.2s;
 	}
-	
+
 	.copy-label {
 			position: relative;
 	}
-	
+
 	.copy-state,
 	.copied-state {
 			display: inline-flex;
 			align-items: center;
 			transition: opacity 0.2s ease, transform 0.2s ease;
 	}
-	
+
 	.copied-state {
 			position: absolute;
 			left: 50%;
@@ -97,17 +97,17 @@ if ($SYMB_UID) {
 			opacity: 0;
 			white-space: nowrap;
 	}
-	
+
 	.copy-state {
 			opacity: 1;
 			transform: translateY(0);
 	}
-	
+
 	#copyButton.copied .copy-state {
 			opacity: 0;
 			transform: translateY(-4px);
 	}
-	
+
 	#copyButton.copied .copied-state {
 			opacity: 1;
 			transform: translateX(-50%) translateY(0);
@@ -145,20 +145,20 @@ $linkedCollections = $collManager->getLinkedCollections();
 			}
 			return false;
 		}
-		
+
 		async function copyCitation() {
 				const citationText = document.getElementById("citation").innerText;
 				const button = document.getElementById("copyButton");
-		
+
 				try {
 						await navigator.clipboard.writeText(citationText);
-		
+
 						button.classList.add("copied");
-		
+
 						setTimeout(() => {
 								button.classList.remove("copied");
 						}, 1500);
-		
+
 				} catch (err) {
 						console.error("Failed to copy citation:", err);
 				}
@@ -190,7 +190,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 			<?php
 		}
 		?>
-		
+
 		function getCitationData() {
 			return JSON.parse(document.querySelector('#citation [data-neon-citation]').dataset.neonCitation);
 		}
@@ -626,7 +626,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 								}
 								?>
 								<li style="margin-left:10px;">
-									<a href="#" onclick="newWindow = window.open('collbackup.php?collid=<?php echo $collid; ?>','bucollid','scrollbars=1,toolbar=0,resizable=1,width=600,height=250,left=20,top=20');">
+									<a href="#" onclick="newWindow = window.open('collbackup.php?collid=<?php echo $collid; ?>','bucollid','scrollbars=1,toolbar=0,resizable=1,width=800,height=650,left=20,top=20');">
 										<?php echo (isset($LANG['BACKUP_DATA_FILE']) ? $LANG['BACKUP_DATA_FILE'] : 'Download Backup Data File'); ?>
 									</a>
 								</li>
@@ -819,7 +819,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 												class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
 												tabindex="0"
 												type="button">
-								
+
 										<span class="MuiButton-label copy-label">
 												<span class="copy-state">
 														<span class="MuiButton-startIcon MuiButton-iconSizeSmall">
@@ -827,7 +827,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 														</span>
 														COPY
 												</span>
-										
+
 												<span class="copied-state">
 														<span class="MuiButton-startIcon MuiButton-iconSizeSmall">
 																<i class="fas fa-check"></i>
@@ -835,9 +835,9 @@ $linkedCollections = $collManager->getLinkedCollections();
 														COPIED!
 												</span>
 										</span>
-								
+
 										<span class="MuiTouchRipple-root"></span>
-								
+
 										<span class="tooltip">
 												Click to copy the above plain text citation to the clipboard
 										</span>
@@ -848,14 +848,14 @@ $linkedCollections = $collManager->getLinkedCollections();
 												class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
 												tabindex="0"
 												type="button">
-								
+
 										<span class="MuiButton-label">
 												<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
 												DOWNLOAD (BIBTEX)
 										</span>
-								
+
 										<span class="MuiTouchRipple-root"></span>
-								
+
 										<span class="tooltip">
 												Click to download the citation as a file in BibTex format
 										</span>
@@ -866,14 +866,14 @@ $linkedCollections = $collManager->getLinkedCollections();
 												class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
 												tabindex="0"
 												type="button">
-								
+
 										<span class="MuiButton-label">
 												<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
 												DOWNLOAD (RIS)
 										</span>
-								
+
 										<span class="MuiTouchRipple-root"></span>
-								
+
 										<span class="tooltip">
 												Click to download the citation as a file in Research Information Systems (RIS) format
 										</span>
