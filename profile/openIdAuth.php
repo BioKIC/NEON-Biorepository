@@ -12,13 +12,19 @@ use Jumbojett\OpenIDConnectClient;
 $AUTH_PROVIDER = $AUTH_PROVIDER ?? 'oid';
 $isSilentAuth = isset($_GET['silent']) && $_GET['silent'] === '1';
 $wasAuthenticated = !empty($SYMB_UID);
+$returnCandidate = $_GET['refurl'] ?? ($_SERVER['HTTP_REFERER'] ?? '');
+$returnUrl = neonAuthGetSafeReturnUrl($returnCandidate, $CLIENT_ROOT);
 
 $_SESSION['NEON_AUTH_FLOW_MODE'] = $isSilentAuth ? 'silent' : 'interactive';
 $_SESSION['NEON_AUTH_FLOW_WAS_AUTHENTICATED'] = $wasAuthenticated;
+$_SESSION['NEON_AUTH_RETURN_URL'] = $returnUrl;
 
-if (!$isSilentAuth) {
-	$returnCandidate = $_GET['refurl'] ?? ($_SERVER['HTTP_REFERER'] ?? '');
-	$_SESSION['refurl'] = neonAuthGetSafeReturnUrl($returnCandidate, $CLIENT_ROOT);
+if ($isSilentAuth) {
+	// Set this before leaving the site so a failed round trip cannot redirect-loop.
+	$_SESSION['NEON_AUTH_LAST_SYNC'] = time();
+}
+else {
+	$_SESSION['refurl'] = $returnUrl;
 }
 
 $oidc = new OpenIDConnectClient(
@@ -47,12 +53,21 @@ if (isset($SHOULD_VERIFY_PEERS)) {
 }
 
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-$oidc->authenticate();
+try {
+	$oidc->authenticate();
+}
+catch (Throwable $ex) {
+	error_log('OIDC authentication start failed: ' . $ex->getMessage());
+	if ($isSilentAuth) {
+		neonAuthFinishFlow($returnUrl, true);
+	}
 
-if ($isSilentAuth) {
-	neonAuthSendSyncResult($wasAuthenticated, false);
+	neonAuthClearFlowState();
+	$_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' ' . $ex->getMessage() . ' <ERR/>';
+	header('Location: ' . $CLIENT_ROOT . '/profile/index.php');
+	exit;
 }
 
-header('Location: ' . neonAuthGetSafeReturnUrl($_SESSION['refurl'] ?? '', $CLIENT_ROOT));
-exit;
+// authenticate() normally exits after issuing the Auth0 redirect.
+neonAuthFinishFlow($returnUrl, $isSilentAuth);
 
