@@ -3,71 +3,62 @@ include_once('../config/symbini.php');
 include_once($SERVER_ROOT . '/vendor/autoload.php');
 include_once($SERVER_ROOT . '/config/auth_config.php');
 include_once($SERVER_ROOT . '/classes/utilities/GeneralUtil.php');
-include_once($SERVER_ROOT . '/profile/authUtil.php');
 if ($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/profile/openIdAuth.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT . '/content/lang/profile/openIdAuth.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/profile/openIdAuth.en.php');
 
 use Jumbojett\OpenIDConnectClient;
 
 $AUTH_PROVIDER = $AUTH_PROVIDER ?? 'oid';
-$isSilentAuth = isset($_GET['silent']) && $_GET['silent'] === '1';
-$wasAuthenticated = !empty($SYMB_UID);
-$returnCandidate = $_GET['refurl'] ?? ($_SERVER['HTTP_REFERER'] ?? '');
-$returnUrl = neonAuthGetSafeReturnUrl($returnCandidate, $CLIENT_ROOT);
-
-$_SESSION['NEON_AUTH_FLOW_MODE'] = $isSilentAuth ? 'silent' : 'interactive';
-$_SESSION['NEON_AUTH_FLOW_WAS_AUTHENTICATED'] = $wasAuthenticated;
-$_SESSION['NEON_AUTH_RETURN_URL'] = $returnUrl;
-
-if ($isSilentAuth) {
-	// Set this before leaving the site so a failed round trip cannot redirect-loop.
-	$_SESSION['NEON_AUTH_LAST_SYNC'] = time();
-}
-else {
-	$_SESSION['refurl'] = $returnUrl;
-}
-
 $oidc = new OpenIDConnectClient(
-	$PROVIDER_URLS[$AUTH_PROVIDER],
-	$CLIENT_IDS[$AUTH_PROVIDER],
-	$CLIENT_SECRETS[$AUTH_PROVIDER]
+  $PROVIDER_URLS[$AUTH_PROVIDER],
+  $CLIENT_IDS[$AUTH_PROVIDER],
+  $CLIENT_SECRETS[$AUTH_PROVIDER]
 );
 
-if ($isSilentAuth) {
-	$oidc->addAuthParam(['prompt' => 'none']);
-}
+$oidc->addAuthParam(array(
+    'prompt' => 'login'
+));
 
-$oidc->addScope(['openid']);
-$oidc->addScope(['email']);
-$oidc->addScope(['profile']);
-$oidc->addScope(['read:current_user']);
-$oidc->addAuthParam(['audience' => $AUDIENCE]);
-$oidc->setResponseTypes(['code']);
+$oidc->addScope(array('openid'));
+$oidc->addScope(array('email'));
+$oidc->addScope(array('profile'));
+$oidc->addScope(array('read:current_user'));
+$oidc->addAuthParam([
+    'audience' => $AUDIENCE
+]);
+$oidc->setResponseTypes(array('code'));
+//$oidc->setResponseTypes(array('id_token'));
 $oidc->setRedirectUrl(GeneralUtil::getDomain() . $CLIENT_ROOT . $CALLBACK_REDIRECT);
 
 if (isset($SHOULD_UPGRADE_INSECURE_REQUESTS)) {
-	$oidc->setHttpUpgradeInsecureRequests($SHOULD_UPGRADE_INSECURE_REQUESTS);
+  $oidc->setHttpUpgradeInsecureRequests($SHOULD_UPGRADE_INSECURE_REQUESTS);
 }
 if (isset($SHOULD_VERIFY_PEERS)) {
-	$oidc->setVerifyPeer($SHOULD_VERIFY_PEERS);
+  $oidc->setVerifyPeer($SHOULD_VERIFY_PEERS);
 }
-
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-try {
-	$oidc->authenticate();
+//NEON edit
+if (empty($_SESSION['refurl']) && !empty($_SERVER['HTTP_REFERER'])) {
+    $_SESSION['refurl'] = $_SERVER['HTTP_REFERER'];
 }
-catch (Throwable $ex) {
-	error_log('OIDC authentication start failed: ' . $ex->getMessage());
-	if ($isSilentAuth) {
-		neonAuthFinishFlow($returnUrl, true);
-	}
+//end NEON edit
+// $_SESSION['oidIssuer'] = $oidc->getIssuer(); // moot for microsoft where it's the same as the providerUrl, but potentially useful for other auth providers?
+$oidc->addAuthParam(['prompt' => 'login']);
+$oidc->authenticate();
 
-	neonAuthClearFlowState();
-	$_SESSION['last_message'] = $LANG['CAUGHT_EXCEPTION'] . ' ' . $ex->getMessage() . ' <ERR/>';
-	header('Location: ' . $CLIENT_ROOT . '/profile/index.php');
-	exit;
-}
+?>
+<!DOCTYPE html>
+<html lang="<?php echo $LANG_TAG ?>">
 
-// authenticate() normally exits after issuing the Auth0 redirect.
-neonAuthFinishFlow($returnUrl, $isSilentAuth);
+<head>
+  <title><?php echo $LANG['OPEN_ID_CONNECT_CLIENT']; ?></title>
+</head>
 
+<body>
+  <h1 class="page-heading"><?php echo $LANG['OPEN_ID_CONNECT_CLIENT']; ?></h1>
+  <div>
+    Hello <?php echo $name; ?>
+  </div>
+
+</body>
+
+</html>
