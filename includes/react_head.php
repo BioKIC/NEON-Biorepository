@@ -22,20 +22,11 @@
 })();
 </script>
 <?php endif; ?>
-<?php
-$lastNeonAuthSync = (int) ($_SESSION['NEON_AUTH_LAST_SYNC'] ?? 0);
-$shouldNeonAuthSync = (time() - $lastNeonAuthSync) >= 60;
-?>
 <script>
   var TURBOPACK_CHUNK_BASE_PATH =
     <?php echo json_encode(rtrim($CLIENT_ROOT, '/') . '/neon-react/core-components/_next/'); ?>;
   window.NEON_CLIENT_ROOT = <?php echo json_encode($CLIENT_ROOT); ?>;
-  window.NEON_BIOREPO_AUTH_SYNC_URL =
-    <?php echo $shouldNeonAuthSync
-      ? json_encode(rtrim($CLIENT_ROOT, '/') . '/profile/openIdAuth.php?silent=1')
-      : 'null'; ?>;
 </script>
-<script src="<?php echo $CLIENT_ROOT; ?>/js/symb/neonAuthSync.js?ver=20261104-1"></script>
 <!-- NEON REACT ASSETS START -->
 <!-- React last updated: 11/4/2026, 9:48:24 PM -->
 <meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ymln80vc0rl-.js"/><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0twqply_6k3_c.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2muonxtzu2a3r.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/turbopack-2sizzcrnxfbym.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ki981-5p5oto.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/40cx8dp4z2bqk.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0oxrt4rdhvasn.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/17xh38m6on6pa.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2dq_z_y8msev9.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/38mw5yv4ca0qv.js"></script><link rel="preload" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css" as="style"/><link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style"/><title>NEON | Portal Core Components</title><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>
@@ -333,10 +324,7 @@ if ($isNeonEditor) {
 
         button.style.setProperty('font-family', '"Inter", Helvetica, Arial, sans-serif', 'important');
         button.style.setProperty('background-color', 'white', 'important');
-        button.addEventListener('click', () => {
-            window.cancelBiorepoAuthSync?.();
-            window.location.href = url;
-        });
+        button.addEventListener('click', () => { window.location.href = url; });
         return button;
     };
 
