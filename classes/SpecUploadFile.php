@@ -1,7 +1,9 @@
 <?php
 include_once($SERVER_ROOT.'/classes/SpecUploadBase.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/classes/SpecUploadFile.'.$LANG_TAG.'.php')) include_once($SERVER_ROOT.'/content/lang/classes/OccurrenceEditorDeterminations.'.$LANG_TAG.'.php');
-else include_once($SERVER_ROOT . '/content/lang/classes/SpecUploadFile.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('classes/SpecUploadFile');
+
 class SpecUploadFile extends SpecUploadBase{
 
 	private $ulFileName;
@@ -20,13 +22,7 @@ class SpecUploadFile extends SpecUploadBase{
 	public function uploadFile(){
 		if(!$this->ulFileName){
 			$finalPath = '';
-			if(array_key_exists("ulfnoverride",$_POST) && $_POST['ulfnoverride']){
-				$this->ulFileName = substr($_POST['ulfnoverride'],strrpos($_POST['ulfnoverride'],'/')+1);
-				if(copy($_POST['ulfnoverride'],$this->uploadTargetPath.$this->ulFileName)){
-					$finalPath = $this->uploadTargetPath.$this->ulFileName;
-				}
-			}
-			elseif(array_key_exists("uploadfile",$_FILES)){
+			if(array_key_exists("uploadfile",$_FILES)){
 				$this->ulFileName = $_FILES['uploadfile']['name'];
 				if(move_uploaded_file($_FILES['uploadfile']['tmp_name'], $this->uploadTargetPath.$this->ulFileName)){
 					$finalPath = $this->uploadTargetPath.$this->ulFileName;
@@ -117,6 +113,7 @@ class SpecUploadFile extends SpecUploadBase{
 			$this->outputMsg('<li>Beginning to load records...</li>',1);
 			while($recordArr = $this->getRecordArr($fh)){
 				$recMap = Array();
+				$recMapPaleo = Array();
 				$hasCultivarEpithet = false;
 				$hasTradeName = false;
 				$isCultivar = false;
@@ -138,6 +135,11 @@ class SpecUploadFile extends SpecUploadBase{
 						if(strtolower($valueStr) == 'cultivar' && $sMap['field'] == 'taxonrank'){
 							$isCultivar = true;
 						}
+						if($this->paleoSupport && strpos($symbField, 'paleo') === 0){
+							$cleanKey = substr($symbField, 6);
+							$recMapPaleo[$cleanKey] = $valueStr;
+							continue;
+						}
 						//If value is enclosed by quotes, remove quotes
 						if(substr($valueStr,0,1) == '"' && substr($valueStr,-1) == '"'){
 							$valueStr = substr($valueStr,1,strlen($valueStr)-2);
@@ -154,6 +156,8 @@ class SpecUploadFile extends SpecUploadBase{
 					unset($recMap);
 					continue;
 				}
+				if (!empty($recMapPaleo))
+					$recMap['paleo'] = $recMapPaleo;
 				$this->loadRecord($recMap);
 				unset($recMap);
 			}
@@ -231,6 +235,9 @@ class SpecUploadFile extends SpecUploadBase{
 		if(strpos($headerData,",") === false){
 			if(strpos($headerData,"\t") !== false){
 				$this->delimiter = "\t";
+			}
+			elseif(strpos($headerData, '|') !== false){
+				$this->delimiter = '|';
 			}
 		}
 		//Check to see if file is csv

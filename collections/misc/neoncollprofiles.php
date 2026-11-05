@@ -261,21 +261,21 @@ $linkedCollections = $collManager->getLinkedCollections();
 				const tooltip = document.getElementById(tooltipId);
 				tooltip.style.display = "block";
 			}
-		
+
 			// Hide tooltip
 			function hideTooltip(event) {
 				const tooltipId = event.currentTarget.getAttribute("data-tooltip-id");
 				const tooltip = document.getElementById(tooltipId);
 				tooltip.style.display = "none";
 			}
-		
+
 			// Attach event listeners to all buttons with the class 'tooltip-button'
 			const tooltipButtons = document.querySelectorAll(".tooltip-button");
 			tooltipButtons.forEach(button => {
 				button.addEventListener("mouseover", showTooltip);
 				button.addEventListener("mouseout", hideTooltip);
 			});
-			
+
 			let descriptionContainer = document.getElementById('fulldescription-container');
 			let imgElements = descriptionContainer.querySelectorAll('img');
 			let collimagesContainer = document.getElementById('collimages');
@@ -293,7 +293,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 		.label {
 			font-weight: bold;
 		}
-		
+
 		#collimages {
 			max-height: 800px;
 			display: flex;
@@ -672,7 +672,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 					$title = !empty($collData['publicname'])
 							? $collData['publicname']
 							: $collData['collectionname'];
-					
+
 					echo '<h1 class="font-bold text-left mb-4" style="font-size: 2.1rem;">' . $title . '</h1>';
 				?>
 				<div class="flex justify-between items-center">
@@ -688,7 +688,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 										<span class="MuiButton-label">Search this Sample Type</span>
 										<span class="MuiTouchRipple-root"></span>
 								</button>
-						</a>						
+						</a>
 					</div>
 					<div class="flex justify-right space-x-3 mt-4">
 						<?php
@@ -712,22 +712,22 @@ $linkedCollections = $collManager->getLinkedCollections();
 					</div>
 				</div>
 			</div>
-			
+
 			<?php if (!empty($collData['identificationcollids'])): ?>
-			
+
 			<div class="mb-6 border-l-4 border-[#0073cf] bg-[#f4f9ff] p-4">
 				<div class="flex items-start">
 						<i class="fas fa-info-circle text-[#0073cf] text-lg mt-1 mr-3"></i>
-				
+
 						<div>
 								<div class="font-semibold text-gray-900">
 										Looking for a specific taxon?
 								</div>
-				
+
 								<div class="text-gray-700">
 										Taxonomic identifications derived from these samples are available through a related sample type.
 								</div>
-				
+
 								<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/neoncollprofiles.php?collid=<?php echo $collData['identificationcollids']; ?>"
 									 class="inline-block mt-2 text-[#0073cf] font-semibold hover:underline">
 										Browse Identifications →
@@ -735,9 +735,9 @@ $linkedCollections = $collManager->getLinkedCollections();
 						</div>
 				</div>
 			</div>
-			
+
 			<?php endif; ?>
-			
+
 			<div class="grid grid-cols-1 gap-4 mb-6">
 				<div id="fulldescription-container">
 					<h2 class="font-semibold mb-2" style="font-size: 1.7rem;">About</h2>
@@ -746,7 +746,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 					?>
 				</div>
 			</div>
-	
+
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 				<div id="collimages" class="lg:col-span-1">
 				</div>
@@ -883,47 +883,47 @@ $linkedCollections = $collManager->getLinkedCollections();
 					</div>
 				</div>
 			</div>
-			
+
 			<?php if (!empty($linkedCollections)): ?>
-		
+
 			<div class="border-t-2 border-gray-200 mt-6 pt-4">
 					<h2 class="text-xl mb-2">Related Sample Types</h2>
-			
+
 					<?php foreach ($linkedCollections as $collid => $collectionName):
 							$collid = (int)$collid;
 							$collectionName = htmlspecialchars($collectionName);
-					
+
 							$url = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid;
 							?>
-			
+
 							<div class="MuiListItem-container">
 									<div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">
-			
+
 											<div class="MuiListItemIcon-root" style="min-width: 40px">
 													<i class="fas fa-flask fa-lg"></i>
 											</div>
-			
+
 											<div class="MuiListItemText-root MuiListItemText-multiline">
 													<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
 															<?= $collectionName ?>
 													</span>
 											</div>
-			
+
 									</div>
-			
+
 									<div class="MuiListItemSecondaryAction-root">
 											<a href="<?= htmlspecialchars($url) ?>"
 												 target="_blank"
 												 rel="noopener noreferrer"
 												 class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">
-			
+
 													<span class="MuiButton-label">Explore</span>
 											</a>
 									</div>
 							</div>
-			
+
 					<?php endforeach; ?>
-			
+
 			</div>
 			<?php endif; ?>
 
@@ -934,12 +934,12 @@ $linkedCollections = $collManager->getLinkedCollections();
 				if (isset($collData['resourcejson'])) {
 					if ($resourceArr = json_decode($collData['resourcejson'], true)) {
 						echo '<div class="mb-4">';
-				
+
 						foreach ($resourceArr as $rArr) {
 							$title = $rArr['title'][$LANG_TAG] ?? "No Title Available";
 							$url = htmlspecialchars($rArr['url']);
 							$fileNumber = basename($rArr['url']);
-				
+
 							echo '<div class="MuiListItem-container">';
 							echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">';
 							echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
@@ -985,7 +985,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 							echo '    </div>';
 							echo '</div>';
 						}
-				
+
 						echo '</div>';
 					}
 				}
@@ -999,7 +999,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 						$dwcaUrl = htmlspecialchars($collData['dwcaurl']);
 						$dwcaLabel = isset($LANG['DWCA_PUB']) ? $LANG['DWCA_PUB'] : 'DwC-Archive';
 						$dwcFile = basename($dwcaUrl);
-					
+
 						echo '<div class="MuiListItem-container">';
 						echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
 						echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
@@ -1010,7 +1010,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 						echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
 						echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($dwcaLabel) . '</span>';
 						echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-						echo '                <span title="file type: Darwin Core Archive (DwC-A)">Darwin Core Archive (DwC-A)</span>';					
+						echo '                <span title="file type: Darwin Core Archive (DwC-A)">Darwin Core Archive (DwC-A)</span>';
 						echo '                <span style="margin: 0px 16px;">|</span>';
 						echo '                <span title="' . htmlspecialchars($dwcFile) . '" style="white-space: break-spaces;">' . htmlspecialchars($dwcFile) . '</span>';
 						echo '            </p>';
@@ -1033,11 +1033,11 @@ $linkedCollections = $collManager->getLinkedCollections();
 						echo '    </div>';
 						echo '</div>';
 					}
-					
+
 					// Digital Metadata (EML File)
 					$emlUrl = "../datasets/emlhandler.php?collid=" . htmlspecialchars($collData['collid']);
 					$emlLabel = isset($LANG['DIGITAL_METADATA']) ? $LANG['DIGITAL_METADATA'] : 'Digital Metadata';
-					
+
 					echo '<div class="MuiListItem-container">';
 					echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
 					echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
@@ -1075,12 +1075,12 @@ $linkedCollections = $collManager->getLinkedCollections();
 					echo '        </a>';
 					echo '    </div>';
 					echo '</div>';
-					
+
 					// GBIF Dataset Page
 					if (!empty($collData['publishtogbif']) && !empty($datasetKey)) {
 						$gbifUrl = "http://www.gbif.org/dataset/" . htmlspecialchars($datasetKey);
 						$gbifLabel = isset($LANG['GBIF_DATASET']) ? $LANG['GBIF_DATASET'] : 'GBIF Dataset Page';
-					
+
 						echo '<div class="MuiListItem-container">';
 						echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
 						echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
@@ -1119,7 +1119,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 						echo '    </div>';
 						echo '</div>';
 					}
-					
+
 					// EDI Dataset Page
 					if (!empty($collData['dynamicproperties'])) {
 						$dynamicProps = json_decode($collData['dynamicproperties'], true);
@@ -1168,7 +1168,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 							echo '</div>';
 						}
 					}
-					
+
 					// iDigBio Dataset Page
 					if (!empty($collData['publishtoidigbio'])) {
 						$idigbioKey = $collManager->getIdigbioKey();
@@ -1178,7 +1178,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 						if ($idigbioKey) {
 							$idigbioUrl = "https://www.idigbio.org/portal/recordsets/" . htmlspecialchars($idigbioKey);
 							$idigbioLabel = isset($LANG['IDIGBIO_DATASET']) ? $LANG['IDIGBIO_DATASET'] : 'iDigBio Dataset Page';
-					
+
 							echo '<div class="MuiListItem-container">';
 							echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
 							echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';

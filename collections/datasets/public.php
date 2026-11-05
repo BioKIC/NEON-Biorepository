@@ -1,22 +1,18 @@
 <?php
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/classes/OccurrenceDataset.php');
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/datasets/public.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/datasets/public.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/collections/datasets/public.en.php');
+include_once($SERVER_ROOT . '/classes/OccurrenceDataset.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+include_once($SERVER_ROOT . '/classes/utilities/Sanitize.php');
 
-header("Content-Type: text/html; charset=".$CHARSET);
+Language::load('collections/datasets/public');
+
+header("Content-Type: text/html; charset=" . $CHARSET);
 
 // Datasets
-$datasetid = array_key_exists('datasetid', $_REQUEST) ? $_REQUEST['datasetid'] : 0;
-
-if (!is_numeric($datasetid)) $datasetid = 0;
+$datasetid = array_key_exists('datasetid', $_REQUEST) ? Sanitize::int($_REQUEST['datasetid']) : 0;
 
 $datasetManager = new OccurrenceDataset();
 $dArr = $datasetManager->getPublicDatasetMetadata($datasetid);
-$searchUrl = '../../collections/list.php?datasetid=' . $datasetid;
-$tableUrl = '../../collections/listtabledisplay.php?datasetid=' . $datasetid;
-$taxaUrl = '../../collections/list.php?datasetid=' . $datasetid . '&tabindex=0';
-// $downloadUrl = '../../collections/download/index.php?datasetid='.$datasetid;
 
 # NEON edit
 $datasetManager = new OccurrenceDataset();
@@ -31,30 +27,28 @@ if ($SYMB_UID == $mdArr['uid']) {
 		$isEditor = 1;
 	} elseif (in_array('DatasetEditor', $mdArr['roles'])) {
 		$isEditor = 1;
-	} 
+	}
 } elseif ($IS_ADMIN) {
 	$isEditor = 1;
 }
 # end NEON edit
-
-$ocArr = $datasetManager->getOccurrences($datasetid);
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo $LANG_TAG ?>">
+<html lang="<?= $LANG_TAG ?>">
 	<head>
-		<title><?php echo $LANG['DATASET']; ?>: <?php echo $dArr['name'] ;?></title>
+		<title><?= $LANG['DATASET'] ?>: <?= $dArr['name'] ?></title>
 		<?php
-		include_once($SERVER_ROOT.'/includes/head.php');
+		include_once($SERVER_ROOT . '/includes/head.php');
 		?>
 	</head>
 	<body>
 		<?php
 		$displayLeftMenu = true;
-		include($SERVER_ROOT.'/includes/header.php');
+		include($SERVER_ROOT . '/includes/header.php');
 		?>
 		<div class="navpath">
-			<a href="<?php echo htmlspecialchars($CLIENT_ROOT, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>/index.php"><?php echo $LANG['HOME']; ?></a> &gt;&gt;
-			<b><?php echo $LANG['DATASET']; ?>: <?php echo $dArr['name'] ;?></b>
+			<a href="<?= htmlspecialchars($CLIENT_ROOT, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>/index.php"><?= $LANG['HOME']; ?></a> &gt;&gt;
+			<b><?= $LANG['DATASET']; ?>: <?= $dArr['name'] ;?></b>
 		</div>
 		<!-- This is inner text! -->
 		<div role="main" id="innertext">
@@ -65,48 +59,44 @@ $ocArr = $datasetManager->getOccurrences($datasetid);
 			}
 			?>
 			<!-- end NEON edit -->
-    	<h1 class="page-heading"><?php echo $LANG['DATASET']; ?>: <?php echo $dArr['name'] ;?></h1>
-    <ul>
-      <!-- Metadata -->
-      <div><?php echo $dArr['description'] ;?></div>
-	  <?php 
-	  if ($dArr['bibliographicCitation']) { 
-		?>
-		<h2> Citation </h2>
-	  	<div><?php echo $dArr['bibliographicCitation'];?></div>
-	  	<?php 
-	  }; 
-	  ?>
-      <!-- Occurrences Summary -->
-      <h2><?php echo $LANG['INCLUDES']; ?> <?php echo count($ocArr); ?> <?php echo $LANG['RECORDS']; ?></h2>
+			<h1 class="page-heading"><?= $LANG['DATASET']; ?>: <?= $dArr['name'] ;?></h1>
+			<div><?= $dArr['description'] ;?></div>
+			<?php
+			if ($dArr['bibliographicCitation']) {
+				?>
+				<h2> Citation </h2>
+				<div><?= $dArr['bibliographicCitation'] ?></div>
+				<?php
+			};
+			$searchUrl = '../../collections/list.php?datasetid=' . $datasetid;
+			$tableUrl = '../../collections/listtabledisplay.php?datasetid=' . $datasetid;
+			$taxaUrl = '../../collections/list.php?datasetid=' . $datasetid . '&tabindex=0';
+			$ocArr = $datasetManager->getOccurrences($datasetid);
+			?>
+			<h2><?= $LANG['INCLUDES'] ?> <?= count($ocArr) ?> <?= $LANG['RECORDS'] ?></h2>
 
-      <p><a class="btn" href="<?php echo htmlspecialchars($searchUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ;?>"><?php echo $LANG['VIEW_AND_DOWNLOAD']; ?></a></p>
-      <p><a class="btn" href="<?php echo htmlspecialchars($tableUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ;?>"><?php echo $LANG['VIEW_SAMPLE']; ?></a></p>
-      <p><a class="btn" href="<?php echo htmlspecialchars($taxaUrl, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ;?>"><?php echo $LANG['VIEW_LIST']; ?></a></p>
-      <!-- <p><a href="#">Download this Dataset</a></p> -->
+			<p><a class="btn" href="<?= $searchUrl ?>"><?= $LANG['VIEW_AND_DOWNLOAD'] ?></a></p>
+			<p><a class="btn" href="<?= $tableUrl ?>"><?= $LANG['VIEW_SAMPLE'] ?></a></p>
+			<p><a class="btn" href="<?= $taxaUrl ?>"><?= $LANG['VIEW_LIST'] ?></a></p>
 
-	  <!-- NEON addition: Download pub ready table -->
+			<!-- NEON addition: Download pub ready table -->
+			<?php
+			if($datasetid){
+				?>
+				<form action="<?= $CLIENT_ROOT ?>/neon/requests/exporthandler.php" method="post" style="margin-top:15px;">
+					<input type="hidden" name="pubID" value="<?= $datasetid; ?>" />
+					<input type="hidden" name="type" value="dataset" />
+					<input type="hidden" name="exportTask" value="pubtable" />
 
-	<?php
-	if($datasetid){
-	?>
-			<form action="<?php echo $CLIENT_ROOT; ?>/neon/requests/exporthandler.php" method="post" style="margin-top:15px;">
-				<input type="hidden" name="pubID" value="<?php echo $datasetid; ?>" />
-				<input type="hidden" name="type" value="dataset" />
-				<input type="hidden" name="exportTask" value="pubtable" />
+					<button type="submit" class="btn">
+						Download Publication-Ready Table
+					</button>
+				</form>
+				<?php
+			}
+			?>
+			<!-- End NEON addition -->
 
-				<button type="submit" class="btn">
-					Download Publication-Ready Table
-				</button>
-			</form>
-	<?php
-	}
-	?>
-
-	  <!-- End NEON addition -->
-
-
-    </ul>
 		</div>
 		<?php
 		include($SERVER_ROOT.'/includes/footer.php');

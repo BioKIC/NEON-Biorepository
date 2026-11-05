@@ -12,7 +12,7 @@ $LANG['RSS_FEED'] = 'RSS Feed';
 $LANG['CONTACT'] = 'Contacts';
 $LANG['HOMEPAGE'] = 'Homepage';
 $LANG['MORE_INFO'] = 'More Information';
-//neon edit
+//neon edit start
 $LANG['COLLECTION_SEARCH'] = 'Sample Type Search Page';
 //end neon edit
 $LANG['UPDATE_STATISTICS'] = 'Updating statistics related to this collection...';
@@ -20,6 +20,7 @@ $LANG['DEACTIVATED'] = 'Deactivated';
 $LANG['DEACTIVATED_MESSAGE'] = 'Certain management options are only available for Live Managed Datasets. Contact portal administrator if collection needs to be reclassified.';
 $LANG['TOGGLE_MAN'] = 'Toggle Manager\'s Control Panel';
 $LANG['COLL_PROF_FOR'] = 'Collection Profile for';
+$LANG['GBIF_CITATIONS'] = 'GBIF citations';
 $LANG['DAT_EDIT'] = 'Data Editor Control Panel';
 $LANG['SUBMIT_IMAGE_V'] = 'Submit a Media Voucher (observation supported by a photo)';
 $LANG['ADD_NEW_OCCUR'] = 'Add New Occurrence Record';
@@ -38,8 +39,6 @@ $LANG['ADMIN_CONTROL'] = 'Administration Control Panel';
 $LANG['VIEW_COMMENTS'] = 'View Posted Comments';
 $LANG['UNREVIEWED_COMMENTS'] = 'unreviewed comments';
 $LANG['EDIT_META'] = 'Edit Metadata';
-$LANG['OPEN_META'] = 'Edit Metadata';
-$LANG['EDIT_COLL_PROPS'] = 'Special Properties';
 $LANG['MANAGE_PERMISSIONS'] = 'Manage Permissions';
 $LANG['IMPORT_SPECIMEN'] = 'Import/Update Specimen Records';
 $LANG['SKELETAL_FILE_IMPORT'] = 'Skeletal Text File Import';
@@ -67,9 +66,9 @@ $LANG['MANAGEMENT'] = 'Management';
 $LANG['LIVE_DATA'] = 'Live Data managed directly within data portal';
 $LANG['DATA_AGGREGATE'] = 'Data harvested from a data aggregator';
 $LANG['DATA_SNAPSHOT'] = 'Data snapshot of local collection database';
-$LANG['LAST_UPDATE'] = 'Last Update';
+$LANG['LAST_UPDATE'] = 'Last Upload';
 $LANG['GLOBAL_UNIQUE_ID'] = 'Global Unique Identifier';
-//neon edit
+//neon edit start
 $LANG['DWCA_PUB'] = 'DwC-Archive';
 //end neon edit
 $LANG['LIVE_DOWNLOAD'] = 'Live Data Download';
@@ -79,6 +78,7 @@ $LANG['IPT_SOURCE'] = 'IPT / DwC-A Source';
 $LANG['DIGITAL_METADATA'] = 'Metadata';
 //end neon edit
 $LANG['USAGE_RIGHTS'] = 'Usage Rights';
+$LANG['LICENSE'] = 'License';
 $LANG['USAGE_POLICY'] = 'Usage policy';
 $LANG['RIGHTS_HOLDER'] = 'Rights Holder';
 $LANG['ACCESS_RIGHTS'] = 'Access Rights';
@@ -86,7 +86,7 @@ $LANG['GBIF_DATASET'] = 'GBIF Dataset page';
 $LANG['IDIGBIO_DATASET'] = 'iDigBio Dataset page';
 $LANG['ADDRESS'] = 'Address';
 $LANG['EDIT_INST'] = 'Edit institution information';
-//neon edit
+//neon edit start
 $LANG['COLL_STATISTICS'] = 'Sample Type Statistics';
 //end neon edit
 $LANG['SPECIMEN_RECORDS'] = 'specimen records';
@@ -104,6 +104,7 @@ $LANG['GENERA'] = 'genera';
 $LANG['SPECIES'] = 'species';
 $LANG['TOTAL_TAXA'] = 'total taxa (including subsp. and var.)';
 $LANG['TYPE_SPECIMENS'] = 'type specimens';
+$LANG['LAST_UPDATED'] = 'last updated';
 $LANG['EXTRA_STATS'] = 'Extra Statistics';
 $LANG['SHOW_FAMILY_DIST'] = 'Show Family Distribution';
 $LANG['HIDE_FAMILY_DIST'] = 'Hide Family Distribution';
@@ -125,4 +126,5 @@ $LANG['OCCURENCE_IDENTIFIER'] = 'Catalog Number';
 $LANG['TAXON'] = 'Taxon';
 $LANG['OCCURRENCE_EDITOR'] = 'Edit';
 $LANG['INFO_ALT'] = "Info. icon indicating link to information about import/update";
+$LANG['LAST_MODIFIED'] = 'Last Modified';
 ?>

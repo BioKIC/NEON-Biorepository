@@ -2,9 +2,10 @@
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceLoans.php');
 include_once($SERVER_ROOT.'/classes/SiteMapManager.php');
-$smManager = new SiteMapManager();
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/collections/loans/loan_langs.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/collections/loans/loan_langs.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('collections/loans/loan_langs');
+
 header("Content-Type: text/html; charset=".$CHARSET);
 if(!$SYMB_UID) header('Location: ' . $CLIENT_ROOT.'/profile/index.php?refurl=../collections/loans/index.php?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
 
@@ -471,8 +472,8 @@ if($isEditor){
 			</div>
 			<?php
 		}else{
+			//NEON edit start
 			?>
-			<!--neon edit-->
 			<div id="admincollection">
 				<h3>Quick Search by Sample Identifier<h3>
 					<form name="sampleQuickSearchFrom" action="<?php echo $CLIENT_ROOT; ?>/neon/loans.php" method="post" style="display: inline" >
@@ -486,10 +487,11 @@ if($isEditor){
 						</li>
 					</ul>
 				</div>
-				
+
 				<h3>List of collections you have permissions to manage</h3>
 				<ul>
 				<?php
+				$smManager = new SiteMapManager();
 				if($collList = $smManager->getCollectionList()){
 					foreach($collList as $group => $groupArr){
 						foreach($groupArr as $k => $cArr){
@@ -501,14 +503,15 @@ if($isEditor){
 						}
 					}
 				}
-				//end neon edit
 				else{
-					echo "<li>".$LANG['NOEDITCOLL']."</li>";
+					if(!$isEditor) echo '<h2>' . $LANG['NOT_AUTH_LOANS'] . '</h2>';
+					else echo '<h2>' . $LANG['UNKNOWN_ERROR'] . '</h2>';
 				}
 				?>
 				</ul>
 			</div>
-		<?php
+			<?php
+			//NEON edit end
 		}
 		?>
 	</div>
