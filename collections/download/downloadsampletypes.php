@@ -12,7 +12,13 @@ if (!is_string($format) || !in_array($format, array('csv', 'json', 'pdf'), true)
 }
 
 try {
-    $summary = SampleTypeSummaryExport::read((new SampleDashboard())->getSummaryTable());
+    $cachePath = $SERVER_ROOT . '/neon/cache/sample-catalog.json';
+    if (!is_readable($cachePath)) throw new RuntimeException('Sample catalog cache is unavailable');
+    $catalog = json_decode(file_get_contents($cachePath), true, 512, JSON_THROW_ON_ERROR);
+    if (($catalog['version'] ?? null) !== 1 || !isset($catalog['items']) || !is_array($catalog['items'])) {
+        throw new RuntimeException('Invalid sample catalog cache');
+    }
+    $summary = SampleTypeSummaryExport::read((new SampleDashboard())->getSummaryTable(), $catalog);
     if ($format === 'csv') $content = SampleTypeSummaryExport::csv($summary);
     elseif ($format === 'json') $content = json_encode($summary['rows'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     else $content = SampleTypeSummaryExport::pdf($summary);
@@ -21,7 +27,7 @@ try {
     http_response_code(503);
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
-    echo json_encode(array('error' => 'The sample type summary could not be downloaded. Please check that neonsamplesummary is configured and try again.'));
+    echo json_encode(array('error' => 'The sample type summary could not be downloaded. Please check that neonsamplesummary is configured and the sample catalog cache has been refreshed.'));
     exit;
 }
 

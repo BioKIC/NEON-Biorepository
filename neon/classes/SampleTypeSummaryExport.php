@@ -1,11 +1,35 @@
 <?php
 
-/** The public summary columns and ordering used by PR #1223. */
+/** Combines the PR #1223 summary with public catalog facets and availability. */
 class SampleTypeSummaryExport {
-    public static function read($result): array {
+    public static function read($result, array $catalog): array {
+        $items = array();
+        foreach ($catalog['items'] as $item) $items[(int)$item['id']] = $item;
         $columns = array_slice(array_map(function ($field) { return $field->name; }, $result->fetch_fields()), 1);
+        $columns = array_map(function ($column) {
+            return array('taxon' => 'taxonomic_groups', 'years' => 'collection_months')[$column] ?? $column;
+        }, $columns);
+        $columns = array_values(array_unique(array_merge($columns, array(
+            'collection_code', 'collection_id', 'preservation', 'sites', 'taxonomic_groups', 'collection_months'
+        ))));
         $rows = array();
         while ($row = $result->fetch_assoc()) {
+            $id = (int)$row['collid'];
+            $item = $items[$id] ?? array();
+            $sites = array();
+            $months = array();
+            foreach ($item['siteCodes'] ?? array() as $site) {
+                $sites[] = $site['siteCode'];
+                $months = array_merge($months, $site['availableMonths']);
+            }
+            $months = array_values(array_unique($months));
+            sort($months);
+            $row['collection_code'] = $item['collectionCode'] ?? '';
+            $row['collection_id'] = $id;
+            $row['preservation'] = implode('; ', $item['preservation'] ?? array());
+            $row['sites'] = implode('; ', array_unique($sites));
+            $row['taxonomic_groups'] = implode('; ', $item['taxa'] ?? array());
+            $row['collection_months'] = implode('; ', $months);
             $public = array();
             foreach ($columns as $column) $public[$column] = $row[$column];
             $rows[] = $public;
