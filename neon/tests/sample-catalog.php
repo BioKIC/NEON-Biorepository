@@ -18,7 +18,7 @@ class Connection {
             return new Rows(array(array('collid' => 1, 'name' => 'Ear Punches', 'fullDescription' => '<p>Frozen &amp; preserved</p>')));
         }
         if (strpos($sql, 'SELECT DISTINCT o.collid') !== false) {
-            if (strpos($sql, 'COALESCE(o.localitySecurity, 0) = 0') === false) throw new Exception('Missing locality restriction');
+            if (strpos($sql, 'COALESCE(o.recordSecurity, 0) = 0') === false) throw new Exception('Missing locality restriction');
             return new Rows(array(
                 array('collid' => 1, 'siteCode' => 'ABBY', 'month' => '2023-02'),
                 array('collid' => 1, 'siteCode' => 'ABBY', 'month' => '2023-01'),
@@ -26,7 +26,10 @@ class Connection {
                 array('collid' => 1, 'siteCode' => 'BART', 'month' => null),
             ));
         }
-        if (strpos($sql, 'COUNT(*)') !== false) return new Rows(array(array('collid' => 1, 'count' => 3)));
+        if (strpos($sql, 'COUNT(*)') !== false) {
+            if (strpos($sql, 'COALESCE(recordSecurity, 0) = 0') === false) throw new Exception('Missing sample count security restriction');
+            return new Rows(array(array('collid' => 1, 'count' => 3)));
+        }
         if (strpos($sql, 'SHOW TABLES') !== false) return new Rows(array());
         throw new Exception('Unexpected query');
     }

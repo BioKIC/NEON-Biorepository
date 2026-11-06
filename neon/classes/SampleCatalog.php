@@ -48,7 +48,7 @@ class SampleCatalog extends Manager {
             DATE_FORMAT(o.eventdate, '%Y-%m') AS month FROM omoccurrences o
             INNER JOIN omoccurdatasetlink l ON l.occid = o.occid
             INNER JOIN omoccurdatasets d ON d.datasetid = l.datasetid
-            WHERE o.collid IN ($ids) AND COALESCE(o.localitySecurity, 0) = 0 AND d.notes = 'NEON Site'");
+            WHERE o.collid IN ($ids) AND COALESCE(o.recordSecurity, 0) = 0 AND d.notes = 'NEON Site'");
         if (!$result) throw new RuntimeException('Unable to aggregate sample availability');
         $sites = array();
         while ($row = $result->fetch_assoc()) {
@@ -60,7 +60,7 @@ class SampleCatalog extends Manager {
         }
         // Separate count avoids multiplying specimens associated with multiple sites.
         $result = $this->conn->query("SELECT collid, COUNT(*) AS count FROM omoccurrences
-            WHERE collid IN ($ids) AND COALESCE(localitySecurity, 0) = 0 GROUP BY collid");
+            WHERE collid IN ($ids) AND COALESCE(recordSecurity, 0) = 0 GROUP BY collid");
         if (!$result) throw new RuntimeException('Unable to count samples');
         while ($row = $result->fetch_assoc()) $catalog[(int)$row['collid']]['totalSamples'] = (int)$row['count'];
         foreach ($catalog as $id => &$item) {
