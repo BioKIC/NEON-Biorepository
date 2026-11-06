@@ -14,7 +14,7 @@ class SampleCatalog extends Manager {
                     $names = array_merge($ancestors, array($node['name']));
                     if (!empty($node['collid'])) {
                         $id = (int)$node['collid'];
-                        if (!isset($catalog[$id])) $catalog[$id] = array('id' => $id, 'name' => $node['name'], 'description' => '',
+                        if (!isset($catalog[$id])) $catalog[$id] = array('id' => $id, 'name' => $node['name'], 'sampleTypeName' => $node['name'], 'description' => '',
                             'taxa' => array(), 'protocols' => array(), 'preservation' => array(),
                             'storageConditions' => '', 'storageContainer' => '', 'dataProducts' => '', 'siteCodes' => array(), 'totalSamples' => 0);
                         $values = $field === 'taxa' ? $ancestors : array_slice($names, 0, 1);
@@ -31,13 +31,14 @@ class SampleCatalog extends Manager {
         // All IDs originate in trusted JSON and are cast to integers.
         $ids = implode(',', array_keys($catalog));
         $result = $this->conn->query("SELECT collid, COALESCE(NULLIF(publicName, ''), collectionName) AS name,
-            collectionCode, fullDescription FROM omcollections WHERE collid IN ($ids)");
+            collectionName, collectionCode, fullDescription FROM omcollections WHERE collid IN ($ids)");
         if (!$result) throw new RuntimeException('Unable to read collection metadata');
         $public = array();
         while ($row = $result->fetch_assoc()) {
             $id = (int)$row['collid'];
             $public[$id] = $catalog[$id];
             $public[$id]['name'] = $row['name'];
+            $public[$id]['collectionName'] = trim($row['collectionName'] ?? '');
             $public[$id]['collectionCode'] = trim($row['collectionCode'] ?? '');
             $public[$id]['description'] = trim(html_entity_decode(strip_tags($row['fullDescription'] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         }
