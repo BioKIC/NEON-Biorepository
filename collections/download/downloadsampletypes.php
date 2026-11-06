@@ -3,6 +3,9 @@ require_once dirname(__DIR__, 2) . '/config/symbini.php';
 require_once $SERVER_ROOT . '/neon/classes/SampleDashboard.php';
 require_once $SERVER_ROOT . '/neon/classes/SampleTypeSummaryExport.php';
 
+// Long downloads must not hold the visitor's PHP session lock.
+if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
+
 $format = $_GET['format'] ?? 'csv';
 if (!is_string($format) || !in_array($format, array('csv', 'json', 'pdf'), true)) {
     http_response_code(400);
@@ -21,7 +24,7 @@ try {
     $summary = SampleTypeSummaryExport::read((new SampleDashboard())->getSummaryTable(), $catalog);
     if ($format === 'csv') $content = SampleTypeSummaryExport::csv($summary);
     elseif ($format === 'json') $content = json_encode($summary['rows'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-    else $content = SampleTypeSummaryExport::pdf($summary);
+    else $content = SampleTypeSummaryExport::cachedPdf($summary, $SERVER_ROOT . '/neon/cache');
 } catch (Throwable $error) {
     error_log('Sample type summary download failed: ' . $error->getMessage());
     http_response_code(503);

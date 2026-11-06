@@ -16,11 +16,11 @@ $rows = array(
     array('collid' => 9, 'sample_type' => 'Plant tissue – café', 'description' => str_repeat('A long description with complete metadata and preserved Unicode: α β µ. ', 45), 'storage_conditions' => null, 'storage_container' => 'Vials & bags <sealed>', 'data_product_ids' => ''),
     array('collid' => 10, 'sample_type' => 'Soil', 'description' => 'Final record', 'storage_conditions' => 'Ambient', 'storage_container' => 'Bags', 'data_product_ids' => ''),
 );
-$columns = array_merge($columns, array('taxon', 'years', 'number_of_sites'));
-foreach ($rows as &$row) { $row['taxon'] = 'Old taxon'; $row['years'] = '2018-2024'; $row['number_of_sites'] = 2; }
+$columns = array_merge($columns, array('taxon', 'years', 'number_of_sites', 'description_url'));
+foreach ($rows as &$row) { $row['taxon'] = 'Old taxon'; $row['years'] = '2018-2024'; $row['number_of_sites'] = 2; $row['description_url'] = 'https://example.org/collections/' . $row['collid']; }
 unset($row);
 $catalog = array('version' => 1, 'items' => array(
-    array('id' => 8, 'collectionCode' => 'NEON-AQ-DNA', 'taxa' => array('Invertebrates', 'Aquatic Macroinvertebrates'),
+    array('id' => 8, 'description' => $rows[0]['description'], 'collectionCode' => 'NEON-AQ-DNA', 'taxa' => array('Invertebrates', 'Aquatic Macroinvertebrates'),
         'preservation' => array('Genomic Samples'), 'siteCodes' => array(
             array('siteCode' => 'ABBY', 'availableMonths' => array('2024-08', '2018-06')),
             array('siteCode' => 'BART', 'availableMonths' => array('2018-06')),
@@ -30,9 +30,9 @@ $catalog = array('version' => 1, 'items' => array(
         'preservation' => array('Frozen', 'Dried'), 'siteCodes' => array()),
 ));
 $summary = SampleTypeSummaryExport::read(new SummaryResult($rows, $columns), $catalog);
-$expectedColumns = array('sample_type', 'collection_code', 'collection_id', 'description', 'preservation',
+$expectedColumns = array('sample_type', 'collection_code', 'collection_id', 'preservation',
     'storage_conditions', 'storage_container', 'data_product_ids', 'taxonomic_groups', 'collection_months',
-    'sites', 'number_of_sites');
+    'sites', 'number_of_sites', 'description', 'description_url');
 if ($summary['columns'] !== $expectedColumns) throw new Exception('Wrong enriched summary columns');
 $first = $summary['rows'][0];
 if ($first['collection_id'] !== 8 || $first['collection_code'] !== 'NEON-AQ-DNA') throw new Exception('Wrong collection identity');
@@ -42,7 +42,9 @@ if ($first['sites'] !== 'ABBY; BART' || $first['preservation'] !== 'Genomic Samp
 if ($summary['rows'][1]['preservation'] !== 'Frozen; Dried') throw new Exception('Multiple preservation values lost');
 if ($summary['rows'][2]['collection_id'] !== 10 || $summary['rows'][2]['sites'] !== '') throw new Exception('Unmapped summary rows must be retained');
 if (count($summary['rows']) !== 3 || array_key_exists('collid', $summary['rows'][0])) throw new Exception('Must export all summary rows without first column');
-if ($summary['rows'][0]['description'] !== $rows[0]['description']) throw new Exception('Do not truncate descriptions in downloads');
+if ($summary['rows'][0]['description'] !== 'DNA extracts, including "archived" samples.') throw new Exception('Description must stop before Sampling');
+if ($summary['rows'][1]['description'] !== trim($rows[1]['description'])) throw new Exception('Descriptions without Sampling must remain complete');
+if ($summary['rows'][2]['description'] !== 'Final record') throw new Exception('Fallback description lost');
 $stream = fopen('php://temp', 'w+');
 fwrite($stream, SampleTypeSummaryExport::csv($summary));
 rewind($stream);
@@ -54,6 +56,33 @@ foreach ($summary['rows'] as $row) {
 fclose($stream);
 $empty = SampleTypeSummaryExport::read(new SummaryResult(array(), $columns), $catalog);
 if (trim(SampleTypeSummaryExport::csv($empty)) !== implode(',', $expectedColumns)) throw new Exception('Empty exports must retain headers');
+class CacheTestSummaryExport extends SampleTypeSummaryExport {
+    public static $renders = 0;
+    public static function pdf(array $summary): string {
+        self::$renders++;
+        return '%PDF-test-' . self::$renders;
+    }
+}
+$cacheDirectory = sys_get_temp_dir() . '/summary-cache-' . uniqid();
+mkdir($cacheDirectory);
+try {
+    $firstPdf = CacheTestSummaryExport::cachedPdf($summary, $cacheDirectory);
+    if (CacheTestSummaryExport::cachedPdf($summary, $cacheDirectory) !== $firstPdf || CacheTestSummaryExport::$renders !== 1) {
+        throw new Exception('Repeated download regenerated PDF');
+    }
+    $changed = $summary;
+    $changed['rows'][0]['description'] = 'Updated';
+    CacheTestSummaryExport::cachedPdf($changed, $cacheDirectory);
+    if (CacheTestSummaryExport::$renders !== 2) throw new Exception('Changed data must invalidate PDF');
+    file_put_contents($cacheDirectory . '/sample-summary-pdf.json', 'incomplete');
+    CacheTestSummaryExport::cachedPdf($changed, $cacheDirectory);
+    if (CacheTestSummaryExport::$renders !== 3) throw new Exception('Corrupt cache must be rebuilt');
+    CacheTestSummaryExport::cachedPdf($summary, $cacheDirectory . '/missing');
+    if (CacheTestSummaryExport::$renders !== 4) throw new Exception('Unavailable cache must not prevent downloading');
+} finally {
+    foreach (glob($cacheDirectory . '/*') as $file) unlink($file);
+    rmdir($cacheDirectory);
+}
 if (in_array('--pdf-base64', $argv ?? array(), true)) {
     $pdf = SampleTypeSummaryExport::pdf($summary);
     if (substr($pdf, 0, 5) !== '%PDF-' || strpos($pdf, '%%EOF') === false) throw new Exception('Invalid PDF');
