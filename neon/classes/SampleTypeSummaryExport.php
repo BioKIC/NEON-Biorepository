@@ -133,14 +133,14 @@ class SampleTypeSummaryExport {
         $bottom = $pdf->getPageHeight() - 15;
         $pdf->SetFont('calibri', '', 22);
         $pdf->MultiCell($width, 10, 'NEON Sample Type Catalog (All Sample Types)', 0, 'L');
-        $pdf->SetFont('calibri', 'B', 14);
-        $pdf->Write(6.5, 'Generated: ');
-        $pdf->SetFont('calibri', '', 14);
-        $pdf->Write(6.5, gmdate('Y-m-d') . '    ');
-        $pdf->SetFont('calibri', 'B', 14);
-        $pdf->Write(6.5, 'Sample Type Count: ');
-        $pdf->SetFont('calibri', '', 14);
-        $pdf->Write(6.5, count($summary['rows']) . ' (full catalog)', '', false, 'L', true);
+        $pdf->SetFont('calibri', 'B', 13);
+        $pdf->Write(6, 'Generated: ');
+        $pdf->SetFont('calibri', '', 13);
+        $pdf->Write(6, gmdate('Y-m-d') . '    ');
+        $pdf->SetFont('calibri', 'B', 13);
+        $pdf->Write(6, 'Sample Type Count: ');
+        $pdf->SetFont('calibri', '', 13);
+        $pdf->Write(6, count($summary['rows']) . ' (full catalog)', '', false, 'L', true);
         $pdf->Ln(4);
         $labels = array('collection_code' => 'Collection Code', 'description_url' => 'URL',
             'taxonomic_groups' => 'Taxon Groups', 'storage_conditions' => 'Storage', 'storage_container' => 'Container');
@@ -152,7 +152,7 @@ class SampleTypeSummaryExport {
             $lines = array();
             $line = array();
             $lineWidth = 0;
-            $pdf->SetFont('calibri', '', 14);
+            $pdf->SetFont('calibri', '', 13);
             foreach ($summary['columns'] as $column) {
                 if ($column === 'sample_type' || $column === 'description') continue;
                 $value = trim(preg_replace('/\s+/u', ' ', (string)($row[$column] ?? '')));
@@ -174,7 +174,7 @@ class SampleTypeSummaryExport {
                 $text = implode('    ', array_map(function ($field) { return $field['label'] . ': ' . $field['value']; }, $fields));
                 $height += $pdf->getStringHeight($width, $text) + 1;
             }
-            $pdf->SetFont('calibri', '', 14);
+            $pdf->SetFont('calibri', '', 13);
             $height += $pdf->getStringHeight($width, $description) + 4;
             $pdf->SetFont('calibri', 'B', 14);
             $height += max(0, $pdf->getStringHeight($width, $name) - 6);
@@ -189,21 +189,21 @@ class SampleTypeSummaryExport {
             $pdf->Ln(1);
             foreach ($lines as $fields) {
                 foreach ($fields as $i => $field) {
-                    if ($i) $pdf->Write(6.5, '    ');
+                    if ($i) $pdf->Write(6, '    ');
                     $pdf->SetTextColor(30, 30, 30);
-                    $pdf->SetFont('calibri', 'B', 14);
-                    $pdf->Write(6.5, $field['label'] . ': ');
-                    $pdf->SetFont('calibri', '', 14);
+                    $pdf->SetFont('calibri', 'B', 13);
+                    $pdf->Write(6, $field['label'] . ': ');
+                    $pdf->SetFont('calibri', '', 13);
                     if ($field['url']) $pdf->SetTextColor(50, 70, 150);
-                    $pdf->Write(6.5, $field['value'] !== '' ? $field['value'] : '-', $field['url']);
+                    $pdf->Write(6, $field['value'] !== '' ? $field['value'] : '-', $field['url']);
                 }
-                $pdf->Ln(6.5);
+                $pdf->Ln(6);
             }
             if ($description !== '') {
                 $pdf->Ln(2);
-                $pdf->SetFont('calibri', '', 14);
+                $pdf->SetFont('calibri', '', 13);
                 $pdf->SetTextColor(30, 30, 30);
-                $pdf->MultiCell($width, 6.5, $description, 0, 'L');
+                $pdf->MultiCell($width, 6, $description, 0, 'L');
             }
             $pdf->Ln(5);
         }
