@@ -1,38 +1,12 @@
 <?php
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT . '/content/lang/collections/misc/collprofiles.' . $LANG_TAG . '.php');
-include_once($SERVER_ROOT . '/classes/OccurrenceCollectionProfile.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
-unset($_SESSION['editorquery']);
-
-$collManager = new OccurrenceCollectionProfile();
-
-$collid = isset($_REQUEST['collid']) ? $collManager->sanitizeInt($_REQUEST['collid']) : 0;
-$action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
-$eMode = array_key_exists('emode', $_REQUEST) ? $collManager->sanitizeInt($_REQUEST['emode']) : 0;
-
-if ($eMode && !$SYMB_UID) header('Location: ../../profile/index.php?refurl=../collections/misc/collprofiles.php?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
-
-$collManager->setCollid($collid);
-
-$collData = $collManager->getCollectionMetadata();
-$datasetKey = $collManager->getDatasetKey();
-
-$editCode = 0;		//0 = no permissions; 1 = CollEditor; 2 = CollAdmin; 3 = SuperAdmin
-if ($SYMB_UID) {
-	if ($IS_ADMIN) {
-		$editCode = 3;
-	} else if ($collid) {
-		if (array_key_exists('CollAdmin', $USER_RIGHTS) && in_array($collid, $USER_RIGHTS['CollAdmin'])) $editCode = 2;
-		elseif (array_key_exists('CollEditor', $USER_RIGHTS) && in_array($collid, $USER_RIGHTS['CollEditor'])) $editCode = 1;
-	}
-}
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-	<title>Browse NEON Sample Types</title>
-	<meta name="keywords" content="Natural history collections,<?php echo ($collid ? $collData[$collid]['collectionname'] : ''); ?>" />
+	<title>Explore NEON Sample Types</title>
 	<meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
 	<meta http-equiv="Pragma" content="no-cache">
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
@@ -46,6 +20,7 @@ if ($SYMB_UID) {
 <body>
 	<div id="innertext">
 		<div id="biorepo-collections-content"></div>
+		<noscript>Enable JavaScript to search and filter sample types.</noscript>
 	</div>
 	<?php
 	include($SERVER_ROOT . '/includes/footer.php');
