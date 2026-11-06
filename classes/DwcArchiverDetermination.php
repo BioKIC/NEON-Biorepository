@@ -84,28 +84,19 @@ class DwcArchiverDetermination extends DwcArchiverBaseManager{
 				if($colName) $sqlFrag .= ', ' . $colName;
 			}
 
-			//NEON edit start - redact protected determinations
-			/*
-			$this->sqlArr[] = 'SELECT ' . trim($sqlFrag, ', ') . ' FROM omoccurdeterminations d INNER JOIN omexportoccurrences x ON d.occid = x.occid
-				LEFT JOIN taxa t ON d.tidinterpreted = t.tid
-				WHERE x.omExportID = ? AND d.appliedstatus = 1 ';
-			*/
-
-			$isSecuredReader = false;
-			if($GLOBALS['USER_RIGHTS']){
-				if($GLOBALS['IS_ADMIN'] || !empty($GLOBALS['USER_RIGHTS']['CollAdmin']) || !empty($GLOBALS['USER_RIGHTS']['RareSppAdmin']) || !empty($GLOBALS['USER_RIGHTS']['RareSppReadAll'])){
-					$isSecuredReader = true;
-				}
-			}
-
 			$sql = 'SELECT ' . trim($sqlFrag, ', ') . ' FROM omoccurdeterminations d INNER JOIN omexportoccurrences x ON d.occid = x.occid
 				LEFT JOIN taxa t ON d.tidinterpreted = t.tid
 				WHERE x.omExportID = ? AND d.appliedstatus = 1 ';
-			if(!$isSecuredReader){
-				$sql .= 'AND d.securityStatus = 0';
+
+			//NEON edit start - redact protected determinations
+			if($GLOBALS['USER_RIGHTS']){
+				if($GLOBALS['IS_ADMIN'] || !empty($GLOBALS['USER_RIGHTS']['CollAdmin']) || !empty($GLOBALS['USER_RIGHTS']['RareSppAdmin']) || !empty($GLOBALS['USER_RIGHTS']['RareSppReadAll'])){
+					$sql .= 'AND d.securityStatus = 0';
+				}
 			}
-			$this->sqlArr[] = $sql;
 			//NEON edit end
+
+			$this->sqlArr[] = $sql;
 		}
 	}
 
