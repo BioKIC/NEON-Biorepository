@@ -16,8 +16,8 @@ $rows = array(
     array('collid' => 9, 'sample_type' => 'Plant tissue – café', 'description' => str_repeat('A long description with complete metadata and preserved Unicode: α β µ. ', 45), 'storage_conditions' => null, 'storage_container' => 'Vials & bags <sealed>', 'data_product_ids' => ''),
     array('collid' => 10, 'sample_type' => 'Soil', 'description' => 'Final record', 'storage_conditions' => 'Ambient', 'storage_container' => 'Bags', 'data_product_ids' => ''),
 );
-$columns = array_merge($columns, array('taxon', 'years'));
-foreach ($rows as &$row) { $row['taxon'] = 'Old taxon'; $row['years'] = '2018-2024'; }
+$columns = array_merge($columns, array('taxon', 'years', 'number_of_sites'));
+foreach ($rows as &$row) { $row['taxon'] = 'Old taxon'; $row['years'] = '2018-2024'; $row['number_of_sites'] = 2; }
 unset($row);
 $catalog = array('version' => 1, 'items' => array(
     array('id' => 8, 'collectionCode' => 'NEON-AQ-DNA', 'taxa' => array('Invertebrates', 'Aquatic Macroinvertebrates'),
@@ -30,8 +30,9 @@ $catalog = array('version' => 1, 'items' => array(
         'preservation' => array('Frozen', 'Dried'), 'siteCodes' => array()),
 ));
 $summary = SampleTypeSummaryExport::read(new SummaryResult($rows, $columns), $catalog);
-$expectedColumns = array('sample_type', 'description', 'storage_conditions', 'storage_container', 'data_product_ids',
-    'taxonomic_groups', 'collection_months', 'collection_code', 'collection_id', 'preservation', 'sites');
+$expectedColumns = array('sample_type', 'collection_code', 'collection_id', 'description', 'preservation',
+    'storage_conditions', 'storage_container', 'data_product_ids', 'taxonomic_groups', 'collection_months',
+    'sites', 'number_of_sites');
 if ($summary['columns'] !== $expectedColumns) throw new Exception('Wrong enriched summary columns');
 $first = $summary['rows'][0];
 if ($first['collection_id'] !== 8 || $first['collection_code'] !== 'NEON-AQ-DNA') throw new Exception('Wrong collection identity');

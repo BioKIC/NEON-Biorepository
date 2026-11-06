@@ -12,6 +12,19 @@ class SampleTypeSummaryExport {
         $columns = array_values(array_unique(array_merge($columns, array(
             'collection_code', 'collection_id', 'preservation', 'sites', 'taxonomic_groups', 'collection_months'
         ))));
+        // Keep the summary's existing order, with collection identity immediately after its name.
+        $columns = array_values(array_diff($columns, array('collection_code', 'collection_id', 'preservation', 'sites')));
+        array_splice($columns, 1, 0, array('collection_code', 'collection_id'));
+        foreach (array('preservation' => 'storageconditions', 'sites' => 'numberofsites') as $column => $anchor) {
+            $position = count($columns);
+            foreach ($columns as $index => $name) {
+                if (strtolower(preg_replace('/[^a-z0-9]/i', '', $name)) === $anchor) {
+                    $position = $index;
+                    break;
+                }
+            }
+            array_splice($columns, $position, 0, array($column));
+        }
         $rows = array();
         while ($row = $result->fetch_assoc()) {
             $id = (int)$row['collid'];
