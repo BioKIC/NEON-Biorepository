@@ -26,10 +26,12 @@ class SampleCatalog extends Manager {
             $walk($nodes);
         }
         if (!$catalog) throw new RuntimeException('No sample types configured');
+        // The public browse trees select catalog collections; securityKey is an integration
+        // credential generated for ordinary collections, not a visibility flag.
         // All IDs originate in trusted JSON and are cast to integers.
         $ids = implode(',', array_keys($catalog));
         $result = $this->conn->query("SELECT collid, COALESCE(NULLIF(publicName, ''), collectionName) AS name,
-            fullDescription FROM omcollections WHERE collid IN ($ids) AND COALESCE(securityKey, '') = ''");
+            fullDescription FROM omcollections WHERE collid IN ($ids)");
         if (!$result) throw new RuntimeException('Unable to read collection metadata');
         $public = array();
         while ($row = $result->fetch_assoc()) {
@@ -39,7 +41,7 @@ class SampleCatalog extends Manager {
             $public[$id]['description'] = trim(html_entity_decode(strip_tags($row['fullDescription'] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         }
         $catalog = $public;
-        if (!$catalog) throw new RuntimeException('No public sample types configured');
+        if (!$catalog) throw new RuntimeException('No configured sample type IDs match omcollections; check that the local database contains the collections referenced in collections-*.json');
         $ids = implode(',', array_keys($catalog));
         // Same NEON Site association as OccurrenceListFunctions::getNeonAvailabilitySiteCodes.
         $result = $this->conn->query("SELECT DISTINCT o.collid, d.name AS siteCode,

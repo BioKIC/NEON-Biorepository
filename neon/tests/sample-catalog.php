@@ -13,7 +13,8 @@ class Rows {
 class Connection {
     public function query($sql) {
         if (strpos($sql, 'FROM omcollections') !== false) {
-            if (strpos($sql, "COALESCE(securityKey, '') = ''") === false) throw new Exception('Missing public collection restriction');
+            if (strpos($sql, 'securityKey') !== false) throw new Exception('Integration keys must not exclude catalog collections');
+            if (strpos($sql, 'collid IN (1,2)') === false) throw new Exception('Missing configured collection restriction');
             return new Rows(array(array('collid' => 1, 'name' => 'Ear Punches', 'fullDescription' => '<p>Frozen &amp; preserved</p>')));
         }
         if (strpos($sql, 'SELECT DISTINCT o.collid') !== false) {
@@ -37,14 +38,14 @@ try {
             array('id' => 1, 'name' => 'Small Mammals', 'children' => array(
                 array('name' => 'Ear Punches', 'collid' => 1),
                 array('id' => 1, 'name' => 'Ear Punches', 'collid' => 1),
-                array('name' => 'Private collection', 'collid' => 2),
+                array('name' => 'Missing collection', 'collid' => 2),
             )),
         )));
         file_put_contents($SERVER_ROOT . '/neon-react/biorepo_lib/collections-' . $tree . '.json', json_encode($nodes));
     }
     require dirname(__DIR__) . '/classes/SampleCatalog.php';
     $result = (new SampleCatalog())->build();
-    if (count($result['items']) !== 1) throw new Exception('Private or duplicate collections leaked');
+    if (count($result['items']) !== 1) throw new Exception('Missing or duplicate collections included');
     $item = $result['items'][0];
     if ($item['taxa'] !== array('taxonomic', 'Small Mammals')) throw new Exception('Taxonomic hierarchy lost');
     if ($item['description'] !== 'Frozen & preserved') throw new Exception('Description normalization failed');

@@ -1,6 +1,8 @@
 <?php
 // Run after nightly maintenance: php neon/scripts/refresh-sample-catalog.php
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
+// Legacy portal configuration expects an HTTP port even when invoked from CLI.
+$_SERVER['SERVER_PORT'] = $_SERVER['SERVER_PORT'] ?? 80;
 require_once dirname(__DIR__, 2) . '/config/symbini.php';
 require_once $SERVER_ROOT . '/neon/classes/SampleCatalog.php';
 $directory = $SERVER_ROOT . '/neon/cache';
