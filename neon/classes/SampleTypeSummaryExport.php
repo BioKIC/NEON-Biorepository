@@ -63,6 +63,34 @@ class SampleTypeSummaryExport {
         return $csv;
     }
 
+    /** PDFs follow the complete browse catalog, including types not in neonsamplesummary. */
+    public static function forPdf(array $catalog, string $baseUrl): array {
+        $columns = array('sample_type', 'collection_code', 'description_url', 'protocol', 'taxonomic_groups',
+            'preservation', 'storage_conditions', 'storage_container', 'available_dates', 'description');
+        $rows = array();
+        foreach ($catalog['items'] as $item) {
+            $months = array();
+            foreach ($item['siteCodes'] ?? array() as $site) $months = array_merge($months, $site['availableMonths']);
+            $months = array_values(array_unique($months));
+            sort($months);
+            $intro = preg_split('/\bSampling\b/u', $item['description'] ?? '', 2)[0];
+            $rows[] = array(
+                'sample_type' => $item['name'],
+                'collection_code' => $item['collectionCode'] ?? '',
+                'description_url' => rtrim($baseUrl, '/') . '/collections/misc/neoncollprofiles.php?collid=' . (int)$item['id'],
+                'protocol' => implode('; ', $item['protocols'] ?? array()),
+                'taxonomic_groups' => implode('; ', $item['taxa'] ?? array()),
+                'preservation' => implode('; ', $item['preservation'] ?? array()),
+                'storage_conditions' => $item['storageConditions'] ?? '',
+                'storage_container' => $item['storageContainer'] ?? '',
+                'available_dates' => $months ? reset($months) . ' through ' . end($months) : 'No dated records',
+                'description' => trim(preg_replace('/\s+/u', ' ', $intro)),
+            );
+        }
+        usort($rows, function ($a, $b) { return strnatcasecmp($a['sample_type'], $b['sample_type']); });
+        return array('columns' => $columns, 'rows' => $rows);
+    }
+
     /** Reuse a completed PDF until its data, generation date, or renderer changes. */
     public static function cachedPdf(array $summary, string $directory): string {
         $key = hash('sha256', hash_file('sha256', __FILE__) . '|' . gmdate('Y-m-d') . '|' . json_encode($summary, JSON_THROW_ON_ERROR));
@@ -103,15 +131,19 @@ class SampleTypeSummaryExport {
         $pdf->AddPage();
         $width = $pdf->getPageWidth() - 36;
         $bottom = $pdf->getPageHeight() - 15;
-        $pdf->SetFont('calibri', '', 16);
+        $pdf->SetFont('calibri', '', 18);
         $pdf->MultiCell($width, 8, 'NEON Sample Type Catalog (All Sample Types)', 0, 'L');
-        $pdf->SetFont('calibri', '', 9);
-        $pdf->MultiCell($width, 4.2, 'Generated: ' . gmdate('Y-m-d') . '    Sample Type Count: '
-            . count($summary['rows']) . ' (full catalog)', 0, 'L');
-        $pdf->MultiCell($width, 4.2, 'Sort: by Sample Type, ascending', 0, 'L');
+        $pdf->SetFont('calibri', 'B', 11);
+        $pdf->Write(5.5, 'Generated: ');
+        $pdf->SetFont('calibri', '', 11);
+        $pdf->Write(5.5, gmdate('Y-m-d') . '    ');
+        $pdf->SetFont('calibri', 'B', 11);
+        $pdf->Write(5.5, 'Sample Type Count: ');
+        $pdf->SetFont('calibri', '', 11);
+        $pdf->Write(5.5, count($summary['rows']) . ' (full catalog)', '', false, 'L', true);
         $pdf->Ln(4);
-        $labels = array('collection_id' => 'Collection ID', 'collection_code' => 'Collection Code',
-            'description_url' => 'URL', 'data_product_ids' => 'Data Product IDs');
+        $labels = array('collection_code' => 'Collection Code', 'description_url' => 'URL',
+            'taxonomic_groups' => 'Taxon Groups', 'storage_conditions' => 'Storage', 'storage_container' => 'Container');
         foreach ($summary['rows'] as $index => $row) {
             $name = (string)($row['sample_type'] ?? ('Sample type ' . ($index + 1)));
             $description = (string)($row['description'] ?? '');
@@ -120,7 +152,7 @@ class SampleTypeSummaryExport {
             $lines = array();
             $line = array();
             $lineWidth = 0;
-            $pdf->SetFont('calibri', '', 9);
+            $pdf->SetFont('calibri', '', 11);
             foreach ($summary['columns'] as $column) {
                 if ($column === 'sample_type' || $column === 'description') continue;
                 $value = trim(preg_replace('/\s+/u', ' ', (string)($row[$column] ?? '')));
@@ -142,9 +174,9 @@ class SampleTypeSummaryExport {
                 $text = implode('    ', array_map(function ($field) { return $field['label'] . ': ' . $field['value']; }, $fields));
                 $height += $pdf->getStringHeight($width, $text) + 1;
             }
-            $pdf->SetFont('calibri', '', 10);
+            $pdf->SetFont('calibri', '', 12);
             $height += $pdf->getStringHeight($width, $description) + 4;
-            $pdf->SetFont('calibri', 'B', 12);
+            $pdf->SetFont('calibri', 'B', 14);
             $height += max(0, $pdf->getStringHeight($width, $name) - 6);
             if ($pdf->GetY() + min($height, 35) > $bottom
                 || ($height < $bottom - 15 && $pdf->GetY() + $height > $bottom)) $pdf->AddPage();
@@ -157,21 +189,21 @@ class SampleTypeSummaryExport {
             $pdf->Ln(1);
             foreach ($lines as $fields) {
                 foreach ($fields as $i => $field) {
-                    if ($i) $pdf->Write(4.2, '    ');
+                    if ($i) $pdf->Write(5.2, '    ');
                     $pdf->SetTextColor(30, 30, 30);
-                    $pdf->SetFont('calibri', 'B', 9);
-                    $pdf->Write(4.2, $field['label'] . ': ');
-                    $pdf->SetFont('calibri', '', 9);
+                    $pdf->SetFont('calibri', 'B', 11);
+                    $pdf->Write(5.2, $field['label'] . ': ');
+                    $pdf->SetFont('calibri', '', 11);
                     if ($field['url']) $pdf->SetTextColor(50, 70, 150);
-                    $pdf->Write(4.2, $field['value'] !== '' ? $field['value'] : '-', $field['url']);
+                    $pdf->Write(5.2, $field['value'] !== '' ? $field['value'] : '-', $field['url']);
                 }
-                $pdf->Ln(4.2);
+                $pdf->Ln(5.2);
             }
             if ($description !== '') {
                 $pdf->Ln(2);
-                $pdf->SetFont('calibri', '', 10);
+                $pdf->SetFont('calibri', '', 12);
                 $pdf->SetTextColor(30, 30, 30);
-                $pdf->MultiCell($width, 4.5, $description, 0, 'L');
+                $pdf->MultiCell($width, 5.5, $description, 0, 'L');
             }
             $pdf->Ln(5);
         }

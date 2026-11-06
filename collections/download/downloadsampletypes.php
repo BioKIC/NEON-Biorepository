@@ -21,10 +21,19 @@ try {
     if (($catalog['version'] ?? null) !== 1 || !isset($catalog['items']) || !is_array($catalog['items'])) {
         throw new RuntimeException('Invalid sample catalog cache');
     }
-    $summary = SampleTypeSummaryExport::read((new SampleDashboard())->getSummaryTable(), $catalog);
-    if ($format === 'csv') $content = SampleTypeSummaryExport::csv($summary);
-    elseif ($format === 'json') $content = json_encode($summary['rows'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-    else $content = SampleTypeSummaryExport::cachedPdf($summary, $SERVER_ROOT . '/neon/cache');
+    if ($format === 'pdf') {
+        $host = rtrim(($SERVER_HOST ?? '') ?: ($_SERVER['HTTP_HOST'] ?? 'localhost'), '/');
+        if (!preg_match('~^https?://~i', $host)) {
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+            $host = $scheme . $host;
+        }
+        $summary = SampleTypeSummaryExport::forPdf($catalog, $host . '/' . trim($CLIENT_ROOT, '/'));
+        $content = SampleTypeSummaryExport::cachedPdf($summary, $SERVER_ROOT . '/neon/cache');
+    } else {
+        $summary = SampleTypeSummaryExport::read((new SampleDashboard())->getSummaryTable(), $catalog);
+        if ($format === 'csv') $content = SampleTypeSummaryExport::csv($summary);
+        else $content = json_encode($summary['rows'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+    }
 } catch (Throwable $error) {
     error_log('Sample type summary download failed: ' . $error->getMessage());
     http_response_code(503);

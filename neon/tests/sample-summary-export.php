@@ -56,6 +56,31 @@ foreach ($summary['rows'] as $row) {
 fclose($stream);
 $empty = SampleTypeSummaryExport::read(new SummaryResult(array(), $columns), $catalog);
 if (trim(SampleTypeSummaryExport::csv($empty)) !== implode(',', $expectedColumns)) throw new Exception('Empty exports must retain headers');
+$pdfCatalog = $catalog;
+foreach ($pdfCatalog['items'] as &$item) {
+    $item['name'] = $item['id'] === 8 ? 'Aquatic DNA extracts' : 'Plant tissue';
+    $item['protocols'] = array('INV - Aquatic Macroinvertebrate Sampling');
+    $item['storageConditions'] = '-80 °C';
+    $item['storageContainer'] = '96-well plates';
+    if ($item['id'] === 9) $item['description'] = 'Plant tissues collected for archival storage. Sampling details';
+}
+unset($item);
+$pdfCatalog['items'][] = array('id' => 99, 'name' => 'Soil', 'collectionCode' => 'NEON-SOIL',
+    'description' => 'Archived soil specimens. Sampling details not included.');
+$pdfSummary = SampleTypeSummaryExport::forPdf($pdfCatalog, 'https://example.org/portal/');
+if (count($pdfSummary['rows']) !== 3 || $pdfSummary['rows'][2]['collection_code'] !== 'NEON-SOIL') {
+    throw new Exception('PDF must include catalog items missing from summary table');
+}
+if ($pdfSummary['columns'] !== array('sample_type', 'collection_code', 'description_url', 'protocol',
+    'taxonomic_groups', 'preservation', 'storage_conditions', 'storage_container', 'available_dates', 'description')) {
+    throw new Exception('PDF fields differ from requested list');
+}
+if ($pdfSummary['rows'][0]['available_dates'] !== '2018-06 through 2024-08') throw new Exception('Wrong PDF available dates');
+if ($pdfSummary['rows'][2]['description_url'] !== 'https://example.org/portal/collections/misc/neoncollprofiles.php?collid=99') throw new Exception('Missing collection URL');
+if ($pdfSummary['rows'][2]['description'] !== 'Archived soil specimens.') throw new Exception('PDF description must stop before Sampling');
+$fullCatalog = array('items' => array());
+for ($i = 1; $i <= 84; $i++) $fullCatalog['items'][] = array('id' => $i, 'name' => 'Sample ' . $i);
+if (count(SampleTypeSummaryExport::forPdf($fullCatalog, 'https://example.org')['rows']) !== 84) throw new Exception('Full PDF count must follow all 84 catalog items');
 class CacheTestSummaryExport extends SampleTypeSummaryExport {
     public static $renders = 0;
     public static function pdf(array $summary): string {
@@ -84,7 +109,7 @@ try {
     rmdir($cacheDirectory);
 }
 if (in_array('--pdf-base64', $argv ?? array(), true)) {
-    $pdf = SampleTypeSummaryExport::pdf($summary);
+    $pdf = SampleTypeSummaryExport::pdf($pdfSummary);
     if (substr($pdf, 0, 5) !== '%PDF-' || strpos($pdf, '%%EOF') === false) throw new Exception('Invalid PDF');
     echo base64_encode($pdf);
 } else {
