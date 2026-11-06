@@ -11,11 +11,35 @@ class Rows {
     public function fetch_assoc() { return array_shift($this->rows); }
 }
 class Connection {
+    public function real_escape_string($value) { return addslashes($value); }
     public function query($sql) {
         if (strpos($sql, 'FROM omcollections') !== false) {
             if (strpos($sql, 'securityKey') !== false) throw new Exception('Integration keys must not exclude catalog collections');
-            if (strpos($sql, 'collid IN (1,2)') === false) throw new Exception('Missing configured collection restriction');
-            return new Rows(array(array('collid' => 1, 'name' => 'Ear Punches', 'collectionCode' => 'NEON-MAM-EP', 'fullDescription' => '<p>Frozen &amp; preserved</p>')));
+            if (strpos($sql, 'collid IN (1,2,118,119)') === false) throw new Exception('Missing configured collection restriction');
+            return new Rows(array(array('collid' => 1, 'name' => 'Ear Punches', 'collectionCode' => 'NEON-MAM-EP', 'fullDescription' => '<p>Frozen &amp; preserved</p>'),
+                array('collid' => 118, 'name' => 'Gastrointestinal Tracts'),
+                array('collid' => 119, 'name' => 'Hearts')));
+        }
+        if (strpos($sql, 'FROM ommaterialsample ms') !== false) {
+            foreach (array('o.collid IN(17,19,28)', 'COALESCE(o.recordSecurity, 0) = 0',
+                'EXISTS (SELECT 1', 'ms.occid = o.occid') as $required) {
+                if (strpos($sql, $required) === false) throw new Exception('Missing tissue restriction: ' . $required);
+            }
+            $heart = strpos($sql, "LIKE '%heart%'") !== false;
+            $tract = strpos($sql, "LIKE '%tract%'") !== false;
+            if (!$heart && !$tract) throw new Exception('Unexpected tissue type');
+            $id = $heart ? 119 : 118;
+            if (strpos($sql, 'SELECT DISTINCT') !== false) {
+                if (strpos($sql, "$id AS collid") === false) throw new Exception('Heart and tract mappings reversed');
+                if (strpos($sql, "d.notes = 'NEON Site'") === false) throw new Exception('Missing site dataset restriction');
+                return new Rows(array(
+                    array('siteCode' => 'ABBY', 'month' => '2024-02'),
+                    array('siteCode' => 'ABBY', 'month' => '2024-01'),
+                    array('siteCode' => 'ABBY', 'month' => '2024-01'),
+                    array('siteCode' => 'BART', 'month' => null),
+                ));
+            }
+            return new Rows(array(array('count' => $heart ? 7 : 5)));
         }
         if (strpos($sql, 'SELECT DISTINCT o.collid') !== false) {
             if (strpos($sql, 'COALESCE(o.recordSecurity, 0) = 0') === false) throw new Exception('Missing locality restriction');
@@ -42,13 +66,15 @@ try {
                 array('name' => 'Ear Punches', 'collid' => 1),
                 array('id' => 1, 'name' => 'Ear Punches', 'collid' => 1),
                 array('name' => 'Missing collection', 'collid' => 2),
+                array('name' => 'Gastrointestinal Tracts', 'collid' => 118),
+                array('name' => 'Hearts', 'collid' => 119),
             )),
         )));
         file_put_contents($SERVER_ROOT . '/neon-react/biorepo_lib/collections-' . $tree . '.json', json_encode($nodes));
     }
     require dirname(__DIR__) . '/classes/SampleCatalog.php';
     $result = (new SampleCatalog())->build();
-    if (count($result['items']) !== 1) throw new Exception('Missing or duplicate collections included');
+    if (count($result['items']) !== 3) throw new Exception('Missing or duplicate collections included');
     $item = $result['items'][0];
     if ($item['collectionCode'] !== 'NEON-MAM-EP') throw new Exception('Collection code missing');
     if ($item['taxa'] !== array('taxonomic', 'Small Mammals')) throw new Exception('Taxonomic hierarchy lost');
@@ -57,6 +83,16 @@ try {
     if ($item['siteCodes'][1]['availableMonths'] !== array()) throw new Exception('Undated sites must remain represented');
     if ($item['totalSamples'] !== 3) throw new Exception('Totals must not multiply site associations');
     if ($item['storageConditions'] !== '') throw new Exception('Missing optional summary must be supported');
+    $byId = array_column($result['items'], null, 'id');
+    foreach (array(118 => 5, 119 => 7) as $id => $count) {
+        if ($byId[$id]['totalSamples'] !== $count) throw new Exception('Tissue totals missing or swapped');
+        if ($byId[$id]['siteCodes'][0]['availableMonths'] !== array('2024-01', '2024-02')) throw new Exception('Tissue months must be sorted and unique');
+        if ($byId[$id]['siteCodes'][1]['availableMonths'] !== array()) throw new Exception('Undated tissue sites lost');
+    }
+    if (NeonMaterialSampleCollections::TYPES !== array(118 => '%tract%', 119 => '%heart%',
+        120 => '%lung%', 121 => '%kidney%', 122 => '%spleen%', 123 => '%liver%', 124 => '%muscle%')) {
+        throw new Exception('Incorrect virtual collection mapping');
+    }
     echo "Sample catalog contract passed\n";
 } finally {
     foreach (glob($SERVER_ROOT . '/neon-react/biorepo_lib/*') as $path) unlink($path);

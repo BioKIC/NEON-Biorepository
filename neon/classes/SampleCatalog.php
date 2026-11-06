@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/../../classes/NeonMaterialSampleCollections.php');
 include_once($SERVER_ROOT . '/classes/Manager.php');
 
 /** Builds a public catalog snapshot; never exports specimen IDs or sensitive localities. */
@@ -65,6 +66,31 @@ class SampleCatalog extends Manager {
             WHERE collid IN ($ids) AND COALESCE(recordSecurity, 0) = 0 GROUP BY collid");
         if (!$result) throw new RuntimeException('Unable to count samples');
         while ($row = $result->fetch_assoc()) $catalog[(int)$row['collid']]['totalSamples'] = (int)$row['count'];
+        // Tissue pseudo-collections have no occurrences of their own. Count matching parent
+        // records with EXISTS so multiple tissue rows never multiply a record or its coverage.
+        foreach (NeonMaterialSampleCollections::TYPES as $id => $sampleType) {
+            if (!isset($catalog[$id])) continue;
+            $where = "o.collid IN(17,19,28) AND COALESCE(o.recordSecurity, 0) = 0
+                AND EXISTS (SELECT 1 FROM ommaterialsample ms WHERE ms.occid = o.occid
+                    AND ms.sampleType LIKE '" . $this->conn->real_escape_string($sampleType) . "')";
+            $result = $this->conn->query("SELECT DISTINCT $id AS collid, d.name AS siteCode,
+                DATE_FORMAT(o.eventdate, '%Y-%m') AS month FROM omoccurrences o
+                INNER JOIN omoccurdatasetlink l ON l.occid = o.occid
+                INNER JOIN omoccurdatasets d ON d.datasetid = l.datasetid
+                WHERE $where AND d.notes = 'NEON Site'");
+            if (!$result) throw new RuntimeException('Unable to aggregate tissue sample availability');
+            $sites[$id] = array();
+            while ($row = $result->fetch_assoc()) {
+                $code = $row['siteCode'];
+                if (!$code) continue;
+                if (!isset($sites[$id][$code])) $sites[$id][$code] = array('siteCode' => $code, 'availableMonths' => array());
+                if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $row['month'] ?? '')) $sites[$id][$code]['availableMonths'][] = $row['month'];
+            }
+            $result = $this->conn->query("SELECT COUNT(*) AS count FROM omoccurrences o WHERE $where");
+            if (!$result) throw new RuntimeException('Unable to count tissue sample records');
+            $row = $result->fetch_assoc();
+            $catalog[$id]['totalSamples'] = (int)$row['count'];
+        }
         foreach ($catalog as $id => &$item) {
             $item['siteCodes'] = array_values($sites[$id] ?? array());
             foreach ($item['siteCodes'] as &$site) {
