@@ -15,7 +15,7 @@ class Connection {
         if (strpos($sql, 'FROM omcollections') !== false) {
             if (strpos($sql, 'securityKey') !== false) throw new Exception('Integration keys must not exclude catalog collections');
             if (strpos($sql, 'collid IN (1,2)') === false) throw new Exception('Missing configured collection restriction');
-            return new Rows(array(array('collid' => 1, 'name' => 'Ear Punches', 'fullDescription' => '<p>Frozen &amp; preserved</p>')));
+            return new Rows(array(array('collid' => 1, 'name' => 'Ear Punches', 'collectionCode' => 'NEON-MAM-EP', 'fullDescription' => '<p>Frozen &amp; preserved</p>')));
         }
         if (strpos($sql, 'SELECT DISTINCT o.collid') !== false) {
             if (strpos($sql, 'COALESCE(o.recordSecurity, 0) = 0') === false) throw new Exception('Missing locality restriction');
@@ -50,6 +50,7 @@ try {
     $result = (new SampleCatalog())->build();
     if (count($result['items']) !== 1) throw new Exception('Missing or duplicate collections included');
     $item = $result['items'][0];
+    if ($item['collectionCode'] !== 'NEON-MAM-EP') throw new Exception('Collection code missing');
     if ($item['taxa'] !== array('taxonomic', 'Small Mammals')) throw new Exception('Taxonomic hierarchy lost');
     if ($item['description'] !== 'Frozen & preserved') throw new Exception('Description normalization failed');
     if ($item['siteCodes'][0]['availableMonths'] !== array('2023-01', '2023-02')) throw new Exception('Months must be sorted and unique');
