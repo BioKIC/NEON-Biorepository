@@ -51,7 +51,7 @@ class SampleCatalog extends Manager {
             DATE_FORMAT(o.eventdate, '%Y-%m') AS month FROM omoccurrences o
             INNER JOIN omoccurdatasetlink l ON l.occid = o.occid
             INNER JOIN omoccurdatasets d ON d.datasetid = l.datasetid
-            WHERE o.collid IN ($ids) AND COALESCE(o.recordSecurity, 0) = 0 AND d.notes = 'NEON Site'");
+            WHERE o.collid IN ($ids) AND d.notes = 'NEON Site'");
         if (!$result) throw new RuntimeException('Unable to aggregate sample availability');
         $sites = array();
         while ($row = $result->fetch_assoc()) {
@@ -63,14 +63,14 @@ class SampleCatalog extends Manager {
         }
         // Separate count avoids multiplying specimens associated with multiple sites.
         $result = $this->conn->query("SELECT collid, COUNT(*) AS count FROM omoccurrences
-            WHERE collid IN ($ids) AND COALESCE(recordSecurity, 0) = 0 GROUP BY collid");
+            WHERE collid IN ($ids) GROUP BY collid");
         if (!$result) throw new RuntimeException('Unable to count samples');
         while ($row = $result->fetch_assoc()) $catalog[(int)$row['collid']]['totalSamples'] = (int)$row['count'];
         // Tissue pseudo-collections have no occurrences of their own. Count matching parent
         // records with EXISTS so multiple tissue rows never multiply a record or its coverage.
         foreach (NeonMaterialSampleCollections::TYPES as $id => $sampleType) {
             if (!isset($catalog[$id])) continue;
-            $where = "o.collid IN(17,19,28) AND COALESCE(o.recordSecurity, 0) = 0
+            $where = "o.collid IN(17,19,28)
                 AND EXISTS (SELECT 1 FROM ommaterialsample ms WHERE ms.occid = o.occid
                     AND ms.sampleType LIKE '" . $this->conn->real_escape_string($sampleType) . "')";
             $result = $this->conn->query("SELECT DISTINCT $id AS collid, d.name AS siteCode,

@@ -13,6 +13,7 @@ class Rows {
 class Connection {
     public function real_escape_string($value) { return addslashes($value); }
     public function query($sql) {
+        if (stripos($sql, 'recordSecurity') !== false) throw new Exception('Catalog aggregates must include restricted records');
         if (strpos($sql, 'FROM omcollections') !== false) {
             if (strpos($sql, 'securityKey') !== false) throw new Exception('Integration keys must not exclude catalog collections');
             if (strpos($sql, 'collid IN (1,2,118,119)') === false) throw new Exception('Missing configured collection restriction');
@@ -21,7 +22,7 @@ class Connection {
                 array('collid' => 119, 'name' => 'Hearts')));
         }
         if (strpos($sql, 'FROM ommaterialsample ms') !== false) {
-            foreach (array('o.collid IN(17,19,28)', 'COALESCE(o.recordSecurity, 0) = 0',
+            foreach (array('o.collid IN(17,19,28)',
                 'EXISTS (SELECT 1', 'ms.occid = o.occid') as $required) {
                 if (strpos($sql, $required) === false) throw new Exception('Missing tissue restriction: ' . $required);
             }
@@ -42,7 +43,6 @@ class Connection {
             return new Rows(array(array('count' => $heart ? 7 : 5)));
         }
         if (strpos($sql, 'SELECT DISTINCT o.collid') !== false) {
-            if (strpos($sql, 'COALESCE(o.recordSecurity, 0) = 0') === false) throw new Exception('Missing locality restriction');
             return new Rows(array(
                 array('collid' => 1, 'siteCode' => 'ABBY', 'month' => '2023-02'),
                 array('collid' => 1, 'siteCode' => 'ABBY', 'month' => '2023-01'),
@@ -51,7 +51,6 @@ class Connection {
             ));
         }
         if (strpos($sql, 'COUNT(*)') !== false) {
-            if (strpos($sql, 'COALESCE(recordSecurity, 0) = 0') === false) throw new Exception('Missing sample count security restriction');
             return new Rows(array(array('collid' => 1, 'count' => 3)));
         }
         if (strpos($sql, 'SHOW TABLES') !== false) return new Rows(array());
