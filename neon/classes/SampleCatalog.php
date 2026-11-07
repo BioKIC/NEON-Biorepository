@@ -26,10 +26,35 @@ class SampleCatalog extends Manager {
             };
             $walk($nodes);
         }
+        $facetPath = $GLOBALS['SERVER_ROOT'] . '/neon-react/biorepo_lib/external-collection-facets.json';
+        $externalFacets = is_file($facetPath) ? json_decode(file_get_contents($facetPath), true, 512, JSON_THROW_ON_ERROR) : array();
+        // Match the outside-repository collections offered by the sample search form.
+        $external = $this->conn->query("SELECT DISTINCT c.collid, c.collectionName
+            FROM omcollections c
+            INNER JOIN omcollcatlink l ON c.collid = l.collid
+            INNER JOIN omcollcategories cat ON l.ccpk = cat.ccpk
+            WHERE cat.category = 'Additional NEON Collections'");
+        if (!$external) throw new RuntimeException('Unable to read outside repository collections');
+        while ($row = $external->fetch_assoc()) {
+            $id = (int)$row['collid'];
+            if (!isset($catalog[$id])) $catalog[$id] = array(
+                'id' => $id, 'name' => $row['collectionName'], 'sampleTypeName' => $row['collectionName'],
+                'description' => '', 'taxa' => array(), 'protocols' => array(), 'preservation' => array(),
+                'storageConditions' => '', 'storageContainer' => '', 'dataProducts' => '',
+                'siteCodes' => array(), 'totalSamples' => 0
+            );
+            $catalog[$id]['outsideRepository'] = true;
+            foreach (array('taxa', 'protocols', 'preservation') as $field) {
+                $catalog[$id][$field] = array_values(array_unique(array_merge(
+                    $catalog[$id][$field], $externalFacets[$id][$field] ?? array()
+                )));
+            }
+
+        }
         if (!$catalog) throw new RuntimeException('No sample types configured');
         // The public browse trees select catalog collections; securityKey is an integration
         // credential generated for ordinary collections, not a visibility flag.
-        // All IDs originate in trusted JSON and are cast to integers.
+        // IDs originate in configured trees or collection metadata and are cast to integers.
         $ids = implode(',', array_keys($catalog));
         $result = $this->conn->query("SELECT collid, COALESCE(NULLIF(publicName, ''), collectionName) AS name,
             collectionName, collectionCode, fullDescription FROM omcollections WHERE collid IN ($ids)");

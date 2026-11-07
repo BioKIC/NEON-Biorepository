@@ -39,6 +39,12 @@ class SampleTypeSummaryExport {
             sort($months);
             $row['collection_code'] = $item['collectionCode'] ?? '';
             $row['collection_id'] = $id;
+            if (!empty($item['outsideRepository'])) {
+                $row['protocol'] = implode('; ', $item['protocols'] ?? array());
+                $row['total_samples'] = $item['totalSamples'] ?? 0;
+                $row['number_of_sites'] = count(array_unique($sites));
+            }
+
             $row['preservation'] = implode('; ', $item['preservation'] ?? array());
             $row['sites'] = implode('; ', array_unique($sites));
             $row['taxonomic_groups'] = implode('; ', $item['taxa'] ?? array());

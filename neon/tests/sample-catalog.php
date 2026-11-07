@@ -14,12 +14,17 @@ class Connection {
     public function real_escape_string($value) { return addslashes($value); }
     public function query($sql) {
         if (stripos($sql, 'recordSecurity') !== false) throw new Exception('Catalog aggregates must include restricted records');
+        if (strpos($sql, "cat.category = 'Additional NEON Collections'") !== false) {
+            return new Rows($GLOBALS['externalRows'] ?? array());
+        }
         if (strpos($sql, 'FROM omcollections') !== false) {
             if (strpos($sql, 'securityKey') !== false) throw new Exception('Integration keys must not exclude catalog collections');
-            if (strpos($sql, 'collid IN (1,2,118,119)') === false) throw new Exception('Missing configured collection restriction');
-            return new Rows(array(array('collid' => 1, 'name' => 'Ear Punches', 'collectionCode' => 'NEON-MAM-EP', 'fullDescription' => '<p>Frozen &amp; preserved</p>'),
+            if (strpos($sql, isset($GLOBALS['externalRows']) ? 'collid IN (1,2,118,119,200)' : 'collid IN (1,2,118,119)') === false) throw new Exception('Missing configured collection restriction');
+            return new Rows(array_merge(array(array('collid' => 1, 'name' => 'Ear Punches', 'collectionCode' => 'NEON-MAM-EP', 'fullDescription' => '<p>Frozen &amp; preserved</p>'),
                 array('collid' => 118, 'name' => 'Gastrointestinal Tracts'),
-                array('collid' => 119, 'name' => 'Hearts')));
+                array('collid' => 119, 'name' => 'Hearts')), isset($GLOBALS['externalRows']) ? array(
+                    array('collid' => 200, 'name' => 'Outside collection', 'collectionName' => 'Outside collection', 'collectionCode' => 'EXT', 'fullDescription' => '<p>Outside specimens.</p>')
+                ) : array()));
         }
         if (strpos($sql, 'FROM ommaterialsample ms') !== false) {
             foreach (array('o.collid IN(17,19,28)',
@@ -105,6 +110,18 @@ try {
     if ($enriched[1]['storageConditions'] !== 'Frozen') throw new Exception('Parent storage was not inherited');
     if ($enriched[1]['storageContainer'] !== 'Existing container') throw new Exception('Explicit child metadata must be preserved');
     if ($enriched[118]['storageContainer'] !== 'Vials') throw new Exception('Parent metadata changed');
+    $GLOBALS['externalRows'] = array(array('collid' => 200, 'collectionName' => 'Outside collection'));
+    file_put_contents($SERVER_ROOT . '/neon-react/biorepo_lib/external-collection-facets.json', json_encode(array(
+        200 => array('taxa' => array('Invertebrates', 'Beetles (Carabids)'), 'protocols' => array('BET'), 'preservation' => array('Dry Samples'))
+    )));
+
+    $outside = array_column((new SampleCatalog())->build()['items'], null, 'id');
+    if (count($outside) !== 4 || empty($outside[200]['outsideRepository'])) throw new Exception('Outside collection missing or unmarked');
+    if ($outside[200]['collectionCode'] !== 'EXT') throw new Exception('Outside metadata missing');
+    if ($outside[200]['taxa'] !== array('Invertebrates', 'Beetles (Carabids)') || $outside[200]['protocols'] !== array('BET')
+        || $outside[200]['preservation'] !== array('Dry Samples')) throw new Exception('Outside filter metadata missing');
+
+    if (!empty($outside[1]['outsideRepository'])) throw new Exception('Internal collection marked outside');
     echo "Sample catalog contract passed\n";
 } finally {
     foreach (glob($SERVER_ROOT . '/neon-react/biorepo_lib/*') as $path) unlink($path);

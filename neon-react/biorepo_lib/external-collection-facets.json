@@ -1,0 +1,111 @@
+{
+  "44": {
+    "taxa": [
+      "Invertebrates",
+      "Beetles (Carabids)"
+    ],
+    "protocols": [
+      "BET – Ground Beetle Sampling"
+    ],
+    "preservation": [
+      "Dry Samples"
+    ]
+  },
+  "74": {
+    "taxa": [
+      "Vertebrates",
+      "Small Mammals"
+    ],
+    "protocols": [
+      "MAM – Small Mammal Sampling"
+    ],
+    "preservation": [
+      "Dry Samples",
+      "Fluid-Preserved Samples"
+    ]
+  },
+  "79": {
+    "taxa": [
+      "Geochemical"
+    ],
+    "protocols": [
+      "TIS Soil Pit Sampling Protocol"
+    ],
+    "preservation": [
+      "Dry Samples"
+    ]
+  },
+  "80": {
+    "taxa": [
+      "Geochemical"
+    ],
+    "protocols": [
+      "Pre-NEON Initial Soil Characterization"
+    ],
+    "preservation": [
+      "Dry Samples"
+    ]
+  },
+  "82": {
+    "taxa": [
+      "Invertebrates",
+      "Beetles (Carabids)"
+    ],
+    "protocols": [
+      "BET – Ground Beetle Sampling"
+    ],
+    "preservation": [
+      "Dry Samples"
+    ]
+  },
+  "83": {
+    "taxa": [
+      "Invertebrates",
+      "Ticks and Other Parasites"
+    ],
+    "protocols": [
+      "TCK – Tick and Tick-Borne Pathogen Sampling"
+    ],
+    "preservation": [
+      "Fluid-Preserved Samples"
+    ]
+  },
+  "95": {
+    "taxa": [
+      "Invertebrates",
+      "Beetles (Carabids)"
+    ],
+    "protocols": [
+      "BET – Ground Beetle Sampling"
+    ],
+    "preservation": [
+      "Dry Samples"
+    ]
+  },
+  "115": {
+    "taxa": [
+      "Terrestrial Plants"
+    ],
+    "protocols": [
+      "DIV – Plant Diversity Sampling"
+    ],
+    "preservation": [
+      "Dry Samples"
+    ]
+  },
+  "97": {
+    "taxa": [
+      "Invertebrates",
+      "Beetles (Carabids)",
+      "Terrestrial Plants"
+    ],
+    "protocols": [
+      "BET – Ground Beetle Sampling",
+      "DIV – Plant Diversity Sampling"
+    ],
+    "preservation": [
+      "Dry Samples",
+      "Fluid-Preserved Samples"
+    ]
+  }
+}

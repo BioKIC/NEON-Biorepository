@@ -114,6 +114,19 @@ try {
     foreach (glob($cacheDirectory . '/*') as $file) unlink($file);
     rmdir($cacheDirectory);
 }
+$externalRow = array_fill_keys($columns, null);
+$externalRow['collid'] = 200;
+$externalRow['sample_type'] = 'Outside repository specimens';
+$externalItem = array('id' => 200, 'name' => 'Outside repository specimens',
+    'outsideRepository' => true, 'collectionCode' => 'EXT', 'description' => 'External specimens.',
+    'taxa' => array(), 'protocols' => array(), 'preservation' => array(), 'siteCodes' => array());
+$externalCatalog = array('items' => array($externalItem));
+$externalSummary = SampleTypeSummaryExport::read(new SummaryResult(array($externalRow), $columns), $externalCatalog);
+if (strpos(SampleTypeSummaryExport::csv($externalSummary), 'Outside repository specimens') === false) throw new Exception('Outside collection missing from CSV');
+if (json_decode(json_encode($externalSummary['rows']), true)[0]['collection_id'] !== 200) throw new Exception('Outside collection missing from JSON');
+$externalPdf = SampleTypeSummaryExport::forPdf($externalCatalog, 'https://example.org', $externalSummary);
+if ($externalPdf['rows'][0]['sample_type'] !== 'Outside repository specimens') throw new Exception('Outside collection missing from PDF');
+
 if (in_array('--pdf-base64', $argv ?? array(), true)) {
     $pdf = SampleTypeSummaryExport::pdf($pdfSummary);
     if (substr($pdf, 0, 5) !== '%PDF-' || strpos($pdf, '%%EOF') === false) throw new Exception('Invalid PDF');
