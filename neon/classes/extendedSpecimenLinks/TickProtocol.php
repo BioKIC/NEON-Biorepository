@@ -4,19 +4,19 @@ require_once(__DIR__ . '/BaseProtocol.php');
 
 class TickProtocolLinker extends BaseProtocol {
 
-    private const RELATIONSHIP_SAME_INDIVIDUAL = 'sameIndividual';
+    private const RELATIONSHIP_SAME_VIAL = 'sameVial';
     private const RELATIONSHIP_SAME_COLLECTING_EVENT = 'sameCollectingEvent';
     private const RELATIONSHIP_SAME_BOUT = 'sameBout';
 
     public function run(): void {
-        $this->linkSameIndividual();
+        $this->linkSameVial();
         $this->linkSameCollectingEvent();
         $this->linkSameBout();
 
         $this->log('Finished Tick extended specimen linking');
     }
 
-    private function linkSameIndividual(): void {
+    private function linkSameVial(): void {
         /**
          * Link samples from the same original bulk nymph vial.
          * Nymphs are stored together, and a subset is sent for pathogen testing.
@@ -49,26 +49,26 @@ class TickProtocolLinker extends BaseProtocol {
             $groups[$key][] = (int)$record['occid'];
         }
 
-        $individualCount = 0;
+        $vialCount = 0;
         $associationCount = 0;
 
         foreach ($groups as $key => $occids) {
             $occids = array_values(array_unique($occids));
 
             if (count($occids) < 2) continue;
-            if ($this->groupAlreadyLinked($occids, self::RELATIONSHIP_SAME_INDIVIDUAL)) continue;
+            if ($this->groupAlreadyLinked($occids, self::RELATIONSHIP_SAME_VIAL)) continue;
 
-            $created = $this->linkOccurrenceGroup($occids, self::RELATIONSHIP_SAME_INDIVIDUAL, $key,
+            $created = $this->linkOccurrenceGroup($occids, self::RELATIONSHIP_SAME_VIAL, $key,
                 'Tick nymph samples from the same original bulk vial, including extracts from the subset sent for pathogen testing.');
 
             if ($created > 0) {
-                $individualCount++;
+                $vialCount++;
                 $associationCount += $created;
                 $this->log("Tick nymph vial {$key}: " . count($occids) . " occurrences; {$created} new associations");
             }
         }
 
-        $this->log("Tick nymph vial groups: {$individualCount} new linked groups; {$associationCount} new associations");
+        $this->log("Tick nymph vial groups: {$vialCount} new linked groups; {$associationCount} new associations");
     }
 
     private function linkSameCollectingEvent(): void {
