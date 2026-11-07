@@ -131,43 +131,6 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         $this->log("Aquatic Plant sampling bouts: {$groupCount} new linked groups; {$associationCount} new associations");
     }
 
-    protected function getOccurrencesWithEventID(): array {
-        if (!$this->collids) return [];
-
-        $collidList = implode(',', $this->collids);
-
-        // Prefer a populated NEON sampleID, then Originating NEON sampleID.
-        // Keep the tag name for diagnostics, and retain records with neither ID.
-        $sql = "
-            SELECT o.occid, o.eventID,
-                COALESCE(i.identifierValue, originating.identifierValue) AS identifierValue,
-                COALESCE(i.identifierName, originating.identifierName) AS identifierName
-            FROM omoccurrences o
-            LEFT JOIN omoccuridentifiers i ON i.occid = o.occid
-                AND i.identifierName = 'NEON sampleID'
-                AND TRIM(i.identifierValue) <> ''
-            LEFT JOIN omoccuridentifiers originating ON originating.occid = o.occid
-                AND originating.identifierName = 'Originating NEON sampleID'
-                AND TRIM(originating.identifierValue) <> ''
-                AND i.occid IS NULL
-            WHERE o.collid IN ({$collidList})
-        ";
-
-        $result = $this->conn->query($sql);
-
-        if (!$result) {
-            throw new RuntimeException('Unable to retrieve Aquatic Plant records: ' . $this->conn->error);
-        }
-
-        $records = [];
-        while ($record = $result->fetch_assoc()) {
-            $records[] = $record;
-        }
-        $result->free();
-
-        return $records;
-    }
-
     private function getEventID(?string $eventID, string $sampleID): ?string {
         $eventID = trim($eventID ?? '');
         if ($eventID !== '') return $eventID;

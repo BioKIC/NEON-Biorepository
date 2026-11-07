@@ -15,19 +15,42 @@ abstract class BaseProtocol {
 
     abstract public function run(): void;
 
-    protected function getOccurrencesWithIdentifier(string $identifierName): array {
+    /**
+     * Retrieve identifiers and eventIDs for this protocol's collections.
+     * A fallback tag is used only when the primary tag has no value.
+     * Existing callers continue to receive only records with an identifier.
+     */
+    protected function getOccurrencesWithIdentifier(string $identifierName, ?string $fallbackIdentifierName = null, bool $includeMissing = false): array {
         if (!$this->collids) return [];
 
         $collidList = implode(',', $this->collids);
+        $valueColumn = 'i.identifierValue';
+        $nameColumn = 'i.identifierName';
+        $fallbackJoin = '';
 
+        if ($fallbackIdentifierName !== null) {
+            $valueColumn = 'COALESCE(i.identifierValue, fallback.identifierValue)';
+            $nameColumn = 'COALESCE(i.identifierName, fallback.identifierName)';
+            $fallbackJoin = "
+                LEFT JOIN omoccuridentifiers fallback ON fallback.occid = o.occid
+                    AND fallback.identifierName = ?
+                    AND TRIM(fallback.identifierValue) <> ''
+                    AND i.occid IS NULL
+            ";
+        }
+
+        $identifierFilter = $includeMissing ? '' : "AND {$valueColumn} IS NOT NULL";
         $sql = "
-            SELECT o.occid, i.identifierValue
+            SELECT o.occid, o.eventID,
+                {$valueColumn} AS identifierValue,
+                {$nameColumn} AS identifierName
             FROM omoccurrences o
-            INNER JOIN omoccuridentifiers i ON i.occid = o.occid
-            WHERE o.collid IN ({$collidList})
+            LEFT JOIN omoccuridentifiers i ON i.occid = o.occid
                 AND i.identifierName = ?
-                AND i.identifierValue IS NOT NULL
-                AND i.identifierValue <> ''
+                AND TRIM(i.identifierValue) <> ''
+            {$fallbackJoin}
+            WHERE o.collid IN ({$collidList})
+                {$identifierFilter}
         ";
 
         $stmt = $this->conn->prepare($sql);
@@ -36,7 +59,11 @@ abstract class BaseProtocol {
             throw new RuntimeException('Unable to prepare occurrence identifier query: ' . $this->conn->error);
         }
 
-        $stmt->bind_param('s', $identifierName);
+        if ($fallbackIdentifierName !== null) {
+            $stmt->bind_param('ss', $identifierName, $fallbackIdentifierName);
+        } else {
+            $stmt->bind_param('s', $identifierName);
+        }
 
         if (!$stmt->execute()) {
             $error = $stmt->error;
@@ -48,12 +75,18 @@ abstract class BaseProtocol {
         $records = [];
 
         while ($row = $result->fetch_assoc()) {
-            $records[] = ['occid' => (int)$row['occid'], 'identifierValue' => $row['identifierValue']];
+            $row['occid'] = (int)$row['occid'];
+            $records[] = $row;
         }
 
         $stmt->close();
 
         return $records;
+    }
+
+    protected function getOccurrencesWithEventID(): array {
+        // Retain missing identifiers so callers can report errors or use eventID.
+        return $this->getOccurrencesWithIdentifier('NEON sampleID', 'Originating NEON sampleID', true);
     }
 
     protected function getYear(string $date): ?string {
