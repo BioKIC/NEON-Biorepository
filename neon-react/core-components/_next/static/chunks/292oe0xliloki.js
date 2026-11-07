@@ -2,6 +2,6 @@
           .ui-widget .biorepo-search-metrics-wrapper button {
             font-size: unset !important;
           }
-        `}),(0,e.jsx)("div",{style:{padding:"24px"},children:(0,e.jsx)(s.default,{siteCodes:t,view:"ungrouped",sortMethod:"sites",sortDirection:"ASC"})})]})}])},40913,t=>{t.v(e=>Promise.all(["static/chunks/2etewgkt1t-tq.js","static/chunks/395pc5u582e43.js","static/chunks/17xi32d5ggc-2.js","static/chunks/26fv90ibebrpv.css"].map(e=>t.l(e))).then(()=>e(2181)))}]);
+        `}),(0,e.jsx)("div",{style:{padding:"24px"},children:(0,e.jsx)(s.default,{siteCodes:t,view:"ungrouped",sortMethod:"sites",sortDirection:"ASC"})})]})}])},40913,t=>{t.v(e=>Promise.all(["static/chunks/2etewgkt1t-tq.js","static/chunks/0ofbiqa5ufylc.js","static/chunks/2jowv_81ja-j_.js","static/chunks/26fv90ibebrpv.css"].map(e=>t.l(e))).then(()=>e(2181)))}]);
 
 //# sourceMappingURL=16ooy84qa12ia.js.map
