@@ -70,6 +70,7 @@ $pdfCatalog['items'][] = array('id' => 99, 'name' => 'Soil', 'collectionCode' =>
     'description' => 'Archived soil specimens. Sampling details not included.');
 $summary['rows'][0]['bulk_sample_identifications'] = 'https://example.org/portal/collections/misc/neoncollprofiles.php?collid=99';
 $pdfSummary = SampleTypeSummaryExport::forPdf($pdfCatalog, 'https://example.org/portal/', $summary);
+if ($pdfSummary['site_count'] !== 2) throw new Exception('PDF must count distinct sites across exported sample types');
 if (count($pdfSummary['rows']) !== count($summary['rows'])) {
     throw new Exception('PDF must contain the same rows as CSV and JSON');
 }

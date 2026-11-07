@@ -76,6 +76,7 @@ class SampleTypeSummaryExport {
         $columns = array('sample_type', 'collection_code', 'description_url', 'protocol', 'taxonomic_groups',
             'preservation', 'storage_conditions', 'storage_container', 'available_dates', 'bulk_sample_identifications', 'description');
         $rows = array();
+        $siteCodes = array();
         $items = array_column($catalog['items'], null, 'id');
         foreach ($summary['rows'] as $summaryRow) {
             $id = (int)$summaryRow['collection_id'];
@@ -85,6 +86,10 @@ class SampleTypeSummaryExport {
                 'storageConditions' => $summaryRow['storage_conditions'] ?? '',
                 'storageContainer' => $summaryRow['storage_container'] ?? '',
             );
+            foreach ($item['siteCodes'] ?? array() as $site) $siteCodes[$site['siteCode']] = true;
+            foreach (explode(';', $summaryRow['sites'] ?? '') as $code) {
+                if (trim($code) !== '') $siteCodes[trim($code)] = true;
+            }
             $months = array();
             foreach ($item['siteCodes'] ?? array() as $site) $months = array_merge($months, $site['availableMonths']);
             $months = array_values(array_unique($months));
@@ -105,7 +110,7 @@ class SampleTypeSummaryExport {
             );
         }
         usort($rows, function ($a, $b) { return strnatcasecmp($a['sample_type'], $b['sample_type']); });
-        return array('columns' => $columns, 'rows' => $rows);
+        return array('columns' => $columns, 'rows' => $rows, 'site_count' => count($siteCodes));
     }
 
     /** Reuse a completed PDF until its data, generation date, or renderer changes. */
@@ -153,11 +158,8 @@ class SampleTypeSummaryExport {
         $pdf->SetFont('calibri', 'B', 13);
         $pdf->Write(6, 'Generated: ');
         $pdf->SetFont('calibri', '', 13);
-        $pdf->Write(6, gmdate('Y-m-d') . '    ');
-        $pdf->SetFont('calibri', 'B', 13);
-        $pdf->Write(6, 'Sample Type Count: ');
-        $pdf->SetFont('calibri', '', 13);
-        $pdf->Write(6, count($summary['rows']) . ' (full catalog)', '', false, 'L', true);
+        $pdf->Write(6, gmdate('Y-m-d'), '', false, 'L', true);
+        $pdf->MultiCell($width, 6, count($summary['rows']) . ' sample types (excluding identification records) from ' . ($summary['site_count'] ?? 0) . ' sites', 0, 'L');
         $pdf->Ln(2);
         $pdf->MultiCell($width, 6, 'Catalog entries list physical sample types. Identification collections shown in the explorer are linked under Bulk Sample Identifications in their associated entries, rather than listed separately.', 0, 'L');
         $pdf->Ln(4);
