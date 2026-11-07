@@ -276,25 +276,19 @@
         ]
       },
       {
-        "id": 33,
-        "name": "General Invertebrates",
-        "children": [
-          {
-            "id": 34,
-            "name": "Insect Taxonomic Reference Collection",
-            "collid": 4
-          },
-          {
-            "id": 35,
-            "name": "Invertebrate Bycatch (from Beetle Sampling; Pooled Catches)",
-            "collid": 13
-          },
-          {
-            "id": 36,
-            "name": "Invertebrate Bycatch (from Beetle Sampling; Unpooled Catches)",
-            "collid": 16
-          }
-        ]
+        "id": 34,
+        "name": "Insect Taxonomic Reference Collection",
+        "collid": 4
+      },
+      {
+        "id": 35,
+        "name": "Invertebrate Bycatch (from Beetle Sampling; Pooled Catches)",
+        "collid": 13
+      },
+      {
+        "id": 36,
+        "name": "Invertebrate Bycatch (from Beetle Sampling; Unpooled Catches)",
+        "collid": 16
       },
       {
         "id": 28,
@@ -377,20 +371,14 @@
         ]
       },
       {
-        "id": 44,
-        "name": "Chemically Preserved",
-        "children": [
-          {
-            "id": 45,
-            "name": "Bulk Samples",
-            "collid": 47
-          },
-          {
-            "id": 46,
-            "name": "Bulk Sample Identifications",
-            "collid": 110
-          }
-        ]
+        "id": 45,
+        "name": "Bulk Samples",
+        "collid": 47
+      },
+      {
+        "id": 46,
+        "name": "Bulk Sample Identifications",
+        "collid": 110
       },
       {
         "id": 47,
