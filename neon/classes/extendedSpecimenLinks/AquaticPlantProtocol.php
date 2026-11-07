@@ -28,8 +28,8 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
          * PRIN.20161109.QUADRAT.Q10-VOUCHER
          * Collecting event key: PRIN.20161109.Q10
          *
-         * Use omoccurrences.eventID for the event, and ignore -VOUCHER
-         * when extracting the sampling location from NEON sampleID.
+         * Prefer omoccurrences.eventID; if empty, use the SITE.date prefix
+         * from NEON sampleID. Ignore -VOUCHER when extracting the location.
          */
         $this->log('Linking Aquatic Plant collecting events');
 
@@ -37,14 +37,14 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         $groups = [];
 
         foreach ($records as $record) {
-            $eventID = trim($record['eventID'] ?? '');
+            $sampleID = trim($record['identifierValue'] ?? '');
+            $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
-            if ($eventID === '') {
-                $this->log('Aquatic Plant: missing eventID for occid ' . $record['occid']);
+            if ($eventID === null) {
+                $this->log('ERROR: Aquatic Plant: unable to determine eventID for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
                 continue;
             }
 
-            $sampleID = trim($record['identifierValue'] ?? '');
             $point = $this->getSamplingPointKey($sampleID);
 
             if ($point === null) {
@@ -80,14 +80,14 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
 
     private function linkSameBout(): void {
         /**
-         * Same bout = the same omoccurrences.eventID (SITE.date).
+         * Same bout = the same eventID (SITE.date).
          *
          * COMO.20190807.SCRI4.T3
          * COMO.20190807.SCUN6.T10
          * Bout key: COMO.20190807
          *
-         * Use the eventID field directly, not a site/year key or a date
-         * reconstructed from the sampleID.
+         * Prefer the eventID field. If empty, use the SITE.date prefix
+         * from NEON sampleID, preserving the full date.
          */
         $this->log('Linking Aquatic Plant sampling bouts');
 
@@ -95,10 +95,11 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         $groups = [];
 
         foreach ($records as $record) {
-            $eventID = trim($record['eventID'] ?? '');
+            $sampleID = trim($record['identifierValue'] ?? '');
+            $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
-            if ($eventID === '') {
-                $this->log('Aquatic Plant: missing eventID for occid ' . $record['occid']);
+            if ($eventID === null) {
+                $this->log('ERROR: Aquatic Plant: unable to determine eventID for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
                 continue;
             }
 
@@ -155,6 +156,21 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         $result->free();
 
         return $records;
+    }
+
+    private function getEventID(?string $eventID, string $sampleID): ?string {
+        $eventID = trim($eventID ?? '');
+        if ($eventID !== '') return $eventID;
+
+        // COMO.20190807.SCRI4.T3 -> COMO.20190807
+        // Only the first two components are needed; taxa may contain dots.
+        $parts = explode('.', trim($sampleID), 3);
+        if (count($parts) !== 3 || preg_match('/^[A-Z]{4}$/i', $parts[0]) !== 1
+            || trim($parts[1]) === '' || trim($parts[2]) === '') {
+            return null;
+        }
+
+        return $parts[0] . '.' . $parts[1];
     }
 
     private function getSamplingPointKey(string $sampleID): ?string {
