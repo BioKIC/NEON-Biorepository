@@ -136,27 +136,24 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         if ($eventID !== '') return $eventID;
 
         // COMO.20190807.SCRI4.T3 -> COMO.20190807
-        // Only the first two components are needed; taxa may contain dots.
-        $parts = explode('.', trim($sampleID), 3);
-        if (count($parts) !== 3 || preg_match('/^[A-Z]{4}$/i', $parts[0]) !== 1
-            || trim($parts[1]) === '' || trim($parts[2]) === '') {
-            return null;
-        }
+        // Only derive an eventID from the expected SITE.date.taxon.location structure.
+        $sampleID = trim($sampleID);
+        if ($this->getSamplingPointKey($sampleID) === null) return null;
 
+        $parts = explode('.', $sampleID);
         return $parts[0] . '.' . $parts[1];
     }
 
     private function getSamplingPointKey(string $sampleID): ?string {
         $parts = explode('.', $sampleID);
 
-        // GUIL.20210712.AP17.1.T4 has a dot within its taxon component.
-        // Read the final component rather than assuming a fixed position.
-        if (count($parts) < 4 || preg_match('/^[A-Z]{4}$/i', $parts[0]) !== 1
+        // Expected structure: SITE.date.taxon.location, e.g. COMO.20190807.SCRI4.T3.
+        if (count($parts) !== 4 || preg_match('/^[A-Z]{4}$/i', $parts[0]) !== 1
             || trim($parts[1]) === '' || trim($parts[2]) === '') {
             return null;
         }
 
-        $point = trim($parts[count($parts) - 1]);
+        $point = trim($parts[3]);
 
         // Q10 and Q10-VOUCHER share a key, but P1 and P10 do not.
         if (preg_match('/^([PQT][0-9]+)(?:-VOUCHER)?$/i', $point, $matches) !== 1) {
