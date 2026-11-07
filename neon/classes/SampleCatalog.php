@@ -107,14 +107,28 @@ class SampleCatalog extends Manager {
         // Optional enrichment from #1223; no schema dependency for the catalog itself.
         $exists = $this->conn->query("SHOW TABLES LIKE 'neonsamplesummary'");
         if ($exists && $exists->num_rows) {
-            $result = $this->conn->query('SELECT collid, storage_conditions, storage_container, data_product_ids FROM neonsamplesummary');
+            $result = $this->conn->query('SELECT collid, storage_conditions, storage_container, data_product_ids, bulk_sample_identifications FROM neonsamplesummary');
             if (!$result) throw new RuntimeException('Unable to read sample summary metadata');
+            $summaryRows = array();
             while ($row = $result->fetch_assoc()) {
+                $summaryRows[] = $row;
                 $id = (int)$row['collid'];
                 if (!isset($catalog[$id])) continue;
                 $catalog[$id]['storageConditions'] = $row['storage_conditions'] ?? '';
                 $catalog[$id]['storageContainer'] = $row['storage_container'] ?? '';
                 $catalog[$id]['dataProducts'] = $row['data_product_ids'] ?? '';
+            }
+            // Identification collections inherit storage metadata through the summary's parent link.
+            foreach ($summaryRows as $row) {
+                $url = html_entity_decode($row['bulk_sample_identifications'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                parse_str(parse_url($url, PHP_URL_QUERY) ?: '', $params);
+                $id = filter_var($params['collid'] ?? null, FILTER_VALIDATE_INT);
+                if (!$id || !isset($catalog[$id])) continue;
+                foreach (array('storageConditions' => 'storage_conditions', 'storageContainer' => 'storage_container') as $field => $column) {
+                    if (trim($catalog[$id][$field]) === '') {
+                        $catalog[$id][$field] = $row[$column] ?? '';
+                    }
+                }
             }
         }
         usort($catalog, function ($a, $b) { return strnatcasecmp($a['name'], $b['name']); });

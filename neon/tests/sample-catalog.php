@@ -53,7 +53,8 @@ class Connection {
         if (strpos($sql, 'COUNT(*)') !== false) {
             return new Rows(array(array('collid' => 1, 'count' => 3)));
         }
-        if (strpos($sql, 'SHOW TABLES') !== false) return new Rows(array());
+        if (strpos($sql, 'SHOW TABLES') !== false) return new Rows(isset($GLOBALS['summaryRows']) ? array(array('table' => 'neonsamplesummary')) : array());
+        if (strpos($sql, 'FROM neonsamplesummary') !== false) return new Rows($GLOBALS['summaryRows']);
         throw new Exception('Unexpected query');
     }
 }
@@ -92,6 +93,17 @@ try {
         120 => '%lung%', 121 => '%kidney%', 122 => '%spleen%', 123 => '%liver%', 124 => '%muscle%')) {
         throw new Exception('Incorrect virtual collection mapping');
     }
+    $GLOBALS['summaryRows'] = array(
+        array('collid' => 118, 'storage_conditions' => 'Frozen', 'storage_container' => 'Vials',
+            'bulk_sample_identifications' => 'https://example.org/neoncollprofiles.php?collid=1'),
+        array('collid' => 1, 'storage_conditions' => '', 'storage_container' => 'Existing container'),
+        array('collid' => 119, 'storage_conditions' => 'Other', 'storage_container' => 'Other',
+            'bulk_sample_identifications' => 'not-a-link'),
+    );
+    $enriched = array_column((new SampleCatalog())->build()['items'], null, 'id');
+    if ($enriched[1]['storageConditions'] !== 'Frozen') throw new Exception('Parent storage was not inherited');
+    if ($enriched[1]['storageContainer'] !== 'Existing container') throw new Exception('Explicit child metadata must be preserved');
+    if ($enriched[118]['storageContainer'] !== 'Vials') throw new Exception('Parent metadata changed');
     echo "Sample catalog contract passed\n";
 } finally {
     foreach (glob($SERVER_ROOT . '/neon-react/biorepo_lib/*') as $path) unlink($path);
