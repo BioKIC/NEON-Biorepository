@@ -67,20 +67,26 @@ foreach ($pdfCatalog['items'] as &$item) {
 unset($item);
 $pdfCatalog['items'][] = array('id' => 99, 'name' => 'Soil', 'collectionCode' => 'NEON-SOIL',
     'description' => 'Archived soil specimens. Sampling details not included.');
-$pdfSummary = SampleTypeSummaryExport::forPdf($pdfCatalog, 'https://example.org/portal/');
-if (count($pdfSummary['rows']) !== 3 || $pdfSummary['rows'][2]['collection_code'] !== 'NEON-SOIL') {
-    throw new Exception('PDF must include catalog items missing from summary table');
+$summary['rows'][0]['bulk_sample_identifications'] = 'https://example.org/portal/collections/misc/neoncollprofiles.php?collid=99';
+$pdfSummary = SampleTypeSummaryExport::forPdf($pdfCatalog, 'https://example.org/portal/', $summary);
+if (count($pdfSummary['rows']) !== count($summary['rows'])) {
+    throw new Exception('PDF must contain the same rows as CSV and JSON');
 }
 if ($pdfSummary['columns'] !== array('sample_type', 'collection_code', 'description_url', 'protocol',
-    'taxonomic_groups', 'preservation', 'storage_conditions', 'storage_container', 'available_dates', 'description')) {
+    'taxonomic_groups', 'preservation', 'storage_conditions', 'storage_container', 'available_dates', 'bulk_sample_identifications', 'description')) {
     throw new Exception('PDF fields differ from requested list');
 }
 if ($pdfSummary['rows'][0]['available_dates'] !== '2018-06 through 2024-08') throw new Exception('Wrong PDF available dates');
-if ($pdfSummary['rows'][2]['description_url'] !== 'https://example.org/portal/collections/misc/neoncollprofiles.php?collid=99') throw new Exception('Missing collection URL');
-if ($pdfSummary['rows'][2]['description'] !== 'Archived soil specimens.') throw new Exception('PDF description must stop before Sampling');
+if ($pdfSummary['rows'][2]['description_url'] !== 'https://example.org/portal/collections/misc/neoncollprofiles.php?collid=10') throw new Exception('Summary rows without cached metadata must remain included');
+if ($pdfSummary['rows'][2]['description'] !== 'Final record') throw new Exception('Summary description fallback lost');
+if ($pdfSummary['rows'][0]['bulk_sample_identifications'] !== $summary['rows'][0]['bulk_sample_identifications']) throw new Exception('Identification link missing from PDF');
 $fullCatalog = array('items' => array());
-for ($i = 1; $i <= 84; $i++) $fullCatalog['items'][] = array('id' => $i, 'name' => 'Sample ' . $i);
-if (count(SampleTypeSummaryExport::forPdf($fullCatalog, 'https://example.org')['rows']) !== 84) throw new Exception('Full PDF count must follow all 84 catalog items');
+$physicalSummary = array('rows' => array());
+for ($i = 1; $i <= 84; $i++) {
+    $fullCatalog['items'][] = array('id' => $i, 'name' => 'Sample ' . $i);
+    if ($i <= 72) $physicalSummary['rows'][] = array('collection_id' => $i, 'sample_type' => 'Sample ' . $i);
+}
+if (count(SampleTypeSummaryExport::forPdf($fullCatalog, 'https://example.org', $physicalSummary)['rows']) !== 72) throw new Exception('PDF must follow the 72 summary rows, not all 84 explorer entries');
 class CacheTestSummaryExport extends SampleTypeSummaryExport {
     public static $renders = 0;
     public static function pdf(array $summary): string {

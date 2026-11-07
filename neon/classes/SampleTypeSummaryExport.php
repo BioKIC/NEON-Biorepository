@@ -63,12 +63,20 @@ class SampleTypeSummaryExport {
         return $csv;
     }
 
-    /** PDFs follow the complete browse catalog, including types not in neonsamplesummary. */
-    public static function forPdf(array $catalog, string $baseUrl): array {
+    /** All formats share the summary rows; the browse catalog supplies PDF metadata. */
+    public static function forPdf(array $catalog, string $baseUrl, array $summary): array {
         $columns = array('sample_type', 'collection_code', 'description_url', 'protocol', 'taxonomic_groups',
-            'preservation', 'storage_conditions', 'storage_container', 'available_dates', 'description');
+            'preservation', 'storage_conditions', 'storage_container', 'available_dates', 'bulk_sample_identifications', 'description');
         $rows = array();
-        foreach ($catalog['items'] as $item) {
+        $items = array_column($catalog['items'], null, 'id');
+        foreach ($summary['rows'] as $summaryRow) {
+            $id = (int)$summaryRow['collection_id'];
+            $item = $items[$id] ?? array(
+                'id' => $id, 'name' => $summaryRow['sample_type'],
+                'description' => $summaryRow['description'] ?? '',
+                'storageConditions' => $summaryRow['storage_conditions'] ?? '',
+                'storageContainer' => $summaryRow['storage_container'] ?? '',
+            );
             $months = array();
             foreach ($item['siteCodes'] ?? array() as $site) $months = array_merge($months, $site['availableMonths']);
             $months = array_values(array_unique($months));
@@ -84,6 +92,7 @@ class SampleTypeSummaryExport {
                 'storage_conditions' => $item['storageConditions'] ?? '',
                 'storage_container' => $item['storageContainer'] ?? '',
                 'available_dates' => $months ? reset($months) . ' through ' . end($months) : 'No dated records',
+                'bulk_sample_identifications' => $summaryRow['bulk_sample_identifications'] ?? '',
                 'description' => trim(preg_replace('/\s+/u', ' ', $intro)),
             );
         }
@@ -119,7 +128,7 @@ class SampleTypeSummaryExport {
         require_once dirname(__DIR__, 2) . '/vendor/tcpdf/tcpdf.php';
         $pdf = new TCPDF('P', 'mm', 'LETTER', true, 'UTF-8', false);
         $pdf->SetCreator('NEON Biorepository');
-        $pdf->SetTitle('NEON Sample Type Catalog (All Sample Types)');
+        $pdf->SetTitle('NEON Sample Type Catalog');
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
         $pdf->SetMargins(18, 15, 18);
@@ -132,7 +141,7 @@ class SampleTypeSummaryExport {
         $width = $pdf->getPageWidth() - 36;
         $bottom = $pdf->getPageHeight() - 15;
         $pdf->SetFont('calibri', '', 22);
-        $pdf->MultiCell($width, 10, 'NEON Sample Type Catalog (All Sample Types)', 0, 'L');
+        $pdf->MultiCell($width, 10, 'NEON Sample Type Catalog', 0, 'L');
         $pdf->SetFont('calibri', 'B', 13);
         $pdf->Write(6, 'Generated: ');
         $pdf->SetFont('calibri', '', 13);
@@ -141,6 +150,8 @@ class SampleTypeSummaryExport {
         $pdf->Write(6, 'Sample Type Count: ');
         $pdf->SetFont('calibri', '', 13);
         $pdf->Write(6, count($summary['rows']) . ' (full catalog)', '', false, 'L', true);
+        $pdf->Ln(2);
+        $pdf->MultiCell($width, 6, 'Catalog entries list physical sample types. Identification collections shown in the explorer are linked under Bulk Sample Identifications in their associated entries, rather than listed separately.', 0, 'L');
         $pdf->Ln(4);
         $labels = array('collection_code' => 'Collection Code', 'description_url' => 'URL',
             'taxonomic_groups' => 'Taxon Groups', 'storage_conditions' => 'Storage', 'storage_container' => 'Container');
@@ -156,6 +167,7 @@ class SampleTypeSummaryExport {
             foreach ($summary['columns'] as $column) {
                 if ($column === 'sample_type' || $column === 'description') continue;
                 $value = trim(preg_replace('/\s+/u', ' ', (string)($row[$column] ?? '')));
+                if ($column === 'bulk_sample_identifications' && $value === '') continue;
                 $label = $labels[$column] ?? ucwords(str_replace('_', ' ', $column));
                 $text = $label . ': ' . ($value !== '' ? $value : '-');
                 $size = $pdf->GetStringWidth($text) + 6;
@@ -164,7 +176,7 @@ class SampleTypeSummaryExport {
                     $line = array();
                     $lineWidth = 0;
                 }
-                $line[] = array('label' => $label, 'value' => $value, 'url' => $column === 'description_url' ? $url : '');
+                $line[] = array('label' => $label, 'value' => $value, 'url' => in_array($column, array('description_url', 'bulk_sample_identifications'), true) && preg_match('~^https?://~i', $value) ? $value : '');
                 $lineWidth += $size;
             }
             if ($line) $lines[] = $line;
