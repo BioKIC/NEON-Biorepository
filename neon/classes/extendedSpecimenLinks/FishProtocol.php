@@ -7,7 +7,6 @@ class FishProtocolLinker extends BaseProtocol {
     private const RELATIONSHIP_SAME_INDIVIDUAL = 'sameIndividual';
     private const RELATIONSHIP_SAME_COLLECTING_EVENT = 'sameCollectingEvent';
     private const RELATIONSHIP_SAME_BOUT = 'sameBout';
-    private const RELATIONSHIP_SAME_LOCATION = 'sameLocation';
 
     public function run(): void {
         $this->linkSameIndividual();

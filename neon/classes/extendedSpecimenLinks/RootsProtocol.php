@@ -30,7 +30,7 @@ class RootsProtocolLinker extends BaseProtocol {
          * other size categories include 1-2 and 05-1).
          * Keep everything before the variable suffix; preserve the date verbatim.
          */
-        $this->log('Linking Roots cores');
+        $this->log('Linking Root cores');
 
         $records = $this->getOccurrencesWithIdentifier('NEON sampleID');
         $groups = [];
@@ -63,11 +63,11 @@ class RootsProtocolLinker extends BaseProtocol {
             if ($created > 0) {
                 $groupCount++;
                 $associationCount += $created;
-                $this->log("Roots cores {$key}: " . count($occids) . " occurrences; {$created} new associations");
+                $this->log("Root cores {$key}: " . count($occids) . " occurrences; {$created} new associations");
             }
         }
 
-        $this->log("Roots cores: {$groupCount} new linked groups; {$associationCount} new associations");
+        $this->log("Root cores: {$groupCount} new linked groups; {$associationCount} new associations");
     }
 
     private function linkSameCollectingEvent(): void {
