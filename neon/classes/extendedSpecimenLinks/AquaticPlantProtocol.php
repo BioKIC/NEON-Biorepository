@@ -44,6 +44,15 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
 
         foreach ($records as $record) {
             $sampleID = trim($record['identifierValue'] ?? '');
+
+            // SITE.date.taxon samples (e.g. BIGC.20220406.AP2) have no fixed location.
+            // They are included in bout linking, but not collecting-event linking.
+            $parts = explode('.', $sampleID);
+            if (count($parts) === 3 && preg_match('/^[A-Z]{4}$/i', $parts[0]) === 1
+                && trim($parts[1]) !== '' && trim($parts[2]) !== '') {
+                continue;
+            }
+
             $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
             if ($eventID === null) {
