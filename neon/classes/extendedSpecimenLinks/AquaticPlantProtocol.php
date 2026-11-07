@@ -48,7 +48,8 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
             $point = $this->getSamplingPointKey($sampleID);
 
             if ($point === null) {
-                throw new RuntimeException('Aquatic Plant: unable to determine collecting point for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
+                $this->log('ERROR: Aquatic Plant: unable to determine collecting point for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
+                continue;
             }
 
             $key = $eventID . '.' . $point;

@@ -6,10 +6,13 @@ require_once(__DIR__ . '/../neon/classes/extendedSpecimenLinks/AquaticPlantProto
 class AquaticPlantLinkerFixture extends AquaticPlantProtocolLinker {
     private array $records;
     public array $links = [];
+    public array $messages = [];
 
     public function __construct(array $records) {
         $this->records = $records;
-        $this->logger = null;
+        $this->logger = function (string $message): void {
+            $this->messages[] = $message;
+        };
     }
 
     protected function getOccurrencesWithEventID(): array {
@@ -73,22 +76,26 @@ foreach (array_keys($linker->links) as $key) {
 $count = count($linker->links);
 $linker->run();
 checkAquaticPlant(count($linker->links) === $count, 'Rerun created duplicate associations');
-// Invalid input must raise a general validation error before creating links.
+// Invalid input must report an error and allow subsequent records to be processed.
 foreach ([null, '', 'invalid-sample-id', 'PRIN.20161109.TEST.INVALID'] as $sampleID) {
     $invalid = new AquaticPlantLinkerFixture([
+        ['occid' => 999, 'eventID' => 'PRIN.20161109', 'identifierValue' => $sampleID],
         $records[0],
-        $records[1],
-        ['occid' => 999, 'eventID' => 'PRIN.20161109', 'identifierValue' => $sampleID]
+        $records[1]
     ]);
-    $error = null;
-    try {
-        $invalid->run();
-    } catch (RuntimeException $e) {
-        $error = $e;
+    $invalid->run();
+    $errors = array_values(array_filter($invalid->messages, function ($message) {
+        return strpos($message, 'ERROR: Aquatic Plant:') === 0;
+    }));
+    checkAquaticPlant(count($errors) === 1, 'Invalid sampleID must report one error');
+    checkAquaticPlant(strpos($errors[0], 'occid 999') !== false, 'Error must identify the occurrence');
+    checkAquaticPlant(strpos($errors[0], 'sampleID ' . ($sampleID ?? '')) !== false, 'Error must identify the sampleID');
+    checkAquaticPlant(isset($invalid->links['sameCollectingEvent:1:2']), 'Processing must continue after the error');
+    checkAquaticPlant(isset($invalid->links['sameCollectingEvent:2:1']), 'Reverse association must still be created');
+    checkAquaticPlant(isset($invalid->links['sameBout:999:1']), 'Bout linking must still run using eventID');
+    foreach (array_keys($invalid->links) as $key) {
+        [$relationship, $a, $b] = explode(':', $key);
+        checkAquaticPlant($relationship !== 'sameCollectingEvent' || ($a !== '999' && $b !== '999'), 'Invalid location must not create collecting-event links');
     }
-    checkAquaticPlant($error !== null, 'Invalid sampleID did not throw an error');
-    checkAquaticPlant(strpos($error->getMessage(), 'occid 999') !== false, 'Error must identify the occurrence');
-    checkAquaticPlant(strpos($error->getMessage(), 'sampleID ' . ($sampleID ?? '')) !== false, 'Error must identify the sampleID');
-    checkAquaticPlant($invalid->links === [], 'Invalid input must fail before creating links');
 }
 echo "Aquatic Plant linkage checks passed.\n";
