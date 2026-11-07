@@ -136,11 +136,13 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         if ($eventID !== '') return $eventID;
 
         // COMO.20190807.SCRI4.T3 -> COMO.20190807
-        // Only derive an eventID from the expected SITE.date.taxon.location structure.
-        $sampleID = trim($sampleID);
-        if ($this->getSamplingPointKey($sampleID) === null) return null;
+        // Bout grouping needs only SITE.date, independent of the remaining components.
+        $parts = explode('.', trim($sampleID), 3);
+        if (count($parts) < 2 || preg_match('/^[A-Z]{4}$/i', $parts[0]) !== 1
+            || trim($parts[1]) === '') {
+            return null;
+        }
 
-        $parts = explode('.', $sampleID);
         return $parts[0] . '.' . $parts[1];
     }
 
