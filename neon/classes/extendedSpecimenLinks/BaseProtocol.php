@@ -56,6 +56,20 @@ abstract class BaseProtocol {
         return $records;
     }
 
+    protected function getYear(string $date): ?string {
+        // Compact YYYYMMDD dates, or a standalone four-digit year in
+        // separated dates (YYYY-MM-DD, MM/DD/YYYY, etc.).
+        if (preg_match('/^([0-9]{4})[0-9]{4}$/', $date, $matches) === 1) {
+            return $matches[1];
+        }
+
+        if (preg_match_all('/(?<![0-9])[0-9]{4}(?![0-9])/', $date, $matches) === 1) {
+            return $matches[0][0];
+        }
+
+        return null;
+    }
+
     protected function getLocationIDs(): array {
         if (!$this->collids) return [];
 
