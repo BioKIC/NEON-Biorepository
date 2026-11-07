@@ -105,30 +105,37 @@ function validateBatchForm(f){
     if (
         f.status.value === "__NOCHANGE__" &&
         f.useType.value === "__NOCHANGE__" &&
-        f.sampleType.value === "__NOCHANGE__" &&
+        f.available.value === "__NOCHANGE__" &&
+        f.substanceProvided.value === "__NOCHANGE__" &&
         f.shipmentID.value === "__NOCHANGE__" &&
         !f.notes.value
     ) {
-            alert("No changes selected.");
-            return false;
+        alert("No changes selected.");
+        return false;
     }
 
-    if(!f.status.value || !f.usetype.value || !f.available.value || !f.substanceprovided.value){
+    if(!f.status.value || !f.useType.value || !f.available.value || !f.substanceProvided.value){
         alert("All fields must be assigned during batch update");
         return false;
     }
-        if(!f.shipmentid.value && ["current","completed","loaned, not used"].includes(f.status.value)){
+
+    const isDigital = ["image","data"].includes(f.substanceProvided.value);
+
+    if(!isDigital && (f.shipmentID.value === "" || f.shipmentID.value === "__REMOVE__") && ["current","completed","loaned, not used"].includes(f.status.value)){
         alert("A shipment must be assigned if the status is current, completed, or loaned, not used");
         return false;
     }
-    if(f.shipmentid.value && !["current","completed","loaned, not used"].includes(f.status.value)){
+
+    if(f.shipmentID.value && !["current","completed","loaned, not used"].includes(f.status.value)){
         alert("If a shipment is assigned, status must be current, completed, or loaned, not used");
         return false;
     }
-    if(!f.notes.value && ["individual(s)","tissue/material sample","subsample/aliquot"].includes(f.substanceprovided.value)){
+
+    if(!f.notes.value && ["individual(s)","tissue/material sample","subsample/aliquot"].includes(f.substanceProvided.value)){
         alert("ERROR: Notes required when substance is tissue/material sample, individual(s), or subsample/aliquot");
         return false;
     }
+
     return true;
 }
 </script>
@@ -238,7 +245,8 @@ button { cursor:pointer; }
             >        
         </div>
         <div class="fieldDiv">
-            <label><b>Shipment:</b> (edit request to add new shipment)</label>
+            <label><b>Shipment:</b>						
+				<strong>(return to sample list to create new shipment or pseudoshipment)</strong>
             <select name="shipmentID" required>
                 <option value="<?= BATCH_NOCHANGE ?>" selected>-- do not change --</option>
 

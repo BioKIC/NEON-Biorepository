@@ -12,7 +12,7 @@ $reportManager = new RequestReportManager();
 
 $isEditor = false;
 if($IS_ADMIN) $isEditor = true;
-elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
+elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 
 ?>
 <html>
@@ -779,5 +779,5 @@ $(function () {
 	?>
 </body>
 
-<script src="<?= $CLIENT_ROOT ?>/neon/requests/js/requestsearchform.js"></script>
+<script src="<?= $CLIENT_ROOT ?>/neon/js/requestsearchform.js"></script>
 </html>

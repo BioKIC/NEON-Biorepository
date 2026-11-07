@@ -103,7 +103,7 @@ input:invalid {
   border: 1px solid red !important;
 }
 
-input[type='checkbox']:not([class*='jss']) {
+input[type='checkbox']:not([class*='jss']):not(.MuiCheckbox-root > input) {
   width: 16px;
   height: 16px;
   vertical-align: baseline !important;

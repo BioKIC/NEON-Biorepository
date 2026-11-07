@@ -34,5 +34,8 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 				<img src="images/loan_process.png" alt="Sample loan process" style="max-width: 100%; height: auto; margin: 1rem 0;">
 			</article>
 		</div>
+		<?php
+		include($SERVER_ROOT . '/includes/footer.php');
+		?>
 	</body>
 </html>

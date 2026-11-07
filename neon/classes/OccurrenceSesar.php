@@ -141,8 +141,8 @@ class OccurrenceSesar extends Manager {
 		}
 	
 		$url = $this->getProductionMode()
-			? 'https://app.geosamples.org/webservices/credentials_service_v2.php'
-			: 'https://app-sandbox.geosamples.org/webservices/credentials_service_v2.php';
+			? 'https://api.geosamples.org/api/users/me/'
+			: 'https://api-sandbox.geosamples.org/api/users/me/';
 	
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -158,18 +158,18 @@ class OccurrenceSesar extends Manager {
 			curl_close($ch);
 			return false;
 		}
-		$result = curl_exec($ch);
+
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 	
-		logMessage("Raw response: " . ($result ?: 'NULL'), $logFH);
-	
+		//if ($logFH) $this->logOrEcho("Raw response: " . ($response ?: 'NULL'), 2);
+		
 		if ($httpCode !== 200) {
-			logMessage("Access token validation failed", $logFH);
+			if ($logFH) $this->logOrEcho("Access token validation failed", 1);
 			return false;
 		}
-	
-		logMessage("Access token is valid", $logFH);
+		
+		if ($logFH) $this->logOrEcho("Access token is valid", 2);
 		return true;
 	}
 
@@ -181,17 +181,19 @@ class OccurrenceSesar extends Manager {
 		}
 	
 		$url = $this->getProductionMode()
-			? 'https://app.geosamples.org/webservices/refresh_token.php'
-			: 'https://app-sandbox.geosamples.org/webservices/refresh_token.php';
+			? 'https://api.geosamples.org/api/auth/token/refresh/'
+			: 'https://api-sandbox.geosamples.org/api/auth/token/refresh/';
 	
-		$data = http_build_query(['refresh' => $refreshToken]);
+		$data = json_encode([
+			'refresh' => $refreshToken
+		]);
 	
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, [
-			'Content-Type: application/x-www-form-urlencoded'
+			'Content-Type: application/json'
 		]);
 	
 		$result = curl_exec($ch);
@@ -205,16 +207,19 @@ class OccurrenceSesar extends Manager {
 	
 		if ($httpCode === 200 && $result) {
 			$response = json_decode($result, true);
-			if (isset($response['access']) && isset($response['refresh'])) {
-				$newAccessToken = $response['access'];
-				$newRefreshToken = $response['refresh'];
+			if (isset($response['data']['access']) && isset($response['data']['refresh'])) {
+				$newAccessToken = $response['data']['access'];
+				$newRefreshToken = $response['data']['refresh'];
 	
 				if ($symbUid) {
 					$this->saveTokens($symbUid, $newAccessToken, $newRefreshToken);
 				}
 	
 				if ($logFH) logMessage("Access token refresh successful.", $logFH);
-				return $newAccessToken;
+				return [
+					'access' => $newAccessToken,
+					'refresh' => $newRefreshToken
+				];
 			} else {
 				if ($logFH) logMessage("Invalid response structure: " . json_encode($response), $logFH);
 			}
@@ -307,7 +312,7 @@ class OccurrenceSesar extends Manager {
 
 			if(!$this->igsnExists($igsn)) $this->setSampleXmlNode($igsn, "new");
 			//$this->logOrEcho('#'.$increment.': IGSN created for <a href="../editor/occurrenceeditor.php?occid='.$this->fieldMap['occid']['value'].'" target="_blank">'.$this->fieldMap['catalogNumber']['value'].'</a>',1);
-			if($this->registerIdentifiersViaApi()){
+			if($this->registerIdentifiersViaApi($igsn)){
 				//this link won't work when called by igsnhandler.php, only igsnmapper.php
 				$this->logOrEcho('#'.$increment.': IGSN registered: <a href="../../../collections/editor/occurrenceeditor.php?occid='.$r['occid'].'" target="_blank">'.$igsn.'</a>',1);
 			}
@@ -425,97 +430,196 @@ class OccurrenceSesar extends Manager {
 		//$this->fieldMap['parentOccurrenceID']['sesar'] = 'parent_igsn';
 		//$this->fieldMap['parentOccurrenceID']['sql'] = ' AS parentOccurrenceID';
 	}
+	
+	private function createRelatedResource($url, $accessToken) {
+		$baseUrl = $this->productionMode ? 'https://api.geosamples.org/api/related-resources/' : 'https://api-sandbox.geosamples.org/api/related-resources/';
+		$data = ['label' => $url, 'description' => 'Source Reference URL', 'related_resource_type' => 'Other', 'uri' => $url, 'uri_type' => 'regular URL'];
+		$headers = ['Authorization: Bearer '.$accessToken, 'Content-Type: application/json', 'Accept: application/json'];
 
-	// SESAR web service calls (http://www.geosamples.org/interop)
-	// End point: https://app.geosamples.org/webservices/
-	// Test end point: https://app-sandbox.geosamples.org/webservices/
-	public function validateUser() {
-		global $SYMB_UID;
-		
-		$userCodeArr = array();
-		$baseUrl = 'https://app.geosamples.org/webservices/credentials_service_v2.php';
-		$accessToken = $this->getAccessToken($SYMB_UID);
-		if (!$this->productionMode) {
-			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/credentials_service_v2.php';
-			$accessToken = $this->getDevelopmentAccessToken($SYMB_UID);
+		$this->logOrEcho('Creating related resource: '.$url, 1);	
+		$resArr = $this->getSesarApiData($baseUrl, 'post', json_encode($data), $headers);
+	
+		if ($resArr['retCode'] == 201) {
+			$response = json_decode($resArr['retStr'], true);
+			$resourceId = $response['data']['id'] ?? false;
+			$this->logOrEcho('Created related resource ID: '.($resourceId ?: 'MISSING'), 2);
+			return $resourceId;
 		}
-
-		if (!$accessToken) {
-			$this->errorMessage = 'Fatal Error validating user: Access token not set';
+	
+		$response = json_decode($resArr['retStr'], true);
+		if ($resArr['retCode'] == 400 && strpos($response['message'] ?? '', 'already exists') !== false) {
+			$this->logOrEcho('Resource already exists, looking up ID', 2);
+			$lookupUrl = $baseUrl.'?search='.urlencode($url);
+			$page = 0;
+	
+			do {
+				$lookup = $this->getSesarApiData($lookupUrl, 'get', null, $headers);
+	
+				if ($lookup['retCode'] != 200) {
+					break;
+				}
+	
+				$results = json_decode($lookup['retStr'], true);
+				$resources = $results['data'] ?? [];
+	
+				foreach ($resources as $resource) {
+					if (($resource['uri'] ?? '') === $url) {
+						$resourceId = $resource['id'] ?? false;
+						$this->logOrEcho('Found existing related resource ID: '.($resourceId ?: 'MISSING'), 2);
+						return $resourceId;
+					}
+				}
+	
+				$lookupUrl = $results['next'] ?? null;
+			} while ($lookupUrl);
+	
+			$this->logOrEcho('Existing related resource ID not found: '.$url, 2);
 			return false;
 		}
 	
-		$headers = [
-			'Authorization: Bearer ' . $accessToken
-		];
-		
-		$resArr = $this->getSesarApiData($baseUrl, 'get', null, $headers);
+		$this->errorMessage = 'Failed to create related resource (HTTP '.$resArr['retCode'].'): '.$resArr['retStr'];
+		$this->logOrEcho($this->errorMessage, 2);
+		return false;
+	}
 	
-		if (isset($resArr['retStr']) && $resArr['retStr']) {
-			$dom = new DOMDocument('1.0','UTF-8');
-			if ($dom->loadXML($resArr['retStr'])) {
-				$validElemList = $dom->getElementsByTagName('valid');
-				if ($validElemList[0]->nodeValue == 'yes') {
-					$userCodeList = $dom->getElementsByTagName('user_code');
-					foreach ($userCodeList as $UserCodeElem) {
-						$userCodeArr[] = $UserCodeElem->nodeValue;
-					}
-				} else {
-					$errCodeList = $dom->getElementsByTagName('error');
-					$this->logOrEcho('Fatal Error validating user: ' . $errCodeList[0]->nodeValue);
-					$userCodeArr = false;
-				}
-			} else {
-				$this->logOrEcho('FATAL ERROR parsing response XML (validateUser): ' . htmlentities($resArr['retStr']));
-				$userCodeArr = false;
+	private function buildSampleJson($igsn) {
+		$sampleData = [
+			'igsn' => '10.58052/'.$igsn,
+			'sesar_code' => 'NEO',
+			'name' => $this->fieldMap['catalogNumber']['value'],
+			'object_type' => 'Individual sample',
+			'general_material_type' => 'Biological material',
+			'material_types' => ['Biological material'],
+			'sampling_method' => 'Manual'
+		];
+	
+		$map = [
+			'sciname' => 'field_name',
+			'verbatimAttributes' => 'sample_description',
+			'country' => 'country',
+			'stateProvince' => 'province',
+			'county' => 'county',
+			'locality' => 'locality',
+			'basisOfRecord' => 'sampling_method_detail'
+		];
+	
+		foreach ($map as $field => $key) {
+			if (!empty($this->fieldMap[$field]['value'])) {
+				$sampleData[$key] = $this->fieldMap[$field]['value'];
 			}
-		} else {
-			$this->logOrEcho($this->errorMessage);
-			$userCodeArr = false;
 		}
 	
-		return $userCodeArr;
+		foreach (['decimalLatitude' => 'latitude', 'decimalLongitude' => 'longitude', 'minimumElevationInMeters' => 'elevation'] as $field => $key) {
+			if (isset($this->fieldMap[$field]['value']) && $this->fieldMap[$field]['value'] !== '') {
+				$sampleData[$key] = (string)$this->fieldMap[$field]['value'];
+			}
+		}
+	
+		if (isset($sampleData['elevation'])) {
+			$sampleData['elevation_unit'] = 'meters';
+		}
+	
+		if (!empty($this->fieldMap['eventDate']['value'])) {
+			$sampleData['sampling_start_date'] = $this->fieldMap['eventDate']['value'];
+			$sampleData['sampling_date_precision'] = 'day';
+		}
+	
+		if (!empty($this->fieldMap['recordedBy']['value'])) {
+			$sampleData['collectors'] = [[
+				'individual' => ['label' => $this->fieldMap['recordedBy']['value']]
+			]];
+		}
+	
+		if (!empty($this->collArr['collectionName'])) {
+			$sampleData['current_archive'] = ['label' => $this->collArr['collectionName']];
+		}
+	
+		$sampleData['current_archive_contact'] = 'NEON Biorepository (biorepo@asu.edu)';
+	
+		if (!empty($this->otherNames)) {
+			$sampleData['other_names'] = array_values($this->otherNames);
+		}
+	
+		return $sampleData;
 	}
 
-	private function registerIdentifiersViaApi($retryCount = 0) {
-		$status = false;
-	
+	public function validateUser() {
 		global $SYMB_UID;
-		$baseUrl = 'https://app.geosamples.org/webservices/upload.php';
-		$accessToken = $this->getAccessToken($SYMB_UID);
-		if (!$this->productionMode) {
-			$baseUrl = 'https://app-sandbox.geosamples.org/webservices/upload.php';
-			$accessToken = $this->getDevelopmentAccessToken($SYMB_UID);
-		}
 	
-		
+		$accessToken = $this->productionMode
+			? $this->getAccessToken($SYMB_UID)
+			: $this->getDevelopmentAccessToken($SYMB_UID);
+	
+		return $this->isAccessTokenValid($accessToken, $this->logFH);
+	}
+
+	private function registerIdentifiersViaApi($igsn, $retryCount = 0) {
+		global $SYMB_UID;
+	
+		$baseUrl = $this->productionMode
+			? 'https://api.geosamples.org/api/samples/'
+			: 'https://api-sandbox.geosamples.org/api/samples/';
+	
+		$accessToken = $this->productionMode
+			? $this->getAccessToken($SYMB_UID)
+			: $this->getDevelopmentAccessToken($SYMB_UID);
+	
 		if (!$accessToken) {
-			$this->errorMessage = 'Fatal Error submitting to SESAR: Access token not found';
+			$this->errorMessage = 'Fatal Error submitting to GeoSamples: Access token not found';
 			return false;
 		}
-		$xmldata = $this->igsnDom->saveXML();
-		$postData = http_build_query([
-			'content' => $this->igsnDom->saveXML()
-		]);
+	
+		$sampleData = $this->buildSampleJson($igsn);
+		
+		$sourceBaseUrl = $this->productionMode
+			? $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/')
+			: 'https://biorepo.neonscience.org/portal/';
+		
+		$sourceUrl = $sourceBaseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+		
+		$resourceId = $this->createRelatedResource($sourceUrl, $accessToken);
+		if ($resourceId) $sampleData['related_resources'] = [$resourceId];
+		
+		$postData = json_encode($sampleData);
+		
+		if ($postData === false) {
+			$this->logOrEcho('Fatal Error encoding GeoSamples JSON: '.json_last_error_msg(), 1);
+			return false;
+		}
 	
 		$headers = [
-			'Content-Type: application/x-www-form-urlencoded',
-			'Authorization: Bearer ' . $accessToken
+			'Authorization: Bearer ' . $accessToken,
+			'Content-Type: application/json',
+			'Accept: application/json'
 		];
-
+	
+		#$this->logOrEcho('GeoSamples request URL: '.$baseUrl, 1);
+		#$this->logOrEcho('GeoSamples request body: '.$postData, 1);
+		
 		$resArr = $this->getSesarApiData($baseUrl, 'post', $postData, $headers);
-		if ($retryCount >= 3) {
-			$this->logOrEcho('Retry limit reached. Not retrying.');
-			$status = false;
-		} else {
-			if (isset($resArr['retStr']) && $resArr['retStr']) {
-				$status = $this->processRegistrationResponse($resArr['retStr'], $retryCount);
-				if ($status) {
-					$status = $this->updateSqlSesarDate();
-				}
-			}
+	
+		if ($resArr['retCode'] < 200 || $resArr['retCode'] >= 300) {
+			$this->errorMessage = 'GeoSamples registration failed (HTTP ' . $resArr['retCode'] . '): ' . $resArr['retStr'];
+			$this->logOrEcho($this->errorMessage, 1);
+			return false;
 		}
-		return $status;
+	
+		$response = json_decode($resArr['retStr'], true);
+		if (!is_array($response)) {
+			$this->logOrEcho('Invalid JSON response from GeoSamples: ' . $resArr['retStr'], 1);
+			return false;
+		}
+	
+		#$this->logOrEcho('GeoSamples registration successful: ' . json_encode($response), 2);
+		
+		$occid = $this->fieldMap['occid']['value'];
+		
+		if (!$this->updateOccurrenceID($igsn, $occid)) {
+			$this->logOrEcho('Failed to save occurrenceID '.$igsn.' for occid '.$occid, 1);
+			return false;
+		}
+		
+		return true;
 	}
 
 	private function updateMetadataViaApi($retryCount = 0) {
@@ -726,23 +830,25 @@ class OccurrenceSesar extends Manager {
 		
 		//I'm not going to deal with updating urls since you need to specify the old url to update and we don't really have a way of (nicely) getting that information. The hope is that the occid will never change. 
 		if ($newOrUpdate === 'new') {
-			$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
-			$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
-			$externalUrlsElem = $this->igsnDom->createElement('external_urls');
-			$externalUrlElem = $this->igsnDom->createElement('external_url');
-			$urlElem = $this->igsnDom->createElement('url');
-			$urlElem->appendChild($this->igsnDom->createTextNode($url));
-			$externalUrlElem->appendChild($urlElem);
-			$descriptionElem = $this->igsnDom->createElement('description');
-			$descriptionElem->appendChild($this->igsnDom->createTextNode('Source Reference URL'));
-			$externalUrlElem->appendChild($descriptionElem);
-			$urlTypeElem = $this->igsnDom->createElement('url_type');
-			$urlTypeElem->appendChild($this->igsnDom->createTextNode('regular URL'));
-			$externalUrlElem->appendChild($urlTypeElem);
-			$externalUrlsElem->appendChild($externalUrlElem);
-			$sampleElem->appendChild($externalUrlsElem);
+			// Sesar gets mad if the url link does not resolve (i.e., localhost links throw an error so only add this if in productionMode)
+			if ($this->productionMode == 1) {
+				$baseUrl = $this->getDomain().$GLOBALS['CLIENT_ROOT'].(substr($GLOBALS['CLIENT_ROOT'],-1)=='/'?'':'/');
+				$url = $baseUrl.'collections/individual/index.php?occid='.$this->fieldMap['occid']['value'];
+				$externalUrlsElem = $this->igsnDom->createElement('external_urls');
+				$externalUrlElem = $this->igsnDom->createElement('external_url');
+				$urlElem = $this->igsnDom->createElement('url');
+				$urlElem->appendChild($this->igsnDom->createTextNode($url));
+				$externalUrlElem->appendChild($urlElem);
+				$descriptionElem = $this->igsnDom->createElement('description');
+				$descriptionElem->appendChild($this->igsnDom->createTextNode('Source Reference URL'));
+				$externalUrlElem->appendChild($descriptionElem);
+				$urlTypeElem = $this->igsnDom->createElement('url_type');
+				$urlTypeElem->appendChild($this->igsnDom->createTextNode('regular URL'));
+				$externalUrlElem->appendChild($urlTypeElem);
+				$externalUrlsElem->appendChild($externalUrlElem);
+				$sampleElem->appendChild($externalUrlsElem);				
+			}
 		}
-		
 		$rootElem = $this->igsnDom->documentElement;
 		$rootElem->appendChild($sampleElem);
 	}
@@ -758,7 +864,12 @@ class OccurrenceSesar extends Manager {
 	private function updateOccurrenceID($igsn, $occid){
 		$status = true;
 		if(strlen($igsn) == 9){
-			$sql = 'UPDATE omoccurrences SET occurrenceID = '.($igsn=='NULL'?'NULL':'"'.$igsn.'"').' WHERE occurrenceID IS NULL AND occid = '.$occid;
+			if ($igsn === null) {
+				$sql = 'UPDATE omoccurrences SET occurrenceID = NULL WHERE occurrenceID IS NULL AND occid = ' . intval($occid);
+			} else {
+				$fullOccurrenceID = 'https://doi.org/10.58052/' . $igsn;
+				$sql = 'UPDATE omoccurrences SET occurrenceID = "' . $fullOccurrenceID . '" WHERE occurrenceID IS NULL AND occid = ' . intval($occid);
+			}	
 			if(!$this->conn->query($sql)){
 				$this->errorMessage = 'ERROR adding IGSN to occurrence table: '.$this->conn->error;
 				//$this->logOrEcho('ERROR adding IGSN to occurrence table: '.$this->conn->error,2);
@@ -776,7 +887,8 @@ class OccurrenceSesar extends Manager {
 	private function igsnExists($igsn){
 		$status = false;
 		if($this->namespace){
-			$sql = 'SELECT occurrenceID FROM omoccurrences WHERE (occurrenceid LIKE "'.$this->namespace.'%") AND (occurrenceID = "'.$igsn.'")';
+			$fullOccurrenceID = 'https://doi.org/10.58052/' . $igsn;
+			$sql = 'SELECT occurrenceID FROM omoccurrences WHERE occurrenceID = "' . $this->cleanInStr($fullOccurrenceID) . '"';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
 				$status = true;
@@ -868,7 +980,7 @@ class OccurrenceSesar extends Manager {
 
 		if($sesarResultArr['totalCnt']){
 			$this->logOrEcho('Calculating stats...',1);
-			$sql = 'UPDATE igsnverification i INNER JOIN omoccurrences o ON i.igsn = o.occurrenceid SET i.occidInPortal = o.occid WHERE i.occidInPortal IS NULL';
+			$sql = 'UPDATE igsnverification i INNER JOIN omoccurrences o ON CONCAT("https://doi.org/10.58052/", i.igsn) = o.occurrenceid SET i.occidInPortal = o.occid WHERE i.occidInPortal IS NULL';
 			if(!$this->conn->query($sql)){
 				$this->logOrEcho('ERROR updating IGSN field: '.$this->conn->error,2);
 			}
@@ -994,17 +1106,17 @@ class OccurrenceSesar extends Manager {
 	private function setSynchronizationStatus(){
 		$status = false;
 		$sqlArr = array();
-		$sqlArr[] = 'UPDATE omoccurrences o LEFT JOIN igsnverification v ON o.occurrenceid = v.igsn
+		$sqlArr[] = 'UPDATE omoccurrences o LEFT JOIN igsnverification v ON SUBSTRING_INDEX(o.occurrenceID, "https://doi.org/10.58052/", -1) = v.igsn
 			SET v.syncStatus = "IGSN in portal, not in SESAR system"
-			WHERE o.occurrenceID LIKE "NEON%" AND v.igsn IS NULL';
+			WHERE o.occurrenceID LIKE "https://doi.org/10.58052/NEON%" AND v.igsn IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification SET syncStatus = "OK" WHERE occidInPortal IS NOT NULL AND catalogNumber IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification i INNER JOIN omoccurrences o ON i.occidInSesar = o.occid
 			SET i.syncStatus = "newIGSN re-assigned to same occurrence record"
-			WHERE i.occidInPortal IS NULL AND i.igsn != o.occurrenceID AND i.syncStatus IS NULL';
+			WHERE i.occidInPortal IS NULL AND i.igsn != SUBSTRING_INDEX(o.occurrenceID, "https://doi.org/10.58052/", -1) AND i.syncStatus IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification v INNER JOIN omoccuridentifiers i ON v.catalogNumber = i.identifierValue
 			INNER JOIN omoccurrences o ON i.occid = o.occid
 			SET v.syncStatus = "newIGSN, new record, matching NEON ID"
-			WHERE v.occidInPortal IS NULL AND v.igsn != o.occurrenceID AND v.syncStatus IS NULL';
+			WHERE v.occidInPortal IS NULL AND v.igsn != SUBSTRING_INDEX(o.occurrenceID, "https://doi.org/10.58052/", -1) AND v.syncStatus IS NULL';
 		$sqlArr[] = 'UPDATE igsnverification SET syncStatus = "Occurrence not in portal" WHERE occidInPortal IS NULL AND catalogNumber IS NOT NULL AND syncStatus IS NULL';
 		foreach($sqlArr as $sql){
 			if(!$this->conn->query($sql)){
@@ -1020,7 +1132,7 @@ class OccurrenceSesar extends Manager {
 		$retArr = array();
 		if($this->collid){
 			$sql = 'SELECT o.occid, o.occurrenceid FROM omoccurrences o LEFT JOIN igsnverification i ON o.occid = i.occidInSesar '.
-				'WHERE o.occurrenceID LIKE "'.$this->namespace.'%" AND o.collid = '.$this->collid.' AND i.occidInSesar IS NULL';
+				'WHERE o.occurrenceID LIKE "https://doi.org/10.58052/' . $this->namespace. '%" AND o.collid = '.$this->collid.' AND i.occidInSesar IS NULL';
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
 				$retArr[$r->occid] = $r->occurrenceid;
@@ -1070,7 +1182,7 @@ class OccurrenceSesar extends Manager {
 			$rs->free();
 
 			if($ok){
-				$sqlUpdate = 'UPDATE omoccurrences SET occurrenceid = "'.$this->cleanInStr($igsn).'" WHERE occid = '.$occid;
+				$sqlUpdate = 'UPDATE omoccurrences SET occurrenceid = "https://doi.org/10.58052/'.$this->cleanInStr($igsn).'" WHERE occid = '.$occid;
 				if($this->conn->query($sqlUpdate)){
 					if($this->conn->affected_rows) $retArr['status'] = 1;
 				}
@@ -1102,10 +1214,16 @@ class OccurrenceSesar extends Manager {
 	
 		$retArr['retStr'] = curl_exec($ch);
 		$retArr['retCode'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	
-		if ($retArr['retCode'] != 200) {
-			$this->errorMessage = 'FATAL CURL ERROR: ' . curl_error($ch) . ' (#' . curl_errno($ch) . ')';
+		
+		if ($retArr['retCode'] === 302) {
+			$redirectUrl = curl_getinfo($ch, CURLINFO_REDIRECT_URL);
+			$this->logOrEcho('GeoSamples redirect URL: '.$redirectUrl, 1);
 		}
+		
+		if (curl_errno($ch)) {
+			$this->logOrEcho('FATAL CURL ERROR: '.curl_error($ch).' (#'.curl_errno($ch).')', 1);
+		}
+		
 	
 		curl_close($ch);
 		return $retArr;
@@ -1115,7 +1233,7 @@ class OccurrenceSesar extends Manager {
 	public function getGuidCount($collid = null){
 		$cnt = 0;
 		if($this->namespace){
-			$sql = 'SELECT COUNT(*) AS cnt FROM omoccurrences WHERE (occurrenceid LIKE "'.$this->namespace.'%") ';
+			$sql = 'SELECT COUNT(*) AS cnt FROM omoccurrences WHERE (occurrenceid LIKE "https://doi.org/10.58052/'.$this->namespace.'%") ';
 			if($collid) $sql .= 'AND (collid = '.$this->collid.')';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
@@ -1160,8 +1278,8 @@ class OccurrenceSesar extends Manager {
 		$sqlBase = 'FROM omoccurrences o 
 			INNER JOIN omcollections c ON o.collid = c.collid
 			INNER JOIN NeonSample s ON o.occid = s.occid
-			WHERE c.institutionCode = "NEON"
-			AND c.collid NOT IN (44,74,78,79,80,82,83,95,97,4,81,85,93,96,84,115)
+			WHERE c.institutionCode IN ("NEON","ASU")
+			AND c.collid NOT IN (44,74,78,79,80,82,83,95,97,81,85,93,96,84,115)
 			AND s.sampleReceived = 1
 			AND o.dateLastModified > IFNULL(s.sampleLastUpdatedSESAR, "1900-01-01") ';
 	
@@ -1217,7 +1335,14 @@ class OccurrenceSesar extends Manager {
 		//Get maximum identifier
 		if($this->collid){
 			$seed = 0;
-			$sql = 'SELECT MAX(occurrenceID) as maxid FROM omoccurrences WHERE occurrenceID LIKE "NEO%" AND length(occurrenceID) = 9';
+			$sql = 'SELECT MAX(
+						SUBSTR(occurrenceID, LENGTH("https://doi.org/10.58052/") + 1)
+					) AS maxid
+					FROM omoccurrences
+					WHERE occurrenceID LIKE "https://doi.org/10.58052/NEON%"
+					  AND LENGTH(
+						  SUBSTR(occurrenceID, LENGTH("https://doi.org/10.58052/") + 1)
+					  ) = 9;';
 			$rs = $this->conn->query($sql);
 			if($r = $rs->fetch_object()){
 				$seed = $r->maxid;

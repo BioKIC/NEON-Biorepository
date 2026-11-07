@@ -29,7 +29,9 @@ class SpecProcessorManager {
 	protected $lgMaxFileSize = 10000000;
 	protected $webImg = 1;
 	protected $createTnImg = 1;
-	protected $createLgImg = 2;
+	//neon edit; default for large image should be 1, not 2
+	protected $createLgImg = 1;
+	//end neon edit
 	protected $customStoredProcedure;
 	protected $lastRunDate = '';
 	//neon edit

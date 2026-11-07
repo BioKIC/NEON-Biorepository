@@ -103,10 +103,45 @@ if($isEditor){
 		}
 	</script>
 	<style type="text/css">
-		fieldset{ padding:15px; margin: 10px 5px; }
-		legend{ font-weight: bold; }
-		.fieldGroupDiv{ clear:both; padding:5px 0px; }
-		.fieldDiv{ float:left; }
+		fieldset {
+			padding: 15px;
+			margin: 10px 5px;
+			box-sizing: border-box;
+		}
+
+		legend {
+			font-weight: bold;
+		}
+
+		.fieldGroupDiv {
+			clear: both;
+			padding: 5px 0;
+		}
+
+		.fieldDiv {
+			float: left;
+		}
+
+		#extendedVariables {
+			display: flow-root;
+			clear: both;
+			width: auto;
+			min-width: 0;
+			margin: 15px 0;
+			box-sizing: border-box;
+		}
+
+		#extendedVariables .fieldDiv {
+			float: none;
+			width: 100%;
+			box-sizing: border-box;
+		}
+
+		#extendedVariables input[name="errorStr"] {
+			width: 600px;
+			max-width: 100%;
+			box-sizing: border-box;
+		}
 	</style>
 </head>
 <body>
@@ -141,16 +176,16 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="fieldDiv">
 						Target Session:
 						<select name="sessionid" >
-						<option value="">All Records</option>
-						<option value="">------------------------</option>
-						<?php
-						$sessionDataArr = $shipManager->getSessionDataArr();
-						foreach($sessionDataArr as $key => $sessionName){
-							echo '<option value="'.htmlspecialchars($key).'" '.(isset($searchArgumentArr['sessionData'])&&$key==$searchArgumentArr['sessionData']?'SELECTED':'').'>'.$sessionName.'</option>';
-						}
-						?>
-					</select>
-				</div>
+							<option value="">All Records</option>
+							<option value="">------------------------</option>
+							<?php
+								$sessionDataArr = $shipManager->getSessionDataArr();
+								foreach($sessionDataArr as $key => $sessionName){
+									echo '<option value="'.htmlspecialchars($key).'" '.(isset($searchArgumentArr['sessionData'])&&$key==$searchArgumentArr['sessionData']?'SELECTED':'').'>'.$sessionName.'</option>';
+								}
+							?>
+						</select>
+					</div>
 				</div>
 				<fieldset id="extendedVariables">
 					<legend>(Re)harvesting Parameters</legend>
@@ -176,25 +211,35 @@ include($SERVER_ROOT.'/includes/header.php');
 					<div class="fieldGroupDiv">
 						<div class="fieldDiv">
 							Target Error Group:
-							<select name="errorStr" >
+					
+							<input
+								type="text"
+								name="errorStr"
+								list="errorStrList"
+								value="<?= htmlspecialchars($errorStr) ?>"
+								style="width: 600px; max-width: 100%;"
+							>
+					
+							<datalist id="errorStrList">
 								<option value="nullError">NULL Error Message</option>
-								<option value="">---------------------</option>
+					
 								<?php
-								foreach($reportArr as $msg => $repCntArr){
-									echo '<option '.($errorStr==$msg?'selected':'').'>'.$msg.'</option>';
+								foreach ($reportArr as $msg => $repCntArr) {
+									echo '<option value="' . htmlspecialchars($msg) . '">';
 								}
 								?>
-							</select>
+							</datalist>
 						</div>
 					</div>
 					<div class="fieldGroupDiv">
 						<div class="fieldDiv">
-						<input name="existing" type="checkbox" value="1" /> Target only samples WITH existing occurrences (occid IS NOT NULL)
+							<input name="existing" type="checkbox" value="1" /> Target only samples WITH existing occurrences (occid IS NOT NULL)
+						</div>
 					</div>
-						<div class="fieldGroupDiv">
+					<div class="fieldGroupDiv">
 						<div class="fieldDiv">
-						<input name="notexisting" type="checkbox" value="1" /> Target only samples WITHOUT existing occurrences (occid IS NULL)
-					</div>
+							<input name="notexisting" type="checkbox" value="1" /> Target only samples WITHOUT existing occurrences (occid IS NULL)
+						</div>
 					</div>
 					<div class="fieldGroupDiv">
 						<div class="fieldDiv" title="Upon reharvesting, replaces existing field values, but only if they haven't been explicitly edited to another value">

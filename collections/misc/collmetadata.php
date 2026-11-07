@@ -85,23 +85,6 @@ $collManager->cleanOutArr($collData);
 	<script type="text/javascript" src="../../js/tinymce/tinymce.min.js"></script>
 	<script>
 		// Adds WYSIWYG editor to description field
-		tinymce.init({
-			selector: '#full-description',
-			plugins: 'code link lists image',
-			menubar: '',
-			toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code | charmap'],
-			branding: false,
-			default_link_target: "_blank",
-			paste_as_text: false,
-			block_unsupported_drop: true,
-			images_file_types: 'jpg,jpeg,png,gif',
-			images_upload_url: 'tinymceimagehandler.php',
-			a11y_advanced_options: true,
-			init_instance_callback: function (editor) {
-				var iframeBody = editor.getBody();
-				iframeBody.setAttribute('aria-label', <?php echo json_encode($LANG['TINYMCE_INFO'], JSON_UNESCAPED_UNICODE); ?>);
-			}
-		});
 
 		$(function() {
 			var dialogArr = new Array("instcode", "collcode", "pedits", "pubagg", "rights", "rightsholder", "accessrights", "guid", "colltype", "management", "icon", "collectionid", "sourceurl", "sort");
@@ -231,6 +214,25 @@ $collManager->cleanOutArr($collData);
 			}
 			return true;
 		}
+		window.addEventListener('load', function () {
+			tinymce.init({
+				selector: '#full-description',
+				plugins: 'code link lists image',
+				menubar: '',
+				toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | formatselect | bullist numlist | indent outdent | blockquote | image | code | charmap'],
+				branding: false,
+				default_link_target: "_blank",
+				paste_as_text: false,
+				block_unsupported_drop: true,
+				images_file_types: 'jpg,jpeg,png,gif',
+				images_upload_url: 'tinymceimagehandler.php',
+				a11y_advanced_options: true,
+				init_instance_callback: function (editor) {
+					var iframeBody = editor.getBody();
+					iframeBody.setAttribute('aria-label', <?php echo json_encode($LANG['TINYMCE_INFO'], JSON_UNESCAPED_UNICODE); ?>);
+				}
+			});
+		});
 	</script>
 	<style>
 		fieldset {

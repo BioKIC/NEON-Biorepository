@@ -13,7 +13,8 @@ class DwcArchiverDetermination{
 		$termArr['identificationQualifier'] = 'http://rs.tdwg.org/dwc/terms/identificationQualifier';
 		$fieldArr['identificationQualifier'] = 'd.identificationQualifier';
 		$termArr['scientificName'] = 'http://rs.tdwg.org/dwc/terms/scientificName';
-		$fieldArr['scientificName'] = 'd.sciName AS scientificName';
+		//neon edit; convert Bulk Canopy Folige to Plantae for publishing
+		$fieldArr['scientificName'] = 'IF(d.sciName = "Bulk Canopy Foliage", "Plantae", d.sciName) AS scientificName';
 		$termArr['tidInterpreted'] = 'https://symbiota.org/terms/tidInterpreted';
 		$fieldArr['tidInterpreted'] = 'd.tidinterpreted';
 		$termArr['identificationIsCurrent'] = 'https://symbiota.org/terms/identificationIsCurrent';
@@ -21,7 +22,8 @@ class DwcArchiverDetermination{
 		$termArr['scientificNameAuthorship'] = 'http://rs.tdwg.org/dwc/terms/scientificNameAuthorship';
 		$fieldArr['scientificNameAuthorship'] = 'd.scientificNameAuthorship';
 		$termArr['genus'] = 'http://rs.tdwg.org/dwc/terms/genus';
-		$fieldArr['genus'] = 'CONCAT_WS(" ",t.unitind1,t.unitname1) AS genus';
+		//neon edit; convert Bulk Canopy Folige to Plantae for publishing
+		$fieldArr['genus'] = 'IF(d.sciName = "Bulk Canopy Foliage", "", CONCAT_WS(" ",t.unitind1,t.unitname1)) AS genus';
 		$termArr['specificEpithet'] = 'http://rs.tdwg.org/dwc/terms/specificEpithet';
 		$fieldArr['specificEpithet'] = 'CONCAT_WS(" ",t.unitind2,t.unitname2) AS specificEpithet';
 		$termArr['taxonRank'] = 'http://rs.tdwg.org/dwc/terms/taxonRank';

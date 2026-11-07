@@ -44,10 +44,10 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS)) $isEditor = true;
 if ($isEditor) {
 ?>
 	<div class="section-nav">
-		<a href="#receipts">1. Sample Receipt Forms</a> |
-		<a href="#accessioning">2. Accessioning</a> |
-		<a href="#data">3. Sample Data</a> |
-		<a href="#loans">4. Loans</a> |
+		<a href="#receipts">1. Sample Receipt Forms</a>|
+		<a href="#accessioning">2. Accessioning</a>|
+		<a href="#data">3. Sample Data</a>|
+		<a href="#loans">4. Loans</a>|
 		<a href="#loanrequests">5. Loan Requests</a>
 	</div>
 	<h1>NEON SOW Report: AY<?php echo htmlspecialchars($ay); ?></h1>

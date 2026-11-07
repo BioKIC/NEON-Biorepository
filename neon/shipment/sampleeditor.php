@@ -255,7 +255,7 @@ if($isEditor){
 				</div>
 				<div class="fieldGroupDiv">
 					<div class="fieldDiv">
-						<b>Remarks for Receipt:</b> <input name="checkinRemarks" type="text" value="<?php echo isset($sampleArr['checkinRemarks'])?$sampleArr['checkinRemarks']:''; ?>" style="width:500px" />
+						<b>Check-in Remarks:</b> <input name="checkinRemarks" type="text" value="<?php echo isset($sampleArr['checkinRemarks'])?$sampleArr['checkinRemarks']:''; ?>" style="width:500px" />
 					</div>
 				</div>
 				<div style="clear:both;margin:15px">

@@ -150,6 +150,17 @@ class SSP {
 
 		if ( isset($request['search']) && $request['search']['value'] != '' ) {
 			$str = $request['search']['value'];
+			
+			$extraSearchColumns = [
+				'alternativeSampleID', 'hashedSampleID', 'individualCount',
+				'filterVolume', 'domainRemarks', 'notes', 'checkinRemarks',
+				'dynamicProperties', 'symbiotaTarget', 'errorMessage'
+			];
+			
+			foreach ($extraSearchColumns as $field) {
+				$binding = self::bind($bindings, '%'.$str.'%', 's');
+				$globalSearch[] = "`".$field."` LIKE ".$binding;
+			}
 
 			for ( $i=0, $ien=count($request['columns']) ; $i<$ien ; $i++ ) {
 				$requestColumn = $request['columns'][$i];
@@ -308,7 +319,8 @@ class SSP {
 		$primaryKey,
 		$columns,
 		$whereResult=null,
-		$whereAll=null
+		$whereAll=null,
+		$extraColumns=array()
 	) {
 		$bindings = array();
 		$whereAllBindings = array();
@@ -359,8 +371,12 @@ class SSP {
 		}
 
 		// Main query to actually get the data
-		$data = self::sql_exec( $db, $bindings,
-			"SELECT `".implode("`, `", self::pluck($columns, 'db'))."`
+		$selectColumns = array_unique(
+			array_merge(self::pluck($columns, 'db'), $extraColumns)
+		);
+		
+		$data = self::sql_exec($db, $bindings,
+			"SELECT `".implode("`, `", $selectColumns)."`
 			 FROM `$table`
 			 $where
 			 $order

@@ -43,26 +43,13 @@ if ($SYMB_UID) {
 	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
 </head>
 
-<style type="text/css">
-	.MuiAccordion-root.Mui-expanded:last-child {
-		margin-bottom: 20 !important;
-		}
-	.MuiAccordion-root.Mui-expanded:first-child {
-		margin-top: 20 !important;
-		}
-	.MuiAccordion-root.Mui-expanded {
-		margin: 16px 0 !important;
-	}
-	.MuiTab-wrapper {
-		font-size: 0.825rem;
-	}
-</style>
-
-
 <body>
 	<div id="innertext">
 		<div id="biorepo-collections-content"></div>
 	</div>
+	<?php
+	include($SERVER_ROOT . '/includes/footer.php');
+	?>
 </body>
 
 </html>

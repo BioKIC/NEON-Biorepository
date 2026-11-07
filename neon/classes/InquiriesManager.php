@@ -220,7 +220,7 @@ public function getHowFoundUs(){
     }
 }
 
-   public function addInquiry($collectionManager, $researcherID, $inquiryDate,$title,$collections,$field,$secondaryfields,$funded,$fundingsource,$description,$howfound,$dataproduced,$existing,$future,$new,$additionalresearchers,$drivefolder,$aiml,$internal,$outreach,$processing) {
+   public function addInquiry($collectionManager, $researcherID, $inquiryDate,$title,$collections,$field,$secondaryfields,$funded,$fundingsource,$description,$howfound,$dataproduced,$future,$new,$additionalresearchers,$drivefolder,$aiml,$internal,$outreach,$processing) {
 
     $collectionManager = (int) $collectionManager;
     $researcherID = (int) $researcherID;
@@ -233,7 +233,6 @@ public function getHowFoundUs(){
     $description = $this->conn->real_escape_string($description);
     $howfound = $this->conn->real_escape_string($howfound);
     $dataproduced = $this->conn->real_escape_string($dataproduced);
-    $existing = $this->conn->real_escape_string($existing);
     $future = $this->conn->real_escape_string($future);
     $new = $this->conn->real_escape_string($new);
     $drivefolder = $this->conn->real_escape_string($drivefolder);
@@ -244,9 +243,9 @@ public function getHowFoundUs(){
 
 
     $sql = "INSERT INTO neonrequest 
-        (collectionManager, inquiryDate, researcherID, status, title, primaryResearchField, secondaryResearchField, funded, fundingSource, description, howFoundUs, dataProduced, existingSamples, futureSamples, generatingSamples, folderName,usesAIML, internal,cut,processing,outreach,lastUpdated) 
+        (collectionManager, inquiryDate, researcherID, status, title, primaryResearchField, secondaryResearchField, funded, fundingSource, description, howFoundUs, dataProduced, futureSamples, generatingSamples, folderName,usesAIML, internal,cut,processing,outreach,lastUpdated) 
         VALUES 
-        ('$collectionManager', '$inquiryDate','$researcherID', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$existing', '$future', '$new', '$drivefolder','$aiml','$internal','no','$processing','$outreach', NOW())";
+        ('$collectionManager', '$inquiryDate','$researcherID', 'sample inquiry', '$title', '$field', '$secondaryfields', '$funded', '$fundingsource', '$description', '$howfound', '$dataproduced', '$future', '$new', '$drivefolder','$aiml','$internal','no','$processing','$outreach', NOW())";
 
     if ($this->conn->query($sql)) {
         $requestID = $this->conn->insert_id;
@@ -509,7 +508,6 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $description,
       $howfound,
       $dataproduced,
-      $existing,
       $future,
       $new,
       $additionalresearchers,
@@ -546,7 +544,6 @@ public function addCollectionInquiryLink($requestID, $collections) {
                   description = ?, 
                   howFoundUs = ?, 
                   dataProduced = ?, 
-                  existingSamples = ?, 
                   futureSamples = ?, 
                   generatingSamples = ?, 
                   folderName = ?, 
@@ -564,7 +561,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       }
 
       $stmt->bind_param(
-          "iissssssssssssssssi",
+          "iisssssssssssssssi",
           $collectionManager,
           $researcherID,
           $title,
@@ -575,7 +572,6 @@ public function addCollectionInquiryLink($requestID, $collections) {
           $description,
           $howfound,
           $dataproduced,
-          $existing,
           $future,
           $new,
           $drivefolder,
@@ -603,7 +599,6 @@ public function addCollectionInquiryLink($requestID, $collections) {
           "description" => $description,
           "howFoundUs" => $howfound,
           "dataProduced" => $dataproduced,
-          "existingSamples" => $existing,
           "futureSamples" => $future,
           "generatingSamples" => $new,
           "folderName" => $drivefolder,
@@ -728,7 +723,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
       $assignee  = !empty($assignee)  ? $assignee  : null;
 
       $dates = [
-          'sample use inquiry'    => $inquiryDate,
+          'sample inquiry'    => $inquiryDate,
           'pending funding'   => $pendingfunding,
           'not funded'        => $notfunded,
           'pending sample list'      => $pendinglist,
@@ -1310,7 +1305,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
 				$available = isset($postArr['available'])&&$postArr['available']?$postArr['available']:NULL;
 				$substanceProvided = isset($postArr['substanceprovided'])&&$postArr['substanceprovided']?$postArr['substanceprovided']:NULL;
 				$notes = isset($postArr['notes'])&&$postArr['notes']?$postArr['notes']:NULL;
-                if (array_key_exists('shipmentid', $postArr) && trim($postArr['shipmentid']) !== '') {
+                if (array_key_exists('shipmentid', $postArr) && trim((string)$postArr['shipmentid']) !== '') {
                     $shipmentID = (int)$postArr['shipmentid'];
                 } else {
                     $shipmentID = null;
@@ -1875,8 +1870,31 @@ public function addCollectionInquiryLink($requestID, $collections) {
         return $requestID;
     }
 
+    // add link when new shipment 
+    public function linkNewShipment($requestID, $shipmentID) {
+        $requestID = (int)$requestID;
+        $shipmentID = (int)$shipmentID;
+        $sql = "INSERT INTO neonrequestshipmentrequestlink
+                (requestID, shipmentID)
+                VALUES (?, ?)";
+
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            $this->errorMessage = "Database Error: " . $this->conn->error;
+            return false;
+        }
+        $stmt->bind_param("ii", $requestID, $shipmentID);
+        if (!$stmt->execute()) {
+            $this->errorMessage = "Database Error: " . $stmt->error;
+            $stmt->close();
+            return false;
+        }
+        $stmt->close();
+        return true;
+    }
+
           // Sample data for availability/disposition editor
-  public function getSampleAvailabilityForEditor($id){
+    public function getSampleAvailabilityForEditor($id){
       $retArr = [];
 
       $sql = "SELECT id,s.occid,n.sampleID,n.sampleCode,s.available,o.availability,o.disposition
@@ -2137,7 +2155,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
             return false;
         }
 
-        $sql = "SELECT title, description FROM neonrequest WHERE id = $requestID";
+        $sql = "SELECT title, description,internal FROM neonrequest WHERE id = $requestID";
         $row = $this->conn->query($sql);
         if (!$row) {
             $this->errorMessage = "Failed to fetch request: " . $this->conn->error;
@@ -2153,10 +2171,19 @@ public function addCollectionInquiryLink($requestID, $collections) {
         $name = $this->conn->real_escape_string($name);
         $description = $this->conn->real_escape_string($row['description'] ?? '');
         $notes = "Dataset created from request $requestID";
+        $dynamicProperties = $this->conn->real_escape_string(
+            json_encode(['requestID' => $requestID])
+        );        
+        if ($row['internal'] == 'no') {
+            $isPublic = 1;
+        }
+        else {
+            $isPublic = 0;
+        }
 
         // create new dataset
-        $insertSql = "INSERT INTO omoccurdatasets (name, description, category, notes, isPublic, uid) 
-                      VALUES ('$name', '$description', 'Request' ,'$notes', 1, $uid)";
+        $insertSql = "INSERT INTO omoccurdatasets (name, description, category, notes, isPublic, uid, dynamicProperties) 
+                      VALUES ('$name', '$description', 'Request' ,'$notes', $isPublic, $uid, '$dynamicProperties')";
         if (!$this->conn->query($insertSql)) {
             $this->errorMessage = "Failed to create dataset: " . $this->conn->error;
             return false;
@@ -2172,7 +2199,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
         }
         
         // Add occurrences to dataset
-        $sampsSql = "SELECT occid FROM neonsamplerequestlink WHERE requestID = $requestID";
+        $sampsSql = "SELECT DISTINCT(occid) FROM neonsamplerequestlink WHERE requestID = $requestID";
         $result = $this->conn->query($sampsSql);
         if (!$result) {
             $this->errorMessage = "Failed to fetch occurrences: " . $this->conn->error;

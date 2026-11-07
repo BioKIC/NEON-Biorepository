@@ -389,7 +389,7 @@ class OccurrenceHarvester{
 				if($sampleArr['occid']){
 					//This is a reharvest event, check to make sure IGSNs match
 					if(isset($sampleArr['occurrenceID']) && $sampleArr['occurrenceID']){
-						if($sampleArr['occurrenceID'] == $igsnMatch[1]){
+						if($sampleArr['occurrenceID'] == 'https://doi.org/10.58052/' . $igsnMatch[1]){
 							$neonSampleUpdate['igsnPushedToNEON'] = 1;
 						}
 						else{
@@ -2930,7 +2930,8 @@ class OccurrenceHarvester{
 		$retArr = array();
 		$sql = 'SELECT DISTINCT c.collid, CONCAT(c.collectionName, " (",CONCAT_WS(":",c.institutionCode,c.collectionCode),")") as name
 			FROM omcollections c INNER JOIN omoccurrences o ON c.collid = o.collid INNER JOIN NeonSample s ON o.occid = s.occid
-			WHERE c.institutioncode = "NEON"';
+			WHERE c.institutioncode = "NEON"
+			ORDER BY c.collectionName';
 		$rs = $this->conn->query($sql);
 		while($r = $rs->fetch_object()){
 			$retArr[$r->collid] = $r->name;

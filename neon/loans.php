@@ -8,8 +8,18 @@ header("Content-Type: text/html; charset=".$CHARSET);
 
 $reports = new OccurrenceLoans();
 $utilities = new Utilities();
-$loansArr = $reports->getLoanOutAll();
-$headerArr = ['loanId','requestor','dateSent','dateDue','dateClosed','totalSpecimens','specimensOut','assignee'];
+$quickSearchTerm = array_key_exists('quicksearch', $_REQUEST) ? $_REQUEST['quicksearch'] : '';
+
+if ($quickSearchTerm) {
+	$loansArr = $reports->getLoanOutFiltered($quickSearchTerm);
+} else {
+	$loansArr = $reports->getLoanOutAll(); 
+	}
+if ($quickSearchTerm) {
+	$headerArr = ['loanId','requestor','dateSent','dateDue','dateClosed','matchingSpecimens','matchingSpecimensOut','assignee'];
+} else {
+	$headerArr = ['loanId','requestor','dateSent','dateDue','dateClosed','totalSpecimens','specimensOut','assignee'];
+}
 $total = $reports->getOutSamplesCnt();
 
 $isEditor = false;
@@ -18,7 +28,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 ?>
 <html>
 	<head>
-		<title><?php echo $DEFAULT_TITLE; ?> Loans Reports</title>
+		<title><?php echo $DEFAULT_TITLE; ?> Loan Report</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET;?>" />
 		<?php
 		include_once($SERVER_ROOT.'/includes/head.php');
@@ -34,11 +44,22 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 		<div id="innertext">
 			<?php
 			if($isEditor){
-				echo '<h1>Loans Reports</h1>';
-				echo '<p>Total number of samples in open loans: '.$total.'</p>';
-				if(!empty($loansArr)){
-					$loansTable = $utilities->htmlTable($loansArr, $headerArr);
-					echo $loansTable;
+				if ($quickSearchTerm) {
+					echo '<h1>Loans Containing Sample: '. $quickSearchTerm . '</h1>';
+					if(!empty($loansArr)){
+						$loansTable = $utilities->htmlTable($loansArr, $headerArr);
+						echo $loansTable;
+					} else {
+						echo 'No loans are linked to this sample.';
+					}
+				}
+				else {
+					echo '<h1>Loan Report</h1>';
+					echo '<p>Total number of samples in open loans: '.$total.'</p>';
+					if(!empty($loansArr)){
+						$loansTable = $utilities->htmlTable($loansArr, $headerArr);
+						echo $loansTable;
+					}
 				}
 			} else {
 				echo '<h3>Please login to get access to this page.</h3>';

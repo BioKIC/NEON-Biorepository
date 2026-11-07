@@ -106,6 +106,7 @@
 
     }
 
+    // get google scholar stats
     function getScholarProfileStats() {
         $url = "https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en";
 
@@ -153,7 +154,6 @@
 
         return $stats;
     }
-
 
     // Generates data for Monthly Report 
     public function generateMonthlyReport() {
@@ -220,6 +220,7 @@
 
         $type = 'general';
 
+        // insert general and request statistics
         foreach ($dataArr as $statName => $statValue) {
 
             if ($statName === 'active use') {
@@ -236,6 +237,7 @@
             }
         }
 
+        // insert sample class stats
         $samplesql = "SELECT sampleClass, COUNT(*) AS count FROM NeonSample GROUP BY sampleClass";
 
         $result = $this->conn->query($samplesql);
@@ -387,7 +389,7 @@
         $year = (int) date('y');  
         $month = (int) date('m');
 
-        $quarterMap = [1  => 1, 4  => 2, 7  => 3, 11 => 4];
+        $quarterMap = [1  => 1, 4  => 2, 7  => 3, 10 => 4];
 
         if (!isset($quarterMap[$month])) {
             throw new Exception('Quarterly report can only be generated in the month directly following completion of a quarter.');

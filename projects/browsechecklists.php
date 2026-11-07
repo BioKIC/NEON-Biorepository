@@ -89,5 +89,8 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 			<p>Species checklists are intended to help users identify taxa at and around NEON field sites. Each checklist provides a <b>comprehensive species list, images, and specimens</b> collected within a site or domain.</p>
 			<div id="biorepo-checklists-content"></div>
 		</div>
+		<?php
+		include($SERVER_ROOT . '/includes/footer.php');
+		?>
 	</body>
 </html>

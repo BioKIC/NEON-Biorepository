@@ -78,17 +78,44 @@ $columns = array(
             return $html;
         }
     ),
-    #these are for the child notes row
-    array('db' => 'alternativeSampleID', 'dt' => 13),
-    array('db' => 'hashedSampleID',      'dt' => 14),
-    array('db' => 'individualCount',     'dt' => 15),
-    array('db' => 'filterVolume',        'dt' => 16),
-    array('db' => 'domainRemarks',       'dt' => 17),
-    array('db' => 'notes',               'dt' => 18),
-    array('db' => 'checkinRemarks',      'dt' => 19),
-    array('db' => 'dynamicProperties',   'dt' => 20),
-    array('db' => 'symbiotaTarget',      'dt' => 21),
-    array('db' => 'errorMessage',        'dt' => 22)
+    #this is for the child notes row
+    array(
+        'db' => 'samplePK',
+        'dt' => 13,
+        'formatter' => function($d, $row) {
+            $parts = [];
+    
+            if (!empty($row['alternativeSampleID'])) $parts[] = '<div>Alternative Sample ID: '.htmlspecialchars($row['alternativeSampleID']).'</div>';
+            if (!empty($row['hashedSampleID'])) $parts[] = '<div>Hashed Sample ID: '.htmlspecialchars($row['hashedSampleID']).'</div>';
+            if (!empty($row['individualCount'])) $parts[] = '<div>Individual Count: '.htmlspecialchars($row['individualCount']).'</div>';
+            if (!empty($row['filterVolume'])) $parts[] = '<div>Filter Volume: '.htmlspecialchars($row['filterVolume']).'</div>';
+            if (!empty($row['domainRemarks'])) $parts[] = '<div>Domain Remarks: '.htmlspecialchars($row['domainRemarks']).'</div>';
+            if (!empty($row['notes'])) $parts[] = '<div>Sample Notes: '.htmlspecialchars($row['notes']).'</div>';
+            if (!empty($row['checkinRemarks'])) $parts[] = '<div>Check-in Remarks: '.htmlspecialchars($row['checkinRemarks']).'</div>';
+    
+            if (!empty($row['dynamicProperties'])) {
+                $parsed = json_decode($row['dynamicProperties'], true);
+                if (is_array($parsed)) {
+                    $values = [];
+                    foreach ($parsed as $key => $value) $values[] = htmlspecialchars($key).': '.htmlspecialchars((string)$value);
+                    if ($values) $parts[] = '<div>'.implode('; ', $values).'</div>';
+                }
+            }
+    
+            if (!empty($row['symbiotaTarget'])) {
+                $parsed = json_decode($row['symbiotaTarget'], true);
+                if (is_array($parsed)) {
+                    $values = [];
+                    foreach ($parsed as $key => $value) $values[] = htmlspecialchars($key).': '.htmlspecialchars((string)$value);
+                    if ($values) $parts[] = '<div>Symbiota targeted data ['.implode('; ', $values).']</div>';
+                }
+            }
+    
+            if (!empty($row['errorMessage'])) $parts[] = '<div>Occurrence Harvesting Error: '.htmlspecialchars($row['errorMessage']).'</div>';
+    
+            return implode('', $parts);
+        }
+    )
 );
 
 $shipmentPK = isset($_POST['shipmentPK']) && is_numeric($_POST['shipmentPK']) ? intval($_POST['shipmentPK']) : null;
@@ -140,9 +167,21 @@ if ($shipmentPK !== null) {
     ];
 }
 
+$extraColumns = [
+    'alternativeSampleID',
+    'hashedSampleID',
+    'individualCount',
+    'filterVolume',
+    'domainRemarks',
+    'notes',
+    'checkinRemarks',
+    'dynamicProperties',
+    'symbiotaTarget',
+    'errorMessage'
+];
  
 require($SERVER_ROOT.'/neon/classes/DatatablesSSP.php');
  
 echo json_encode(
-    SSP::complex( $_POST, $table, $primaryKey, $columns, $whereResult=null, $whereAll )
+    SSP::complex( $_POST, $table, $primaryKey, $columns, $whereResult=null, $whereAll, $extraColumns )
 );

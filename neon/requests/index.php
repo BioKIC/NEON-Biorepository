@@ -9,7 +9,7 @@ header("Content-Type: text/html; charset=".$CHARSET);
 $reportManager = new RequestReportManager();
 $utilities = new Utilities();
 $inquiriesArr = $reportManager->getInquiriesOut($_GET);
-$headerArr = ['id','researcher','inquiry date','title','status','samples','follow up type','follow up date','assignee'];
+$headerArr = ['id','researcher','manager','inquiry date','title','status','samples','follow up type','follow up date','assignee'];
 $total = $reportManager->getInqSamplesCnt();
 
 $isEditor = false;
@@ -39,7 +39,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
         border-collapse: collapse;
         width: 100%;
         margin-top: 1em;
-        font-size: 0.95em;
+        font-size: 0.5em;
         background-color: #fff;
     }
 
@@ -101,7 +101,7 @@ elseif(array_key_exists('SuperAdmin',$USER_RIGHTS) || array_key_exists('SuperAdm
         ?>
 				<?php
 			} else {
-	    echo '<h3>Please login with administrator permissions get access to this page.</h3>';
+	    echo '<h3>Please login with administrator privileges to get access to this page.</h3>';
       }
 			?>
 		</div>
