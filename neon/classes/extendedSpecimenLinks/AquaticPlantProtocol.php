@@ -42,19 +42,14 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
             $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
             if ($eventID === null) {
-                $this->log('ERROR: Aquatic Plant occid ' . $record['occid'] . ': collecting-event links skipped. '
-                    . 'The eventID field is empty and SITE.date could not be read from the sample ID. '
-                    . $this->describeSampleID($record));
+                $this->log('ERROR: APL occid ' . $record['occid'] . ': eventID missing; fallback failed (collecting event). ' . $this->describeSampleID($record));
                 continue;
             }
 
             $point = $this->getSamplingPointKey($sampleID);
 
             if ($point === null) {
-                $this->log('ERROR: Aquatic Plant occid ' . $record['occid'] . ': collecting-event links skipped. '
-                    . 'Could not identify the point, quadrat or transect; expected a final location code such as P10, Q4 or T3 (optionally -VOUCHER). '
-                    . $this->describeSampleID($record)
-                    . ' Resolved eventID "' . $eventID . '" is still available for bout links.');
+                $this->log('ERROR: APL occid ' . $record['occid'] . ': point/quadrat/transect unreadable. ' . $this->describeSampleID($record));
                 continue;
             }
 
@@ -106,9 +101,7 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
             $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
             if ($eventID === null) {
-                $this->log('ERROR: Aquatic Plant occid ' . $record['occid'] . ': bout links skipped. '
-                    . 'The eventID field is empty and SITE.date could not be read from the sample ID. '
-                    . $this->describeSampleID($record));
+                $this->log('ERROR: APL occid ' . $record['occid'] . ': eventID missing; fallback failed (bout). ' . $this->describeSampleID($record));
                 continue;
             }
 
@@ -178,11 +171,11 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
     private function describeSampleID(array $record): string {
         $sampleID = trim($record['identifierValue'] ?? '');
         if ($sampleID === '') {
-            return 'Sample ID is missing: neither "NEON sampleID" nor "Originating NEON sampleID" has a value.';
+            return 'sampleID=<missing>';
         }
 
         $tag = $record['identifierName'] ?? 'sampleID';
-        return $tag . ': "' . $sampleID . '".';
+        return $tag . '="' . $sampleID . '"';
     }
 
     private function getEventID(?string $eventID, string $sampleID): ?string {
