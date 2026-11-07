@@ -44,7 +44,7 @@ class SampleTypeSummaryExport {
             $row['taxonomic_groups'] = implode('; ', $item['taxa'] ?? array());
             $row['collection_months'] = implode('; ', $months);
             $description = $item['description'] ?? $row['description'] ?? '';
-            $intro = preg_split('/\bSampling\b/u', $description, 2)[0];
+            $intro = $item['shortDescription'] ?? preg_split('/\bSampling\b/u', $description, 2)[0];
             $row['description'] = trim(preg_replace('/\s+/u', ' ', $intro));
             $public = array();
             foreach ($columns as $column) $public[$column] = $row[$column];
@@ -81,7 +81,7 @@ class SampleTypeSummaryExport {
             foreach ($item['siteCodes'] ?? array() as $site) $months = array_merge($months, $site['availableMonths']);
             $months = array_values(array_unique($months));
             sort($months);
-            $intro = preg_split('/\bSampling\b/u', $item['description'] ?? '', 2)[0];
+            $intro = $item['shortDescription'] ?? preg_split('/\bSampling\b/u', $item['description'] ?? '', 2)[0];
             $rows[] = array(
                 'sample_type' => $item['name'],
                 'collection_code' => $item['collectionCode'] ?? '',
