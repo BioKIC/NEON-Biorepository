@@ -46,7 +46,7 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
                 continue;
             }
 
-            $point = $this->getSamplingPointKey($sampleID);
+            $point = $this->getEventIDFromSampleID($sampleID);
 
             if ($point === null) {
                 $this->log('ERROR: Aquatic Plant: unable to create collecting event for occid ' . $record['occid'] . ' sampleID ' . ($sampleID !== '' ? $sampleID : '<missing>'));
@@ -138,13 +138,13 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         // COMO.20190807.SCRI4.T3 -> COMO.20190807
         // Only derive an eventID from the expected SITE.date.taxon.location structure.
         $sampleID = trim($sampleID);
-        if ($this->getSamplingPointKey($sampleID) === null) return null;
+        if ($this->getEventIDFromSampleID($sampleID) === null) return null;
 
         $parts = explode('.', $sampleID);
         return $parts[0] . '.' . $parts[1];
     }
 
-    private function getSamplingPointKey(string $sampleID): ?string {
+    private function getEventIDFromSampleID(string $sampleID): ?string {
         $parts = explode('.', $sampleID);
 
         // Expected structure: SITE.date.taxon.location, e.g. COMO.20190807.SCRI4.T3.
