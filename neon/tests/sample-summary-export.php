@@ -48,6 +48,7 @@ if ($summary['rows'][2]['description'] !== 'Final record') throw new Exception('
 $stream = fopen('php://temp', 'w+');
 fwrite($stream, SampleTypeSummaryExport::csv($summary));
 rewind($stream);
+if (fread($stream, 3) !== "\xEF\xBB\xBF") throw new Exception('CSV must declare UTF-8 for Excel');
 if (fgetcsv($stream, 0, ',', '"', '') !== $expectedColumns) throw new Exception('Wrong CSV headers');
 foreach ($summary['rows'] as $row) {
     $expected = array_map(function ($value) { return (string)($value ?? ''); }, array_values($row));
@@ -55,7 +56,7 @@ foreach ($summary['rows'] as $row) {
 }
 fclose($stream);
 $empty = SampleTypeSummaryExport::read(new SummaryResult(array(), $columns), $catalog);
-if (trim(SampleTypeSummaryExport::csv($empty)) !== implode(',', $expectedColumns)) throw new Exception('Empty exports must retain headers');
+if (trim(substr(SampleTypeSummaryExport::csv($empty), 3)) !== implode(',', $expectedColumns)) throw new Exception('Empty exports must retain headers');
 $pdfCatalog = $catalog;
 foreach ($pdfCatalog['items'] as &$item) {
     $item['name'] = $item['id'] === 8 ? 'Aquatic DNA extracts' : 'Plant tissue';
@@ -114,6 +115,9 @@ try {
     foreach (glob($cacheDirectory . '/*') as $file) unlink($file);
     rmdir($cacheDirectory);
 }
+$unicodeCsv = SampleTypeSummaryExport::csv(array('columns' => array('sample_type'), 'rows' => array(array('sample_type' => 'Hawaiʻi specimens'))));
+if (substr($unicodeCsv, 0, 3) !== "\xEF\xBB\xBF" || strpos($unicodeCsv, 'Hawaiʻi specimens') === false) throw new Exception('CSV must preserve the okina in UTF-8');
+
 $externalRow = array_fill_keys($columns, null);
 $externalRow['collid'] = 200;
 $externalRow['sample_type'] = 'Outside repository specimens';

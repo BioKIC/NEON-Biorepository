@@ -61,6 +61,8 @@ class SampleTypeSummaryExport {
 
     public static function csv(array $summary): string {
         $stream = fopen('php://temp', 'w+');
+        // Excel uses the UTF-8 signature to preserve characters such as the Hawaiian ʻokina.
+        fwrite($stream, "\xEF\xBB\xBF");
         fputcsv($stream, $summary['columns'], ',', '"', '');
         foreach ($summary['rows'] as $row) fputcsv($stream, array_values($row), ',', '"', '');
         rewind($stream);
