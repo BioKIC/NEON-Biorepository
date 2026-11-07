@@ -79,6 +79,7 @@ try {
     if ($item['collectionCode'] !== 'NEON-MAM-EP') throw new Exception('Collection code missing');
     if ($item['taxa'] !== array('taxonomic', 'Small Mammals')) throw new Exception('Taxonomic hierarchy lost');
     if ($item['description'] !== 'Frozen & preserved') throw new Exception('Description normalization failed');
+    if ($item['shortDescriptionHtml'] !== '<p>Frozen &amp; preserved</p>') throw new Exception('Description markup was lost');
     if ($item['siteCodes'][0]['availableMonths'] !== array('2023-01', '2023-02')) throw new Exception('Months must be sorted and unique');
     if ($item['siteCodes'][1]['availableMonths'] !== array()) throw new Exception('Undated sites must remain represented');
     if ($item['totalSamples'] !== 3) throw new Exception('Totals must not multiply site associations');

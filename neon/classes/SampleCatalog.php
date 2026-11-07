@@ -43,6 +43,7 @@ class SampleCatalog extends Manager {
             $public[$id]['collectionCode'] = trim($row['collectionCode'] ?? '');
             $html = $row['fullDescription'] ?? '';
             $intro = preg_split('~<h3\b[^>]*>~i', $html, 2)[0];
+            $public[$id]['shortDescriptionHtml'] = $intro;
             $intro = preg_replace('~</p\s*>|<br\s*/?>~i', ' ', $intro);
             $public[$id]['shortDescription'] = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($intro), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
             $public[$id]['description'] = trim(html_entity_decode(strip_tags($row['fullDescription'] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
