@@ -1,6 +1,7 @@
 <?php
 
 require_once(__DIR__ . '/extendedSpecimenLinks/FishProtocol.php');
+require_once(__DIR__ . '/extendedSpecimenLinks/RootsProtocol.php');
 
 class OccurrenceLinker {
 
@@ -21,6 +22,7 @@ class OccurrenceLinker {
      */
     public function run(): void {
         $this->runFishProtocol();
+        $this->runRootsProtocol();
 
         /*
          * Later:
@@ -57,6 +59,33 @@ class OccurrenceLinker {
 		
 		$linker = new FishProtocolLinker($this->conn, $collids, $this->logger);
 		$linker->run();
+    }
+
+    private function runRootsProtocol(): void {
+        $protocolID = 30;
+        $protocol = $this->findProtocolById($this->protocolConfig, $protocolID);
+
+        if (!$protocol) {
+            $this->log("Roots protocol {$protocolID} not found in protocol JSON");
+            return;
+        }
+
+        $collections = $this->getCollectionsRecursive($protocol);
+
+        if (!$collections) {
+            $this->log("No collections found for Roots protocol {$protocolID}");
+            return;
+        }
+
+        $collids = array_column($collections, 'collid');
+        $collectionList = array_map(function ($collection) {
+            return $collection['name'] . ' (' . $collection['collid'] . ')';
+        }, $collections);
+
+        $this->log('Starting Roots extended specimen linkage; collections: ' . implode(', ', $collectionList));
+
+        $linker = new RootsProtocolLinker($this->conn, $collids, $this->logger);
+        $linker->run();
     }
 
     /**
