@@ -18,7 +18,7 @@ class SampleCatalog extends Manager {
                         if (!isset($catalog[$id])) $catalog[$id] = array('id' => $id, 'name' => $node['name'], 'sampleTypeName' => $node['name'], 'description' => '',
                             'taxa' => array(), 'protocols' => array(), 'preservation' => array(),
                             'storageConditions' => '', 'storageContainer' => '', 'dataProducts' => '', 'siteCodes' => array(), 'totalSamples' => 0);
-                        $values = $field === 'taxa' ? $ancestors : array_slice($names, 0, 1);
+                        $values = $field === 'taxa' ? array_slice($ancestors, 0, 2) : array_slice($names, 0, 1);
                         $catalog[$id][$field] = array_values(array_unique(array_merge($catalog[$id][$field], $values)));
                     }
                     if (!empty($node['children'])) $walk($node['children'], $names);
