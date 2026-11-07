@@ -18,16 +18,18 @@ class TickProtocolLinker extends BaseProtocol {
 
     private function linkSameIndividual(): void {
         /**
-         * Same individual = nymph samples and extracts sharing the prefix
-         * through the N component, ignoring everything after it.
+         * Link samples from the same original bulk nymph vial.
+         * Nymphs are stored together, and a subset is sent for pathogen testing.
+         * The group includes the archived nymphs and extracts from that subset.
+         * Match the prefix through the N component, ignoring everything after it.
          *
          * HARV_022.20170622.IXOSCA.N.T.003
-         * Individual key: HARV_022.20170622.IXOSCA.N
+         * Vial group key: HARV_022.20170622.IXOSCA.N
          *
          * Matching pattern: TREE_007.20240917.IXOSCA.N*
          * Other life stages receive collecting-event and bout links only.
          */
-        $this->log('Linking Tick individuals');
+        $this->log('Linking Tick nymph vial groups');
 
         $records = $this->getOccurrencesWithIdentifier('NEON sampleID', 'Originating NEON sampleID', true);
         $groups = [];
@@ -37,7 +39,7 @@ class TickProtocolLinker extends BaseProtocol {
             $sample = $this->parseSampleID($sampleID);
 
             if ($sample === null) {
-                $this->log('ERROR: Tick: unable to determine individual for occid ' . $record['occid'] . ' sampleID ' . ($sampleID !== '' ? $sampleID : '<missing>'));
+                $this->log('ERROR: Tick: unable to determine nymph vial for occid ' . $record['occid'] . ' sampleID ' . ($sampleID !== '' ? $sampleID : '<missing>'));
                 continue;
             }
 
@@ -57,16 +59,16 @@ class TickProtocolLinker extends BaseProtocol {
             if ($this->groupAlreadyLinked($occids, self::RELATIONSHIP_SAME_INDIVIDUAL)) continue;
 
             $created = $this->linkOccurrenceGroup($occids, self::RELATIONSHIP_SAME_INDIVIDUAL, $key,
-                'Tick nymph samples and extracts sharing the same plot, collection date, taxon and nymph sample prefix.');
+                'Tick nymph samples from the same original bulk vial, including extracts from the subset sent for pathogen testing.');
 
             if ($created > 0) {
                 $individualCount++;
                 $associationCount += $created;
-                $this->log("Tick individual {$key}: " . count($occids) . " occurrences; {$created} new associations");
+                $this->log("Tick nymph vial {$key}: " . count($occids) . " occurrences; {$created} new associations");
             }
         }
 
-        $this->log("Tick same individual: {$individualCount} new linked individuals; {$associationCount} new associations");
+        $this->log("Tick nymph vial groups: {$individualCount} new linked groups; {$associationCount} new associations");
     }
 
     private function linkSameCollectingEvent(): void {
