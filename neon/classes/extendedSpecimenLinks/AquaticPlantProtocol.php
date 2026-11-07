@@ -48,8 +48,7 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
             $point = $this->getSamplingPointKey($sampleID);
 
             if ($point === null) {
-                $this->log('Aquatic Plant: unable to determine collecting point for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
-                continue;
+                throw new RuntimeException('Aquatic Plant: unable to determine collecting point for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
             }
 
             $key = $eventID . '.' . $point;
@@ -87,7 +86,7 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
          * Bout key: COMO.20190807
          *
          * Use the eventID field directly, not a site/year key or a date
-         * reconstructed from the sampleID. No sampling location is required.
+         * reconstructed from the sampleID.
          */
         $this->log('Linking Aquatic Plant sampling bouts');
 
@@ -133,7 +132,7 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
 
         $collidList = implode(',', $this->collids);
 
-        // The left join keeps records without a sampleID available for bouts.
+        // Include records without a sampleID so validation can report them.
         $sql = "
             SELECT o.occid, o.eventID, i.identifierValue
             FROM omoccurrences o
@@ -170,8 +169,6 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         $point = trim($parts[count($parts) - 1]);
 
         // Q10 and Q10-VOUCHER share a key, but P1 and P10 do not.
-        // Missing locations, REACH and ambiguous numeric suffixes are
-        // skipped for collecting events; their eventID still supports bouts.
         if (preg_match('/^([PQT][0-9]+)(?:-VOUCHER)?$/i', $point, $matches) !== 1) {
             return null;
         }

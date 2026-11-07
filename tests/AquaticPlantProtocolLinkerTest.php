@@ -41,7 +41,6 @@ $records = [
     ['occid' => 1, 'eventID' => 'PRIN.20161109', 'identifierValue' => 'PRIN.20161109.PLANT9.Q10'],
     ['occid' => 2, 'eventID' => 'PRIN.20161109', 'identifierValue' => 'PRIN.20161109.QUADRAT.Q10-VOUCHER'],
     ['occid' => 3, 'eventID' => 'PRIN.20161109', 'identifierValue' => 'PRIN.20161109.PLANT6.T4'],
-    ['occid' => 4, 'eventID' => 'PRIN.20161109', 'identifierValue' => null],
     // Synthetic edge cases: location types and point numbers must not collapse.
     ['occid' => 5, 'eventID' => 'PRIN.20161109', 'identifierValue' => 'PRIN.20161109.TEST.P10'],
     ['occid' => 6, 'eventID' => 'PRIN.20161109', 'identifierValue' => 'PRIN.20161109.TEST.P1'],
@@ -49,8 +48,6 @@ $records = [
     ['occid' => 7, 'eventID' => 'PRIN.20161109', 'identifierValue' => 'PRIN.20161108.TEST.Q10'],
     ['occid' => 8, 'eventID' => 'PRIN.20161110', 'identifierValue' => 'PRIN.20161109.TEST.Q10'],
     ['occid' => 9, 'eventID' => null, 'identifierValue' => 'PRIN.20161109.TEST.Q10'],
-    ['occid' => 10, 'eventID' => 'PRIN.20161109', 'identifierValue' => 'PRIN.20161109.TEST.1'],
-    ['occid' => 11, 'eventID' => 'PRIN.20161109', 'identifierValue' => 'PRIN.20161109.TEST'],
     ['occid' => 12, 'eventID' => 'GUIL.20210712', 'identifierValue' => 'GUIL.20210712.AP17.1.T4'],
     ['occid' => 13, 'eventID' => 'GUIL.20210712', 'identifierValue' => 'GUIL.20210712.AP1.1.T4']
 ];
@@ -67,10 +64,6 @@ checkAquaticPlant(!isset($linker->links['sameBout:1:8']), 'Bouts must use the fu
 checkAquaticPlant(!isset($linker->links['sameCollectingEvent:1:5']), 'Quadrats and points must remain distinct');
 checkAquaticPlant(!isset($linker->links['sameCollectingEvent:5:6']), 'P1 and P10 must remain distinct');
 checkAquaticPlant(isset($linker->links['sameBout:1:3']), 'Different locations in the same event must share a bout');
-foreach ([4, 10, 11] as $occid) {
-    checkAquaticPlant(isset($linker->links["sameBout:1:{$occid}"]), 'Missing or ambiguous locations must retain bout links');
-    checkAquaticPlant(!isset($linker->links["sameCollectingEvent:1:{$occid}"]), 'Missing or ambiguous locations must not create point links');
-}
 checkAquaticPlant(($linker->links['sameCollectingEvent:12:13'] ?? null) === 'GUIL.20210712.T4', 'Dotted taxa must not shift the location field');
 foreach (array_keys($linker->links) as $key) {
     [$relationship, $a, $b] = explode(':', $key);
@@ -80,4 +73,22 @@ foreach (array_keys($linker->links) as $key) {
 $count = count($linker->links);
 $linker->run();
 checkAquaticPlant(count($linker->links) === $count, 'Rerun created duplicate associations');
+// Invalid input must raise a general validation error before creating links.
+foreach ([null, '', 'invalid-sample-id', 'PRIN.20161109.TEST.INVALID'] as $sampleID) {
+    $invalid = new AquaticPlantLinkerFixture([
+        $records[0],
+        $records[1],
+        ['occid' => 999, 'eventID' => 'PRIN.20161109', 'identifierValue' => $sampleID]
+    ]);
+    $error = null;
+    try {
+        $invalid->run();
+    } catch (RuntimeException $e) {
+        $error = $e;
+    }
+    checkAquaticPlant($error !== null, 'Invalid sampleID did not throw an error');
+    checkAquaticPlant(strpos($error->getMessage(), 'occid 999') !== false, 'Error must identify the occurrence');
+    checkAquaticPlant(strpos($error->getMessage(), 'sampleID ' . ($sampleID ?? '')) !== false, 'Error must identify the sampleID');
+    checkAquaticPlant($invalid->links === [], 'Invalid input must fail before creating links');
+}
 echo "Aquatic Plant linkage checks passed.\n";
