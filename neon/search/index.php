@@ -13,7 +13,7 @@ $collManager = new OccurrenceManager();
 
 <head>
 	<!-- neon edit -->
-	<title><?php echo $DEFAULT_TITLE; ?></title>
+	<title>Search Samples &amp; Specimens</title>
 	<!-- end neon edit -->
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
@@ -175,7 +175,7 @@ $collManager = new OccurrenceManager();
 		<h1 style="
 			margin-bottom: 30px;
 			font-size: 2.3rem;
-		">Explore Samples &amp; Specimens</h1>
+		">Search Samples &amp; Specimens</h1>
 		<div id="error-msgs" class="errors"></div>
 		<form id="params-form">
 			<!-- Criteria forms -->

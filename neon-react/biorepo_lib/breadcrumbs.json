@@ -4,11 +4,11 @@
     ],
   "/neon/search/index.php": [
     { "name": "Samples & Specimens", "href": "../../index.php" },
-    { "name": "NEON Biorepository Sample Portal" }
+    { "name": "Search Samples & Specimens" }
     ],
   "/collections/list.php": [
     { "name": "Samples & Specimens", "href": "../index.php" },
-    { "name": "NEON Biorepository Sample Portal", "href": "../neon/search/index.php" },
+    { "name": "Search Samples & Specimens", "href": "../neon/search/index.php" },
     { "name": "NEON Biorepository Sample Portal Results" }
   ],
   "/projects/browsechecklists.php": [
