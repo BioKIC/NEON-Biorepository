@@ -28,6 +28,11 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
          * PRIN.20161109.QUADRAT.Q10-VOUCHER
          * Collecting event key: PRIN.20161109.Q10
          *
+         * BLUE.20220314.AP14.1.T5
+         * BLUE.20220314.AP14.2.T5
+         * Collecting event key: BLUE.20220314.T5
+         * The numeric component between taxon and location is ignored.
+         *
          * Prefer omoccurrences.eventID; if empty, use the SITE.date prefix
          * from NEON sampleID (falling back to Originating NEON sampleID).
          * Ignore -VOUCHER when extracting the location.
@@ -149,13 +154,20 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
     private function getSamplingPointKey(string $sampleID): ?string {
         $parts = explode('.', $sampleID);
 
-        // Expected structure: SITE.date.taxon.location, e.g. COMO.20190807.SCRI4.T3.
-        if (count($parts) !== 4 || preg_match('/^[A-Z]{4}$/i', $parts[0]) !== 1
+        // Accept SITE.date.taxon.location or SITE.date.taxon.number.location.
+        // The optional numeric component does not affect collecting-event grouping.
+        $partCount = count($parts);
+        if (($partCount !== 4 && $partCount !== 5)
+            || preg_match('/^[A-Z]{4}$/i', $parts[0]) !== 1
             || trim($parts[1]) === '' || trim($parts[2]) === '') {
             return null;
         }
 
-        $point = trim($parts[3]);
+        if ($partCount === 5 && preg_match('/^[0-9]+$/', $parts[3]) !== 1) {
+            return null;
+        }
+
+        $point = trim($parts[$partCount === 5 ? 4 : 3]);
 
         // Q10 and Q10-VOUCHER share a key, but P1 and P10 do not.
         if (preg_match('/^([PQT][0-9]+)(?:-VOUCHER)?$/i', $point, $matches) !== 1) {
