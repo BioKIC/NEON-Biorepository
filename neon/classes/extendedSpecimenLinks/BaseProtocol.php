@@ -84,9 +84,42 @@ abstract class BaseProtocol {
         return $records;
     }
 
-    protected function getOccurrencesWithEventID(): array {
-        // Retain missing identifiers so callers can report errors or use eventID.
-        return $this->getOccurrencesWithIdentifier('NEON sampleID', 'Originating NEON sampleID', true);
+    protected function getOccurrencesWithEventID(string $eventID): array {
+        if (!$this->collids || trim($eventID) === '') return [];
+
+        $collidList = implode(',', $this->collids);
+        $sql = "
+            SELECT occid, eventID
+            FROM omoccurrences
+            WHERE collid IN ({$collidList})
+                AND eventID = ?
+        ";
+
+        $stmt = $this->conn->prepare($sql);
+
+        if (!$stmt) {
+            throw new RuntimeException('Unable to prepare occurrence eventID query: ' . $this->conn->error);
+        }
+
+        $stmt->bind_param('s', $eventID);
+
+        if (!$stmt->execute()) {
+            $error = $stmt->error;
+            $stmt->close();
+            throw new RuntimeException('Unable to execute occurrence eventID query: ' . $error);
+        }
+
+        $result = $stmt->get_result();
+        $records = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $row['occid'] = (int)$row['occid'];
+            $records[] = $row;
+        }
+
+        $stmt->close();
+
+        return $records;
     }
 
     protected function getYear(string $date): ?string {

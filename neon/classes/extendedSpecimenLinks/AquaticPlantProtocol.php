@@ -34,7 +34,7 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
          */
         $this->log('Linking Aquatic Plant collecting events');
 
-        $records = $this->getOccurrencesWithEventID();
+        $records = $this->getOccurrencesWithIdentifier('NEON sampleID', 'Originating NEON sampleID', true);
         $groups = [];
 
         foreach ($records as $record) {
@@ -93,7 +93,7 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
          */
         $this->log('Linking Aquatic Plant sampling bouts');
 
-        $records = $this->getOccurrencesWithEventID();
+        $records = $this->getOccurrencesWithIdentifier('NEON sampleID', 'Originating NEON sampleID', true);
         $groups = [];
 
         foreach ($records as $record) {
