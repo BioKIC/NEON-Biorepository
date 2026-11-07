@@ -377,20 +377,14 @@
         ]
       },
       {
-        "id": 44,
-        "name": "Chemically Preserved",
-        "children": [
-          {
-            "id": 45,
-            "name": "Bulk Samples",
-            "collid": 47
-          },
-          {
-            "id": 46,
-            "name": "Bulk Sample Identifications",
-            "collid": 110
-          }
-        ]
+        "id": 45,
+        "name": "Bulk Samples",
+        "collid": 47
+      },
+      {
+        "id": 46,
+        "name": "Bulk Sample Identifications",
+        "collid": 110
       },
       {
         "id": 47,
