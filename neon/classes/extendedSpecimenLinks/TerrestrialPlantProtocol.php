@@ -29,10 +29,13 @@ class TerrestrialPlantProtocolLinker extends BaseProtocol {
         $this->log('Linking Terrestrial Plant individuals');
 
         $records = $this->getOccurrencesWithIdentifier('NEON sampleUUID');
+        $this->log('DEBUG: Terrestrial Plant: ' . count($records) . ' sampleUUID records to check');
         $groups = [];
 
         foreach ($records as $record) {
             $sampleUUID = trim($record['identifierValue']);
+            $lookup = array_key_exists($sampleUUID, $this->sampleViewCache) ? 'cache' : 'API';
+            $this->log('DEBUG: Terrestrial Plant: ' . $lookup . ' lookup for occid ' . $record['occid'] . ' sampleUUID ' . $sampleUUID);
             $sample = $this->getNeonSampleView($sampleUUID);
 
             if ($sample === null) {
@@ -40,9 +43,18 @@ class TerrestrialPlantProtocolLinker extends BaseProtocol {
                 continue;
             }
 
+            $parents = $sample['parentSampleIdentifiers'] ?? [];
+            $this->log('DEBUG: Terrestrial Plant: occid ' . $record['occid'] . ' sampleTag ' . ($sample['sampleTag'] ?? '<missing>') . '; ' . count($parents) . ' parents');
+
             // No parent identifiers means there is no individual plant to link.
-            foreach ($sample['parentSampleIdentifiers'] ?? [] as $parent) {
+            if (!$parents) {
+                $this->log('DEBUG: Terrestrial Plant: skipping individual for occid ' . $record['occid'] . '; no parents');
+                continue;
+            }
+
+            foreach ($parents as $parent) {
                 $sampleClass = $parent['sampleClass'] ?? '';
+                $this->log('DEBUG: Terrestrial Plant: occid ' . $record['occid'] . ' parent sampleClass ' . ($sampleClass !== '' ? $sampleClass : '<missing>') . ' sampleTag ' . ($parent['sampleTag'] ?? '<missing>'));
 
                 if ($sampleClass !== 'taggedPlant') {
                     $this->log('Terrestrial Plant: unexpected parent sampleClass ' . ($sampleClass !== '' ? $sampleClass : '<missing>') . ' for occid ' . $record['occid']);
@@ -56,17 +68,27 @@ class TerrestrialPlantProtocolLinker extends BaseProtocol {
                 }
 
                 $groups[$individualKey][] = (int)$record['occid'];
+                $this->log('DEBUG: Terrestrial Plant: occid ' . $record['occid'] . ' assigned to individual ' . $individualKey);
             }
         }
 
+        $this->log('DEBUG: Terrestrial Plant: ' . count($groups) . ' individual groups found');
         $individualCount = 0;
         $associationCount = 0;
 
         foreach ($groups as $individualKey => $occids) {
             $occids = array_values(array_unique($occids));
 
-            if (count($occids) < 2) continue;
-            if ($this->groupAlreadyLinked($occids, self::RELATIONSHIP_SAME_INDIVIDUAL)) continue;
+            $this->log('DEBUG: Terrestrial Plant individual ' . $individualKey . ': occids ' . implode(', ', $occids));
+
+            if (count($occids) < 2) {
+                $this->log('DEBUG: Terrestrial Plant individual ' . $individualKey . ': skipped; only one occurrence');
+                continue;
+            }
+            if ($this->groupAlreadyLinked($occids, self::RELATIONSHIP_SAME_INDIVIDUAL)) {
+                $this->log('DEBUG: Terrestrial Plant individual ' . $individualKey . ': skipped; already linked');
+                continue;
+            }
 
             $created = $this->linkOccurrenceGroup($occids, self::RELATIONSHIP_SAME_INDIVIDUAL, $individualKey,
                 'Terrestrial plant vouchers and leaf samples derived from the same tagged individual plant.');
@@ -95,6 +117,7 @@ class TerrestrialPlantProtocolLinker extends BaseProtocol {
         $this->log('Linking Terrestrial Plant sampling bouts');
 
         $records = $this->getOccurrencesWithIdentifier('NEON sampleID', 'Originating NEON sampleID', true);
+        $this->log('DEBUG: Terrestrial Plant: ' . count($records) . ' sampleID records to check for bouts');
         $groups = [];
 
         foreach ($records as $record) {
@@ -107,16 +130,26 @@ class TerrestrialPlantProtocolLinker extends BaseProtocol {
             }
 
             $groups[$boutKey][] = (int)$record['occid'];
+            $this->log('DEBUG: Terrestrial Plant: occid ' . $record['occid'] . ' sampleID ' . $sampleID . ' assigned to bout ' . $boutKey);
         }
 
+        $this->log('DEBUG: Terrestrial Plant: ' . count($groups) . ' bout groups found');
         $boutCount = 0;
         $associationCount = 0;
 
         foreach ($groups as $boutKey => $occids) {
             $occids = array_values(array_unique($occids));
 
-            if (count($occids) < 2) continue;
-            if ($this->groupAlreadyLinked($occids, self::RELATIONSHIP_SAME_BOUT)) continue;
+            $this->log('DEBUG: Terrestrial Plant bout ' . $boutKey . ': ' . count($occids) . ' occurrences');
+
+            if (count($occids) < 2) {
+                $this->log('DEBUG: Terrestrial Plant bout ' . $boutKey . ': skipped; only one occurrence');
+                continue;
+            }
+            if ($this->groupAlreadyLinked($occids, self::RELATIONSHIP_SAME_BOUT)) {
+                $this->log('DEBUG: Terrestrial Plant bout ' . $boutKey . ': skipped; already linked');
+                continue;
+            }
 
             $created = $this->linkOccurrenceGroup($occids, self::RELATIONSHIP_SAME_BOUT, $boutKey,
                 'Terrestrial plant vouchers and leaf samples collected at the same site in the same year.');
