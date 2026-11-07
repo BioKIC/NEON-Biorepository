@@ -42,14 +42,14 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
             $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
             if ($eventID === null) {
-                $this->log('ERROR: APL occid ' . $record['occid'] . ': eventID missing; fallback failed (collecting event). ' . $this->describeSampleID($record));
+                $this->log('ERROR: Aquatic Plant: unable to create collecting event for occid ' . $record['occid'] . ' sampleID ' . ($sampleID !== '' ? $sampleID : '<missing>'));
                 continue;
             }
 
             $point = $this->getSamplingPointKey($sampleID);
 
             if ($point === null) {
-                $this->log('ERROR: APL occid ' . $record['occid'] . ': point/quadrat/transect unreadable. ' . $this->describeSampleID($record));
+                $this->log('ERROR: Aquatic Plant: unable to create collecting event for occid ' . $record['occid'] . ' sampleID ' . ($sampleID !== '' ? $sampleID : '<missing>'));
                 continue;
             }
 
@@ -101,7 +101,7 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
             $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
             if ($eventID === null) {
-                $this->log('ERROR: APL occid ' . $record['occid'] . ': eventID missing; fallback failed (bout). ' . $this->describeSampleID($record));
+                $this->log('ERROR: Aquatic Plant: unable to create sampling bout for occid ' . $record['occid'] . ' sampleID ' . ($sampleID !== '' ? $sampleID : '<missing>'));
                 continue;
             }
 
@@ -166,16 +166,6 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         $result->free();
 
         return $records;
-    }
-
-    private function describeSampleID(array $record): string {
-        $sampleID = trim($record['identifierValue'] ?? '');
-        if ($sampleID === '') {
-            return 'sampleID=<missing>';
-        }
-
-        $tag = $record['identifierName'] ?? 'sampleID';
-        return $tag . '="' . $sampleID . '"';
     }
 
     private function getEventID(?string $eventID, string $sampleID): ?string {
