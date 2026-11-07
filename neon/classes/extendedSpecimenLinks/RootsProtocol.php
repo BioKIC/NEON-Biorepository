@@ -24,7 +24,10 @@ class RootsProtocolLinker extends BaseProtocol {
          * BBC.TREE052163.2025.0-1.POOL.AR
          * BBC.TREE052163.2025.2-10.POOL.AR
          *
+         * Plot: TREE052; subplot: 163; date: 2025.
          * Core key: BBC.TREE052163.2025
+         * The suffix starts with the size category (0-1 or 2-10 here;
+         * other size categories include 1-2 and 05-1).
          * Keep everything before the variable suffix; preserve the date verbatim.
          */
         $this->log('Linking Roots cores');
@@ -75,7 +78,8 @@ class RootsProtocolLinker extends BaseProtocol {
          * BBC.TREE052412.2025.0-1.POOL.AR
          *
          * Collecting event key: TREE052.2025
-         * Different cores may share an event. Preserve the date verbatim.
+         * Subplots 163 and 412 share plot TREE052 and date 2025.
+         * Preserve the date verbatim.
          */
         $this->log('Linking Roots collecting events');
 
@@ -177,8 +181,10 @@ class RootsProtocolLinker extends BaseProtocol {
         $parts = explode('.', $sampleID, 4);
 
         // Example: BBC.TREE052163.2025.0-1.POOL.AR
-        // Site: TREE; plot: TREE052; core key: BBC.TREE052163.2025.
-        // The variable suffix is 0-1.POOL.AR.
+        // Site: TREE; plot: TREE052; subplot: 163; date: 2025.
+        // Core grouping key: BBC.TREE052163.2025 (plot + subplot + date).
+        // The suffix starts with the size category: 0-1 in this example.
+        // Other size categories include 2-10, 1-2 and 05-1.
         if (count($parts) !== 4 || $parts[0] !== 'BBC'
             || preg_match('/^([A-Z]{4})([0-9]{3}).+$/', $parts[1], $location) !== 1
             || trim($parts[2]) === '' || trim($parts[3]) === '') {
