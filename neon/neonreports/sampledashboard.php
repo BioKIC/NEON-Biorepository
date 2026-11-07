@@ -47,6 +47,21 @@ if ($isEditor) {
         <a href="#cumulativeTaxaSection">Taxa</a>
 	</div>
 	<h1>NEON Sample Dashboard: <?php echo date('Y-m-d H:i:s'); ?></h1>
+    <section>
+        <form class="button-form" action="../../collections/download/downloadsampletypes.php" method="get">
+            <input name="format" type="hidden" value="csv" />
+            <button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary" type="submit">
+                <span class="MuiButton-label" style="font-size: 0.55rem;">
+                    <i class="fa-solid fa-download" aria-hidden="true" style="font-size: 0.75rem; margin-right: 1.2em;"></i>
+                    Download Sample Type Summary Table (CSV)
+                    <span class="MuiButton-endIcon MuiButton-iconSizeMedium">
+                        <i class="fa-solid fa-chevron-right" aria-hidden="true" style="font-size: 0.55rem; margin-left: 1.4em;"></i>
+                    </span>
+                </span>
+                <span class="MuiTouchRipple-root"></span>
+            </button>
+        </form>
+    </section>
  <?php
 
     $cumulativeSamples = [];
