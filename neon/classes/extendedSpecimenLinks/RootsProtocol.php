@@ -21,10 +21,10 @@ class RootsProtocolLinker extends BaseProtocol {
          * Same individual grouping for roots = samples derived from the same core.
          * The stored relationship remains sameCore.
          *
-         * BBC.TREE052163.20230418.1
-         * BBC.TREE052163.20230418.2
+         * BBC.TREE052163.2025.0-1.POOL.AR
+         * BBC.TREE052163.2025.2-10.POOL.AR
          *
-         * Core key: BBC.TREE052163.20230418
+         * Core key: BBC.TREE052163.2025
          * Keep everything before the variable suffix; preserve the date verbatim.
          */
         $this->log('Linking Roots cores');
@@ -71,10 +71,10 @@ class RootsProtocolLinker extends BaseProtocol {
         /**
          * Same collecting event = same plot (XXXX###) and date.
          *
-         * BBC.TREE052163.20230418.1
-         * BBC.TREE052164.20230418.1
+         * BBC.TREE052163.2025.0-1.POOL.AR
+         * BBC.TREE052412.2025.0-1.POOL.AR
          *
-         * Collecting event key: TREE052.20230418
+         * Collecting event key: TREE052.2025
          * Different cores may share an event. Preserve the date verbatim.
          */
         $this->log('Linking Roots collecting events');
@@ -121,10 +121,10 @@ class RootsProtocolLinker extends BaseProtocol {
         /**
          * Same bout = same site (XXXX) and year.
          *
-         * BBC.TREE052163.20230418.1
-         * BBC.TREE053164.20230920.1
+         * BBC.TREE052163.2025.0-1.POOL.AR
+         * BBC.TREE053329.2025.0-1.POOL.AR
          *
-         * Bout key: TREE.2023
+         * Bout key: TREE.2025
          * Only this grouping extracts the year from the date.
          */
         $this->log('Linking Roots sampling bouts');
@@ -176,8 +176,9 @@ class RootsProtocolLinker extends BaseProtocol {
     private function parseSampleID(string $sampleID): ?array {
         $parts = explode('.', $sampleID, 4);
 
-        // BBC.TREE052163.DATE.*: TREE is the site, TREE052 is the plot,
-        // and TREE052163 identifies the core within that plot.
+        // Example: BBC.TREE052163.2025.0-1.POOL.AR
+        // Site: TREE; plot: TREE052; core key: BBC.TREE052163.2025.
+        // The variable suffix is 0-1.POOL.AR.
         if (count($parts) !== 4 || $parts[0] !== 'BBC'
             || preg_match('/^([A-Z]{4})([0-9]{3}).+$/', $parts[1], $location) !== 1
             || trim($parts[2]) === '' || trim($parts[3]) === '') {
