@@ -29,7 +29,8 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
          * Collecting event key: PRIN.20161109.Q10
          *
          * Prefer omoccurrences.eventID; if empty, use the SITE.date prefix
-         * from NEON sampleID. Ignore -VOUCHER when extracting the location.
+         * from NEON sampleID (falling back to Originating NEON sampleID).
+         * Ignore -VOUCHER when extracting the location.
          */
         $this->log('Linking Aquatic Plant collecting events');
 
@@ -41,14 +42,19 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
             $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
             if ($eventID === null) {
-                $this->log('ERROR: Aquatic Plant: unable to determine eventID for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
+                $this->log('ERROR: Aquatic Plant occid ' . $record['occid'] . ': collecting-event links skipped. '
+                    . 'The eventID field is empty and SITE.date could not be read from the sample ID. '
+                    . $this->describeSampleID($record));
                 continue;
             }
 
             $point = $this->getSamplingPointKey($sampleID);
 
             if ($point === null) {
-                $this->log('ERROR: Aquatic Plant: unable to determine collecting point for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
+                $this->log('ERROR: Aquatic Plant occid ' . $record['occid'] . ': collecting-event links skipped. '
+                    . 'Could not identify the point, quadrat or transect; expected a final location code such as P10, Q4 or T3 (optionally -VOUCHER). '
+                    . $this->describeSampleID($record)
+                    . ' Resolved eventID "' . $eventID . '" is still available for bout links.');
                 continue;
             }
 
@@ -87,7 +93,8 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
          * Bout key: COMO.20190807
          *
          * Prefer the eventID field. If empty, use the SITE.date prefix
-         * from NEON sampleID, preserving the full date.
+         * from NEON sampleID (falling back to Originating NEON sampleID),
+         * preserving the full date.
          */
         $this->log('Linking Aquatic Plant sampling bouts');
 
@@ -99,7 +106,9 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
             $eventID = $this->getEventID($record['eventID'] ?? null, $sampleID);
 
             if ($eventID === null) {
-                $this->log('ERROR: Aquatic Plant: unable to determine eventID for occid ' . $record['occid'] . ' sampleID ' . $sampleID);
+                $this->log('ERROR: Aquatic Plant occid ' . $record['occid'] . ': bout links skipped. '
+                    . 'The eventID field is empty and SITE.date could not be read from the sample ID. '
+                    . $this->describeSampleID($record));
                 continue;
             }
 
@@ -134,12 +143,20 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
 
         $collidList = implode(',', $this->collids);
 
-        // Include records without a sampleID so validation can report them.
+        // Prefer a populated NEON sampleID, then Originating NEON sampleID.
+        // Keep the tag name for diagnostics, and retain records with neither ID.
         $sql = "
-            SELECT o.occid, o.eventID, i.identifierValue
+            SELECT o.occid, o.eventID,
+                COALESCE(i.identifierValue, originating.identifierValue) AS identifierValue,
+                COALESCE(i.identifierName, originating.identifierName) AS identifierName
             FROM omoccurrences o
             LEFT JOIN omoccuridentifiers i ON i.occid = o.occid
                 AND i.identifierName = 'NEON sampleID'
+                AND TRIM(i.identifierValue) <> ''
+            LEFT JOIN omoccuridentifiers originating ON originating.occid = o.occid
+                AND originating.identifierName = 'Originating NEON sampleID'
+                AND TRIM(originating.identifierValue) <> ''
+                AND i.occid IS NULL
             WHERE o.collid IN ({$collidList})
         ";
 
@@ -156,6 +173,16 @@ class AquaticPlantProtocolLinker extends BaseProtocol {
         $result->free();
 
         return $records;
+    }
+
+    private function describeSampleID(array $record): string {
+        $sampleID = trim($record['identifierValue'] ?? '');
+        if ($sampleID === '') {
+            return 'Sample ID is missing: neither "NEON sampleID" nor "Originating NEON sampleID" has a value.';
+        }
+
+        $tag = $record['identifierName'] ?? 'sampleID';
+        return $tag . ': "' . $sampleID . '".';
     }
 
     private function getEventID(?string $eventID, string $sampleID): ?string {
