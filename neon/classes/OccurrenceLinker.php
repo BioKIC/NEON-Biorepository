@@ -6,6 +6,7 @@ require_once(__DIR__ . '/extendedSpecimenLinks/CanopyProtocol.php');
 require_once(__DIR__ . '/extendedSpecimenLinks/AquaticPlantProtocol.php');
 require_once(__DIR__ . '/extendedSpecimenLinks/TerrestrialPlantProtocol.php');
 require_once(__DIR__ . '/extendedSpecimenLinks/LitterfallProtocol.php');
+require_once(__DIR__ . '/extendedSpecimenLinks/TickProtocol.php');
 
 class OccurrenceLinker {
 
@@ -31,6 +32,7 @@ class OccurrenceLinker {
         $this->runAquaticPlantProtocol();
         $this->runTerrestrialPlantProtocol();
         $this->runLitterfallProtocol();
+        $this->runTickProtocol();
 
         /*
          * Later:
@@ -200,6 +202,33 @@ class OccurrenceLinker {
         $this->log('Starting Litterfall extended specimen linkage; collections: ' . implode(', ', $collectionList));
 
         $linker = new LitterfallProtocolLinker($this->conn, $collids, $this->logger);
+        $linker->run();
+    }
+
+    private function runTickProtocol(): void {
+        $protocolID = 79;
+        $protocol = $this->findProtocolById($this->protocolConfig, $protocolID);
+
+        if (!$protocol) {
+            $this->log("Tick protocol {$protocolID} not found in protocol JSON");
+            return;
+        }
+
+        $collections = $this->getCollectionsRecursive($protocol);
+
+        if (!$collections) {
+            $this->log("No collections found for Tick protocol {$protocolID}");
+            return;
+        }
+
+        $collids = array_column($collections, 'collid');
+        $collectionList = array_map(function ($collection) {
+            return $collection['name'] . ' (' . $collection['collid'] . ')';
+        }, $collections);
+
+        $this->log('Starting Tick extended specimen linkage; collections: ' . implode(', ', $collectionList));
+
+        $linker = new TickProtocolLinker($this->conn, $collids, $this->logger);
         $linker->run();
     }
 
