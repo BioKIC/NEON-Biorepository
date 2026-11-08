@@ -11,9 +11,10 @@ $neonCitation = array(
     'licenseUrl' => 'https://creativecommons.org/licenses/by/4.0/'
 );
 #neon edit
+$neonCitation['bibNote'] = 'Data were filtered and reformatted for analysis [edit or omit as appropriate]. Data archived at [your DOI].';
 $neonCitation['note'] = 'Data accessed from ' . $neonCitation['url'] . ' on ' . $neonCitation['accessDate']
     . '. Licensed under ' . $neonCitation['license'] . ' (' . $neonCitation['licenseUrl']
-    . '). Data were filtered and reformatted for analysis [edit or omit as appropriate]. Data archived at [your DOI].';
+    . '). ' . $neonCitation['bibNote'];
 #end neon edit
 $neonCitationText = $neonCitation['author'] . '. ' . $neonCitation['title'] . '. ' . $neonCitation['note'];
 ?>
