@@ -256,45 +256,28 @@ if ($SYMB_UID) {
             include($SERVER_ROOT . '/includes/citationneoncollection.php');
             ob_end_clean();
             $stats = $collManager->getBasicStats();
-            $resources = array_values(array_filter($decodeArray($collData['resourcejson'] ?? ''), static function ($resource) {
-                return is_array($resource) && !empty($resource['url']) && is_string($resource['url']);
+            $archiveUrl = $collData['dwcaurl'] ?? '';
+            $archiveFilename = $archiveUrl ? basename(rawurldecode((string) parse_url($archiveUrl, PHP_URL_PATH))) : '';
+            $resources = array_values(array_filter($decodeArray($collData['resourcejson'] ?? ''), static function ($resource) use ($archiveUrl, $archiveFilename) {
+                if (!is_array($resource) || empty($resource['url']) || !is_string($resource['url'])) return false;
+                // The archive has one PHP-selected action; never expose a second raw link in JSON.
+                if (($resource['kind'] ?? '') === 'dwca' || $resource['url'] === $archiveUrl
+                    || ($resource['title'] ?? '') === 'Darwin Core Archive') return false;
+                $resourcePath = rawurldecode((string) parse_url($resource['url'], PHP_URL_PATH));
+                return !$archiveFilename || basename($resourcePath) !== $archiveFilename
+                    || strpos($resourcePath, '/content/dwca/') === false;
             }));
             $additionalResources = [];
-            if (!empty($collData['dwcaurl'])) {
-                $archiveUrl = $collData['dwcaurl'];
-                $archivePath = rawurldecode((string) parse_url($archiveUrl, PHP_URL_PATH));
-                $archiveFilename = basename($archivePath);
+            if ($archiveUrl) {
+                $downloadUrl = rtrim($CLIENT_ROOT, '/') . '/content/dwca/' . rawurlencode($archiveFilename);
                 $archiveSize = null;
                 $archiveDirectory = realpath($SERVER_ROOT . '/content/dwca');
                 $archiveFile = $archiveDirectory ? realpath($archiveDirectory . '/' . $archiveFilename) : false;
-                $portalHost = parse_url('https://' . preg_replace('~^https?://~i', '', $SERVER_HOST ?: ($_SERVER['SERVER_NAME'] ?? '')), PHP_URL_HOST);
-                $archiveHost = parse_url($archiveUrl, PHP_URL_HOST);
-                // Published archives normally live here; stat the file without downloading it.
-                if ((!$archiveHost || strcasecmp($archiveHost, (string) $portalHost) === 0)
-                    && dirname($archivePath) === rtrim($CLIENT_ROOT, '/') . '/content/dwca'
-                    && $archiveFile && dirname($archiveFile) === $archiveDirectory
+                // Read the size of the same local archive used by the root-relative download link.
+                if ($archiveFile && dirname($archiveFile) === $archiveDirectory
                     && is_file($archiveFile) && is_readable($archiveFile)) {
                     $bytes = filesize($archiveFile);
                     if ($bytes !== false) $archiveSize = $bytes;
-                }
-                // For archives hosted elsewhere, request only the headers with a short timeout.
-                if ($archiveSize === null && function_exists('curl_init')
-                    && in_array(strtolower((string) parse_url($archiveUrl, PHP_URL_SCHEME)), ['http', 'https'], true)) {
-                    $archiveRequest = curl_init($archiveUrl);
-                    curl_setopt_array($archiveRequest, [
-                        CURLOPT_NOBODY => true,
-                        CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_CONNECTTIMEOUT => 1,
-                        CURLOPT_TIMEOUT => 2,
-                        CURLOPT_FOLLOWLOCATION => false,
-                    ]);
-                    $headers = curl_exec($archiveRequest);
-                    $status = curl_getinfo($archiveRequest, CURLINFO_HTTP_CODE);
-                    $bytes = curl_getinfo($archiveRequest, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
-                    if ($headers !== false && $status >= 200 && $status < 300 && $bytes >= 0) {
-                        $archiveSize = (int) $bytes;
-                    }
-                    curl_close($archiveRequest);
                 }
                 $returnUrl = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid . '#data-downloads';
                 // Use the Biorepository session, not a client-side login flag.
@@ -302,9 +285,9 @@ if ($SYMB_UID) {
                     'kind' => 'dwca',
                     'title' => 'Full Data Download',
                     'description' => 'Download specimen records (DwC-A)',
-                    'filename' => $archiveFilename,
+                    'filename' => $SYMB_UID ? $archiveFilename : '',
                     'sizeBytes' => $archiveSize,
-                    'url' => $SYMB_UID ? $archiveUrl : $CLIENT_ROOT . '/profile/index.php?refurl=' . rawurlencode($returnUrl),
+                    'url' => $SYMB_UID ? $downloadUrl : $CLIENT_ROOT . '/profile/index.php?refurl=' . rawurlencode($returnUrl),
                     'action' => $SYMB_UID ? 'Download' : 'Log in to download',
                     'actionIcon' => $SYMB_UID ? 'download' : 'lock',
                     'openInNewTab' => !empty($SYMB_UID),
