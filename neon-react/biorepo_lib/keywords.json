@@ -1,0 +1,660 @@
+{
+  "4": [
+    "insects",
+    "invertebrates",
+    "pinned specimens",
+    "pitfall trapping",
+    "taxonomic vouchers"
+  ],
+  "5": [
+    "benthic microbes",
+    "periphyton",
+    "biofilms",
+    "Sterivex filters",
+    "wadeable streams"
+  ],
+  "6": [
+    "aquatic microbes",
+    "surface water",
+    "Sterivex filters",
+    "freshwater",
+    "microbial sampling"
+  ],
+  "7": [
+    "aquatic plants",
+    "bryophytes",
+    "lichens",
+    "point count surveys",
+    "herbarium vouchers"
+  ],
+  "8": [
+    "aquatic plants",
+    "bryophytes",
+    "lichens",
+    "opportunistic sampling",
+    "herbarium vouchers"
+  ],
+  "9": [
+    "aquatic plants",
+    "bryophytes",
+    "lichens",
+    "clip harvest",
+    "herbarium vouchers"
+  ],
+  "10": [
+    "roots",
+    "belowground biomass",
+    "soil cores",
+    "terrestrial plants",
+    "oven-dried samples"
+  ],
+  "11": [
+    "ground beetles",
+    "carabids",
+    "pitfall trapping",
+    "pooled samples",
+    "ethanol preservation"
+  ],
+  "12": [
+    "reptiles",
+    "amphibians",
+    "bycatch",
+    "pitfall trapping",
+    "pooled samples"
+  ],
+  "13": [
+    "invertebrates",
+    "bycatch",
+    "pitfall trapping",
+    "pooled samples",
+    "ethanol preservation"
+  ],
+  "14": [
+    "ground beetles",
+    "carabids",
+    "pitfall trapping",
+    "unpooled samples",
+    "ethanol preservation"
+  ],
+  "15": [
+    "reptiles",
+    "amphibians",
+    "bycatch",
+    "pitfall trapping",
+    "unpooled samples"
+  ],
+  "16": [
+    "invertebrates",
+    "bycatch",
+    "pitfall trapping",
+    "unpooled samples",
+    "ethanol preservation"
+  ],
+  "17": [
+    "small mammals",
+    "bycatch",
+    "pitfall trapping",
+    "whole specimens",
+    "ethanol preservation"
+  ],
+  "18": [
+    "canopy foliage",
+    "plant biomass",
+    "foliar chemistry",
+    "leaf mass per area",
+    "oven-dried samples"
+  ],
+  "19": [
+    "small mammals",
+    "incidental collection",
+    "study skins",
+    "skeletal specimens",
+    "ethanol preservation"
+  ],
+  "20": [
+    "fish",
+    "freshwater",
+    "electrofishing",
+    "net sampling",
+    "voucher specimens"
+  ],
+  "21": [
+    "benthic macroinvertebrates",
+    "freshwater",
+    "bulk samples",
+    "unprocessed samples",
+    "DNA metabarcoding"
+  ],
+  "22": [
+    "chironomids",
+    "midges",
+    "benthic macroinvertebrates",
+    "bulk samples",
+    "taxonomic identification"
+  ],
+  "23": [
+    "litterfall",
+    "foliage",
+    "fine woody debris",
+    "litter traps",
+    "forest ecosystems"
+  ],
+  "24": [
+    "small mammals",
+    "blood",
+    "live trapping",
+    "pathogen testing",
+    "frozen samples"
+  ],
+  "25": [
+    "small mammals",
+    "ear punches",
+    "frozen tissue",
+    "DNA barcoding",
+    "pathogen testing"
+  ],
+  "26": [
+    "small mammals",
+    "feces",
+    "live trapping",
+    "frozen samples"
+  ],
+  "27": [
+    "small mammals",
+    "hair",
+    "whiskers",
+    "live trapping",
+    "dry samples"
+  ],
+  "28": [
+    "small mammals",
+    "live trapping",
+    "study skins",
+    "skeletal specimens",
+    "voucher specimens"
+  ],
+  "29": [
+    "mosquitoes",
+    "pinned specimens",
+    "CDC light traps",
+    "taxonomic vouchers",
+    "terrestrial insects"
+  ],
+  "30": [
+    "soil",
+    "biogeochemistry",
+    "organic horizons",
+    "mineral horizons",
+    "air-dried samples"
+  ],
+  "31": [
+    "soil",
+    "soil microbes",
+    "organic horizons",
+    "mineral horizons",
+    "frozen samples"
+  ],
+  "39": [
+    "ground beetles",
+    "carabids",
+    "pitfall trapping",
+    "pinned specimens",
+    "taxonomic vouchers"
+  ],
+  "40": [
+    "leaf tissue",
+    "terrestrial plants",
+    "plant diversity",
+    "genetic archive",
+    "frozen tissue"
+  ],
+  "41": [
+    "dust",
+    "particulate matter",
+    "quartz microfiber filters",
+    "dust deposition",
+    "particulate mass"
+  ],
+  "42": [
+    "precipitation",
+    "wet deposition",
+    "major ions",
+    "pH",
+    "conductivity"
+  ],
+  "44": [
+    "ground beetles",
+    "carabids",
+    "pitfall trapping",
+    "pinned specimens",
+    "taxonomic vouchers"
+  ],
+  "45": [
+    "zooplankton",
+    "bulk samples",
+    "water column",
+    "lakes",
+    "taxonomic identification"
+  ],
+  "46": [
+    "diatoms",
+    "microalgae",
+    "periphyton",
+    "phytoplankton",
+    "freeze-dried samples"
+  ],
+  "47": [
+    "microalgae",
+    "periphyton",
+    "phytoplankton",
+    "seston",
+    "chemically preserved samples"
+  ],
+  "48": [
+    "benthic macroinvertebrates",
+    "freshwater",
+    "taxonomic references",
+    "voucher specimens",
+    "morphological identification"
+  ],
+  "49": [
+    "diatoms",
+    "microscope slides",
+    "periphyton",
+    "phytoplankton",
+    "taxonomic references"
+  ],
+  "50": [
+    "macroalgae",
+    "clip harvest",
+    "aquatic vegetation",
+    "voucher specimens",
+    "glutaraldehyde preservation"
+  ],
+  "52": [
+    "oligochaetes",
+    "aquatic worms",
+    "benthic macroinvertebrates",
+    "bulk samples",
+    "taxonomic identification"
+  ],
+  "53": [
+    "chironomids",
+    "oligochaetes",
+    "microscope slides",
+    "benthic macroinvertebrates",
+    "taxonomic identification"
+  ],
+  "54": [
+    "terrestrial plants",
+    "plant diversity",
+    "herbarium vouchers",
+    "opportunistic sampling",
+    "taxonomic references"
+  ],
+  "56": [
+    "mosquitoes",
+    "frozen specimens",
+    "CDC light traps",
+    "bulk samples",
+    "species identification"
+  ],
+  "57": [
+    "benthic macroinvertebrates",
+    "freshwater",
+    "bulk samples",
+    "morphological taxonomy",
+    "ethanol preservation"
+  ],
+  "59": [
+    "mosquitoes",
+    "pathogen testing",
+    "total nucleic acid",
+    "DNA",
+    "RNA",
+    "CDC light traps"
+  ],
+  "60": [
+    "zooplankton",
+    "unprocessed samples",
+    "DNA metabarcoding",
+    "water column",
+    "bulk samples"
+  ],
+  "61": [
+    "benthic macroinvertebrates",
+    "DNA extracts",
+    "DNA metabarcoding",
+    "freshwater",
+    "bulk samples"
+  ],
+  "62": [
+    "zooplankton",
+    "DNA extracts",
+    "DNA metabarcoding",
+    "water column",
+    "bulk samples"
+  ],
+  "63": [
+    "ground beetles",
+    "carabids",
+    "DNA extracts",
+    "DNA barcoding",
+    "pitfall trapping"
+  ],
+  "65": [
+    "mosquitoes",
+    "DNA extracts",
+    "DNA barcoding",
+    "CDC light traps",
+    "species identification"
+  ],
+  "66": [
+    "fish",
+    "fin clips",
+    "DNA extracts",
+    "DNA barcoding",
+    "freshwater"
+  ],
+  "67": [
+    "benthic microbes",
+    "biofilms",
+    "DNA extracts",
+    "16S",
+    "ITS",
+    "metagenomics"
+  ],
+  "68": [
+    "aquatic microbes",
+    "surface water",
+    "DNA extracts",
+    "16S",
+    "ITS",
+    "metagenomics"
+  ],
+  "69": [
+    "soil microbes",
+    "DNA extracts",
+    "microbial community composition",
+    "16S",
+    "ITS",
+    "shotgun metagenomics"
+  ],
+  "70": [
+    "reptiles",
+    "amphibians",
+    "bycatch",
+    "fish sampling",
+    "small mammal trapping"
+  ],
+  "71": [
+    "small mammals",
+    "ear punches",
+    "DNA extracts",
+    "DNA barcoding",
+    "live trapping"
+  ],
+  "73": [
+    "macroalgae",
+    "point count surveys",
+    "transects",
+    "aquatic vegetation",
+    "voucher specimens"
+  ],
+  "74": [
+    "small mammals",
+    "live trapping",
+    "study skins",
+    "skeletal specimens",
+    "voucher specimens"
+  ],
+  "75": [
+    "ticks",
+    "nymphs",
+    "pathogen testing",
+    "total nucleic acid",
+    "DNA",
+    "RNA"
+  ],
+  "76": [
+    "roots",
+    "belowground biomass",
+    "megapit sampling",
+    "soil profiles",
+    "oven-dried samples"
+  ],
+  "79": [
+    "soil",
+    "megapit sampling",
+    "soil profiles",
+    "soil chemistry",
+    "air-dried samples"
+  ],
+  "80": [
+    "soil",
+    "initial soil characterization",
+    "soil horizons",
+    "bulk density",
+    "air-dried samples"
+  ],
+  "81": [
+    "legacy samples",
+    "prototype sampling",
+    "protocol development",
+    "prototype data"
+  ],
+  "82": [
+    "ground beetles",
+    "carabids",
+    "pitfall trapping",
+    "pinned specimens",
+    "taxonomic vouchers"
+  ],
+  "83": [
+    "ticks",
+    "drag sampling",
+    "flag sampling",
+    "life stages",
+    "ethanol preservation"
+  ],
+  "85": [
+    "small mammals",
+    "parasites",
+    "ectoparasites",
+    "endoparasites",
+    "ethanol preservation"
+  ],
+  "90": [
+    "small mammals",
+    "ear punches",
+    "total nucleic acid",
+    "pathogen testing",
+    "tick-borne pathogens",
+    "PCR"
+  ],
+  "91": [
+    "small mammals",
+    "blood",
+    "total nucleic acid",
+    "pathogen testing",
+    "tick-borne pathogens",
+    "PCR"
+  ],
+  "92": [
+    "aquatic sediments",
+    "depositional zones",
+    "sediment chemistry",
+    "physical properties",
+    "frozen samples"
+  ],
+  "95": [
+    "ground beetles",
+    "carabids",
+    "pitfall trapping",
+    "pinned specimens",
+    "taxonomic vouchers"
+  ],
+  "97": [
+    "Hawaiʻi",
+    "PUUM",
+    "insects",
+    "invertebrate bycatch",
+    "leaf tissue",
+    "plant vouchers"
+  ],
+  "98": [
+    "microalgae",
+    "periphyton",
+    "phytoplankton",
+    "seston",
+    "Sterivex filters",
+    "DNA metabarcoding"
+  ],
+  "100": [
+    "chironomids",
+    "midges",
+    "taxonomic identifications",
+    "subsample analysis",
+    "benthic macroinvertebrates"
+  ],
+  "101": [
+    "oligochaetes",
+    "aquatic worms",
+    "taxonomic identifications",
+    "subsample analysis",
+    "benthic macroinvertebrates"
+  ],
+  "102": [
+    "chironomids",
+    "oligochaetes",
+    "microscope slides",
+    "taxonomic identifications",
+    "subsample analysis"
+  ],
+  "103": [
+    "benthic macroinvertebrates",
+    "taxonomic identifications",
+    "subsample analysis",
+    "freshwater",
+    "morphological taxonomy"
+  ],
+  "104": [
+    "zooplankton",
+    "taxonomic identifications",
+    "subsample analysis",
+    "organism counts",
+    "water column"
+  ],
+  "105": [
+    "macroalgae",
+    "clip harvest",
+    "taxonomic identifications",
+    "aquatic vegetation",
+    "voucher specimens"
+  ],
+  "106": [
+    "macroalgae",
+    "point count surveys",
+    "transects",
+    "taxonomic identifications",
+    "aquatic vegetation"
+  ],
+  "107": [
+    "aquatic plants",
+    "bryophytes",
+    "lichens",
+    "clip harvest",
+    "taxonomic identifications"
+  ],
+  "108": [
+    "aquatic plants",
+    "bryophytes",
+    "lichens",
+    "point count surveys",
+    "taxonomic identifications"
+  ],
+  "109": [
+    "aquatic plants",
+    "bryophytes",
+    "lichens",
+    "opportunistic sampling",
+    "taxonomic identifications"
+  ],
+  "110": [
+    "microalgae",
+    "periphyton",
+    "phytoplankton",
+    "seston",
+    "taxonomic identifications"
+  ],
+  "111": [
+    "diatoms",
+    "microscope slides",
+    "taxonomic identifications",
+    "periphyton",
+    "phytoplankton"
+  ],
+  "115": [
+    "terrestrial plants",
+    "plant diversity",
+    "herbarium vouchers",
+    "opportunistic sampling",
+    "taxonomic references"
+  ],
+  "116": [
+    "ticks",
+    "drag sampling",
+    "flag sampling",
+    "life stages",
+    "ethanol preservation"
+  ],
+  "118": [
+    "small mammals",
+    "gastrointestinal tracts",
+    "internal tissues",
+    "frozen tissue",
+    "live trapping"
+  ],
+  "119": [
+    "small mammals",
+    "hearts",
+    "internal organs",
+    "frozen tissue",
+    "live trapping"
+  ],
+  "120": [
+    "small mammals",
+    "lungs",
+    "internal organs",
+    "frozen tissue",
+    "live trapping"
+  ],
+  "121": [
+    "small mammals",
+    "kidneys",
+    "internal organs",
+    "frozen tissue",
+    "live trapping"
+  ],
+  "122": [
+    "small mammals",
+    "spleens",
+    "internal organs",
+    "frozen tissue",
+    "live trapping"
+  ],
+  "123": [
+    "small mammals",
+    "livers",
+    "internal organs",
+    "frozen tissue",
+    "live trapping"
+  ],
+  "124": [
+    "small mammals",
+    "muscle",
+    "internal tissues",
+    "frozen tissue",
+    "live trapping"
+  ]
+}
