@@ -6,7 +6,7 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 <html lang="en">
 
 <head>
-	<title>NEON | Explore Sample Types</title>
+	<title>NEON Biorepository | Explore Sample Types</title>
 	<meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
 	<meta http-equiv="Pragma" content="no-cache">
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
