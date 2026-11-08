@@ -239,6 +239,19 @@ if ($SYMB_UID) {
                 $value = json_decode($json ?? '', true);
                 return is_array($value) ? $value : [];
             };
+            $linkedCollectionCodes = [];
+            $sampleCatalogPath = $SERVER_ROOT . '/neon/cache/sample-catalog.json';
+            if ($linkedCollections && is_file($sampleCatalogPath) && is_readable($sampleCatalogPath)) {
+                $sampleCatalog = $decodeArray(file_get_contents($sampleCatalogPath));
+                $catalogItems = is_array($sampleCatalog['items'] ?? null) ? $sampleCatalog['items'] : [];
+                foreach ($catalogItems as $item) {
+                    if (!is_array($item)) continue;
+                    $linkedId = (int) ($item['id'] ?? 0);
+                    if (array_key_exists($linkedId, $linkedCollections) && is_string($item['collectionCode'] ?? null)) {
+                        $linkedCollectionCodes[$linkedId] = trim($item['collectionCode']);
+                    }
+                }
+            }
             ob_start();
             include($SERVER_ROOT . '/includes/citationneoncollection.php');
             ob_end_clean();
@@ -276,6 +289,7 @@ if ($SYMB_UID) {
                 'citation' => $neonCitation,
                 'citationText' => $neonCitationText,
                 'related' => (object) $linkedCollections,
+                'relatedCodes' => (object) $linkedCollectionCodes,
                 'resources' => $resources,
                 'additionalResources' => $additionalResources,
                 'contacts' => array_values($decodeArray($collData['contactjson'] ?? '')),
