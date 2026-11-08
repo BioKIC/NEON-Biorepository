@@ -257,12 +257,12 @@ if ($SYMB_UID) {
             ob_end_clean();
             $stats = $collManager->getBasicStats();
             $extraStats = $decodeArray($stats['dynamicProperties'] ?? '');
-            $getResearchUse = static function ($collectionId) {
+            $getLinkedUse = static function ($collectionId) {
                 $connection = null;
-                $statement = null;
+                $counts = [];
                 try {
                     $connection = MySQLiConnectionFactory::getCon('readonly');
-                    if (!$connection) throw new RuntimeException('Research project connection unavailable');
+                    if (!$connection) throw new RuntimeException('Research statistics connection unavailable');
                     $sampleType = NeonMaterialSampleCollections::TYPES[$collectionId] ?? null;
                     $where = $sampleType === null ? 'o.collid = ?' :
                         'o.collid IN (17,19,28) AND EXISTS (
@@ -270,34 +270,58 @@ if ($SYMB_UID) {
                             WHERE ms.occid = o.occid AND ms.sampleType LIKE ?
                         )';
                     // Match the public research list, counting each project once for this sample type.
-                    $sql = "SELECT COUNT(DISTINCT d.datasetid) AS projectCount,
+                    $queries = [
+                        'research' => "SELECT COUNT(DISTINCT d.datasetid) AS itemCount,
                             COUNT(DISTINCT o.occid) AS specimenCount
                         FROM omoccurdatasets d
                         INNER JOIN neonrequest nr ON nr.datasetID = d.datasetid
                         INNER JOIN omoccurdatasetlink dl ON dl.datasetid = d.datasetid
                         INNER JOIN omoccurrences o ON o.occid = dl.occid
                         WHERE d.ispublic = 1 AND d.category = 'Request'
-                            AND nr.activeDate IS NOT NULL AND (" . $where . ')';
-                    $statement = $connection->prepare($sql);
-                    if (!$statement) throw new RuntimeException('Research project query unavailable');
-                    if ($sampleType === null) $statement->bind_param('i', $collectionId);
-                    else $statement->bind_param('s', $sampleType);
-                    if (!$statement->execute()) throw new RuntimeException('Research project query failed');
-                    $statement->bind_result($projectCount, $specimenCount);
-                    if (!$statement->fetch()) throw new RuntimeException('Research project count unavailable');
-                    return ['projectCount' => (int) $projectCount, 'specimenCount' => (int) $specimenCount];
+                            AND nr.activeDate IS NOT NULL AND (" . $where . ')',
+                        'publications' => 'SELECT COUNT(DISTINCT r.refid) AS itemCount,
+                                COUNT(DISTINCT o.occid) AS specimenCount
+                            FROM referenceoccurlink r
+                            INNER JOIN omoccurrences o ON o.occid = r.occid
+                            WHERE ' . $where,
+                        'sequences' => 'SELECT COUNT(*) AS itemCount,
+                                COUNT(DISTINCT o.occid) AS specimenCount
+                            FROM omoccurgenetic g
+                            INNER JOIN omoccurrences o ON o.occid = g.occid
+                            WHERE ' . $where,
+                    ];
+                    // Aggregate each link table separately so joins cannot multiply the counts.
+                    foreach ($queries as $source => $sql) {
+                        $statement = null;
+                        try {
+                            $statement = $connection->prepare($sql);
+                            if (!$statement) throw new RuntimeException('Linked-use query unavailable');
+                            if ($sampleType === null) $statement->bind_param('i', $collectionId);
+                            else $statement->bind_param('s', $sampleType);
+                            if (!$statement->execute()) throw new RuntimeException('Linked-use query failed');
+                            $statement->bind_result($itemCount, $specimenCount);
+                            if (!$statement->fetch()) throw new RuntimeException('Linked-use count unavailable');
+                            $counts[$source] = ['itemCount' => (int) $itemCount, 'specimenCount' => (int) $specimenCount];
+                        } catch (Throwable $error) {
+                            error_log('Unable to count ' . $source . ' links for sample type ' . $collectionId);
+                        } finally {
+                            if ($statement) $statement->close();
+                        }
+                    }
                 } catch (Throwable $error) {
                     error_log('Unable to count research use for sample type ' . $collectionId);
-                    return [];
                 } finally {
-                    if ($statement) $statement->close();
                     if ($connection) $connection->close();
                 }
+                return $counts;
             };
-            unset($extraStats['refcnt']);
-            $researchUse = $getResearchUse((int) $collid);
-            $extraStats['researchProjectCount'] = $researchUse['projectCount'] ?? null;
-            $extraStats['researchSpecimenCount'] = $researchUse['specimenCount'] ?? null;
+            unset($extraStats['refcnt'], $extraStats['gencnt'], $extraStats['boldcnt'], $extraStats['geneticcnt']);
+            $linkedUse = $getLinkedUse((int) $collid);
+            $extraStats['researchProjectCount'] = $linkedUse['research']['itemCount'] ?? null;
+            $extraStats['researchSpecimenCount'] = $linkedUse['research']['specimenCount'] ?? null;
+            $extraStats['publicationCount'] = $linkedUse['publications']['itemCount'] ?? null;
+            $extraStats['publicationSpecimenCount'] = $linkedUse['publications']['specimenCount'] ?? null;
+            $extraStats['sequencedRecordCount'] = $linkedUse['sequences']['specimenCount'] ?? null;
             $archiveUrl = $collData['dwcaurl'] ?? '';
             $archiveFilename = $archiveUrl ? basename(rawurldecode((string) parse_url($archiveUrl, PHP_URL_PATH))) : '';
             $resources = array_values(array_filter($decodeArray($collData['resourcejson'] ?? ''), static function ($resource) use ($archiveUrl, $archiveFilename) {
