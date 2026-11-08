@@ -35,7 +35,7 @@ if ($SYMB_UID) {
 <!DOCTYPE html>
 <html lang="<?php echo htmlspecialchars($LANG_TAG, ENT_QUOTES); ?>">
 <head>
-    <title><?php echo htmlspecialchars('NEON | ' . (($collData[$collid]['publicname'] ?? '') ?: ($collData[$collid]['collectionname'] ?? 'Sample Types')), ENT_QUOTES); ?></title>
+    <title><?php echo htmlspecialchars('NEON Biorepository | ' . (($collData[$collid]['publicname'] ?? '') ?: ($collData[$collid]['collectionname'] ?? 'Sample Types')), ENT_QUOTES); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?php include_once($SERVER_ROOT . '/includes/head.php'); ?>
     <script>
