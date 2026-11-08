@@ -260,8 +260,8 @@ if ($SYMB_UID) {
                 return is_array($resource) && !empty($resource['url']) && is_string($resource['url']);
             }));
             $additionalResources = [];
-            if (!empty($collData['dwcaurl'])) $additionalResources[] = ['title' => 'Darwin Core Archive', 'description' => 'Download specimen records (DwC-A)', 'url' => $collData['dwcaurl'], 'action' => 'Download'];
-            $additionalResources[] = ['title' => 'Collection metadata', 'description' => 'Ecological Metadata Language (EML)', 'url' => '../datasets/emlhandler.php?collid=' . $collid, 'action' => 'View'];
+            if (!empty($collData['dwcaurl'])) $additionalResources[] = ['kind' => 'dwca', 'title' => 'Darwin Core Archive', 'description' => 'Download specimen records (DwC-A)', 'url' => $collData['dwcaurl'], 'action' => 'Download'];
+            $additionalResources[] = ['kind' => 'eml', 'title' => 'Collection metadata', 'description' => 'Ecological Metadata Language (EML)', 'url' => '../datasets/emlhandler.php?collid=' . $collid, 'action' => 'View'];
             if (!empty($collData['publishtogbif']) && $datasetKey) $additionalResources[] = ['title' => 'GBIF dataset', 'url' => 'https://www.gbif.org/dataset/' . $datasetKey];
             $dynamicProps = $decodeArray($collData['dynamicproperties'] ?? '');
             if (!empty($dynamicProps['edi']) && is_string($dynamicProps['edi'])) $additionalResources[] = ['title' => 'EDI dataset', 'url' => 'https://doi.org/' . preg_replace('/^doi:/i', '', $dynamicProps['edi'])];
