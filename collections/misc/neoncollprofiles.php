@@ -280,6 +280,7 @@ if ($SYMB_UID) {
             }
             $profile = [
                 'id' => (int) $collid,
+                'isLoggedIn' => !empty($SYMB_UID),
                 'title' => $collData['publicname'] ?: $collData['collectionname'],
                 'code' => $collData['collectioncode'] ?? '',
                 'description' => $collData['fulldescription'] ?? '',
