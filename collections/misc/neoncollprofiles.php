@@ -313,6 +313,7 @@ if ($SYMB_UID) {
             $profile = [
                 'id' => (int) $collid,
                 'title' => $collData['publicname'] ?: $collData['collectionname'],
+                'collectionName' => $collData['collectionname'] ?? '',
                 'code' => $collData['collectioncode'] ?? '',
                 'description' => $collData['fulldescription'] ?? '',
                 'identificationCollectionId' => (int) ($collData['identificationcollids'] ?? 0),
