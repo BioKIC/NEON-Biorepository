@@ -256,6 +256,48 @@ if ($SYMB_UID) {
             include($SERVER_ROOT . '/includes/citationneoncollection.php');
             ob_end_clean();
             $stats = $collManager->getBasicStats();
+            $extraStats = $decodeArray($stats['dynamicProperties'] ?? '');
+            $getResearchUse = static function ($collectionId) {
+                $connection = null;
+                $statement = null;
+                try {
+                    $connection = MySQLiConnectionFactory::getCon('readonly');
+                    if (!$connection) throw new RuntimeException('Research project connection unavailable');
+                    $sampleType = NeonMaterialSampleCollections::TYPES[$collectionId] ?? null;
+                    $where = $sampleType === null ? 'o.collid = ?' :
+                        'o.collid IN (17,19,28) AND EXISTS (
+                            SELECT 1 FROM ommaterialsample ms
+                            WHERE ms.occid = o.occid AND ms.sampleType LIKE ?
+                        )';
+                    // Match the public research list, counting each project once for this sample type.
+                    $sql = "SELECT COUNT(DISTINCT d.datasetid) AS projectCount,
+                            COUNT(DISTINCT o.occid) AS specimenCount
+                        FROM omoccurdatasets d
+                        INNER JOIN neonrequest nr ON nr.datasetID = d.datasetid
+                        INNER JOIN omoccurdatasetlink dl ON dl.datasetid = d.datasetid
+                        INNER JOIN omoccurrences o ON o.occid = dl.occid
+                        WHERE d.ispublic = 1 AND d.category = 'Request'
+                            AND nr.activeDate IS NOT NULL AND (" . $where . ')';
+                    $statement = $connection->prepare($sql);
+                    if (!$statement) throw new RuntimeException('Research project query unavailable');
+                    if ($sampleType === null) $statement->bind_param('i', $collectionId);
+                    else $statement->bind_param('s', $sampleType);
+                    if (!$statement->execute()) throw new RuntimeException('Research project query failed');
+                    $statement->bind_result($projectCount, $specimenCount);
+                    if (!$statement->fetch()) throw new RuntimeException('Research project count unavailable');
+                    return ['projectCount' => (int) $projectCount, 'specimenCount' => (int) $specimenCount];
+                } catch (Throwable $error) {
+                    error_log('Unable to count research use for sample type ' . $collectionId);
+                    return [];
+                } finally {
+                    if ($statement) $statement->close();
+                    if ($connection) $connection->close();
+                }
+            };
+            unset($extraStats['refcnt']);
+            $researchUse = $getResearchUse((int) $collid);
+            $extraStats['researchProjectCount'] = $researchUse['projectCount'] ?? null;
+            $extraStats['researchSpecimenCount'] = $researchUse['specimenCount'] ?? null;
             $archiveUrl = $collData['dwcaurl'] ?? '';
             $archiveFilename = $archiveUrl ? basename(rawurldecode((string) parse_url($archiveUrl, PHP_URL_PATH))) : '';
             $resources = array_values(array_filter($decodeArray($collData['resourcejson'] ?? ''), static function ($resource) use ($archiveUrl, $archiveFilename) {
@@ -318,7 +360,7 @@ if ($SYMB_UID) {
                 'description' => $collData['fulldescription'] ?? '',
                 'identificationCollectionId' => (int) ($collData['identificationcollids'] ?? 0),
                 'stats' => $stats,
-                'extraStats' => $decodeArray($stats['dynamicProperties'] ?? ''),
+                'extraStats' => $extraStats,
                 'citation' => $neonCitation,
                 'citationText' => $neonCitationText,
                 'related' => (object) $linkedCollections,
