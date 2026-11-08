@@ -260,7 +260,56 @@ if ($SYMB_UID) {
                 return is_array($resource) && !empty($resource['url']) && is_string($resource['url']);
             }));
             $additionalResources = [];
-            if (!empty($collData['dwcaurl'])) $additionalResources[] = ['kind' => 'dwca', 'title' => 'Darwin Core Archive', 'description' => 'Download specimen records (DwC-A)', 'url' => $collData['dwcaurl'], 'action' => 'Download'];
+            if (!empty($collData['dwcaurl'])) {
+                $archiveUrl = $collData['dwcaurl'];
+                $archivePath = rawurldecode((string) parse_url($archiveUrl, PHP_URL_PATH));
+                $archiveFilename = basename($archivePath);
+                $archiveSize = null;
+                $archiveDirectory = realpath($SERVER_ROOT . '/content/dwca');
+                $archiveFile = $archiveDirectory ? realpath($archiveDirectory . '/' . $archiveFilename) : false;
+                $portalHost = parse_url('https://' . preg_replace('~^https?://~i', '', $SERVER_HOST ?: ($_SERVER['SERVER_NAME'] ?? '')), PHP_URL_HOST);
+                $archiveHost = parse_url($archiveUrl, PHP_URL_HOST);
+                // Published archives normally live here; stat the file without downloading it.
+                if ((!$archiveHost || strcasecmp($archiveHost, (string) $portalHost) === 0)
+                    && dirname($archivePath) === rtrim($CLIENT_ROOT, '/') . '/content/dwca'
+                    && $archiveFile && dirname($archiveFile) === $archiveDirectory
+                    && is_file($archiveFile) && is_readable($archiveFile)) {
+                    $bytes = filesize($archiveFile);
+                    if ($bytes !== false) $archiveSize = $bytes;
+                }
+                // For archives hosted elsewhere, request only the headers with a short timeout.
+                if ($archiveSize === null && function_exists('curl_init')
+                    && in_array(strtolower((string) parse_url($archiveUrl, PHP_URL_SCHEME)), ['http', 'https'], true)) {
+                    $archiveRequest = curl_init($archiveUrl);
+                    curl_setopt_array($archiveRequest, [
+                        CURLOPT_NOBODY => true,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_CONNECTTIMEOUT => 1,
+                        CURLOPT_TIMEOUT => 2,
+                        CURLOPT_FOLLOWLOCATION => false,
+                    ]);
+                    $headers = curl_exec($archiveRequest);
+                    $status = curl_getinfo($archiveRequest, CURLINFO_HTTP_CODE);
+                    $bytes = curl_getinfo($archiveRequest, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+                    if ($headers !== false && $status >= 200 && $status < 300 && $bytes >= 0) {
+                        $archiveSize = (int) $bytes;
+                    }
+                    curl_close($archiveRequest);
+                }
+                $returnUrl = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid . '#data-downloads';
+                // Use the Biorepository session, not a client-side login flag.
+                $additionalResources[] = [
+                    'kind' => 'dwca',
+                    'title' => 'Full Data Download',
+                    'description' => 'Download specimen records (DwC-A)',
+                    'filename' => $archiveFilename,
+                    'sizeBytes' => $archiveSize,
+                    'url' => $SYMB_UID ? $archiveUrl : $CLIENT_ROOT . '/profile/index.php?refurl=' . rawurlencode($returnUrl),
+                    'action' => $SYMB_UID ? 'Download' : 'Log in to download',
+                    'actionIcon' => $SYMB_UID ? 'download' : 'lock',
+                    'openInNewTab' => !empty($SYMB_UID),
+                ];
+            }
             $additionalResources[] = ['kind' => 'eml', 'title' => 'Collection metadata', 'description' => 'Ecological Metadata Language (EML)', 'url' => '../datasets/emlhandler.php?collid=' . $collid, 'action' => 'View'];
             if (!empty($collData['publishtogbif']) && $datasetKey) $additionalResources[] = ['title' => 'GBIF dataset', 'url' => 'https://www.gbif.org/dataset/' . $datasetKey];
             $dynamicProps = $decodeArray($collData['dynamicproperties'] ?? '');
@@ -280,7 +329,6 @@ if ($SYMB_UID) {
             }
             $profile = [
                 'id' => (int) $collid,
-                'isLoggedIn' => !empty($SYMB_UID),
                 'title' => $collData['publicname'] ?: $collData['collectionname'],
                 'code' => $collData['collectioncode'] ?? '',
                 'description' => $collData['fulldescription'] ?? '',
