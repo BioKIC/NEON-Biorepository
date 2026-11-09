@@ -106,15 +106,12 @@ $_SESSION['citationvar'] = $searchVar;
 		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
 	); ?>;
 
+	// #neon edit
 	window.biorepoCollectionTypeSummaryTotal = <?php echo json_encode(
 		$collectionTypeSummary['totalRecords'],
 		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
 	); ?>;
-
-	window.biorepoCollectionTypeSummaryIdentificationTotal = <?php echo json_encode(
-		$collectionTypeSummary['totalIdentifications'] ?? 0,
-		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
-	); ?>;
+	// #end neon edit
 
 	const params = <?php echo json_encode($params, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
 	const rawSearchVar = <?php echo $encodedSearchVar; ?>;
