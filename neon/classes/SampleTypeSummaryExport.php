@@ -2,9 +2,7 @@
 
 /** Combines the PR #1223 summary with public catalog facets and availability. */
 class SampleTypeSummaryExport {
-    #neon edit
     public static function read($result, array $catalog, array $keywords = array()): array {
-        #end neon edit
         $items = array();
         foreach ($catalog['items'] as $item) $items[(int)$item['id']] = $item;
         $columns = array_slice(array_map(function ($field) { return $field->name; }, $result->fetch_fields()), 1);
@@ -27,11 +25,9 @@ class SampleTypeSummaryExport {
             }
             array_splice($columns, $position, 0, array($column));
         }
-        #neon edit
         $columns = array_values(array_diff($columns, array('first_available_month', 'latest_available_month', 'keywords')));
         array_splice($columns, array_search('collection_months', $columns, true), 1, array('first_available_month', 'latest_available_month'));
         $columns[] = 'keywords';
-        #end neon edit
         $rows = array();
         while ($row = $result->fetch_assoc()) {
             $id = (int)$row['collid'];
@@ -55,7 +51,6 @@ class SampleTypeSummaryExport {
             $row['preservation'] = implode('; ', $item['preservation'] ?? array());
             $row['sites'] = implode('; ', array_unique($sites));
             $row['taxonomic_groups'] = implode('; ', $item['taxa'] ?? array());
-            #neon edit
             $row['first_available_month'] = $months ? reset($months) : '';
             $row['latest_available_month'] = $months ? end($months) : '';
             $entry = $keywords[$id] ?? array();
@@ -65,7 +60,6 @@ class SampleTypeSummaryExport {
                 if (is_string($value) && trim($value) !== '') $keywordTerms[] = trim($value);
             }
             $row['keywords'] = implode('; ', array_unique($keywordTerms));
-            #end neon edit
             $description = $item['description'] ?? $row['description'] ?? '';
             $intro = $item['shortDescription'] ?? preg_split('/\bSampling\b/u', $description, 2)[0];
             $row['description'] = trim(preg_replace('/\s+/u', ' ', $intro));
