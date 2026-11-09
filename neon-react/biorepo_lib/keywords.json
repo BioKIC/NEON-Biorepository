@@ -34,6 +34,7 @@
       "bacterioplankton",
       "bacteria",
       "archaea",
+      "fungi",
       "freshwater",
       "plankton",
       "suspended",
@@ -119,7 +120,7 @@
     "name": "Pooled Invertebrate Bycatch - Pitfall Trapping",
     "keywords": [
       "arthropods",
-      "epigeal fauna",
+      "epigeal",
       "entomology",
       "biodiversity",
       "population",
@@ -154,7 +155,7 @@
     "name": "Unpooled Invertebrate Bycatch - Pitfall Trapping",
     "keywords": [
       "arthropods",
-      "epigeal fauna",
+      "epigeal",
       "entomology",
       "biodiversity",
       "population",
@@ -166,7 +167,6 @@
     "keywords": [
       "mammalogy",
       "vertebrates",
-      "comparative anatomy",
       "biodiversity",
       "population",
       "abundance"
@@ -191,7 +191,6 @@
     "keywords": [
       "mammalogy",
       "vertebrates",
-      "comparative anatomy",
       "rodents",
       "mice",
       "voles",
@@ -230,6 +229,7 @@
     "keywords": [
       "Chironomidae",
       "Diptera",
+      "flies",
       "entomology",
       "bioassessment",
       "biodiversity",
@@ -311,7 +311,6 @@
     "keywords": [
       "mammalogy",
       "vertebrates",
-      "comparative anatomy",
       "rodents",
       "mice",
       "voles",
@@ -323,11 +322,9 @@
     "name": "Pinned Mosquitos",
     "keywords": [
       "Culicidae",
-      "Diptera",
       "entomology",
       "disease vectors",
       "vector-borne",
-      "flies",
       "abundance",
       "biodiversity"
     ]
@@ -512,6 +509,8 @@
     "keywords": [
       "Chironomidae",
       "Annelida",
+      "Diptera",
+      "flies",
       "microscopy",
       "bioassessment",
       "biodiversity",
@@ -536,11 +535,9 @@
     "name": "Frozen Mosquitos",
     "keywords": [
       "Culicidae",
-      "Diptera",
       "entomology",
       "disease vectors",
       "vector-borne",
-      "flies",
       "abundance",
       "biodiversity"
     ]
@@ -625,7 +622,6 @@
     "name": "Mosquito DNA Extracts",
     "keywords": [
       "Culicidae",
-      "Diptera",
       "molecular ecology",
       "phylogenetics",
       "cytochrome oxidase I (COI)",
@@ -637,6 +633,7 @@
     "name": "Fish DNA Extracts",
     "keywords": [
       "ichthyology",
+      "vertebrates",
       "molecular ecology",
       "phylogenetics",
       "freshwater",
@@ -668,6 +665,7 @@
       "bacterioplankton",
       "bacteria",
       "archaea",
+      "fungi",
       "freshwater",
       "plankton",
       "suspended",
@@ -728,7 +726,6 @@
     "keywords": [
       "mammalogy",
       "vertebrates",
-      "comparative anatomy",
       "rodents",
       "mice",
       "voles",
@@ -740,6 +737,7 @@
     "name": "Tick Pathogen Extracts (Total Nucleic Acid)",
     "keywords": [
       "Acari",
+      "Ixodida",
       "arachnids",
       "epidemiology",
       "disease vectors",
@@ -769,8 +767,7 @@
       "pedon",
       "sand",
       "silt",
-      "clay",
-      "weathering"
+      "clay"
     ]
   },
   "80": {
@@ -790,7 +787,6 @@
     "name": "Legacy and Prototype Samples",
     "keywords": [
       "pilot studies",
-      "method development",
       "historical holdings"
     ]
   },
@@ -889,8 +885,7 @@
     "keywords": [
       "entomology",
       "botany",
-      "island biodiversity",
-      "Oceania",
+      "biodiversity",
       "community composition",
       "abundance"
     ]
@@ -913,6 +908,7 @@
     "keywords": [
       "Chironomidae",
       "Diptera",
+      "flies",
       "entomology",
       "bioassessment",
       "biodiversity",
@@ -925,6 +921,7 @@
     "name": "Oligochaete Identifications",
     "keywords": [
       "Annelida",
+      "worms",
       "Clitellata",
       "zoobenthos",
       "bioassessment",
@@ -939,6 +936,9 @@
     "keywords": [
       "Chironomidae",
       "Annelida",
+      "Diptera",
+      "flies",
+      "worms",
       "microscopy",
       "bioassessment",
       "biodiversity",
