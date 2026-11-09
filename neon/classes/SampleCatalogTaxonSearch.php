@@ -2,7 +2,7 @@
 #neon edit
 require_once __DIR__ . '/../../classes/NeonMaterialSampleCollections.php';
 
-/** Read-only scientific-name lookup. Returns catalog IDs, never specimen data. */
+/** Read-only scientific-name lookup. Returns catalog IDs and aggregate site/month coverage. */
 class SampleCatalogTaxonSearch {
     public static function terms($input): array {
         if (!is_array($input) || !$input || count($input) > 8) {
@@ -32,24 +32,29 @@ class SampleCatalogTaxonSearch {
         }, $terms);
         $names = '(' . implode(' OR ', array_fill(0, count($patterns), "o.sciname LIKE ? ESCAPE '!'")) . ')';
         $visible = '(o.recordSecurity IS NULL OR o.recordSecurity <> 5)';
+        // Keep matches without a site so they remain discoverable, but restrict
+        // availability to the same NEON Site associations as the catalog.
+        $siteJoins = " LEFT JOIN omoccurdatasetlink l ON l.occid = o.occid
+            LEFT JOIN omoccurdatasets d ON d.datasetid = l.datasetid AND d.notes = 'NEON Site' ";
+        $coverage = "d.name AS siteCode, DATE_FORMAT(o.eventdate, '%Y-%m') AS month";
         $queries = array();
         $params = array();
         $ordinaryIds = array_diff($ids, array_keys(NeonMaterialSampleCollections::TYPES));
         if ($ordinaryIds) {
-            $queries[] = 'SELECT DISTINCT o.collid FROM omoccurrences o WHERE ' . $names
+            $queries[] = 'SELECT DISTINCT o.collid, ' . $coverage . ' FROM omoccurrences o' . $siteJoins . ' WHERE ' . $names
                 . ' AND o.collid IN (' . implode(',', $ordinaryIds) . ') AND ' . $visible;
             $params = $patterns;
         }
         // Virtual tissues have no occurrences of their own. Match the same parent
-        // records and material-sample patterns as SampleCatalog::build(), stopping
-        // as soon as a qualifying specimen is found for each tissue collection.
+        // records and material-sample patterns as SampleCatalog::build(). EXISTS
+        // prevents multiple tissues from multiplying a parent's site coverage.
         foreach (NeonMaterialSampleCollections::TYPES as $id => $sampleType) {
             if (!in_array($id, $ids, true)) continue;
-            $queries[] = 'SELECT ' . (int)$id . ' AS collid WHERE EXISTS (
-                SELECT 1 FROM omoccurrences o
-                INNER JOIN ommaterialsample ms ON ms.occid = o.occid
-                WHERE ' . $names . ' AND o.collid IN (17,19,28) AND ' . $visible . '
-                AND ms.sampleType LIKE ?)';
+            $queries[] = 'SELECT DISTINCT ' . (int)$id . ' AS collid, ' . $coverage
+                . ' FROM omoccurrences o' . $siteJoins . ' WHERE ' . $names
+                . ' AND o.collid IN (17,19,28) AND ' . $visible . '
+                AND EXISTS (SELECT 1 FROM ommaterialsample ms
+                    WHERE ms.occid = o.occid AND ms.sampleType LIKE ?)';
             $params = array_merge($params, $patterns, array($sampleType));
         }
         return array(implode(' UNION ALL ', $queries), $params);
@@ -62,11 +67,32 @@ class SampleCatalogTaxonSearch {
         try {
             $statement->bind_param(str_repeat('s', count($params)), ...$params);
             if (!$statement->execute()) throw new RuntimeException('Unable to search scientific names');
-            $statement->bind_result($id);
+            $statement->bind_result($id, $siteCode, $month);
             $matches = array();
-            while ($statement->fetch()) $matches[] = (int)$id;
-            sort($matches, SORT_NUMERIC);
-            return array_values(array_unique($matches));
+            while ($statement->fetch()) {
+                $id = (int)$id;
+                if (!isset($matches[$id])) $matches[$id] = array();
+                if (!$siteCode) continue;
+                if (!isset($matches[$id][$siteCode])) $matches[$id][$siteCode] = array();
+                if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month ?? '')) {
+                    $matches[$id][$siteCode][$month] = true;
+                }
+            }
+            ksort($matches, SORT_NUMERIC);
+            $siteCodesByCollection = array();
+            foreach ($matches as $collectionId => $sites) {
+                ksort($sites, SORT_STRING);
+                $siteCodesByCollection[$collectionId] = array();
+                foreach ($sites as $code => $months) {
+                    $months = array_keys($months);
+                    sort($months, SORT_STRING);
+                    $siteCodesByCollection[$collectionId][] = array('siteCode' => $code, 'availableMonths' => $months);
+                }
+            }
+            return array(
+                'collectionIds' => array_keys($matches),
+                'siteCodesByCollection' => (object)$siteCodesByCollection
+            );
         } finally {
             $statement->close();
         }

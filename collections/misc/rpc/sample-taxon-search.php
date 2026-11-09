@@ -20,7 +20,7 @@ try {
     // Only search collections already exposed in the public catalog. Never accept
     // collection IDs from the request or reveal unrelated repository collections.
     $ids = array_column($catalog['items'], 'id');
-    $key = 'sample-taxon-v1:' . hash('sha256', $SERVER_ROOT . json_encode(array($terms, $ids, $catalog['generatedAt'] ?? filemtime($path))));
+    $key = 'sample-taxon-v2:' . hash('sha256', $SERVER_ROOT . json_encode(array($terms, $ids, $catalog['generatedAt'] ?? filemtime($path))));
     $cacheEnabled = function_exists('apcu_enabled') && apcu_enabled();
     $found = false;
     $matches = $cacheEnabled ? apcu_fetch($key, $found) : null;
@@ -32,7 +32,7 @@ try {
         if ($cacheEnabled) apcu_store($key, $matches, 300);
     }
     header('Cache-Control: private, max-age=300');
-    echo json_encode(array('collectionIds' => $matches), JSON_THROW_ON_ERROR);
+    echo json_encode($matches, JSON_THROW_ON_ERROR);
 } catch (InvalidArgumentException $error) {
     http_response_code(400);
     echo json_encode(array('error' => $error->getMessage()));
