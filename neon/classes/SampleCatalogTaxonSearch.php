@@ -22,15 +22,32 @@ class SampleCatalogTaxonSearch {
         return array_values(array_unique($terms));
     }
 
-    /** No LOWER(), leading wildcard, or substring scan on the indexed sciname column. */
-    public static function query(array $collectionIds, array $terms): array {
-        $ids = array_values(array_unique(array_filter(array_map('intval', $collectionIds), function ($id) { return $id > 0; })));
-        if (!$ids || !$terms) throw new InvalidArgumentException('No collections or names to search.');
+    /** Match name prefixes and descendants of named taxa in the portal's default authority. */
+    public static function nameWhere(array $terms): array {
         $patterns = array_map(function ($term) {
             // Escape LIKE metacharacters as literals; values are bound separately.
             return strtr($term, array('!' => '!!', '%' => '!%', '_' => '!_')) . '%';
         }, $terms);
         $names = '(' . implode(' OR ', array_fill(0, count($patterns), "o.sciname LIKE ? ESCAPE '!'")) . ')';
+        // Resolve a higher taxon's full name, as the browse/search pages do.
+        $taxa = '(' . implode(' OR ', array_fill(0, count($terms), 't.sciname = ?')) . ')';
+        // Descendants stay in SQL; no list of taxa or specimen IDs is sent to the browser.
+        $descendants = 'SELECT e.tid FROM taxa t INNER JOIN taxaenumtree e ON e.parenttid = t.tid
+            WHERE e.taxauthid = 1 AND ' . $taxa;
+        $taxonIds = 'SELECT t.tid FROM taxa t WHERE ' . $taxa . '
+            UNION ' . $descendants . '
+            UNION SELECT ts.tid FROM taxstatus ts WHERE ts.taxauthid = 1
+                AND ts.tidaccepted IN (' . $descendants . ')';
+        // Also match recorded names whose interpreted taxon ID has not been populated.
+        $names = '(' . $names . ' OR o.tidinterpreted IN (' . $taxonIds . ')
+            OR o.sciname IN (SELECT named.sciname FROM taxa named WHERE named.tid IN (' . $taxonIds . ')))';
+        return array($names, array_merge($patterns, $terms, $terms, $terms, $terms, $terms, $terms));
+    }
+
+    public static function query(array $collectionIds, array $terms): array {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $collectionIds), function ($id) { return $id > 0; })));
+        if (!$ids || !$terms) throw new InvalidArgumentException('No collections or names to search.');
+        list($names, $patterns) = self::nameWhere($terms);
         $visible = '(o.recordSecurity IS NULL OR o.recordSecurity <> 5)';
         // Keep matches without a site so they remain discoverable, but restrict
         // availability to the same NEON Site associations as the catalog.
