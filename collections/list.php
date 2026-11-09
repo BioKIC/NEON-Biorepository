@@ -59,10 +59,12 @@ $combinedCollectionFamilies = array_merge(
 );
 
 foreach($combinedCollectionFamilies as &$family){
-	$family['percent'] = round(
-		($family['total'] / $collectionTypeSummary['totalRecords']) * 100,
-		1
-	);
+	if($collectionTypeSummary['totalRecords'] > 0){
+		$family['percent'] = round(
+			($family['total'] / $collectionTypeSummary['totalRecords']) * 100,
+			1
+		);
+	}
 }
 unset($family);
 
@@ -106,6 +108,11 @@ $_SESSION['citationvar'] = $searchVar;
 
 	window.biorepoCollectionTypeSummaryTotal = <?php echo json_encode(
 		$collectionTypeSummary['totalRecords'],
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
+
+	window.biorepoCollectionTypeSummaryIdentificationTotal = <?php echo json_encode(
+		$collectionTypeSummary['totalIdentifications'] ?? 0,
 		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
 	); ?>;
 

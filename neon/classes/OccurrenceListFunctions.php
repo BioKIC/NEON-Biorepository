@@ -53,13 +53,14 @@ class OccurrenceListFunctions extends OccurrenceManager{
 	}
 	
 	public function getCollectionTypeSummary(): array {
+		$emptySummary = array('totalRecords' => 0, 'totalIdentifications' => 0, 'families' => array());
 		$retArr = array();
 		$sqlWhere = $this->getSqlWhere();
-		if(!$sqlWhere) return $retArr;
+		if(!$sqlWhere) return $emptySummary;
 		$jsonPath = $GLOBALS['SERVER_ROOT'] . '/neon-react/biorepo_lib/collections-protocol.json';
-		if(!file_exists($jsonPath)) return $retArr;
+		if(!file_exists($jsonPath)) return $emptySummary;
 		$protocolTree = json_decode(file_get_contents($jsonPath), true);
-		if(!$protocolTree) return $retArr;
+		if(!$protocolTree) return $emptySummary;
 		$identificationParentMap = array();
 		$mapIdentificationParents = function($node, $parentCollid = null) use (&$mapIdentificationParents, &$identificationParentMap){
 			if(isset($node['collid'])){
@@ -75,8 +76,6 @@ class OccurrenceListFunctions extends OccurrenceManager{
 					if(isset($child['collid']) && stripos($child['name'], 'Identifications') === false){
 						$bulkCollid = (int)$child['collid'];
 					}
-				}
-				foreach($node['children'] as $child){
 					$mapIdentificationParents($child, $bulkCollid);
 				}
 			}
@@ -152,16 +151,19 @@ class OccurrenceListFunctions extends OccurrenceManager{
 				$linkRs->free();
 			}
 		}
-		$isIdentification = function($name){
-			return stripos($name, 'Identifications') !== false;
+		$isIdentification = function($collid, $name) use ($identificationParentMap){
+			return isset($identificationParentMap[$collid]) || stripos($name, 'Identifications') !== false;
 		};
+		$totalIdentifications = 0;
 		foreach($countMap as $collid => $cnt){
 			$name = $nameMap[$collid] ?? '';
-			if(!$isIdentification($name)){
+			if($isIdentification($collid, $name)){
+				$totalIdentifications += $cnt;
+			} else {
 				$totalRecords += $cnt;
 			}
 		}
-		$flattenNode = function($node) use (&$flattenNode, $countMap, $nameMap, $isIdentification){
+		$flattenNode = function($node) use (&$flattenNode, $countMap, $nameMap, $isIdentification, $identificationParentMap){
 			$ret = array();
 			if(isset($node['collid'])){
 				$collid = (int)$node['collid'];
@@ -172,7 +174,8 @@ class OccurrenceListFunctions extends OccurrenceManager{
 						'name' => $name,
 						'collid' => $collid,
 						'total' => $total,
-						'isIdentification' => $isIdentification($name),
+						'isIdentification' => $isIdentification($collid, $name),
+						'hasParentSample' => !empty($countMap[$identificationParentMap[$collid] ?? 0]),
 					);
 				}
 				return $ret;
@@ -191,14 +194,16 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			}
 			if(!$subtypes) continue;
 			$familyTotal = 0;
+			$identificationTotal = 0;
 			foreach($subtypes as $subtype){
 				if(empty($subtype['isIdentification'])){
 					$familyTotal += $subtype['total'];
+				} else {
+					$identificationTotal += $subtype['total'];
 				}
 			}
-			if($familyTotal <= 0 || $totalRecords <= 0) continue;
 			foreach($subtypes as &$subtype){
-				if(!empty($subtype['isIdentification'])){
+				if(!empty($subtype['isIdentification']) || $totalRecords <= 0){
 					$subtype['percent'] = 0;
 				} else {
 					$subtype['percent'] = round(($subtype['total'] / $totalRecords) * 100, 1);
@@ -207,18 +212,18 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			unset($subtype);
 			$sortedSubtypes = array();
 			
-			for($i = 0; $i < count($subtypes); $i++){
-				if(!empty($subtypes[$i]['isIdentification'])){
-					continue;
+			foreach($subtypes as $subtype){
+				if(empty($subtype['isIdentification'])){
+					$sortedSubtypes[$subtype['collid']] = array($subtype);
 				}
-			
-				$group = array($subtypes[$i]);
-			
-				if(isset($subtypes[$i + 1]) && !empty($subtypes[$i + 1]['isIdentification'])){
-					$group[] = $subtypes[$i + 1];
+			}
+			foreach($subtypes as $subtype){
+				if(!empty($subtype['isIdentification'])){
+					$parent = $identificationParentMap[$subtype['collid']] ?? 0;
+					// An identification remains a search result even without a linked sample.
+					$group = isset($sortedSubtypes[$parent]) ? $parent : $subtype['collid'];
+					$sortedSubtypes[$group][] = $subtype;
 				}
-			
-				$sortedSubtypes[] = $group;
 			}
 			
 			usort($sortedSubtypes, function($a, $b){
@@ -229,15 +234,19 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			$retArr[] = array(
 				'family' => $familyNode['name'],
 				'total' => $familyTotal,
-				'percent' => round(($familyTotal / $totalRecords) * 100, 1),
+				'identificationTotal' => $identificationTotal,
+				'percent' => $totalRecords > 0
+					? round(($familyTotal / $totalRecords) * 100, 1)
+					: ($totalIdentifications > 0 ? round(($identificationTotal / $totalIdentifications) * 100, 1) : 0),
 				'subtypes' => $subtypes
 			);
 		}
 		usort($retArr, function($a, $b){
-			return $b['total'] <=> $a['total'];
+			return ($b['total'] <=> $a['total']) ?: ($b['identificationTotal'] <=> $a['identificationTotal']);
 		});
 		return array(
 			'totalRecords' => $totalRecords,
+			'totalIdentifications' => $totalIdentifications,
 			'families' => $retArr
 		);
 	}
