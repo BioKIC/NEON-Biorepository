@@ -22,88 +22,63 @@ class SampleCatalogTaxonSearch {
         return array_values(array_unique($terms));
     }
 
-    /** Resolve exact names once before looking for their descendants. */
-    public static function rootIds($connection, array $terms): array {
-        $sql = 'SELECT tid FROM taxa WHERE sciname IN (' . implode(',', array_fill(0, count($terms), '?')) . ')';
-        $statement = $connection->prepare($sql);
-        if (!$statement) throw new RuntimeException('Unable to prepare taxon lookup');
-        try {
-            $statement->bind_param(str_repeat('s', count($terms)), ...$terms);
-            if (!$statement->execute()) throw new RuntimeException('Unable to resolve taxon names');
-            $statement->bind_result($id);
-            $ids = array();
-            while ($statement->fetch()) $ids[] = (int)$id;
-            return array_values(array_unique($ids));
-        } finally {
-            $statement->close();
-        }
-    }
-
-    /** Separate indexed name and taxon-ID lookups; UNION removes overlapping matches. */
-    public static function occurrenceQuery(array $collectionIds, array $terms, array $rootIds): array {
-        $ids = array_values(array_unique(array_filter(array_map('intval', $collectionIds), function ($id) { return $id > 0; })));
-        if (!$ids || !$terms) throw new InvalidArgumentException('No collections or names to search.');
+    /** Match name prefixes and descendants of named taxa in the portal's default authority. */
+    public static function nameWhere(array $terms): array {
         $patterns = array_map(function ($term) {
             // Escape LIKE metacharacters as literals; values are bound separately.
             return strtr($term, array('!' => '!!', '%' => '!%', '_' => '!_')) . '%';
         }, $terms);
         $names = '(' . implode(' OR ', array_fill(0, count($patterns), "o.sciname LIKE ? ESCAPE '!'")) . ')';
-        $scope = 'o.collid IN (' . implode(',', $ids) . ') AND (o.recordSecurity IS NULL OR o.recordSecurity <> 5)';
-        $queries = array('SELECT o.occid FROM omoccurrences o WHERE ' . $scope . ' AND ' . $names);
-        $rootIds = array_values(array_unique(array_filter(array_map('intval', $rootIds), function ($id) { return $id > 0; })));
-        // Partial names need only the prefix lookup. Descendants stay in SQL, never in the browser.
-        if ($rootIds) {
-            $roots = implode(',', $rootIds);
-            $taxonIds = 'SELECT tid FROM taxa WHERE tid IN (' . $roots . ')
-                UNION SELECT e.tid FROM taxaenumtree e WHERE e.taxauthid = 1 AND e.parenttid IN (' . $roots . ')
-                UNION SELECT ts.tid FROM taxaenumtree e
-                    INNER JOIN taxstatus ts ON ts.tidaccepted = e.tid AND ts.taxauthid = 1
-                    WHERE e.taxauthid = 1 AND e.parenttid IN (' . $roots . ')';
-            $queries[] = 'SELECT o.occid FROM (' . $taxonIds . ') relevant
-                INNER JOIN omoccurrences o ON o.tidinterpreted = relevant.tid WHERE ' . $scope;
-            // Keep matching recorded names even when their interpreted ID is missing.
-            $queries[] = 'SELECT o.occid FROM (' . $taxonIds . ') relevant
-                INNER JOIN taxa named ON named.tid = relevant.tid
-                INNER JOIN omoccurrences o ON o.sciname = named.sciname WHERE ' . $scope;
-        }
-        return array(implode(' UNION ', $queries), $patterns);
+        // Resolve a higher taxon's full name, as the browse/search pages do.
+        $taxa = '(' . implode(' OR ', array_fill(0, count($terms), 't.sciname = ?')) . ')';
+        // Descendants stay in SQL; no list of taxa or specimen IDs is sent to the browser.
+        $descendants = 'SELECT e.tid FROM taxa t INNER JOIN taxaenumtree e ON e.parenttid = t.tid
+            WHERE e.taxauthid = 1 AND ' . $taxa;
+        $taxonIds = 'SELECT t.tid FROM taxa t WHERE ' . $taxa . '
+            UNION ' . $descendants . '
+            UNION SELECT ts.tid FROM taxstatus ts WHERE ts.taxauthid = 1
+                AND ts.tidaccepted IN (' . $descendants . ')';
+        // Also match recorded names whose interpreted taxon ID has not been populated.
+        $names = '(' . $names . ' OR o.tidinterpreted IN (' . $taxonIds . ')
+            OR o.sciname IN (SELECT named.sciname FROM taxa named WHERE named.tid IN (' . $taxonIds . ')))';
+        return array($names, array_merge($patterns, $terms, $terms, $terms, $terms, $terms, $terms));
     }
 
-    public static function query(array $collectionIds, array $terms, array $rootIds): array {
+    public static function query(array $collectionIds, array $terms): array {
         $ids = array_values(array_unique(array_filter(array_map('intval', $collectionIds), function ($id) { return $id > 0; })));
         if (!$ids || !$terms) throw new InvalidArgumentException('No collections or names to search.');
+        list($names, $patterns) = self::nameWhere($terms);
+        $visible = '(o.recordSecurity IS NULL OR o.recordSecurity <> 5)';
+        // Keep matches without a site so they remain discoverable, but restrict
+        // availability to the same NEON Site associations as the catalog.
+        $siteJoins = " LEFT JOIN omoccurdatasetlink l ON l.occid = o.occid
+            LEFT JOIN omoccurdatasets d ON d.datasetid = l.datasetid AND d.notes = 'NEON Site' ";
+        $coverage = "d.name AS siteCode, DATE_FORMAT(o.eventdate, '%Y-%m') AS month";
+        $queries = array();
+        $params = array();
         $ordinaryIds = array_diff($ids, array_keys(NeonMaterialSampleCollections::TYPES));
-        $sourceIds = $ordinaryIds;
-        $mapping = array();
-        $sampleTypes = array();
-        foreach ($ordinaryIds as $id) {
-            $mapping[] = 'SELECT ' . $id . ' AS collid, ' . $id . ' AS sourceCollid, NULL AS sampleType';
+        if ($ordinaryIds) {
+            $queries[] = 'SELECT DISTINCT o.collid, ' . $coverage . ' FROM omoccurrences o' . $siteJoins . ' WHERE ' . $names
+                . ' AND o.collid IN (' . implode(',', $ordinaryIds) . ') AND ' . $visible;
+            $params = $patterns;
         }
-        // Map virtual tissues onto their source collections so the occurrence lookup
-        // runs once for all sample types instead of repeating for every tissue type.
+        // Virtual tissues have no occurrences of their own. Match the same parent
+        // records and material-sample patterns as SampleCatalog::build(). EXISTS
+        // prevents multiple tissues from multiplying a parent's site coverage.
         foreach (NeonMaterialSampleCollections::TYPES as $id => $sampleType) {
             if (!in_array($id, $ids, true)) continue;
-            foreach (array(17, 19, 28) as $parentId) {
-                $sourceIds[] = $parentId;
-                $mapping[] = 'SELECT ' . (int)$id . ' AS collid, ' . $parentId . ' AS sourceCollid, ? AS sampleType';
-                $sampleTypes[] = $sampleType;
-            }
+            $queries[] = 'SELECT DISTINCT ' . (int)$id . ' AS collid, ' . $coverage
+                . ' FROM omoccurrences o' . $siteJoins . ' WHERE ' . $names
+                . ' AND o.collid IN (17,19,28) AND ' . $visible . '
+                AND EXISTS (SELECT 1 FROM ommaterialsample ms
+                    WHERE ms.occid = o.occid AND ms.sampleType LIKE ?)';
+            $params = array_merge($params, $patterns, array($sampleType));
         }
-        list($matching, $params) = self::occurrenceQuery($sourceIds, $terms, $rootIds);
-        // Keep matches without a site; only NEON Site associations contribute coverage.
-        $sql = "SELECT DISTINCT kinds.collid, d.name AS siteCode, DATE_FORMAT(o.eventdate, '%Y-%m') AS month
-            FROM (" . $matching . ') matching INNER JOIN omoccurrences o ON o.occid = matching.occid
-            INNER JOIN (' . implode(' UNION ALL ', $mapping) . ") kinds ON kinds.sourceCollid = o.collid
-            LEFT JOIN omoccurdatasetlink l ON l.occid = o.occid
-            LEFT JOIN omoccurdatasets d ON d.datasetid = l.datasetid AND d.notes = 'NEON Site'
-            WHERE kinds.sampleType IS NULL OR EXISTS (SELECT 1 FROM ommaterialsample ms
-                WHERE ms.occid = o.occid AND ms.sampleType LIKE kinds.sampleType)";
-        return array($sql, array_merge($params, $sampleTypes));
+        return array(implode(' UNION ALL ', $queries), $params);
     }
 
     public static function find($connection, array $collectionIds, array $terms): array {
-        $rootIds = self::rootIds($connection, $terms);
-        list($sql, $params) = self::query($collectionIds, $terms, $rootIds);
+        list($sql, $params) = self::query($collectionIds, $terms);
         $statement = $connection->prepare($sql);
         if (!$statement) throw new RuntimeException('Unable to prepare scientific-name lookup');
         try {
