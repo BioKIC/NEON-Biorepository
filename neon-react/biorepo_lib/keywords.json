@@ -340,7 +340,7 @@
       "stable isotopes",
       "nitrogen (N)",
       "carbon (C)",
-      "biogeochemistry".
+      "biogeochemistry",
       "soil horizons",
       "soil taxonomy",
       "soil order",
@@ -776,7 +776,7 @@
   "79": {
     "name": "Air-Dried Soils - NEON Headquarters (Pre-NEON, Megapit Sampling)",
     "keywords": [
-      "sand"
+      "sand",
       "silt",
       "clay",
       "rocks",
@@ -790,7 +790,7 @@
   "80": {
     "name": "Air-Dried Soils - University of Michigan Biological Station (Pre-NEON, Initial Soil Characterization)",
     "keywords": [
-      "sand"
+      "sand",
       "silt",
       "clay",
       "rocks",
