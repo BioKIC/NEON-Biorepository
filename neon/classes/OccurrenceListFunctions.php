@@ -151,6 +151,26 @@ class OccurrenceListFunctions extends OccurrenceManager{
 				$linkRs->free();
 			}
 		}
+		#neon edit
+		// Keep the parent sample type visible even when no linked sample count is returned.
+		$parentContexts = array();
+		foreach($identificationParentMap as $identificationCollid => $parentCollid){
+			if(!empty($countMap[$identificationCollid]) && empty($countMap[$parentCollid])){
+				$parentContexts[$parentCollid] = true;
+				$countMap[$parentCollid] = 0;
+			}
+		}
+		if($parentContexts){
+			$parentRs = $this->conn->query('SELECT collid, publicName FROM omcollections WHERE collid IN('
+				. implode(',', array_keys($parentContexts)) . ')');
+			if($parentRs){
+				while($parentRow = $parentRs->fetch_object()){
+					$nameMap[(int)$parentRow->collid] = $parentRow->publicName;
+				}
+				$parentRs->free();
+			}
+		}
+		#end neon edit
 		$isIdentification = function($collid, $name) use ($identificationParentMap){
 			return isset($identificationParentMap[$collid]) || stripos($name, 'Identifications') !== false;
 		};
@@ -163,19 +183,21 @@ class OccurrenceListFunctions extends OccurrenceManager{
 				$totalRecords += $cnt;
 			}
 		}
-		$flattenNode = function($node) use (&$flattenNode, $countMap, $nameMap, $isIdentification, $identificationParentMap){
+		#neon edit
+		$flattenNode = function($node) use (&$flattenNode, $countMap, $nameMap, $isIdentification, $identificationParentMap, $parentContexts){
 			$ret = array();
 			if(isset($node['collid'])){
 				$collid = (int)$node['collid'];
 				$total = $countMap[$collid] ?? 0;
-				if($total > 0){
+				if($total > 0 || isset($parentContexts[$collid])){
 					$name = $nameMap[$collid] ?? $node['name'];
 					$ret[] = array(
 						'name' => $name,
 						'collid' => $collid,
 						'total' => $total,
 						'isIdentification' => $isIdentification($collid, $name),
-						'hasParentSample' => !empty($countMap[$identificationParentMap[$collid] ?? 0]),
+						'hasParentSample' => isset($countMap[$identificationParentMap[$collid] ?? 0]),
+						'isParentContext' => isset($parentContexts[$collid]),
 					);
 				}
 				return $ret;
@@ -187,6 +209,7 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			}
 			return $ret;
 		};
+		#end neon edit
 		foreach($protocolTree as $familyNode){
 			$subtypes = array();
 			foreach($familyNode['children'] as $child){
