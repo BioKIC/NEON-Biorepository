@@ -239,6 +239,32 @@ if ($SYMB_UID) {
                 $value = json_decode($json ?? '', true);
                 return is_array($value) ? $value : [];
             };
+            $bulkSampleCollections = [];
+            $bulkConnection = null;
+            $bulkStatement = null;
+            try {
+                // Reverse the same relationship used by the taxonomic-identification notice.
+                $bulkConnection = MySQLiConnectionFactory::getCon('readonly');
+                if (!$bulkConnection) throw new RuntimeException('Collection relationship connection unavailable');
+                $bulkStatement = $bulkConnection->prepare("SELECT collid,
+                        COALESCE(NULLIF(TRIM(publicName), ''), CollectionName) AS title
+                    FROM omcollections
+                    WHERE FIND_IN_SET(?, REPLACE(identificationCollIDs, ' ', '')) > 0
+                        AND collid <> ?
+                    ORDER BY title, collid");
+                if (!$bulkStatement) throw new RuntimeException('Collection relationship query unavailable');
+                $bulkStatement->bind_param('ii', $collid, $collid);
+                if (!$bulkStatement->execute()) throw new RuntimeException('Collection relationship query failed');
+                $bulkStatement->bind_result($bulkCollectionId, $bulkCollectionTitle);
+                while ($bulkStatement->fetch()) {
+                    $bulkSampleCollections[] = ['id' => (int) $bulkCollectionId, 'title' => $bulkCollectionTitle];
+                }
+            } catch (Throwable $error) {
+                error_log('Unable to load bulk sample types for identification collection ' . (int) $collid);
+            } finally {
+                if ($bulkStatement) $bulkStatement->close();
+                if ($bulkConnection) $bulkConnection->close();
+            }
             $linkedCollectionCodes = [];
             $sampleCatalogPath = $SERVER_ROOT . '/neon/cache/sample-catalog.json';
             if ($linkedCollections && is_file($sampleCatalogPath) && is_readable($sampleCatalogPath)) {
@@ -383,6 +409,7 @@ if ($SYMB_UID) {
                 'code' => $collData['collectioncode'] ?? '',
                 'description' => $collData['fulldescription'] ?? '',
                 'identificationCollectionId' => (int) ($collData['identificationcollids'] ?? 0),
+                'bulkSampleCollections' => $bulkSampleCollections,
                 'stats' => $stats,
                 'extraStats' => $extraStats,
                 'citation' => $neonCitation,
