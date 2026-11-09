@@ -29,15 +29,28 @@ $catalog = array('version' => 1, 'items' => array(
     array('id' => 9, 'collectionCode' => 'NEON-PLANT', 'taxa' => array('Plants'),
         'preservation' => array('Frozen', 'Dried'), 'siteCodes' => array()),
 ));
-$summary = SampleTypeSummaryExport::read(new SummaryResult($rows, $columns), $catalog);
+$keywords = array(
+    8 => array('name' => 'Aquatic DNA extracts', 'keywords' => array(' DNA barcoding ', '"sequence", archives', 'α diversity', 'DNA barcoding', '', null, 123)),
+    9 => array('botany', 'ecology'),
+    999 => array('name' => 'Unrelated collection', 'keywords' => array('unrelated')),
+);
+$summary = SampleTypeSummaryExport::read(new SummaryResult($rows, $columns), $catalog, $keywords);
 $expectedColumns = array('sample_type', 'collection_code', 'collection_id', 'preservation',
-    'storage_conditions', 'storage_container', 'data_product_ids', 'taxonomic_groups', 'collection_months',
-    'sites', 'number_of_sites', 'description', 'description_url');
+    'storage_conditions', 'storage_container', 'data_product_ids', 'taxonomic_groups', 'first_available_month', 'latest_available_month',
+    'sites', 'number_of_sites', 'description', 'description_url', 'keywords');
 if ($summary['columns'] !== $expectedColumns) throw new Exception('Wrong enriched summary columns');
 $first = $summary['rows'][0];
 if ($first['collection_id'] !== 8 || $first['collection_code'] !== 'NEON-AQ-DNA') throw new Exception('Wrong collection identity');
 if ($first['taxonomic_groups'] !== 'Invertebrates; Aquatic Macroinvertebrates') throw new Exception('Taxon was not replaced with catalog taxonomy');
-if ($first['collection_months'] !== '2018-06; 2024-08') throw new Exception('Months must be unique, sorted and replace years');
+if ($first['first_available_month'] !== '2018-06' || $first['latest_available_month'] !== '2024-08') throw new Exception('Available month endpoints must cover all sites, regardless of ordering or duplicates');
+foreach ($summary['rows'] as $row) {
+    if (array_key_exists('collection_months', $row) || array_key_exists('date_range', $row)) throw new Exception('Month list and date_range must not be exported');
+}
+foreach (array(1, 2) as $index) {
+    if ($summary['rows'][$index]['first_available_month'] !== '' || $summary['rows'][$index]['latest_available_month'] !== '') throw new Exception('Collections without dated records must have empty month endpoints');
+}
+if ($first['keywords'] !== 'DNA barcoding; "sequence", archives; α diversity') throw new Exception('Named keywords must be cleaned and exported without the collection name');
+if ($summary['rows'][1]['keywords'] !== 'botany; ecology' || $summary['rows'][2]['keywords'] !== '') throw new Exception('Legacy keyword arrays and missing keyword entries must be supported');
 if ($first['sites'] !== 'ABBY; BART' || $first['preservation'] !== 'Genomic Samples') throw new Exception('Wrong catalog facets');
 if ($summary['rows'][1]['preservation'] !== 'Frozen; Dried') throw new Exception('Multiple preservation values lost');
 if ($summary['rows'][2]['collection_id'] !== 10 || $summary['rows'][2]['sites'] !== '') throw new Exception('Unmapped summary rows must be retained');
@@ -55,6 +68,19 @@ foreach ($summary['rows'] as $row) {
     if (fgetcsv($stream, 0, ',', '"', '') !== $expected) throw new Exception('CSV values changed');
 }
 fclose($stream);
+$jsonRows = json_decode(json_encode($summary['rows'], JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
+foreach ($jsonRows as $index => $row) {
+    if (array_keys($row) !== $expectedColumns) throw new Exception('JSON must preserve field order with keywords last');
+    if ($row !== $summary['rows'][$index]) throw new Exception('JSON values differ from CSV');
+}
+$singleMonthCatalog = $catalog;
+$singleMonthCatalog['items'][0]['siteCodes'] = array(array('siteCode' => 'ABBY', 'availableMonths' => array('2024-08')));
+$singleMonthSummary = SampleTypeSummaryExport::read(new SummaryResult($rows, $columns), $singleMonthCatalog);
+if ($singleMonthSummary['rows'][0]['first_available_month'] !== '2024-08' || $singleMonthSummary['rows'][0]['latest_available_month'] !== '2024-08') throw new Exception('Single-month collections must use the same month for both endpoints');
+foreach (array(array('name' => 'Editor label'), array('keywords' => 'not an array'), 'not an entry') as $invalidKeywords) {
+    $invalidSummary = SampleTypeSummaryExport::read(new SummaryResult($rows, $columns), $catalog, array(8 => $invalidKeywords));
+    if ($invalidSummary['rows'][0]['keywords'] !== '') throw new Exception('Invalid keyword entries must not be exported as keywords');
+}
 $empty = SampleTypeSummaryExport::read(new SummaryResult(array(), $columns), $catalog);
 if (trim(substr(SampleTypeSummaryExport::csv($empty), 3)) !== implode(',', $expectedColumns)) throw new Exception('Empty exports must retain headers');
 $pdfCatalog = $catalog;

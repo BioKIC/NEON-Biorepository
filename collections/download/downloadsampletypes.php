@@ -21,7 +21,12 @@ try {
     if (($catalog['version'] ?? null) !== 1 || !isset($catalog['items']) || !is_array($catalog['items'])) {
         throw new RuntimeException('Invalid sample catalog cache');
     }
-    $summary = SampleTypeSummaryExport::read((new SampleDashboard())->getSummaryTable(), $catalog);
+    #neon edit
+    // Read the editable keywords on each download, independently of the catalog cache.
+    $keywordsPath = $SERVER_ROOT . '/neon-react/biorepo_lib/keywords.json';
+    $keywords = is_readable($keywordsPath) ? json_decode(file_get_contents($keywordsPath), true) : array();
+    $summary = SampleTypeSummaryExport::read((new SampleDashboard())->getSummaryTable(), $catalog, is_array($keywords) ? $keywords : array());
+    #end neon edit
     if ($format === 'pdf') {
         $host = rtrim(($SERVER_HOST ?? '') ?: ($_SERVER['HTTP_HOST'] ?? 'localhost'), '/');
         if (!preg_match('~^https?://~i', $host)) {
