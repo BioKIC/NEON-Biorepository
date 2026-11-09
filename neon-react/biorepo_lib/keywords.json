@@ -89,7 +89,8 @@
       "carbon cycling",
       "nutrient cycling",
       "productivity",
-      "carbon cycle"
+      "carbon cycle",
+      "root cores"
     ]
   },
   "11": {
@@ -339,7 +340,18 @@
       "stable isotopes",
       "nitrogen (N)",
       "carbon (C)",
-      "biogeochemistry"
+      "biogeochemistry".
+      "soil horizons",
+      "soil taxonomy",
+      "soil order",
+      "soil series",
+      "bulk density",
+      "sand",
+      "silt",
+      "clay",
+      "rocks",
+      "coarse fragments",
+      "soil cores"
     ]
   },
   "31": {
@@ -755,32 +767,38 @@
       "carbon cycling",
       "nutrient cycling",
       "production",
-      "carbon cycle"
+      "carbon cycle",
+      "root cores",
+      "megapit",
+      "MGP"
     ]
   },
   "79": {
     "name": "Air-Dried Soils - NEON Headquarters (Pre-NEON, Megapit Sampling)",
     "keywords": [
-      "pedology",
-      "edaphic",
-      "baseline",
-      "pedon",
-      "sand",
+      "sand"
       "silt",
-      "clay"
+      "clay",
+      "rocks",
+      "coarse fragments",
+      "soil pits",
+      "soil cores",
+      "megapit",
+      "MGP"
     ]
   },
   "80": {
     "name": "Air-Dried Soils - University of Michigan Biological Station (Pre-NEON, Initial Soil Characterization)",
     "keywords": [
-      "pedology",
-      "edaphic",
-      "baseline",
-      "pedon",
-      "sand",
+      "sand"
       "silt",
       "clay",
-      "weathering"
+      "rocks",
+      "coarse fragments",
+      "soil pits",
+      "soil cores",
+      "megapit",
+      "MGP"
     ]
   },
   "81": {
