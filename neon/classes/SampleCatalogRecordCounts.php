@@ -12,7 +12,7 @@ class SampleCatalogRecordCounts {
         return $value;
     }
 
-    public static function query($queries, array $allowedIds): array {
+    public static function query($queries, array $allowedIds, $connection = null): array {
         if (!is_array($queries) || !$queries || count($queries) > 100) {
             throw new InvalidArgumentException('Use between one and 100 sample type queries.');
         }
@@ -20,6 +20,7 @@ class SampleCatalogRecordCounts {
         $seen = array();
         $sql = array();
         $params = array();
+        $rootsByTerms = array();
         foreach ($queries as $query) {
             if (!is_array($query) || array_diff(array_keys($query), array('db', 'datasetid', 'eventdate1', 'eventdate2', 'taxa'))) {
                 throw new InvalidArgumentException('Invalid record query.');
@@ -31,6 +32,8 @@ class SampleCatalogRecordCounts {
             $seen[$id] = true;
             $where = array('(o.recordSecurity IS NULL OR o.recordSecurity <> 5)');
             $values = array();
+            $source = 'omoccurrences o';
+            $sourceValues = array();
             if (isset(NeonMaterialSampleCollections::TYPES[$id])) {
                 $where[] = 'o.collid IN (17,19,28) AND EXISTS (SELECT 1 FROM ommaterialsample ms
                     WHERE ms.occid = o.occid AND ms.sampleType LIKE ?)';
@@ -66,21 +69,27 @@ class SampleCatalogRecordCounts {
             if (isset($query['taxa'])) {
                 if (!is_string($query['taxa'])) throw new InvalidArgumentException('Invalid scientific names.');
                 $terms = SampleCatalogTaxonSearch::terms(explode(',', $query['taxa']));
-                list($names, $patterns) = SampleCatalogTaxonSearch::nameWhere($terms);
-                $where[] = $names;
-                $values = array_merge($values, $patterns);
+                $key = json_encode($terms);
+                // Validation can run without a connection; execution resolves each
+                // distinct term list only once across all visible card counts.
+                if (!isset($rootsByTerms[$key])) {
+                    $rootsByTerms[$key] = $connection ? SampleCatalogTaxonSearch::rootIds($connection, $terms) : array();
+                }
+                $sourceIds = isset(NeonMaterialSampleCollections::TYPES[$id]) ? array(17, 19, 28) : array($id);
+                list($matching, $sourceValues) = SampleCatalogTaxonSearch::occurrenceQuery($sourceIds, $terms, $rootsByTerms[$key]);
+                $source = '(' . $matching . ') matching INNER JOIN omoccurrences o ON o.occid = matching.occid';
                 $filtered = true;
             }
             if (!$filtered) throw new InvalidArgumentException('A record filter is required.');
             // EXISTS keeps multiple site links or tissue rows from multiplying a record.
-            $sql[] = 'SELECT ' . $id . ' AS collid, COUNT(*) AS count FROM omoccurrences o WHERE ' . implode(' AND ', $where);
-            $params = array_merge($params, $values);
+            $sql[] = 'SELECT ' . $id . ' AS collid, COUNT(*) AS count FROM ' . $source . ' WHERE ' . implode(' AND ', $where);
+            $params = array_merge($params, $sourceValues, $values);
         }
         return array(implode(' UNION ALL ', $sql), $params);
     }
 
     public static function find($connection, $queries, array $allowedIds): array {
-        list($sql, $params) = self::query($queries, $allowedIds);
+        list($sql, $params) = self::query($queries, $allowedIds, $connection);
         $statement = $connection->prepare($sql);
         if (!$statement) throw new RuntimeException('Unable to prepare record counts');
         try {
