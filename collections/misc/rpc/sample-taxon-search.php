@@ -1,5 +1,5 @@
 <?php
-require_once dirname(__DIR__, 2) . '/config/symbini.php';
+require_once dirname(__DIR__, 3) . '/config/symbini.php';
 require_once $SERVER_ROOT . '/config/dbconnection.php';
 require_once $SERVER_ROOT . '/neon/classes/SampleCatalogTaxonSearch.php';
 
