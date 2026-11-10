@@ -45,9 +45,19 @@ usort($pArr, function ($a, $b) {
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
         <style>
+            #innertext > h3.MuiTypography-h3 {
+                font-size: 1.75rem;
+                line-height: 1.3;
+            }
+            #innertext > p.MuiTypography-body1,
+            #innertext > p.MuiTypography-body1 a {
+                font-size: 0.875rem;
+                line-height: 1.6;
+            }
             #project-overview {
-                margin: 0 0 40px;
-                padding: 32px 0 0;
+                container: project-overview / inline-size;
+                margin: 0 0 32px;
+                padding: 24px 0 0;
                 background: #fff;
                 border-top: 2px dotted #8b9bb3;
                 font-family: 'Inter', Helvetica, Arial, sans-serif;
@@ -70,7 +80,7 @@ usort($pArr, function ($a, $b) {
                 border-left: 2px dotted #8b9bb3;
             }
             #project-overview dt {
-                font-size: 1rem;
+                font-size: 0.875rem;
                 font-weight: 400;
                 line-height: 1.5;
             }
@@ -78,10 +88,10 @@ usort($pArr, function ($a, $b) {
                 order: -1;
                 margin: 0 0 8px;
                 color: #002c77;
-                font-size: 2.5rem;
+                font-size: 2rem;
                 font-weight: 600;
                 line-height: 1.2;
-                overflow-wrap: anywhere;
+                white-space: nowrap;
                 font-variant-numeric: tabular-nums;
             }
             #project-overview .overview-status-bar {
@@ -104,7 +114,7 @@ usort($pArr, function ($a, $b) {
                 font-size: 0.75rem;
                 line-height: 1.5;
             }
-            @media (max-width: 900px) {
+            @container project-overview (max-width: 900px) {
                 #project-overview .overview-metrics {
                     grid-template-columns: repeat(2, minmax(0, 1fr));
                     gap: 24px 0;
@@ -113,8 +123,7 @@ usort($pArr, function ($a, $b) {
                     border-left: 0;
                 }
             }
-            @media (max-width: 540px) {
-                #project-overview { padding-top: 24px; }
+            @container project-overview (max-width: 540px) {
                 #project-overview .overview-metrics {
                     grid-template-columns: 1fr;
                     gap: 16px;
@@ -128,7 +137,7 @@ usort($pArr, function ($a, $b) {
                     border-top: 2px dotted #8b9bb3;
                     padding-top: 16px;
                 }
-                #project-overview dd { font-size: 2.25rem; }
+                #project-overview dd { font-size: 1.75rem; }
             }
         </style>
 	</head>
