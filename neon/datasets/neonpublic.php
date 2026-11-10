@@ -64,6 +64,16 @@ if (!empty($mdArr)) {
 
 ?>
 <style>
+	#innertext .project-description {
+		color: #000000;
+		margin: 1em 0;
+	}
+	/* Normalize rich-text markup, including saved inline font sizes. */
+	#innertext .project-description,
+	#innertext .project-description * {
+		font-size: 0.875rem !important;
+		line-height: 1.6;
+	}
 	.request-meta {
 		display: flex;
 		justify-content: space-between;
@@ -277,7 +287,7 @@ if (!empty($mdArr)) {
 				</button>
 			</div>
 			<h1 style="font-weight:300; font-size:2.25rem; line-height:1.3; margin-top: 27px;"><?php echo $dArr['name']; ?></h1>
-			<p style="color:#000000; font-size:0.875rem; line-height:1.6;"><?php echo $dArr['description'] ;?></p>
+			<div class="project-description"><?php echo $dArr['description'] ;?></div>
 			<div class="request-meta">
 				<div class="request-meta-main">
 					<div class="request-field">
