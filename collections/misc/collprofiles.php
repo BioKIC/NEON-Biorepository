@@ -2,7 +2,7 @@
 include_once('../../config/symbini.php');
 //neon edit
 // Redirect all collprofiles.php requests to neoncollprofiles.php with the same collid parameter
-header('Location: neoncollprofiles.php?collid=' . (empty($_REQUEST['collid']) ? '' : $_REQUEST['collid']), true, 302);
+//header('Location: neoncollprofiles.php?collid=' . (empty($_REQUEST['collid']) ? '' : $_REQUEST['collid']), true, 302);
 exit;
 //end neon edit
 
