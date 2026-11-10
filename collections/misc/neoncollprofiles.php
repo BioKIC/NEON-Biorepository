@@ -409,12 +409,7 @@ $linkedCollections = $collManager->getLinkedCollections();
 									<?php echo (isset($LANG['ADD_NEW_OCCUR']) ? $LANG['ADD_NEW_OCCUR'] : 'Add New Occurrence Record'); ?>
 								</a>
 							</li>
-															<li style="margin-left:10px">
-									<a href="../editor/skeletalsubmit.php?collid=<?php echo $collid; ?>">
-										<?php echo (isset($LANG['SKELETAL']) ? $LANG['SKELETAL'] : 'Add Skeletal Records'); ?>
-									</a>
-								</li>
-<!-- 							<?php
+<!--							<?php
 							if ($collData['colltype'] == 'Preserved Specimens') {
 							?>
 								<li style="margin-left:10px">
