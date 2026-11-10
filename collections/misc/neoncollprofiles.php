@@ -408,9 +408,10 @@ $linkedCollections = $collManager->getLinkedCollections();
 								<a href="../editor/occurrenceeditor.php?gotomode=1&collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['ADD_NEW_OCCUR']) ? $LANG['ADD_NEW_OCCUR'] : 'Add New Occurrence Record'); ?>
 								</a>
-								<li class="importItem">
-									<a href="../admin/specupload.php?uploadtype=3&collid=<?php echo $collid; ?>">
-										<?= $LANG['TEXT_FILE_IMPORT'] ?>
+							</li>
+															<li style="margin-left:10px">
+									<a href="../editor/skeletalsubmit.php?collid=<?php echo $collid; ?>">
+										<?php echo (isset($LANG['SKELETAL']) ? $LANG['SKELETAL'] : 'Add Skeletal Records'); ?>
 									</a>
 								</li>
 <!-- 							<?php
