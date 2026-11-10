@@ -46,7 +46,7 @@ usort($pArr, function ($a, $b) {
 		?>
         <style>
             #innertext > h3.MuiTypography-h3 {
-                font-size: 1.75rem;
+                font-size: 2.25rem;
                 line-height: 1.3;
             }
             #innertext > p.MuiTypography-body1,
