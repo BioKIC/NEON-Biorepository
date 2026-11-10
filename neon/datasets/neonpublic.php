@@ -286,7 +286,7 @@ if (!empty($mdArr)) {
 					Manage Project <span class="button-arrow">›</span>
 				</button>
 			</div>
-			<h1 style="font-weight:300; font-size:2.25rem; line-height:1.3; margin-top: 27px;"><?php echo $dArr['name']; ?></h1>
+			<h1 style="font-weight:500; font-size:2.25rem; line-height:1.3; margin-top: 27px;"><?php echo $dArr['name']; ?></h1>
 			<div class="project-description"><?php echo $dArr['description'] ;?></div>
 			<div class="request-meta">
 				<div class="request-meta-main">
