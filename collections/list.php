@@ -362,21 +362,21 @@ $_SESSION['citationvar'] = $searchVar;
 							}
 							if ($cnt > 11) $collSearchStr .= '</span>';
 						}
-						//NEON edit - comment out redundant dataset list
+						//NEON edit - comment out search summaries
 							// echo '<div><b>' . $LANG['DATASET'] . ':</b> ' . $collSearchStr . '</div>';
+							// if ($taxaSearchStr = $collManager->getTaxaSearchStr()) {
+							// 	if (strlen($taxaSearchStr) > 300) $taxaSearchStr = substr($taxaSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.taxa-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="taxa-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>';
+							// 	echo '<div><b>' . $LANG['TAXA'] . ':</b> ' . $taxaSearchStr . '</div>';
+							// }
+							// if ($associationSearchStr = $collManager->getAssociationSearchStr()) {
+							// 	if (strlen($associationSearchStr) > 300) $associationSearchStr = substr($associationSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.association-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="association-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>'; // @TODO wouldn't this truncate in either case?
+							// 	echo '<div><b>' . $LANG['ASSOCIATIONS'] . ':</b> ' . $associationSearchStr . '</div>';
+							// }
+							// if ($localSearchStr = $collManager->getLocalSearchStr()) {
+							// 	echo '<div><b>' . $LANG['SEARCH_CRITERIA'] . ':</b> ' . $localSearchStr . '</div>';
+							// 	$_SESSION['datasetName'] = $localSearchStr;
+							// }
 						// end NEON edit
-						if ($taxaSearchStr = $collManager->getTaxaSearchStr()) {
-							if (strlen($taxaSearchStr) > 300) $taxaSearchStr = substr($taxaSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.taxa-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="taxa-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>';
-							echo '<div><b>' . $LANG['TAXA'] . ':</b> ' . $taxaSearchStr . '</div>';
-						}
-						if ($associationSearchStr = $collManager->getAssociationSearchStr()) {
-							if (strlen($associationSearchStr) > 300) $associationSearchStr = substr($associationSearchStr, 0, 300) . '<span class="taxa-span">... (<a href="#" onclick="$(\'.association-span\').toggle();return false;">' . $LANG['SHOW_ALL'] . '</a>)</span><span class="association-span" style="display:none;">' . substr($taxaSearchStr, 300) . '</span>'; // @TODO wouldn't this truncate in either case?
-							echo '<div><b>' . $LANG['ASSOCIATIONS'] . ':</b> ' . $associationSearchStr . '</div>';
-						}
-						if ($localSearchStr = $collManager->getLocalSearchStr()) {
-							echo '<div><b>' . $LANG['SEARCH_CRITERIA'] . ':</b> ' . $localSearchStr . '</div>';
-							$_SESSION['datasetName'] = $localSearchStr;
-						}
 						?>
 					</div>
 					<div id="sort-div" style="display:<?= ($sortField1 ? 'block' : 'none') ?>">
