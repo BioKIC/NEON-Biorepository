@@ -210,5 +210,11 @@
         return (int)$row['total'];
     }
 
+    public function getSummaryTable() {
+        $stmt = $this->conn->prepare('SELECT * FROM neonsamplesummary ORDER BY sample_type');
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+
  }
  ?>

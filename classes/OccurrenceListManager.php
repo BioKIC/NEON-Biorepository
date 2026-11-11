@@ -27,20 +27,27 @@ class OccurrenceListManager extends OccurrenceManager{
 		$occArr = array();
 		$sqlWhere = $this->getSqlWhere();
 		if(!$this->recordCount || $this->reset) $this->setRecordCnt($sqlWhere);
-		$sql = 'SELECT o.occid, o.collid, c.institutioncode, c.collectioncode, c.icon, o.institutioncode AS instcodeoverride, o.collectioncode AS collcodeoverride, '.
+		#neon edit
+		// Deduplicate taxonomy/site joins before LIMIT, matching COUNT(DISTINCT o.occid).
+		// Include collectionname so collection sorting remains valid with DISTINCT.
+		$sql = 'SELECT DISTINCT o.occid, o.collid, c.institutioncode, c.collectioncode, c.collectionname, c.icon, o.institutioncode AS instcodeoverride, o.collectioncode AS collcodeoverride, '.
 				'o.catalognumber, o.family, o.sciname, o.scientificnameauthorship, o.tidinterpreted, o.recordedby, o.recordnumber, o.eventdate, '.
 				'o.country, o.stateprovince, o.county, o.locality, o.decimallatitude, o.decimallongitude, o.recordsecurity, o.securityreason, '.
 				'o.habitat, o.substrate, o.minimumelevationinmeters, o.maximumelevationinmeters, o.observeruid, c.sortseq '.
 				'FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid ';
+		#end neon edit
 		$sql .= $this->getTableJoins($sqlWhere).$sqlWhere;
 		//Don't allow someone to query all occurrences if there are no conditions
 		if(!$sqlWhere) $sql .= 'WHERE o.occid IS NULL ';
+		#neon edit
+		// Keep page boundaries stable when records share the selected sort values.
 		if($this->sortArr){
-			$sql .= 'ORDER BY ' . implode(',', $this->sortArr) . ', o.collid ';
+			$sql .= 'ORDER BY ' . implode(',', $this->sortArr) . ', o.collid, o.occid ';
 		}
 		else{
-			$sql .= 'ORDER BY o.collid ';
+			$sql .= 'ORDER BY o.collid, o.occid ';
 		}
+		#end neon edit
 		if($pageRequest > 0) $pageRequest = ($pageRequest - 1) * $cntPerPage;
 		$sql .= ' LIMIT ' . $pageRequest . ',' . $cntPerPage;
 		//echo '<div style="width: 1200px">' . $sql . '</div>';
