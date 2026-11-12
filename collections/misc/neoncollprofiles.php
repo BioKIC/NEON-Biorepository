@@ -18,7 +18,7 @@ if ($eMode && !$SYMB_UID) {
 
 $collManager->setCollid($collid);
 
-$collData = $collManager->getCollectionMetadata();
+$collectionData = $collManager->getCollectionMetadata();
 $datasetKey = $collManager->getDatasetKey();
 $linkedCollections = $collManager->getLinkedCollections();
 
@@ -75,107 +75,100 @@ if ($SYMB_UID) {
 			$collData = $collData[$collid];
 			$_SESSION['colldata'] = $collData;
 			if ($editCode) {
-			?>
-				<div id="controlpanel" style="clear:both;display:<?php echo ($eMode ? 'block' : 'none'); ?>;">
+				?>
+				<div id="controlpanel" style="clear:both;display:<?= ($eMode ? 'block' : 'none'); ?>;">
 					<fieldset style="padding:10px;padding-left:25px;">
-						<legend><b><?php echo (isset($LANG['DAT_EDIT']) ? $LANG['DAT_EDIT'] : 'Data Editor Control Panel'); ?></b></legend>
+						<legend><b><?= (isset($LANG['DAT_EDIT']) ? $LANG['DAT_EDIT'] : 'Data Editor Control Panel'); ?></b></legend>
 						<fieldset style="float:right;margin:5px;min-inline-size:0;padding:0.35em 0.625em 0.75em;" title="Quick Search">
-							<legend><b><?php echo (isset($LANG['QUICK_SEARCH']) ? $LANG['QUICK_SEARCH'] : 'Quick Search'); ?></b></legend>
-							<b><?php echo (isset($LANG['CAT_NUM']) ? $LANG['CAT_NUM'] : 'Catalog Number'); ?></b><br />
+							<legend><b><?= (isset($LANG['QUICK_SEARCH']) ? $LANG['QUICK_SEARCH'] : 'Quick Search'); ?></b></legend>
+							<b><?= (isset($LANG['CAT_NUM']) ? $LANG['CAT_NUM'] : 'Catalog Number'); ?></b><br />
 							<form name="quicksearch" action="../editor/occurrenceeditor.php" method="post">
 								<input name="q_catalognumber" type="text" style="border:1px solid #d0d0d0 !important;"/>
-								<input name="collid" type="hidden" value="<?php echo $collid; ?>" />
+								<input name="collid" type="hidden" value="<?= $collid; ?>" />
 								<input name="occindex" type="hidden" value="0" />
 							</form>
 						</fieldset>
 						<ul>
 							<?php
 							if (stripos($collData['colltype'], 'observation') !== false) {
-							?>
+								?>
 								<li>
-									<a href="../editor/observationsubmit.php?collid=<?php echo $collid; ?>">
-										<?php echo (isset($LANG['SUBMIT_IMAGE_V']) ? $LANG['SUBMIT_IMAGE_V'] : 'Submit an Image Voucher (observation supported by a photo)'); ?>
+									<a href="../editor/observationsubmit.php?collid=<?= $collid; ?>">
+										<?= (isset($LANG['SUBMIT_IMAGE_V']) ? $LANG['SUBMIT_IMAGE_V'] : 'Submit an Image Voucher (observation supported by a photo)'); ?>
 									</a>
 								</li>
-							<?php
+								<?php
 							}
 							?>
 							<li>
-								<a href="../editor/occurrenceeditor.php?gotomode=1&collid=<?php echo $collid; ?>">
-									<?php echo (isset($LANG['ADD_NEW_OCCUR']) ? $LANG['ADD_NEW_OCCUR'] : 'Add New Occurrence Record'); ?>
+								<a href="../editor/occurrenceeditor.php?gotomode=1&collid=<?= $collid; ?>">
+									<?= (isset($LANG['ADD_NEW_OCCUR']) ? $LANG['ADD_NEW_OCCUR'] : 'Add New Occurrence Record'); ?>
 								</a>
 							</li>
-
 							<li>
-								<a href="../editor/occurrencetabledisplay.php?displayquery=1&collid=<?php echo $collid; ?>">
-									<?php echo (isset($LANG['EDIT_EXISTING']) ? $LANG['EDIT_EXISTING'] : 'Edit Existing Occurrence Records'); ?>
+								<a href="../editor/occurrencetabledisplay.php?displayquery=1&collid=<?= $collid; ?>">
+									<?= (isset($LANG['EDIT_EXISTING']) ? $LANG['EDIT_EXISTING'] : 'Edit Existing Occurrence Records'); ?>
 								</a>
 							</li>
-
 							<li>
-								<a href="../reports/labelmanager.php?collid=<?php echo $collid; ?>">
-									<?php echo (isset($LANG['PRINT_LABELS']) ? $LANG['PRINT_LABELS'] : 'Print Specimen Labels'); ?>
+								<a href="../reports/labelmanager.php?collid=<?= $collid; ?>">
+									<?= (isset($LANG['PRINT_LABELS']) ? $LANG['PRINT_LABELS'] : 'Print Specimen Labels'); ?>
 								</a>
 							</li>
-
 							<?php
 							if ($collData['colltype'] == 'Preserved Specimens') {
-							?>
+								?>
 								<li>
-									<a href="../loans/index.php?collid=<?php echo $collid; ?>">
-										<?php echo (isset($LANG['LOAN_MANAGEMENT']) ? $LANG['LOAN_MANAGEMENT'] : 'Loan Management'); ?>
+									<a href="../loans/index.php?collid=<?= $collid; ?>">
+										<?= (isset($LANG['LOAN_MANAGEMENT']) ? $LANG['LOAN_MANAGEMENT'] : 'Loan Management'); ?>
 									</a>
 								</li>
-							<?php
+								<?php
 							}
 							?>
 						</ul>
 					</fieldset>
 					<?php
 					if ($editCode > 1) {
-					?>
+						?>
 						<fieldset style="padding:10px;padding-left:25px;">
-							<legend><b><?php echo (isset($LANG['ADMIN_CONTROL']) ? $LANG['ADMIN_CONTROL'] : 'Administration Control Panel'); ?></b></legend>
+							<legend><b><?= (isset($LANG['ADMIN_CONTROL']) ? $LANG['ADMIN_CONTROL'] : 'Administration Control Panel'); ?></b></legend>
 							<ul>
-
 								<li>
 									<a href="collmetadata.php?collid=<?php echo $collid; ?>">
 										<?php echo (isset($LANG['EDIT_META']) ? $LANG['EDIT_META'] : 'Edit Metadata'); ?>
 									</a>
 								</li>
-
 								<li>
-									<a href="collpermissions.php?collid=<?php echo $collid; ?>">
-										<?php echo (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
+									<a href="collpermissions.php?collid=<?= $collid; ?>">
+										<?= (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
 									</a>
 								</li>
 								<li>
 									<a href='../../neon/editor/neoneditor.php'>NEON Occurrence (Skeletal) and Extended Data Editor</a>
 								</li>
-
 								<?php
 								if ($collData['colltype'] != 'General Observations') {
 									if ($collData['managementtype'] != 'Aggregate') {
-								?>
+									?>
 										<li>
-											<a href="../specprocessor/index.php?collid=<?php echo $collid; ?>">
-												<?php echo (isset($LANG['PROCESSING_TOOLBOX']) ? $LANG['PROCESSING_TOOLBOX'] : 'Processing Toolbox'); ?>
+											<a href="../specprocessor/index.php?collid=<?= $collid; ?>">
+												<?= (isset($LANG['PROCESSING_TOOLBOX']) ? $LANG['PROCESSING_TOOLBOX'] : 'Processing Toolbox'); ?>
 											</a>
 										</li>
 										<li>
-											<a href="../datasets/datapublisher.php?collid=<?php echo $collid; ?>">
-												<?php echo (isset($LANG['DARWIN_CORE_PUB']) ? $LANG['DARWIN_CORE_PUB'] : 'Darwin Core Archive Publishing'); ?>
+											<a href="../datasets/datapublisher.php?collid=<?= $collid; ?>">
+												<?= (isset($LANG['DARWIN_CORE_PUB']) ? $LANG['DARWIN_CORE_PUB'] : 'Darwin Core Archive Publishing'); ?>
 											</a>
 										</li>
-									<?php
+										<?php
 									}
 									?>
 									<li>
-										<a href="../editor/editreviewer.php?collid=<?php echo $collid; ?>">
-											<?php echo (isset($LANG['REVIEW_SPEC_EDITS']) ? $LANG['REVIEW_SPEC_EDITS'] : 'Review/Verify Occurrence Edits'); ?>
+										<a href="../editor/editreviewer.php?collid=<?= $collid; ?>">
+											<?= (isset($LANG['REVIEW_SPEC_EDITS']) ? $LANG['REVIEW_SPEC_EDITS'] : 'Review/Verify Occurrence Edits'); ?>
 										</a>
 									</li>
-
 								<?php
 								}
 								if (!empty($ACTIVATE_DUPLICATES)) {
@@ -189,7 +182,7 @@ if ($SYMB_UID) {
 								}
 								?>
 								<li>
-									<?php echo (isset($LANG['MAINTENANCE_TASKS']) ? $LANG['MAINTENANCE_TASKS'] : 'General Maintenance Tasks'); ?>
+									<?= (isset($LANG['MAINTENANCE_TASKS']) ? $LANG['MAINTENANCE_TASKS'] : 'General Maintenance Tasks'); ?>
 								</li>
 								<?php
 								if ($collData['colltype'] != 'General Observations') {
@@ -210,29 +203,25 @@ if ($SYMB_UID) {
 								if ($collData['managementtype'] == 'Live Data') {
 								?>
 									<li style="margin-left:10px;">
-										<a href="../admin/restorebackup.php?collid=<?php echo $collid; ?>">
-											<?php echo (isset($LANG['RESTORE_BACKUP']) ? $LANG['RESTORE_BACKUP'] : 'Restore Backup File'); ?>
-										</a>
-									</li>
-								<?php
+									<a href="../cleaning/index.php?obsuid=0&collid=<?= $collid; ?>">
+									<?= (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>
+									<?php
 								}
 								?>
-
 								<li style="margin-left:10px;">
-									<a href="neoncollprofiles.php?collid=<?php echo $collid; ?>&action=UpdateStatistics">
-										<?php echo (isset($LANG['UPDATE_STATS']) ? $LANG['UPDATE_STATS'] : 'Update Statistics'); ?>
+									<a href="neoncollprofiles.php?collid=<?= $collid; ?>&action=UpdateStatistics">
+										<?= (isset($LANG['UPDATE_STATS']) ? $LANG['UPDATE_STATS'] : 'Update Statistics'); ?>
 									</a>
 								</li>
 							</ul>
 						</fieldset>
-					<?php
+						<?php
 					}
 					?>
 				</div>
-			<?php
+				<?php
 			}
 			?>
-
             <?php
             // Adapt existing backend output for React; no class changes are needed.
             $decodeArray = static function ($json) {

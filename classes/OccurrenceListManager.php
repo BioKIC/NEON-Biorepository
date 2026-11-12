@@ -26,6 +26,7 @@ class OccurrenceListManager extends OccurrenceManager{
 		}
 		$occArr = array();
 		$sqlWhere = $this->getSqlWhere();
+
 		if(!$this->recordCount || $this->reset) $this->setRecordCnt($sqlWhere);
 		#neon edit
 		// Deduplicate taxonomy/site joins before LIMIT, matching COUNT(DISTINCT o.occid).
@@ -78,6 +79,11 @@ class OccurrenceListManager extends OccurrenceManager{
 				$retArr[$row->occid]['sciname'] = ($row->sciname?$this->cleanOutStr($row->sciname):'undetermined');
 				$retArr[$row->occid]['tid'] = $row->tidinterpreted;
 				$retArr[$row->occid]['author'] = $this->cleanOutStr($row->scientificnameauthorship);
+				if (!empty($GLOBALS['ACTIVATE_PALEO'])) {
+					$retArr[$row->occid]['earlyInterval'] = $this->cleanOutStr($row->earlyInterval);
+					$retArr[$row->occid]['lateInterval'] = $this->cleanOutStr($row->lateInterval);
+					$retArr[$row->occid]['formation'] = $this->cleanOutStr($row->formation);
+				}
 				/*
 				 if(isset($row->scinameprotected) && $row->scinameprotected && !$securityClearance){
 				 $retArr[$row->occid]['taxonsecure'] = 1;
@@ -100,6 +106,7 @@ class OccurrenceListManager extends OccurrenceManager{
 					$retArr[$row->occid]['declong'] = $row->decimallongitude;
 					$retArr[$row->occid]['collnum'] = $this->cleanOutStr($row->recordnumber);
 					$retArr[$row->occid]['date'] = $row->eventdate;
+					$retArr[$row->occid]['eventtime'] = $this->cleanOutStr($row->eventtime);
 					$retArr[$row->occid]['habitat'] = $this->cleanOutStr($row->habitat);
 					$retArr[$row->occid]['substrate'] = $this->cleanOutStr($row->substrate);
 					$elevStr = $row->minimumelevationinmeters;
@@ -159,7 +166,12 @@ class OccurrenceListManager extends OccurrenceManager{
 
 	private function setRecordCnt($sqlWhere){
 		if($sqlWhere){
-			$sql = "SELECT COUNT(DISTINCT o.occid) AS cnt FROM omoccurrences o ".$this->getTableJoins($sqlWhere).$sqlWhere;
+			$sql = "";
+			if (!empty($this->searchTermArr['earlyInterval']) || !empty($this->searchTermArr['lateInterval'])) {
+				$sql .= "WITH searchRange AS (SELECT COALESCE((SELECT myaStart FROM omoccurpaleogts WHERE gtsterm = '"  . ($this->searchTermArr['earlyInterval'] ?? '') . "'), 5000) AS searchStart,";
+				$sql .= "COALESCE((SELECT myaEnd FROM omoccurpaleogts WHERE gtsterm = '" . ($this->searchTermArr['lateInterval'] ?? '') . "'), 0) AS searchEnd) ";
+			}
+			$sql .= "SELECT COUNT(DISTINCT o.occid) AS cnt FROM omoccurrences o ".$this->getTableJoins($sqlWhere).$sqlWhere;
 			// echo "<div>Count sql: ".$sql."</div>"; exit; // @TODO here
 			$result = $this->conn->query($sql);
 			if($result){
@@ -181,24 +193,21 @@ class OccurrenceListManager extends OccurrenceManager{
 		}
 	}
 
-	//neon edit; add function
+	//NEON edit start - NEON specific function
 	private function setIdentifiers($occArr, &$retArr): void {
-		$sql = 'SELECT occid, identifierName, identifierValue 
-				FROM omoccuridentifiers 
-				WHERE occid IN('.implode(',', $occArr).') 
-				AND identifierName IN("NEON sampleID", "NEON sampleID Hash", "NEON sampleCode (barcode)")';
-	
-		$rs = $this->conn->query($sql);
-	
 		$isAdmin = (
 			!empty($GLOBALS['IS_ADMIN']) ||
 			!empty($GLOBALS['USER_RIGHTS']['CollAdmin']) ||
 			!empty($GLOBALS['USER_RIGHTS']['CollEditor'])
 		);
-	
+
+		$sql = 'SELECT occid, identifierName, identifierValue
+				FROM omoccuridentifiers
+				WHERE occid IN('.implode(',', $occArr).') AND identifierName IN("NEON sampleID", "NEON sampleID Hash", "NEON sampleCode (barcode)")';
+		$rs = $this->conn->query($sql);
+
 		while($r = $rs->fetch_object()){
 			$occid = $r->occid;
-	
 			if($r->identifierName === 'NEON sampleID'){
 				if(!isset($retArr[$occid]['sampleID'])){
 					$retArr[$occid]['sampleID'] = $this->cleanOutStr($r->identifierValue);
@@ -213,21 +222,21 @@ class OccurrenceListManager extends OccurrenceManager{
 				$retArr[$occid]['sampleCode'] = $this->cleanOutStr($r->identifierValue);
 			}
 		}
-	
+
 		$rs->free();
 	}
-	//end neon edit
-	
+	//NEON edit end
+
 	//Misc support functions
 	public function getDatasetArr(){
 		$retArr = array();
 		$symbUid = $GLOBALS['SYMB_UID'];
 		if($symbUid){
-			$sql = 'SELECT DISTINCT datasetid, name FROM omoccurdatasets WHERE uid = '.$symbUid.' OR datasetid IN(SELECT tablepk FROM userroles WHERE uid = '.$symbUid.' AND role IN("DatasetAdmin","DatasetEditor"))';
+			$sql = 'SELECT DISTINCT datasetid, IFNULL(datasetName, name) as datasetName FROM omoccurdatasets WHERE uid = '.$symbUid.' OR datasetid IN(SELECT tablepk FROM userroles WHERE uid = '.$symbUid.' AND role IN("DatasetAdmin","DatasetEditor"))';
 			//echo "<div>Count sql: ".$sql."</div>";
 			$rs = $this->conn->query($sql);
 			while($r = $rs->fetch_object()){
-				$retArr[$r->datasetid] = $r->name;
+				$retArr[$r->datasetid] = $r->datasetName;
 			}
 			$rs->free();
 		}

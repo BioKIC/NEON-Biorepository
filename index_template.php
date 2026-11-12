@@ -1,7 +1,9 @@
 <?php
 include_once('config/symbini.php');
-if($LANG_TAG == 'en' || !file_exists($SERVER_ROOT.'/content/lang/templates/index.'.$LANG_TAG.'.php')) include_once($SERVER_ROOT.'/content/lang/templates/index.en.php');
-else include_once($SERVER_ROOT.'/content/lang/templates/index.'.$LANG_TAG.'.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('templates/index');
+
 header('Content-Type: text/html; charset=' . $CHARSET);
 ?>
 <!DOCTYPE html>
@@ -52,7 +54,7 @@ header('Content-Type: text/html; charset=' . $CHARSET);
 		}
 		?>
 	</main>
-	<?php if($GLOBALS['DONATE_LINK'] && file_exists($SERVER_ROOT . '/includes/donationButton.php')): ?>
+	<?php if(!empty($GLOBALS['DONATE_LINK']) && file_exists($SERVER_ROOT . '/includes/donationButton.php')): ?>
 		<?php include($SERVER_ROOT . '/includes/donationButton.php') ?>
 	<?php endif ?>
 	<?php

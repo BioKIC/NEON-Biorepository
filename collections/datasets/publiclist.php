@@ -1,7 +1,10 @@
 <?php
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/OccurrenceDataset.php');
-include_once($SERVER_ROOT.'/content/lang/collections/datasets/publiclist.'.$LANG_TAG.'.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
+
+Language::load('collections/datasets/publiclist');
+
 header('Content-Type: text/html; charset='.$CHARSET);
 
 $datasetManager = new OccurrenceDataset();
@@ -38,8 +41,7 @@ $dArr = array_filter($dArr, function($row) {
 					echo '<p><a href="index.php">Dataset Management</a></p>';
 				}
 
-					echo '<p>The datasets below link to samples and specimens associated with published research and special collections. Visit the <b><a href="https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en&oi=ao">NEON Biorepository Google Scholar Profile</a></b> for an up-to-date list of publications related to NEON samples and specimens.</p>';
-
+				echo '<p>The datasets below link to samples and specimens associated with published research and special collections. Visit the <b><a href="https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en&oi=ao">NEON Biorepository Google Scholar Profile</a></b> for an up-to-date list of publications related to NEON samples and specimens.</p>';
 
 				if($dArr){
 					$catArr = array();
@@ -49,7 +51,7 @@ $dArr = array_filter($dArr, function($row) {
 							($row['category']) ? array_push($catArr, $row['category']) : array_push($catArr, NULL);
 						}
 						else {
-							echo '<li><a href="public.php?datasetid=' . htmlspecialchars($row['datasetid'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . htmlspecialchars($row['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a></li>';
+							echo '<li><a href="public.php?datasetid=' . htmlspecialchars($row['datasetid'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . $row['name'] . '</a></li>';
 						}
 					}
 					if (count($catArr) > 1) {
@@ -58,13 +60,13 @@ $dArr = array_filter($dArr, function($row) {
 							echo ($cat) ? '<h3>'.$cat.'</h3>' : '';
 							foreach($dArr as $row){
 								if ($cat === $row['category']) {
-									echo '<li><a href="public.php?datasetid=' . htmlspecialchars($row['datasetid'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . htmlspecialchars($row['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a></li>';
+									echo '<li><a href="public.php?datasetid=' . htmlspecialchars($row['datasetid'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . $row['name'] . '</a></li>';
 								}
 							}
 						}
 					}
 					else {
-						echo '<li><a href="public.php?datasetid=' . htmlspecialchars($row['datasetid'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . htmlspecialchars($row['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '</a></li>';
+						echo '<li><a href="public.php?datasetid=' . htmlspecialchars($row['datasetid'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">' . $row['name'] . '</a></li>';
 					}
 				}
 				?>
@@ -74,9 +76,9 @@ $dArr = array_filter($dArr, function($row) {
 		include($SERVER_ROOT.'/includes/footer.php');
 		?>
 	</body>
-<script>
-	let pubTools = document.getElementById('pubtools');
-	// toggle visibility of save button
-	pubTools.addEventListener('click', function() {});
-</script>
+	<script>
+		let pubTools = document.getElementById('pubtools');
+		// toggle visibility of save button
+		pubTools.addEventListener('click', function() {});
+	</script>
 </html>

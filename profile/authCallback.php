@@ -6,9 +6,9 @@ include_once($SERVER_ROOT.'/classes/OpenIdProfileManager.php');
 include_once($SERVER_ROOT . '/config/auth_config.php');
 require_once($SERVER_ROOT . '/vendor/autoload.php');
 use Jumbojett\OpenIDConnectClient;
-if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/profile/authCallback.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT.'/content/lang/profile/authCallback.' . $LANG_TAG . '.php');
-else include_once($SERVER_ROOT . '/content/lang/profile/authCallback.en.php');
+include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 
+Language::load('profile/authCallback');
 
 $profManager = new OpenIdProfileManager();
 
@@ -25,7 +25,7 @@ if(isset($SHOULD_VERIFY_PEERS)){
 
 
 if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
-  
+
   try{
     $status = $oidc->authenticate();
     $claims = $oidc->getVerifiedClaims();
@@ -53,13 +53,13 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
       // update user information from Auth0 fields
       $firstName = $oidc->requestUserInfoByID($sub, 'given_name')
           ?? $oidc->requestUserInfoByID($sub, 'user_metadata.first_name');
-      
+
       $lastName = $oidc->requestUserInfoByID($sub, 'family_name')
           ?? $oidc->requestUserInfoByID($sub, 'user_metadata.last_name');
-          
+
       $organization = $oidc->requestUserInfoByID($sub, 'user_metadata.ror_id')
           ?? $oidc->requestUserInfoByID($sub, 'user_metadata.organization');
-      
+
       $profManager->updateLocalUserFromAuth0Metadata(
           $sub,
           $oidc->getProviderURL(),
@@ -121,7 +121,7 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
           $_SESSION['last_message'] = $LANG['ERROR'] . " <ERR/>";
           header('Location:'. $CLIENT_ROOT . '/profile/index.php');
         }
-        
+
       }
       else{
         $_SESSION['last_message'] = $LANG['UNABLE_RETRIEVE_EMAIL'] . " <ERR/>";
@@ -130,7 +130,7 @@ if (array_key_exists('code', $_REQUEST) && $_REQUEST['code']) {
     }
   } else {
     $_SESSION['last_message'] = $LANG['AUTHENTICATION_FAILED'] . " <ERR/>";
-    header('Location:' . $CLIENT_ROOT . '/profile/index.php');    
+    header('Location:' . $CLIENT_ROOT . '/profile/index.php');
   }
 
 }

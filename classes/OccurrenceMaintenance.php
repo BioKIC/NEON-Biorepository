@@ -186,13 +186,13 @@ class OccurrenceMaintenance {
 		if(!empty($geoArr)) $this->batchUpdateCountyCode($geoArr);
 		unset($geoArr);
 
-		//Batch populate NULL or incorrect continent values
+		//Batch populate NULL
 		$this->outputMsg('Populating null continent values... ', 1);
 		$geoArr = array();
 		$sql = 'SELECT o.occid, p.geoTerm
 			FROM omoccurrences o INNER JOIN geographicthesaurus g ON o.countryCode = g.iso2
 			INNER JOIN geographicthesaurus p ON g.parentID = p.geoThesID
-			WHERE (o.continent IS NULL OR o.continent != p.geoTerm) AND g.geoLevel = 50 AND g.acceptedID IS NULL';
+			WHERE (o.continent IS NULL) AND g.geoLevel = 50 AND g.acceptedID IS NULL';
 		//if($this->collidStr) $sql .= 'AND collid IN('.$this->collidStr.')';
 		$rs = $this->conn->query($sql);
 		$cnt = 0;
@@ -493,12 +493,14 @@ class OccurrenceMaintenance {
 		$this->outputMsg('Protecting globally rare species... ',1);
 		//Only protect names on list and synonym of accepted names
 		$sensitiveArr = $this->getSensitiveTaxa();
+		$shouldProtectCultivated = $GLOBALS['SHOULD_PROTECT_CULTIVATED'] ?? false;
+		$cultivationClause = $shouldProtectCultivated ? '' : 'AND (cultivationStatus = 0 OR cultivationStatus IS NULL)';
 
 		if($sensitiveArr){
 			$sql = 'UPDATE omoccurrences
 				SET recordSecurity = 1
-				WHERE (recordSecurity = 0) AND (securityReason IS NULL)
-				AND (cultivationStatus = 0 OR cultivationStatus IS NULL) AND (tidinterpreted IN(' . implode(',', $sensitiveArr) . ')) ';
+				WHERE (securityReason IS NULL)
+				'.$cultivationClause.' AND (tidinterpreted IN(' . implode(',', $sensitiveArr) . ')) ';
 			if($this->collidStr) $sql .= 'AND collid IN('.$this->collidStr.')';
 			if($this->conn->query($sql)){
 				$status += $this->conn->affected_rows;

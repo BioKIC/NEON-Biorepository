@@ -1,6 +1,7 @@
 <?php
 include_once('../../config/symbini.php');
 include_once($SERVER_ROOT.'/classes/ChecklistManager.php');
+include_once($SERVER_ROOT.'/neon/classes/ChecklistPDF.php');
 include_once($SERVER_ROOT.'/classes/MapSupport.php');
 if($LANG_TAG != 'en' && file_exists($SERVER_ROOT.'/content/lang/checklists/checklist.'.$LANG_TAG.'.php')) include_once($SERVER_ROOT.'/content/lang/checklists/checklist.'.$LANG_TAG.'.php');
 else include_once($SERVER_ROOT.'/content/lang/checklists/checklist.en.php');
@@ -103,7 +104,10 @@ if (array_key_exists('dlcsv', $_GET)) {
 	exit();
 }
 if (array_key_exists('dlpdf', $_GET)) {
-	$clManager->downloadChecklistPdf();
+	$pdfDownloadManager = new ChecklistPDF();
+	$pdfDownloadManager->setChecklistTitle($clManager->getClName());
+	$taxaArray = $clManager->getTaxaList(1, 0);
+	$pdfDownloadManager->downloadChecklistPdf($taxaArray, $showAuthors, $showSynonyms, $showCommon);
 	exit();
 }
 elseif(array_key_exists('printlist_x',$_GET)){
@@ -190,24 +194,24 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 					});
 				});
 			};
-		
+
 			syncCheckbox('showsynonyms', ['imgform-showsynonyms', 'imgform2-showsynonyms']);
 			syncCheckbox('showcommon', ['imgform-showcommon', 'imgform2-showcommon']);
 			syncCheckbox('showauthors', ['imgform-showauthors', 'imgform2-showauthors']);
 		});
-		
+
 		function syncOptionValues() {
 			const downloadForm = document.forms['downloadform'];
 			const optionForm = document.forms['optionform'];
-		
+
 			downloadForm.dl_showsynonyms.value = optionForm.showsynonyms.checked ? "1" : "0";
 			downloadForm.dl_showauthors.value = optionForm.showauthors.checked ? "1" : "0";
-		
+
 			const showcommon = optionForm.showcommon;
 			if (showcommon) {
 				downloadForm.dl_showcommon.value = showcommon.checked ? "1" : "0";
 			}
-		
+
 			const groupBySelect = optionForm.groupbyrank;
 			const hiddenGroupByInput = downloadForm.dl_groupbyrank;
 			if (groupBySelect && hiddenGroupByInput) {
@@ -216,7 +220,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 		}
 	</script>
 	<script type="text/javascript" src="../../js/symb/checklists.checklist.js"></script>
-	
+
 	<style>
 		<?php
 		if($printMode){
@@ -240,24 +244,24 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
         .family-block {
           margin-bottom: 2em;
         }
-        
+
         .family-div {
           font-weight: bold;
           margin-bottom: 0.5em;
         }
-        
+
         .tndiv-container {
           display: flex;
           flex-wrap: wrap;
           gap: 10px;
         }
-        
+
         .tndiv {
           flex: 0 0 auto;
           width: 180px;
           height: auto;
         }
-         
+
 	</style>
 </head>
 <body>
@@ -344,7 +348,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 
 			$plainStyle = 'border: 1px solid #999; padding: 4px 10px; font-size: 14px; margin-bottom: 0px;';
 			$photoStyle = $plainStyle;
-			
+
 			if (!$showImages) {
 				$plainStyle .= ' background-color: #e0e0e0; color: #000; font-weight: bold;';
 				$photoStyle .= ' background-color: #f9f9f9; color: #666; font-weight: normal;';
@@ -353,10 +357,10 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 				$photoStyle .= ' background-color: #e0e0e0; color: #000; font-weight: bold;';
 			}
 			?>
-			
+
 			<div style="display: flex; align-items: center; gap: 6px; margin-top: .5rem; margin-bottom: .5rem;">
 				<div style="font-style: italic; font-size: 14px; line-height: 1;">View</div>
-			
+
 				<form method="get" action="checklist.php" style="display:inline;">
 					<input type="hidden" name="clid" value="<?= $clid ?>">
 					<input type="hidden" name="showimages" value="0">
@@ -366,7 +370,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 					<input type="hidden" name="defaultoverride" value="1">
 					<button type="submit" style="<?= $plainStyle ?>">Plain</button>
 				</form>
-			
+
 				<form method="get" action="checklist.php" style="display:inline;">
 					<input type="hidden" name="clid" value="<?= $clid ?>">
 					<input type="hidden" name="showimages" value="1">
@@ -437,16 +441,16 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                         $prevGroup = '';
                         foreach($taxaArray as $tid => $sppArr){
                             $group = $sppArr['taxongroup'];
-                    
+
                             // If we've hit a new family group
                             if($group != $prevGroup){
-                    
+
                                 // Close previous group container if it was open
                                 if($prevGroup != ''){
                                     echo "    </div>\n"; // close .tndiv-container
                                     echo "</div>\n";     // close .family-block
                                 }
-                    
+
                                 // Start new family block
                                 $famUrl = '../../taxa/index.php?taxauthid=1&taxon=' . strip_tags($group) . '&clid='.$clid;
                                 echo '<div class="family-block">'."\n";
@@ -462,10 +466,10 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                     echo '  </div>'."\n";
                                 }
                                 echo '  <div class="tndiv-container">'."\n"; // flex wrapper for species
-                    
+
                                 $prevGroup = $group;
                             }
-                    
+
                             // Thumbnail image source
                             $tu = (array_key_exists('tnurl',$sppArr) ? $sppArr['tnurl'] : '');
                             $u  = (array_key_exists('url',$sppArr)   ? $sppArr['url']   : '');
@@ -478,20 +482,20 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                         $imgSrcFull = (array_key_exists('IMAGE_DOMAIN', $GLOBALS) && substr($imgSrc, 0, 4) != 'http'
                                             ? $GLOBALS['IMAGE_DOMAIN']
                                             : "") . $imgSrc;
-                            
+
                                         $spUrl = $u
                                             ? ((array_key_exists('IMAGE_DOMAIN', $GLOBALS) && substr($u, 0, 4) != 'http'
                                                 ? $GLOBALS['IMAGE_DOMAIN']
                                                 : "") . $u)
                                             : $imgSrcFull;
-                            
+
                                         echo "<a href='$spUrl' title='View Larger Image'><img src='$imgSrcFull' /></a>";
                                     } else {
                                         echo '<div style="margin-top:50px;"><b>'.$LANG['IMAGE'].'<br/>'.$LANG['NOTY'].'<br/>'.$LANG['AVAIL'].'</b></div>';
                                     }
                                     ?>
                                 </div>
-                    
+
                                 <?php
                                 echo '<div id="tid-'.$tid.'">';
                                 echo '<div class="taxon-div">';
@@ -511,7 +515,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                 echo '   <img src="../../images/image-icon.svg" alt="View Specimen Images" width="16" height="16" style="vertical-align:middle; cursor:pointer;" />';
                                 echo ' </a>';
                                 echo "</div>\n"; // close .taxon-div
-                    
+
                                 if($showSynonyms && isset($sppArr['syn'])){
                                     echo '<div class="syn-div" style="margin-left:0px">['.$sppArr['syn'].']</div>';
                                 }
@@ -520,7 +524,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                             </div>
                             <?php
                         }
-                    
+
                         // Close last family block
                         if($prevGroup != ''){
                             echo "    </div>\n"; // close .tndiv-container
@@ -554,16 +558,16 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                             <?php echo strip_tags($group); ?>
                                         </a>
                                         <?php
-                                        echo ' <a href="../../collections/list.php?clid=' . $clid . '&taxa=' . strip_tags($group) . '" 
+                                        echo ' <a href="../../collections/list.php?clid=' . $clid . '&taxa=' . strip_tags($group) . '"
                                                   title="View Specimens">
-                                                  <img src="../../images/magnifying-glass-chart-solid-full.svg" 
-                                                       alt="View Specimens" width="16" height="16" 
+                                                  <img src="../../images/magnifying-glass-chart-solid-full.svg"
+                                                       alt="View Specimens" width="16" height="16"
                                                        style="vertical-align:middle; cursor:pointer;" />
                                               </a>';
-                                        echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'&tabindex=3" 
+                                        echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.strip_tags($group).'&tabindex=3"
                                                   title="View Specimen Images">
-                                                  <img src="../../images/image-icon.svg" 
-                                                       alt="View Specimen Images" width="16" height="16" 
+                                                  <img src="../../images/image-icon.svg"
+                                                       alt="View Specimen Images" width="16" height="16"
                                                        style="vertical-align:middle; cursor:pointer;" />
                                               </a>';
                                         ?>
@@ -582,16 +586,16 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 							if(array_key_exists('vern',$sppArr)){
 								echo ' - <span class="vern-span">'.$sppArr['vern'] . '</span>';
 							}
-                            echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'" 
+                            echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'"
                                       title="View Specimens">
-                                      <img src="../../images/magnifying-glass-chart-solid-full.svg" 
-                                           alt="View Specimens" width="16" height="16" 
+                                      <img src="../../images/magnifying-glass-chart-solid-full.svg"
+                                           alt="View Specimens" width="16" height="16"
                                            style="vertical-align:middle; cursor:pointer;" />
                                   </a>';
-                            echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'&tabindex=3" 
+                            echo ' <a href="../../collections/list.php?clid='.$clid.'&taxa='.$tid.'&tabindex=3"
                                       title="View Specimen Images">
-                                      <img src="../../images/image-icon.svg" 
-                                           alt="View Specimen Images" width="16" height="16" 
+                                      <img src="../../images/image-icon.svg"
+                                           alt="View Specimen Images" width="16" height="16"
                                            style="vertical-align:middle; cursor:pointer;" />
                                   </a>';
 							if($isEditor){
@@ -725,12 +729,12 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                 <div id="imageoptionsdiv" style="margin:10px 0;">
                                     <b><?php echo $LANG['IMAGE_OPTIONS'] ?? 'Image Source'; ?>:</b><br>
                                     <label>
-                                        <input type="radio" name="imageScope" value="all" 
+                                        <input type="radio" name="imageScope" value="all"
                                                <?php echo ($imageScope === 'all' ? 'checked' : ''); ?>>
                                         Best Available (Any)
                                     </label><br>
                                     <label>
-                                        <input type="radio" name="imageScope" value="site" 
+                                        <input type="radio" name="imageScope" value="site"
                                                <?php echo ($imageScope === 'site' ? 'checked' : ''); ?>>
                                         From This Site/Domain Only
                                     </label>
@@ -747,10 +751,10 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
 										<input type="hidden" name="showsubgenera" value="<?= ($showSubgenera?1:0) ?>" >
                                         <input type="hidden" name="showimages" value="<?= ($showImages?1:0) ?>" >
 										<?php if(!$taxonFilter) echo '<input type="hidden" name="pagenumber" value="'.$pageNumber.'" />'; ?>
-									<button 
-									  name="submitaction" 
-									  type="submit" 
-									  value="Rebuild List" 
+									<button
+									  name="submitaction"
+									  type="submit"
+									  value="Rebuild List"
 									  onclick="
 										const form = document.forms['optionform'];
 										const url = 'checklist.php?clid=<?php echo $clid; ?>'
@@ -812,7 +816,7 @@ $taxaArray = array_filter($taxaArray, function($item) use ($taxonFilter) {
                                             <img src="../../images/file-pdf-solid.svg" alt="Download PDF" width="24" height="24" />
                                             <div style="font-size: 0.9em; text-decoration: none;">Download PDF</div>
                                         </button>
-                                    </div>					
+                                    </div>
     <!--								<div class="icon-button" style="text-align: center; flex: 1;" title="<?php echo $LANG['PRINT_BROWSER']; ?>">
                                         <input type="image" name="printlist" alt="<?php echo $LANG['IMG_PRINT_LIST']; ?>" src="../../images/print.png"
                                             onclick="changeDownloadFormAction('checklist.php?clid=<?php echo $clid; ?>','_blank');" />

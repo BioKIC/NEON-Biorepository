@@ -3,7 +3,6 @@ include_once('../config/symbini.php');
 include_once($SERVER_ROOT . '/classes/Manager.php');
 include_once($SERVER_ROOT . '/classes/DwcArchiverOccurrence.php');
 include_once($SERVER_ROOT . '/classes/DwcArchiverDetermination.php');
-include_once($SERVER_ROOT . '/classes/DwcArchiverImage.php');
 include_once($SERVER_ROOT . '/classes/DwcArchiverAttribute.php');
 include_once($SERVER_ROOT . '/classes/DwcArchiverMaterialSample.php');
 include_once($SERVER_ROOT . '/classes/UuidFactory.php');
@@ -2372,7 +2371,7 @@ class EDIFileCreator extends Manager
 			return false;
 		}
 
-		if (!$this->imageFieldArr) $this->imageFieldArr = DwcArchiverImage::getImageArr($this->schemaType);
+		if (!$this->imageFieldArr) $this->setImageArr();
 
 		//Output header
 		$headerArr = array_keys($this->imageFieldArr['fields']);
@@ -2380,7 +2379,7 @@ class EDIFileCreator extends Manager
 		$this->writeOutRecord($fh, $headerArr);
 
 		//Output records
-		$sql = DwcArchiverImage::getSqlImages($this->imageFieldArr['fields'], $this->conditionSql, $this->redactLocalities, $this->rareReaderArr);
+		$sql = $this->getSqlImages();
 		if ($rs = $this->dataConn->query($sql, MYSQLI_USE_RESULT)) {
 			$this->setServerDomain();
 			$urlPathPrefix = $this->serverDomain . $GLOBALS['CLIENT_ROOT'] . (substr($GLOBALS['CLIENT_ROOT'], -1) == '/' ? '' : '/');
@@ -2456,6 +2455,118 @@ class EDIFileCreator extends Manager
 		fclose($fh);
 
 		$this->logOrEcho('Done! (' . date('h:i:s A') . ")\n");
+	}
+
+	private function setImageArr(){
+		$fieldArr['coreid'] = 'o.occid';
+		$termArr['identifier'] = 'http://purl.org/dc/terms/identifier';
+		//$fieldArr['identifier'] = 'IFNULL(m.originalurl,m.url) as identifier';
+		$fieldArr['identifier'] = "LEFT(SUBSTRING_INDEX(IFNULL(m.originalurl,m.url), '/', -1), LENGTH(SUBSTRING_INDEX(IFNULL(m.originalurl,m.url), '/', -1)) - LENGTH(SUBSTRING_INDEX(SUBSTRING_INDEX(IFNULL(m.originalurl,m.url), '/', -1), '.', -1)) - 1) AS identifier";
+		$termArr['accessURI'] = 'http://rs.tdwg.org/ac/terms/accessURI';
+		$fieldArr['accessURI'] = 'IFNULL(NULLIF(m.originalurl,""),m.url) as accessURI';
+		$termArr['thumbnailAccessURI'] = 'http://rs.tdwg.org/ac/terms/thumbnailAccessURI';
+		$fieldArr['thumbnailAccessURI'] = 'm.thumbnailurl as thumbnailAccessURI';
+		$termArr['goodQualityAccessURI'] = 'http://rs.tdwg.org/ac/terms/goodQualityAccessURI';
+		$fieldArr['goodQualityAccessURI'] = 'm.url as goodQualityAccessURI';
+		$termArr['format'] = 'http://purl.org/dc/terms/format';		//jpg
+		$fieldArr['format'] = 'm.format';
+		$termArr['type'] = 'http://purl.org/dc/terms/type';		//StillImage or Sound
+		$fieldArr['type'] = 'CASE WHEN m.mediaType = "audio" THEN "Sound" ELSE "StillImage" END as type';
+		$termArr['subtype'] = 'http://rs.tdwg.org/ac/terms/subtype';		//Photograph or Recorded Organism
+		$fieldArr['subtype'] = 'CASE WHEN m.mediaType = "audio" THEN "Recorded Organism" ELSE "Photograph" END as subtype';
+		$termArr['rights'] = 'http://purl.org/dc/terms/rights';
+		//$fieldArr['rights'] = 'c.rights';
+		$fieldArr['rights'] = 'm.rights'; // NEON customization
+		$termArr['Owner'] = 'http://ns.adobe.com/xap/1.0/rights/Owner';	//Institution name
+		//$fieldArr['Owner'] = 'IFNULL(c.rightsholder,CONCAT(c.collectionname," (",CONCAT_WS("-",c.institutioncode,c.collectioncode),")")) AS owner';
+		$fieldArr['Owner'] = 'm.owner'; //NEON customization
+		$termArr['creator'] = 'http://purl.org/dc/elements/1.1/creator';
+		$fieldArr['creator'] = 'IF(m.creatorUid IS NOT NULL,CONCAT_WS(" ",u.firstname,u.lastname),m.creator) AS creator';
+		$termArr['UsageTerms'] = 'http://ns.adobe.com/xap/1.0/rights/UsageTerms';	//Creative Commons BY-SA 4.0 license
+		$fieldArr['UsageTerms'] = 'm.copyright AS usageterms';
+		$termArr['WebStatement'] = 'http://ns.adobe.com/xap/1.0/rights/WebStatement';	//https://creativecommons.org/licenses/by-nc-sa/4.0/us/
+		$fieldArr['WebStatement'] = 'c.accessrights AS webstatement';
+		$termArr['caption'] = 'http://rs.tdwg.org/ac/terms/caption';
+		$fieldArr['caption'] = 'm.caption';
+		$termArr['comments'] = 'http://rs.tdwg.org/ac/terms/comments';
+		$fieldArr['comments'] = 'm.notes';
+		$termArr['tag'] = 'http://rs.tdwg.org/ac/terms/tag';
+		$fieldArr['tag'] = 'GROUP_CONCAT( tag.keyValue ) AS tag';
+		$termArr['providerManagedID'] = 'http://rs.tdwg.org/ac/terms/providerManagedID';	//GUID
+		$fieldArr['providerManagedID'] = 'm.recordID AS providermanagedid';
+		$termArr['MetadataDate'] = 'http://ns.adobe.com/xap/1.0/MetadataDate';	//timestamp
+		$fieldArr['MetadataDate'] = 'm.initialtimestamp AS metadatadate';
+		$termArr['associatedSpecimenReference'] = 'http://rs.tdwg.org/ac/terms/associatedSpecimenReference';	//reference url in portal
+		$fieldArr['associatedSpecimenReference'] = 'null as associatedSpecimenReference';
+		$termArr['metadataLanguage'] = 'http://rs.tdwg.org/ac/terms/metadataLanguage';	//en
+		$fieldArr['metadataLanguage'] = '';
+		$termArr['mediaID'] = 'https://symbiota.org/terms/mediaID';	//en
+		$fieldArr['mediaID'] = 'm.mediaID';
+
+		if($this->schemaType == 'backup') $fieldArr['rights'] = 'm.copyright';
+
+		$this->imageFieldArr['terms'] = $this->trimBySchemaType($termArr);
+		$this->imageFieldArr['fields'] = $this->trimBySchemaType($fieldArr);
+	}
+
+	private function trimBySchemaType($imageArr){
+		$trimArr = array();
+		if($this->schemaType == 'backup'){
+			$trimArr = array('Owner', 'UsageTerms', 'WebStatement');
+		}
+		return array_diff_key($imageArr, array_flip($trimArr));
+	}
+
+	private function getSqlImages()
+	{
+		$sql = '';
+		if($this->imageFieldArr && $this->conditionSql){
+			$sqlFrag = '';
+			foreach($this->imageFieldArr['fields'] as $colName){
+				if($colName) $sqlFrag .= ', '.$colName;
+			}
+			$sql = 'SELECT '.trim($sqlFrag,', '). ' FROM media m INNER JOIN omoccurrences o ON m.occid = o.occid
+				INNER JOIN omcollections c ON o.collid = c.collid
+				LEFT JOIN imagetag tag ON m.mediaID = tag.mediaID
+				LEFT JOIN users u ON m.creatorUid = u.uid ';
+			if(strpos($this->conditionSql,'ts.taxauthid')){
+				$sql .= 'LEFT JOIN taxstatus ts ON o.tidinterpreted = ts.tid ';
+			}
+			if(stripos($this->conditionSql,'e.parenttid')){
+				$sql .= 'LEFT JOIN taxaenumtree e ON o.tidinterpreted = e.tid ';
+			}
+			if(strpos($this->conditionSql,'ctl.clid')){
+				//Search criteria came from custom search page
+				$sql .= 'LEFT JOIN fmvouchers v ON o.occid = v.occid LEFT JOIN fmchklsttaxalink ctl ON v.clTaxaID = ctl.clTaxaID ';
+			}
+			if(strpos($this->conditionSql,'p.lngLatPoint')){
+				//Search criteria came from map search page
+				$sql .= 'LEFT JOIN omoccurpoints p ON o.occid = p.occid ';
+			}
+			if(strpos($this->conditionSql,'ds.datasetid')){
+				$sql .= 'LEFT JOIN omoccurdatasetlink ds ON o.occid = ds.occid ';
+			}
+			if(stripos($this->conditionSql,'a.stateid')){
+				//Search is limited by occurrence attribute
+				$sql .= 'INNER JOIN tmattributes a ON o.occid = a.occid ';
+			}
+			elseif(stripos($this->conditionSql,'s.traitid')){
+				//Search is limited by occurrence trait
+				$sql .= 'INNER JOIN tmattributes a ON o.occid = a.occid '.
+						'INNER JOIN tmstates s ON a.stateid = s.stateid ';
+			}
+			$sql .= $this->conditionSql;
+			if($this->redactLocalities){
+				if($this->rareReaderArr){
+					$sql .= 'AND (o.recordSecurity = 0 OR c.collid IN('.implode(',',$this->rareReaderArr).')) ';
+				}
+				else{
+					$sql .= 'AND (o.recordSecurity = 0) ';
+				}
+			}
+			$sql .= 'GROUP BY m.mediaID';
+		}
+		return $sql;
 	}
 
 	private function writeAttributeFile()
