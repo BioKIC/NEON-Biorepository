@@ -32,10 +32,10 @@ class OccurrenceListManager extends OccurrenceManager{
 		// Deduplicate taxonomy/site joins before LIMIT, matching COUNT(DISTINCT o.occid).
 		// Include collectionname so collection sorting remains valid with DISTINCT.
 		$sql = 'SELECT DISTINCT o.occid, o.collid, c.institutioncode, c.collectioncode, c.collectionname, c.icon, o.institutioncode AS instcodeoverride, o.collectioncode AS collcodeoverride, '.
-				'o.catalognumber, o.family, o.sciname, o.scientificnameauthorship, o.tidinterpreted, o.recordedby, o.recordnumber, o.eventdate, '.
-				'o.country, o.stateprovince, o.county, o.locality, o.decimallatitude, o.decimallongitude, o.recordsecurity, o.securityreason, '.
-				'o.habitat, o.substrate, o.minimumelevationinmeters, o.maximumelevationinmeters, o.observeruid, c.sortseq '.
-				'FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid ';
+			'o.catalognumber, o.family, o.sciname, o.scientificnameauthorship, o.tidinterpreted, o.recordedby, o.recordnumber, o.eventdate, o.eventtime, '.
+			'o.country, o.stateprovince, o.county, o.locality, o.decimallatitude, o.decimallongitude, o.recordsecurity, o.securityreason, '.
+			'o.habitat, o.substrate, o.minimumelevationinmeters, o.maximumelevationinmeters, o.observeruid, c.sortseq '.
+			'FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid ';
 		#end neon edit
 		$sql .= $this->getTableJoins($sqlWhere).$sqlWhere;
 		//Don't allow someone to query all occurrences if there are no conditions
