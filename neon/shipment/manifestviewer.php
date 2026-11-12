@@ -235,7 +235,7 @@ elseif(array_key_exists('CollAdmin',$USER_RIGHTS) || array_key_exists('CollEdito
 						dayStr = extractArr[2];
 					}
 					else if(extractArr = dateEx4.exec(testStr)){
-						yearStr = "2023";
+						yearStr = new Date().getFullYear().toString();
 						monthStr = getMonthFromString(extractArr[1]);
 						dayStr = extractArr[2];
 					}

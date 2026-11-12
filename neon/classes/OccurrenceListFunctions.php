@@ -52,6 +52,7 @@ class OccurrenceListFunctions extends OccurrenceManager{
 		return $retArr;
 	}
 	
+	#neon edit
 	public function getCollectionTypeSummary(): array {
 		$retArr = array();
 		$sqlWhere = $this->getSqlWhere();
@@ -241,6 +242,7 @@ class OccurrenceListFunctions extends OccurrenceManager{
 			'families' => $retArr
 		);
 	}
+	#end neon edit
 	
 	public function getAdditionalCollectionTypeSummary(): array {
 		$retArr = array();

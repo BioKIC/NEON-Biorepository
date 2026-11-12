@@ -61,10 +61,12 @@ $combinedCollectionFamilies = array_merge(
 );
 
 foreach($combinedCollectionFamilies as &$family){
-	$family['percent'] = round(
-		($family['total'] / $collectionTypeSummary['totalRecords']) * 100,
-		1
-	);
+	if($collectionTypeSummary['totalRecords'] > 0){
+		$family['percent'] = round(
+			($family['total'] / $collectionTypeSummary['totalRecords']) * 100,
+			1
+		);
+	}
 }
 unset($family);
 
@@ -99,43 +101,45 @@ $_SESSION['citationvar'] = $searchVar;
 
 	<!-- NEON edit start -->
 	<script>
-		window.biorepoAvailabilitySiteCodes = <?php echo json_encode(
-			$biorepoAvailabilitySiteCodes ?? [],
-			JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
-		); ?>;
+	window.biorepoAvailabilitySiteCodes = <?php echo json_encode(
+		$biorepoAvailabilitySiteCodes ?? [],
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
 
-		window.biorepoCollectionTypeSummary = <?php echo json_encode(
-			$combinedCollectionFamilies,
-			JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
-		); ?>;
+	window.biorepoCollectionTypeSummary = <?php echo json_encode(
+		$combinedCollectionFamilies,
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
 
-		window.biorepoCollectionTypeSummaryTotal = <?php echo json_encode(
-			$collectionTypeSummary['totalRecords'],
-			JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
-		); ?>;
+	// #neon edit
+	window.biorepoCollectionTypeSummaryTotal = <?php echo json_encode(
+		$collectionTypeSummary['totalRecords'],
+		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+	); ?>;
+	// #end neon edit
 
-		const params = <?php echo json_encode($params, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
-		const rawSearchVar = <?php echo $encodedSearchVar; ?>;
+	const params = <?php echo json_encode($params, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+	const rawSearchVar = <?php echo $encodedSearchVar; ?>;
 
-		const eventParams = {};
+	const eventParams = {};
 
-		Object.keys(params).forEach(key => {
-			eventParams[key] = Array.isArray(params[key])
-				? params[key].join(',')
-				: params[key];
-		});
+	Object.keys(params).forEach(key => {
+		eventParams[key] = Array.isArray(params[key])
+			? params[key].join(',')
+			: params[key];
+	});
 
-		eventParams.rawSearchVar = rawSearchVar;
+	eventParams.rawSearchVar = rawSearchVar;
 
-		window.pendingGAEvents.push([
-			'event',
-			'search_query',
-			{
-				event_category: 'Search',
-				event_label: 'Search Parameters',
-				...eventParams
-			}
-		]);
+	window.pendingGAEvents.push([
+		'event',
+		'search_query',
+		{
+			event_category: 'Search',
+			event_label: 'Search Parameters',
+			...eventParams
+		}
+	]);
 	</script>
 	<!-- NEON edit end -->
 

@@ -28,28 +28,27 @@ class OccurrenceListManager extends OccurrenceManager{
 		$sqlWhere = $this->getSqlWhere();
 
 		if(!$this->recordCount || $this->reset) $this->setRecordCnt($sqlWhere);
-
-		$sql = "";
-		if (array_key_exists("earlyInterval",$this->searchTermArr) || array_key_exists("lateInterval",$this->searchTermArr)) {
-			$sql .= "WITH searchRange AS (SELECT COALESCE((SELECT myaStart FROM omoccurpaleogts WHERE gtsterm = '"  . ($this->searchTermArr["earlyInterval"] ?? '') . "'), 5000) AS searchStart,";
-			$sql .= "COALESCE((SELECT myaEnd FROM omoccurpaleogts WHERE gtsterm = '" . ($this->searchTermArr["lateInterval"] ?? '') ."'), 0) AS searchEnd)";
-		}
-		$sql .= 'SELECT o.occid, c.collid, c.institutioncode, c.collectioncode, c.collectionname, c.icon, o.institutioncode AS instcodeoverride, o.collectioncode AS collcodeoverride, '.
-			'o.catalognumber, o.family, o.sciname, o.scientificnameauthorship, o.tidinterpreted, o.recordedby, o.recordnumber, o.eventdate, o.eventtime, '.
-			'o.country, o.stateprovince, o.county, o.locality, o.decimallatitude, o.decimallongitude, o.recordsecurity, o.securityreason, '.
-			'o.habitat, o.substrate, o.minimumelevationinmeters, o.maximumelevationinmeters, o.observeruid, c.sortseq ';
-		if (!empty($GLOBALS['ACTIVATE_PALEO']) && $sqlWhere)
-			$sql .= ', paleo.formation, paleo.earlyInterval, paleo.lateInterval ';
-		$sql .= 'FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid ';
-		$sql .= $this->getTableJoins($sqlWhere, true) . $sqlWhere;
+		#neon edit
+		// Deduplicate taxonomy/site joins before LIMIT, matching COUNT(DISTINCT o.occid).
+		// Include collectionname so collection sorting remains valid with DISTINCT.
+		$sql = 'SELECT DISTINCT o.occid, o.collid, c.institutioncode, c.collectioncode, c.collectionname, c.icon, o.institutioncode AS instcodeoverride, o.collectioncode AS collcodeoverride, '.
+				'o.catalognumber, o.family, o.sciname, o.scientificnameauthorship, o.tidinterpreted, o.recordedby, o.recordnumber, o.eventdate, '.
+				'o.country, o.stateprovince, o.county, o.locality, o.decimallatitude, o.decimallongitude, o.recordsecurity, o.securityreason, '.
+				'o.habitat, o.substrate, o.minimumelevationinmeters, o.maximumelevationinmeters, o.observeruid, c.sortseq '.
+				'FROM omoccurrences o INNER JOIN omcollections c ON o.collid = c.collid ';
+		#end neon edit
+		$sql .= $this->getTableJoins($sqlWhere).$sqlWhere;
 		//Don't allow someone to query all occurrences if there are no conditions
 		if(!$sqlWhere) $sql .= 'WHERE o.occid IS NULL ';
+		#neon edit
+		// Keep page boundaries stable when records share the selected sort values.
 		if($this->sortArr){
-			$sql .= 'ORDER BY ' . implode(',', $this->sortArr) . ', o.collid ';
+			$sql .= 'ORDER BY ' . implode(',', $this->sortArr) . ', o.collid, o.occid ';
 		}
 		else{
-			$sql .= 'ORDER BY o.collid ';
+			$sql .= 'ORDER BY o.collid, o.occid ';
 		}
+		#end neon edit
 		if($pageRequest > 0) $pageRequest = ($pageRequest - 1) * $cntPerPage;
 		$sql .= ' LIMIT ' . $pageRequest . ',' . $cntPerPage;
 		//echo '<div style="width: 1200px">' . $sql . '</div>';

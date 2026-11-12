@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/NeonMaterialSampleCollections.php');
 include_once($SERVER_ROOT.'/config/dbconnection.php');
 
 class OccurrenceMaintenance {
@@ -603,15 +604,7 @@ class OccurrenceMaintenance {
 			foreach($collArr as $collid){
 				if(is_numeric($collid)){
 					//neon edit allow for sudo-colletion stats
-					$materialSampleMap = [
-						118 => '%tract%',
-						119 => '%heart%',
-						120 => '%lung%',
-						121 => '%kidney%',
-						122 => '%spleen%',
-						123 => '%liver%',
-						124 => '%muscle%'
-					];
+					$materialSampleMap = NeonMaterialSampleCollections::TYPES;
 
 					$where = 'o.collid = '.$collid;
 
@@ -745,15 +738,7 @@ class OccurrenceMaintenance {
 			$this->outputMsg('Calculating specimen, georeference, family, genera, and species counts... ',1);
 			$statArr = array();
 
-			$materialSampleMap = [
-				118 => '%heart%',
-				119 => '%tract%',
-				120 => '%lung%',
-				121 => '%kidney%',
-				122 => '%spleen%',
-				123 => '%liver%',
-				124 => '%muscle%'
-			];
+			$materialSampleMap = NeonMaterialSampleCollections::TYPES;
 
 			$where = 'o.collid = ?';
 			$bindType = 'i';

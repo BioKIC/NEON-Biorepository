@@ -11,12 +11,16 @@ $collid = isset($_REQUEST['collid']) ? $collManager->sanitizeInt($_REQUEST['coll
 $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 $eMode = array_key_exists('emode', $_REQUEST) ? $collManager->sanitizeInt($_REQUEST['emode']) : 0;
 
-if ($eMode && !$SYMB_UID) header('Location: ../../profile/index.php?refurl=../collections/misc/collprofiles.php?' . htmlspecialchars($_SERVER['QUERY_STRING'], ENT_QUOTES));
+if ($eMode && !$SYMB_UID) {
+    header('Location: ../../profile/index.php?refurl=' . rawurlencode('../collections/misc/neoncollprofiles.php?' . ($_SERVER['QUERY_STRING'] ?? '')));
+    exit;
+}
 
 $collManager->setCollid($collid);
 
 $collectionData = $collManager->getCollectionMetadata();
 $datasetKey = $collManager->getDatasetKey();
+$linkedCollections = $collManager->getLinkedCollections();
 
 $editCode = 0;		//0 = no permissions; 1 = CollEditor; 2 = CollAdmin; 3 = SuperAdmin
 if ($SYMB_UID) {
@@ -27,330 +31,32 @@ if ($SYMB_UID) {
 		elseif (array_key_exists('CollEditor', $USER_RIGHTS) && in_array($collid, $USER_RIGHTS['CollEditor'])) $editCode = 1;
 	}
 }
-
-$resourceJson = isset($collData[$collid]['resourcejson']) ? json_decode($collData[$collid]['resourcejson'], true) : [];
-$dataProductIds = array_map(fn($item) => basename($item['url']), $resourceJson);
-$encodedJson = json_encode(array_values($dataProductIds), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-$biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 ?>
-<script>
-  window.BiorepoCollectionData = '<?= $encodedJson; ?>';
-	window.biorepoAvailabilitySiteCodes = <?= json_encode(
-		$biorepoAvailabilitySiteCodes ?? [],
-		JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
-	); ?>;
-</script>
-<style>
-	.MuiButton-root {
-		position: relative;
-	}
-
-	.MuiButton-root .tooltip {
-		position: absolute;
-		top: calc(100% + 6px);
-		left: 0;
-
-		width: max-content;
-		max-width: min(16rem, calc(100vw - 24px));
-		padding: 6px 8px;
-
-		background: #f3f4f6;
-		color: #000;
-		border: 1px solid #000;
-
-		font-size: 0.75rem;
-		font-weight: 400;
-		line-height: 1.35;
-		text-align: left;
-		text-transform: none;
-		white-space: normal;
-
-		opacity: 0;
-		visibility: hidden;
-		pointer-events: none;
-
-		transition: opacity 0.15s ease, visibility 0s linear 0.15s;
-		z-index: 1000;
-	}
-
-	.MuiButton-root:hover .tooltip {
-		opacity: 1;
-		visibility: visible;
-		transition-delay: 0.2s;
-	}
-
-	.copy-label {
-		position: relative;
-	}
-
-	.copy-state,
-	.copied-state {
-		display: inline-flex;
-		align-items: center;
-		transition: opacity 0.2s ease, transform 0.2s ease;
-	}
-
-	.copied-state {
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%) translateY(4px);
-		opacity: 0;
-		white-space: nowrap;
-	}
-
-	.copy-state {
-		opacity: 1;
-		transform: translateY(0);
-	}
-
-	#copyButton.copied .copy-state {
-		opacity: 0;
-		transform: translateY(-4px);
-	}
-
-	#copyButton.copied .copied-state {
-		opacity: 1;
-		transform: translateX(-50%) translateY(0);
-	}
-</style>
-<html>
+<!DOCTYPE html>
+<html lang="<?php echo htmlspecialchars($LANG_TAG, ENT_QUOTES); ?>">
 <head>
-	<title><?= $DEFAULT_TITLE . ' ' . ($collid && isset($collectionData[$collid]) ? ($collectionData[$collid]['publicname'] ?: $collectionData[$collid]['collectionname']) : ''); ?></title>
-	<meta name="keywords" content="Natural history collections,<?= ($collid ? (!empty($collectionData[$collid]['publicname']) ? $collectionData[$collid]['publicname'].',' : '') . $collectionData[$collid]['collectionname'] : ''); ?>" />
-	<meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
-	<meta http-equiv="Pragma" content="no-cache">
-	<link href="<?= $CSS_BASE_PATH; ?>/jquery-ui.css" type="text/css" rel="stylesheet">
-	<link href="../../neon/css/mui-overrides.css" type="text/css" rel="stylesheet">
-	<?php
-	include_once($SERVER_ROOT . '/includes/head.php');
-	?>
-	<script src="../../js/jquery-3.7.1.min.js" type="text/javascript"></script>
-	<script src="../../js/jquery-ui.min.js" type="text/javascript"></script>
-	<script>
-		function toggleById(target) {
-			if (target != null) {
-				var obj = document.getElementById(target);
-				if (obj.style.display == "none" || obj.style.display == "") {
-					obj.style.display = "block";
-				} else {
-					obj.style.display = "none";
-				}
-			}
-			return false;
-		}
-
-		async function copyCitation() {
-				const citationText = document.getElementById("citation").innerText;
-				const button = document.getElementById("copyButton");
-
-				try {
-						await navigator.clipboard.writeText(citationText);
-
-						button.classList.add("copied");
-
-						setTimeout(() => {
-								button.classList.remove("copied");
-						}, 1500);
-
-				} catch (err) {
-						console.error("Failed to copy citation:", err);
-				}
-		}
-
-		<?php
-		if($datasetKey){
-			?>
-			async function loadGbifCount() {
-				const url = 'https://api.gbif.org/v1/literature/search?gbifDatasetKey=<?= $datasetKey ?>&limit=0';
-
-				try {
-					const response = await fetch(url);
-
-					if (!response.ok) {
-						throw new Error(`HTTP error: ${response.status}`);
-					}
-
-					const data = await response.json();
-
-					document.getElementById('gbif-count').textContent = data.count.toLocaleString();
-				} catch (error) {
-					console.error('Error retrieving GBIF count:', error);
-				}
-			}
-
-			// Run when the page loads
-			document.addEventListener('DOMContentLoaded', loadGbifCount);
-			<?php
-		}
-		?>
-
-		function getCitationData() {
-			return JSON.parse(document.querySelector('#citation [data-neon-citation]').dataset.neonCitation);
-		}
-
-		function escapeBibtex(value) {
-			const escapes = {
-				'\\': '\\textbackslash{}', '{': '\\{', '}': '\\}',
-				'&': '\\&', '%': '\\%', '$': '\\$', '#': '\\#', '_': '\\_',
-				'~': '\\textasciitilde{}', '^': '\\textasciicircum{}'
-			};
-			return String(value).replace(/[\\{}&%$#_~^]/g, character => escapes[character]);
-		}
-
-		function downloadCitation(content, extension, mimeType, citation) {
-			const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
-			const url = URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = url;
-			link.download = `NEON-${citation.title.replace(/[^a-zA-Z0-9]+/g, '-')}-${citation.accessDate}.${extension}`;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-			// Allow the browser to start consuming the download before releasing it.
-			setTimeout(() => URL.revokeObjectURL(url), 1000);
-		}
-
-		function downloadBib() {
-			const citation = getCitationData();
-			const citationKey = citation.collectionCode.replace(/[^a-zA-Z0-9._-]/g, '') || ('NEON' + citation.collectionId);
-			const bibtexEntry = `@misc{${citationKey}/provisional,
-				doi = {},
-				url = {${escapeBibtex(citation.url)}},
-				author = {{${escapeBibtex(citation.author)}}},
-				language = {en},
-				title = {{${escapeBibtex(citation.title)}}},
-				publisher = {National Ecological Observatory Network (NEON)},
-				note = {${escapeBibtex(citation.note)}},
-				urldate = {${citation.accessDate}},
-				copyright = {${escapeBibtex(citation.license + ' (' + citation.licenseUrl + ')')}}
-			}`;
-			downloadCitation(bibtexEntry, 'bib', 'application/x-bibtex', citation);
-		}
-
-		function downloadRis() {
-			const citation = getCitationData();
-			const singleLine = value => String(value).replace(/[\r\n]+/g, ' ');
-			const description = document.querySelector('#fulldescription-container p');
-			const lines = [
-				'TY  - DATA',
-				'T1  - ' + singleLine(citation.title),
-				'AU  - ' + singleLine(citation.author),
-				'DO  -',
-				'UR  - ' + singleLine(citation.url),
-				'PB  - NEON (National Ecological Observatory Network) Biorepository',
-				'Y2  - ' + citation.accessDate,
-				'LA  - en',
-				'N1  - ' + singleLine(citation.note)
-			];
-			if (description && description.innerText.trim()) lines.push('AB  - ' + singleLine(description.innerText));
-			lines.push('ER  -');
-			downloadCitation(lines.join('\r\n') + '\r\n', 'ris', 'application/x-research-info-systems', citation);
-		}
-
-		document.addEventListener("DOMContentLoaded", function () {
-			// Show tooltip
-			function showTooltip(event) {
-				const tooltipId = event.currentTarget.getAttribute("data-tooltip-id");
-				const tooltip = document.getElementById(tooltipId);
-				tooltip.style.display = "block";
-			}
-
-			// Hide tooltip
-			function hideTooltip(event) {
-				const tooltipId = event.currentTarget.getAttribute("data-tooltip-id");
-				const tooltip = document.getElementById(tooltipId);
-				tooltip.style.display = "none";
-			}
-
-			// Attach event listeners to all buttons with the class 'tooltip-button'
-			const tooltipButtons = document.querySelectorAll(".tooltip-button");
-			tooltipButtons.forEach(button => {
-				button.addEventListener("mouseover", showTooltip);
-				button.addEventListener("mouseout", hideTooltip);
-			});
-
-			let descriptionContainer = document.getElementById('fulldescription-container');
-			let imgElements = descriptionContainer.querySelectorAll('img');
-			let collimagesContainer = document.getElementById('collimages');
-			imgElements.forEach(img => {
-				collimagesContainer.appendChild(img);
-			});
-		});
-	</script>
-	<style type="text/css">
-		.field-div {
-			margin: 10px 0px;
-			clear: both
-		}
-
-		.label {
-			font-weight: bold;
-		}
-
-		#collimages {
-			max-height: 800px;
-			display: flex;
-			flex-direction: column;
-			justify-content: space-evenly;
-			align-items: center;
-		}
-		#collimages img {
-			height: auto;
-			width: auto !important;
-			object-fit: contain;
-		}
-		#gbif-citations{
-			display:inline-flex;
-			height:24.5px;
-			font-family:Verdana,Geneva,sans-serif;
-			font-size:13.5px;
-			color:#fff;
-			line-height:24px;
-			border-radius:4px;
-			overflow:hidden;
-			box-shadow: inset 0 -1px 0 rgba(0,0,0,.1);
-		}
-		#gbif-citations img{
-			width:24px;
-			height:24.5px;
-			background:#396e36;
-			display:flex;
-			align-items:center;
-			justify-content:center;
-		}
-		#gbif-count{
-			background:#26a644;
-			padding:0 8px;
-			text-shadow: 0 1.25px 0 rgb(32, 129, 53), 0 0 0.8px #fff;
-		}
-		#gbif-text{
-			background:#5a5a5a;
-			padding:0 8px;
-			text-shadow: 0 1.25px 0 rgb(66, 66, 66), 0 0 0.8px #fff;
-		}
-	</style>
-	<script src="https://cdn.tailwindcss.com"></script>
-	<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-	<style>
-		body {
-			font-family: 'Open Sans', sans-serif;
-		}
-	</style>
+    <title><?php echo htmlspecialchars('NEON Biorepository | ' . (($collData[$collid]['publicname'] ?? '') ?: ($collData[$collid]['collectionname'] ?? 'Sample Types')), ENT_QUOTES); ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php include_once($SERVER_ROOT . '/includes/head.php'); ?>
+    <script>
+        function toggleById(target) {
+            const panel = document.getElementById(target);
+            if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            return false;
+        }
+    </script>
 </head>
-
 <body>
-	<?php
-	$displayLeftMenu = (isset($collections_misc_collprofilesMenu) ? $collections_misc_collprofilesMenu : true);
-	include($SERVER_ROOT . '/includes/header.php');
-	?>
-	<div class="navpath">
-		<a href="../../index.php"><?= $LANG['HOME'] ?></a> &gt;&gt;
-		<a href="../index.php"><?= $LANG['COLLECTION_SEARCH'] ?></a> &gt;&gt;
-		<b><?= $LANG['COLL_PROFILE'] ?></b>
-	</div>
-	<div id="innertext">
-		<?php
+    <?php
+    $displayLeftMenu = false;
+    include($SERVER_ROOT . '/includes/header.php');
+    ?>
+    <div class="navpath">
+        <a href="../../index.php">Home</a> &gt;
+        <a href="../index.php">Sample types</a> &gt; Sample type profile
+    </div>
+    <div id="innertext">
+        <?php
 		if ($editCode > 1) {
 			if ($action == 'UpdateStatistics') {
 				echo '<h2> ' . (isset($LANG['UPDATE_STATISTICS']) ? $LANG['UPDATE_STATISTICS'] : 'Updating statistics related to this collection...') . '</h2>';
@@ -359,17 +65,14 @@ $biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 			}
 		}
 		if ($editCode && $collid) {
-			?>
-			<div style="float:right;margin:3px;cursor:pointer;" onclick="toggleById('controlpanel');" title="<?= $LANG['TOGGLE_MAN'] ?>">
-				<img style='border:0px;' src='../../images/edit.png' />
+		?>
+			<div style="float:right;margin:3px;cursor:pointer;" onclick="toggleById('controlpanel');" title="<?php echo (isset($LANG['TOGGLE_MAN']) ? $LANG['TOGGLE_MAN'] : 'Toggle Manager\'s Control Panel'); ?>">
+				<img style='border:0px;' src='../../images/edit.png' alt='Open editing controls' />
 			</div>
 			<?php
 		}
-		if ($collid && isset($collectionData[$collid])) {
-			$collData = $collectionData[$collid];
-			$codeStr = ' (' . $collData['institutioncode'];
-			if ($collData['collectioncode']) $codeStr .= '-' . $collData['collectioncode'];
-			$codeStr .= ')';
+		if ($collid && isset($collData[$collid])) {
+			$collData = $collData[$collid];
 			$_SESSION['colldata'] = $collData;
 			if ($editCode) {
 				?>
@@ -432,8 +135,8 @@ $biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 							<legend><b><?= (isset($LANG['ADMIN_CONTROL']) ? $LANG['ADMIN_CONTROL'] : 'Administration Control Panel'); ?></b></legend>
 							<ul>
 								<li>
-									<a href="collmetadata.php?collid=<?= $collid; ?>">
-										<?= (isset($LANG['EDIT_META']) ? $LANG['EDIT_META'] : 'Edit Metadata'); ?>
+									<a href="collmetadata.php?collid=<?php echo $collid; ?>">
+										<?php echo (isset($LANG['EDIT_META']) ? $LANG['EDIT_META'] : 'Edit Metadata'); ?>
 									</a>
 								</li>
 								<li>
@@ -466,7 +169,16 @@ $biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 											<?= (isset($LANG['REVIEW_SPEC_EDITS']) ? $LANG['REVIEW_SPEC_EDITS'] : 'Review/Verify Occurrence Edits'); ?>
 										</a>
 									</li>
-									<?php
+								<?php
+								}
+								if (!empty($ACTIVATE_DUPLICATES)) {
+								?>
+									<li>
+										<a href="../datasets/duplicatemanager.php?collid=<?php echo $collid; ?>">
+											<?php echo (isset($LANG['DUP_CLUSTER']) ? $LANG['DUP_CLUSTER'] : 'Duplicate Clustering'); ?>
+										</a>
+									</li>
+								<?php
 								}
 								?>
 								<li>
@@ -474,18 +186,28 @@ $biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 								</li>
 								<?php
 								if ($collData['colltype'] != 'General Observations') {
-									?>
+								?>
+									<li style="margin-left:10px;">
+									<a href="../cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">
+									<?php echo (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>
+                                    </a></li>
+								<?php
+								}
+								?>
+								<li style="margin-left:10px;">
+									<a href="#" onclick="newWindow = window.open('collbackup.php?collid=<?php echo $collid; ?>','bucollid','scrollbars=1,toolbar=0,resizable=1,width=600,height=250,left=20,top=20');">
+										<?php echo (isset($LANG['BACKUP_DATA_FILE']) ? $LANG['BACKUP_DATA_FILE'] : 'Download Backup Data File'); ?>
+									</a>
+								</li>
+								<?php
+								if ($collData['managementtype'] == 'Live Data') {
+								?>
 									<li style="margin-left:10px;">
 									<a href="../cleaning/index.php?obsuid=0&collid=<?= $collid; ?>">
 									<?= (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>
 									<?php
 								}
 								?>
-								<li style="margin-left:10px;">
-									<a href="#" onclick="newWindow = window.open('collbackup.php?collid=<?= $collid; ?>','bucollid','scrollbars=1,toolbar=0,resizable=1,width=800,height=650,left=20,top=20');">
-										<?= (isset($LANG['BACKUP_DATA_FILE']) ? $LANG['BACKUP_DATA_FILE'] : 'Download Backup Data File'); ?>
-									</a>
-								</li>
 								<li style="margin-left:10px;">
 									<a href="neoncollprofiles.php?collid=<?= $collid; ?>&action=UpdateStatistics">
 										<?= (isset($LANG['UPDATE_STATS']) ? $LANG['UPDATE_STATS'] : 'Update Statistics'); ?>
@@ -500,680 +222,210 @@ $biorepoAvailabilitySiteCodes = $collManager->getNeonAvailabilitySiteCodes();
 				<?php
 			}
 			?>
-			<div class="mb-6">
-				<?php
-				$title = !empty($collData['publicname']) ? $collData['publicname'] : $collData['collectionname'];
-				echo '<h1 class="font-bold text-left mb-4" style="font-size: 2.1rem;">' . $title . '</h1>';
-				?>
-				<div class="flex justify-between items-center">
-					<div class="flex justify-left space-x-3 mt-4">
-						<a href="<?= $CLIENT_ROOT . '/collections/list.php?db=' . $collid; ?>">
-							<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
-								<span class="MuiButton-label">Browse Records</span>
-								<span class="MuiTouchRipple-root"></span>
-							</button>
-						</a>
-						<a href="<?= $CLIENT_ROOT . '/neon/search/index.php?db=' . $collid; ?>">
-							<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
-								<span class="MuiButton-label">Search this Sample Type</span>
-								<span class="MuiTouchRipple-root"></span>
-							</button>
-						</a>
-					</div>
-					<div class="flex justify-right space-x-3 mt-4">
-						<?php
-						if ($datasetKey) {
-							?>
-							<div class="flex justify-right space-x-3 mt-4">
-								<a href="https://www.gbif.org/resource/search?contentType=literature&gbifDatasetKey=<?= $datasetKey ?>" target="_blank" style="text-decoration:none;">
-									<span id="gbif-citations">
-										<img src="../../images/gbif-mark-white-logo.svg" alt="GBIF">
-										<span id="gbif-text">GBIF citations</span>
-										<span id="gbif-count"></span>
-									</span>
-								</a>
-								<a href="https://bionomia.net/dataset/<?= $datasetKey ?>">
-									<img src="https://api.bionomia.net/dataset/<?= $datasetKey ?>/badge.svg" onerror="this.style.display='none'" alt="Bionomia dataset badge" style="width:262px; height:24px; padding-left:10px;">
-								</a>
-							</div>
-							<?php
-						}
-						?>
-					</div>
-				</div>
-			</div>
-			<?php
-			if (!empty($collData['identificationcollids'])){
-				?>
-				<div class="mb-6 border-l-4 border-[#0073cf] bg-[#f4f9ff] p-4">
-					<div class="flex items-start">
-						<i class="fas fa-info-circle text-[#0073cf] text-lg mt-1 mr-3"></i>
-						<div>
-							<div class="font-semibold text-gray-900">
-								Looking for a specific taxon?
-							</div>
-							<div class="text-gray-700">
-								Taxonomic identifications derived from these samples are available through a related sample type.
-							</div>
-							<a href="<?= $CLIENT_ROOT; ?>/collections/misc/neoncollprofiles.php?collid=<?= $collData['identificationcollids']; ?>"
-								class="inline-block mt-2 text-[#0073cf] font-semibold hover:underline">
-								Browse Identifications →
-							</a>
-						</div>
-					</div>
-				</div>
-				<?php
-			}
-			?>
-			<div class="grid grid-cols-1 gap-4 mb-6">
-				<div id="fulldescription-container">
-					<h2 class="font-semibold mb-2" style="font-size: 1.7rem;">About</h2>
-					<?php
-					echo $collData["fulldescription"];
-					?>
-				</div>
-			</div>
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-				<div id="collimages" class="lg:col-span-1"></div>
-				<?php
-				//Collection Statistics
-				$statsArr = $collManager->getBasicStats();
-				$georefPerc = 0;
-				if ($statsArr['georefcnt'] && $statsArr['recordcnt']) $georefPerc = (100 * ($statsArr['georefcnt'] / $statsArr['recordcnt']));
-				?>
-				<div class="lg:col-span-1 flex flex-col justify-around">
-					<div>
-						<h2 class="text-xl font-semibold mb-2"><?= (isset($LANG['COLL_STATISTICS']) ? $LANG['COLL_STATISTICS'] : 'Sample Type Statistics'); ?></h2>
-						<ul class="list-disc pl-6">
-							<li><?= number_format($statsArr["recordcnt"]) . ' ' . (isset($LANG['SPECIMEN_RECORDS']) ? $LANG['SPECIMEN_RECORDS'] : 'specimen records'); ?></li>
-							<li><?= ($statsArr['georefcnt'] ? number_format($statsArr['georefcnt']) : 0) . ($georefPerc ? " (" . ($georefPerc > 1 ? round($georefPerc) : round($georefPerc, 2)) . "%)" : '') . ' ' . (isset($LANG['GEOREFERENCED']) ? $LANG['GEOREFERENCED'] : 'georeferenced'); ?></li>
-							<?php
-							$extrastatsArr = array();
-							if ($statsArr['dynamicProperties']) $extrastatsArr = json_decode($statsArr['dynamicProperties'], true);
-							if ($extrastatsArr) {
-								if ($extrastatsArr['imgcnt']) {
-									$imgSpecCnt = $extrastatsArr['imgcnt'];
-									$imgCnt = 0;
-									if (strpos($imgSpecCnt, ':')) {
-										$imgCntArr = explode(':', $imgSpecCnt);
-										$imgCnt = $imgCntArr[0];
-										$imgSpecCnt = $imgCntArr[1];
-									}
-									if ($imgSpecCnt) {
-										$imgPerc = 0;
-										if ($statsArr['recordcnt']) $imgPerc = (100 * ($imgSpecCnt / $statsArr['recordcnt']));
-										echo '<li>';
-										echo number_format($imgSpecCnt) . ($imgPerc ? " (" . ($imgPerc > 1 ? round($imgPerc) : round($imgPerc, 2)) . "%)" : '') . ' ' . (isset($LANG['WITH_IMAGES']) ? $LANG['WITH_IMAGES'] : 'with images');
-										if ($imgCnt) echo ' (' . number_format($imgCnt) . ' ' . (isset($LANG['TOTAL_IMAGES']) ? $LANG['TOTAL_IMAGES'] : 'total images') . ')';
-										echo '</li>';
-									}
-								}
-								$genRefStr = '';
-								if (isset($extrastatsArr['gencnt']) && $extrastatsArr['gencnt']) $genRefStr = number_format($extrastatsArr['gencnt']) . ' ' . (isset($LANG['GENBANK_REF']) ? $LANG['GENBANK_REF'] : 'GenBank') . ', ';
-								if (isset($extrastatsArr['boldcnt']) && $extrastatsArr['boldcnt']) $genRefStr .= number_format($extrastatsArr['boldcnt']) . ' ' . (isset($LANG['BOLD_REF']) ? $LANG['BOLD_REF'] : 'BOLD') . ', ';
-								if (isset($extrastatsArr['geneticcnt']) && $extrastatsArr['geneticcnt']) $genRefStr .= number_format($extrastatsArr['geneticcnt']) . ' ' . (isset($LANG['OTHER_GENETIC_REF']) ? $LANG['OTHER_GENETIC_REF'] : 'other');
-								if ($genRefStr) echo '<li>' . trim($genRefStr, ' ,') . ' ' . (isset($LANG['GENETIC_REF']) ? $LANG['GENETIC_REF'] : 'genetic references') . '</li>';
-								if (isset($extrastatsArr['refcnt']) && $extrastatsArr['refcnt']) echo '<li>' . number_format($extrastatsArr['refcnt']) . ' ' . (isset($LANG['PUB_REFS']) ? $LANG['PUB_REFS'] : 'publication references') . '</li>';
-								if (isset($extrastatsArr['SpecimensCountID']) && $extrastatsArr['SpecimensCountID']) {
-									$spidPerc = (100 * ($extrastatsArr['SpecimensCountID'] / $statsArr['recordcnt']));
-									echo '<li>' . number_format($extrastatsArr['SpecimensCountID']) . ($spidPerc ? " (" . ($spidPerc > 1 ? round($spidPerc) : round($spidPerc, 2)) . "%)" : '') . ' ' . (isset($LANG['IDED_TO_SPECIES']) ? $LANG['IDED_TO_SPECIES'] : 'identified to species') . '</li>';
-								}
-							}
-							if (isset($statsArr['familycnt']) && $statsArr['familycnt']) echo '<li>' . number_format($statsArr['familycnt']) . ' ' . (isset($LANG['FAMILIES']) ? $LANG['FAMILIES'] : 'families') . '</li>';
-							if (isset($statsArr['genuscnt']) && $statsArr['genuscnt']) echo '<li>' . number_format($statsArr['genuscnt']) . ' ' . (isset($LANG['GENERA']) ? $LANG['GENERA'] : 'genera') . '</li>';
-							if (isset($statsArr['speciescnt']) && $statsArr['speciescnt']) echo '<li>' . number_format($statsArr['speciescnt']) . ' ' . (isset($LANG['SPECIES']) ? $LANG['SPECIES'] : 'species') . '</li>';
-							if ($extrastatsArr && $extrastatsArr['TotalTaxaCount']) echo '<li>' . number_format($extrastatsArr['TotalTaxaCount']) . ' ' . (isset($LANG['TOTAL_TAXA']) ? $LANG['TOTAL_TAXA'] : 'total taxa (including subsp. and var.)') . '</li>';
-							//if($extrastatsArr&&$extrastatsArr['TypeCount']) echo '<li>'.number_format($extrastatsArr['TypeCount']).' '.(isset($LANG['TYPE_SPECIMENS'])?$LANG['TYPE_SPECIMENS']:'type specimens').'</li>';
-							?>
-						</ul>
-					</div>
-					<div class="border-t-2 border-gray-200 mt-6 pt-4">
-						<h2 class="text-xl font-semibold mb-2">Citation</h2>
-						<p style="padding:16px"><strong>Please use the citation below when referencing this sample type. This citation is required for both data-only and physical sample use. Publications involving physical samples must also include the additional specimen citation requirements. See <a href="<?= $CLIENT_ROOT . '/misc/cite.php'?>">Acknowledging and Citing the Biorepository</a> for full guidance.</strong></p>
-						<div style="border: 1px solid rgba(0, 0, 0, 0.12); padding: 16px;">
-							<div id="citation" style="font-family: monospace; padding: 16px; font-size:large; word-break:break-all;">
-								<?php
-								include($SERVER_ROOT . '/includes/citationneoncollection.php');
-								?>
-							</div>
-						</div>
-						<div class="flex space-x-2">
-							<button id="copyButton" data-tooltip-id="tooltip-copy"
-								onclick="copyCitation()"
-								class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
-								tabindex="0"
-								type="button">
-								<span class="MuiButton-label copy-label">
-										<span class="copy-state">
-											<span class="MuiButton-startIcon MuiButton-iconSizeSmall">
-												<i class="fas fa-copy"></i>
-											</span>
-											COPY
-										</span>
-										<span class="copied-state">
-											<span class="MuiButton-startIcon MuiButton-iconSizeSmall">
-												<i class="fas fa-check"></i>
-											</span>
-											COPIED!
-										</span>
-								</span>
-								<span class="MuiTouchRipple-root"></span>
-								<span class="tooltip">
-									Click to copy the above plain text citation to the clipboard
-								</span>
-							</button>
-							<button id="bibButton"
-								data-tooltip-id="tooltip-bib"
-								onclick="downloadBib()"
-								class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
-								tabindex="0"
-								type="button">
-								<span class="MuiButton-label">
-									<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
-									DOWNLOAD (BIBTEX)
-								</span>
-								<span class="MuiTouchRipple-root"></span>
-								<span class="tooltip">
-									Click to download the citation as a file in BibTex format
-								</span>
-							</button>
-							<button id="risButton"
-								data-tooltip-id="tooltip-ris"
-								onclick="downloadRis()"
-								class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeMedium MuiButton-sizeMedium"
-								tabindex="0"
-								type="button">
-								<span class="MuiButton-label">
-									<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
-									DOWNLOAD (RIS)
-								</span>
-								<span class="MuiTouchRipple-root"></span>
-								<span class="tooltip">
-									Click to download the citation as a file in Research Information Systems (RIS) format
-								</span>
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-			<?php
-			if ($linkedCollections = $collManager->getLinkedCollections()){
-				?>
-				<div class="border-t-2 border-gray-200 mt-6 pt-4">
-					<h2 class="text-xl mb-2">Related Sample Types</h2>
-					<?php
-					foreach ($linkedCollections as $collid => $collectionName){
-						$collid = (int)$collid;
-						$url = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid;
-						?>
-						<div class="MuiListItem-container">
-							<div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">
-								<div class="MuiListItemIcon-root" style="min-width: 40px">
-									<i class="fas fa-flask fa-lg"></i>
-								</div>
-								<div class="MuiListItemText-root MuiListItemText-multiline">
-									<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
-										<?= htmlspecialchars($collectionName) ?>
-									</span>
-								</div>
-							</div>
-							<div class="MuiListItemSecondaryAction-root">
-								<a href="<?= htmlspecialchars($url) ?>"
-									 target="_blank"
-									 rel="noopener noreferrer"
-									 class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">
-										<span class="MuiButton-label">Explore</span>
-								</a>
-							</div>
-						</div>
-						<?php
-					}
-					?>
-				</div>
-				<?php
-			}
-			?>
-			<div class="border-t-2 border-gray-200 mt-6 pt-4">
-				<h2 class="text-xl mb-2">Linked Data Products and Protocols</h2>
-				<div class="mb-4">
-					<?php
-					if (isset($collData['resourcejson'])) {
-						if ($resourceArr = json_decode($collData['resourcejson'], true)) {
-							echo '<div class="mb-4">';
-							foreach ($resourceArr as $rArr) {
-								$title = $rArr['title'][$LANG_TAG] ?? "No Title Available";
-								$url = htmlspecialchars($rArr['url']);
-								$fileNumber = basename($rArr['url']);
+            <?php
+            // Adapt existing backend output for React; no class changes are needed.
+            $decodeArray = static function ($json) {
+                $value = json_decode($json ?? '', true);
+                return is_array($value) ? $value : [];
+            };
+            $bulkSampleCollections = [];
+            $bulkConnection = null;
+            $bulkStatement = null;
+            try {
+                // Reverse the same relationship used by the taxonomic-identification notice.
+                $bulkConnection = MySQLiConnectionFactory::getCon('readonly');
+                if (!$bulkConnection) throw new RuntimeException('Collection relationship connection unavailable');
+                $bulkStatement = $bulkConnection->prepare("SELECT collid,
+                        COALESCE(NULLIF(TRIM(publicName), ''), CollectionName) AS title
+                    FROM omcollections
+                    WHERE FIND_IN_SET(?, REPLACE(identificationCollIDs, ' ', '')) > 0
+                        AND collid <> ?
+                    ORDER BY title, collid");
+                if (!$bulkStatement) throw new RuntimeException('Collection relationship query unavailable');
+                $bulkStatement->bind_param('ii', $collid, $collid);
+                if (!$bulkStatement->execute()) throw new RuntimeException('Collection relationship query failed');
+                $bulkStatement->bind_result($bulkCollectionId, $bulkCollectionTitle);
+                while ($bulkStatement->fetch()) {
+                    $bulkSampleCollections[] = ['id' => (int) $bulkCollectionId, 'title' => $bulkCollectionTitle];
+                }
+            } catch (Throwable $error) {
+                error_log('Unable to load bulk sample types for identification collection ' . (int) $collid);
+            } finally {
+                if ($bulkStatement) $bulkStatement->close();
+                if ($bulkConnection) $bulkConnection->close();
+            }
+            $linkedCollectionCodes = [];
+            $sampleCatalogPath = $SERVER_ROOT . '/neon/cache/sample-catalog.json';
+            if ($linkedCollections && is_file($sampleCatalogPath) && is_readable($sampleCatalogPath)) {
+                $sampleCatalog = $decodeArray(file_get_contents($sampleCatalogPath));
+                $catalogItems = is_array($sampleCatalog['items'] ?? null) ? $sampleCatalog['items'] : [];
+                foreach ($catalogItems as $item) {
+                    if (!is_array($item)) continue;
+                    $linkedId = (int) ($item['id'] ?? 0);
+                    if (array_key_exists($linkedId, $linkedCollections) && is_string($item['collectionCode'] ?? null)) {
+                        $linkedCollectionCodes[$linkedId] = trim($item['collectionCode']);
+                    }
+                }
+            }
+            ob_start();
+            include($SERVER_ROOT . '/includes/citationneoncollection.php');
+            ob_end_clean();
+            $stats = $collManager->getBasicStats();
+            $extraStats = $decodeArray($stats['dynamicProperties'] ?? '');
+            $getLinkedUse = static function ($collectionId) {
+                $connection = null;
+                $counts = [];
+                try {
+                    $connection = MySQLiConnectionFactory::getCon('readonly');
+                    if (!$connection) throw new RuntimeException('Research statistics connection unavailable');
+                    $sampleType = NeonMaterialSampleCollections::TYPES[$collectionId] ?? null;
+                    $where = $sampleType === null ? 'o.collid = ?' :
+                        'o.collid IN (17,19,28) AND EXISTS (
+                            SELECT 1 FROM ommaterialsample ms
+                            WHERE ms.occid = o.occid AND ms.sampleType LIKE ?
+                        )';
+                    // Match the public research list, counting each project once for this sample type.
+                    $queries = [
+                        'research' => "SELECT COUNT(DISTINCT d.datasetid) AS itemCount,
+                            COUNT(DISTINCT o.occid) AS specimenCount
+                        FROM omoccurdatasets d
+                        INNER JOIN neonrequest nr ON nr.datasetID = d.datasetid
+                        INNER JOIN omoccurdatasetlink dl ON dl.datasetid = d.datasetid
+                        INNER JOIN omoccurrences o ON o.occid = dl.occid
+                        WHERE d.ispublic = 1 AND d.category = 'Request'
+                            AND nr.activeDate IS NOT NULL AND (" . $where . ')',
+                        'publications' => 'SELECT COUNT(DISTINCT r.refid) AS itemCount,
+                                COUNT(DISTINCT o.occid) AS specimenCount
+                            FROM referenceoccurlink r
+                            INNER JOIN omoccurrences o ON o.occid = r.occid
+                            WHERE ' . $where,
+                        'sequences' => 'SELECT COUNT(*) AS itemCount,
+                                COUNT(DISTINCT o.occid) AS specimenCount
+                            FROM omoccurgenetic g
+                            INNER JOIN omoccurrences o ON o.occid = g.occid
+                            WHERE ' . $where,
+                    ];
+                    // Aggregate each link table separately so joins cannot multiply the counts.
+                    foreach ($queries as $source => $sql) {
+                        $statement = null;
+                        try {
+                            $statement = $connection->prepare($sql);
+                            if (!$statement) throw new RuntimeException('Linked-use query unavailable');
+                            if ($sampleType === null) $statement->bind_param('i', $collectionId);
+                            else $statement->bind_param('s', $sampleType);
+                            if (!$statement->execute()) throw new RuntimeException('Linked-use query failed');
+                            $statement->bind_result($itemCount, $specimenCount);
+                            if (!$statement->fetch()) throw new RuntimeException('Linked-use count unavailable');
+                            $counts[$source] = ['itemCount' => (int) $itemCount, 'specimenCount' => (int) $specimenCount];
+                        } catch (Throwable $error) {
+                            error_log('Unable to count ' . $source . ' links for sample type ' . $collectionId);
+                        } finally {
+                            if ($statement) $statement->close();
+                        }
+                    }
+                } catch (Throwable $error) {
+                    error_log('Unable to count research use for sample type ' . $collectionId);
+                } finally {
+                    if ($connection) $connection->close();
+                }
+                return $counts;
+            };
+            unset($extraStats['refcnt'], $extraStats['gencnt'], $extraStats['boldcnt'], $extraStats['geneticcnt']);
+            $linkedUse = $getLinkedUse((int) $collid);
+            $extraStats['researchProjectCount'] = $linkedUse['research']['itemCount'] ?? null;
+            $extraStats['researchSpecimenCount'] = $linkedUse['research']['specimenCount'] ?? null;
+            $extraStats['publicationCount'] = $linkedUse['publications']['itemCount'] ?? null;
+            $extraStats['publicationSpecimenCount'] = $linkedUse['publications']['specimenCount'] ?? null;
+            $extraStats['sequencedRecordCount'] = $linkedUse['sequences']['specimenCount'] ?? null;
+            $archiveUrl = $collData['dwcaurl'] ?? '';
+            $archiveFilename = $archiveUrl ? basename(rawurldecode((string) parse_url($archiveUrl, PHP_URL_PATH))) : '';
+            $resources = array_values(array_filter($decodeArray($collData['resourcejson'] ?? ''), static function ($resource) use ($archiveUrl, $archiveFilename) {
+                if (!is_array($resource) || empty($resource['url']) || !is_string($resource['url'])) return false;
+                // The archive has one PHP-selected action; never expose a second raw link in JSON.
+                if (($resource['kind'] ?? '') === 'dwca' || $resource['url'] === $archiveUrl
+                    || ($resource['title'] ?? '') === 'Darwin Core Archive') return false;
+                $resourcePath = rawurldecode((string) parse_url($resource['url'], PHP_URL_PATH));
+                return !$archiveFilename || basename($resourcePath) !== $archiveFilename
+                    || strpos($resourcePath, '/content/dwca/') === false;
+            }));
+            $additionalResources = [];
+            if ($archiveUrl) {
+                $downloadUrl = rtrim($CLIENT_ROOT, '/') . '/content/dwca/' . rawurlencode($archiveFilename);
+                $archiveSize = null;
+                $archiveDirectory = realpath($SERVER_ROOT . '/content/dwca');
+                $archiveFile = $archiveDirectory ? realpath($archiveDirectory . '/' . $archiveFilename) : false;
+                // Read the size of the same local archive used by the root-relative download link.
+                if ($archiveFile && dirname($archiveFile) === $archiveDirectory
+                    && is_file($archiveFile) && is_readable($archiveFile)) {
+                    $bytes = filesize($archiveFile);
+                    if ($bytes !== false) $archiveSize = $bytes;
+                }
+                $returnUrl = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid . '#data-downloads';
+                // Use the Biorepository session, not a client-side login flag.
+                $additionalResources[] = [
+                    'kind' => 'dwca',
+                    'title' => 'Full Data Download',
+                    'description' => 'Download specimen records (DwC-A)',
+                    'filename' => $SYMB_UID ? $archiveFilename : '',
+                    'sizeBytes' => $archiveSize,
+                    'url' => $SYMB_UID ? $downloadUrl : $CLIENT_ROOT . '/profile/index.php?refurl=' . rawurlencode($returnUrl),
+                    'action' => $SYMB_UID ? 'Download' : 'Log in to download',
+                    'actionIcon' => $SYMB_UID ? 'download' : 'lock',
+                    'openInNewTab' => !empty($SYMB_UID),
+                ];
+            }
+            $additionalResources[] = ['kind' => 'eml', 'title' => 'Collection metadata', 'description' => 'Ecological Metadata Language (EML)', 'url' => '../datasets/emlhandler.php?collid=' . $collid, 'action' => 'View'];
+            if (!empty($collData['publishtogbif']) && $datasetKey) $additionalResources[] = ['title' => 'GBIF dataset', 'url' => 'https://www.gbif.org/dataset/' . $datasetKey];
+            $dynamicProps = $decodeArray($collData['dynamicproperties'] ?? '');
+            if (!empty($dynamicProps['edi']) && is_string($dynamicProps['edi'])) $additionalResources[] = ['title' => 'EDI dataset', 'url' => 'https://doi.org/' . preg_replace('/^doi:/i', '', $dynamicProps['edi'])];
+            if (!empty($collData['publishtoidigbio'])) {
+                $idigbioKey = $collManager->getIdigbioKey() ?: $collManager->findIdigbioKey($collData['recordid']);
+                if ($idigbioKey) $additionalResources[] = ['title' => 'iDigBio dataset', 'url' => 'https://www.idigbio.org/portal/recordsets/' . $idigbioKey];
+            }
+            $distribution = null;
+            if (($_REQUEST['stat'] ?? '') === 'geography') {
+                $country = is_string($_REQUEST['country'] ?? null) ? $_REQUEST['country'] : '';
+                $state = is_string($_REQUEST['state'] ?? null) ? $_REQUEST['state'] : '';
+                $distribution = ['type' => 'geography', 'country' => $country, 'state' => $state, 'rows' => $collManager->getGeographyStats($country, $state)];
+            } elseif (($_REQUEST['stat'] ?? '') === 'taxonomy') {
+                $family = is_string($_REQUEST['family'] ?? null) ? $collManager->cleanOutStr($_REQUEST['family']) : '';
+                $distribution = ['type' => 'taxonomy', 'family' => $family, 'rows' => $collManager->getTaxonomyStats($family)];
+            }
+            $profile = [
+                'id' => (int) $collid,
+                'title' => $collData['publicname'] ?: $collData['collectionname'],
+                'collectionName' => $collData['collectionname'] ?? '',
+                'code' => $collData['collectioncode'] ?? '',
+                'description' => $collData['fulldescription'] ?? '',
+                'identificationCollectionId' => (int) ($collData['identificationcollids'] ?? 0),
+                'bulkSampleCollections' => $bulkSampleCollections,
+                'stats' => $stats,
+                'extraStats' => $extraStats,
+                'citation' => $neonCitation,
+                'citationText' => $neonCitationText,
+                'related' => (object) $linkedCollections,
+                'relatedCodes' => (object) $linkedCollectionCodes,
+                'resources' => $resources,
+                'additionalResources' => $additionalResources,
+                'contacts' => array_values($decodeArray($collData['contactjson'] ?? '')),
+                'datasetKey' => $datasetKey,
+                'siteCodes' => $collManager->getNeonAvailabilitySiteCodes(),
+                'distribution' => $distribution
+            ];
+            ?>
+        <?php } else {
+            $profile = ['collections' => []];
+            foreach ($collData ?: [] as $cid => $collection) {
+                $profile['collections'][] = ['id' => (int) $cid, 'title' => $collection['publicname'] ?: $collection['collectionname'], 'code' => $collection['collectioncode'] ?? ''];
+            }
+        } ?>
+        <script id="neon-collection-profile-data" type="application/json"><?php
+            echo json_encode(['profile' => $profile, 'clientRoot' => $CLIENT_ROOT, 'language' => $LANG_TAG], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE);
+        ?></script>
+        <div id="biorepo-collection-page-content"><p role="status">Loading sample type profile…</p></div>
+        <noscript>Please enable JavaScript to view this sample type profile.</noscript>
 
-								echo '<div class="MuiListItem-container">';
-								echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction" style="padding-left: 8px">';
-								echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
-								echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
-								echo '                <g>';
-								echo '                    <g>';
-								echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
-								echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
-								echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
-								echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
-								echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
-								echo '                    </g>';
-								echo '                    <g>';
-								echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
-								echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
-								echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
-								echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
-								echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
-								echo '                    </g>';
-								echo '                </g>';
-								echo '            </svg>';
-								echo '        </div>';
-								echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
-								echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">';
-								echo                  ucwords(htmlspecialchars($title));
-								echo '            </span>';
-								echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-								if ($title !== "Homepage") {
-									echo '<span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
-								} else {
-									echo '<span title="' . $url . '" style="white-space: break-spaces;">' . $url . '</span>';
-								}
-								echo '            </p>';
-								echo '        </div>';
-								echo '    </div>';
-								echo '    <div class="MuiListItemSecondaryAction-root">';
-								echo '        <a href="' . $url . '" target="_blank" rel="noopener noreferrer">';
-								echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
-								echo '                <span class="MuiButton-label">Explore</span>';
-								echo '                <span class="MuiTouchRipple-root"></span>';
-								echo '            </button>';
-								echo '        </a>';
-								echo '    </div>';
-								echo '</div>';
-							}
-							echo '</div>';
-						}
-					}
-					?>
-					<div id="biorepo-collection-page-content"></div>
-					<div class="border-t-2 border-gray-200 mt-6 pt-4">
-						<h2 class="text-xl mb-2">Additional Resources</h2>
-						<?php
-						if (isset($collData['dwcaurl'])) {
-							$dwcaUrl = htmlspecialchars($collData['dwcaurl']);
-							$dwcaLabel = isset($LANG['DWCA_PUB']) ? $LANG['DWCA_PUB'] : 'DwC-Archive';
-							$dwcFile = basename($dwcaUrl);
-
-							echo '<div class="MuiListItem-container">';
-							echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
-							echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
-							echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 24 24" aria-hidden="true">';
-							echo '                <path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"></path>';
-							echo '            </svg>';
-							echo '        </div>';
-							echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
-							echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($dwcaLabel) . '</span>';
-							echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-							echo '                <span title="file type: Darwin Core Archive (DwC-A)">Darwin Core Archive (DwC-A)</span>';
-							echo '                <span style="margin: 0px 16px;">|</span>';
-							echo '                <span title="' . htmlspecialchars($dwcFile) . '" style="white-space: break-spaces;">' . htmlspecialchars($dwcFile) . '</span>';
-							echo '            </p>';
-							echo '        </div>';
-							echo '    </div>';
-							echo '    <div class="MuiListItemSecondaryAction-root">';
-							echo '        <a href="' . $dwcaUrl . '" target="_blank" rel="noopener noreferrer">';
-							echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">';
-							echo '                <span class="MuiButton-label">';
-							echo '                    <span class="MuiButton-startIcon MuiButton-iconSizeMedium">';
-							echo '                        <svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall" focusable="false" viewBox="0 0 24 24" aria-hidden="true">';
-							echo '                            <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path>';
-							echo '                        </svg>';
-							echo '                    </span>';
-							echo '                    Download';
-							echo '                </span>';
-							echo '                <span class="MuiTouchRipple-root"></span>';
-							echo '            </button>';
-							echo '        </a>';
-							echo '    </div>';
-							echo '</div>';
-						}
-
-						// Digital Metadata (EML File)
-						$emlUrl = "../datasets/emlhandler.php?collid=" . htmlspecialchars($collData['collid']);
-						$emlLabel = isset($LANG['DIGITAL_METADATA']) ? $LANG['DIGITAL_METADATA'] : 'Digital Metadata';
-
-						echo '<div class="MuiListItem-container">';
-						echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
-						echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
-						echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
-						echo '                <g>';
-						echo '                    <g>';
-						echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
-						echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
-						echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
-						echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
-						echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
-						echo '                    </g>';
-						echo '                    <g>';
-						echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
-						echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
-						echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
-						echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
-						echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
-						echo '                    </g>';
-						echo '                </g>';
-						echo '            </svg>';
-						echo '        </div>';
-						echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
-						echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($emlLabel) . '</span>';
-						echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-						echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">Ecological Metadata Language (EML) File</span>';
-						echo '            </p>';
-						echo '        </div>';
-						echo '    </div>';
-						echo '    <div class="MuiListItemSecondaryAction-root">';
-						echo '        <a href="' . $emlUrl . '" target="_blank" rel="noopener noreferrer">';
-						echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
-						echo '                <span class="MuiButton-label">View</span>';
-						echo '            </button>';
-						echo '        </a>';
-						echo '    </div>';
-						echo '</div>';
-
-						// GBIF Dataset Page
-						if (!empty($collData['publishtogbif']) && !empty($datasetKey)) {
-							$gbifUrl = "http://www.gbif.org/dataset/" . htmlspecialchars($datasetKey);
-							$gbifLabel = isset($LANG['GBIF_DATASET']) ? $LANG['GBIF_DATASET'] : 'GBIF Dataset Page';
-
-							echo '<div class="MuiListItem-container">';
-							echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
-							echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
-							echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
-							echo '                <g>';
-							echo '                    <g>';
-							echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
-							echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
-							echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
-							echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
-							echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
-							echo '                    </g>';
-							echo '                    <g>';
-							echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
-							echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
-							echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
-							echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
-							echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
-							echo '                    </g>';
-							echo '                </g>';
-							echo '            </svg>';
-							echo '        </div>';
-							echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
-							echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($gbifLabel) . '</span>';
-							echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-							echo '                <span title="' . htmlspecialchars($datasetKey) . '" style="white-space: break-spaces;">Dataset Key: ' . htmlspecialchars($datasetKey) . '</span>';
-							echo '            </p>';
-							echo '        </div>';
-							echo '    </div>';
-							echo '    <div class="MuiListItemSecondaryAction-root">';
-							echo '        <a href="' . $gbifUrl . '" target="_blank" rel="noopener noreferrer">';
-							echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
-							echo '                <span class="MuiButton-label">Access</span>';
-							echo '            </button>';
-							echo '        </a>';
-							echo '    </div>';
-							echo '</div>';
-						}
-
-						// EDI Dataset Page
-						if (!empty($collData['dynamicproperties'])) {
-							$dynamicProps = json_decode($collData['dynamicproperties'], true);
-							if (isset($dynamicProps['edi'])) {
-								$doiNum = $dynamicProps['edi'];
-								if (strpos($doiNum, 'doi:') === 0) {
-									$doiNum = substr($doiNum, 4);
-								}
-								$ediUrl = "https://www.doi.org/" . htmlspecialchars($doiNum);
-								echo '<div class="MuiListItem-container">';
-								echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
-								echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
-								echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
-								echo '                <g>';
-								echo '                    <g>';
-								echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
-								echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
-								echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
-								echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
-								echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
-								echo '                    </g>';
-								echo '                    <g>';
-								echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
-								echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
-								echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
-								echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
-								echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
-								echo '                    </g>';
-								echo '                </g>';
-								echo '            </svg>';
-								echo '        </div>';
-								echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
-								echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">EDI Dataset Page</span>';
-								echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-								echo '                <span title="' . htmlspecialchars($doiNum) . '" style="white-space: break-spaces;">DOI: ' . htmlspecialchars($doiNum) . '</span>';
-								echo '            </p>';
-								echo '        </div>';
-								echo '    </div>';
-								echo '    <div class="MuiListItemSecondaryAction-root">';
-								echo '        <a href="' . $ediUrl . '" target="_blank" rel="noopener noreferrer">';
-								echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
-								echo '                <span class="MuiButton-label">Access</span>';
-								echo '            </button>';
-								echo '        </a>';
-								echo '    </div>';
-								echo '</div>';
-							}
-						}
-
-						// iDigBio Dataset Page
-						if (!empty($collData['publishtoidigbio'])) {
-							$idigbioKey = $collManager->getIdigbioKey();
-							if (!$idigbioKey) {
-								$idigbioKey = $collManager->findIdigbioKey($collData['recordid']);
-							}
-							if ($idigbioKey) {
-								$idigbioUrl = "https://www.idigbio.org/portal/recordsets/" . htmlspecialchars($idigbioKey);
-								$idigbioLabel = isset($LANG['IDIGBIO_DATASET']) ? $LANG['IDIGBIO_DATASET'] : 'iDigBio Dataset Page';
-
-								echo '<div class="MuiListItem-container">';
-								echo '    <div class="MuiListItem-root MuiListItem-gutters MuiListItem-secondaryAction">';
-								echo '        <div class="MuiListItemIcon-root" style="min-width: 40px">';
-								echo '            <svg class="MuiSvgIcon-root" focusable="false" viewBox="0 0 64 64" aria-hidden="true">';
-								echo '                <g>';
-								echo '                    <g>';
-								echo '                        <path d="M35.521,41.288c-3.422,0-6.64-1.333-9.06-3.753c-1.106-1.106-1.106-2.9,0-4.006';
-								echo '                            c1.106-1.106,2.9-1.106,4.006,0c1.35,1.35,3.145,2.093,5.054,2.093c1.909,0,3.704-0.743,5.054-2.094l7.538-7.538';
-								echo '                            c2.787-2.787,2.787-7.321,0-10.108c-2.787-2.787-7.321-2.787-10.108,0l-3.227,3.227c-1.106,1.106-2.9,1.106-4.006,0';
-								echo '                            c-1.106-1.106-1.106-2.9,0-4.006L34,11.877c4.996-4.996,13.124-4.995,18.12,0c4.996,4.996,4.996,13.124,0,18.12l-7.538,7.538';
-								echo '                            C42.161,39.955,38.944,41.288,35.521,41.288z"></path>';
-								echo '                    </g>';
-								echo '                    <g>';
-								echo '                        <path d="M20.94,55.869c-3.422,0-6.64-1.333-9.06-3.753c-4.996-4.996-4.996-13.124,0-18.12l7.538-7.538';
-								echo '                            c4.996-4.995,13.124-4.995,18.12,0c1.106,1.106,1.106,2.9,0,4.006c-1.106,1.106-2.9,1.106-4.006,0';
-								echo '                            c-2.787-2.787-7.321-2.787-10.108,0l-7.538,7.538c-2.787,2.787-2.787,7.321,0,10.108c1.35,1.35,3.145,2.094,5.054,2.094';
-								echo '                            c1.909,0,3.704-0.743,5.054-2.093l3.227-3.227c1.106-1.106,2.9-1.106,4.006,0c1.106,1.106,1.106,2.9,0,4.006L30,52.117';
-								echo '                            C27.58,54.536,24.363,55.869,20.94,55.869z"></path>';
-								echo '                    </g>';
-								echo '                </g>';
-								echo '            </svg>';
-								echo '        </div>';
-								echo '        <div class="MuiListItemText-root MuiListItemText-multiline">';
-								echo '            <span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">' . htmlspecialchars($idigbioLabel) . '</span>';
-								//echo '            <p class="MuiTypography-root MuiListItemText-secondary MuiTypography-body2 MuiTypography-colorTextSecondary MuiTypography-displayBlock">';
-								//echo '                <span title="' . htmlspecialchars($fileNumber) . '" style="white-space: break-spaces;">' . htmlspecialchars($fileNumber) . '</span>';
-								//echo '            </p>';
-								echo '        </div>';
-								echo '    </div>';
-								echo '    <div class="MuiListItemSecondaryAction-root">';
-								echo '        <a href="' . $idigbioUrl . '" target="_blank" rel="noopener noreferrer">';
-								echo '            <button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary">';
-								echo '                <span class="MuiButton-label">Open</span>';
-								echo '            </button>';
-								echo '        </a>';
-								echo '    </div>';
-								echo '</div>';
-							}
-						}
-						?>
-					</div>
-				</div>
-				<div class="border-t-2 border-gray-200 mt-6 pt-4">
-					<div class="grid grid-cols-1 gap-4 mb-6">
-						<div>
-							<h2 class="text-xl font-semibold mb-2">Contact Information</h2>
-							<?php
-							$contacts = json_decode($collData["contactjson"], true);
-							if (is_array($contacts)) {
-								foreach ($contacts as $contact) {
-									$output = '<p class="mb-4">';
-									if (!empty($contact["role"])) {
-										$output .= htmlspecialchars($contact["role"]) . ': ';
-									}
-									$output .= htmlspecialchars($contact["firstName"]) . ' ' . htmlspecialchars($contact["lastName"]);
-									if (!empty($contact["orcid"])) {
-										$output .= ' (ORCID ID: <a href="https://orcid.org/' . htmlspecialchars($contact["orcid"]) . '" target="_blank">' . htmlspecialchars($contact["orcid"]) . '</a>)';
-									}
-									$output .= '</p>';
-									echo $output;
-								}
-							}
-							?>
-							<a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">
-									<button class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary" tabindex="0" type="button">
-											<span class="MuiButton-label">Contact the Biorepository</span>
-											<span class="MuiTouchRipple-root"></span>
-									</button>
-							</a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<?php
-			include('collprofilestats.php');
-		} elseif ($collectionData) {
-			?>
-			<h2><?= $DEFAULT_TITLE . ' ' . (isset($LANG['COLLECTION_PROJECTS']) ? $LANG['COLLECTION_PROJECTS'] : 'Natural History Collections and Observation Projects'); ?></h2>
-			<div style='margin:10px;clear:both;'>
-				<?php
-				echo (isset($LANG['RSS_FEED']) ? $LANG['RSS_FEED'] : 'RSS feed') . ': <a href="../datasets/rsshandler.php" target="_blank">' . $collManager->getDomain() . $CLIENT_ROOT . 'collections/datasets/rsshandler.php</a>';
-				?>
-				<hr />
-			</div>
-			<div class="gridlike-form">
-				<?php
-				foreach ($collectionData as $cid => $collArr) {
-					$collManager->setCollid($cid);
-					$cid = htmlspecialchars($cid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE);
-					?>
-					<section class="bottom-breathing-room gridlike-form-row">
-						<div class="gridlike-form">
-							<?php
-							$iconStr = $collArr['icon'];
-							if ($iconStr) {
-								if (substr($iconStr, 0, 6) == 'images') $iconStr = '../../' . $iconStr;
-								?>
-								<div class="justify-center">
-									<img src='<?= $iconStr ?>' class="col-profile-img" alt="icon for collection" /><br />
-								</div>
-								<?php
-							} else{ // placeholder for missing icon
-								?>
-								<div class="justify-center">
-									<p class="col-profile-img"></p><br />
-								</div>
-								<?php
-							}
-							?>
-							<div class="gridlike-form-row col-profile-inst-code justify-center">
-								<p>
-									<?= $collArr['institutioncode'] . ($collArr['collectioncode'] ? '-' . $collArr['collectioncode'] : '') ?>
-								</p>
-							</div>
-						</div>
-						<div>
-							<h3>
-								<a class="col-profile-header" href='collprofiles.php?collid=<?= $cid ?>'>
-									<?= $collArr['collectionname'] ?>
-								</a>
-							</h3>
-							<div style='margin:10px;'>
-								<?php
-								/*
-								if(!empty($collArr['fulldescription'])){
-									echo '<div class="coll-description bottom-breathing-room-rel">' . $collArr['fulldescription'] . '</div>';
-								}
-								*/
-								if(isset($collArr['resourcejson'])){
-									if($resourceArr = json_decode($collArr['resourcejson'], true)){
-										$title = $LANG['HOMEPAGE'];
-										foreach($resourceArr as $rArr){
-											if(!empty($rArr['title'][$LANG_TAG])) $title = $rArr['title'][$LANG_TAG];
-											?>
-											<div class="field-div">
-												<a href="<?= htmlspecialchars($rArr['url'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) ?>" target="_blank"><?= $title ?></a>
-											</div>
-											<?php
-										}
-									}
-								}
-								if(!empty($collArr['contactjson'])){
-									if($contactArr = json_decode($collArr['contactjson'], true)){
-										if(!empty($contactArr)){
-											?>
-											<section style="margin-left: 0;">
-												<h4><span><?= $LANG['CONTACT'] ?>: </span></h4>
-												<ul>
-													<?php
-													foreach($contactArr as $cArr){
-														?>
-														<li>
-															<div class="field-div">
-																<?php
-																if(!empty($cArr['role'])){
-																	echo '<span class="label">' . $cArr['role'] . ': </span>';
-																}
-																echo $cArr['firstName'].' '.$cArr['lastName'];
-																if(!empty($cArr['email'])) echo ', ' . $cArr['email'];
-																if(!empty($cArr['phone'])) echo ', ' . $cArr['phone'];
-																if(!empty($cArr['orcid'])) echo ' (ORCID #: <a href="https://orcid.org/' . $cArr['orcid'] . '" target="_blank">'. $cArr['orcid'] . '</a>)';
-																?>
-															</div>
-														</li>
-														<?php
-													}
-													?>
-												</ul>
-											</section>
-											<?php
-										}
-									}
-								}
-								?>
-							</div>
-							<div style='margin:5px 0px 15px 10px;'>
-								<a href='collprofiles.php?collid=<?= $cid ?>'><?= $LANG['MORE_INFO'] ?></a>
-							</div>
-						</div>
-					</section>
-					<hr class="test" />
-					<?php
-				}
-				?>
-			</div>
-			<?php
-		}
-		?>
-	</div>
-	<?php
-	include($SERVER_ROOT . '/includes/footer.php');
-	?>
+    </div>
+    <?php include($SERVER_ROOT . '/includes/footer.php'); ?>
 </body>
-
 </html>

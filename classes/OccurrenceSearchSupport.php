@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/NeonMaterialSampleCollections.php');
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 
 Language::load('collections/misc/collstats');
@@ -171,17 +172,9 @@ class OccurrenceSearchSupport {
 			// NEON edit - mammal material samples
 			$dbArr = array_map('intval', explode(',', $dbSearchTerm));
 			$whereParts = [];
-
-			$materialSampleMap = [
-				118 => '%tract%',
-				119 => '%heart%',
-				120 => '%lung%',
-				121 => '%kidney%',
-				122 => '%spleen%',
-				123 => '%liver%',
-				124 => '%muscle%'
-			];
-
+			
+			$materialSampleMap = NeonMaterialSampleCollections::TYPES;
+			
 			// regular collections
 			$normalCollids = array_diff($dbArr, array_keys($materialSampleMap));
 

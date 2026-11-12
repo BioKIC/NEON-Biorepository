@@ -38,6 +38,22 @@ if($SYMB_UID && $collid){
 if($collid) $loanManager->setCollId($collid);
 
 $statusStr = '';
+#start neon edits
+$startActionStatus = function($count, $singularMessage, $pluralMessage){
+	$message = ($count == 1 ? $singularMessage : $pluralMessage);
+	return '<ul><li><b>' . (int)$count . '</b> ' . $message . ($count > 0 ? ' successfully' : '') . '.</li>';
+};
+$appendActionErrors = function($errorArr){
+	$status = '';
+	if($errorArr){
+		$status .= '<li style="color:red;"><b>Errors:</b></li>';
+		foreach($errorArr as $error){
+			$status .= '<li style="margin-left:10px;color:black;">' . htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
+		}
+	}
+	return $status;
+};
+#end neon edits
 if($isEditor){
 	if($formSubmit){
 		if($formSubmit == 'createLoanOut'){
@@ -47,60 +63,90 @@ if($isEditor){
 		elseif($formSubmit == 'Save Outgoing'){
 			$statusStr = $loanManager->editLoanOut($_POST);
 		}
+		#start neon edits
 		elseif($formSubmit == 'deleteSpecimens'){
-			if(!$loanManager->deleteSpecimens($_POST['occid'], $_POST['loanid'])) $statusStr = $loanManager->getErrorMessage();
+			$occidArr = (isset($_POST['occid']) && is_array($_POST['occid'])) ? array_values(array_unique($_POST['occid'])) : array();
+			$cnt = 0;
+			$errorArr = array();
+			if(!$occidArr) $errorArr[] = 'No specimens were selected for removal.';
+			elseif($loanManager->deleteSpecimens($occidArr, $_POST['loanid'])) $cnt = count($occidArr);
+			else $errorArr[] = ($loanManager->getErrorMessage() ?: 'The selected specimens could not be removed from the loan.');
+			$statusStr = $startActionStatus($cnt, 'specimen removed', 'specimens removed');
+			$statusStr .= $appendActionErrors($errorArr) . '</ul>';
+			$tabIndex = 1;
 		}
 		elseif($formSubmit == 'checkinSpecimens'){
-			if(!$loanManager->batchCheckinSpecimens($_POST['occid'], $_POST['loanid'])) $statusStr = $loanManager->getErrorMessage();
+			$cnt = 0;
+			$errorArr = array();
+			if(isset($_POST['occid']) && ($checkinCnt = $loanManager->batchCheckinSpecimens($_POST['occid'], $_POST['loanid']))) $cnt = (int)$checkinCnt;
+			else $errorArr[] = ($loanManager->getErrorMessage() ?: 'No specimens were marked as returned. They may already be returned or may not belong to this loan.');
+			$statusStr = $startActionStatus($cnt, 'specimen marked as returned', 'specimens marked as returned');
+			$statusStr .= $appendActionErrors($errorArr) . '</ul>';
+			$tabIndex = 1;
 		}
 		elseif($formSubmit == 'addDeterminations'){
 			include_once($SERVER_ROOT . '/classes/OccurrenceEditorDeterminations.php');
 			$occManager = new OccurrenceEditorDeterminations();
-			$occidArr = $_REQUEST['occid'];
+			$occidArr = (isset($_REQUEST['occid']) && is_array($_REQUEST['occid'])) ? array_values(array_unique($_REQUEST['occid'])) : array();
+			$cnt = 0;
+			$errorArr = array();
+			if(!$occidArr) $errorArr[] = 'No specimens were selected for the determination.';
 			foreach($occidArr as $k){
+				if(!is_numeric($k)){
+					$errorArr[] = 'Invalid occurrence identifier: ' . $k;
+					continue;
+				}
 				$occManager->setOccId($k);
-				$occManager->addDetermination($_REQUEST,$isEditor);
+				$detStatus = $occManager->addDetermination($_REQUEST,$isEditor);
+				if(strpos($detStatus, $LANG['DET_SUCCESS']) === 0 || strpos($detStatus, $LANG['DET_ADDED_PENDING']) === 0) $cnt++;
+				else $errorArr[] = 'Occurrence ' . $k . ': ' . $detStatus;
 			}
+			$statusStr = $startActionStatus($cnt, 'determination added', 'determinations added');
+			$statusStr .= $appendActionErrors($errorArr) . '</ul>';
+			$tabIndex = 1;
 		}
 		elseif($formSubmit == 'batchProcessSpecimens'){
 			$cnt = $loanManager->batchProcessSpecimens($_POST);
-			$statusStr = '<ul>';
-			$statusStr .= '<li><b>' . $cnt . '</b> ' . $LANG['PROC_SUCCESS'] . '</li>';
+			$processMode = (isset($_POST['processmode']) ? $_POST['processmode'] : '');
+			if($processMode == 'link') $statusStr = $startActionStatus($cnt, 'specimen added', 'specimens added');
+			elseif($processMode == 'checkin') $statusStr = $startActionStatus($cnt, 'specimen marked as returned', 'specimens marked as returned');
+			else $statusStr = $startActionStatus($cnt, 'specimen processed', 'specimens processed');
 			if($warnArr = $loanManager->getWarningArr()){
 				if(isset($warnArr['missing'])){
 					$statusStr .= '<li style="color:red;"><b>' . $LANG['CATNUMS_NOT_LOCATED'] . '</b></li>';
 					foreach($warnArr['missing'] as $catNum){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $catNum . '</li>';
+						$statusStr .= '<li style="margin-left:10px;color:black;">' . htmlspecialchars($catNum, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
 					}
 				}
 				if(isset($warnArr['multiple'])){
 					$statusStr .= '<li style="color:orange;"><b>' . $LANG['CATNUM_MULTIPLE_MATCHES'] . '</b></li>';
 					foreach($warnArr['multiple'] as $catNum){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $catNum . '</li>';
+						$statusStr .= '<li style="margin-left:10px;color:black;">' . htmlspecialchars($catNum, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
 					}
 				}
 				if(isset($warnArr['dupe'])){
 					$statusStr .= '<li style="color:orange"><b>' . $LANG['SPECS_ALREADY_LINKED'] . '</b></li>';
 					foreach($warnArr['dupe'] as $catNum){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $catNum . '</li>';
+						$statusStr .= '<li style="margin-left:10px;color:black;">' . htmlspecialchars($catNum, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
 					}
 				}
 				if(isset($warnArr['zeroMatch'])){
 					$statusStr .= '<li style="color:orange;"><b>' . $LANG['ALREADY_CHECKED_IN'] . '</b></li>';
 					foreach($warnArr['zeroMatch'] as $catNum){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $catNum . '</li>';
+						$statusStr .= '<li style="margin-left:10px;color:black;">' . htmlspecialchars($catNum, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
 					}
 				}
 				if(isset($warnArr['error'])){
 					$statusStr .= '<li style="color:red;"><b>' . $LANG['MISC_ERROR'] . '</b></li>';
 					foreach($warnArr['error'] as $errStr){
-						$statusStr .= '<li style="margin-left:10px;color:black;">' . $errStr . '</li>';
+						$statusStr .= '<li style="margin-left:10px;color:black;">' . htmlspecialchars($errStr, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
 					}
 				}
 			}
 			$statusStr .= '</ul>';
 			$tabIndex = 1;
 		}
+		#end neon edits
 		elseif($formSubmit == 'saveSpecimenDetails'){
 			if($loanManager->editSpecimenDetails($loanId,$_POST['occid'],$_POST['returndate'],$_POST['notes'])) $statusStr = true;
 			echo $statusStr = $loanManager->getErrorMessage();
@@ -134,6 +180,10 @@ $specimenTotal = $loanManager->getSpecimenTotal($loanId);
 	?>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
+	<!-- #start neon edits -->
+	<script src="../../js/datatables/datatables.js"></script>
+	<link rel="stylesheet" href="../../js/datatables/datatables.css" />
+	<!-- #end neon edits -->
 	<script type="text/javascript">
 		var tabIndex = <?php echo $tabIndex; ?>;
 
@@ -191,12 +241,14 @@ $specimenTotal = $loanManager->getSpecimenTotal($loanId);
 			  <ul>
 					<li><a href="#outloandetaildiv"><span><?= $LANG['LOAN_DETAILS'] ?></span></a></li>
 					<li>
-						<a href="specimentab.php?collid=<?= $collid
+						<!-- #start neon edits -->
+						<a href="neonspecimentab.php?collid=<?= $collid
 							. '&loanid=' . $loanId
 							. '&sortTag=' . htmlspecialchars($sortTag, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE)
 							. '&sampletype=' . $sampletype ?>">
-							<span><?= $LANG['SPECIMENS'] ?></span>
+							<span>Specimens</span>
 						</a>
+						<!-- #end neon edits -->
 					</li>
 					<li><a href="#outloandeldiv"><span><?= $LANG['ADMIN'] ?></span></a></li>
 				</ul>
@@ -443,3 +495,4 @@ $specimenTotal = $loanManager->getSpecimenTotal($loanId);
 	?>
 </body>
 </html>
+

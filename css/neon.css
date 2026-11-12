@@ -48,7 +48,7 @@ Jan 2021
 }
 
 body {
-  font-feature-settings: "ss02" 1;
+  font-feature-settings: "ss04" 1, "zero" 0;
 }
 
 

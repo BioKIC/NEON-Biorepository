@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__ . '/NeonMaterialSampleCollections.php');
 include_once($SERVER_ROOT . '/classes/OmCollections.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceMaintenance.php');
 
@@ -857,17 +858,9 @@ class OccurrenceCollectionProfile extends OmCollections
 		if(!$this->collid){
 			return $retArr;
 		}
-		$materialSampleMap = [
-			118 => '%heart%',
-			119 => '%tract%',
-			120 => '%lung%',
-			121 => '%kidney%',
-			122 => '%spleen%',
-			123 => '%liver%',
-			124 => '%muscle%'
-		];
+		$materialSampleMap = NeonMaterialSampleCollections::TYPES;
 
-		$where = 'o.collid = '.(int)$this->collid;
+    $where = 'o.collid = '.(int)$this->collid;
 
 		if(isset($materialSampleMap[$this->collid])){
 			$where = 'o.collid IN(17,19,28)

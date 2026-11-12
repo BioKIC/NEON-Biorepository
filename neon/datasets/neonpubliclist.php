@@ -40,14 +40,24 @@ usort($pArr, function ($a, $b) {
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
 	<head>
-		<title>Published Sample Research Datasets</title>
+		<title>Biorepository Research Projects</title>
 		<?php
 		include_once($SERVER_ROOT.'/includes/head.php');
 		?>
         <style>
+            #innertext > h3.MuiTypography-h3 {
+                font-size: 2.25rem;
+                line-height: 1.3;
+            }
+            #innertext > p.MuiTypography-body1,
+            #innertext > p.MuiTypography-body1 a {
+                font-size: 0.875rem;
+                line-height: 1.6;
+            }
             #project-overview {
-                margin: 0 0 40px;
-                padding: 32px 0 0;
+                container: project-overview / inline-size;
+                margin: 0 0 32px;
+                padding: 24px 0 0;
                 background: #fff;
                 border-top: 2px dotted #8b9bb3;
                 font-family: 'Inter', Helvetica, Arial, sans-serif;
@@ -70,7 +80,7 @@ usort($pArr, function ($a, $b) {
                 border-left: 2px dotted #8b9bb3;
             }
             #project-overview dt {
-                font-size: 1rem;
+                font-size: 0.875rem;
                 font-weight: 400;
                 line-height: 1.5;
             }
@@ -78,10 +88,10 @@ usort($pArr, function ($a, $b) {
                 order: -1;
                 margin: 0 0 8px;
                 color: #002c77;
-                font-size: 2.5rem;
+                font-size: 2rem;
                 font-weight: 600;
                 line-height: 1.2;
-                overflow-wrap: anywhere;
+                white-space: nowrap;
                 font-variant-numeric: tabular-nums;
             }
             #project-overview .overview-status-bar {
@@ -90,39 +100,21 @@ usort($pArr, function ($a, $b) {
                 margin-bottom: 16px;
                 background: #d7d9d9;
             }
-            #project-overview .overview-ongoing { background: #0073cf; }
-            #project-overview .overview-completed { background: #002c77; }
             #project-overview .overview-footer {
                 display: flex;
                 flex-wrap: wrap;
                 align-items: baseline;
                 justify-content: space-between;
                 gap: 12px 24px;
-            }
-            #project-overview .overview-legend {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 12px 28px;
-                font-size: 0.875rem;
-                line-height: 1.5;
-            }
-            #project-overview .overview-legend > span {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-            }
-            #project-overview .overview-swatch {
-                display: inline-block;
-                width: 12px;
-                height: 12px;
-                flex-shrink: 0;
+                border-top: 2px dotted #8b9bb3;
+                padding-top: 5px;
             }
             #project-overview .overview-note {
                 margin: 0;
                 font-size: 0.75rem;
                 line-height: 1.5;
             }
-            @media (max-width: 900px) {
+            @container project-overview (max-width: 900px) {
                 #project-overview .overview-metrics {
                     grid-template-columns: repeat(2, minmax(0, 1fr));
                     gap: 24px 0;
@@ -131,8 +123,7 @@ usort($pArr, function ($a, $b) {
                     border-left: 0;
                 }
             }
-            @media (max-width: 540px) {
-                #project-overview { padding-top: 24px; }
+            @container project-overview (max-width: 540px) {
                 #project-overview .overview-metrics {
                     grid-template-columns: 1fr;
                     gap: 16px;
@@ -146,14 +137,14 @@ usort($pArr, function ($a, $b) {
                     border-top: 2px dotted #8b9bb3;
                     padding-top: 16px;
                 }
-                #project-overview dd { font-size: 2.25rem; }
+                #project-overview dd { font-size: 1.75rem; }
             }
         </style>
 	</head>
 	<body>
 		<!-- This is inner text! -->
 		<div role="main" id="innertext">
-			<h3 class="MuiTypography-root MuiTypography-h3" style="font-weight: 300;">NEON Biorepository Research Projects</h3>
+			<h3 class="MuiTypography-root MuiTypography-h3" style="font-weight: 300;">Biorepository Research Projects</h3>
             <p class="MuiTypography-root MuiTypography-body1" style="margin:30px 0;">
                 Each project listed below highlights the breadth of scientific research supported by samples and specimens from the
                 <a
@@ -182,15 +173,7 @@ usort($pArr, function ($a, $b) {
                         <dd><?php echo number_format(count($sampleTypes)); ?></dd>
                     </div>
                 </dl>
-                <div class="overview-status-bar" aria-hidden="true">
-                    <span class="overview-ongoing" style="flex: <?php echo $ongoingProjects; ?> 1 0;"></span>
-                    <span class="overview-completed" style="flex: <?php echo $completedProjects; ?> 1 0;"></span>
-                </div>
                 <div class="overview-footer">
-                    <div class="overview-legend">
-                        <span><span class="overview-swatch overview-ongoing" aria-hidden="true"></span><?php echo number_format($ongoingProjects); ?> ongoing projects</span>
-                        <span><span class="overview-swatch overview-completed" aria-hidden="true"></span><?php echo number_format($completedProjects); ?> completed projects</span>
-                    </div>
                     <p class="overview-note">Across all public projects listed below.</p>
                 </div>
             </section>
