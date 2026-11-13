@@ -728,6 +728,197 @@ html:has(#innertext.neon-search) {
   gap: 16px;
 }
 
+#innertext.neon-search .search-date-filter {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+#innertext.neon-search .search-date-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+#innertext.neon-search .search-date-heading h3 {
+  margin: 0;
+  font: 400 20px/1.4 Inter, Helvetica, Arial, sans-serif;
+  font-size: 20px !important;
+}
+
+#innertext.neon-search #date-range-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  height: auto;
+  min-height: 28px;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--search-blue);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--search-blue);
+  font: 500 11px/18px Inter, Helvetica, Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+#innertext.neon-search #date-range-reset:hover:enabled {
+  background: rgb(0 115 207 / 6%);
+}
+
+#innertext.neon-search #date-range-reset:disabled {
+  color: #9fa4a6;
+  border-color: currentColor;
+  cursor: default;
+}
+
+#innertext.neon-search #params-form #date-range-help {
+  margin: 10px 0 24px;
+  color: #808080;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+#innertext.neon-search .search-date-range {
+  --date-start: 0%;
+  --date-end: 100%;
+  position: relative;
+  height: 40px;
+  margin: 16px 12px 8px;
+}
+
+#innertext.neon-search .search-date-rail,
+#innertext.neon-search .search-date-track {
+  position: absolute;
+  top: 0;
+  height: 6px;
+  border-radius: 1px;
+}
+
+#innertext.neon-search .search-date-rail {
+  width: 100%;
+  background: #8abfec;
+}
+
+#innertext.neon-search .search-date-track {
+  left: var(--date-start);
+  right: calc(100% - var(--date-end));
+  background: var(--search-blue);
+}
+
+#innertext.neon-search .search-date-mark {
+  position: absolute;
+  top: -3px;
+  width: 3px;
+  height: 12px;
+  border-radius: 1px;
+  background: #5ca6e3;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#innertext.neon-search .search-date-mark > span {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--search-ink);
+  font: 400 12px/18px Inter, Helvetica, Arial, sans-serif;
+}
+
+#innertext.neon-search input.search-date-range-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  top: -16px;
+  left: -5px;
+  width: calc(100% + 10px);
+  height: 38px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  outline: none;
+}
+
+#innertext.neon-search input.search-date-range-input::-webkit-slider-runnable-track {
+  height: 6px;
+  background: transparent;
+}
+
+#innertext.neon-search input.search-date-range-input::-moz-range-track {
+  height: 6px;
+  background: transparent;
+}
+
+#innertext.neon-search input.search-date-range-input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 10px;
+  height: 26px;
+  margin-top: -10px;
+  border: 2px solid var(--search-blue);
+  border-radius: 1px;
+  background: var(--search-surface);
+  cursor: ew-resize;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#innertext.neon-search input.search-date-range-input::-moz-range-thumb {
+  width: 10px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 2px solid var(--search-blue);
+  border-radius: 1px;
+  background: var(--search-surface);
+  cursor: ew-resize;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#innertext.neon-search input.search-date-range-input:focus-visible {
+  z-index: 2;
+}
+
+#innertext.neon-search input.search-date-range-input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--search-blue);
+  outline-offset: 3px;
+}
+
+#innertext.neon-search input.search-date-range-input:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--search-blue);
+  outline-offset: 3px;
+}
+
+#innertext.neon-search .search-date-value {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  padding: 4px 8px;
+  border-radius: 2px;
+  background: var(--search-blue);
+  color: #fff;
+  font: 500 12px/18px Inter, Helvetica, Arial, sans-serif;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+#innertext.neon-search #date-range-start-label { left: clamp(40px, var(--date-start), calc(100% - 40px)); }
+#innertext.neon-search #date-range-end-label { left: clamp(40px, var(--date-end), calc(100% - 40px)); }
+
+#innertext.neon-search input.search-date-range-input:is(:hover, :focus-visible, :active) + .search-date-value {
+  opacity: 1;
+}
+
 #innertext.neon-search #search-form-sample > div:first-child {
   grid-column: 1 / -1;
 }

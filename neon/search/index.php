@@ -36,6 +36,8 @@ $collManager = new OccurrenceManager();
 			changeMonth: true,
 			changeYear: true,
 			yearRange: "2008:<?= date('Y') ?>",
+			minDate: new Date(2008, 9, 2),
+			maxDate: 0,
 			showAnim: "fadeIn",
 			duration: getSearchMotionDuration(),
 	
@@ -375,6 +377,21 @@ $collManager = new OccurrenceManager();
 					<div class="content">
 						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<div id="search-form-coll-event">
+							<div class="search-date-filter">
+								<div class="search-date-heading">
+									<h3>Available Dates</h3>
+									<button type="button" id="date-range-reset" disabled><span aria-hidden="true">×</span> Reset</button>
+								</div>
+								<p id="date-range-help">Find records collected between two dates. Drag by month or select an exact day below.</p>
+								<div id="date-range-slider" class="search-date-range" role="group" aria-label="Collection date range" aria-describedby="date-range-help">
+									<div class="search-date-rail" aria-hidden="true"><div class="search-date-track"></div></div>
+									<div id="date-range-marks" aria-hidden="true"></div>
+									<input type="range" id="date-range-start" class="search-date-range-input" min="0" max="0" step="1" value="0" aria-label="Start month" aria-controls="eventdate1">
+									<output id="date-range-start-label" class="search-date-value" aria-hidden="true"></output>
+									<input type="range" id="date-range-end" class="search-date-range-input" min="0" max="0" step="1" value="0" aria-label="End month" aria-controls="eventdate2">
+									<output id="date-range-end-label" class="search-date-value" aria-hidden="true"></output>
+								</div>
+							</div>
 							<div class="input-text-container">
 								<label for="eventdate1" class="input-text--outlined input-text--floating">
 									<input type="text" placeholder=" " id="eventdate1" name="eventdate1" data-chip="Event Date Start" autocomplete="off">

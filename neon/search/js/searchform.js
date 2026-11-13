@@ -336,8 +336,104 @@ function getInputChip(input) {
   };
 }
 
+const firstCollectionDate = '2008-10-02';
+const firstCollectionMonth = 2008 * 12 + 9;
+const dateFields = ['eventdate1', 'eventdate2'].map(id => document.getElementById(id));
+const dateHandles = ['date-range-start', 'date-range-end'].map(id => document.getElementById(id));
+const dateMonthFormat = new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric' });
+
+function dateString(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function dateMonthIndex(value) {
+  return Number(value.slice(0, 4)) * 12 + Number(value.slice(5, 7)) - 1;
+}
+
+function readCollectionDate(value, end = false, today = dateString(new Date())) {
+  const match = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/.exec(value.trim());
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2] || 1);
+  const day = Number(match[3] || 1);
+  const first = new Date(year, month - 1, day);
+  if (first.getFullYear() !== year || first.getMonth() !== month - 1 || first.getDate() !== day) return null;
+  const low = dateString(first);
+  const high = match[3] ? low : dateString(new Date(year, match[2] ? month : 12, 0));
+  if (low > today || high < firstCollectionDate) return null;
+  return end ? (high > today ? today : high) : (low < firstCollectionDate ? firstCollectionDate : low);
+}
+
+function syncDateRange() {
+  const slider = document.getElementById('date-range-slider');
+  if (!slider) return;
+  const today = dateString(new Date());
+  const maximum = dateMonthIndex(today) - firstCollectionMonth;
+  const dates = dateFields.map((input, index) => {
+    const date = readCollectionDate(input.value, index === 1, today);
+    input.setCustomValidity(input.value.trim() && !date
+      ? `Enter a valid date from ${firstCollectionDate} through ${today} (YYYY-MM-DD, YYYY-MM, or YYYY).` : '');
+    return date;
+  });
+  if (dates[0] && dates[1] && dates[0] > dates[1]) {
+    dateFields[1].setCustomValidity('End Date must be on or after Start Date.');
+  }
+  const values = dates.map((date, index) => date ? dateMonthIndex(date) - firstCollectionMonth : index ? maximum : 0);
+  if (values[0] <= values[1]) {
+    dateHandles.forEach((handle, index) => {
+      handle.max = maximum;
+      handle.value = values[index];
+      const month = firstCollectionMonth + values[index];
+      const label = dateMonthFormat.format(new Date(Math.floor(month / 12), month % 12, 1));
+      handle.setAttribute('aria-valuetext', label);
+      handle.setAttribute('aria-valuemin', index ? values[0] : 0);
+      handle.setAttribute('aria-valuemax', index ? maximum : values[1]);
+      document.getElementById(`${handle.id}-label`).textContent = label;
+    });
+    slider.style.setProperty('--date-start', `${maximum ? values[0] / maximum * 100 : 0}%`);
+    slider.style.setProperty('--date-end', `${maximum ? values[1] / maximum * 100 : 100}%`);
+  }
+  document.getElementById('date-range-reset').disabled = !dateFields.some(input => input.value.trim());
+  if (slider.dataset.maximum !== String(maximum)) {
+    slider.dataset.maximum = maximum;
+    const marks = document.getElementById('date-range-marks');
+    marks.replaceChildren();
+    const lastYear = Number(today.slice(0, 4));
+    const labelStep = Math.max(1, Math.ceil((lastYear - 2008) / 3));
+    for (let year = 2008; year <= lastYear; year++) {
+      const value = year === 2008 ? 0 : year === lastYear ? maximum : year * 12 - firstCollectionMonth;
+      const mark = document.createElement('span');
+      mark.className = 'search-date-mark';
+      mark.style.left = `${maximum ? value / maximum * 100 : 0}%`;
+      if (year === 2008 || year === lastYear || ((year - 2008) % labelStep === 0 && lastYear - year >= labelStep / 2)) {
+        const label = document.createElement('span');
+        label.textContent = year;
+        mark.append(label);
+      }
+      marks.append(mark);
+    }
+  }
+}
+
+function updateDatesFromSlider(handle) {
+  const index = dateHandles.indexOf(handle);
+  if (index < 0) return;
+  const other = 1 - index;
+  const value = index ? Math.max(Number(handle.value), Number(dateHandles[other].value))
+    : Math.min(Number(handle.value), Number(dateHandles[other].value));
+  const month = firstCollectionMonth + value;
+  const year = Math.floor(month / 12);
+  const selectedDate = dateString(index ? new Date(year, month % 12 + 1, 0) : new Date(year, month % 12, 1));
+  const today = dateString(new Date());
+  dateFields[index].value = selectedDate < firstCollectionDate ? firstCollectionDate : selectedDate > today ? today : selectedDate;
+  if (!readCollectionDate(dateFields[other].value, other === 1, today)) {
+    dateFields[other].value = other ? today : firstCollectionDate;
+  }
+}
+
 function updateChip() {
   if (!chips) return;
+  syncDateRange();
   form.querySelectorAll('.MuiSwitch-input').forEach(input => {
     input.closest('.MuiSwitch-switchBase')?.classList.toggle('Mui-checked', input.checked);
   });
@@ -535,7 +631,7 @@ function validateForm() {
     errors.push({ element: formColls, errorMsg: 'Please select at least one sample type.' });
   }
   form.querySelectorAll('input:invalid, textarea:invalid, select:invalid').forEach(input => {
-    errors.push({ element: input, errorMsg: `Please check values in field ${input.dataset.chip || input.name}.` });
+    errors.push({ element: input, errorMsg: input.validity.customError ? input.validationMessage : `Please check values in field ${input.dataset.chip || input.name}.` });
   });
 
   const messages = new Set();
@@ -609,7 +705,10 @@ function hideColCheckbox(collid) {
 }
 
 /** Events: one delegated change handler also handles Select2 and dynamic inputs. */
-$(form).on('input.searchForm', 'input:not([type="checkbox"]):not([type="radio"]), textarea', updateChip);
+$(form).on('input.searchForm', 'input:not([type="checkbox"]):not([type="radio"]), textarea', function () {
+  if (this.classList.contains('search-date-range-input')) updateDatesFromSlider(this);
+  updateChip();
+});
 $(form).on('change.searchForm', 'input, textarea, select', function () {
   if (this.name === 'collChoice' && collsModal.contains(this)) {
     collsModal.querySelectorAll('.box').forEach(box => { box.style.display = box.id === this.value ? 'block' : 'none'; });
@@ -684,6 +783,11 @@ form.addEventListener('submit', event => {
   event.preventDefault();
   updateChip();
   if (!document.getElementById('search-btn').disabled) simpleSearch();
+});
+document.getElementById('date-range-reset')?.addEventListener('click', () => {
+  dateFields.forEach(input => { input.value = ''; });
+  clearValidationErrors(true);
+  updateChip();
 });
 form.addEventListener('reset', () => {
   // Native controls reset after this event; then reconcile widgets and derived state.
