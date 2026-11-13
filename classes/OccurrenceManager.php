@@ -1128,7 +1128,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			if (preg_match($patternTaxonChars, $this->getTaxaSearchTerm())==1) {
 				$queryTermArr['taxa'] = $this->getTaxaSearchTerm();
 			}
-			if($this->taxaArr['usethes']) $queryTermArr['usethes'] = 1;
+			#neon edit
+			$queryTermArr['usethes'] = empty($this->taxaArr['usethes']) ? 0 : 1;
+			#end neon edit
 			if(is_numeric($this->taxaArr['taxontype'])) {
 				$queryTermArr['taxontype'] = intval($this->taxaArr['taxontype']);
 			} else {

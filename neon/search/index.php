@@ -343,12 +343,12 @@ $searchParameterConfig = $searchParameterNames->clientConfig($_GET);
 						<label for="usethes" class="search-switch taxonomy-synonyms MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
 							<span class="MuiSwitch-root MuiSwitch-sizeMedium">
 								<span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root">
-									<input type="checkbox" role="switch" name="usethes" id="usethes" class="PrivateSwitchBase-input MuiSwitch-input" data-chip="Exclude Synonyms">
+									<input type="checkbox" role="switch" name="usethes" id="usethes" class="PrivateSwitchBase-input MuiSwitch-input" data-chip="Exact Taxon Only" checked>
 									<span class="MuiSwitch-thumb"></span>
 								</span>
 								<span class="MuiSwitch-track"></span>
 							</span>
-							<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Exclude Synonyms</span>
+							<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Include children and synonyms</span>
 						</label>
 						</div></div>
 					</div>

@@ -265,15 +265,15 @@ class OccurrenceTaxaManager {
 		}
 		$taxaStr = str_replace('_', ' ',$taxaStr);
 		if($taxaStr){
+			#neon edit
+			$this->taxaArr = array();
+			#end neon edit
 			$this->taxaArr['search'] = $taxaStr;
 			//Set usage of taxonomic thesaurus
-			$this->taxaArr[$useThesId] = 0;
-			if(isset($inputArr[$useThesId]) && $inputArr[$useThesId]){
-				$this->taxaArr[$useThesId] = 1;
-			}
-			elseif(array_key_exists($useThesId,$_REQUEST) && $_REQUEST[$useThesId]){
-				$this->taxaArr[$useThesId] = 1;
-			}
+			#neon edit
+			$options = is_array($inputArr) && array_key_exists($useThesId, $inputArr) ? $inputArr : $_REQUEST;
+			$this->taxaArr[$useThesId] = empty($options[$useThesId]) ? 0 : 1;
+			#end neon edit
 			//Set default taxa type
 			$defaultTaxaType = TaxaSearchType::SCIENTIFIC_NAME;
 			if(isset($inputArr['taxontype']) && is_numeric($inputArr['taxontype'])){
@@ -442,6 +442,11 @@ class OccurrenceTaxaManager {
 
 
 	public function getTaxonWhereFrag(){
+		#neon edit
+		if(isset($this->taxaArr['taxa']) && array_key_exists('usethes', $this->taxaArr)){
+			return $this->getNeonTaxonWhereFrag();
+		}
+		#end neon edit
 		$sqlWhereTaxa = '';
 		if(isset($this->taxaArr['taxa'])){
 			$tidInArr = array();
@@ -546,6 +551,48 @@ class OccurrenceTaxaManager {
 		if($sqlWhereTaxa) return $sqlWhereTaxa;
 		else return false;
 	}
+
+	#neon edit
+	private function getNeonTaxonWhereFrag(){
+		$ids = array();
+		$names = array();
+		$conditions = array();
+		$includeRelated = !empty($this->taxaArr['usethes']);
+		foreach($this->taxaArr['taxa'] as $name => $taxon){
+			$term = $this->cleanInStr((string) $name);
+			if(!empty($taxon['tid'])){
+				$ids = array_merge($ids, array_map('intval', array_keys($taxon['tid'])));
+				$names[] = $term;
+			}
+			elseif(is_numeric($name)){
+				$ids[] = (int) $name;
+			}
+			elseif($term !== ''){
+				$conditions[] = $includeRelated && !$this->exactMatchOnly
+					? 'o.sciname LIKE "'.$term.'%"' : 'o.sciname = "'.$term.'"';
+			}
+		}
+		if($ids){
+			$roots = implode(',', array_unique($ids));
+			$conditions[] = 'o.tidinterpreted IN('.$roots.')';
+			if($includeRelated){
+				$authority = (int) $this->taxAuthId;
+				// Use the closure table at every rank, then include synonyms of every matched taxon.
+				$children = 'SELECT taxon_branch.tid FROM taxaenumtree taxon_branch '
+					.'WHERE taxon_branch.parenttid IN('.$roots.') AND taxon_branch.taxauthid = '.$authority;
+				$conditions[] = 'o.tidinterpreted IN('.$children.')';
+				$conditions[] = 'o.tidinterpreted IN(SELECT taxon_synonym.tid FROM taxstatus taxon_synonym '
+					.'WHERE taxon_synonym.taxauthid = '.$authority.' AND (taxon_synonym.tidaccepted IN('.$roots.') '
+					.'OR taxon_synonym.tidaccepted IN('.$children.')))';
+			}
+		}
+		if($names){
+			// Include exact names on records that have not yet been linked to a taxon ID.
+			$conditions[] = '((o.tidinterpreted IS NULL OR o.tidinterpreted = 0) AND o.sciname IN("'.implode('","', array_unique($names)).'"))';
+		}
+		return $conditions ? 'AND ('.implode(' OR ', $conditions).') ' : 'AND (1=0) ';
+	}
+	#end neon edit
 
 	protected function setCommonNameWhereTerms($searchArr, &$tidInArr){
 		$famArr = array();

@@ -351,7 +351,7 @@ function getInputChip(input) {
     anchor: input,
     clear: () => {
       if (input.type === 'checkbox') {
-        input.checked = false;
+        input.checked = input.name === 'usethes';
         input.indeterminate = false;
         if (input.dataset.formId) uncheckAll(input);
       } else if (input.tagName === 'SELECT') {
@@ -538,7 +538,7 @@ function updateChip() {
 
   form.querySelectorAll('input[data-chip], textarea[data-chip], select[data-chip]').forEach(input => {
     if (input.disabled || input.name === 'db' || input.name === 'datasetid') return;
-    const active = input.type === 'checkbox' ? input.checked : input.value.trim() !== '';
+    const active = input.type === 'checkbox' ? (input.name === 'usethes' ? !input.checked : input.checked) : input.value.trim() !== '';
     if (active) next.push(getInputChip(input));
   });
 
@@ -701,8 +701,8 @@ function getSearchParameters(readable = true) {
       params.set(name, readable && name === 'taxa' ? readableSearchValue(name, value.split(',').map(term => term.trim())) : value);
     }
   });
-  const excludeSynonyms = document.getElementById('usethes');
-  if (excludeSynonyms?.checked) params.set('usethes', '0');
+  const includeRelatedTaxa = document.getElementById('usethes');
+  if (includeRelatedTaxa && !includeRelatedTaxa.checked) params.set('usethes', '0');
   return params;
 }
 
@@ -869,10 +869,10 @@ function prefillFromUrl() {
     const hasValue = input.type === 'checkbox' ? input.checked : input.value.trim() !== '';
     if (hasValue) expandCriterionAccordions(input);
   });
-  const excludeSynonyms = document.getElementById('usethes');
-  if (excludeSynonyms) {
-    excludeSynonyms.checked = params.get('usethes') === '0';
-    if (excludeSynonyms.checked) expandCriterionAccordions(excludeSynonyms);
+  const includeRelatedTaxa = document.getElementById('usethes');
+  if (includeRelatedTaxa) {
+    includeRelatedTaxa.checked = params.get('usethes') !== '0';
+    if (!includeRelatedTaxa.checked) expandCriterionAccordions(includeRelatedTaxa);
   }
 
   const rows = getAdvancedRows();
