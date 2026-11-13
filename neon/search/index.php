@@ -378,7 +378,7 @@ $collManager = new OccurrenceManager();
 						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<div id="search-form-coll-event">
 							<div class="search-date-filter">
-								<p id="date-range-help">Find records collected between two dates. Drag by month or select an exact day below.</p>
+								<p id="date-range-help">Find records collected between two dates.</p>
 								<div id="date-range-slider" class="search-date-range" role="group" aria-label="Collection date range" aria-describedby="date-range-help">
 									<div class="search-date-rail" aria-hidden="true"><div class="search-date-track"></div></div>
 									<div id="date-range-marks" aria-hidden="true"></div>

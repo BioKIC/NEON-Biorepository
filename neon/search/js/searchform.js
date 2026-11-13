@@ -403,6 +403,7 @@ function syncDateRange() {
       const value = year === 2008 ? 0 : year === lastYear ? maximum : year * 12 - firstCollectionMonth;
       const mark = document.createElement('span');
       mark.className = 'search-date-mark';
+      mark.dataset.value = value;
       mark.style.left = `${maximum ? value / maximum * 100 : 0}%`;
       if (year === 2008 || year === lastYear || ((year - 2008) % labelStep === 0 && lastYear - year >= labelStep / 2)) {
         const label = document.createElement('span');
@@ -412,6 +413,10 @@ function syncDateRange() {
       marks.append(mark);
     }
   }
+  slider.querySelectorAll('.search-date-mark').forEach(mark => {
+    const value = Number(mark.dataset.value);
+    mark.classList.toggle('search-date-mark-selected', value >= Number(dateHandles[0].value) && value <= Number(dateHandles[1].value));
+  });
 }
 
 function updateDatesFromSlider(handle) {
@@ -784,6 +789,9 @@ form.addEventListener('submit', event => {
   if (!document.getElementById('search-btn').disabled) simpleSearch();
 });
 form.addEventListener('reset', () => {
+  form.querySelectorAll('.accordion-selector').forEach(input => {
+    input.defaultChecked = input.checked;
+  });
   // Native controls reset after this event; then reconcile widgets and derived state.
   setTimeout(() => {
     clearSites();

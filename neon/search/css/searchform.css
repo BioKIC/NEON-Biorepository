@@ -785,6 +785,10 @@ html:has(#innertext.neon-search) {
   pointer-events: none;
 }
 
+#innertext.neon-search .search-date-mark-selected {
+  background: var(--search-blue);
+}
+
 #innertext.neon-search .search-date-mark > span {
   position: absolute;
   top: 26px;
