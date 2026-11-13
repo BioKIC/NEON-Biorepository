@@ -303,17 +303,19 @@ function updateChip() {
       const node = document.createElement('span');
       node.id = descriptor.id;
       node.className = 'chip';
-      const label = document.createTextNode('');
+      const label = document.createElement('span');
+      label.className = 'chip-label';
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'chip-remove-btn Mui';
+      button.className = 'chip-remove-btn';
+      button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm5 13.6L15.6 17 12 13.4 8.4 17 7 15.6l3.6-3.6L7 8.4 8.4 7l3.6 3.6L15.6 7 17 8.4 13.4 12Z"/></svg>';
       node.append(label, button);
       chip = { node, label, button };
       renderedChips.set(descriptor.id, chip);
     }
     chip.clear = descriptor.clear;
-    if (chip.label.data !== descriptor.text) {
-      chip.label.data = descriptor.text;
+    if (chip.label.textContent !== descriptor.text) {
+      chip.label.textContent = descriptor.text;
       chip.button.setAttribute('aria-label', `Remove ${descriptor.text}`);
       chip.button.title = `Remove ${descriptor.text}`;
     }

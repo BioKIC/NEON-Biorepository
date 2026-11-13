@@ -41,45 +41,17 @@ $collManager = new OccurrenceManager();
 				updateChip();
 			}
 		});
+		$("#ui-datepicker-div").appendTo("#params-form");
+		if ($("#taxa").autocomplete("instance")) {
+			$("#taxa").autocomplete("option", "appendTo", "#params-form");
+		}
 	});
 	</script>
 
 	<!-- Search-specific styles -->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" href="../css/app.css?v=<?php echo date('Ymd'); ?>">
-	<style>
-	.collapsed { 
-	  display: none; 
-	}
-	.group-label { 
-	  cursor: pointer; 
-	  user-select: none; 
-	}
-	.group-label:hover { 
-	  text-decoration: underline;
-	  cursor: pointer; 
-	}
-	#neon-modal-open,
-	.neon-modal-open { 
-	  cursor: pointer; 
-	  user-select: none; 
-	}
-	
-	.neon-modal-open:hover { 
-	  cursor: pointer; 
-	}
-	.leaf-label { cursor: pointer; user-select: none; }
-	.leaf-label:hover { text-decoration: underline; cursor: pointer; }
-	
-	#neonext-collections-list li > span.group-label {
-	  cursor: pointer;
-	  text-decoration: none;
-	}
-	
-	#neonext-collections-list li > span.group-label:hover {
-	  text-decoration: underline;
-	}
-	</style>
+	<link rel="stylesheet" href="css/searchform.css?v=<?= filemtime(__DIR__ . '/css/searchform.css') ?>">
 </head>
 
 <body>
@@ -146,12 +118,12 @@ $collManager = new OccurrenceManager();
 	}
 	?>
 	<!-- This is inner text! -->
-	<div id="innertext">
+	<div id="innertext" class="neon-search">
 		<h1 style="
 			margin-bottom: 30px;
 			font-size: 2.3rem;
 		">Search Samples &amp; Specimens</h1>
-		<div id="error-msgs" class="errors"></div>
+		<div id="error-msgs" class="errors" role="alert"></div>
 		<form id="params-form">
 			<!-- Criteria forms -->
 			<div class="accordions">
@@ -236,9 +208,9 @@ $collManager = new OccurrenceManager();
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
 						<div class="modal-content">
-							<button type="button" id="neon-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
+							<button type="button" id="neon-modal-close" class="modal-close btn">Accept and close</button>
 							<div id="colls-modal">
-								<div>
+								<div class="search-tabs">
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
 									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> Protocol</label>
 									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Preservation Method</label>
@@ -325,14 +297,11 @@ $collManager = new OccurrenceManager();
 				</section>
 				<!-- Locality -->
 				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="locality" class="accordion-selector" />
-					<!-- Accordion header -->
-					<label for="locality" class="accordion-header neon-modal-open" data-modal-id="domains-sites-modal">Domains & Sites</label>
+					<button type="button" id="locality" class="accordion-header neon-modal-open" data-modal-id="domains-sites-modal">Domains &amp; Sites</button>
 					<!-- Accordion content -->
 					<div class="modal" id="domains-sites-modal">
 						<div class="modal-content">
-							<button type="button" id="domains-sites-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
+							<button type="button" id="domains-sites-modal-close" class="modal-close btn">Accept and close</button>
 				
 							<div id="collection-search-map"></div>
 						</div>
@@ -350,7 +319,7 @@ $collManager = new OccurrenceManager();
 							<div class="input-text-container">
 								<label for="eventdate1" class="input-text--outlined">
 									<input type="text" id="eventdate1" name="eventdate1" data-chip="Event Date Start">
-									<span data-label="Start Date"></span>
+									<span class="search-field-label" data-label="Start Date">Start Date</span>
 								</label>
 								<span class="assistive-text">
 									Single date or start date of range.
@@ -360,7 +329,7 @@ $collManager = new OccurrenceManager();
 							<div class="input-text-container">
 								<label for="eventdate2" class="input-text--outlined">
 									<input type="text" id="eventdate2" name="eventdate2" data-chip="Event Date End">
-									<span data-label="End Date"></span>
+									<span class="search-field-label" data-label="End Date">End Date</span>
 								</label>
 								<span class="assistive-text">
 									End date of range.
@@ -381,10 +350,10 @@ $collManager = new OccurrenceManager();
 							<div>
 								<div class="text-area-container">
 									<label for="catnum" class="text-area--outlined">
-										<textarea id="catnum" name="catnum" data-chip="Identifier" style="width: 100%"
+										<textarea id="catnum" name="catnum" data-chip="Identifier"
 												  placeholder="Examples:&#10; Catalog Number: NEON007VA&#10; SampleID: NEON.BET.D06.002579&#10;           STEI.20250925.R11242.E&#10; Barcode: A00000020232&#10;"
 												  ></textarea>
-										<span data-label="Identifiers"></span></label>
+										<span class="search-field-label" data-label="Identifiers">Identifiers</span></label>
 									<span class="assistive-text">
 										Separate multiple values with commas or new lines. 
 										Use * as a wildcard (e.g., MOS.D05* or *20150910.SURBER.3*).
@@ -395,7 +364,7 @@ $collManager = new OccurrenceManager();
 									<label for="includeothercatnum">Search all identifiers</label>
 								</div>
 							</div>
-							<div>
+							<div class="search-checks">
 								<div>
 									<input type="checkbox" id="hasimages" name="hasimages" value=1 data-chip="Only with images">
 									<label for="hasimages">Specimens with images</label>
@@ -412,7 +381,7 @@ $collManager = new OccurrenceManager();
 							<div class="input-text-container">
 								<label for="collector" class="input-text--outlined">
 									<input type="text" id="collector" name="collector" data-chip="Collector/ORCID">
-									<span data-label="Collector/ORCID"></span></label>
+									<span class="search-field-label" data-label="Collector/ORCID">Collector/ORCID</span></label>
 								<span class="assistive-text">Any part of a collector's name or ORCID iD (XXXX-XXXX-XXXX-XXXX).</span>
 							</div>
 						</div>
@@ -431,12 +400,12 @@ $collManager = new OccurrenceManager();
 						<div id="taxa-text" class="input-text-container">
 							<label for="taxa" class="input-text--outlined">
 								<input type="text" name="taxa" id="taxa" data-chip="Taxa" data-occurrence-only="1" placeholder="Scientific names only (e.g., Carabidae)">
-								<span data-label="Taxon"></span></label>
+								<span class="search-field-label" data-label="Taxon">Taxon</span></label>
 							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
 						</div>
-						<div>
+						<div class="search-checkbox">
 						  <input type="checkbox" name="usethes" id="usethes" data-chip="Exclude Synonyms">
-						  <span class="ml-1">Exclude Synonyms</span>
+						  <label for="usethes">Exclude Synonyms</label>
 						</div>
 					</div>
 				</section>
@@ -455,15 +424,16 @@ $collManager = new OccurrenceManager();
 					$container.addClass('Mui');
 					$container.find('*:not(li)').addClass('Mui');
 				
-					$('.select2-dropdown').addClass('Mui');
-					$('.select2-dropdown').find('*:not(li)').addClass('Mui');
+					$('#params-form .select2-dropdown').addClass('Mui');
+					$('#params-form .select2-dropdown').find('*:not(li)').addClass('Mui');
 				}
 				
 				$(document).ready(function () {
 					$('#materialsampletype').select2({
 						placeholder: 'Select material sample types',
 						width: '100%',
-						closeOnSelect: false
+						closeOnSelect: false,
+						dropdownParent: $('#params-form')
 					});
 				
 					addMuiToMaterialSampleSelect2();
@@ -474,11 +444,6 @@ $collManager = new OccurrenceManager();
 					);
 				});
 				</script>
-				<style>
-					.select2-container--default .select2-results>.select2-results__options {
-						max-height: 300px;
-					}
-				</style>
 				<section>
 					<!-- Accordion selector -->
 					<input type="checkbox" id="material-sample" class="accordion-selector" />
@@ -492,6 +457,7 @@ $collManager = new OccurrenceManager();
 						if ($matSampleTypeArr = $collManager->getMaterialSampleTypeArr()) {
 						?>
 							<div class="select-container">
+								<label for="materialsampletype" class="search-control-label">Material sample types</label>
 								<select name="materialsampletype[]" id="materialsampletype" data-chip= "Material Sample" multiple>
 									<?php
 									foreach ($matSampleTypeArr as $matSampeType) {
@@ -540,9 +506,11 @@ $collManager = new OccurrenceManager();
 				?>
 			</div>
 			<!-- Criteria panel -->
-			<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
-				<button type="submit" id="search-btn">Search</button>
-				<button type="reset" id="reset-btn">Reset</button>
+			<div id="criteria-panel">
+				<div class="search-actions">
+					<button type="submit" id="search-btn">Search</button>
+					<button type="reset" id="reset-btn">Reset</button>
+				</div>
 				<h2>Criteria</h2>
 				<div id="chips"></div>
 			</div>

@@ -103,11 +103,12 @@ for($x=1; $x<9; $x++){
 	?>
 
 	<div id="customdiv<?php echo $x; ?>" class="fieldGroupDiv" style="display:<?php echo $divDisplay; ?>;">
+		<div class="advanced-query-fields">
 		<?php
 		if($x > 1){
 			?>
-			<div class="select-container" style="width: 7%; display: inline-block;">
-				<select name="q_customandor<?php echo $x; ?>" style="height:30px;">
+			<div class="select-container advanced-query-short">
+				<select aria-label="Join conditions, condition <?php echo $x; ?>" name="q_customandor<?php echo $x; ?>">
 					<option value="">---</option>
 					<option value="AND"><?php echo $LANG['AND']; ?></option>
 					<option <?php echo ($cAndOr == 'OR' ? 'SELECTED' : ''); ?> value="OR"><?php echo $LANG['OR']; ?></option>
@@ -116,8 +117,8 @@ for($x=1; $x<9; $x++){
 			<?php
 		}
 		?>
-		<div class="select-container" style="width: 5%; display: inline-block;">
-			<select name="q_customopenparen<?php echo $x; ?>" style="height:30px;">
+		<div class="select-container advanced-query-short">
+			<select aria-label="Opening parentheses, condition <?php echo $x; ?>" name="q_customopenparen<?php echo $x; ?>">
 				<option value="">---</option>
 				<?php
 				echo '<option '.($cOpenParen == '(' ? 'SELECTED' : '').' value="(">(</option>';
@@ -128,8 +129,8 @@ for($x=1; $x<9; $x++){
 			<!--<span class="assistive-text">Parentheses for advanced searches</span>-->
 		</div>
 
-		<div class="select-container" style="width: 25%; display: inline-block;">
-			<select name="q_customfield<?php echo $x; ?>" style="height:30px;">
+		<div class="select-container">
+			<select aria-label="Field, condition <?php echo $x; ?>" name="q_customfield<?php echo $x; ?>">
 				<option value=""><?php echo $LANG['SELECT_FIELD_NAME']; ?></option>
 				<option value="">---------------------------------</option>
 				<?php
@@ -139,8 +140,8 @@ for($x=1; $x<9; $x++){
 				?>
 			</select>
 		</div>
-		<div class="select-container" style="width: 21%; display: inline-block;">
-			<select name="q_customtype<?php echo $x; ?>" style="height:30px;">
+		<div class="select-container">
+			<select aria-label="Statement, condition <?php echo $x; ?>" name="q_customtype<?php echo $x; ?>">
 				<option value="">Select Statement</option>
 				<option value="">---------------------------------</option>
 				<?php
@@ -150,13 +151,13 @@ for($x=1; $x<9; $x++){
 				?>
 			</select>
 		</div>
-		<div class="input-text-container" style="width: 30%; display: inline-block;">
-			<label for="customvalue" class="input-text--outlined">
-				<input name="q_customvalue<?php echo $x; ?>" type="text" value="<?php echo $cValue; ?>" style="height:30px" />
+		<div class="input-text-container">
+			<label for="customvalue<?php echo $x; ?>" class="input-text--outlined">
+				<input id="customvalue<?php echo $x; ?>" aria-label="Value, condition <?php echo $x; ?>" name="q_customvalue<?php echo $x; ?>" type="text" value="<?php echo $cValue; ?>" />
 			</label>
 		</div>
-		<div class="select-container" style="width: 5%; display: inline-block;">
-			<select name="q_customcloseparen<?php echo $x; ?>" style="height:30px;">
+		<div class="select-container advanced-query-short">
+			<select aria-label="Closing parentheses, condition <?php echo $x; ?>" name="q_customcloseparen<?php echo $x; ?>">
 				<option value="">---</option>
 				<?php
 				echo '<option '.($cCloseParen == ')' ? 'SELECTED' : '').' value=")">)</option>';
@@ -165,10 +166,11 @@ for($x=1; $x<9; $x++){
 				?>
 			</select>
 		</div>
-		<div style="display: inline-block;">
-			<a href="#" onclick="toggleCustomDiv(<?php echo ($x+1); ?>);return false;">
-				<img class="editimg" src="../../images/editplus.png" />
-			</a>
+		<?php if ($x < 8) { ?>
+		<div class="advanced-query-actions">
+			<button type="button" class="advanced-query-add" aria-label="Show or hide condition <?php echo ($x+1); ?>" onclick="toggleCustomDiv(<?php echo ($x+1); ?>)">+</button>
+		</div>
+		<?php } ?>
 		</div>
 	<div>
 		<span class="assistive-text"><?php echo $LANG['CUSTOM_FIELD'].' '.$x; ?></span>
