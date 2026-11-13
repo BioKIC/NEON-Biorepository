@@ -17,6 +17,10 @@
 
 #innertext.neon-search .accordion-content-body,
 #innertext.neon-search #criteria-panel,
+#innertext.neon-search .modal {
+  transition: opacity 200ms ease;
+}
+
 #innertext.neon-search #biorepo-collections-list {
   font-family: Inter, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -30,6 +34,7 @@
 }
 
 #innertext.neon-search .accordions {
+  --search-accordion-inset: 24px;
   flex: 2.2 1 480px;
 }
 
@@ -45,6 +50,7 @@
   border-radius: 4px;
   background: #fff;
   box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+  transition: border-color 150ms ease;
 }
 
 #innertext.neon-search .accordion-header,
@@ -72,9 +78,12 @@
   transition: background-color 150ms ease;
 }
 
-#innertext.neon-search .accordion-header {
+#innertext.neon-search .accordions > section > .accordion-header {
+  justify-content: flex-start;
+  padding-left: var(--search-accordion-inset);
   font-size: 18px;
-  text-transform: uppercase;
+  text-align: left;
+  text-transform: none;
 }
 
 #innertext.neon-search .accordion-subheader {
@@ -85,9 +94,21 @@
   font-size: 14px;
 }
 
-#innertext.neon-search .accordion-header:hover,
+#innertext.neon-search .accordions > section:hover,
+#innertext.neon-search .accordions > section:has(> .accordion-selector:checked),
+#innertext.neon-search .accordion-subheader:hover,
+#innertext.neon-search .accordion-selector:checked + .accordion-subheader {
+  border-color: #0092e2;
+}
+
+#innertext.neon-search .accordions > section:hover > .accordion-header,
 #innertext.neon-search .accordion-subheader:hover {
-  background: var(--search-surface) !important;
+  background: rgb(0 115 207 / 3%) !important;
+}
+
+#innertext.neon-search .accordions > section:has(> .accordion-selector:checked) > .accordion-header,
+#innertext.neon-search .accordion-selector:checked + .accordion-subheader {
+  background: #fff !important;
 }
 
 #innertext.neon-search .accordion-header::after,
@@ -154,6 +175,10 @@
   padding: 16px;
 }
 
+#innertext.neon-search .accordions > section > .content > .accordion-content-inner > .accordion-content-body {
+  padding-inline: var(--search-accordion-inset);
+}
+
 #innertext.neon-search .accordions .accordion-selector:checked + label + .content {
   grid-template-rows: 1fr;
   opacity: 1;
@@ -185,6 +210,37 @@
 #innertext.neon-search #params-form .material-icons:not(#domains-sites-modal *) {
   color: var(--search-muted);
   vertical-align: middle;
+}
+
+#innertext.neon-search #params-form a.search-info:not(#domains-sites-modal *) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin: -8px 0;
+  padding: 7px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--search-blue);
+  vertical-align: middle;
+  text-decoration: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+#innertext.neon-search #params-form a.search-info:not(#domains-sites-modal *):is(:hover, :focus-visible) {
+  border-color: #0092e2;
+  background: rgb(0 115 207 / 8%);
+  color: #0092e2;
+}
+
+#innertext.neon-search .search-info svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
 }
 
 #innertext.neon-search #criteria-panel {
@@ -766,16 +822,79 @@
 }
 
 #innertext.neon-search .errors .error {
-  margin: 0 0 12px;
-  padding: 12px 16px;
-  border: 1px solid #e4b4b4;
-  border-left: 4px solid #b3261e;
-  border-radius: 4px;
-  background: #fff3f2;
-  color: #8c1d18;
+  margin: 0 0 24px;
+  padding: 24px;
+  border: 1px solid #cb8b8a;
+  border-radius: 2px;
+  background: #f9e5ea;
+  color: var(--search-ink);
   font: 400 14px/22px Inter, Helvetica, Arial, sans-serif;
   transform: none;
   animation: none;
+}
+
+#innertext.neon-search .search-alert-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#innertext.neon-search .search-alert-heading > svg {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  fill: #cb8b8a;
+}
+
+#innertext.neon-search .search-alert-heading strong {
+  font-weight: 600;
+}
+
+#innertext.neon-search .search-alert-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  margin: 0 0 0 auto;
+  padding: 6px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--search-muted);
+  cursor: pointer;
+}
+
+#innertext.neon-search .search-alert-close:hover {
+  background: rgb(203 139 138 / 16%);
+}
+
+#innertext.neon-search .search-alert-close svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+#innertext.neon-search .errors .error hr {
+  height: 0;
+  margin: 24px 0;
+  border: 0;
+  border-top: 1px solid rgb(0 0 0 / 12%);
+}
+
+#innertext.neon-search .search-alert-messages {
+  margin: 0;
+  padding-left: 20px;
+}
+
+#innertext.neon-search .search-alert-messages li + li {
+  margin-top: 8px;
+}
+
+#innertext.neon-search .search-alert-messages:has(> li:only-child) {
+  list-style: none;
+  padding-left: 0;
 }
 
 #innertext.neon-search #params-form .invalid {
@@ -817,12 +936,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  #innertext.neon-search .accordions > section,
   #innertext.neon-search .accordion-header,
   #innertext.neon-search .accordion-subheader,
   #innertext.neon-search .accordion-header::after,
   #innertext.neon-search .accordion-subheader::after,
   #innertext.neon-search .input-text--floating .search-field-label,
   #innertext.neon-search input.search-checkbox-input,
+  #innertext.neon-search .modal,
+  #innertext.neon-search #params-form a.search-info:not(#domains-sites-modal *),
   #innertext.neon-search .accordions .accordion-selector + label + .content {
     transition: none;
   }
@@ -880,4 +1002,17 @@
 #ui-datepicker-div.neon-search-datepicker td .ui-state-active {
   background: var(--search-blue);
   color: #fff;
+}
+
+.ui-tooltip.neon-search-tooltip {
+  z-index: 5000;
+  max-width: min(300px, calc(100vw - 32px));
+  padding: 12px 16px;
+  border: 1px solid #4f5254;
+  border-radius: 2px;
+  background: #f5f6f7;
+  color: rgb(0 0 0 / 90%);
+  box-shadow: none;
+  font: 400 14px/21px Inter, Helvetica, Arial, sans-serif;
+  overflow-wrap: anywhere;
 }

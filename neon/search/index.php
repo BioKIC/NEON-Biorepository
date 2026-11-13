@@ -36,12 +36,21 @@ $collManager = new OccurrenceManager();
 			changeMonth: true,
 			changeYear: true,
 			yearRange: "2008:<?= date('Y') ?>",
+			showAnim: "fadeIn",
+			duration: getSearchMotionDuration(),
 	
 			onSelect: function () {
 				updateChip();
 			}
 		});
 		$("#ui-datepicker-div").addClass("neon-search-datepicker");
+		$("#params-form").tooltip({
+			items: ".search-info[title]",
+			classes: { "ui-tooltip": "neon-search-tooltip" },
+			position: { my: "center bottom-8", at: "center top", collision: "flipfit" },
+			show: { effect: "fadeIn", delay: 150, duration: getSearchMotionDuration(150) },
+			hide: { effect: "fadeOut", duration: getSearchMotionDuration(100) }
+		});
 		if ($("#taxa").autocomplete("instance")) {
 			$("#taxa").autocomplete("option", "appendTo", "#params-form");
 		}
@@ -57,6 +66,13 @@ $collManager = new OccurrenceManager();
 <body>
 	<?php
 	include($SERVER_ROOT . '/includes/header.php');
+
+	function renderSearchInfoLink($url, $label) {
+		$url = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
+		$label = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+		return "<a class='search-info' href='{$url}' target='_blank' rel='noopener noreferrer' title='{$label}' aria-label='{$label}'>"
+			. "<svg viewBox='0 0 24 24' focusable='false' aria-hidden='true'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-6h2zm0-8h-2V7h2z'></path></svg></a>";
+	}
 
 	//function to render sample type tree
 	function renderTree($nodes, $parentId = '') {
@@ -83,7 +99,7 @@ $collManager = new OccurrenceManager();
 						)
 						. ">";
 				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
-				$html .= " <a href='../../collections/misc/neoncollprofiles.php?collid={$collid}' title='View Sample Type Profile' target='_blank'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
+				$html .= ' ' . renderSearchInfoLink('../../collections/misc/neoncollprofiles.php?collid=' . $collid, 'View Sample Type Profile');
 
 			} 
 			// group node
@@ -178,10 +194,7 @@ $collManager = new OccurrenceManager();
 											  data-form-id="neonext-collections-list"
 											>
 										  All NEON Sample Types at Other Repositories
-										  <a href="https://www.neonscience.org/samples/sample-repositories"
-											 target="_blank" rel="noopener noreferrer" title="View More Information">
-											<span class="material-icons" style="color:#565a5c; vertical-align:middle;">info</span>
-										  </a>
+										  <?= renderSearchInfoLink('https://www.neonscience.org/samples/sample-repositories', 'View More Information') ?>
 										</label>								
 										<!-- Accordion content -->
 										<div class="content">
@@ -193,7 +206,7 @@ $collManager = new OccurrenceManager();
 												  echo "<li class='Mui'>";
 												  echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child search-checkbox-input' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
 												  echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]}</span>";
-												  echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
+												  echo ' ' . renderSearchInfoLink('../../collections/misc/neoncollprofiles.php?collid=' . $result['collid'], 'View Collection Profile');
 												  echo "</li>";
 												}
 												echo '</ul>';

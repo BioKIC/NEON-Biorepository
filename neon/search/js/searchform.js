@@ -11,6 +11,7 @@ const advancedForm = document.getElementById('search-form-advanced-search');
 const advancedRowCount = 8;
 const collectionViews = ['taxonomic-cat', 'neon-theme', 'sample-type'];
 const renderedChips = new Map();
+const modalCloseTimers = new WeakMap();
 let modalBodyOverflow = null;
 
 const paramNames = [
@@ -101,23 +102,42 @@ function uncheckAll(element) {
 }
 
 /** Modals */
+function getSearchMotionDuration(duration = 200) {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0 : duration;
+}
+
 function openModal(selector) {
   const modal = document.querySelector(selector);
   if (!modal) return;
+  clearTimeout(modalCloseTimers.get(modal));
+  modalCloseTimers.delete(modal);
   if (modalBodyOverflow === null) modalBodyOverflow = document.body.style.overflow;
-  modal.style.display = 'block';
   document.body.style.overflow = 'hidden';
+  const wasHidden = window.getComputedStyle(modal).display === 'none';
+  if (wasHidden) modal.style.opacity = '0';
+  modal.style.display = 'block';
+  if (wasHidden) void modal.offsetHeight;
+  modal.style.opacity = '1';
 }
 
 function closeModal(selector) {
   const modal = document.querySelector(selector);
-  if (modal) modal.style.display = 'none';
-  const anyOpen = Array.from(form.querySelectorAll('.modal'))
-    .some(item => item.style.display === 'block');
-  if (!anyOpen && modalBodyOverflow !== null) {
-    document.body.style.overflow = modalBodyOverflow;
-    modalBodyOverflow = null;
-  }
+  if (!modal) return;
+  clearTimeout(modalCloseTimers.get(modal));
+  modal.style.opacity = '0';
+  const finish = () => {
+    modalCloseTimers.delete(modal);
+    modal.style.display = 'none';
+    const anyOpen = Array.from(form.querySelectorAll('.modal'))
+      .some(item => item.style.display === 'block');
+    if (!anyOpen && modalBodyOverflow !== null) {
+      document.body.style.overflow = modalBodyOverflow;
+      modalBodyOverflow = null;
+    }
+  };
+  const duration = getSearchMotionDuration();
+  if (duration) modalCloseTimers.set(modal, setTimeout(finish, duration));
+  else finish();
 }
 
 function openCoordAid(mapMode) {
@@ -431,27 +451,40 @@ function validateForm() {
   return errors;
 }
 
-function clearValidationErrors() {
-  document.getElementById('error-msgs')?.replaceChildren();
+function clearValidationErrors(animate = false) {
+  const messages = $('#error-msgs').children().stop(true);
+  if (animate) {
+    messages.animate({ height: 'hide', opacity: 'hide', marginBottom: 'hide', paddingTop: 'hide', paddingBottom: 'hide' },
+      getSearchMotionDuration(), function () { $(this).remove(); });
+  } else messages.remove();
   form.querySelectorAll('.invalid').forEach(element => element.classList.remove('invalid'));
 }
 
 function handleValErrors(errors) {
   clearValidationErrors();
   const errorDiv = document.getElementById('error-msgs');
-  if (!errorDiv) return;
+  if (!errorDiv || !errors.length) return;
   errorDiv.classList.remove('visually-hidden');
+  const message = document.createElement('div');
+  message.className = 'error';
+  message.innerHTML = '<div class="search-alert-heading">' +
+    '<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2zm0-4h-2V7h2z"></path></svg>' +
+    '<strong>Please check your search</strong>' +
+    '<button type="button" class="search-alert-close" aria-label="Dismiss search errors">' +
+    '<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>' +
+    '</button></div><hr><ul class="search-alert-messages"></ul>';
+  const list = message.querySelector('.search-alert-messages');
   errors.forEach(({ element, errorMsg }) => {
     element?.classList.add('invalid');
-    const message = document.createElement('p');
-    message.className = 'error';
-    message.textContent = `${errorMsg} Click to dismiss.`;
-    message.onclick = () => {
-      message.remove();
-      element?.classList.remove('invalid');
-    };
-    errorDiv.appendChild(message);
+    const item = document.createElement('li');
+    item.textContent = errorMsg;
+    list.appendChild(item);
   });
+  message.querySelector('.search-alert-close').addEventListener('click', () => clearValidationErrors(true));
+  message.style.display = 'none';
+  errorDiv.appendChild(message);
+  $(message).animate({ height: 'show', opacity: 'show', marginBottom: 'show', paddingTop: 'show', paddingBottom: 'show' },
+    getSearchMotionDuration());
 }
 
 function simpleSearch() {
