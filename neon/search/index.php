@@ -317,9 +317,12 @@ $collManager = new OccurrenceManager();
 				<section>
 					<button type="button" id="locality" class="accordion-header neon-modal-open" data-modal-id="domains-sites-modal">Domains &amp; Sites</button>
 					<!-- Accordion content -->
-					<div class="modal" id="domains-sites-modal">
+					<div class="modal" id="domains-sites-modal" role="dialog" aria-modal="true" aria-labelledby="domains-sites-title">
 						<div class="modal-content">
-							<button type="button" id="domains-sites-modal-close" class="modal-close btn">Accept and close</button>
+							<div class="search-map-header">
+								<h2 id="domains-sites-title">Select sites</h2>
+								<button type="button" id="domains-sites-modal-close" class="modal-close btn">Accept and close</button>
+							</div>
 				
 							<div id="collection-search-map"></div>
 						</div>
@@ -337,7 +340,7 @@ $collManager = new OccurrenceManager();
 						<div id="search-form-coll-event">
 							<div class="input-text-container">
 								<label for="eventdate1" class="input-text--outlined input-text--floating">
-									<input type="text" placeholder=" " id="eventdate1" name="eventdate1" data-chip="Event Date Start">
+									<input type="text" placeholder=" " id="eventdate1" name="eventdate1" data-chip="Event Date Start" autocomplete="off">
 									<span class="search-field-label" data-label="Start Date">Start Date</span>
 								</label>
 								<span class="assistive-text">
@@ -347,7 +350,7 @@ $collManager = new OccurrenceManager();
 					
 							<div class="input-text-container">
 								<label for="eventdate2" class="input-text--outlined input-text--floating">
-									<input type="text" placeholder=" " id="eventdate2" name="eventdate2" data-chip="Event Date End">
+									<input type="text" placeholder=" " id="eventdate2" name="eventdate2" data-chip="Event Date End" autocomplete="off">
 									<span class="search-field-label" data-label="End Date">End Date</span>
 								</label>
 								<span class="assistive-text">

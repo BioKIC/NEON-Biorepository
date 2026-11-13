@@ -12,6 +12,7 @@ const advancedRowCount = 8;
 const collectionViews = ['taxonomic-cat', 'neon-theme', 'sample-type'];
 const renderedChips = new Map();
 const modalCloseTimers = new WeakMap();
+const modalReturnFocus = new WeakMap();
 let modalBodyOverflow = null;
 
 const paramNames = [
@@ -114,10 +115,12 @@ function openModal(selector) {
   if (modalBodyOverflow === null) modalBodyOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
   const wasHidden = window.getComputedStyle(modal).display === 'none';
+  if (wasHidden && modal.matches('[role="dialog"]')) modalReturnFocus.set(modal, document.activeElement);
   if (wasHidden) modal.style.opacity = '0';
   modal.style.display = 'block';
   if (wasHidden) void modal.offsetHeight;
   modal.style.opacity = '1';
+  if (wasHidden && modal.matches('[role="dialog"]')) modal.querySelector('button')?.focus({ preventScroll: true });
 }
 
 function closeModal(selector) {
@@ -127,6 +130,7 @@ function closeModal(selector) {
   modal.style.opacity = '0';
   const finish = () => {
     modalCloseTimers.delete(modal);
+    const restoreFocus = modal.contains(document.activeElement);
     modal.style.display = 'none';
     const anyOpen = Array.from(form.querySelectorAll('.modal'))
       .some(item => item.style.display === 'block');
@@ -134,11 +138,39 @@ function closeModal(selector) {
       document.body.style.overflow = modalBodyOverflow;
       modalBodyOverflow = null;
     }
+    const opener = modalReturnFocus.get(modal);
+    if (!anyOpen && restoreFocus && opener?.isConnected) opener.focus({ preventScroll: true });
+    modalReturnFocus.delete(modal);
   };
   const duration = getSearchMotionDuration();
   if (duration) modalCloseTimers.set(modal, setTimeout(finish, duration));
   else finish();
 }
+
+document.addEventListener('keydown', event => {
+  if (event.defaultPrevented || !['Escape', 'Tab'].includes(event.key)) return;
+  const modal = Array.from(form.querySelectorAll('.modal[role="dialog"]'))
+    .find(item => item.style.display === 'block' && item.style.opacity === '1');
+  if (!modal) return;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    modal.querySelector('.modal-close')?.click();
+    return;
+  }
+  const controls = Array.from(modal.querySelectorAll('a[href], button, input, select, textarea, [tabindex]'))
+    .filter(element => !element.disabled && element.tabIndex >= 0 && element.getClientRects().length);
+  const first = controls[0];
+  const last = controls[controls.length - 1];
+  if (!first) {
+    event.preventDefault();
+  } else if (!modal.contains(document.activeElement) || (event.shiftKey && document.activeElement === first)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
 
 function openCoordAid(mapMode) {
   const mapWindow = window.open(

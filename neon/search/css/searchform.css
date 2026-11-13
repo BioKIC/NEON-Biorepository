@@ -148,7 +148,6 @@
   margin: 0;
   padding: 16px;
   border: 0;
-  border-top: 1px solid var(--search-border);
   border-radius: 0 0 4px 4px;
   background: #fff;
 }
@@ -162,7 +161,7 @@
   height: auto;
   padding: 0;
   border-top-width: 0;
-  transition: grid-template-rows 240ms ease, border-top-width 240ms ease,
+  transition: grid-template-rows 240ms ease,
     opacity 180ms ease, visibility 0s 240ms;
 }
 
@@ -183,7 +182,6 @@
   grid-template-rows: 1fr;
   opacity: 1;
   visibility: inherit;
-  border-top-width: 1px;
   transition-delay: 0s;
 }
 
@@ -708,6 +706,66 @@
   margin: 0 0 24px auto;
 }
 
+#innertext.neon-search #domains-sites-modal {
+  z-index: 4000;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+#innertext.neon-search #domains-sites-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#innertext.neon-search .search-map-header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 16px;
+  min-height: 64px;
+  padding: 8px 16px;
+  background: var(--navy, #002c77);
+  color: #fff;
+}
+
+#innertext.neon-search .search-map-header h2 {
+  margin: 0;
+  color: inherit;
+  font: 500 20px/1.4 Inter, Helvetica, Arial, sans-serif;
+}
+
+#innertext.neon-search .search-map-header #domains-sites-modal-close {
+  flex: 0 0 auto;
+  margin: 0;
+  border-color: #fff;
+  background: #fff;
+  color: var(--search-blue);
+}
+
+#innertext.neon-search .search-map-header #domains-sites-modal-close:hover {
+  background: var(--search-surface);
+}
+
+#innertext.neon-search #collection-search-map {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
 #innertext.neon-search .search-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -968,6 +1026,52 @@
   border: 0;
   background: var(--search-surface);
   color: var(--search-ink);
+}
+
+#ui-datepicker-div.neon-search-datepicker :is(.ui-datepicker-prev, .ui-datepicker-next) {
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--search-blue);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+#ui-datepicker-div.neon-search-datepicker .ui-datepicker-prev {
+  left: 2px;
+}
+
+#ui-datepicker-div.neon-search-datepicker .ui-datepicker-next {
+  right: 2px;
+}
+
+#ui-datepicker-div.neon-search-datepicker :is(.ui-datepicker-prev, .ui-datepicker-next):hover {
+  border-color: #0092e2;
+  background: rgb(0 115 207 / 8%);
+}
+
+#ui-datepicker-div.neon-search-datepicker :is(.ui-datepicker-prev, .ui-datepicker-next) .ui-icon {
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border: 0;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  background: none;
+}
+
+#ui-datepicker-div.neon-search-datepicker .ui-datepicker-prev .ui-icon {
+  transform: rotate(135deg);
+}
+
+#ui-datepicker-div.neon-search-datepicker .ui-datepicker-next .ui-icon {
+  transform: rotate(-45deg);
 }
 
 #ui-datepicker-div.neon-search-datepicker select {
