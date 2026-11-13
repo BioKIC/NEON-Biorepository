@@ -231,6 +231,7 @@ $collManager = new OccurrenceManager();
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
 									<label class="tab"><input type="radio" name="collChoice" value="neon-theme"> Protocol</label>
 									<label class="tab"><input type="radio" name="collChoice" value="sample-type"> Preservation Method</label>
+									<button type="button" id="neon-modal-close" class="modal-close btn">Accept and close</button>
 								</div>
 								<!-- By Taxonomic Group -->
 								<div id="taxonomic-cat" class="box" style="display: block;">
@@ -309,7 +310,6 @@ $collManager = new OccurrenceManager();
 									?>
 								</div>
 							</div>
-							<button type="button" id="neon-modal-close" class="modal-close btn">Accept and close</button>
 						</div>
 					</div>
 				</section>

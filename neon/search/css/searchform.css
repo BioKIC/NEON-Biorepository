@@ -707,7 +707,9 @@
 }
 
 #innertext.neon-search #neon-modal-close {
-  margin: 24px 0 0 auto;
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0 0 0 auto;
 }
 
 #innertext.neon-search #domains-sites-modal {
