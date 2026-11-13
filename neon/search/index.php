@@ -73,7 +73,7 @@ $collManager = new OccurrenceManager();
 				$collid = $node['collid'];
 				$name = htmlspecialchars($node['name']);
 	
-				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child' data-cat='{$parentId}' data-ccode='{$name}' "
+				$html .= "<input type='checkbox' name='db' value='{$collid}' class='child search-checkbox-input' data-cat='{$parentId}' data-ccode='{$name}' "
 						. (
 							$IS_ADMIN ||
 							!empty($USER_RIGHTS["CollAdmin"]) ||
@@ -90,7 +90,7 @@ $collManager = new OccurrenceManager();
 			else {
 				$name = htmlspecialchars($node['name']);
 				$catAttr = $parentId !== '' ? " data-cat='{$parentId}'" : '';
-				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child'{$catAttr} data-ccode='{$name}' "
+				$html .= "<input type='checkbox' id='{$cCodeId}' class='all-selector child search-checkbox-input'{$catAttr} data-ccode='{$name}' "
 					. (
 						$IS_ADMIN ||
 						!empty($USER_RIGHTS["CollAdmin"]) ||
@@ -145,6 +145,7 @@ $collManager = new OccurrenceManager();
 								<label class="accordion-subheader neon-modal-open" data-modal-id="biorepo-collections-list">
 								<input
 								  id="all-neon-colls-quick"
+								  class="search-checkbox-input"
 								  data-chip="All Sample Types at the Biorepository"
 								  type="checkbox"
 								  data-form-id="biorepo-collections-list"
@@ -173,7 +174,7 @@ $collManager = new OccurrenceManager();
 											  id="all-neon-ext"
 											  data-chip="All Sample Types at Other Repositories"
 											  type="checkbox"
-											  class="all-selector"
+											  class="all-selector search-checkbox-input"
 											  data-form-id="neonext-collections-list"
 											>
 										  All NEON Sample Types at Other Repositories
@@ -190,7 +191,7 @@ $collManager = new OccurrenceManager();
 												echo '<ul>';
 												foreach ($collsArr as $result) {
 												  echo "<li class='Mui'>";
-												  echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
+												  echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child search-checkbox-input' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
 												  echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]}</span>";
 												  echo " <a href='../../collections/misc/neoncollprofiles.php?collid={$result["collid"]}' target='_blank' rel='noopener noreferrer' title='View Collection Profile'><span class='material-icons' style='color:#565a5c; vertical-align:middle;'>info</span></a>";
 												  echo "</li>";
@@ -232,7 +233,7 @@ $collManager = new OccurrenceManager();
 									if ($dataArr) {
 										echo '<ul id="collections-list1">';
 										echo '  <li>';
-										echo '    <input type="checkbox" class="all-selector all-neon-colls">';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls search-checkbox-input">';
 										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
 										echo '    <span class="group-label">All Sample Types</span>';
 										
@@ -257,7 +258,7 @@ $collManager = new OccurrenceManager();
 									if ($dataArr) {
 										echo '<ul id="collections-list2">';
 										echo '  <li>';
-										echo '    <input type="checkbox" class="all-selector all-neon-colls">';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls search-checkbox-input">';
 										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
 										echo '    <span class="group-label">All Sample Types</span>';
 										
@@ -282,7 +283,7 @@ $collManager = new OccurrenceManager();
 									if ($dataArr) {
 										echo '<ul id="collections-list3">';
 										echo '  <li>';
-										echo '    <input type="checkbox" class="all-selector all-neon-colls">';
+										echo '    <input type="checkbox" class="all-selector all-neon-colls search-checkbox-input">';
 										echo '    <span class="material-icons expansion-icon">indeterminate_check_box</span>';
 										echo '    <span class="group-label">All Sample Types</span>';
 										
@@ -305,7 +306,7 @@ $collManager = new OccurrenceManager();
 					<!-- Accordion content -->
 					<div class="modal" id="domains-sites-modal">
 						<div class="modal-content">
-							<button type="button" id="domains-sites-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
+							<button type="button" id="domains-sites-modal-close" class="modal-close btn">Accept and close</button>
 				
 							<div id="collection-search-map"></div>
 						</div>
@@ -357,8 +358,8 @@ $collManager = new OccurrenceManager();
 							<div>
 								<div class="text-area-container">
 									<label for="catnum" class="text-area--outlined">
-										<textarea id="catnum" name="catnum" data-chip="Identifier" rows="6"
-												  placeholder="Examples:&#10;NEON007VA&#10;NEON.BET.D06.002579&#10;STEI.20250925.R11242.E&#10;A00000020232&#10;MOS.D05*"
+										<textarea id="catnum" name="catnum" data-chip="Identifier" rows="4"
+												  placeholder="NEON007VA&#10;NEON.BET.D06.002579&#10;A00000020232&#10;MOS.D05*"
 												  ></textarea>
 										<span class="search-field-label" data-label="Identifiers">Identifiers</span></label>
 									<span class="assistive-text">
@@ -372,15 +373,15 @@ $collManager = new OccurrenceManager();
 							</div>
 							<div class="search-checks">
 								<div>
-									<input type="checkbox" id="hasimages" name="hasimages" value=1 data-chip="Only with images">
+									<input type="checkbox" id="hasimages" class="search-checkbox-input" name="hasimages" value=1 data-chip="Only with images">
 									<label for="hasimages">Specimens with images</label>
 								</div>
 								<div>
-									<input type="checkbox" id="hasgenetic" name="hasgenetic" value=1 data-chip="Only with genetic">
+									<input type="checkbox" id="hasgenetic" class="search-checkbox-input" name="hasgenetic" value=1 data-chip="Only with genetic">
 									<label for="hasgenetic">Specimens with published genetic data</label>
 								</div>
 								<div>
-									<input type="checkbox" id="availableforloan" name="availableforloan" value=1 data-chip="Only available for loan">
+									<input type="checkbox" id="availableforloan" class="search-checkbox-input" name="availableforloan" value=1 data-chip="Only available for loan">
 									<label for="availableforloan">Specimens available for loan</label>
 								</div>
 							</div>
@@ -412,7 +413,7 @@ $collManager = new OccurrenceManager();
 							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
 						</div>
 						<div class="search-checkbox">
-						  <input type="checkbox" name="usethes" id="usethes" data-chip="Exclude Synonyms">
+						  <input type="checkbox" name="usethes" id="usethes" class="search-checkbox-input" data-chip="Exclude Synonyms">
 						  <label for="usethes">Exclude Synonyms</label>
 						</div>
 						</div></div>
