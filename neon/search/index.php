@@ -41,7 +41,7 @@ $collManager = new OccurrenceManager();
 				updateChip();
 			}
 		});
-		$("#ui-datepicker-div").appendTo("#params-form");
+		$("#ui-datepicker-div").addClass("neon-search-datepicker");
 		if ($("#taxa").autocomplete("instance")) {
 			$("#taxa").autocomplete("option", "appendTo", "#params-form");
 		}

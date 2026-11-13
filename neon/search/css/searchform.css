@@ -1,4 +1,5 @@
-#innertext.neon-search {
+#innertext.neon-search,
+#ui-datepicker-div.neon-search-datepicker {
   --search-blue: #0073cf;
   --search-blue-hover: #005dab;
   --search-ink: #222;
@@ -53,18 +54,18 @@
   gap: 8px;
   position: relative;
   min-height: 52px;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   letter-spacing: 0;
   box-shadow: none;
   margin: 0;
-  padding: 12px 44px;
+  padding: 12px 44px 12px 16px;
   border: 0;
   border-radius: 4px;
   background: #fff;
   color: var(--search-ink);
   font: 500 16px/1.5 Inter, Helvetica, Arial, sans-serif;
-  text-align: center;
+  text-align: left;
   text-transform: none;
   cursor: pointer;
   user-select: none;
@@ -827,7 +828,12 @@
   }
 }
 
-#innertext.neon-search .ui-datepicker {
+#ui-datepicker-div.neon-search-datepicker,
+#ui-datepicker-div.neon-search-datepicker * {
+  box-sizing: border-box;
+}
+
+#ui-datepicker-div.neon-search-datepicker {
   padding: 8px;
   border: 1px solid var(--search-border);
   border-radius: 4px;
@@ -836,13 +842,13 @@
   font: 400 14px/1.5 Inter, Helvetica, Arial, sans-serif;
 }
 
-#innertext.neon-search .ui-datepicker-header {
+#ui-datepicker-div.neon-search-datepicker .ui-datepicker-header {
   border: 0;
   background: var(--search-surface);
   color: var(--search-ink);
 }
 
-#innertext.neon-search .ui-datepicker select {
+#ui-datepicker-div.neon-search-datepicker select {
   padding: 4px;
   border: 1px solid var(--search-border) !important;
   border-radius: 4px;
@@ -851,13 +857,13 @@
   font: inherit;
 }
 
-#innertext.neon-search .ui-datepicker table {
+#ui-datepicker-div.neon-search-datepicker table {
   width: 100%;
   margin: 8px 0 0;
   background: #fff;
 }
 
-#innertext.neon-search .ui-datepicker td a {
+#ui-datepicker-div.neon-search-datepicker td a {
   padding: 6px;
   border: 0;
   border-radius: 2px;
@@ -867,11 +873,11 @@
   text-decoration: none;
 }
 
-#innertext.neon-search .ui-datepicker td .ui-state-hover {
+#ui-datepicker-div.neon-search-datepicker td .ui-state-hover {
   background: var(--search-surface);
 }
 
-#innertext.neon-search .ui-datepicker td .ui-state-active {
+#ui-datepicker-div.neon-search-datepicker td .ui-state-active {
   background: var(--search-blue);
   color: #fff;
 }
