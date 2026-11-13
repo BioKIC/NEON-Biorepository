@@ -300,7 +300,7 @@ html:has(#innertext.neon-search) {
   font-weight: 700;
 }
 
-:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#search-btn, #reset-btn, #neon-modal-close, #domains-sites-modal-close, .advanced-query-add, .advanced-query-remove) {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#search-btn, #reset-btn, #edit-search-btn, #neon-modal-close, #domains-sites-modal-close, .advanced-query-add, .advanced-query-remove) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -333,7 +333,7 @@ html:has(#innertext.neon-search) {
   fill: currentColor;
 }
 
-:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#search-btn, #neon-modal-close, #domains-sites-modal-close):hover {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#search-btn, #edit-search-btn, #neon-modal-close, #domains-sites-modal-close):hover {
   background: var(--search-blue-hover) !important;
   border-color: var(--search-blue-hover);
 }
@@ -349,7 +349,7 @@ html:has(#innertext.neon-search) {
   color: var(--search-blue-hover);
 }
 
-#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn) {
+#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn, #edit-search-btn) {
   width: 100%;
   max-width: none;
   min-width: 0;
@@ -395,13 +395,13 @@ html:has(#innertext.neon-search) {
   white-space: nowrap;
 }
 
-#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn):hover:not(:disabled) {
+#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn, #edit-search-btn):hover:not(:disabled) {
   background: #438cdd !important;
   color: #fff;
 }
 
-#criteria-panel.neon-search-controls :is(#search-btn, #reset-btn):disabled,
-#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn):disabled {
+#criteria-panel.neon-search-controls :is(#search-btn, #reset-btn, #edit-search-btn):disabled,
+#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn, #edit-search-btn):disabled {
   background: #e3e6e8 !important;
   color: #9fa4a6;
   border-color: transparent;
@@ -409,7 +409,7 @@ html:has(#innertext.neon-search) {
   cursor: default;
 }
 
-#biorepo-search-controls :is(#search-btn, #reset-btn) .search-button-icon {
+#biorepo-search-controls :is(#search-btn, #reset-btn, #edit-search-btn) .search-button-icon {
   flex-basis: 14px;
   width: 14px;
   height: 14px;
@@ -1805,4 +1805,8 @@ html:has(#innertext.neon-search) {
 
 body.neon-search-map-open :is(.MuiPopover-root, .MuiPopper-root) {
   z-index: 4100;
+}
+
+#criteria-panel.search-results-controls .chip {
+  padding-right: 12px;
 }

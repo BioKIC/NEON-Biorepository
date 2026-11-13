@@ -147,6 +147,9 @@ $_SESSION['citationvar'] = $searchVar;
 	<!-- NEON edit end -->
 
 	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=<?= date('YmdHis'); ?>" type="text/css" rel="stylesheet" />
+	<!-- #neon edit -->
+	<link href="<?= $CLIENT_ROOT; ?>/neon/search/css/searchform.css?ver=<?= date('YmdHis'); ?>" type="text/css" rel="stylesheet" />
+	<!-- #end neon edit -->
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.min.css" type="text/css" rel="stylesheet">
 	<link rel="stylesheet"
 		  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -228,6 +231,11 @@ $_SESSION['citationvar'] = $searchVar;
 	?>
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
+		<?php
+		#neon edit
+		include($SERVER_ROOT . '/neon/search/includes/results-sidebar.php');
+		#end neon edit
+		?>
 		<h1 class="page-heading screen-reader-only"><?php echo $LANG['SEARCH_RES_LIST']; ?></h1>
 		<div id="tabs" class="top-breathing-room-rel" style="margin-bottom: 1rem">
 			<ul>
