@@ -1,0 +1,572 @@
+{
+  "source": "https://data.neonscience.org/api/v0/sites",
+  "sites": {
+    "ABBY": {
+      "siteName": "Abby Road NEON",
+      "domainCode": "D16",
+      "domainName": "Pacific Northwest",
+      "stateCode": "WA",
+      "stateName": "Washington"
+    },
+    "ARIK": {
+      "siteName": "Arikaree River NEON",
+      "domainCode": "D10",
+      "domainName": "Central Plains",
+      "stateCode": "CO",
+      "stateName": "Colorado"
+    },
+    "BARC": {
+      "siteName": "Lake Barco NEON",
+      "domainCode": "D03",
+      "domainName": "Southeast",
+      "stateCode": "FL",
+      "stateName": "Florida"
+    },
+    "BARR": {
+      "siteName": "Utqia\u0121vik NEON",
+      "domainCode": "D18",
+      "domainName": "Tundra",
+      "stateCode": "AK",
+      "stateName": "Alaska"
+    },
+    "BART": {
+      "siteName": "Bartlett Experimental Forest NEON",
+      "domainCode": "D01",
+      "domainName": "Northeast",
+      "stateCode": "NH",
+      "stateName": "New Hampshire"
+    },
+    "BIGC": {
+      "siteName": "Upper Big Creek NEON",
+      "domainCode": "D17",
+      "domainName": "Pacific Southwest",
+      "stateCode": "CA",
+      "stateName": "California"
+    },
+    "BLAN": {
+      "siteName": "Blandy Experimental Farm NEON",
+      "domainCode": "D02",
+      "domainName": "Mid-Atlantic",
+      "stateCode": "VA",
+      "stateName": "Virginia"
+    },
+    "BLDE": {
+      "siteName": "Blacktail Deer Creek NEON",
+      "domainCode": "D12",
+      "domainName": "Northern Rockies",
+      "stateCode": "WY",
+      "stateName": "Wyoming"
+    },
+    "BLUE": {
+      "siteName": "Blue River NEON",
+      "domainCode": "D11",
+      "domainName": "Southern Plains",
+      "stateCode": "OK",
+      "stateName": "Oklahoma"
+    },
+    "BLWA": {
+      "siteName": "Black Warrior River NEON",
+      "domainCode": "D08",
+      "domainName": "Ozarks Complex",
+      "stateCode": "AL",
+      "stateName": "Alabama"
+    },
+    "BONA": {
+      "siteName": "Caribou-Poker Creeks Research Watershed NEON",
+      "domainCode": "D19",
+      "domainName": "Taiga",
+      "stateCode": "AK",
+      "stateName": "Alaska"
+    },
+    "CARI": {
+      "siteName": "Caribou Creek NEON",
+      "domainCode": "D19",
+      "domainName": "Taiga",
+      "stateCode": "AK",
+      "stateName": "Alaska"
+    },
+    "CLBJ": {
+      "siteName": "Lyndon B. Johnson National Grassland NEON",
+      "domainCode": "D11",
+      "domainName": "Southern Plains",
+      "stateCode": "TX",
+      "stateName": "Texas"
+    },
+    "COMO": {
+      "siteName": "Como Creek NEON",
+      "domainCode": "D13",
+      "domainName": "Southern Rockies and Colorado Plateau",
+      "stateCode": "CO",
+      "stateName": "Colorado"
+    },
+    "CPER": {
+      "siteName": "Central Plains Experimental Range NEON",
+      "domainCode": "D10",
+      "domainName": "Central Plains",
+      "stateCode": "CO",
+      "stateName": "Colorado"
+    },
+    "CRAM": {
+      "siteName": "Crampton Lake NEON",
+      "domainCode": "D05",
+      "domainName": "Great Lakes",
+      "stateCode": "WI",
+      "stateName": "Wisconsin"
+    },
+    "CUPE": {
+      "siteName": "R\u00edo Cupeyes NEON",
+      "domainCode": "D04",
+      "domainName": "Atlantic Neotropical",
+      "stateCode": "PR",
+      "stateName": "Puerto Rico"
+    },
+    "DCFS": {
+      "siteName": "Dakota Coteau Field Site NEON",
+      "domainCode": "D09",
+      "domainName": "Northern Plains",
+      "stateCode": "ND",
+      "stateName": "North Dakota"
+    },
+    "DEJU": {
+      "siteName": "Delta Junction NEON",
+      "domainCode": "D19",
+      "domainName": "Taiga",
+      "stateCode": "AK",
+      "stateName": "Alaska"
+    },
+    "DELA": {
+      "siteName": "Dead Lake NEON",
+      "domainCode": "D08",
+      "domainName": "Ozarks Complex",
+      "stateCode": "AL",
+      "stateName": "Alabama"
+    },
+    "DSNY": {
+      "siteName": "Disney Wilderness Preserve NEON",
+      "domainCode": "D03",
+      "domainName": "Southeast",
+      "stateCode": "FL",
+      "stateName": "Florida"
+    },
+    "FLNT": {
+      "siteName": "Flint River NEON",
+      "domainCode": "D03",
+      "domainName": "Southeast",
+      "stateCode": "GA",
+      "stateName": "Georgia"
+    },
+    "GRSM": {
+      "siteName": "Great Smoky Mountains National Park NEON",
+      "domainCode": "D07",
+      "domainName": "Appalachians and Cumberland Plateau",
+      "stateCode": "TN",
+      "stateName": "Tennessee"
+    },
+    "GUAN": {
+      "siteName": "Gu\u00e1nica Forest NEON",
+      "domainCode": "D04",
+      "domainName": "Atlantic Neotropical",
+      "stateCode": "PR",
+      "stateName": "Puerto Rico"
+    },
+    "GUIL": {
+      "siteName": "R\u00edo Yahuecas NEON",
+      "domainCode": "D04",
+      "domainName": "Atlantic Neotropical",
+      "stateCode": "PR",
+      "stateName": "Puerto Rico"
+    },
+    "HARV": {
+      "siteName": "Harvard Forest & Quabbin Watershed NEON",
+      "domainCode": "D01",
+      "domainName": "Northeast",
+      "stateCode": "MA",
+      "stateName": "Massachusetts"
+    },
+    "HEAL": {
+      "siteName": "Healy NEON",
+      "domainCode": "D19",
+      "domainName": "Taiga",
+      "stateCode": "AK",
+      "stateName": "Alaska"
+    },
+    "HOPB": {
+      "siteName": "Lower Hop Brook NEON",
+      "domainCode": "D01",
+      "domainName": "Northeast",
+      "stateCode": "MA",
+      "stateName": "Massachusetts"
+    },
+    "JERC": {
+      "siteName": "The Jones Center At Ichauway NEON",
+      "domainCode": "D03",
+      "domainName": "Southeast",
+      "stateCode": "GA",
+      "stateName": "Georgia"
+    },
+    "JORN": {
+      "siteName": "Jornada Experimental Range NEON",
+      "domainCode": "D14",
+      "domainName": "Desert Southwest",
+      "stateCode": "NM",
+      "stateName": "New Mexico"
+    },
+    "KING": {
+      "siteName": "Kings Creek NEON",
+      "domainCode": "D06",
+      "domainName": "Prairie Peninsula",
+      "stateCode": "KS",
+      "stateName": "Kansas"
+    },
+    "KONA": {
+      "siteName": "Konza Prairie Agroecosystem NEON",
+      "domainCode": "D06",
+      "domainName": "Prairie Peninsula",
+      "stateCode": "KS",
+      "stateName": "Kansas"
+    },
+    "KONZ": {
+      "siteName": "Konza Prairie Biological Station NEON",
+      "domainCode": "D06",
+      "domainName": "Prairie Peninsula",
+      "stateCode": "KS",
+      "stateName": "Kansas"
+    },
+    "LAJA": {
+      "siteName": "Lajas Experimental Station NEON",
+      "domainCode": "D04",
+      "domainName": "Atlantic Neotropical",
+      "stateCode": "PR",
+      "stateName": "Puerto Rico"
+    },
+    "LECO": {
+      "siteName": "LeConte Creek NEON",
+      "domainCode": "D07",
+      "domainName": "Appalachians and Cumberland Plateau",
+      "stateCode": "TN",
+      "stateName": "Tennessee"
+    },
+    "LENO": {
+      "siteName": "Lenoir Landing NEON",
+      "domainCode": "D08",
+      "domainName": "Ozarks Complex",
+      "stateCode": "AL",
+      "stateName": "Alabama"
+    },
+    "LEWI": {
+      "siteName": "Lewis Run NEON",
+      "domainCode": "D02",
+      "domainName": "Mid-Atlantic",
+      "stateCode": "VA",
+      "stateName": "Virginia"
+    },
+    "LIRO": {
+      "siteName": "Little Rock Lake NEON",
+      "domainCode": "D05",
+      "domainName": "Great Lakes",
+      "stateCode": "WI",
+      "stateName": "Wisconsin"
+    },
+    "MART": {
+      "siteName": "Martha Creek NEON",
+      "domainCode": "D16",
+      "domainName": "Pacific Northwest",
+      "stateCode": "WA",
+      "stateName": "Washington"
+    },
+    "MAYF": {
+      "siteName": "Mayfield Creek NEON",
+      "domainCode": "D08",
+      "domainName": "Ozarks Complex",
+      "stateCode": "AL",
+      "stateName": "Alabama"
+    },
+    "MCDI": {
+      "siteName": "McDiffett Creek NEON",
+      "domainCode": "D06",
+      "domainName": "Prairie Peninsula",
+      "stateCode": "KS",
+      "stateName": "Kansas"
+    },
+    "MCRA": {
+      "siteName": "McRae Creek NEON",
+      "domainCode": "D16",
+      "domainName": "Pacific Northwest",
+      "stateCode": "OR",
+      "stateName": "Oregon"
+    },
+    "MLBS": {
+      "siteName": "Mountain Lake Biological Station NEON",
+      "domainCode": "D07",
+      "domainName": "Appalachians and Cumberland Plateau",
+      "stateCode": "VA",
+      "stateName": "Virginia"
+    },
+    "MOAB": {
+      "siteName": "Moab NEON",
+      "domainCode": "D13",
+      "domainName": "Southern Rockies and Colorado Plateau",
+      "stateCode": "UT",
+      "stateName": "Utah"
+    },
+    "NIWO": {
+      "siteName": "Niwot Ridge NEON",
+      "domainCode": "D13",
+      "domainName": "Southern Rockies and Colorado Plateau",
+      "stateCode": "CO",
+      "stateName": "Colorado"
+    },
+    "NOGP": {
+      "siteName": "Northern Great Plains Research Laboratory NEON",
+      "domainCode": "D09",
+      "domainName": "Northern Plains",
+      "stateCode": "ND",
+      "stateName": "North Dakota"
+    },
+    "OAES": {
+      "siteName": "Marvin Klemme Range Research Station NEON",
+      "domainCode": "D11",
+      "domainName": "Southern Plains",
+      "stateCode": "OK",
+      "stateName": "Oklahoma"
+    },
+    "OKSR": {
+      "siteName": "Oksrukuyik Creek NEON",
+      "domainCode": "D18",
+      "domainName": "Tundra",
+      "stateCode": "AK",
+      "stateName": "Alaska"
+    },
+    "ONAQ": {
+      "siteName": "Onaqui NEON",
+      "domainCode": "D15",
+      "domainName": "Great Basin",
+      "stateCode": "UT",
+      "stateName": "Utah"
+    },
+    "ORNL": {
+      "siteName": "Oak Ridge NEON",
+      "domainCode": "D07",
+      "domainName": "Appalachians and Cumberland Plateau",
+      "stateCode": "TN",
+      "stateName": "Tennessee"
+    },
+    "OSBS": {
+      "siteName": "Ordway-Swisher Biological Station NEON",
+      "domainCode": "D03",
+      "domainName": "Southeast",
+      "stateCode": "FL",
+      "stateName": "Florida"
+    },
+    "POSE": {
+      "siteName": "Posey Creek NEON",
+      "domainCode": "D02",
+      "domainName": "Mid-Atlantic",
+      "stateCode": "VA",
+      "stateName": "Virginia"
+    },
+    "PRIN": {
+      "siteName": "Pringle Creek NEON",
+      "domainCode": "D11",
+      "domainName": "Southern Plains",
+      "stateCode": "TX",
+      "stateName": "Texas"
+    },
+    "PRLA": {
+      "siteName": "Prairie Lake NEON",
+      "domainCode": "D09",
+      "domainName": "Northern Plains",
+      "stateCode": "ND",
+      "stateName": "North Dakota"
+    },
+    "PRPO": {
+      "siteName": "Prairie Pothole NEON",
+      "domainCode": "D09",
+      "domainName": "Northern Plains",
+      "stateCode": "ND",
+      "stateName": "North Dakota"
+    },
+    "PUUM": {
+      "siteName": "Puu Makaala Natural Area Reserve NEON",
+      "domainCode": "D20",
+      "domainName": "Pacific Tropical",
+      "stateCode": "HI",
+      "stateName": "Hawaii"
+    },
+    "REDB": {
+      "siteName": "Red Butte Creek NEON",
+      "domainCode": "D15",
+      "domainName": "Great Basin",
+      "stateCode": "UT",
+      "stateName": "Utah"
+    },
+    "RMNP": {
+      "siteName": "Rocky Mountains NEON",
+      "domainCode": "D10",
+      "domainName": "Central Plains",
+      "stateCode": "CO",
+      "stateName": "Colorado"
+    },
+    "SCBI": {
+      "siteName": "Smithsonian Conservation Biology Institute NEON",
+      "domainCode": "D02",
+      "domainName": "Mid-Atlantic",
+      "stateCode": "VA",
+      "stateName": "Virginia"
+    },
+    "SERC": {
+      "siteName": "Smithsonian Environmental Research Center NEON",
+      "domainCode": "D02",
+      "domainName": "Mid-Atlantic",
+      "stateCode": "MD",
+      "stateName": "Maryland"
+    },
+    "SJER": {
+      "siteName": "San Joaquin Experimental Range NEON",
+      "domainCode": "D17",
+      "domainName": "Pacific Southwest",
+      "stateCode": "CA",
+      "stateName": "California"
+    },
+    "SOAP": {
+      "siteName": "Soaproot Saddle NEON",
+      "domainCode": "D17",
+      "domainName": "Pacific Southwest",
+      "stateCode": "CA",
+      "stateName": "California"
+    },
+    "SRER": {
+      "siteName": "Santa Rita Experimental Range NEON",
+      "domainCode": "D14",
+      "domainName": "Desert Southwest",
+      "stateCode": "AZ",
+      "stateName": "Arizona"
+    },
+    "STEI": {
+      "siteName": "Steigerwaldt-Chequamegon NEON",
+      "domainCode": "D05",
+      "domainName": "Great Lakes",
+      "stateCode": "WI",
+      "stateName": "Wisconsin"
+    },
+    "STER": {
+      "siteName": "North Sterling NEON",
+      "domainCode": "D10",
+      "domainName": "Central Plains",
+      "stateCode": "CO",
+      "stateName": "Colorado"
+    },
+    "SUGG": {
+      "siteName": "Lake Suggs NEON",
+      "domainCode": "D03",
+      "domainName": "Southeast",
+      "stateCode": "FL",
+      "stateName": "Florida"
+    },
+    "SYCA": {
+      "siteName": "Sycamore Creek NEON",
+      "domainCode": "D14",
+      "domainName": "Desert Southwest",
+      "stateCode": "AZ",
+      "stateName": "Arizona"
+    },
+    "TALL": {
+      "siteName": "Talladega National Forest NEON",
+      "domainCode": "D08",
+      "domainName": "Ozarks Complex",
+      "stateCode": "AL",
+      "stateName": "Alabama"
+    },
+    "TEAK": {
+      "siteName": "Lower Teakettle NEON",
+      "domainCode": "D17",
+      "domainName": "Pacific Southwest",
+      "stateCode": "CA",
+      "stateName": "California"
+    },
+    "TECR": {
+      "siteName": "Teakettle Creek - Watershed 2 NEON",
+      "domainCode": "D17",
+      "domainName": "Pacific Southwest",
+      "stateCode": "CA",
+      "stateName": "California"
+    },
+    "TOMB": {
+      "siteName": "Lower Tombigbee River NEON",
+      "domainCode": "D08",
+      "domainName": "Ozarks Complex",
+      "stateCode": "AL",
+      "stateName": "Alabama"
+    },
+    "TOOK": {
+      "siteName": "Toolik Lake NEON",
+      "domainCode": "D18",
+      "domainName": "Tundra",
+      "stateCode": "AK",
+      "stateName": "Alaska"
+    },
+    "TOOL": {
+      "siteName": "Toolik Field Station NEON",
+      "domainCode": "D18",
+      "domainName": "Tundra",
+      "stateCode": "AK",
+      "stateName": "Alaska"
+    },
+    "TREE": {
+      "siteName": "Treehaven NEON",
+      "domainCode": "D05",
+      "domainName": "Great Lakes",
+      "stateCode": "WI",
+      "stateName": "Wisconsin"
+    },
+    "UKFS": {
+      "siteName": "KU Field Station NEON",
+      "domainCode": "D06",
+      "domainName": "Prairie Peninsula",
+      "stateCode": "KS",
+      "stateName": "Kansas"
+    },
+    "UNDE": {
+      "siteName": "University of Notre Dame Environmental Research Center NEON",
+      "domainCode": "D05",
+      "domainName": "Great Lakes",
+      "stateCode": "MI",
+      "stateName": "Michigan"
+    },
+    "WALK": {
+      "siteName": "Walker Branch NEON",
+      "domainCode": "D07",
+      "domainName": "Appalachians and Cumberland Plateau",
+      "stateCode": "TN",
+      "stateName": "Tennessee"
+    },
+    "WLOU": {
+      "siteName": "West St. Louis Creek NEON",
+      "domainCode": "D13",
+      "domainName": "Southern Rockies and Colorado Plateau",
+      "stateCode": "CO",
+      "stateName": "Colorado"
+    },
+    "WOOD": {
+      "siteName": "Chase Lake National Wildlife Refuge NEON",
+      "domainCode": "D09",
+      "domainName": "Northern Plains",
+      "stateCode": "ND",
+      "stateName": "North Dakota"
+    },
+    "WREF": {
+      "siteName": "Wind River Experimental Forest NEON",
+      "domainCode": "D16",
+      "domainName": "Pacific Northwest",
+      "stateCode": "WA",
+      "stateName": "Washington"
+    },
+    "YELL": {
+      "siteName": "Yellowstone National Park NEON",
+      "domainCode": "D12",
+      "domainName": "Northern Rockies",
+      "stateCode": "WY",
+      "stateName": "Wyoming"
+    }
+  }
+}

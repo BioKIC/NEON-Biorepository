@@ -8,6 +8,9 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 $collData = new CollectionMetadata();
 $siteData = new DatasetsMetadata();
 $collManager = new OccurrenceManager();
+$searchParameterNames = $collManager->getSearchParameterNames();
+$searchParameterNames->redirect($CLIENT_ROOT . '/neon/search/index.php');
+$searchParameterConfig = $searchParameterNames->clientConfig($_GET);
 ?>
 <html>
 
@@ -27,6 +30,7 @@ $collManager = new OccurrenceManager();
 	</script>
 	<script>
 		const clientRoot = '<?php echo $CLIENT_ROOT; ?>';
+		window.NEON_SEARCH_PARAMETERS = <?= json_encode($searchParameterConfig, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE) ?>;
 	</script>
 	<script>
 

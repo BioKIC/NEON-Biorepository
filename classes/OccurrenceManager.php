@@ -1,5 +1,8 @@
 <?php
 include_once($SERVER_ROOT . '/classes/OccurrenceSearchSupport.php');
+#neon edit
+include_once($SERVER_ROOT . '/neon/classes/SearchParameterNames.php');
+#end neon edit
 include_once($SERVER_ROOT . '/classes/ChecklistVoucherAdmin.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceTaxaManager.php');
 include_once($SERVER_ROOT . '/classes/AssociationManager.php');
@@ -10,6 +13,9 @@ Language::load('classes/OccurrenceManager');
 class OccurrenceManager extends OccurrenceTaxaManager {
 
 	protected $searchTermArr = Array();
+	#neon edit
+	private $searchParameterNames;
+	#end neon edit
 	protected $sqlWhere;
 	protected $paleoSqlWith;
 	protected $displaySearchArr = Array();
@@ -25,6 +31,10 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 
 	public function __construct($type='readonly'){
 		parent::__construct($type);
+		#neon edit
+		$this->searchParameterNames = new SearchParameterNames($this->conn);
+		$_REQUEST = $this->searchParameterNames->normalize($_REQUEST);
+		#end neon edit
  		if(array_key_exists('reset',$_REQUEST) && $_REQUEST['reset'])  $this->reset();
 		$this->associationManager = new AssociationManager();
 		$this->readRequestVariables();
@@ -1148,19 +1158,33 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 		return $queryTermArr;
 	}
 
+	#neon edit
+	public function getSearchParameterNames(){
+		return $this->searchParameterNames;
+	}
+	#end neon edit
+
 	public function getQueryTermStr(){
 		//Returns a search variable string
 		$retStr = '';
 		foreach($this->searchTermArr as $k => $v){
 			if($k == 'countryCode') continue;
 			if($k == 'countryRaw') continue;
+			#neon edit
+			if($k === 'db' || $k === 'datasetid'){
+				$retStr .= '&'.$k.'='.rawurlencode($this->searchParameterNames->encode($k, $v));
+				continue;
+			}
+			#end neon edit
 			//neon edit; add support for arrays
 			if(is_array($v)) foreach($v as $value) $retStr .= '&'.$this->cleanOutStr($k).'[]='.$this->cleanOutStr($value);
 			elseif($v) $retStr .= '&'.$this->cleanOutStr($k).'='.$this->cleanOutStr($v);
 			//end neon edit
 		}
 		if(isset($this->taxaArr['search'])){
-			$retStr .= '&taxa=' . $this->getTaxaSearchTerm();
+			#neon edit
+			$retStr .= '&taxa=' . rawurlencode($this->searchParameterNames->encodeTaxa(html_entity_decode($this->getTaxaSearchTerm(), ENT_QUOTES, 'UTF-8')));
+			#end neon edit
 			if($this->taxaArr['usethes']) $retStr .= '&usethes=1';
 			if(is_numeric($this->taxaArr['taxontype'])) {
 				$retStr .= '&taxontype=' . intval($this->taxaArr['taxontype']);

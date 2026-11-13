@@ -507,8 +507,9 @@ function updateChip() {
   const next = [];
   const selectedSites = Array.from(form.querySelectorAll('input[name="datasetid"]:checked'));
   if (selectedSites.length) {
-    const labels = [...new Set(selectedSites.map(input => input.id || input.value))];
-    next.push({ id: 'chip-some-datasetids', text: `Sites: ${labels.join(', ')}`, anchor: document.getElementById('locality'), clear: clearSites });
+    const labels = [...new Set(selectedSites.map(input => input.dataset.label || input.id || input.value))];
+    const title = selectedSites.some(input => input.dataset.namedDataset) ? 'Sites / Datasets' : 'Sites';
+    next.push({ id: 'chip-some-datasetids', text: `${title}: ${labels.join(', ')}`, anchor: document.getElementById('locality'), clear: clearSites });
   }
 
   const selectedCollections = getCollectionInputs(getCollectionView()).filter(input => input.checked);
@@ -599,15 +600,35 @@ function getParam(name) {
   return input.value || '';
 }
 
+function readableSearchValue(name, values) {
+  const config = window.NEON_SEARCH_PARAMETERS;
+  if (!config) return values.join(',');
+  if (name === 'taxa') return values.map(value => config.taxa?.[value] || value).join(',');
+  const entries = config[name];
+  if (!Array.isArray(entries)) return values.join(',');
+  const remaining = new Set(values.map(String));
+  const tokens = [];
+  if (remaining.delete('all')) tokens.push('all');
+  const view = { 'taxonomic-cat': 'taxonomic', 'neon-theme': 'protocol', 'sample-type': 'sampletype' }[getCriterionSelected()];
+  const ordered = [...entries].sort((a, b) => b.ids.length - a.ids.length
+    || Number(b.view === view) - Number(a.view === view));
+  ordered.forEach(entry => {
+    if (!entry.ids.length || !entry.ids.every(id => remaining.has(String(id)))) return;
+    tokens.push(entry.token);
+    entry.ids.forEach(id => remaining.delete(String(id)));
+  });
+  return [...tokens, ...remaining].join(',');
+}
+
 function getSearchUrl() {
   const url = new URL('../../collections/list.php', window.location.href);
   paramNames.forEach(name => {
     const value = getParam(name);
     if (Array.isArray(value)) {
       if (name === 'materialsampletype[]') value.forEach(item => url.searchParams.append(name, item));
-      else if (value.length) url.searchParams.set(name, value.join(','));
+      else if (value.length) url.searchParams.set(name, readableSearchValue(name, value));
     } else if (value !== '') {
-      url.searchParams.set(name, value);
+      url.searchParams.set(name, name === 'taxa' ? readableSearchValue(name, value.split(',').map(term => term.trim())) : value);
     }
   });
   const excludeSynonyms = document.getElementById('usethes');
@@ -639,7 +660,8 @@ function expandCollectionPath(input, root) {
 }
 
 function prefillFromUrl() {
-  const params = new URLSearchParams(window.location.search);
+  const config = window.NEON_SEARCH_PARAMETERS;
+  const params = new URLSearchParams(config?.query ?? window.location.search);
   if (params.has('db')) {
     const selected = new Set(params.getAll('db').flatMap(value => value.split(',')));
     collectionViews.forEach(id => {
@@ -657,7 +679,25 @@ function prefillFromUrl() {
     refreshCollectionRowStripes();
   }
 
-  // The React map initializes its own site selections from datasetid.
+  // The map owns site checkboxes. Preserve other named datasets outside its selection.
+  form.querySelectorAll('[data-named-dataset]').forEach(input => input.remove());
+  if (config && params.has('datasetid')) {
+    const siteIds = new Set(config.datasetid.filter(entry => entry.view === 'site').flatMap(entry => entry.ids.map(String)));
+    const selectedIds = new Set(params.getAll('datasetid').flatMap(value => value.split(',')));
+    selectedIds.forEach(id => {
+      if (siteIds.has(id)) return;
+      const entry = config.datasetid.find(item => item.view === 'dataset' && item.ids.includes(Number(id)));
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.name = 'datasetid';
+      input.value = id;
+      input.checked = true;
+      input.hidden = true;
+      input.dataset.namedDataset = 'true';
+      input.dataset.label = entry?.label || `Dataset ${id}`;
+      form.appendChild(input);
+    });
+  }
   // Only known search controls may be populated; never interpolate URL keys into selectors.
   paramNames.filter(name => name !== 'db' && name !== 'datasetid').forEach(name => {
     if (!params.has(name)) return;

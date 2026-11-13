@@ -32,6 +32,9 @@ if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
 $_SESSION['datasetid'] = $datasetid;
 
 $collManager = new OccurrenceListManager();
+#neon edit
+$collManager->getSearchParameterNames()->redirect($CLIENT_ROOT . '/collections/list.php');
+#end neon edit
 $searchVar = $collManager->getQueryTermStr();
 if ($targetTid && array_key_exists('mode', $_REQUEST)) $searchVar .= '&mode=voucher&targettid=' . $targetTid;
 
