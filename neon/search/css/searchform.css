@@ -885,8 +885,22 @@ html:has(#innertext.neon-search) {
   opacity: 1;
 }
 
+#innertext.neon-search #search-form-sample {
+  grid-template-areas:
+    "identifiers switches"
+    "identifiers collector";
+}
+
 #innertext.neon-search #search-form-sample > div:first-child {
-  grid-column: 1 / -1;
+  grid-area: identifiers;
+}
+
+#innertext.neon-search #search-form-sample > .search-switches {
+  grid-area: switches;
+}
+
+#innertext.neon-search #search-form-sample > .input-text-container {
+  grid-area: collector;
 }
 
 #innertext.neon-search #taxa-text {
@@ -1613,6 +1627,9 @@ html:has(#innertext.neon-search) {
 @media (max-width: 600px) {
   #innertext.neon-search :is(#search-form-coll-event, #search-form-sample) {
     grid-template-columns: minmax(0, 1fr);
+  }
+  #innertext.neon-search #search-form-sample {
+    grid-template-areas: "identifiers" "switches" "collector";
   }
   #innertext.neon-search #biorepo-collections-list {
     padding: 12px;
