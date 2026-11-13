@@ -728,8 +728,15 @@ html:has(#innertext.neon-search) {
   gap: 16px;
 }
 
+#innertext.neon-search #search-form-coll-event {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-items: stretch;
+  width: 100%;
+}
+
 #innertext.neon-search .search-date-filter {
   grid-column: 1 / -1;
+  width: 100%;
   min-width: 0;
 }
 
@@ -744,36 +751,6 @@ html:has(#innertext.neon-search) {
   margin: 0;
   font: 400 20px/1.4 Inter, Helvetica, Arial, sans-serif;
   font-size: 20px !important;
-}
-
-#innertext.neon-search #date-range-reset {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  width: auto;
-  height: auto;
-  min-height: 28px;
-  margin: 0;
-  padding: 4px 8px;
-  border: 1px solid var(--search-blue);
-  border-radius: 2px;
-  background: transparent;
-  color: var(--search-blue);
-  font: 500 11px/18px Inter, Helvetica, Arial, sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  box-shadow: none;
-  cursor: pointer;
-}
-
-#innertext.neon-search #date-range-reset:hover:enabled {
-  background: rgb(0 115 207 / 6%);
-}
-
-#innertext.neon-search #date-range-reset:disabled {
-  color: #9fa4a6;
-  border-color: currentColor;
-  cursor: default;
 }
 
 #innertext.neon-search #params-form #date-range-help {

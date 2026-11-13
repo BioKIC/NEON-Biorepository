@@ -393,7 +393,6 @@ function syncDateRange() {
     slider.style.setProperty('--date-start', `${maximum ? values[0] / maximum * 100 : 0}%`);
     slider.style.setProperty('--date-end', `${maximum ? values[1] / maximum * 100 : 100}%`);
   }
-  document.getElementById('date-range-reset').disabled = !dateFields.some(input => input.value.trim());
   if (slider.dataset.maximum !== String(maximum)) {
     slider.dataset.maximum = maximum;
     const marks = document.getElementById('date-range-marks');
@@ -783,11 +782,6 @@ form.addEventListener('submit', event => {
   event.preventDefault();
   updateChip();
   if (!document.getElementById('search-btn').disabled) simpleSearch();
-});
-document.getElementById('date-range-reset')?.addEventListener('click', () => {
-  dateFields.forEach(input => { input.value = ''; });
-  clearValidationErrors(true);
-  updateChip();
 });
 form.addEventListener('reset', () => {
   // Native controls reset after this event; then reconcile widgets and derived state.
