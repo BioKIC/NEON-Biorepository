@@ -226,7 +226,6 @@ $collManager = new OccurrenceManager();
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
 						<div class="modal-content">
-							<button type="button" id="neon-modal-close" class="modal-close btn">Accept and close</button>
 							<div id="colls-modal">
 								<div class="search-tabs">
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
@@ -310,6 +309,7 @@ $collManager = new OccurrenceManager();
 									?>
 								</div>
 							</div>
+							<button type="button" id="neon-modal-close" class="modal-close btn">Accept and close</button>
 						</div>
 					</div>
 				</section>

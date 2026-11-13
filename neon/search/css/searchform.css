@@ -706,6 +706,10 @@
   margin: 0 0 24px auto;
 }
 
+#innertext.neon-search #neon-modal-close {
+  margin: 24px 0 0 auto;
+}
+
 #innertext.neon-search #domains-sites-modal {
   z-index: 4000;
   inset: 0;
