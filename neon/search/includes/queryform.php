@@ -153,9 +153,7 @@ for($x=1; $x<9; $x++){
 		<div class="input-text-container" style="width: 30%; display: inline-block;">
 			<label for="customvalue" class="input-text--outlined">
 				<input name="q_customvalue<?php echo $x; ?>" type="text" value="<?php echo $cValue; ?>" style="height:30px" />
-				<!-- #neon edit -->
 			</label>
-				<!-- #end neon edit -->
 		</div>
 		<div class="select-container" style="width: 5%; display: inline-block;">
 			<select name="q_customcloseparen<?php echo $x; ?>" style="height:30px;">
@@ -181,6 +179,4 @@ for($x=1; $x<9; $x++){
 }
 ?>
 
-<!-- #neon edit -->
 <!-- Advanced search events and row helpers are defined in js/searchform.js. -->
-<!-- #end neon edit -->
