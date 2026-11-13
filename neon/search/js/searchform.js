@@ -338,6 +338,9 @@ function getInputChip(input) {
 
 function updateChip() {
   if (!chips) return;
+  form.querySelectorAll('.MuiSwitch-input').forEach(input => {
+    input.closest('.MuiSwitch-switchBase')?.classList.toggle('Mui-checked', input.checked);
+  });
   const next = [];
   const selectedSites = Array.from(form.querySelectorAll('input[name="datasetid"]:checked'));
   if (selectedSites.length) {

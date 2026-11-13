@@ -334,10 +334,16 @@ $collManager = new OccurrenceManager();
 								<span class="search-field-label" data-label="Taxon">Taxon</span></label>
 							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
 						</div>
-						<div class="search-checkbox">
-						  <input type="checkbox" name="usethes" id="usethes" class="search-checkbox-input" data-chip="Exclude Synonyms">
-						  <label for="usethes">Exclude Synonyms</label>
-						</div>
+						<label for="usethes" class="taxonomy-synonyms MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+							<span class="MuiSwitch-root MuiSwitch-sizeMedium">
+								<span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root">
+									<input type="checkbox" role="switch" name="usethes" id="usethes" class="PrivateSwitchBase-input MuiSwitch-input" data-chip="Exclude Synonyms">
+									<span class="MuiSwitch-thumb"></span>
+								</span>
+								<span class="MuiSwitch-track"></span>
+							</span>
+							<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Exclude Synonyms</span>
+						</label>
 						</div></div>
 					</div>
 				</section>

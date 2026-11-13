@@ -665,6 +665,62 @@ html:has(#innertext.neon-search) {
   cursor: pointer;
 }
 
+#innertext.neon-search #search-form-taxonomy {
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+#innertext.neon-search #search-form-taxonomy .accordion-content-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 24px;
+}
+
+#innertext.neon-search #taxa-text {
+  flex: 1 1 360px;
+}
+
+#innertext.neon-search .taxonomy-synonyms {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 48px;
+  margin: 8px 0 0;
+  cursor: pointer;
+}
+
+#innertext.neon-search .taxonomy-synonyms .MuiFormControlLabel-label {
+  color: #7c7f80;
+  font-size: 14px;
+  transition: color 150ms ease;
+}
+
+#innertext.neon-search .taxonomy-synonyms:has(input:checked) .MuiFormControlLabel-label {
+  color: var(--search-ink);
+}
+
+#innertext.neon-search .taxonomy-synonyms .MuiSwitch-switchBase {
+  position: absolute;
+}
+
+#innertext.neon-search .taxonomy-synonyms .MuiSwitch-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  margin: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+#innertext.neon-search .taxonomy-synonyms:has(input:focus-visible) .MuiSwitch-switchBase {
+  outline: 2px solid var(--search-blue);
+  outline-offset: 2px;
+}
+
 #innertext.neon-search :is(#search-form-coll-event, #search-form-sample) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
