@@ -5,6 +5,7 @@ class SearchParameterNames {
     private $conn;
     private $root;
     private $entries = array();
+    private $collectionCodes = array();
     private $taxa = array();
     private $scopes = array();
 
@@ -80,16 +81,22 @@ class SearchParameterNames {
             $nodes = is_file($path) ? json_decode(file_get_contents($path), true) : array();
             if (is_array($nodes)) $this->tree($nodes, $prefix, $view);
         }
-        $result = $this->conn->query('SELECT collid, collectionname FROM omcollections');
+        $result = $this->conn->query('SELECT collid, collectionname, collectioncode FROM omcollections');
         if (!$result) return;
         $rows = array();
         while ($row = $result->fetch_assoc()) $rows[] = $row;
         $result->free();
         $counts = array_count_values(array_map(function ($row) { return self::slug($row['collectionname']); }, $rows));
+        $codeCounts = array_count_values(array_map(function ($row) { return strtolower(trim($row['collectioncode'] ?? '')); }, $rows));
         foreach ($rows as $row) {
             $slug = self::slug($row['collectionname']);
             $token = 'collection:' . $slug . ($counts[$slug] > 1 || !$slug ? '~' . $row['collid'] : '');
             $this->add('db', $token, array($row['collid']), $row['collectionname']);
+            $code = trim($row['collectioncode'] ?? '');
+            if ($codeCounts[strtolower($code)] === 1 && preg_match('/^(?=.*[a-z])[a-z0-9._-]+$/iD', $code)
+                && !in_array(strtolower($code), array('all', 'allspec', 'allobs'), true)) {
+                $this->collectionCodes[(int) $row['collid']] = array('code' => $code, 'label' => $row['collectionname']);
+            }
         }
     }
 
@@ -189,6 +196,24 @@ class SearchParameterNames {
             unset($entry);
             // Reserve the shortest names for the default taxonomic tree.
             $entries = array_replace($entries, $this->shortNames($taxonomic));
+            $codes = array();
+            foreach ($this->collectionCodes as $id => $collection) {
+                $code = $collection['code'];
+                $existing = $this->lookup($entries, $code);
+                // Keep existing group/name URLs unambiguous when codes collide with an alias.
+                if ($existing !== null && $existing !== array($id)) continue;
+                $codes[$id] = $code;
+                if ($existing === null) {
+                    $entries[strtolower($code)] = array(
+                        'token' => $code, 'short' => $code, 'ids' => array($id), 'label' => $collection['label'],
+                        'view' => 'code', 'public' => true, 'ambiguous' => false,
+                    );
+                }
+            }
+            foreach ($entries as &$entry) {
+                if (count($entry['ids']) === 1 && isset($codes[$entry['ids'][0]])) $entry['code'] = $codes[$entry['ids'][0]];
+            }
+            unset($entry);
         }
         return self::$dictionaries[$cacheKey] = $entries;
     }
@@ -243,7 +268,7 @@ class SearchParameterNames {
         });
         foreach ($entries as $entry) {
             if (array_diff($entry['ids'], $ids)) continue;
-            $tokens[] = $entry['short'] ?? $entry['token'];
+            $tokens[] = $entry['code'] ?? $entry['short'] ?? $entry['token'];
             $ids = array_values(array_diff($ids, $entry['ids']));
         }
         return array_merge($tokens, array_map('strval', $ids));

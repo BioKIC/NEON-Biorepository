@@ -661,7 +661,7 @@ function compactSearchSelection(values, entries) {
     const tokens = [];
     options.forEach(entry => {
       if (!entry.ids.every(id => remaining.has(id))) return;
-      tokens.push(entry.short || entry.token);
+      tokens.push(entry.code || entry.short || entry.token);
       entry.ids.forEach(id => remaining.delete(id));
     });
     return [...tokens, ...remaining];
