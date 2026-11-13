@@ -13,7 +13,7 @@ $collManager = new OccurrenceManager();
 
 <head>
 	<!-- neon edit -->
-	<title>Search Samples &amp; Specimens</title>
+	<title>NEON Biorepository | search sample &amp; specimen records</title>
 	<!-- end neon edit -->
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
@@ -144,7 +144,7 @@ $collManager = new OccurrenceManager();
 		<h1 style="
 			margin-bottom: 30px;
 			font-size: 2.3rem;
-		">Search Samples &amp; Specimens</h1>
+		">search sample &amp; specimen records</h1>
 		<div id="error-msgs" class="errors" role="alert"></div>
 		<form id="params-form">
 			<!-- Criteria forms -->
@@ -158,9 +158,6 @@ $collManager = new OccurrenceManager();
 					<!-- Accordion content -->
 					<div class="content">
 						<div class="accordion-content-inner"><div class="accordion-content-body">
-						<p class="Mui">
-						  Looking for pinned specimens, blood vials, DNA extracts, frozen microbes or other NEON samples? Choose an available sample type here. 
-						</p>
 						<div id="search-form-colls">
 							<section>
 								<!-- Open NEON Collections modal -->
@@ -223,9 +220,6 @@ $collManager = new OccurrenceManager();
 									</li>
 								</ul>
 							</section>
-							<p class="Mui">
-							  Unsure what sample type to choose? Browse our <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank">sample type profiles</a> for descriptions, collection methods and associated data or <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> for help!
-							</p>	
 						</div>
 						</div></div>
 					</div>
@@ -320,6 +314,30 @@ $collManager = new OccurrenceManager();
 								</div>
 							</div>
 						</div>
+					</div>
+				</section>
+				<!-- Taxonomy -->
+				<section>
+					<!-- Accordion selector -->
+					<input type="checkbox" id="taxonomy" class="accordion-selector"/>
+
+					<!-- Accordion header -->
+					<label for="taxonomy" class="accordion-header">Taxonomy</label>
+
+					<!-- Taxonomy -->
+					<div id="search-form-taxonomy" class="content">
+						<div class="accordion-content-inner"><div class="accordion-content-body">
+						<div id="taxa-text" class="input-text-container">
+							<label for="taxa" class="input-text--outlined">
+								<input type="text" name="taxa" id="taxa" data-chip="Taxa" data-occurrence-only="1" placeholder="Scientific names only (e.g., Carabidae)">
+								<span class="search-field-label" data-label="Taxon">Taxon</span></label>
+							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
+						</div>
+						<div class="search-checkbox">
+						  <input type="checkbox" name="usethes" id="usethes" class="search-checkbox-input" data-chip="Exclude Synonyms">
+						  <label for="usethes">Exclude Synonyms</label>
+						</div>
+						</div></div>
 					</div>
 				</section>
 				<!-- Locality -->
@@ -419,30 +437,6 @@ $collManager = new OccurrenceManager();
 									<span class="search-field-label" data-label="Collector/ORCID">Collector/ORCID</span></label>
 								<span class="assistive-text">Any part of a collector's name or ORCID iD (XXXX-XXXX-XXXX-XXXX).</span>
 							</div>
-						</div>
-						</div></div>
-					</div>
-				</section>
-				<!-- Taxonomy -->
-				<section>
-					<!-- Accordion selector -->
-					<input type="checkbox" id="taxonomy" class="accordion-selector"/>
-
-					<!-- Accordion header -->
-					<label for="taxonomy" class="accordion-header">Taxonomy</label>
-
-					<!-- Taxonomy -->
-					<div id="search-form-taxonomy" class="content">
-						<div class="accordion-content-inner"><div class="accordion-content-body">
-						<div id="taxa-text" class="input-text-container">
-							<label for="taxa" class="input-text--outlined">
-								<input type="text" name="taxa" id="taxa" data-chip="Taxa" data-occurrence-only="1" placeholder="Scientific names only (e.g., Carabidae)">
-								<span class="search-field-label" data-label="Taxon">Taxon</span></label>
-							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
-						</div>
-						<div class="search-checkbox">
-						  <input type="checkbox" name="usethes" id="usethes" class="search-checkbox-input" data-chip="Exclude Synonyms">
-						  <label for="usethes">Exclude Synonyms</label>
 						</div>
 						</div></div>
 					</div>
