@@ -450,7 +450,7 @@ $searchParameterConfig = $searchParameterNames->clientConfig($_GET);
 										</span>
 										<span class="MuiSwitch-track"></span>
 									</span>
-									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Specimens with images</span>
+									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">With images</span>
 								</label>
 								<label for="hasgenetic" class="search-switch MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
 									<span class="MuiSwitch-root MuiSwitch-sizeMedium">
@@ -460,7 +460,7 @@ $searchParameterConfig = $searchParameterNames->clientConfig($_GET);
 										</span>
 										<span class="MuiSwitch-track"></span>
 									</span>
-									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Specimens with published genetic data</span>
+									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">With published genetic data</span>
 								</label>
 								<label for="availableforloan" class="search-switch MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
 									<span class="MuiSwitch-root MuiSwitch-sizeMedium">
@@ -470,7 +470,7 @@ $searchParameterConfig = $searchParameterNames->clientConfig($_GET);
 										</span>
 										<span class="MuiSwitch-track"></span>
 									</span>
-									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Specimens available for loan</span>
+									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Available for loan</span>
 								</label>
 							</div>
 							<div class="input-text-container">
