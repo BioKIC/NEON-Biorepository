@@ -279,6 +279,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: 40px;
   height: auto;
   min-width: 0;
@@ -297,6 +298,14 @@
   cursor: pointer;
   box-shadow: 0 2px 4px rgb(0 0 0 / 18%);
   transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+#innertext.neon-search .search-button-icon {
+  display: block;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 #innertext.neon-search :is(#search-btn, #neon-modal-close, #domains-sites-modal-close):hover {
