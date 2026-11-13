@@ -274,7 +274,7 @@ function getAdvancedSearchChip(rows = getAdvancedRows()) {
     if (row.value && row.type !== 'IS_NULL' && row.type !== 'NOT_NULL') parts.push(`'${row.value}'`);
     return parts.join(' ') + row.closeparen;
   }).join(' ');
-  return { id: 'chip-advancedsearchstr', text: `Advanced Search: ${text}`, clear: resetAdvancedSearch };
+  return { id: 'chip-advancedsearchstr', text: `Advanced Search: ${text}`, anchor: advancedForm, clear: resetAdvancedSearch };
 }
 
 /** Chips */
@@ -303,6 +303,7 @@ function getCollsChips(listId, label) {
   return {
     id: `chip-some-${listId}-collids`,
     text: `${label}: ${[...new Set(labels)].join(', ')}`,
+    anchor: collsModal.contains(root) ? allNeon : root,
     clear: () => uncheckAll(root),
   };
 }
@@ -318,6 +319,7 @@ function getInputChip(input) {
   return {
     id: `chip-${input.id || input.name}`,
     text,
+    anchor: input,
     clear: () => {
       if (input.type === 'checkbox') {
         input.checked = false;
@@ -340,7 +342,7 @@ function updateChip() {
   const selectedSites = Array.from(form.querySelectorAll('input[name="datasetid"]:checked'));
   if (selectedSites.length) {
     const labels = [...new Set(selectedSites.map(input => input.id || input.value))];
-    next.push({ id: 'chip-some-datasetids', text: `Sites: ${labels.join(', ')}`, clear: clearSites });
+    next.push({ id: 'chip-some-datasetids', text: `Sites: ${labels.join(', ')}`, anchor: document.getElementById('locality'), clear: clearSites });
   }
 
   const selectedCollections = getCollectionInputs(getCollectionView()).filter(input => input.checked);
@@ -366,6 +368,13 @@ function updateChip() {
     if (active) next.push(getInputChip(input));
   });
 
+  next.sort((a, b) => {
+    const position = a.anchor.compareDocumentPosition(b.anchor);
+    if (position & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+    if (position & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+    return 0;
+  });
+
   // Reuse unchanged chips, preserving keyboard focus and avoiding repeated DOM rebuilds.
   const nextIds = new Set(next.map(chip => chip.id));
   renderedChips.forEach((chip, id) => {
@@ -375,6 +384,7 @@ function updateChip() {
     }
   });
   document.getElementById('criteria-empty').hidden = next.length > 0;
+  document.getElementById('reset-btn').disabled = next.length === 0;
   let position = chips.firstChild;
   next.forEach(descriptor => {
     let chip = renderedChips.get(descriptor.id);
@@ -447,13 +457,29 @@ function expandCriterionAccordions(input) {
   }
 }
 
+function expandCollectionPath(input, root) {
+  let list = input.closest('ul');
+  while (list && root.contains(list)) {
+    list.classList.remove('collapsed');
+    list.style.removeProperty('display');
+    const parent = list.parentElement;
+    if (parent?.tagName === 'LI') {
+      const icon = parent.querySelector(':scope > .expansion-icon, :scope > [data-target] .expansion-icon');
+      if (icon) icon.textContent = 'indeterminate_check_box';
+    }
+    list = parent?.closest('ul');
+  }
+}
+
 function prefillFromUrl() {
   const params = new URLSearchParams(window.location.search);
   if (params.has('db')) {
     const selected = new Set(params.getAll('db').flatMap(value => value.split(',')));
     collectionViews.forEach(id => {
-      getCollectionInputs(document.getElementById(id)).forEach(input => {
+      const root = document.getElementById(id);
+      getCollectionInputs(root).forEach(input => {
         input.checked = selected.has('all') || selected.has(input.value);
+        if (selected.has(input.value)) expandCollectionPath(input, root);
       });
     });
     getCollectionInputs(formColls).forEach(input => {
@@ -461,6 +487,7 @@ function prefillFromUrl() {
       if (input.checked) expandCriterionAccordions(input);
     });
     if (getCollsSelected().length) expandCriterionAccordions(formColls);
+    refreshCollectionRowStripes();
   }
 
   // The React map initializes its own site selections from datasetid.

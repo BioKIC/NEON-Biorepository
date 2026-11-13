@@ -347,55 +347,66 @@ html:has(#innertext.neon-search) {
 
 #biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn) {
   width: 100%;
+  max-width: none;
   min-width: 0;
-  min-height: 1.75rem;
-  padding: 0.4rem 0.5rem;
+  height: 34px;
+  min-height: 34px;
+  align-self: stretch;
+  padding: 0 8px;
   border: 0;
-  font-size: 0.5625rem;
+  font-size: 11px;
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: 0.04em;
-  background: #0073cf;
+  background: #2974d2;
   color: #fff;
   box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px rgb(0 0 0 / 14%), 0 1px 5px rgb(0 0 0 / 12%);
 }
 
 #biorepo-search-controls #criteria-panel {
+  width: 100%;
+  max-width: none;
   gap: 16px;
 }
 
-#biorepo-search-controls #criteria-panel .selected-criteria {
-  gap: 12px;
+#biorepo-search-controls #criteria-panel :is(.search-actions, .selected-criteria) {
+  width: 100%;
+  gap: 16px;
   padding-top: 16px;
+  border-top: 1px solid #d5d7d8;
 }
 
-#biorepo-search-controls #criteria-panel .selected-criteria h3 {
-  font-size: 1.125rem;
-  font-weight: 500;
+#biorepo-search-controls #criteria-panel :is(.search-actions, .selected-criteria) h3 {
+  margin: 0;
+  font-family: Inter, Helvetica, Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 29px;
+  color: #000;
 }
 
 #biorepo-search-controls #criteria-panel #reset-btn {
-  min-height: 1.25rem;
-  padding: 0.45rem 0.375rem;
-  line-height: 1.2;
   white-space: nowrap;
 }
 
-#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn):hover {
-  background: #005da8 !important;
+#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn):hover:not(:disabled) {
+  background: #438cdd !important;
   color: #fff;
 }
 
-#biorepo-search-controls #search-btn .search-button-icon {
-  flex-basis: 0.875rem;
-  width: 0.875rem;
-  height: 0.875rem;
+#criteria-panel.neon-search-controls #reset-btn:disabled,
+#biorepo-search-controls #criteria-panel #reset-btn:disabled {
+  background: #e3e6e8 !important;
+  color: #9fa4a6;
+  border-color: transparent;
+  box-shadow: none;
+  cursor: default;
 }
 
-#biorepo-search-controls #reset-btn .search-button-icon {
-  flex-basis: 0.75rem;
-  width: 0.75rem;
-  height: 0.75rem;
+#biorepo-search-controls :is(#search-btn, #reset-btn) .search-button-icon {
+  flex-basis: 14px;
+  width: 14px;
+  height: 14px;
 }
 
 :is(#innertext.neon-search, #criteria-panel.neon-search-controls) #chips {
