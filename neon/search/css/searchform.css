@@ -87,7 +87,7 @@ html:has(#innertext.neon-search) {
 #innertext.neon-search .accordions > section > .accordion-header {
   justify-content: flex-start;
   padding-left: var(--search-accordion-inset);
-  font-size: 18px;
+  font-size: 20px;
   text-align: left;
   text-transform: none;
 }
@@ -396,8 +396,8 @@ html:has(#innertext.neon-search) {
   color: #fff;
 }
 
-#criteria-panel.neon-search-controls #reset-btn:disabled,
-#biorepo-search-controls #criteria-panel #reset-btn:disabled {
+#criteria-panel.neon-search-controls :is(#search-btn, #reset-btn):disabled,
+#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn):disabled {
   background: #e3e6e8 !important;
   color: #9fa4a6;
   border-color: transparent;
@@ -1008,6 +1008,7 @@ html:has(#innertext.neon-search) {
   align-self: center;
   justify-self: end;
   margin-left: 8px;
+  margin-right: 12px;
   font-size: 12px;
   line-height: 24px;
   white-space: nowrap;

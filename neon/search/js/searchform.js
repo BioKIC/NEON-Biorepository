@@ -364,7 +364,7 @@ function updateChip() {
 
   form.querySelectorAll('input[data-chip], textarea[data-chip], select[data-chip]').forEach(input => {
     if (input.disabled || input.name === 'db' || input.name === 'datasetid') return;
-    const active = input.type === 'checkbox' ? input.checked : input.value !== '';
+    const active = input.type === 'checkbox' ? input.checked : input.value.trim() !== '';
     if (active) next.push(getInputChip(input));
   });
 
@@ -385,6 +385,7 @@ function updateChip() {
   });
   document.getElementById('criteria-empty').hidden = next.length > 0;
   document.getElementById('reset-btn').disabled = next.length === 0;
+  document.getElementById('search-btn').disabled = next.length === 0;
   let position = chips.firstChild;
   next.forEach(descriptor => {
     let chip = renderedChips.get(descriptor.id);
@@ -605,6 +606,7 @@ function hideColCheckbox(collid) {
 }
 
 /** Events: one delegated change handler also handles Select2 and dynamic inputs. */
+$(form).on('input.searchForm', 'input:not([type="checkbox"]):not([type="radio"]), textarea', updateChip);
 $(form).on('change.searchForm', 'input, textarea, select', function () {
   if (this.name === 'collChoice' && collsModal.contains(this)) {
     collsModal.querySelectorAll('.box').forEach(box => { box.style.display = box.id === this.value ? 'block' : 'none'; });
@@ -677,7 +679,8 @@ form.querySelectorAll('#neon-modal-open, .neon-modal-open').forEach(opener => {
 
 form.addEventListener('submit', event => {
   event.preventDefault();
-  simpleSearch();
+  updateChip();
+  if (!document.getElementById('search-btn').disabled) simpleSearch();
 });
 form.addEventListener('reset', () => {
   // Native controls reset after this event; then reconcile widgets and derived state.
