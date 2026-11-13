@@ -336,7 +336,7 @@ $collManager = new OccurrenceManager();
 								<span class="search-field-label" data-label="Taxon">Taxon</span></label>
 							<span class="assistive-text">Type at least 4 characters for quick suggestions. Separate multiple with commas. Includes non-organismal groups.</span>
 						</div>
-						<label for="usethes" class="taxonomy-synonyms MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+						<label for="usethes" class="search-switch taxonomy-synonyms MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
 							<span class="MuiSwitch-root MuiSwitch-sizeMedium">
 								<span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root">
 									<input type="checkbox" role="switch" name="usethes" id="usethes" class="PrivateSwitchBase-input MuiSwitch-input" data-chip="Exclude Synonyms">
@@ -437,19 +437,37 @@ $collManager = new OccurrenceManager();
 									<label for="includeothercatnum">Search all identifiers</label>
 								</div>
 							</div>
-							<div class="search-checks">
-								<div>
-									<input type="checkbox" id="hasimages" class="search-checkbox-input" name="hasimages" value=1 data-chip="Only with images">
-									<label for="hasimages">Specimens with images</label>
-								</div>
-								<div>
-									<input type="checkbox" id="hasgenetic" class="search-checkbox-input" name="hasgenetic" value=1 data-chip="Only with genetic">
-									<label for="hasgenetic">Specimens with published genetic data</label>
-								</div>
-								<div>
-									<input type="checkbox" id="availableforloan" class="search-checkbox-input" name="availableforloan" value=1 data-chip="Only available for loan">
-									<label for="availableforloan">Specimens available for loan</label>
-								</div>
+							<div class="search-switches">
+								<label for="hasimages" class="search-switch MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+									<span class="MuiSwitch-root MuiSwitch-sizeMedium">
+										<span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root">
+											<input type="checkbox" role="switch" id="hasimages" name="hasimages" value="1" class="PrivateSwitchBase-input MuiSwitch-input" data-chip="Only with images">
+											<span class="MuiSwitch-thumb"></span>
+										</span>
+										<span class="MuiSwitch-track"></span>
+									</span>
+									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Specimens with images</span>
+								</label>
+								<label for="hasgenetic" class="search-switch MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+									<span class="MuiSwitch-root MuiSwitch-sizeMedium">
+										<span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root">
+											<input type="checkbox" role="switch" id="hasgenetic" name="hasgenetic" value="1" class="PrivateSwitchBase-input MuiSwitch-input" data-chip="Only with genetic">
+											<span class="MuiSwitch-thumb"></span>
+										</span>
+										<span class="MuiSwitch-track"></span>
+									</span>
+									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Specimens with published genetic data</span>
+								</label>
+								<label for="availableforloan" class="search-switch MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd">
+									<span class="MuiSwitch-root MuiSwitch-sizeMedium">
+										<span class="MuiButtonBase-root MuiSwitch-switchBase MuiSwitch-colorPrimary PrivateSwitchBase-root">
+											<input type="checkbox" role="switch" id="availableforloan" name="availableforloan" value="1" class="PrivateSwitchBase-input MuiSwitch-input" data-chip="Only available for loan">
+											<span class="MuiSwitch-thumb"></span>
+										</span>
+										<span class="MuiSwitch-track"></span>
+									</span>
+									<span class="MuiTypography-root MuiTypography-body1 MuiFormControlLabel-label">Specimens available for loan</span>
+								</label>
 							</div>
 							<div class="input-text-container">
 								<label for="collector" class="input-text--outlined input-text--floating">

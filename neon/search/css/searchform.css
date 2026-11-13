@@ -649,20 +649,11 @@ html:has(#innertext.neon-search) {
   }
 }
 
-#innertext.neon-search .search-checks > div,
-#innertext.neon-search .search-checkbox {
-  display: flex;
-  align-items: center;
+#innertext.neon-search .search-switches {
+  display: grid;
+  align-content: start;
   gap: 4px;
-  margin: 0 0 12px;
-  font-size: 14px;
-}
-
-#innertext.neon-search .search-checks label,
-#innertext.neon-search .search-checkbox label {
-  margin: 0;
-  font-weight: 400;
-  cursor: pointer;
+  padding-top: 8px;
 }
 
 #innertext.neon-search #search-form-taxonomy {
@@ -681,30 +672,41 @@ html:has(#innertext.neon-search) {
   flex: 1 1 360px;
 }
 
-#innertext.neon-search .taxonomy-synonyms {
+#innertext.neon-search .search-switch {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   min-height: 48px;
-  margin: 8px 0 0;
+  min-width: 0;
+  margin: 0;
   cursor: pointer;
 }
 
-#innertext.neon-search .taxonomy-synonyms .MuiFormControlLabel-label {
+#innertext.neon-search .taxonomy-synonyms {
+  margin-top: 8px;
+}
+
+#innertext.neon-search .search-switch .MuiSwitch-root {
+  flex-shrink: 0;
+}
+
+#innertext.neon-search .search-switch .MuiFormControlLabel-label {
+  min-width: 0;
   color: #7c7f80;
   font-size: 14px;
+  line-height: 1.5;
   transition: color 150ms ease;
 }
 
-#innertext.neon-search .taxonomy-synonyms:has(input:checked) .MuiFormControlLabel-label {
+#innertext.neon-search .search-switch:has(input:checked) .MuiFormControlLabel-label {
   color: var(--search-ink);
 }
 
-#innertext.neon-search .taxonomy-synonyms .MuiSwitch-switchBase {
+#innertext.neon-search .search-switch .MuiSwitch-switchBase {
   position: absolute;
 }
 
-#innertext.neon-search .taxonomy-synonyms .MuiSwitch-input {
+#innertext.neon-search .search-switch .MuiSwitch-input {
   position: absolute;
   opacity: 0;
   width: 100%;
@@ -716,22 +718,18 @@ html:has(#innertext.neon-search) {
   z-index: 1;
 }
 
-#innertext.neon-search .taxonomy-synonyms:has(input:focus-visible) .MuiSwitch-switchBase {
+#innertext.neon-search .search-switch:has(input:focus-visible) .MuiSwitch-switchBase {
   outline: 2px solid var(--search-blue);
   outline-offset: 2px;
 }
 
 #innertext.neon-search :is(#search-form-coll-event, #search-form-sample) {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-  align-items: start;
-  gap: 16px;
-}
-
-#innertext.neon-search #search-form-coll-event {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
   justify-items: stretch;
   width: 100%;
+  gap: 16px;
 }
 
 #innertext.neon-search .search-date-filter {
