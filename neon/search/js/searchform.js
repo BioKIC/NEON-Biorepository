@@ -592,7 +592,12 @@ form.addEventListener('click', event => {
     const li = expansion.closest('li');
     const list = li?.querySelector(':scope > ul');
     if (!list) return;
+    const branch = $(list).stop(true);
+    branch.css('display', branch.css('display'));
     const collapsed = list.classList.toggle('collapsed');
+    branch[collapsed ? 'slideUp' : 'slideDown'](getSearchMotionDuration(), () => {
+      list.style.removeProperty('display');
+    });
     const icon = li.querySelector(':scope > .expansion-icon, :scope > [data-target] .expansion-icon');
     if (icon) icon.textContent = collapsed ? 'add_box' : 'indeterminate_check_box';
   }
