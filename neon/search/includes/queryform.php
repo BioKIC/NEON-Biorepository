@@ -152,8 +152,9 @@ for($x=1; $x<9; $x++){
 			</select>
 		</div>
 		<div class="input-text-container">
-			<label for="customvalue<?php echo $x; ?>" class="input-text--outlined">
-				<input id="customvalue<?php echo $x; ?>" aria-label="Value, condition <?php echo $x; ?>" name="q_customvalue<?php echo $x; ?>" type="text" value="<?php echo $cValue; ?>" />
+			<label for="customvalue<?php echo $x; ?>" class="input-text--outlined input-text--floating">
+				<input id="customvalue<?php echo $x; ?>" aria-label="Value, condition <?php echo $x; ?>" name="q_customvalue<?php echo $x; ?>" type="text" placeholder=" " value="<?php echo $cValue; ?>" />
+				<span class="search-field-label">Value</span>
 			</label>
 		</div>
 		<div class="select-container advanced-query-short">

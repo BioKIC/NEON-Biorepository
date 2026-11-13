@@ -296,6 +296,7 @@ function updateChip() {
       renderedChips.delete(id);
     }
   });
+  document.getElementById('criteria-empty').hidden = next.length > 0;
   let position = chips.firstChild;
   next.forEach(descriptor => {
     let chip = renderedChips.get(descriptor.id);

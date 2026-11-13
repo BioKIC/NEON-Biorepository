@@ -135,6 +135,7 @@ $collManager = new OccurrenceManager();
 					<label for="collections" class="accordion-header">Sample Types</label>
 					<!-- Accordion content -->
 					<div class="content">
+						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<p class="Mui">
 						  Looking for pinned specimens, blood vials, DNA extracts, frozen microbes or other NEON samples? Choose an available sample type here. 
 						</p>
@@ -183,6 +184,7 @@ $collManager = new OccurrenceManager();
 										</label>								
 										<!-- Accordion content -->
 										<div class="content">
+											<div class="accordion-content-inner"><div class="accordion-content-body">
 											<ul id="neonext-collections-items">
 											  <?php if ($collsArr = $collData->getCollMetaByCat('Additional NEON Collections')) {
 												echo '<ul>';
@@ -196,6 +198,7 @@ $collManager = new OccurrenceManager();
 												echo '</ul>';
 											  } ?>
 											</ul>
+											</div></div>
 										</div>
 									</li>
 								</ul>
@@ -204,6 +207,7 @@ $collManager = new OccurrenceManager();
 							  Unsure what sample type to choose? Browse our <a href="<?php echo $CLIENT_ROOT . '/collections/misc/browsecollprofiles.php'; ?>" target="_blank">sample type profiles</a> for descriptions, collection methods and associated data or <a href="https://www.neonscience.org/about/contact-neon-biorepository">contact us</a> for help!
 							</p>	
 						</div>
+						</div></div>
 					</div>
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
@@ -301,7 +305,7 @@ $collManager = new OccurrenceManager();
 					<!-- Accordion content -->
 					<div class="modal" id="domains-sites-modal">
 						<div class="modal-content">
-							<button type="button" id="domains-sites-modal-close" class="modal-close btn">Accept and close</button>
+							<button type="button" id="domains-sites-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
 				
 							<div id="collection-search-map"></div>
 						</div>
@@ -315,10 +319,11 @@ $collManager = new OccurrenceManager();
 					<label for="coll-event" class="accordion-header">Date</label>
 					<!-- Accordion content -->
 					<div class="content">
+						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<div id="search-form-coll-event">
 							<div class="input-text-container">
-								<label for="eventdate1" class="input-text--outlined">
-									<input type="text" id="eventdate1" name="eventdate1" data-chip="Event Date Start">
+								<label for="eventdate1" class="input-text--outlined input-text--floating">
+									<input type="text" placeholder=" " id="eventdate1" name="eventdate1" data-chip="Event Date Start">
 									<span class="search-field-label" data-label="Start Date">Start Date</span>
 								</label>
 								<span class="assistive-text">
@@ -327,8 +332,8 @@ $collManager = new OccurrenceManager();
 							</div>
 					
 							<div class="input-text-container">
-								<label for="eventdate2" class="input-text--outlined">
-									<input type="text" id="eventdate2" name="eventdate2" data-chip="Event Date End">
+								<label for="eventdate2" class="input-text--outlined input-text--floating">
+									<input type="text" placeholder=" " id="eventdate2" name="eventdate2" data-chip="Event Date End">
 									<span class="search-field-label" data-label="End Date">End Date</span>
 								</label>
 								<span class="assistive-text">
@@ -336,6 +341,7 @@ $collManager = new OccurrenceManager();
 								</span>
 							</div>
 						</div>
+						</div></div>
 					</div>
 				</section>
 				<!-- Sample Properties -->
@@ -346,17 +352,17 @@ $collManager = new OccurrenceManager();
 					<label for="sample" class="accordion-header">Sample Properties</label>
 					<!-- Accordion content -->
 					<div class="content">
+						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<div id="search-form-sample">
 							<div>
 								<div class="text-area-container">
 									<label for="catnum" class="text-area--outlined">
-										<textarea id="catnum" name="catnum" data-chip="Identifier"
-												  placeholder="Examples:&#10; Catalog Number: NEON007VA&#10; SampleID: NEON.BET.D06.002579&#10;           STEI.20250925.R11242.E&#10; Barcode: A00000020232&#10;"
+										<textarea id="catnum" name="catnum" data-chip="Identifier" rows="6"
+												  placeholder="Examples:&#10;NEON007VA&#10;NEON.BET.D06.002579&#10;STEI.20250925.R11242.E&#10;A00000020232&#10;MOS.D05*"
 												  ></textarea>
 										<span class="search-field-label" data-label="Identifiers">Identifiers</span></label>
 									<span class="assistive-text">
 										Separate multiple values with commas or new lines. 
-										Use * as a wildcard (e.g., MOS.D05* or *20150910.SURBER.3*).
 									</span>
 								</div>
 								<div style="display:none">
@@ -379,12 +385,13 @@ $collManager = new OccurrenceManager();
 								</div>
 							</div>
 							<div class="input-text-container">
-								<label for="collector" class="input-text--outlined">
-									<input type="text" id="collector" name="collector" data-chip="Collector/ORCID">
+								<label for="collector" class="input-text--outlined input-text--floating">
+									<input type="text" placeholder=" " id="collector" name="collector" data-chip="Collector/ORCID">
 									<span class="search-field-label" data-label="Collector/ORCID">Collector/ORCID</span></label>
 								<span class="assistive-text">Any part of a collector's name or ORCID iD (XXXX-XXXX-XXXX-XXXX).</span>
 							</div>
 						</div>
+						</div></div>
 					</div>
 				</section>
 				<!-- Taxonomy -->
@@ -397,6 +404,7 @@ $collManager = new OccurrenceManager();
 
 					<!-- Taxonomy -->
 					<div id="search-form-taxonomy" class="content">
+						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<div id="taxa-text" class="input-text-container">
 							<label for="taxa" class="input-text--outlined">
 								<input type="text" name="taxa" id="taxa" data-chip="Taxa" data-occurrence-only="1" placeholder="Scientific names only (e.g., Carabidae)">
@@ -407,6 +415,7 @@ $collManager = new OccurrenceManager();
 						  <input type="checkbox" name="usethes" id="usethes" data-chip="Exclude Synonyms">
 						  <label for="usethes">Exclude Synonyms</label>
 						</div>
+						</div></div>
 					</div>
 				</section>
 				<!-- Material Sample -->
@@ -453,6 +462,7 @@ $collManager = new OccurrenceManager();
 					
 					<!-- Accordion content -->
 					<div class="content">
+						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<?php
 						if ($matSampleTypeArr = $collManager->getMaterialSampleTypeArr()) {
 						?>
@@ -469,6 +479,7 @@ $collManager = new OccurrenceManager();
 						<?php
 						}
 						?>
+						</div></div>
 					</div>
 				</section>
 				
@@ -493,11 +504,13 @@ $collManager = new OccurrenceManager();
 					
 					<!-- Accordion content -->
 					<div class="content">
+						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<div id="search-form-advanced-search">
 							<?php
 							include($SERVER_ROOT . '/neon/search/includes/queryform.php');
 							?>
 						</div>
+						</div></div>
 					</div>
 				</section>
 				
@@ -513,6 +526,7 @@ $collManager = new OccurrenceManager();
 				</div>
 				<h2>Criteria</h2>
 				<div id="chips"></div>
+				<p id="criteria-empty">Nothing selected</p>
 			</div>
 		</form>
 
