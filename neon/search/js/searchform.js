@@ -16,7 +16,7 @@ const modalReturnFocus = new WeakMap();
 let modalBodyOverflow = null;
 
 const paramNames = [
-  'db', 'datasetid', 'catnum', 'collector', 'includeothercatnum',
+  'db', 'datasetid', 'catnum', 'collector',
   'hasimages', 'hasgenetic', 'state', 'county', 'local', 'elevlow',
   'elevhigh', 'llbound', 'footprintwkt', 'llpoint', 'eventdate1',
   'eventdate2', 'taxa', 'taxontype', 'availableforloan', 'materialsampletype[]',
@@ -600,6 +600,76 @@ function getParam(name) {
   return input.value || '';
 }
 
+function compactSearchSelection(values, entries) {
+  const encodedLength = tokens => encodeURIComponent(tokens.join(',')).replace(/[!'()*]/g, char => `%${char.charCodeAt(0).toString(16)}`).length;
+  const ordered = [...entries].sort((a, b) => b.ids.length - a.ids.length);
+  const scopedCache = new Map();
+  const scopedEntries = scope => {
+    const cacheKey = scope.join(',');
+    if (scopedCache.has(cacheKey)) return scopedCache.get(cacheKey);
+    const scoped = entries.filter(entry => entry.ids.every(id => scope.includes(id)));
+    const suffixes = new Map();
+    scoped.forEach(entry => {
+      const parts = entry.token.toLowerCase().split('/');
+      while (parts.length) {
+        const suffix = parts.join('/');
+        const ids = entry.ids.join(',');
+        if (!suffixes.has(suffix)) suffixes.set(suffix, ids);
+        else if (suffixes.get(suffix) !== ids) suffixes.set(suffix, null);
+        parts.shift();
+      }
+    });
+    const result = scoped.map(entry => {
+      if (!entry.token.includes('/') && entry.short) return entry;
+      const parts = entry.token.split('/');
+      let short = entry.token;
+      for (let length = 1; length <= parts.length; length++) {
+        const suffix = parts.slice(-length).join('/');
+        if (suffixes.get(suffix.toLowerCase()) !== entry.ids.join(',')) continue;
+        short = suffix;
+        break;
+      }
+      return { ...entry, short };
+    }).sort((a, b) => b.ids.length - a.ids.length);
+    scopedCache.set(cacheKey, result);
+    return result;
+  };
+  const cover = (ids, options = ordered) => {
+    const remaining = new Set(ids);
+    const tokens = [];
+    options.forEach(entry => {
+      if (!entry.ids.every(id => remaining.has(id))) return;
+      tokens.push(entry.short || entry.token);
+      entry.ids.forEach(id => remaining.delete(id));
+    });
+    return [...tokens, ...remaining];
+  };
+  const compact = ids => {
+    let best = cover(ids);
+    let bestLength = encodedLength(best);
+    let prefix;
+    let remainder;
+    entries.forEach(entry => {
+      const selected = entry.ids.filter(id => ids.includes(id));
+      const missing = entry.ids.filter(id => !ids.includes(id));
+      if (selected.length < 2 || !missing.length) return;
+      const base = entry.short || entry.token;
+      if (encodedLength([base]) + 4 >= bestLength) return;
+      const term = `${base}!${cover(missing, scopedEntries(entry.ids)).join('!')}`;
+      const rest = ids.filter(id => !selected.includes(id));
+      const candidate = [term, ...cover(rest)];
+      const length = encodedLength(candidate);
+      if (length >= bestLength) return;
+      best = candidate;
+      bestLength = length;
+      prefix = term;
+      remainder = rest;
+    });
+    return remainder === undefined ? best : [prefix, ...compact(remainder)];
+  };
+  return compact([...new Set(values.map(Number))]);
+}
+
 function readableSearchValue(name, values) {
   const config = window.NEON_SEARCH_PARAMETERS;
   if (!config) return values.join(',');
@@ -609,15 +679,7 @@ function readableSearchValue(name, values) {
   const remaining = new Set(values.map(String));
   const tokens = [];
   if (remaining.delete('all')) tokens.push('all');
-  const view = { 'taxonomic-cat': 'taxonomic', 'neon-theme': 'protocol', 'sample-type': 'sampletype' }[getCriterionSelected()];
-  const ordered = [...entries].sort((a, b) => b.ids.length - a.ids.length
-    || Number(b.view === view) - Number(a.view === view));
-  ordered.forEach(entry => {
-    if (!entry.ids.length || !entry.ids.every(id => remaining.has(String(id)))) return;
-    tokens.push(entry.token);
-    entry.ids.forEach(id => remaining.delete(String(id)));
-  });
-  return [...tokens, ...remaining].join(',');
+  return [...tokens, ...compactSearchSelection([...remaining], entries)].join(',');
 }
 
 function getSearchUrl() {
@@ -632,7 +694,7 @@ function getSearchUrl() {
     }
   });
   const excludeSynonyms = document.getElementById('usethes');
-  if (excludeSynonyms) url.searchParams.set('usethes', excludeSynonyms.checked ? '0' : '1');
+  if (excludeSynonyms?.checked) url.searchParams.set('usethes', '0');
   return url.href;
 }
 

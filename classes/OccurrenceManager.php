@@ -1171,6 +1171,7 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			if($k == 'countryCode') continue;
 			if($k == 'countryRaw') continue;
 			#neon edit
+			if($k === 'includeothercatnum' || $k === 'usethes') continue;
 			if($k === 'db' || $k === 'datasetid'){
 				$retStr .= '&'.$k.'='.rawurlencode($this->searchParameterNames->encode($k, $v));
 				continue;
@@ -1185,7 +1186,9 @@ class OccurrenceManager extends OccurrenceTaxaManager {
 			#neon edit
 			$retStr .= '&taxa=' . rawurlencode($this->searchParameterNames->encodeTaxa(html_entity_decode($this->getTaxaSearchTerm(), ENT_QUOTES, 'UTF-8')));
 			#end neon edit
-			if($this->taxaArr['usethes']) $retStr .= '&usethes=1';
+			#neon edit
+			if(!$this->taxaArr['usethes']) $retStr .= '&usethes=0';
+			#end neon edit
 			if(is_numeric($this->taxaArr['taxontype'])) {
 				$retStr .= '&taxontype=' . intval($this->taxaArr['taxontype']);
 			} else {

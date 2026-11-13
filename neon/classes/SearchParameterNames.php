@@ -6,6 +6,7 @@ class SearchParameterNames {
     private $root;
     private $entries = array();
     private $taxa = array();
+    private $scopes = array();
 
     public function __construct($conn, $root = null) {
         $this->conn = $conn;
@@ -118,13 +119,14 @@ class SearchParameterNames {
                 $this->add('datasetid', $name, array($id), $name . ' — ' . $site['siteName'], 'site');
                 foreach (array('domain', 'state') as $kind) {
                     $token = $kind . ':' . self::slug($site[$kind . 'Name']);
-                    if (!isset($groups[$token])) $groups[$token] = array('ids' => array(), 'label' => $site[$kind . 'Name'], 'kind' => $kind);
+                    if (!isset($groups[$token])) $groups[$token] = array('ids' => array(), 'label' => $site[$kind . 'Name'], 'kind' => $kind, 'short' => $site[$kind . 'Code']);
                     $groups[$token]['ids'][] = $id;
                 }
             }
             if (isset($domains[$name]) && $names[$name] === 1) {
                 $this->add('datasetid', 'dataset:domain-' . self::slug($domains[$name]), array($id),
                     $domains[$name] . ' (' . $name . ')', 'dataset', !empty($row['ispublic']));
+                $this->entries['datasetid']['dataset:domain-' . self::slug($domains[$name])]['short'] = 'dataset:' . $name;
             }
             $slug = $titles[$index];
             $token = 'dataset:' . $slug . ($counts[$slug] > 1 || !$slug ? '~' . $id : '');
@@ -132,7 +134,46 @@ class SearchParameterNames {
         }
         foreach ($groups as $token => $group) {
             $this->add('datasetid', $token, $group['ids'], $group['label'], $group['kind']);
+            $this->entries['datasetid'][$token]['short'] = $group['short'];
         }
+    }
+
+    private function shortNames($entries) {
+        $suffixes = array();
+        foreach ($entries as $entry) {
+            $parts = explode('/', strtolower($entry['token']));
+            while ($parts) {
+                $suffix = implode('/', $parts);
+                if (!isset($suffixes[$suffix])) $suffixes[$suffix] = $entry['ids'];
+                elseif ($suffixes[$suffix] !== $entry['ids']) $suffixes[$suffix] = false;
+                array_shift($parts);
+            }
+        }
+        foreach ($entries as &$entry) {
+            if (isset($entry['short'])) continue;
+            $parts = explode('/', $entry['token']);
+            $entry['short'] = $entry['token'];
+            for ($length = 1; $length <= count($parts); $length++) {
+                $suffix = implode('/', array_slice($parts, -$length));
+                if ($suffixes[strtolower($suffix)] === $entry['ids']) {
+                    $entry['short'] = $suffix;
+                    break;
+                }
+            }
+        }
+        return $entries;
+    }
+
+    private function scopedEntries($entries, $scope) {
+        $cacheKey = array_key_first($entries) . ':' . implode(',', $scope);
+        if (isset($this->scopes[$cacheKey])) return $this->scopes[$cacheKey];
+        $scoped = array();
+        foreach ($entries as $key => $entry) {
+            if (array_diff($entry['ids'], $scope)) continue;
+            if (strpos($entry['token'], '/') !== false) unset($entry['short']);
+            $scoped[$key] = $entry;
+        }
+        return $this->scopes[$cacheKey] = $this->shortNames($scoped);
     }
 
     public function dictionary($key) {
@@ -140,7 +181,28 @@ class SearchParameterNames {
         if (isset(self::$dictionaries[$cacheKey])) return self::$dictionaries[$cacheKey];
         if ($key === 'db') $this->loadCollections();
         elseif ($key === 'datasetid') $this->loadDatasets();
-        return self::$dictionaries[$cacheKey] = array_filter($this->entries[$key] ?? array(), function ($entry) { return !$entry['ambiguous']; });
+        $entries = array_filter($this->entries[$key] ?? array(), function ($entry) { return !$entry['ambiguous']; });
+        if ($key === 'db') {
+            $entries = $this->shortNames($entries);
+            $taxonomic = array_filter($entries, function ($entry) { return $entry['view'] === 'taxonomic'; });
+            foreach ($taxonomic as &$entry) unset($entry['short']);
+            unset($entry);
+            // Reserve the shortest names for the default taxonomic tree.
+            $entries = array_replace($entries, $this->shortNames($taxonomic));
+        }
+        return self::$dictionaries[$cacheKey] = $entries;
+    }
+
+    private function lookup($entries, $token) {
+        $token = strtolower($token);
+        if (isset($entries[$token])) return $entries[$token]['ids'];
+        $ids = null;
+        foreach ($entries as $entry) {
+            if (strtolower($entry['short'] ?? $entry['token']) !== $token) continue;
+            if ($ids !== null && $ids !== $entry['ids']) return null;
+            $ids = $entry['ids'];
+        }
+        return $ids;
     }
 
     public function resolve($key, $value) {
@@ -153,42 +215,76 @@ class SearchParameterNames {
                 $ids[] = $token;
             } else {
                 $entries = $this->dictionary($key);
-                $entry = $entries[strtolower($token)] ?? null;
+                $parts = explode('!', $token);
+                $base = array_shift($parts);
+                $selected = $this->lookup($entries, $base);
                 // An unknown name must never silently remove a filter or broaden a search.
-                if (!$entry) return '0,0';
-                $ids = array_merge($ids, array_map('strval', $entry['ids']));
+                if ($selected === null) return '0,0';
+                if ($parts) {
+                    $scoped = $this->scopedEntries($entries, $selected);
+                    foreach ($parts as $part) {
+                        $excluded = ctype_digit($part) ? array((int) $part) : $this->lookup($scoped, $part);
+                        if (!$excluded || array_diff($excluded, $selected)) return '0,0';
+                        $selected = array_values(array_diff($selected, $excluded));
+                    }
+                }
+                $ids = array_merge($ids, array_map('strval', $selected));
             }
         }
         $resolved = implode(',', array_unique($ids));
         // Legacy request readers treat the string "0" as an absent filter.
-        return $resolved === '0' ? '0,0' : $resolved;
+        return $resolved === '0' || ($tokens && $resolved === '') ? '0,0' : $resolved;
+    }
+
+    private function cover($ids, $entries) {
+        $tokens = array();
+        uasort($entries, function ($a, $b) {
+            return count($b['ids']) <=> count($a['ids']);
+        });
+        foreach ($entries as $entry) {
+            if (array_diff($entry['ids'], $ids)) continue;
+            $tokens[] = $entry['short'] ?? $entry['token'];
+            $ids = array_values(array_diff($ids, $entry['ids']));
+        }
+        return array_merge($tokens, array_map('strval', $ids));
+    }
+
+    private function compactSelection($ids, $entries) {
+        $best = $this->cover($ids, $entries);
+        $bestLength = strlen(rawurlencode(implode(',', $best)));
+        $remainder = null;
+        $prefix = null;
+        foreach ($entries as $entry) {
+            $selected = array_values(array_intersect($entry['ids'], $ids));
+            $missing = array_values(array_diff($entry['ids'], $ids));
+            if (count($selected) < 2 || !$missing) continue;
+            $base = $entry['short'] ?? $entry['token'];
+            if (strlen(rawurlencode($base)) + 4 >= $bestLength) continue;
+            $excluded = $this->cover($missing, $this->scopedEntries($entries, $entry['ids']));
+            $term = $base . '!' . implode('!', $excluded);
+            $rest = array_values(array_diff($ids, $selected));
+            $candidate = array_merge(array($term), $this->cover($rest, $entries));
+            $length = strlen(rawurlencode(implode(',', $candidate)));
+            if ($length >= $bestLength) continue;
+            $bestLength = $length;
+            $best = $candidate;
+            $prefix = $term;
+            $remainder = $rest;
+        }
+        return $remainder === null ? $best : array_merge(array($prefix), $this->compactSelection($remainder, $entries));
     }
 
     public function encode($key, $value) {
-        $tokens = $this->parameterTokens($key, $value);
+        $tokens = $this->parameterTokens($key, $this->resolve($key, $value));
         $entries = $this->dictionary($key);
         $remaining = array();
         $named = array();
         foreach ($tokens as $token) {
             if ($key === 'db' && in_array($token, array('all', 'allspec', 'allobs'), true)) $named[] = $token;
             elseif (ctype_digit($token)) $remaining[(int) $token] = true;
-            elseif (isset($entries[strtolower($token)])) $named[] = $entries[strtolower($token)]['token'];
             else return '0';
         }
-        // Largest complete groups first; never replace a partial selection with its parent.
-        uasort($entries, function ($a, $b) { return count($b['ids']) <=> count($a['ids']); });
-        foreach ($entries as $entry) {
-            if (count($entry['ids']) < 2 || array_diff($entry['ids'], array_keys($remaining))) continue;
-            $named[] = $entry['token'];
-            foreach ($entry['ids'] as $id) unset($remaining[$id]);
-        }
-        foreach (array_keys($remaining) as $id) {
-            $token = (string) $id;
-            foreach ($entries as $entry) {
-                if ($entry['ids'] === array($id)) { $token = $entry['token']; break; }
-            }
-            $named[] = $token;
-        }
+        $named = array_merge($named, $this->compactSelection(array_keys($remaining), $entries));
         return implode(',', array_unique($named));
     }
 
@@ -233,6 +329,8 @@ class SearchParameterNames {
     }
 
     public function normalize($request) {
+        $request['includeothercatnum'] = '1';
+        $request['usethes'] = in_array($request['usethes'] ?? null, array('0', 0), true) ? '0' : '1';
         foreach (array('db', 'datasetid') as $key) {
             if (isset($request[$key])) $request[$key] = $this->resolve($key, $request[$key]);
         }
@@ -246,6 +344,9 @@ class SearchParameterNames {
     }
 
     public function canonical($request) {
+        unset($request['includeothercatnum']);
+        if (in_array($request['usethes'] ?? null, array('0', 0), true)) $request['usethes'] = '0';
+        else unset($request['usethes']);
         foreach (array('db', 'datasetid') as $key) {
             if (isset($request[$key])) $request[$key] = $this->encode($key, $request[$key]);
         }
