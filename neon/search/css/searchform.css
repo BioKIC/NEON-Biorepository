@@ -708,8 +708,9 @@
 
 #innertext.neon-search #neon-modal-close {
   flex-shrink: 0;
-  align-self: center;
-  margin: 0 0 2px auto;
+  align-self: baseline;
+  margin: 0 0 0 auto;
+  line-height: 20px;
 }
 
 #innertext.neon-search #domains-sites-modal {
@@ -780,6 +781,7 @@
 #innertext.neon-search .search-tabs {
   display: flex;
   flex-wrap: wrap;
+  align-items: baseline;
   min-height: 64px;
   gap: 0;
   border-bottom: 1px solid var(--search-border);
@@ -788,6 +790,7 @@
 #innertext.neon-search .tab {
   display: flex;
   align-items: center;
+  min-height: 64px;
   position: relative;
   margin: 0;
   padding: 12px 16px;
@@ -830,8 +833,17 @@
 
 #innertext.neon-search :is(#colls-modal, #neonext-collections-items) li {
   margin: 6px 0;
+  background: #fff;
   font-size: 14px;
   line-height: 1.5;
+}
+
+#innertext.neon-search :is(#colls-modal, #neonext-collections-items) li:nth-child(even) {
+  background: var(--search-surface);
+}
+
+#innertext.neon-search :is(#colls-modal, #neonext-collections-items) li > ul {
+  background: #fff;
 }
 
 #innertext.neon-search :is(#colls-modal, #neonext-collections-items) li:has(> .search-profile-link) {
