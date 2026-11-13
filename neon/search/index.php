@@ -487,33 +487,6 @@ $collManager = new OccurrenceManager();
 					!empty($USER_RIGHTS["CollEditor"])
 				) {
 				?>
-				<script>
-				function addMuiToMaterialSampleSelect2() {
-					const $container = $('#materialsampletype').next('.select2-container');
-				
-					$container.addClass('Mui');
-					$container.find('*:not(li)').addClass('Mui');
-				
-					$('#params-form .select2-dropdown').addClass('Mui');
-					$('#params-form .select2-dropdown').find('*:not(li)').addClass('Mui');
-				}
-				
-				$(document).ready(function () {
-					$('#materialsampletype').select2({
-						placeholder: 'Select material sample types',
-						width: '100%',
-						closeOnSelect: false,
-						dropdownParent: $('#params-form')
-					});
-				
-					addMuiToMaterialSampleSelect2();
-				
-					$('#materialsampletype').on(
-						'select2:open select2:close select2:select select2:unselect select2:clear',
-						addMuiToMaterialSampleSelect2
-					);
-				});
-				</script>
 				<section>
 					<!-- Accordion selector -->
 					<input type="checkbox" id="material-sample" class="accordion-selector" />
@@ -528,7 +501,9 @@ $collManager = new OccurrenceManager();
 						if ($matSampleTypeArr = $collManager->getMaterialSampleTypeArr()) {
 						?>
 							<div class="select-container">
-								<label for="materialsampletype" class="search-control-label">Material sample types</label>
+								<div class="material-sample-select MuiFormControl-root">
+								<label for="materialsampletype" id="materialsampletype-label" class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-colorPrimary" data-shrink="false">Material Sample Types</label>
+								<div class="material-sample-input MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiSelect-root">
 								<select name="materialsampletype[]" id="materialsampletype" data-chip= "Material Sample" multiple>
 									<?php
 									foreach ($matSampleTypeArr as $matSampeType) {
@@ -536,6 +511,10 @@ $collManager = new OccurrenceManager();
 									}
 									?>
 								</select>
+								<svg class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon" focusable="false" aria-hidden="true" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"></path></svg>
+								<fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline"><legend><span>Material Sample Types</span></legend></fieldset>
+								</div>
+								</div>
 							</div>
 						<?php
 						}

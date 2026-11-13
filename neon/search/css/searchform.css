@@ -902,23 +902,135 @@ html:has(#innertext.neon-search) {
   background-repeat: no-repeat;
 }
 
+#innertext.neon-search .material-sample-select,
+#innertext.neon-search .material-sample-input {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border-radius: 4px;
+  font: 400 16px/24px Inter, Helvetica, Arial, sans-serif;
+}
+
+#innertext.neon-search .material-sample-select > label {
+  display: block;
+  margin: 0 0 6px;
+  color: var(--search-muted);
+  font: inherit;
+}
+
+#innertext.neon-search .material-select-enhanced > label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  max-width: calc(100% - 46px);
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transform: translate(14px, 16px) scale(1);
+  transform-origin: top left;
+  transition: transform 200ms ease, color 200ms ease;
+}
+
+#innertext.neon-search .material-select-floating > label {
+  max-width: calc(133% - 32px);
+  transform: translate(14px, -9px) scale(0.75);
+}
+
+#innertext.neon-search .material-sample-select > label.Mui-focused {
+  color: var(--search-blue);
+}
+
+#innertext.neon-search .material-sample-input > :is(svg, fieldset) {
+  display: none;
+}
+
+#innertext.neon-search .material-select-enhanced .MuiSelect-icon {
+  display: block;
+  position: absolute;
+  top: calc(50% - 12px);
+  right: 7px;
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  color: var(--search-muted);
+  pointer-events: none;
+  transition: transform 180ms ease;
+}
+
+#innertext.neon-search .material-select-enhanced .MuiSelect-iconOpen {
+  transform: rotate(180deg);
+}
+
+#innertext.neon-search .material-select-enhanced .MuiOutlinedInput-notchedOutline {
+  display: block;
+  position: absolute;
+  inset: -5px 0 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid rgb(0 0 0 / 23%);
+  border-radius: inherit;
+  pointer-events: none;
+  transition: border-color 150ms ease;
+}
+
+#innertext.neon-search .material-sample-input:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--search-ink);
+}
+
+#innertext.neon-search .material-sample-input.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border: 2px solid var(--search-blue);
+}
+
+#innertext.neon-search .material-sample-input legend {
+  float: none;
+  width: auto;
+  max-width: 0.01px;
+  height: 11px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: nowrap;
+  font-size: 0.75em;
+  transition: max-width 200ms ease;
+}
+
+#innertext.neon-search .material-sample-input legend > span {
+  display: inline-block;
+  padding: 0 5px;
+}
+
+#innertext.neon-search .material-select-floating legend {
+  max-width: 100%;
+}
+
 #innertext.neon-search .select2-container {
   max-width: 100%;
   font: inherit;
 }
 
 #innertext.neon-search .select2-container .select2-selection--multiple {
-  min-height: 48px;
-  padding: 6px;
-  border: 1px solid #b7bdc0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 56px;
+  padding: 14px 32px 14px 14px;
+  border: 0;
   border-radius: 4px;
   background: #fff;
 }
 
 #innertext.neon-search .select2-container--focus .select2-selection--multiple,
 #innertext.neon-search .select2-container--open .select2-selection--multiple {
-  border-color: var(--search-blue);
-  outline: 1px solid var(--search-blue);
+  border: 0;
+  outline: none;
 }
 
 #innertext.neon-search .select2-selection__rendered {
@@ -927,6 +1039,10 @@ html:has(#innertext.neon-search) {
   gap: 6px;
   margin: 0;
   padding: 0;
+}
+
+#innertext.neon-search .select2-selection__rendered:empty {
+  display: none;
 }
 
 #innertext.neon-search .select2-container .select2-selection__choice {
@@ -959,12 +1075,13 @@ html:has(#innertext.neon-search) {
 }
 
 #innertext.neon-search .select2-search .select2-search__field {
+  height: 24px;
   min-height: 24px;
-  margin: 4px 0 0;
+  margin: 0;
   padding: 0;
   border: 0 !important;
   background: transparent;
-  font: 400 14px/24px Inter, Helvetica, Arial, sans-serif;
+  font: 400 16px/24px Inter, Helvetica, Arial, sans-serif;
   outline: none;
 }
 
@@ -979,13 +1096,48 @@ html:has(#innertext.neon-search) {
 
 #innertext.neon-search .select2-results__options {
   max-height: 300px;
+  margin: 0;
+  padding: 8px 0;
 }
 
 #innertext.neon-search .select2-results__option {
-  padding: 8px 12px;
+  min-height: 36px;
+  padding: 6px 16px;
+  transition: background-color 150ms ease;
 }
 
-#innertext.neon-search .select2-results__option--highlighted[aria-selected],
+#innertext.neon-search .material-sample-menu {
+  border: 0;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgb(0 0 0 / 20%);
+  font-size: 16px;
+  line-height: 24px;
+  transform-origin: top center;
+  animation: material-sample-menu-open 180ms ease;
+}
+
+#innertext.neon-search .select2-dropdown--above.material-sample-menu {
+  transform-origin: bottom center;
+}
+
+#innertext.neon-search .material-sample-menu .select2-results__option--selected {
+  background: rgb(0 115 207 / 8%);
+}
+
+#innertext.neon-search .material-sample-menu .select2-results__option--highlighted {
+  background: rgb(0 0 0 / 4%);
+  color: var(--search-ink);
+}
+
+#innertext.neon-search .material-sample-menu .select2-results__option--selected.select2-results__option--highlighted {
+  background: rgb(0 115 207 / 12%);
+}
+
+@keyframes material-sample-menu-open {
+  from { opacity: 0; transform: scaleY(0.92); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
 #innertext.neon-search .ui-autocomplete .ui-state-active {
   border-color: var(--search-blue);
   background: var(--search-blue);
@@ -1407,11 +1559,16 @@ html:has(#innertext.neon-search) {
   #innertext.neon-search .accordion-header::after,
   #innertext.neon-search .accordion-subheader::after,
   #innertext.neon-search .input-text--floating .search-field-label,
+  #innertext.neon-search .material-sample-select *,
+  #innertext.neon-search .material-sample-menu *,
   #innertext.neon-search input.search-checkbox-input,
   #innertext.neon-search .modal,
   #innertext.neon-search #params-form a.search-info:not(#domains-sites-modal *),
   #innertext.neon-search .accordions .accordion-selector + label + .content {
     transition: none;
+  }
+  #innertext.neon-search .material-sample-menu {
+    animation: none;
   }
 }
 

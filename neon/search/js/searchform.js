@@ -336,6 +336,46 @@ function getInputChip(input) {
   };
 }
 
+function syncMaterialSampleSelect() {
+  const input = document.getElementById('materialsampletype');
+  const group = input?.closest('.material-sample-select');
+  const container = group?.querySelector('.select2-container');
+  if (!container) return;
+  const open = container.classList.contains('select2-container--open');
+  const focused = open || group.contains(document.activeElement);
+  const shrink = focused || input.selectedOptions.length > 0;
+  const label = group.querySelector('label');
+  group.classList.toggle('material-select-floating', shrink);
+  group.querySelector('.MuiSelect-root').classList.toggle('Mui-focused', focused);
+  group.querySelector('.MuiSelect-icon').classList.toggle('MuiSelect-iconOpen', open);
+  label.classList.toggle('Mui-focused', focused);
+  label.classList.toggle('MuiInputLabel-shrink', shrink);
+  label.setAttribute('data-shrink', String(shrink));
+}
+
+function initMaterialSampleSelect() {
+  const input = document.getElementById('materialsampletype');
+  const group = input?.closest('.material-sample-select');
+  if (!group || !$.fn.select2) return;
+  const select = $(input).select2({
+    width: '100%',
+    closeOnSelect: false,
+    dropdownParent: $('#params-form'),
+  });
+  group.classList.add('material-select-enhanced');
+  const decorate = () => {
+    const container = select.next('.select2-container');
+    const dropdown = $('#params-form .select2-dropdown');
+    container.add(dropdown).addClass('Mui').find('*:not(li)').addClass('Mui');
+    dropdown.addClass('material-sample-menu');
+    container.find('[role="combobox"], .select2-search__field').attr('aria-labelledby', 'materialsampletype-label');
+    syncMaterialSampleSelect();
+  };
+  select.on('select2:open select2:close select2:select select2:unselect select2:clear change', decorate);
+  $(group).on('focusin', syncMaterialSampleSelect).on('focusout', () => setTimeout(syncMaterialSampleSelect, 0));
+  decorate();
+}
+
 const firstCollectionDate = '2008-10-02';
 const firstCollectionMonth = 2008 * 12 + 9;
 const dateFields = ['eventdate1', 'eventdate2'].map(id => document.getElementById(id));
@@ -438,6 +478,7 @@ function updateDatesFromSlider(handle) {
 function updateChip() {
   if (!chips) return;
   syncDateRange();
+  syncMaterialSampleSelect();
   form.querySelectorAll('.MuiSwitch-input').forEach(input => {
     input.closest('.MuiSwitch-switchBase')?.classList.toggle('Mui-checked', input.checked);
   });
@@ -807,5 +848,6 @@ form.addEventListener('reset', () => {
 });
 
 refreshCollectionRowStripes();
+$(initMaterialSampleSelect);
 if (document.readyState === 'complete') prefillFromUrl();
 else window.addEventListener('load', prefillFromUrl, { once: true });
