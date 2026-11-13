@@ -1,1156 +1,551 @@
 /**
- * GLOBAL VARIABLES
+ * Search criteria, collection trees, chips, and URL serialization.
+ * Keep updateChip() global: the date picker and React site map call it.
  */
-const criteriaPanel = document.getElementById('criteria-panel');
-const allNeon = document.getElementById('all-neon-colls-quick');
-const allSites = document.getElementById('all-sites');
 const form = document.getElementById('params-form');
+const allNeon = document.getElementById('all-neon-colls-quick');
 const formColls = document.getElementById('search-form-colls');
 const collsModal = document.getElementById('colls-modal');
-// list of parameters to be passed to url, modified by getSearchUrl method
-let paramNames = [
-  'db',
-  'datasetid',
-  'catnum',
-  'collector',
-  'includeothercatnum',
-  'hasimages',
-  'hasgenetic',
-  'state',
-  'county',
-  'local',
-  'elevlow',
-  'elevhigh',
-  'llbound',
-  'footprintwkt',
-  'llpoint',
-  'eventdate1',
-  'eventdate2',
-  'taxa',
-  'taxontype',
-  'availableforloan',
-  'materialsampletype[]',
+const chips = document.getElementById('chips');
+const advancedForm = document.getElementById('search-form-advanced-search');
+const advancedRowCount = 8;
+const collectionViews = ['taxonomic-cat', 'neon-theme', 'sample-type'];
+const renderedChips = new Map();
+let modalBodyOverflow = null;
+
+const paramNames = [
+  'db', 'datasetid', 'catnum', 'collector', 'includeothercatnum',
+  'hasimages', 'hasgenetic', 'state', 'county', 'local', 'elevlow',
+  'elevhigh', 'llbound', 'footprintwkt', 'llpoint', 'eventdate1',
+  'eventdate2', 'taxa', 'taxontype', 'availableforloan', 'materialsampletype[]',
 ];
-
-for (let i = 1; i <= 8; i++) {
-  paramNames.push(
-    `q_customopenparen${i}`,
-    `q_customfield${i}`,
-    `q_customtype${i}`,
-    `q_customvalue${i}`,
-    `q_customcloseparen${i}`
-  );
-  if (i < 8) {
-    paramNames.push(`q_customandor${i + 1}`);
-  }
-}
-
-
-const uLat = document.getElementById('upperlat');
-const uLatNs = document.getElementById('upperlat_NS');
-const bLat = document.getElementById('bottomlat');
-const bLatNs = document.getElementById('bottomlat_NS');
-const lLng = document.getElementById('leftlong');
-const lLngEw = document.getElementById('leftlong_EW');
-const rLng = document.getElementById('rightlong');
-const rLngEw = document.getElementById('rightlong_EW');
-const pLat = document.getElementById('pointlat');
-const pLatNs = document.getElementById('pointlat_NS');
-const pLng = document.getElementById('pointlong');
-const pLngEw = document.getElementById('pointlong_EW');
-const pRadius = document.getElementById('radius');
-const pRadiusUn = document.getElementById('radiusunits');
-
-let criterionSelected = getCriterionSelected();
-let paramsArr = [];
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * METHODS
- */
-
-/**
- * Toggles tab selection for collection picking options in modal
- * Uses jQuery
- */
-$('input[type="radio"]').click(function () {
-  var inputValue = $(this).attr('value');
-  var targetBox = $('#' + inputValue);
-  $('.box').not(targetBox).hide();
-  $(targetBox).show();
-  $(this).parent().addClass('tab-active');
-  $(this).parent().siblings().removeClass('tab-active');
-});
-
-/**
- * Opens modal with id selector
- * @param {String} elementid Selector for modal to be opened
- */
-function openModal(elementid) {
-  $(elementid).css('display', 'block');
-  $(document.body).css('overflow: hidden');
-}
-
-/**
- * Closes modal with id selector
- * @param {String} elementid Selector for modal to be opened
- */
-function closeModal(elementid) {
-  $(elementid).css('display', 'none');
-}
-
-/**
- * Opens map helper
- * @param {String} mapMode Option from select in form
- * Function from `../../js/symb/collections.harvestparams.js`
- */
-function openCoordAid(mapMode) {
-  mapWindow = open(
-    '../../collections/tools/mapcoordaid.php?mapmode=' + mapMode,
-    'polygon',
-    'resizable=0,width=900,height=630,left=20,top=20'
-  );
-  if (mapWindow.opener == null) mapWindow.opener = self;
-  mapWindow.focus();
-}
-
-/**
- * Chips
- */
-
-/**
- * Adds default chips
- * @param {HTMLObjectElement} element Input for which chips are going to be created by default
- */
-function addChip(element) {
-  //console.log(element);
-  let inputChip = document.createElement('span');
-  inputChip.classList.add('chip');
-  let chipBtn = document.createElement('button');
-  chipBtn.setAttribute('type', 'button');
-  chipBtn.classList.add('chip-remove-btn');
-  chipBtn.classList.add('Mui');
-  // if element is domain or site, pass other content
-  if (element.name == 'some-datasetid') {
-    if (element.text != '') {
-      inputChip.id = 'chip-some-datasetids';
-      inputChip.textContent = element.text;
-      chipBtn.onclick = function () {
-        uncheckAll(document.getElementById('all-sites'));
-        removeChip(inputChip);
-      };
-    }
-  } else if (
-    (element.name == 'neonext-collections-items') |
-    (element.name == 'ext-collections-list') |
-    (element.name == 'taxonomic-cat') |
-    (element.name == 'neon-theme') |
-    (element.name == 'sample-type')
-  ) {
-    inputChip.id = `chip-some-${element.name}-collids`;
-    inputChip.textContent = element.text;
-    chipBtn.onclick = function () {
-      uncheckAll(document.getElementById(element.name));
-      removeChip(inputChip);
-    };
-  } else if (element.name == 'advancedsearchstr') {
-    if (element.text != '') {
-      inputChip.id = 'chip-advancedsearchstr';
-      inputChip.textContent = element.text;
-      chipBtn.onclick = function () {
-        const formElements = document.querySelectorAll('#search-form-advanced-search input, #search-form-advanced-search select');
-        formElements.forEach(element => {
-            if (element.type === 'checkbox') {
-                element.checked = false;
-            } else if (element.type === 'select'){
-                element.selectedIndex = 0;
-            } else {
-                element.value = '';
-            }
-        for(let x = 1; x < 9; x++){
-          if(x > 1) document.getElementById("customdiv"+x).style.display = "none";
-        }
-        removeChip(inputChip);
-        });
-      }
-    }
-  } else if (element.name == 'materialsampletype[]') {
-    inputChip.id = 'chip-materialsampletype';
-    const values = $(element).val() || [];
-    inputChip.textContent =
-        `${element.dataset.chip}: ${values.map(v => `'${v}'`).join(', ')}`;
-    chipBtn.onclick = function () {
-        $(element).val([]).trigger('change');
-        removeChip(inputChip);
-    };
-  } else {
-    inputChip.id = 'chip-' + element.id;
-    let isTextOrNum = (element.type == 'text') | (element.type == 'number') | (element.type == 'textarea');
-    isTextOrNum
-      ? (inputChip.textContent = `${element.dataset.chip}: ${element.value}`)
-      : (inputChip.textContent = element.dataset.chip);
-    chipBtn.onclick = function () {
-      element.type === 'checkbox'
-        ? (element.checked = false)
-        : (element.value = element.defaultValue);
-      element.dataset.formId ? uncheckAll(element) : '';
-      removeChip(inputChip);
-    };
-  }
-  inputChip.appendChild(chipBtn);
-  document.getElementById('chips').appendChild(inputChip);
-}
-
-/**
- * Removes chip
- * @param {HTMLObjectElement} chip Chip element
- */
-function removeChip(chip) {
-  chip != null ? chip.remove() : '';
-}
-
-/**
- * Updates chips based on selected options
- * @param {Event} e
- */
-function updateChip(e) {
-  document.getElementById('chips').innerHTML = '';
-  // first go through collections and sites
-  let selectedSites = document.querySelectorAll(
-    'input[name="datasetid"]:checked'
-  );
-  
-  if (selectedSites.length > 0) {
-    addChip({
-      text: `Sites: ${Array.from(selectedSites)
-        .map((input) => input.id)
-        .join(', ')}`,
-      name: 'some-datasetid',
-    });
-  }
-  // if any biorepo colls are selected (except for "all"), then add chip
-  let biorepoAllChecked = document.getElementById(
-    'all-neon-colls-quick'
-  ).checked;
-  let biorepoChecked = Array.from(
-    document.querySelectorAll(
-      `#${getCriterionSelected()} input[name="db"]:checked`
-    )
-  );
-  if (!biorepoAllChecked && biorepoChecked.length > 0) {
-    addChip(getCollsChips(getCriterionSelected(), 'Some Sample Types'));
-  }
-  // if any additional NEON colls are selected (except for "all"), then add chip
-  let addCols = document.querySelectorAll(
-    '#neonext-collections-items input[type=checkbox]'
-  );
-  let addColsChecked = document.querySelectorAll(
-    '#neonext-collections-items input[type=checkbox]:checked'
-  );
-  if (addColsChecked.length > 0 && addColsChecked.length < addCols.length) {
-    addChip(getCollsChips('neonext-collections-items', 'Some Sample Types at Other Repos'));
-  }
-  // if any external NEON colls are selected (expect for "all"), then add chip
-  let extCols = document.querySelectorAll(
-    '#ext-collections-list input[type=checkbox]'
-  );
-  let extColsChecked = document.querySelectorAll(
-    '#ext-collections-list input[type=checkbox]:checked'
-  );
-  if (extColsChecked.length > 0 && extColsChecked.length < extCols.length) {
-    addChip(getCollsChips('ext-collections-list', 'Some Ext NEON Colls'));
-  }
-  // if there are advanced query changes
-  let advCheckbox = document.getElementById('AdvancedHasBeenChanged');
-  if (advCheckbox && advCheckbox.checked === true) {
-    addChip(getAdvancedSearchChip());
-  }
-  
-  // then go through remaining inputs (exclude db and datasetid)
-  // go through entire form and find selected items
-  formInputs.forEach((item) => {
-    if ((item.name != 'db') | (item.name != 'datasetid')) {
-      if (
-        (item.type == 'checkbox' && item.checked) |
-        (item.type == 'text' && item.value != '') |
-        (item.type == 'textarea' && item.value != '') |
-        (item.type == 'select-multiple' && item.value != '') |
-        (item.type == 'number' && item.value != '')
-      ) {
-        // now add chips depending on type of item
-        item.hasAttribute('data-chip') ? addChip(item) : '';
-      }
-    }
+for (let row = 1; row <= advancedRowCount; row++) {
+  if (row > 1) paramNames.push(`q_customandor${row}`);
+  ['openparen', 'field', 'type', 'value', 'closeparen'].forEach(part => {
+    paramNames.push(`q_custom${part}${row}`);
   });
 }
 
-/**
- * Gets collections chips
- * @param {String} listId id of coll list element
- * @param {String} chipText explanatory text to be addded to chip
- * @returns {Object} chipEl chip element with text and name props
- */
-function getCollsChips(listId, chipText) {
-  // Goes through list of collection options
-  let collOptions = document.querySelectorAll(
-    `#${listId} input[type=checkbox]`
-  );
-  let collSelected = document.querySelectorAll(
-    `#${listId} input[type=checkbox]:checked`
-  );
-  // If 'all' is not selected, picks which are selected
-  collsArr = [];
-  let chipEl = {};
-
-  if (collOptions.length > collSelected.length) {
-    // Generates chip element object
-    collSelected.forEach((coll) => {
-      // check if we're inside biorepo coll form
-      let isColl = coll.dataset.cat != undefined;
-      if (isColl) {
-        let isCatSel = document.getElementById(coll.dataset.cat).checked;
-        isCatSel ? '' : collsArr.push(coll.dataset.ccode);
-      } else {
-        collsArr.push(coll.dataset.ccode);
-      }
-    });
-  }
-  chipEl.text = `${chipText}: ${collsArr.join(', ')}`;
-  chipEl.name = listId;
-  return chipEl;
+function getCriterionSelected() {
+  return collsModal?.querySelector('input[name="collChoice"]:checked')?.value || collectionViews[0];
 }
 
-/**
- * Gets selected domains and sites to generate chips
- * @returns {Object} chipEl chip element with text and name props
- */
-function getDomainsSitesChips() {
-  let boxes = document.getElementsByName('datasetid');
-  let dArr = [];
-  let sArr = [];
-  boxes.forEach((box) => {
-    if (box.checked) {
-      let isSite = box.dataset.domain != undefined;
-      if (isSite) {
-        let isDomainSel = document.getElementById(box.dataset.domain).checked;
-        isDomainSel ? '' : sArr.push(box.id);
-      } else {
-        dArr.push(box.id);
-      }
-    }
-  });
-  let dStr = '';
-  let sStr = '';
-  dArr.length > 0 ? (dStr = `Domain(s): ${dArr.join(', ')} `) : '';
-  sArr.length > 0 ? (sStr = `Sites: ${sArr.join(', ')}`) : '';
-  let chipEl = {
-    text: dStr + sStr,
-    name: 'some-datasetid',
-  };
-  return chipEl;
-}
-/////////
-
-/**
- * Creates advanced search string to generate chip
- * @returns {Object} chipEl chip element with text and name props
- */
-function getAdvancedSearchChip() {
-  const advancedInputs = document.querySelectorAll('#search-form-advanced-search select, #search-form-advanced-search input[type=text]');
-  let sqlString = "";
-  let openParen = "";
-  let closeParen = "";
-	advancedInputs.forEach((advancedInput) => {
-    const name = advancedInput.name;
-    const value = advancedInput.value;
-    
-    if (name.startsWith("q_customopenparen")) {
-      openParen = value;
-    } else if (name.startsWith("q_customfield")) {
-      if (value) {
-        sqlString += `${openParen}${advancedInput.options[advancedInput.selectedIndex].text}`;
-      }
-    } else if (name.startsWith("q_customtype")) {
-      if (value) {
-        sqlString += ` ${advancedInput.options[advancedInput.selectedIndex].text}`;
-      }
-    } else if (name.startsWith("q_customvalue")) {
-      if (value) {
-        sqlString += ` '${value}'`;
-      }
-    } else if (name.startsWith("q_customcloseparen")) {
-      closeParen = value;
-    } else if (name.startsWith("q_customandor")) {
-      sqlString += ` ${value} `;
-    }
-    
-    if (closeParen) {
-      sqlString += `${closeParen}`;
-      openParen = "";
-      closeParen = "";
-    }
-	});
-  
-  let chipEl = {
-    text: "Advanced Search: " + sqlString.trim(),
-    name: 'advancedsearchstr',
-  };
-  return chipEl;
-}
-/////////
-
-
-/**
- * Toggles state of checkboxes in nested lists when clicking an "all-selector" element
- * Uses jQuery
- */
-function toggleAllSelector() {
-  // CASE 1: accordion-style (all-selector inside .accordion-subheader)
-  const accordionHeader = this.closest('.accordion-subheader');
-  if (accordionHeader) {
-    const li = accordionHeader.closest('li');
-    if (!li) return;
-
-    li.querySelectorAll('.content input.child:enabled').forEach(cb => {
-      cb.checked = this.checked;
-      cb.indeterminate = false;
-    });
-    return;
-  }
-
-  // CASE 2: original behavior (unchanged)
-  $(this)
-    .siblings()
-    .find('input[type=checkbox]:enabled')
-    .prop('checked', this.checked)
-    .prop('indeterminate', false)
-    .attr('checked', this.checked);
+function getCollectionView() {
+  return document.getElementById(getCriterionSelected());
 }
 
+function getCollectionInputs(root) {
+  return Array.from(root?.querySelectorAll('input[name="db"]:enabled') || []);
+}
 
-/**
- * Triggers toggling of checked/unchecked boxes in nested lists
- * Default is all boxes are checked in HTML.
- * @param {String} e.data.element Selector for element containing
- * list, should be passed when binding function to element
- */
+function getCollsSelected() {
+  return [...getCollectionInputs(getCollectionView()), ...getCollectionInputs(formColls)]
+    .filter(input => input.checked);
+}
+
+/** Tree state is derived from enabled leaves, never from another tab. */
+function getGroupRoot(checkbox) {
+  return (checkbox.dataset.formId && document.getElementById(checkbox.dataset.formId)) ||
+    checkbox.closest('li');
+}
+
+function setGroupState(checkbox) {
+  const root = getGroupRoot(checkbox);
+  const children = Array.from(root?.querySelectorAll('input.child:enabled:not(.all-selector)') || []);
+  const checked = children.filter(child => child.checked).length;
+  checkbox.checked = children.length > 0 && checked === children.length;
+  checkbox.indeterminate = checked > 0 && checked < children.length;
+}
 
 function updateGlobalMaster() {
-  const $allKids = $('#collections-list1 input.child:enabled, #collections-list2 input.child:enabled, #collections-list3 input.child:enabled');
-  const total = $allKids.length;
-  const checked = $allKids.filter(':checked').length;
-  const anyInd = $allKids.filter(function () { return this.indeterminate; }).length > 0;
-  const $master = $('#all-neon-colls-quick');
-  $master.prop('checked', total > 0 && checked === total && !anyInd);
-  $master.prop('indeterminate', (checked > 0 && checked < total) || anyInd);
+  const children = getCollectionInputs(getCollectionView());
+  const checked = children.filter(child => child.checked).length;
+  allNeon.checked = children.length > 0 && checked === children.length;
+  allNeon.indeterminate = checked > 0 && checked < children.length;
 }
 
-function updateAncestors(fromCheckbox) {
-  // start at the LI that owns this checkbox
-  let li = fromCheckbox.closest('li');
+function refreshCollectionSelectors() {
+  form.querySelectorAll('.all-selector').forEach(setGroupState);
+  updateGlobalMaster();
+}
 
+function updateAncestors(checkbox) {
+  let li = checkbox.closest('li');
   while (li) {
-    const parentLi = li.parentElement?.closest('li');
-    if (!parentLi) break; // reached the root
-
-    // --- CASE A: original structure ---
-    // <li>
-    //   <input class="all-selector">
-    //   <ul> <li><input class="child"> ...
-    // </li>
-    let parentCb = parentLi.querySelector(':scope > input.all-selector');
-    let kids = null;
-
-    if (parentCb) {
-      kids = parentLi.querySelectorAll(':scope > ul > li > input.child:enabled');
-    } else {
-      // --- CASE B: your accordion structure ---
-      // <li>
-      //   <label class="accordion-subheader">
-      //     <input class="all-selector">
-      //   </label>
-      //   <div class="content">
-      //     <ul> ... <input class="child"> ...
-      // </li>
-      parentCb = parentLi.querySelector(':scope > label.accordion-subheader input.all-selector');
-      if (parentCb) {
-        // only count real leaf checkboxes in the content area
-        kids = parentLi.querySelectorAll(':scope > .content input.child:enabled');
-      }
-    }
-
-    // If this parent LI doesn't have a group checkbox in either shape, just climb
-    if (!parentCb || !kids) {
-      li = parentLi;
-      continue;
-    }
-
-    let total = 0, checkedCount = 0, anyIndeterminate = false;
-    kids.forEach(cb => {
-      total++;
-      if (cb.indeterminate) anyIndeterminate = true;
-      if (cb.checked) checkedCount++;
-    });
-
-    parentCb.checked = total > 0 && checkedCount === total && !anyIndeterminate;
-    parentCb.indeterminate = anyIndeterminate || (checkedCount > 0 && checkedCount < total);
-
-    // climb
-    li = parentLi;
+    const parent = li.querySelector(':scope > input.all-selector, :scope > .accordion-subheader input.all-selector');
+    if (parent) setGroupState(parent);
+    li = li.parentElement?.closest('li');
   }
 }
 
-
-function autoToggleSelector(e) {
-  if (e.type !== 'click' && e.type !== 'change') return;
-
-  const t = e.target;
-  if (!t.classList.contains('child')) return;
-
-  // If a group/all-selector changed, propagate to all descendants first
-  if (t.classList.contains('all-selector')) {
-    const li = t.closest('li');
-    if (li) {
-      li.querySelectorAll(':scope ul input.child:enabled').forEach(cb => {
-        cb.checked = t.checked;
-        cb.indeterminate = false;
-      });
-    }
-  }
-
-  // Then recompute all ancestors up to the root
-  updateAncestors(t);
-  updateGlobalMaster();
+function setGroupChecked(root, checked) {
+  root?.querySelectorAll('input[type="checkbox"]:enabled:not(.accordion-selector)').forEach(input => {
+    input.checked = checked;
+    input.indeterminate = false;
+  });
 }
 
-/**
- * Unchecks children of 'all-selector' checkboxes or all checkboxes in list
- * when criterion chip is removed
- * Uses 'data-form-id' property in .php
- * @param {Object} element HTML Node Object
- */
+function toggleAllSelector() {
+  setGroupChecked(getGroupRoot(this), this.checked);
+}
+
 function uncheckAll(element) {
-  let isAllSel = element.classList.contains('all-selector');
-  if (isAllSel) {
-    let selChildren = document.querySelectorAll(
-      `#${element.dataset.formId} input[type=checkbox]:checked`
-    );
-    selChildren.forEach((item) => {
-      item.checked = false;
-    });
-  } else {
-    let items = document.querySelectorAll(
-      `#${element.id} input[type=checkbox]:checked`
-    );
-    items.forEach((item) => {
-      item.checked = false;
-    });
+  if (!element) return;
+  const root = element.matches('input') ? getGroupRoot(element) : element;
+  setGroupChecked(root, false);
+  if (element.matches('input[type="checkbox"]')) {
+    element.checked = false;
+    element.indeterminate = false;
   }
-}
-/////////
-function getCriterionSelected() {
-  return collsModal.querySelector('.tab.tab-active input[type=radio]:checked')
-    .value;
+  refreshCollectionSelectors();
 }
 
-/**
- * Finds all collections selected
- * Uses active tab in modal
- */
-function getCollsSelected() {
-  let query = '#' + getCriterionSelected() + ' input[name="db"]:checked';
-  let selectedInModal = Array.from(document.querySelectorAll(query));
-  let selectedInForm = Array.from(
-    document.querySelectorAll('#search-form-colls input[name="db"]:checked')
+/** Modals */
+function openModal(selector) {
+  const modal = document.querySelector(selector);
+  if (!modal) return;
+  if (modalBodyOverflow === null) modalBodyOverflow = document.body.style.overflow;
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(selector) {
+  const modal = document.querySelector(selector);
+  if (modal) modal.style.display = 'none';
+  const anyOpen = Array.from(form.querySelectorAll('.modal'))
+    .some(item => item.style.display === 'block');
+  if (!anyOpen && modalBodyOverflow !== null) {
+    document.body.style.overflow = modalBodyOverflow;
+    modalBodyOverflow = null;
+  }
+}
+
+function openCoordAid(mapMode) {
+  const mapWindow = window.open(
+    '../../collections/tools/mapcoordaid.php?mapmode=' + encodeURIComponent(mapMode),
+    'polygon', 'resizable=0,width=900,height=630,left=20,top=20'
   );
-  let collsArr = selectedInForm.concat(selectedInModal);
-  return collsArr;
+  if (mapWindow) mapWindow.focus();
 }
 
-/**
- * Searches specified fields and capture values
- * @param {String} paramName Name of parameter to be looked for in form
- * Passes objects to `paramsArr`
- * Passes default objects
- */
-function getParam(paramName) {
-  //Default country
-  // paramsArr['country'] = 'USA';
-  const elements = document.getElementsByName(paramName);
-  const firstEl = elements[0];
-
-  let elementValues = '';
-
-  // for db and datasetid
-  if (paramName === 'db') {
-    if (allNeon.checked) {
-      let dbArr = ['all'];
-  
-      // only get checked external collection checkboxes
-      document
-        .querySelectorAll('#neonext-collections-items input[name="db"]:checked')
-        .forEach((item) => {
-          dbArr.push(item.value);
-        });
-  
-      elementValues = dbArr;
-    } else {
-      let dbArr = [];
-      let tempArr = getCollsSelected();
-  
-      tempArr.forEach((item) => {
-        dbArr.push(item.value);
-      });
-  
-      elementValues = dbArr;
-    }
-  } else if (paramName === 'datasetid') {
-    let datasetArr = [];
-    elements.forEach((el) => {
-      if (el.checked) {
-        let isSite = el.dataset.domain != undefined;
-        if (isSite) {
-          let isDomainSel = document.getElementById(el.dataset.domain).checked;
-          isDomainSel ? '' : datasetArr.push(el.value);
-        } else {
-          datasetArr.push(el.value);
-        }
-      }
-    });
-    elementValues = datasetArr;
-  //} else if (paramName === 'llbound') {
-  //  // Only if inputs aren't empty
-  //  if (
-  //    uLat.value != '' &&
-  //    bLat.value != '' &&
-  //    lLng.value != '' &&
-  //    rLng.value != ''
-  //  ) {
-  //    let uLatVal = uLatNs.value == 'S' ? uLat.value * -1 : uLat.value * 1;
-  //    let bLatVal = bLatNs.value == 'S' ? bLat.value * -1 : bLat.value * 1;
-  //    let lLngVal = lLngEw.value == 'W' ? lLng.value * -1 : lLng.value * 1;
-  //    let rLngVal = rLngEw.value == 'W' ? rLng.value * -1 : rLng.value * 1;
-  //    elementValues = `${uLatVal};${bLatVal};${lLngVal};${rLngVal}`;
-  //  }
-  //} else if (paramName === 'llpoint') {
-  //  if (
-  //    pLat.value != '' &&
-  //    pLng.value != '' &&
-  //    pRadius.value != '' &&
-  //    pRadiusUn.value != ''
-  //  ) {
-  //    let pLatVal =
-  //      pLatNs.value == 'S'
-  //        ? Math.round(pLat.value * -1 * 100000) / 100000
-  //        : Math.round(pLat.value * 100000) / 100000;
-  //    let pLngVal =
-  //      pLngEw.value == 'W'
-  //        ? Math.round(pLng.value * -1 * 100000) / 100000
-  //        : Math.round(pLng.value * 100000) / 100000;
-  //    let pRadiusVal = pRadius.value + ';' + pRadiusUn.value;
-  //    elementValues = `${pLatVal};${pLngVal};${pRadiusVal}`;
-  //  }
-  } else if (elements[0] != undefined) {
-    switch (firstEl.tagName) {
-      case 'INPUT':
-        (firstEl.type === 'checkbox' && firstEl.checked) ||
-        ((firstEl.type === 'text' || firstEl.type === 'number' || firstEl.type === 'textarea') && firstEl != '')
-          ? (elementValues = firstEl.value)
-          : '';
-        break;
-      case 'SELECT':
-        elementValues = Array.from(firstEl.selectedOptions).map(option => option.value);
-        break;
-      case 'TEXTAREA':
-        elementValues = firstEl.value;
-        break;
-    }
-  }
-  elementValues != '' ? (paramsArr[paramName] = elementValues) : '';
-  return paramsArr;
-}
-
-/**
- * Creates search URL with parameters
- * Define parameters to be looked for in `paramNames` array
- */
-function getSearchUrl() {
-  const harvestUrl = location.href.slice(0, location.href.indexOf('/neon/search'));
-  const baseUrl = new URL(harvestUrl + '/collections/list.php');
-
-  // Clears array temporarily to avoid redundancy
-  paramsArr = [];
-
-  //db sites
-  const selectedDatasetIds = document.querySelectorAll(
-    'input[name="datasetid"]:checked'
-  );
-  
-  paramNames = paramNames.filter((value) => value !== 'datasetid');
-  
-  if (selectedDatasetIds.length > 0) {
-    paramNames.push('datasetid');
-  }
-
-  // Grabs params from form for each param name
-  paramNames.forEach((param, i) => {
-    return getParam(paramNames[i]);
-  });
-  
-  // Adds useThes if box is not checked
-  const useThesCb = document.getElementById('usethes');
-  if (useThesCb && !useThesCb.checked) {
-    baseUrl.searchParams.set('usethes', '1');
-  }
-  // Appends each key value for each param in search url
-  Object.keys(paramsArr).forEach((key) => {
-      const value = paramsArr[key];
-  
-      if (key === 'materialsampletype[]') {
-          value.forEach(v => baseUrl.searchParams.append(key, v));
-      } else if (Array.isArray(value)) {
-          baseUrl.searchParams.append(key, value.join(','));
-      } else {
-          baseUrl.searchParams.append(key, value);
-      }
-  });
-  return baseUrl.href;
-}
-
-/**
- * Form validation functions
- * @returns {Array} errors Array of errors objects with form element it refers to (elId), for highlighting, and errorMsg
- */
-function validateForm() {
-  errors = [];
-  // DB
-  let anyCollsSelected = getCollsSelected();
-  if (anyCollsSelected.length === 0) {
-    errors.push({
-      elId: 'search-form-colls',
-      errorMsg: 'Please select at least one sample type.',
-    });
-  }
-  // HTML5 built-in validation
-  let invalidInputs = document.querySelectorAll('input:invalid');
-  if (invalidInputs.length > 0) {
-    invalidInputs.forEach((inp) => {
-      errors.push({
-        elId: inp.id,
-        errorMsg: `Please check values in field ${inp.dataset.chip}.`,
-      });
-    });
-  }
-  //// Bounding Box
-  //let bBoxNums = document.querySelectorAll(
-  //  '#bounding-box-form input[type=number]'
-  //);
-  //let bBoxNumArr = [];
-  //bBoxNums.forEach((el) => {
-  //  el.value != '' ? bBoxNumArr.push(el.value) : false;
-  //});
-  //let bBoxCardinals = document.querySelectorAll('#bounding-box-form select');
-  //selectedCardinals = [];
-  //bBoxCardinals.forEach((hItem) => {
-  //  hItem.value != '' ? selectedCardinals.push(hItem.id) : false;
-  //});
-  //if (bBoxNumArr.length > 0 && bBoxNumArr.length < bBoxNums.length) {
-  //  errors.push({
-  //    elId: 'bounding-box-form',
-  //    errorMsg:
-  //      'Please make sure either all Lat/Long bounding box values contain a value, or all are empty.',
-  //  });
-  //} else if (bBoxNumArr.length > 0 && selectedCardinals.length == 0) {
-  //  errors.push({
-  //    elId: 'bounding-box-form',
-  //    errorMsg: 'Please select hemisphere values.',
-  //  });
-  //} else if (bBoxNumArr.length > 0 && selectedCardinals.length > 0) {
-  //  let uLatVal = uLat.value;
-  //  let uLatNsVal = uLatNs.value;
-  //  let bLatVal = bLat.value;
-  //  let bLatNsVal = bLatNs.value;
-  //
-  //  if (uLatNsVal == 'S' && bLatNsVal == 'S') {
-  //    uLatVal = uLatVal * -1;
-  //    bLatVal = bLatVal * -1;
-  //    if (uLatVal < bLatVal) {
-  //      errors.push({
-  //        elId: 'bounding-box-form',
-  //        errorMsg:
-  //          'Your northern latitude value is less than your southern latitude value.',
-  //      });
-  //    }
-  //  }
-  //
-  //  let lLngVal = lLng.value;
-  //  let lLngEwVal = lLngEw.value;
-  //  let rLngVal = rLng.value;
-  //  let rLngEwVal = rLngEw.value;
-  //
-  //  if (lLngEwVal == 'W' && rLngEwVal == 'W') {
-  //    lLngVal = lLngVal * -1;
-  //    rLngVal = rLngVal * -1;
-  //    if (lLngVal > rLngVal) {
-  //      errors.push({
-  //        elId: 'bounding-box-form',
-  //        errorMsg:
-  //          'Your western longitude value is greater than your eastern longitude value. Note that western hemisphere longitudes in the decimal format are negative.',
-  //      });
-  //    }
-  //  }
-  //}
-
-  
-  const advancedHasBeenChangedCheckbox = document.getElementById('AdvancedHasBeenChanged');
-
-  if (advancedHasBeenChangedCheckbox && advancedHasBeenChangedCheckbox.checked == true) {
-    const advancedInputs = document.querySelectorAll('#search-form-advanced-search select, #search-form-advanced-search input[type=text]');
-    let openParensCount = 0;
-    let closeParensCount = 0;
-    
-    const nonDefaultInputs = Array.from(advancedInputs).filter(input => {
-      // For select elements, check if the value is not the first option (default)
-      if (input.tagName === 'SELECT') {
-        return input.selectedIndex !== 0;
-      }
-      // For text inputs, check if the value is not empty
-      if (input.type === 'text') {
-        return input.value.trim() !== '';
-      }
-      return false;
-    });
-    
-    // To keep track of whether we've seen a field without a complete statement
-    let awaitingCondition = false;
-    let awaitingValue = false;
-    let lastInputType = "";
-  
-    nonDefaultInputs.forEach((advancedInput) => {
-      const name = advancedInput.name;
-      const value = advancedInput.value.trim();
-  
-      if (name.startsWith("q_customopenparen")) {
-        openParensCount += value.length;
-        lastInputType = "openparen";
-      } else if (name.startsWith("q_customfield")) {
-        if (awaitingCondition || awaitingValue) {
-          errors.push({
-            elId: 'search-form-advanced-search',
-            errorMsg:
-              'Each field must have a corresponding condition and value if required.',
-          });
-        }
-        awaitingCondition = true;
-        lastInputType = "field";
-      } else if (name.startsWith("q_customtype")) {
-        if (lastInputType !== "field") {
-          errors.push({
-            elId: 'search-form-advanced-search',
-            errorMsg:
-              'Missing field name.',
-          });
-        }
-        awaitingCondition = false;
-        if (value !== "IS_NULL" && value !== "NOT_NULL") {
-          awaitingValue = true;
-        }
-        lastInputType = "type";
-      } else if (name.startsWith("q_customvalue")) {
-        if (lastInputType !== "type") {
-          errors.push({
-             elId: 'search-form-advanced-search',
-             errorMsg:
-               'Missing condition statement.',
-           });
-        }
-        awaitingValue = false;
-        lastInputType = "value";
-      } else if (name.startsWith("q_customcloseparen")) {
-          closeParensCount += value.length;
-          lastInputType = "closeparen";
-      } else if (name.startsWith("q_customandor")) {
-        if (lastInputType !== "value" && lastInputType !== "closeparen" && lastInputType !== "type") {
-          errors.push({
-             elId: 'search-form-advanced-search',
-             errorMsg:
-               'AND/OR must follow a value, condition type, or closing parenthesis.',
-           });
-        }
-        lastInputType = "andor";
-      }
-    });
-  
-    if (openParensCount !== closeParensCount) {
-      errors.push({
-        elId: 'search-form-advanced-search',
-        errorMsg:
-          'Mismatched parentheses.',
-      });
-    }
-    
-    if (awaitingCondition) {
-      errors.push({
-         elId: 'search-form-advanced-search',
-         errorMsg:
-           'Missing condition statement.',
-       });
-    }
-    if (awaitingValue) {
-      errors.push({
-         elId: 'search-form-advanced-search',
-         errorMsg:
-           'Missing input value.',
-       });
-    }
-  }
-  return errors;
-}
-
-/**
- * Gets validation errors, outputs alerts with error messages and highlights form element with error
- * @param {Array} errors Array with error objects with form element it refers to (elId), for highlighting, and errorMsg
- */
-function handleValErrors(errors) {
-  const errorDiv = document.getElementById('error-msgs');
-  errorDiv.innerHTML = '';
-  errors.map((err) => {
-    let element = document.getElementById(err.elId);
-    element.classList.add('invalid');
-    errorDiv.classList.remove('visually-hidden');
-    let errorP = document.createElement('p');
-    errorP.classList.add('error');
-    errorP.innerText = err.errorMsg + ' Click to dismiss.';
-    errorP.onclick = function () {
-      errorP.remove();
-      element.classList.remove('invalid');
-    };
-    errorDiv.appendChild(errorP);
+/** Advanced search */
+function resetCustomElements(index) {
+  const row = document.getElementById(`customdiv${index}`);
+  row?.querySelectorAll('input, select').forEach(input => {
+    if (input.tagName === 'SELECT') input.selectedIndex = 0;
+    else input.value = '';
   });
 }
 
-/**
- * Calls methods to validate form and build URL that will redirect search
- */
-function simpleSearch() {
-  let alerts = document.getElementById('alert-msgs');
-  alerts != null ? (alerts.innerHTML = '') : '';
-  let errors = [];
-  errors = validateForm();
-  let isValid = errors.length == 0;
-  if (isValid) {
-    let searchUrl = getSearchUrl();
-    window.location = searchUrl;
-  } else {
-    handleValErrors(errors);
+function toggleCustomDiv(index) {
+  const row = document.getElementById(`customdiv${index}`);
+  if (!row) return;
+  const opening = row.style.display === 'none';
+  // Clear every following row, so hidden conditions cannot remain in the URL.
+  for (let current = index; current <= advancedRowCount; current++) {
+    resetCustomElements(current);
+    const next = document.getElementById(`customdiv${current}`);
+    if (next) next.style.display = 'none';
   }
-}
-
-/**
- * Hides selected collections checkboxes (for whatever reason)
- * @param {integer} collid
- */
-function hideColCheckbox(collid) {
-  let colsToHide = document.querySelectorAll(
-    `input[type='checkbox'][value='${collid}']`
-  );
-  colsToHide.forEach((col) => {
-    let li = col.closest('li');
-    let isInsideSearchNEONColls = li.closest('#biorepo-collections-list.modal');
-    if (isInsideSearchNEONColls) {
-      li.style.display = 'none';
-    }
-  });
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * EVENT LISTENERS/INITIALIZERS
- */
-
-// Search button
-document
-  .getElementById('search-btn')
-  .addEventListener('click', function (event) {
-    event.preventDefault();
-    simpleSearch();
-  });
-// Reset button
-document
-  .getElementById('reset-btn')
-  .addEventListener('click', function (event) {
-    document.getElementById('params-form').reset();
-    for(let x = 1; x < 9; x++){
-			if(x > 1) document.getElementById("customdiv"+x).style.display = "none";
-		}
-    updateChip();
-  });
-// Listen for open modal click but not when checkbox is clicked
-document
-  .querySelectorAll('#neon-modal-open, .neon-modal-open')
-  .forEach(el => {
-    el.addEventListener('click', function (event) {
-      if (event.target.matches('input[type="checkbox"]')) {
-        return; // let the checkbox do its thing
-      }
-
-      event.preventDefault();
-      const modalId = this.dataset.modalId;
-
-      if (modalId) {
-        openModal(`#${modalId}`);
-      }
-    });
-  });
-// When checking "all neon collections" box, toggle checkboxes in modal
-$('#all-neon-colls-quick').click(function () {
-  let isChecked = $(this).prop('checked');
-  $('.all-neon-colls').prop('checked', isChecked);
-  $('.all-neon-colls').siblings().find('.child').prop('checked', isChecked);
-});
-// When checking any 'all-selector', toggle children checkboxes
-$('.all-selector').click(toggleAllSelector);
-formColls.addEventListener('click', autoToggleSelector, false);
-formColls.addEventListener('change', autoToggleSelector, false);
-collsModal.addEventListener('click', autoToggleSelector, false);
-collsModal.addEventListener('change', autoToggleSelector, false);
-// Listen for close modal click and passes value of selected colls to main form
-document
-  .getElementById('neon-modal-close')
-  .addEventListener('click', function (event) {
-    removeChip(document.getElementById('chip-' + allNeon.id));
-    event.preventDefault();
-    closeModal('#biorepo-collections-list');
-    let tabSelected = document.getElementById(getCriterionSelected());
-    let isAllSelected =
-      tabSelected.getElementsByClassName('all-neon-colls')[0].checked;
-    allNeon.checked = isAllSelected;
-    updateChip();
-  });
-document
-  .getElementById('domains-sites-modal-close')
-  .addEventListener('click', function (event) {
-    event.preventDefault();
-    closeModal('#domains-sites-modal');
-  });
-//////// Binds Update chip on event change
-const formInputs = document.querySelectorAll(
-    '.content input, .content textarea, #search-form-advanced-search select, #materialsampletype'
-);
-
-formInputs.forEach(formInput => {
-    formInput.addEventListener('change', updateChip);
-});
-
-$('#materialsampletype').on('change', updateChip);
-
-document.addEventListener('change', function (e) {
-  if (e.target.name === 'datasetid') {
-    updateChip();
-  }
-});
-// on default (on document load): All Neon Collections, All Domains & Sites, Include other IDs, All Domains & Sites
-window.addEventListener('load', updateChip);
-// Binds expansion function to plus and minus icons in selectors, uses jQuery
-$('#collections-list1, #collections-list2, #collections-list3').on('click', '.expansion-icon', function () {
-  const $li = $(this).closest('li');
-  const $childUl = $li.children('ul').first();
-
-  if (!$childUl.length) return; // no children here
-
-  const isCollapsed = $childUl.toggleClass('collapsed').hasClass('collapsed');
-  $(this).text(isCollapsed ? 'add_box' : 'indeterminate_check_box');
-});
-
-////////////////////////////////////////////////////////////////////////////
-// Prefill form from URL params
-function prefillFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-
-  const hasDbParam = params.has('db');
-  const hasDatasetParam = params.has('datasetid');
-
-  // Reset ONLY collections tree if db= is present
-  if (hasDbParam) {
-    document.querySelectorAll('#biorepo-collections-list input[type="checkbox"]').forEach(cb => {
-      cb.checked = false;
-      cb.indeterminate = false;
-    });
-  }
-
-  // Reset ONLY site tree if datasetid= is present
-  if (hasDatasetParam) {
-    document.querySelectorAll('#site-list input[type="checkbox"]').forEach(cb => {
-      cb.checked = false;
-      cb.indeterminate = false;
-    });
-  }
-
-  // Apply URL params
-  params.forEach((value, key) => {
-
-    // --- COLLECTIONS TREE (db) ---
-    if (key === 'db') {
-      const values = value.split(',');
-      const leafCheckboxes = document.querySelectorAll(
-        '#biorepo-collections-list input[name="db"], #neonext-collections-list input[name="db"]'
-      );
-
-      values.forEach(v => {
-        leafCheckboxes.forEach(cb => {
-          if (cb.value === v) cb.checked = true;
-        });
-      });
-      return;
-    }
-
-    // --- SITE TREE (datasetid) ---
-if (key === 'datasetid') {
-  const values = value.split(',');
-
-  values.forEach(v => {
-    document.querySelectorAll(
-      `#site-list input[name="datasetid"][value="${v}"]`
-    ).forEach(cb => {
-      cb.checked = true;
-      cb.indeterminate = false;
-
-      // If this is a domain (parent), also check all its descendant sites
-      if (cb.classList.contains('all-selector')) {
-        const li = cb.closest('li');
-        if (li) {
-          li.querySelectorAll(':scope ul input.child:enabled').forEach(child => {
-            child.checked = true;
-            child.indeterminate = false;
-          });
-        }
-      }
-    });
-  });
-  return;
-}
-
-    // (other single-value text fields, selects, etc.)
-    const el = document.querySelector(`[name="${key}"]`);
-    if (el) el.value = value;
-  });
-
-  // Recalculate ancestors & chips
-  updateGlobalMaster();
-
-  document.querySelectorAll(
-    '#biorepo-collections-list input.child, #site-list input.child, #neonext-collections-list input.child'
-  ).forEach(cb => {
-    updateAncestors(cb);
-  });
-
+  row.style.display = opening ? 'block' : 'none';
   updateChip();
 }
 
+function getAdvancedRows() {
+  const rows = [];
+  if (!advancedForm) return rows;
+  for (let index = 1; index <= advancedRowCount; index++) {
+    const row = { index };
+    ['andor', 'openparen', 'field', 'type', 'value', 'closeparen'].forEach(part => {
+      const input = form.elements.namedItem(`q_custom${part}${index}`);
+      row[part] = input?.value.trim() || '';
+      if (part === 'field' || part === 'type') {
+        row[`${part}Label`] = input?.selectedOptions[0]?.textContent || '';
+      }
+    });
+    if (['andor', 'openparen', 'field', 'type', 'value', 'closeparen'].some(part => row[part])) {
+      rows.push(row);
+    }
+  }
+  return rows;
+}
 
-// Run prefill after DOM + default state loads
-window.addEventListener('load', function () {
-  prefillFromUrl();
+function syncAdvancedState(rows = getAdvancedRows()) {
+  const flag = document.getElementById('AdvancedHasBeenChanged');
+  if (flag) flag.checked = rows.length > 0;
+}
+
+function resetAdvancedSearch() {
+  advancedForm?.querySelectorAll('input, select').forEach(input => {
+    if (input.type === 'checkbox') input.checked = false;
+    else if (input.tagName === 'SELECT') input.selectedIndex = 0;
+    else input.value = '';
+  });
+  for (let index = 2; index <= advancedRowCount; index++) {
+    const row = document.getElementById(`customdiv${index}`);
+    if (row) row.style.display = 'none';
+  }
+}
+
+function getAdvancedSearchChip(rows = getAdvancedRows()) {
+  const text = rows.map(row => {
+    const parts = [];
+    if (row.andor) parts.push(row.andor);
+    if (row.openparen || row.field) parts.push(row.openparen + (row.field ? row.fieldLabel : ''));
+    if (row.type) parts.push(row.typeLabel);
+    if (row.value && row.type !== 'IS_NULL' && row.type !== 'NOT_NULL') parts.push(`'${row.value}'`);
+    return parts.join(' ') + row.closeparen;
+  }).join(' ');
+  return { id: 'chip-advancedsearchstr', text: `Advanced Search: ${text}`, clear: resetAdvancedSearch };
+}
+
+/** Chips */
+function clearSites() {
+  // The map owns its hidden checkboxes. Notify React as well as clearing legacy inputs.
+  form.querySelectorAll('input[name="datasetid"]').forEach(input => {
+    input.checked = false;
+    input.indeterminate = false;
+  });
+  window.dispatchEvent(new Event('neon:clear-sites'));
+}
+
+function getCollsChips(listId, label) {
+  const root = document.getElementById(listId);
+  const labels = [];
+  root?.querySelectorAll('input[type="checkbox"]:checked:enabled[data-ccode]').forEach(input => {
+    // Use the local tree rather than IDs, which may repeat across collection tabs.
+    let parent = input.closest('li')?.parentElement?.closest('li');
+    while (parent && root.contains(parent)) {
+      const group = parent.querySelector(':scope > input.all-selector');
+      if (group?.checked && !group.indeterminate && group.dataset.ccode) return;
+      parent = parent.parentElement?.closest('li');
+    }
+    if (input.dataset.ccode) labels.push(input.dataset.ccode);
+  });
+  return {
+    id: `chip-some-${listId}-collids`,
+    text: `${label}: ${[...new Set(labels)].join(', ')}`,
+    clear: () => uncheckAll(root),
+  };
+}
+
+function getInputChip(input) {
+  let text = input.dataset.chip;
+  if (input.tagName === 'SELECT') {
+    const selected = Array.from(input.selectedOptions).map(option => `'${option.value}'`);
+    text += `: ${selected.join(', ')}`;
+  } else if (input.type !== 'checkbox') {
+    text += `: ${input.value}`;
+  }
+  return {
+    id: `chip-${input.id || input.name}`,
+    text,
+    clear: () => {
+      if (input.type === 'checkbox') {
+        input.checked = false;
+        input.indeterminate = false;
+        if (input.dataset.formId) uncheckAll(input);
+      } else if (input.tagName === 'SELECT') {
+        Array.from(input.options).forEach(option => { option.selected = false; });
+        // Update Select2 without invoking our form change handler a second time.
+        $(input).trigger('change.select2');
+      } else {
+        input.value = '';
+      }
+    },
+  };
+}
+
+function updateChip() {
+  if (!chips) return;
+  const next = [];
+  const selectedSites = Array.from(form.querySelectorAll('input[name="datasetid"]:checked'));
+  if (selectedSites.length) {
+    const labels = [...new Set(selectedSites.map(input => input.id || input.value))];
+    next.push({ id: 'chip-some-datasetids', text: `Sites: ${labels.join(', ')}`, clear: clearSites });
+  }
+
+  const selectedCollections = getCollectionInputs(getCollectionView()).filter(input => input.checked);
+  if (!allNeon.checked && selectedCollections.length) {
+    next.push(getCollsChips(getCriterionSelected(), 'Some Sample Types'));
+  }
+  [
+    ['neonext-collections-items', 'Some Sample Types at Other Repos'],
+    ['ext-collections-list', 'Some Ext NEON Colls'],
+  ].forEach(([id, label]) => {
+    const inputs = getCollectionInputs(document.getElementById(id));
+    const checked = inputs.filter(input => input.checked).length;
+    if (checked > 0 && checked < inputs.length) next.push(getCollsChips(id, label));
+  });
+
+  const rows = getAdvancedRows();
+  syncAdvancedState(rows);
+  if (rows.length) next.push(getAdvancedSearchChip(rows));
+
+  form.querySelectorAll('input[data-chip], textarea[data-chip], select[data-chip]').forEach(input => {
+    if (input.disabled || input.name === 'db' || input.name === 'datasetid') return;
+    const active = input.type === 'checkbox' ? input.checked : input.value !== '';
+    if (active) next.push(getInputChip(input));
+  });
+
+  // Reuse unchanged chips, preserving keyboard focus and avoiding repeated DOM rebuilds.
+  const nextIds = new Set(next.map(chip => chip.id));
+  renderedChips.forEach((chip, id) => {
+    if (!nextIds.has(id)) {
+      chip.node.remove();
+      renderedChips.delete(id);
+    }
+  });
+  let position = chips.firstChild;
+  next.forEach(descriptor => {
+    let chip = renderedChips.get(descriptor.id);
+    if (!chip) {
+      const node = document.createElement('span');
+      node.id = descriptor.id;
+      node.className = 'chip';
+      const label = document.createTextNode('');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'chip-remove-btn Mui';
+      node.append(label, button);
+      chip = { node, label, button };
+      renderedChips.set(descriptor.id, chip);
+    }
+    chip.clear = descriptor.clear;
+    if (chip.label.data !== descriptor.text) {
+      chip.label.data = descriptor.text;
+      chip.button.setAttribute('aria-label', `Remove ${descriptor.text}`);
+      chip.button.title = `Remove ${descriptor.text}`;
+    }
+    if (chip.node !== position) chips.insertBefore(chip.node, position);
+    position = chip.node.nextSibling;
+  });
+}
+
+/** URL parameters are read from the form on demand, with no mutable parameter cache. */
+function getParam(name) {
+  if (name === 'db') {
+    const values = allNeon.checked
+      ? ['all', ...getCollectionInputs(formColls).filter(input => input.checked).map(input => input.value)]
+      : getCollsSelected().map(input => input.value);
+    return [...new Set(values)];
+  }
+  if (name === 'datasetid') {
+    return [...new Set(Array.from(form.querySelectorAll('input[name="datasetid"]:checked'))
+      .map(input => input.value))];
+  }
+  const input = form.elements.namedItem(name);
+  if (!input || input.disabled) return '';
+  if (input.type === 'checkbox') return input.checked ? input.value : '';
+  if (input.tagName === 'SELECT') return Array.from(input.selectedOptions).map(option => option.value).filter(Boolean);
+  return input.value || '';
+}
+
+function getSearchUrl() {
+  const url = new URL('../../collections/list.php', window.location.href);
+  paramNames.forEach(name => {
+    const value = getParam(name);
+    if (Array.isArray(value)) {
+      if (name === 'materialsampletype[]') value.forEach(item => url.searchParams.append(name, item));
+      else if (value.length) url.searchParams.set(name, value.join(','));
+    } else if (value !== '') {
+      url.searchParams.set(name, value);
+    }
+  });
+  const excludeSynonyms = document.getElementById('usethes');
+  if (excludeSynonyms) url.searchParams.set('usethes', excludeSynonyms.checked ? '0' : '1');
+  return url.href;
+}
+
+function prefillFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('db')) {
+    const selected = new Set(params.getAll('db').flatMap(value => value.split(',')));
+    collectionViews.forEach(id => {
+      getCollectionInputs(document.getElementById(id)).forEach(input => {
+        input.checked = selected.has('all') || selected.has(input.value);
+      });
+    });
+    getCollectionInputs(formColls).forEach(input => { input.checked = selected.has(input.value); });
+  }
+
+  // The React map initializes its own site selections from datasetid.
+  // Only known search controls may be populated; never interpolate URL keys into selectors.
+  paramNames.filter(name => name !== 'db' && name !== 'datasetid').forEach(name => {
+    if (!params.has(name)) return;
+    const input = form.elements.namedItem(name);
+    if (!input) return;
+    const values = params.getAll(name);
+    if (input.type === 'checkbox') {
+      input.checked = values.some(value => value === '1' || value === 'true' || value === input.value);
+    } else if (input.tagName === 'SELECT' && input.multiple) {
+      Array.from(input.options).forEach(option => { option.selected = values.includes(option.value); });
+      $(input).trigger('change.select2');
+    } else {
+      input.value = values[values.length - 1];
+    }
+  });
+  const excludeSynonyms = document.getElementById('usethes');
+  if (excludeSynonyms && params.has('usethes')) excludeSynonyms.checked = params.get('usethes') !== '1';
+
+  const rows = getAdvancedRows();
+  const lastRow = rows.length ? rows[rows.length - 1].index : 1;
+  for (let index = 1; index <= lastRow; index++) {
+    const row = document.getElementById(`customdiv${index}`);
+    if (row) row.style.display = 'block';
+  }
+  refreshCollectionSelectors();
+  updateChip();
+}
+
+/** Validation */
+function validateForm() {
+  const errors = [];
+  if (!getCollsSelected().length) {
+    errors.push({ element: formColls, errorMsg: 'Please select at least one sample type.' });
+  }
+  form.querySelectorAll('input:invalid, textarea:invalid, select:invalid').forEach(input => {
+    errors.push({ element: input, errorMsg: `Please check values in field ${input.dataset.chip || input.name}.` });
+  });
+
+  const messages = new Set();
+  let balance = 0;
+  getAdvancedRows().forEach((row, index) => {
+    if (row.index !== index + 1) messages.add('Complete advanced search rows in order, without empty rows between conditions.');
+    if (!row.field) messages.add('Missing field name.');
+    if (!row.type) messages.add('Missing condition statement.');
+    if (row.type && row.type !== 'IS_NULL' && row.type !== 'NOT_NULL' && !row.value) {
+      messages.add('Missing input value.');
+    }
+    if (row.index > 1 && row.andor !== 'AND' && row.andor !== 'OR') {
+      messages.add('Choose AND/OR between advanced search conditions.');
+    }
+    balance += row.openparen.length - row.closeparen.length;
+    if (balance < 0) messages.add('Mismatched parentheses.');
+  });
+  if (balance !== 0) messages.add('Mismatched parentheses.');
+  messages.forEach(errorMsg => errors.push({ element: advancedForm, errorMsg }));
+  return errors;
+}
+
+function clearValidationErrors() {
+  document.getElementById('error-msgs')?.replaceChildren();
+  form.querySelectorAll('.invalid').forEach(element => element.classList.remove('invalid'));
+}
+
+function handleValErrors(errors) {
+  clearValidationErrors();
+  const errorDiv = document.getElementById('error-msgs');
+  if (!errorDiv) return;
+  errorDiv.classList.remove('visually-hidden');
+  errors.forEach(({ element, errorMsg }) => {
+    element?.classList.add('invalid');
+    const message = document.createElement('p');
+    message.className = 'error';
+    message.textContent = `${errorMsg} Click to dismiss.`;
+    message.onclick = () => {
+      message.remove();
+      element?.classList.remove('invalid');
+    };
+    errorDiv.appendChild(message);
+  });
+}
+
+function simpleSearch() {
+  document.getElementById('alert-msgs')?.replaceChildren();
+  const errors = validateForm();
+  if (errors.length) handleValErrors(errors);
+  else window.location.assign(getSearchUrl());
+}
+
+function hideColCheckbox(collid) {
+  getCollectionInputs(collsModal).forEach(input => {
+    if (input.value === String(collid)) input.closest('li').style.display = 'none';
+  });
+}
+
+/** Events: one delegated change handler also handles Select2 and dynamic inputs. */
+$(form).on('change.searchForm', 'input, textarea, select', function () {
+  if (this.name === 'collChoice' && collsModal.contains(this)) {
+    collsModal.querySelectorAll('.box').forEach(box => { box.style.display = box.id === this.value ? 'block' : 'none'; });
+    collsModal.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('tab-active', tab.contains(this)));
+    updateGlobalMaster();
+  } else if (this === allNeon) {
+    setGroupChecked(collsModal, this.checked);
+    refreshCollectionSelectors();
+  } else if (this.type === 'checkbox' && !this.closest('#collection-search-map')) {
+    if (this.classList.contains('all-selector')) toggleAllSelector.call(this);
+    updateAncestors(this);
+    updateGlobalMaster();
+  }
+  updateChip();
 });
 
+chips.addEventListener('click', event => {
+  const button = event.target.closest('.chip-remove-btn');
+  if (!button) return;
+  const chip = renderedChips.get(button.parentElement.id);
+  if (!chip) return;
+  chip.clear();
+  refreshCollectionSelectors();
+  updateChip();
+});
+
+form.addEventListener('click', event => {
+  const leafLabel = event.target.closest('.leaf-label');
+  if (leafLabel) {
+    const checkbox = leafLabel.previousElementSibling;
+    if (checkbox?.matches('input[type="checkbox"]:enabled')) checkbox.click();
+    return;
+  }
+  const expansion = event.target.closest('[data-target], .group-label, .expansion-icon');
+  if (expansion && (collsModal.contains(expansion) || formColls.contains(expansion))) {
+    const li = expansion.closest('li');
+    const list = li?.querySelector(':scope > ul');
+    if (!list) return;
+    const collapsed = list.classList.toggle('collapsed');
+    const icon = li.querySelector(':scope > .expansion-icon, :scope > [data-target] .expansion-icon');
+    if (icon) icon.textContent = collapsed ? 'add_box' : 'indeterminate_check_box';
+  }
+});
+
+form.querySelectorAll('#neon-modal-open, .neon-modal-open').forEach(opener => {
+  opener.addEventListener('click', event => {
+    if (event.target.closest('input, a')) return;
+    event.preventDefault();
+    if (opener.dataset.modalId) openModal(`#${opener.dataset.modalId}`);
+  });
+});
+[
+  ['neon-modal-close', '#biorepo-collections-list'],
+  ['domains-sites-modal-close', '#domains-sites-modal'],
+].forEach(([id, selector]) => {
+  document.getElementById(id)?.addEventListener('click', event => {
+    event.preventDefault();
+    closeModal(selector);
+    updateGlobalMaster();
+    updateChip();
+  });
+});
+
+form.addEventListener('submit', event => {
+  event.preventDefault();
+  simpleSearch();
+});
+form.addEventListener('reset', () => {
+  // Native controls reset after this event; then reconcile widgets and derived state.
+  setTimeout(() => {
+    clearSites();
+    resetAdvancedSearch();
+    form.querySelectorAll('input[type="checkbox"]').forEach(input => { input.indeterminate = false; });
+    $('#materialsampletype').trigger('change.select2');
+    const selected = collsModal.querySelector('input[name="collChoice"]:checked');
+    if (selected) $(selected).trigger('change');
+    refreshCollectionSelectors();
+    clearValidationErrors();
+    updateChip();
+  }, 0);
+});
+
+if (document.readyState === 'complete') prefillFromUrl();
+else window.addEventListener('load', prefillFromUrl, { once: true });

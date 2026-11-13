@@ -1,4 +1,12 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,92389,e=>{"use strict";var t=e.i(57727),r=e.i(71645),s=e.i(2181),a=e.i(78512),i=e.i(98163);e.s(["default",0,function(){let[e,o]=(0,r.useState)(()=>(0,i.sitesFromRecordQuery)(window.location.search,a.default.datasets)),[n,l]=(0,r.useState)(!1),u=Object.fromEntries(a.default.datasets.map(e=>[e.name,e.datasetID]));return(0,r.useEffect)(()=>{"function"==typeof updateChip&&document.getElementById("chips")&&updateChip()},[e]),(0,r.useEffect)(()=>{let e=document.getElementById("domains-sites-modal");if(!e)return;let t=()=>{"none"!==window.getComputedStyle(e).display?setTimeout(()=>{l(!0)},300):l(!1)},r=new MutationObserver(t);return r.observe(e,{attributes:!0,attributeFilter:["style","class"]}),t(),()=>{r.disconnect()}},[]),(0,t.jsxs)("div",{style:{width:"100%"},children:[(0,t.jsx)("style",{children:`
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,92389,e=>{"use strict";var t=e.i(57727),r=e.i(71645),s=e.i(2181),a=e.i(78512),i=e.i(98163);e.s(["default",0,function(){let[e,o]=(0,r.useState)(()=>(0,i.sitesFromRecordQuery)(window.location.search,a.default.datasets)),[n,l]=(0,r.useState)(!1),u=Object.fromEntries(a.default.datasets.map(e=>[e.name,e.datasetID]));/* #neon edit */
+// Keep the controlled site selection in sync with the legacy form's clear/reset actions.
+(0,r.useEffect)(()=>{
+  const clearSites=()=>o(new Set());
+  window.addEventListener("neon:clear-sites",clearSites);
+  return()=>window.removeEventListener("neon:clear-sites",clearSites);
+},[]);
+/* #end neon edit */
+return(0,r.useEffect)(()=>{"function"==typeof updateChip&&document.getElementById("chips")&&updateChip()},[e]),(0,r.useEffect)(()=>{let e=document.getElementById("domains-sites-modal");if(!e)return;let t=()=>{"none"!==window.getComputedStyle(e).display?setTimeout(()=>{l(!0)},300):l(!1)},r=new MutationObserver(t);return r.observe(e,{attributes:!0,attributeFilter:["style","class"]}),t(),()=>{r.disconnect()}},[]),(0,t.jsxs)("div",{style:{width:"100%"},children:[(0,t.jsx)("style",{children:`
           .ui-widget button {
             font-size: unset !important;
           }

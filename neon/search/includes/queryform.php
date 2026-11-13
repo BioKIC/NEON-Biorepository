@@ -153,7 +153,9 @@ for($x=1; $x<9; $x++){
 		<div class="input-text-container" style="width: 30%; display: inline-block;">
 			<label for="customvalue" class="input-text--outlined">
 				<input name="q_customvalue<?php echo $x; ?>" type="text" value="<?php echo $cValue; ?>" style="height:30px" />
-				<!--<span data-label="State"></span></label>-->
+				<!-- #neon edit -->
+			</label>
+				<!-- #end neon edit -->
 		</div>
 		<div class="select-container" style="width: 5%; display: inline-block;">
 			<select name="q_customcloseparen<?php echo $x; ?>" style="height:30px;">
@@ -179,54 +181,6 @@ for($x=1; $x<9; $x++){
 }
 ?>
 
-<script>
-
-	function toggleCustomDiv(x){
-		resetCustomElements(x);
-		$('#customdiv'+x).toggle();
-		if(x < 8){
-			y = x + 1;
-			resetCustomElements(y);
-			document.getElementById('customdiv'+y).style.display = "none";
-		}
-	}
-
-	function resetCustomElements(x){
-		var f = document.getElementById("search-form-advanced-search");
-		if(x < 9 && f.querySelector["q_customvalue" + x] && f.querySelector["q_customvalue" + x] != undefined){
-			if(x > 1) f.querySelector["q_customandor" + x].options[0].selected = true;
-			f.querySelector["q_customopenparen" + x].options[0].selected = true;
-			f.querySelector["q_customfield" + x].options[0].selected = true;
-			f.querySelector["q_customtype" + x].options[0].selected = true;
-			f.querySelector["q_customvalue" + x].value = "";
-			f.querySelector["q_customcloseparen" + x].options[0].selected = true;
-		}
-	}
-
-
-	const advancedInputs = document.querySelectorAll('#search-form-advanced-search select, #search-form-advanced-search input[type=text]');
-	const advancedHasBeenChangedCheckbox = document.getElementById('AdvancedHasBeenChanged');
-
-	advancedInputs.forEach((advancedInput) => {
-		advancedInput.addEventListener('change', function(){
-			let allDefault = true;
-
-			advancedInputs.forEach((input) => {
-				if (input.tagName === 'SELECT') {
-					if (input.selectedIndex !== 0) {
-						allDefault = false;
-					}
-				} else if (input.type === 'text') {
-					if (input.value.trim() !== "") {
-						allDefault = false;
-					}
-				}
-			});
-
-			advancedHasBeenChangedCheckbox.checked = !allDefault;
-		});
-	});
-
-
-
-</script>
+<!-- #neon edit -->
+<!-- Advanced search events and row helpers are defined in js/searchform.js. -->
+<!-- #end neon edit -->

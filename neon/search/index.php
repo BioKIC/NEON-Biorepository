@@ -29,31 +29,6 @@ $collManager = new OccurrenceManager();
 		const clientRoot = '<?php echo $CLIENT_ROOT; ?>';
 	</script>
 	<script>
-	document.addEventListener('DOMContentLoaded', () => {
-	  // expand/collapse groups
-		document.querySelectorAll('[data-target], .group-label, .expansion-icon').forEach(el => {
-		  el.addEventListener('click', e => {
-			e.stopPropagation();
-			const li = el.closest('li');
-			const ul = li.querySelector('ul');
-			const icon = li.querySelector('.expansion-icon');
-			if (!ul) return;
-		
-			const isCollapsed = ul.classList.toggle('collapsed');
-			if (icon) icon.textContent = isCollapsed ? 'add_box' : 'indeterminate_check_box';
-		  });
-		});
-	
-	  // toggle checkbox when clicking leaf text
-	  document.querySelectorAll('.leaf-label').forEach(label => {
-		label.addEventListener('click', e => {
-		  const checkbox = label.previousElementSibling; // the <input type="checkbox">
-		  if (checkbox && checkbox.type === 'checkbox') {
-			checkbox.checked = !checkbox.checked;
-		  }
-		});
-	  });
-	});
 
 	$(function () {
 		$("#eventdate1, #eventdate2").datepicker({
@@ -200,11 +175,6 @@ $collManager = new OccurrenceManager();
 								  data-chip="All Sample Types at the Biorepository"
 								  type="checkbox"
 								  data-form-id="biorepo-collections-list"
-								<input
-								  id="all-neon-colls-quick"
-								  data-chip="All Sample Types at the Biorepository"
-								  type="checkbox"
-								  data-form-id="biorepo-collections-list"
 								  <?php
 									if (
 										$IS_ADMIN ||
@@ -266,7 +236,7 @@ $collManager = new OccurrenceManager();
 					<!-- NEON Biorepository Collections Modal -->
 					<div class="modal" id="biorepo-collections-list">
 						<div class="modal-content">
-							<button id="neon-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
+							<button type="button" id="neon-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
 							<div id="colls-modal">
 								<div>
 									<label class="tab tab-active"><input type="radio" name="collChoice" value="taxonomic-cat" checked="true"> Taxonomic Group</label>
@@ -362,7 +332,7 @@ $collManager = new OccurrenceManager();
 					<!-- Accordion content -->
 					<div class="modal" id="domains-sites-modal">
 						<div class="modal-content">
-							<button id="domains-sites-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
+							<button type="button" id="domains-sites-modal-close" class="modal-close btn" style="width:auto !important">Accept and close</button>
 				
 							<div id="collection-search-map"></div>
 						</div>
@@ -410,8 +380,8 @@ $collManager = new OccurrenceManager();
 						<div id="search-form-sample">
 							<div>
 								<div class="text-area-container">
-									<label for="" class="text-area--outlined">
-										<textarea name="catnum" data-chip="Identifier" style="width: 100%"
+									<label for="catnum" class="text-area--outlined">
+										<textarea id="catnum" name="catnum" data-chip="Identifier" style="width: 100%"
 												  placeholder="Examples:&#10; Catalog Number: NEON007VA&#10; SampleID: NEON.BET.D06.002579&#10;           STEI.20250925.R11242.E&#10; Barcode: A00000020232&#10;"
 												  ></textarea>
 										<span data-label="Identifiers"></span></label>
@@ -427,21 +397,21 @@ $collManager = new OccurrenceManager();
 							</div>
 							<div>
 								<div>
-									<input type="checkbox" name="hasimages" value=1 data-chip="Only with images">
+									<input type="checkbox" id="hasimages" name="hasimages" value=1 data-chip="Only with images">
 									<label for="hasimages">Specimens with images</label>
 								</div>
 								<div>
-									<input type="checkbox" name="hasgenetic" value=1 data-chip="Only with genetic">
+									<input type="checkbox" id="hasgenetic" name="hasgenetic" value=1 data-chip="Only with genetic">
 									<label for="hasgenetic">Specimens with published genetic data</label>
 								</div>
 								<div>
-									<input type="checkbox" name="availableforloan" value=1 data-chip="Only available for loan">
+									<input type="checkbox" id="availableforloan" name="availableforloan" value=1 data-chip="Only available for loan">
 									<label for="availableforloan">Specimens available for loan</label>
 								</div>
 							</div>
 							<div class="input-text-container">
 								<label for="collector" class="input-text--outlined">
-									<input type="text" name="collector" data-chip="Collector/ORCID">
+									<input type="text" id="collector" name="collector" data-chip="Collector/ORCID">
 									<span data-label="Collector/ORCID"></span></label>
 								<span class="assistive-text">Any part of a collector's name or ORCID iD (XXXX-XXXX-XXXX-XXXX).</span>
 							</div>
@@ -571,8 +541,8 @@ $collManager = new OccurrenceManager();
 			</div>
 			<!-- Criteria panel -->
 			<div id="criteria-panel" style="position: sticky; top: 130; height: 50vh">
-				<button id="search-btn">Search</button>
-				<button id="reset-btn">Reset</button>
+				<button type="submit" id="search-btn">Search</button>
+				<button type="reset" id="reset-btn">Reset</button>
 				<h2>Criteria</h2>
 				<div id="chips"></div>
 			</div>
@@ -585,5 +555,5 @@ $collManager = new OccurrenceManager();
 
 </body>
 <script src="js/searchform.js?ver=<?= date('Y-m-d H:i:s') ?>" type="text/javascript"></script>
-<script> window.addEventListener('load', updateChip);</script>
 </html>
+
