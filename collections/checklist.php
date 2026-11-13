@@ -75,40 +75,21 @@ $searchVarEncoded = urlencode($searchVar);
 	?>
 	<div style="clear:both;"><hr/></div>
 		<?php
-		$checklistArr = $checklistManager->getChecklist($taxonFilter);
+		#neon edit
+		$taxonGroups = $checklistManager->getRankedChecklist($taxonFilter);
 		echo '<div style="font-size:110%;margin-bottom: 10px">'.$LANG['TAXA_COUNT'].': '.$checklistManager->getChecklistTaxaCnt().'</div>';
-		$undFamilyArray = Array();
-		if(array_key_exists('undefined',$checklistArr)){
-			$undFamilyArray = $checklistArr['undefined'];
-			unset($checklistArr['undefined']);
-		}
-		ksort($checklistArr);
-		foreach($checklistArr as $family => $sciNameArr){
-			ksort($sciNameArr);
-			echo '<div style="margin-left:5;margin-top:5;">'.$family.'</div>';
-			foreach($sciNameArr as $sciName => $tid){
-				echo '<div style="margin-left:20;font-style:italic;">';
-				if($tid) echo '<a target="_blank" href="../taxa/index.php?tid=' . htmlspecialchars($tid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">';
-				echo $sciName;
-				if($tid) echo '</a>';
-				#neon edit
-				echo ' <span style="font-style:normal">('.number_format($checklistManager->getChecklistRecordCount($family, $sciName)).')</span>';
-				#end neon edit
+		foreach($taxonGroups as $rankName => $taxa){
+			echo '<div style="margin-left:5px;margin-top:5px;">'.htmlspecialchars($rankName, ENT_QUOTES | ENT_SUBSTITUTE).'</div>';
+			foreach($taxa as $taxon){
+				$fontStyle = $taxon['rankid'] >= 180 ? 'italic' : 'normal';
+				echo '<div style="margin-left:20px;font-style:'.$fontStyle.';">';
+				if($taxon['tid']) echo '<a target="_blank" href="../taxa/index.php?tid='.(int) $taxon['tid'].'">';
+				echo htmlspecialchars($taxon['sciname'], ENT_QUOTES | ENT_SUBSTITUTE);
+				if($taxon['tid']) echo '</a>';
+				echo ' <span style="font-style:normal">('.number_format($taxon['recordcount']).')</span>';
 				echo '</div>';
 			}
 		}
-		if($undFamilyArray){
-			echo '<div style="margin-left:5;margin-top:5;">'.$LANG['FAMILY_NOT_DEFINED'].'</div>';
-			foreach($undFamilyArray as $sciName => $tid){
-				echo '<div style="margin-left:20;font-style:italic;">';
-				if($tid) echo '<a target="_blank" href="../taxa/index.php?tid=' . htmlspecialchars($tid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">';
-				echo $sciName;
-				if($tid) echo '</a>';
-				#neon edit
-				echo ' <span style="font-style:normal">('.number_format($checklistManager->getChecklistRecordCount('undefined', $sciName)).')</span>';
-				#end neon edit
-				echo '</div>';
-			}
-		}
+		#end neon edit
 	?>
 </div>

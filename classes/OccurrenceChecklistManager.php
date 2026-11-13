@@ -24,6 +24,72 @@ class OccurrenceChecklistManager extends OccurrenceManager{
 	public function getChecklistRecordCount($family, $sciName){
 		return $this->checklistRecordCounts[$family][$sciName] ?? 0;
 	}
+
+	public function getRankedChecklist($taxonAuthorityId){
+		$checklist = $this->getChecklist($taxonAuthorityId);
+		$ids = array();
+		$names = array();
+		foreach($checklist as $taxa){
+			foreach($taxa as $name => $tid){
+				if($tid) $ids[(int) $tid] = (int) $tid;
+				else $names[$name] = '"'.$this->cleanInStr($name).'"';
+			}
+		}
+		$conditions = array();
+		if($ids) $conditions[] = 'tid IN('.implode(',', $ids).')';
+		if($names) $conditions[] = 'sciname IN('.implode(',', $names).')';
+		$taxaById = array();
+		$taxaByName = array();
+		if($conditions){
+			$result = $this->conn->query('SELECT tid, sciname, rankid, kingdomname FROM taxa WHERE '.implode(' OR ', $conditions));
+			while($taxon = $result->fetch_assoc()){
+				$taxaById[$taxon['tid']] = $taxon;
+				$taxaByName[strtolower(trim($taxon['sciname']))][$taxon['tid']] = $taxon;
+			}
+			$result->free();
+		}
+		$rankNames = array();
+		if($taxaById){
+			$result = $this->conn->query('SELECT rankid, rankname, kingdomname FROM taxonunits ORDER BY rankid, rankname');
+			while($rank = $result->fetch_assoc()){
+				$rankNames[$rank['rankid']][strtolower((string) $rank['kingdomname'])] = $rank['rankname'];
+			}
+			$result->free();
+		}
+		$entries = array();
+		foreach($checklist as $family => $taxa){
+			foreach($taxa as $name => $tid){
+				$taxon = $taxaById[$tid] ?? null;
+				$nameKey = strtolower(trim($name));
+				if(!$taxon && isset($taxaByName[$nameKey]) && count($taxaByName[$nameKey]) === 1){
+					$taxon = reset($taxaByName[$nameKey]);
+				}
+				$key = $taxon ? 'tid:'.$taxon['tid'] : 'name:'.$nameKey;
+				if(!isset($entries[$key])){
+					$rankId = isset($taxon['rankid']) ? (int) $taxon['rankid'] : null;
+					$labels = $rankNames[$rankId] ?? array();
+					$kingdom = strtolower((string) ($taxon['kingdomname'] ?? ''));
+					$rankName = $labels[$kingdom] ?? (count(array_unique($labels)) === 1 ? reset($labels) : null);
+					$entries[$key] = array(
+						'tid' => $taxon['tid'] ?? null,
+						'sciname' => $taxon['sciname'] ?? $name,
+						'rankid' => $rankId,
+						'rankname' => $rankName ? ucfirst($rankName) : ($rankId ? 'Other ranks' : 'Unranked taxa'),
+						'recordcount' => 0
+					);
+				}
+				$entries[$key]['recordcount'] += $this->getChecklistRecordCount($family, $name);
+			}
+		}
+		$this->checklistTaxaCnt = count($entries);
+		usort($entries, function($a, $b){
+			$rankOrder = ($a['rankid'] ?? PHP_INT_MAX) <=> ($b['rankid'] ?? PHP_INT_MAX);
+			return $rankOrder ?: strnatcasecmp($a['sciname'], $b['sciname']);
+		});
+		$groups = array();
+		foreach($entries as $entry) $groups[$entry['rankname']][] = $entry;
+		return $groups;
+	}
 	#end neon edit
 
 	public function getChecklist($taxonAuthorityId){
