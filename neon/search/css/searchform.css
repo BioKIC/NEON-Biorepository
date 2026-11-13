@@ -1816,6 +1816,6 @@ body.neon-search-map-open :is(.MuiPopover-root, .MuiPopper-root) {
   z-index: 4100;
 }
 
-#criteria-panel.search-results-controls .chip {
-  padding-right: 12px;
+#criteria-panel.search-results-controls .chip-remove-btn {
+  text-decoration: none;
 }

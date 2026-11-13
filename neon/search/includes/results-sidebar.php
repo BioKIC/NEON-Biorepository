@@ -11,8 +11,13 @@ $resultChips = $resultsSidebar->chips();
     <div class="selected-criteria">
         <h3>Selected Criteria</h3>
         <div id="chips">
-            <?php foreach ($resultChips as $chip) { ?>
-                <span class="chip"><span class="chip-label"><?= htmlspecialchars($chip, ENT_QUOTES | ENT_SUBSTITUTE) ?></span></span>
+            <?php foreach ($resultChips as $criterion => $chip) { ?>
+                <span class="chip">
+                    <span class="chip-label"><?= htmlspecialchars($chip, ENT_QUOTES | ENT_SUBSTITUTE) ?></span>
+                    <a class="chip-remove-btn" href="<?= htmlspecialchars($resultsSidebar->removeUrl($CLIENT_ROOT, $criterion), ENT_QUOTES | ENT_SUBSTITUTE) ?>" aria-label="<?= htmlspecialchars('Remove '.$chip, ENT_QUOTES | ENT_SUBSTITUTE) ?>" title="<?= htmlspecialchars('Remove '.$chip, ENT_QUOTES | ENT_SUBSTITUTE) ?>">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm5 13.6L15.6 17 12 13.4 8.4 17 7 15.6l3.6-3.6L7 8.4 8.4 7l3.6 3.6L15.6 7 17 8.4 13.4 12Z"></path></svg>
+                    </a>
+                </span>
             <?php } ?>
         </div>
         <?php if (!$resultChips) { ?><p id="criteria-empty">Nothing selected</p><?php } ?>

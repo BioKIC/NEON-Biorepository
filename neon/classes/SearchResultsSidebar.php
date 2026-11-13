@@ -20,6 +20,24 @@ class SearchResultsSidebar {
         return rtrim($clientRoot, '/') . '/neon/search/index.php?' . SearchParameterNames::queryString($criteria);
     }
 
+    public function removeUrl($clientRoot, $criterion) {
+        $criteria = $this->criteria;
+        if ($criterion === 'advanced') {
+            foreach (array_keys($criteria) as $key) {
+                if (preg_match('/^q_custom(?:andor|openparen|field|type|value|closeparen)\d+$/', $key)) unset($criteria[$key]);
+            }
+        } elseif ($criterion === 'dates') {
+            unset($criteria['eventdate1'], $criteria['eventdate2']);
+        } else {
+            unset($criteria[$criterion]);
+            if ($criterion === 'taxa') unset($criteria['taxontype'], $criteria['usethes']);
+            if ($criterion === 'country') unset($criteria['countryCode'], $criteria['countryRaw'], $criteria['countryCodeRaw']);
+        }
+        if ((string) ($criteria['taxontype'] ?? '') === '2') unset($criteria['taxontype']);
+        $query = SearchParameterNames::queryString($criteria);
+        return rtrim($clientRoot, '/') . '/collections/list.php' . ($query !== '' ? '?'.$query : '');
+    }
+
     private function entry($entries, $token, $scope = null) {
         $key = strtolower($token);
         if (isset($entries[$key]) && ($scope === null || !array_diff($entries[$key]['ids'], $scope))) return $entries[$key];
@@ -73,19 +91,22 @@ class SearchResultsSidebar {
             $value = $criteria[$key];
             unset($criteria[$key]);
             if ($flag && !$value) return;
-            $chips[] = $flag ? $label : $label.': '.(is_array($value) ? implode(', ', $value) : $value);
+            $chips[$key] = $flag ? $label : $label.': '.(is_array($value) ? implode(', ', $value) : $value);
         };
         if (!empty($criteria['db'])) {
             $label = $this->selectionLabel('db', $criteria['db']);
-            $chips[] = $criteria['db'] === 'all' ? $label : 'Some Sample Types: '.$label;
+            $chips['db'] = $criteria['db'] === 'all' ? $label : 'Some Sample Types: '.$label;
         }
         unset($criteria['db']);
         $add('taxa', 'Taxa');
-        if (isset($criteria['usethes']) && (string) $criteria['usethes'] === '0') $chips[] = 'Exact Taxon Only';
+        if (isset($criteria['usethes']) && (string) $criteria['usethes'] === '0') $chips['usethes'] = 'Exact Taxon Only';
         unset($criteria['usethes']);
-        if (!empty($criteria['datasetid'])) $chips[] = 'Sites / Datasets: '.$this->selectionLabel('datasetid', $criteria['datasetid']);
+        if (!empty($criteria['datasetid'])) $chips['datasetid'] = 'Sites / Datasets: '.$this->selectionLabel('datasetid', $criteria['datasetid']);
         unset($criteria['datasetid']);
-        foreach (array('eventdate1' => 'Event Date Start', 'eventdate2' => 'Event Date End', 'catnum' => 'Identifier') as $key => $label) $add($key, $label);
+        $dates = array_filter(array($criteria['eventdate1'] ?? '', $criteria['eventdate2'] ?? ''), 'strlen');
+        if ($dates) $chips['dates'] = 'Event Date: '.implode(' – ', $dates);
+        unset($criteria['eventdate1'], $criteria['eventdate2']);
+        $add('catnum', 'Identifier');
         foreach (array('hasimages' => 'Only with images', 'hasgenetic' => 'Only with genetic', 'availableforloan' => 'Only available for loan') as $key => $label) $add($key, $label, true);
         $add('collector', 'Collector/ORCID');
         $add('materialsampletype', 'Material Sample');
@@ -105,7 +126,7 @@ class SearchResultsSidebar {
             }
             if ($parts) $advanced[] = implode(' ', $parts);
         }
-        if ($advanced) $chips[] = 'Advanced Search: '.implode(' ', $advanced);
+        if ($advanced) $chips['advanced'] = 'Advanced Search: '.implode(' ', $advanced);
         foreach (array('taxontype', 'includeothercatnum', 'countryCode', 'countryRaw', 'countryCodeRaw', 'usethes-associations', 'associated-taxon-type') as $key) unset($criteria[$key]);
         foreach ($criteria as $key => $value) {
             if ($value !== '' && $value !== null && $value !== array()) $add($key, $this->humanize($key));
