@@ -117,7 +117,7 @@ for($x=1; $x<9; $x++){
 			<?php
 		}
 		?>
-		<div class="select-container advanced-query-short">
+		<div class="select-container advanced-query-open">
 			<select aria-label="Opening parentheses, condition <?php echo $x; ?>" name="q_customopenparen<?php echo $x; ?>">
 				<option value="">---</option>
 				<?php
@@ -128,7 +128,7 @@ for($x=1; $x<9; $x++){
 			</select>
 		</div>
 
-		<div class="select-container">
+		<div class="select-container advanced-query-field">
 			<select aria-label="Field, condition <?php echo $x; ?>" name="q_customfield<?php echo $x; ?>">
 				<option value=""><?php echo $LANG['SELECT_FIELD_NAME']; ?></option>
 				<?php
@@ -138,7 +138,7 @@ for($x=1; $x<9; $x++){
 				?>
 			</select>
 		</div>
-		<div class="select-container">
+		<div class="select-container advanced-query-statement">
 			<select aria-label="Statement, condition <?php echo $x; ?>" name="q_customtype<?php echo $x; ?>">
 				<option value="">Select Statement</option>
 				<?php
@@ -148,13 +148,13 @@ for($x=1; $x<9; $x++){
 				?>
 			</select>
 		</div>
-		<div class="input-text-container">
+		<div class="input-text-container advanced-query-value">
 			<label for="customvalue<?php echo $x; ?>" class="input-text--outlined input-text--floating">
 				<input id="customvalue<?php echo $x; ?>" aria-label="Value, condition <?php echo $x; ?>" name="q_customvalue<?php echo $x; ?>" type="text" placeholder=" " value="<?php echo $cValue; ?>" />
 				<span class="search-field-label">Value</span>
 			</label>
 		</div>
-		<div class="select-container advanced-query-short">
+		<div class="select-container advanced-query-close">
 			<select aria-label="Closing parentheses, condition <?php echo $x; ?>" name="q_customcloseparen<?php echo $x; ?>">
 				<option value="">---</option>
 				<?php

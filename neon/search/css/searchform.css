@@ -1394,35 +1394,64 @@ html:has(#innertext.neon-search) {
   display: none;
 }
 
+#innertext.neon-search #search-form-advanced-search {
+  container: advanced-query / inline-size;
+}
+
 #innertext.neon-search .advanced-query-row + .advanced-query-row {
   margin-top: 12px;
 }
 
 #innertext.neon-search .advanced-query-fields {
-  display: flex;
+  display: grid;
+  grid-template-columns: 80px 64px repeat(3, minmax(0, 1fr)) 64px 88px;
+  grid-template-areas: "join open field statement value close actions";
   align-items: center;
-  flex-wrap: wrap;
   gap: 8px;
 }
 
 #innertext.neon-search .advanced-query-fields > div {
-  flex: 1 1 160px;
   min-width: 0;
   padding-top: 0;
 }
 
-#innertext.neon-search .advanced-query-fields > .advanced-query-short {
-  flex: 0 0 64px;
-}
-
-#innertext.neon-search .advanced-query-fields > .advanced-query-join {
-  flex: 0 0 80px;
-}
+#innertext.neon-search .advanced-query-join { grid-area: join; }
+#innertext.neon-search .advanced-query-open { grid-area: open; }
+#innertext.neon-search .advanced-query-field { grid-area: field; }
+#innertext.neon-search .advanced-query-statement { grid-area: statement; }
+#innertext.neon-search .advanced-query-value { grid-area: value; }
+#innertext.neon-search .advanced-query-close { grid-area: close; }
 
 #innertext.neon-search .advanced-query-fields > .advanced-query-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: 40px 40px;
+  grid-area: actions;
+  justify-content: end;
   gap: 8px;
-  flex: 0 0 auto;
+}
+
+#innertext.neon-search .advanced-query-remove { grid-column: 1; }
+#innertext.neon-search .advanced-query-add { grid-column: 2; }
+
+@container advanced-query (max-width: 800px) {
+  #innertext.neon-search .advanced-query-fields {
+    grid-template-columns: 80px 64px minmax(0, 1fr) 64px 88px;
+    grid-template-areas:
+      "join open field field field"
+      "statement statement value close actions";
+  }
+}
+
+@container advanced-query (max-width: 520px) {
+  #innertext.neon-search .advanced-query-fields {
+    grid-template-columns: 64px 56px minmax(88px, 1fr);
+    grid-template-areas:
+      "join open ."
+      "field field field"
+      "statement statement statement"
+      "value value value"
+      ". close actions";
+  }
 }
 
 #innertext.neon-search .advanced-query-fields :is(input, select) {
