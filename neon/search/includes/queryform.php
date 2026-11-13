@@ -102,12 +102,12 @@ for($x=1; $x<9; $x++){
 	if($x == 1 || $cValue != '' || $cTerm == 'IS_NULL' || $cTerm == 'NOT_NULL') $divDisplay = 'block';
 	?>
 
-	<div id="customdiv<?php echo $x; ?>" class="fieldGroupDiv" style="display:<?php echo $divDisplay; ?>;">
+	<div id="customdiv<?php echo $x; ?>" class="advanced-query-row" role="group" aria-label="Condition <?php echo $x; ?>" style="display:<?php echo $divDisplay; ?>;">
 		<div class="advanced-query-fields">
 		<?php
 		if($x > 1){
 			?>
-			<div class="select-container advanced-query-short">
+			<div class="select-container advanced-query-join">
 				<select aria-label="Join conditions, condition <?php echo $x; ?>" name="q_customandor<?php echo $x; ?>">
 					<option value="">---</option>
 					<option value="AND"><?php echo $LANG['AND']; ?></option>
@@ -121,18 +121,16 @@ for($x=1; $x<9; $x++){
 			<select aria-label="Opening parentheses, condition <?php echo $x; ?>" name="q_customopenparen<?php echo $x; ?>">
 				<option value="">---</option>
 				<?php
-				echo '<option '.($cOpenParen == '(' ? 'SELECTED' : '').' value="(">(</option>';
-				if($x < 7) echo '<option '.($cOpenParen == '((' ? 'SELECTED' : '').' value="((">((</option>';
-				if($x < 8) echo '<option '.($cOpenParen == '(((' ? 'SELECTED' : '').' value="(((">(((</option>';
+				foreach (array('(', '((', '(((') as $parentheses) {
+					echo '<option '.($cOpenParen == $parentheses ? 'SELECTED' : '').' value="'.$parentheses.'">'.$parentheses.'</option>';
+				}
 				?>
 			</select>
-			<!--<span class="assistive-text">Parentheses for advanced searches</span>-->
 		</div>
 
 		<div class="select-container">
 			<select aria-label="Field, condition <?php echo $x; ?>" name="q_customfield<?php echo $x; ?>">
 				<option value=""><?php echo $LANG['SELECT_FIELD_NAME']; ?></option>
-				<option value="">---------------------------------</option>
 				<?php
 				foreach($customFieldArr as $k => $v){
 					echo '<option value="'.$k.'" '.($k == $cField ? 'SELECTED' : '').'>'.$v.'</option>';
@@ -143,7 +141,6 @@ for($x=1; $x<9; $x++){
 		<div class="select-container">
 			<select aria-label="Statement, condition <?php echo $x; ?>" name="q_customtype<?php echo $x; ?>">
 				<option value="">Select Statement</option>
-				<option value="">---------------------------------</option>
 				<?php
 				foreach($customTermArr as $term){
 					echo '<option '.($cTerm == $term ? 'SELECTED' : '').' value="'.$term.'">'.$LANG[$term].'</option>';
@@ -161,22 +158,21 @@ for($x=1; $x<9; $x++){
 			<select aria-label="Closing parentheses, condition <?php echo $x; ?>" name="q_customcloseparen<?php echo $x; ?>">
 				<option value="">---</option>
 				<?php
-				echo '<option '.($cCloseParen == ')' ? 'SELECTED' : '').' value=")">)</option>';
-				if($x > 1) echo '<option '.($cCloseParen == '))' ? 'SELECTED' : '').' value="))">))</option>';
-				if($x > 2) echo '<option '.($cCloseParen == ')))' ? 'SELECTED' : '').' value=")))">)))</option>';
+				foreach (array(')', '))', ')))') as $parentheses) {
+					echo '<option '.($cCloseParen == $parentheses ? 'SELECTED' : '').' value="'.$parentheses.'">'.$parentheses.'</option>';
+				}
 				?>
 			</select>
 		</div>
-		<?php if ($x < 8) { ?>
 		<div class="advanced-query-actions">
-			<button type="button" class="advanced-query-add" aria-label="Show or hide condition <?php echo ($x+1); ?>" onclick="toggleCustomDiv(<?php echo ($x+1); ?>)">+</button>
+			<?php if ($x > 1) { ?>
+			<button type="button" class="advanced-query-remove" aria-label="Remove condition <?php echo $x; ?>" onclick="removeCustomRow(<?php echo $x; ?>)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 13H5v-2h14z"></path></svg></button>
+			<?php } ?>
+			<?php if ($x < 8) { ?>
+			<button type="button" class="advanced-query-add" aria-label="Add condition <?php echo ($x+1); ?>" aria-controls="customdiv<?php echo ($x+1); ?>" onclick="toggleCustomDiv(<?php echo ($x+1); ?>)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"></path></svg></button>
+			<?php } ?>
 		</div>
-		<?php } ?>
 		</div>
-	<div>
-		<span class="assistive-text"><?php echo $LANG['CUSTOM_FIELD'].' '.$x; ?></span>
-	</div>
-
 	</div>
 	<?php
 }

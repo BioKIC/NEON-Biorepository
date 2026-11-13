@@ -229,6 +229,24 @@ function toggleCustomDiv(index) {
   updateChip();
 }
 
+function removeCustomRow(index) {
+  const row = document.getElementById(`customdiv${index}`);
+  if (index < 2 || !row || row.style.display === 'none') return;
+  for (let current = index; current <= advancedRowCount; current++) {
+    const target = document.getElementById(`customdiv${current}`);
+    const next = document.getElementById(`customdiv${current + 1}`);
+    const visible = !!next && next.style.display !== 'none';
+    ['andor', 'openparen', 'field', 'type', 'value', 'closeparen'].forEach(part => {
+      const input = form.elements.namedItem(`q_custom${part}${current}`);
+      if (input) input.value = visible ? form.elements.namedItem(`q_custom${part}${current + 1}`)?.value || '' : '';
+    });
+    if (target) target.style.display = visible ? 'block' : 'none';
+  }
+  updateChip();
+  const focusRow = row.style.display === 'none' ? document.getElementById(`customdiv${index - 1}`) : row;
+  focusRow?.querySelector('.advanced-query-add:not([hidden]), .advanced-query-remove')?.focus();
+}
+
 function getAdvancedRows() {
   const rows = [];
   if (!advancedForm) return rows;
@@ -251,6 +269,10 @@ function getAdvancedRows() {
 function syncAdvancedState(rows = getAdvancedRows()) {
   const flag = document.getElementById('AdvancedHasBeenChanged');
   if (flag) flag.checked = rows.length > 0;
+  advancedForm?.querySelectorAll('.advanced-query-add').forEach(button => {
+    const target = document.getElementById(button.getAttribute('aria-controls'));
+    button.hidden = !!target && target.style.display !== 'none';
+  });
 }
 
 function resetAdvancedSearch() {

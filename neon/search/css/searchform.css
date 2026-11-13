@@ -296,7 +296,7 @@ html:has(#innertext.neon-search) {
   font-weight: 700;
 }
 
-:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#search-btn, #reset-btn, #neon-modal-close, #domains-sites-modal-close, .advanced-query-add) {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#search-btn, #reset-btn, #neon-modal-close, #domains-sites-modal-close, .advanced-query-add, .advanced-query-remove) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -334,13 +334,13 @@ html:has(#innertext.neon-search) {
   border-color: var(--search-blue-hover);
 }
 
-:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#reset-btn, .advanced-query-add) {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#reset-btn, .advanced-query-add, .advanced-query-remove) {
   background: transparent;
   color: var(--search-blue);
   box-shadow: none;
 }
 
-:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#reset-btn, .advanced-query-add):hover {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#reset-btn, .advanced-query-add, .advanced-query-remove):hover {
   background: #e8f3fb !important;
   color: var(--search-blue-hover);
 }
@@ -1394,37 +1394,79 @@ html:has(#innertext.neon-search) {
   display: none;
 }
 
-#innertext.neon-search .fieldGroupDiv {
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--search-border);
+#innertext.neon-search .advanced-query-row + .advanced-query-row {
+  margin-top: 12px;
 }
 
 #innertext.neon-search .advanced-query-fields {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 #innertext.neon-search .advanced-query-fields > div {
-  flex: 1 1 140px;
+  flex: 1 1 160px;
   min-width: 0;
+  padding-top: 0;
 }
 
 #innertext.neon-search .advanced-query-fields > .advanced-query-short {
-  flex: 0 1 76px;
+  flex: 0 0 64px;
+}
+
+#innertext.neon-search .advanced-query-fields > .advanced-query-join {
+  flex: 0 0 80px;
 }
 
 #innertext.neon-search .advanced-query-fields > .advanced-query-actions {
+  display: flex;
+  gap: 8px;
   flex: 0 0 auto;
 }
 
-#innertext.neon-search .advanced-query-add {
-  min-height: 48px;
-  min-width: 48px;
-  padding: 8px;
-  font-size: 22px;
+#innertext.neon-search .advanced-query-fields :is(input, select) {
+  height: 40px;
+  min-height: 40px;
+  padding: 8px 10px;
+  font: 400 14px/22px Inter, Helvetica, Arial, sans-serif;
+}
+
+#innertext.neon-search .advanced-query-fields select:not([multiple]) {
+  padding-right: 28px;
+  background-position: right 6px center;
+  background-size: 18px;
+}
+
+#innertext.neon-search .advanced-query-fields .search-field-label {
+  left: 10px;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+#innertext.neon-search .advanced-query-fields input:is(:focus, :not(:placeholder-shown)) ~ .search-field-label {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+#innertext.neon-search #search-form-advanced-search :is(.advanced-query-add, .advanced-query-remove) {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  min-width: 40px;
+  padding: 9px;
+}
+
+#innertext.neon-search #search-form-advanced-search .advanced-query-add[hidden] {
+  display: none;
+}
+
+#innertext.neon-search :is(.advanced-query-add, .advanced-query-remove) svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  pointer-events: none;
 }
 
 #innertext.neon-search .errors {
