@@ -61,6 +61,43 @@ class OccurrenceListFunctions extends OccurrenceManager{
 		if(!file_exists($jsonPath)) return $retArr;
 		$protocolTree = json_decode(file_get_contents($jsonPath), true);
 		if(!$protocolTree) return $retArr;
+		$collectionFamilies = array();
+		$collectionNames = array();
+		$mapCollections = function($node, $family) use (&$mapCollections, &$collectionFamilies, &$collectionNames){
+			if(isset($node['collid'])){
+				$collid = (int)$node['collid'];
+				$collectionFamilies[$collid][$family] = true;
+				$collectionNames[$collid] = $node['name'];
+			}
+			foreach($node['children'] ?? array() as $child){
+				$mapCollections($child, $family);
+			}
+		};
+		foreach($protocolTree as $familyNode){
+			$mapCollections($familyNode, $familyNode['name']);
+		}
+		$isIdentification = function($name){
+			return stripos($name, 'Identifications') !== false;
+		};
+		$selectedCollids = explode(',', $this->searchTermArr['db'] ?? '');
+		$materialCollids = array();
+		if(!in_array('all', $selectedCollids) && empty($this->searchTermArr['clid']) && empty($this->searchTermArr['targetclid'])){
+			$materialCollids = array_intersect(array_keys(NeonMaterialSampleCollections::TYPES), $selectedCollids);
+		}
+		$summaryColumns = '';
+		$summaryGrouping = '';
+		if($materialCollids){
+			$normalCollids = array_diff(array_map('intval', $selectedCollids), $materialCollids);
+			$summaryColumns .= ', CASE WHEN ' . ($normalCollids ? 'o.collid IN(' . implode(',', $normalCollids) . ')' : '1=0') . ' THEN 1 ELSE 0 END AS includeOriginal';
+			$summaryGrouping .= ', includeOriginal';
+			foreach($materialCollids as $collid){
+				// Use the search predicate so tissue availability and parent collections match the results.
+				$terms = $this->searchTermArr;
+				$terms['db'] = (string)$collid;
+				$summaryColumns .= ', CASE WHEN 1=1 ' . OccurrenceSearchSupport::getDbWhereFrag($terms) . ' THEN 1 ELSE 0 END AS tissue' . $collid;
+				$summaryGrouping .= ', tissue' . $collid;
+			}
+		}
 		$identificationParentMap = array();
 		$mapIdentificationParents = function($node, $parentCollid = null) use (&$mapIdentificationParents, &$identificationParentMap){
 			if(isset($node['collid'])){
@@ -90,22 +127,45 @@ class OccurrenceListFunctions extends OccurrenceManager{
 				o.collid,
 				c.publicName,
 				COUNT(DISTINCT o.occid) AS recordCnt
+				' . $summaryColumns . '
 			FROM omoccurrences o
 			INNER JOIN omcollections c ON o.collid = c.collid
 			' . $this->getTableJoins($sqlWhere) . '
 			' . $sqlWhere . '
-			GROUP BY o.collid, c.publicName
+			GROUP BY o.collid, c.publicName ' . $summaryGrouping . '
 		';
 		$rs = $this->conn->query($sql);
 		$countMap = array();
 		$nameMap = array();
+		$familyCounts = array();
 		$totalRecords = 0;
 		if($rs){
 			while($r = $rs->fetch_object()){
 				$collid = (int)$r->collid;
 				$cnt = (int)$r->recordCnt;
-				$countMap[$collid] = $cnt;
 				$nameMap[$collid] = $r->publicName;
+				$summaryCollids = (!$materialCollids || $r->includeOriginal) ? array($collid) : array();
+				foreach($materialCollids as $materialCollid){
+					if($r->{'tissue' . $materialCollid}){
+						$summaryCollids[] = $materialCollid;
+						$nameMap[$materialCollid] = 'Small Mammals - ' . $collectionNames[$materialCollid];
+					}
+				}
+				// These groups partition records by their matching tissue types. Count overlapping
+				// types separately, but count each record only once in a family and the total.
+				$recordFamilies = array();
+				$countInTotal = false;
+				foreach($summaryCollids as $summaryCollid){
+					$countMap[$summaryCollid] = ($countMap[$summaryCollid] ?? 0) + $cnt;
+					if(!$isIdentification($nameMap[$summaryCollid])){
+						$countInTotal = true;
+						$recordFamilies += $collectionFamilies[$summaryCollid] ?? array();
+					}
+				}
+				if($countInTotal) $totalRecords += $cnt;
+				foreach($recordFamilies as $family => $unused){
+					$familyCounts[$family] = ($familyCounts[$family] ?? 0) + $cnt;
+				}
 			}
 			$rs->free();
 		}
@@ -149,17 +209,15 @@ class OccurrenceListFunctions extends OccurrenceManager{
 					}
 					$currentParentCnt = $countMap[$parentCollid] ?? 0;
 					$countMap[$parentCollid] = max($currentParentCnt, $linkedCnt);
+					if(!$isIdentification($nameMap[$parentCollid] ?? '')){
+						$added = $countMap[$parentCollid] - $currentParentCnt;
+						$totalRecords += $added;
+						foreach($collectionFamilies[$parentCollid] ?? array() as $family => $unused){
+							$familyCounts[$family] = ($familyCounts[$family] ?? 0) + $added;
+						}
+					}
 				}
 				$linkRs->free();
-			}
-		}
-		$isIdentification = function($name){
-			return stripos($name, 'Identifications') !== false;
-		};
-		foreach($countMap as $collid => $cnt){
-			$name = $nameMap[$collid] ?? '';
-			if(!$isIdentification($name)){
-				$totalRecords += $cnt;
 			}
 		}
 		$flattenNode = function($node) use (&$flattenNode, $countMap, $nameMap, $isIdentification){
@@ -191,12 +249,7 @@ class OccurrenceListFunctions extends OccurrenceManager{
 				$subtypes = array_merge($subtypes, $flattenNode($child));
 			}
 			if(!$subtypes) continue;
-			$familyTotal = 0;
-			foreach($subtypes as $subtype){
-				if(empty($subtype['isIdentification'])){
-					$familyTotal += $subtype['total'];
-				}
-			}
+			$familyTotal = $familyCounts[$familyNode['name']] ?? 0;
 			if($familyTotal <= 0 || $totalRecords <= 0) continue;
 			foreach($subtypes as &$subtype){
 				if(!empty($subtype['isIdentification'])){
@@ -334,3 +387,4 @@ class OccurrenceListFunctions extends OccurrenceManager{
 		return $retArr;
 	}
 }
+
