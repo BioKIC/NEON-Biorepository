@@ -372,15 +372,12 @@ $collManager = new OccurrenceManager();
 					<!-- Accordion selector -->
 					<input type="checkbox" id="coll-event" class="accordion-selector" />
 					<!-- Accordion header -->
-					<label for="coll-event" class="accordion-header">Date</label>
+					<label for="coll-event" class="accordion-header">Available Dates</label>
 					<!-- Accordion content -->
 					<div class="content">
 						<div class="accordion-content-inner"><div class="accordion-content-body">
 						<div id="search-form-coll-event">
 							<div class="search-date-filter">
-								<div class="search-date-heading">
-									<h3>Available Dates</h3>
-								</div>
 								<p id="date-range-help">Find records collected between two dates. Drag by month or select an exact day below.</p>
 								<div id="date-range-slider" class="search-date-range" role="group" aria-label="Collection date range" aria-describedby="date-range-help">
 									<div class="search-date-rail" aria-hidden="true"><div class="search-date-track"></div></div>

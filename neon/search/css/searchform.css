@@ -740,19 +740,6 @@ html:has(#innertext.neon-search) {
   min-width: 0;
 }
 
-#innertext.neon-search .search-date-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-#innertext.neon-search .search-date-heading h3 {
-  margin: 0;
-  font: 400 20px/1.4 Inter, Helvetica, Arial, sans-serif;
-  font-size: 20px !important;
-}
-
 #innertext.neon-search #params-form #date-range-help {
   margin: 10px 0 24px;
   color: #808080;
