@@ -14,6 +14,7 @@ class SearchResultsSidebar {
 
     public function editUrl($clientRoot) {
         $criteria = $this->criteria;
+        if ((string) ($criteria['taxontype'] ?? '') === '2') unset($criteria['taxontype']);
         // Preserve an empty collection selection instead of applying editor defaults.
         if (!array_key_exists('db', $criteria)) $criteria['db'] = '';
         return rtrim($clientRoot, '/') . '/neon/search/index.php?' . SearchParameterNames::queryString($criteria);

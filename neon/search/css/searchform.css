@@ -415,6 +415,15 @@ html:has(#innertext.neon-search) {
   height: 14px;
 }
 
+#biorepo-search-controls #criteria-panel #edit-search-btn {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+#biorepo-search-controls #edit-search-btn .search-button-icon {
+  justify-self: end;
+}
+
 :is(#innertext.neon-search, #criteria-panel.neon-search-controls) #chips {
   display: flex;
   flex-wrap: wrap;
