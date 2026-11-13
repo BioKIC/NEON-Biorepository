@@ -193,10 +193,12 @@ class OccurrenceSearchSupport {
 							WHERE ms.occid = o.occid
 							AND ms.sampleType LIKE '".$sampleTypeLike."'";
 
+					#neon edit
 					if(array_key_exists('availableforloan', $searchTermArr)){
 						$materialSql .= "
-							AND ms.disposition IN('In Collection','Being Processed') OR ms.disposition IS NULL";
+							AND (ms.disposition IN('In Collection','Being Processed') OR ms.disposition IS NULL)";
 					}
+					#end neon edit
 
 					$materialSql .= "
 						))";
