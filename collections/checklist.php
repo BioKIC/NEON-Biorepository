@@ -91,6 +91,9 @@ $searchVarEncoded = urlencode($searchVar);
 				if($tid) echo '<a target="_blank" href="../taxa/index.php?tid=' . htmlspecialchars($tid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">';
 				echo $sciName;
 				if($tid) echo '</a>';
+				#neon edit
+				echo ' <span style="font-style:normal">('.number_format($checklistManager->getChecklistRecordCount($family, $sciName)).')</span>';
+				#end neon edit
 				echo '</div>';
 			}
 		}
@@ -101,6 +104,9 @@ $searchVarEncoded = urlencode($searchVar);
 				if($tid) echo '<a target="_blank" href="../taxa/index.php?tid=' . htmlspecialchars($tid, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '">';
 				echo $sciName;
 				if($tid) echo '</a>';
+				#neon edit
+				echo ' <span style="font-style:normal">('.number_format($checklistManager->getChecklistRecordCount('undefined', $sciName)).')</span>';
+				#end neon edit
 				echo '</div>';
 			}
 		}

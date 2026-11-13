@@ -4,6 +4,9 @@ include_once('OccurrenceManager.php');
 class OccurrenceChecklistManager extends OccurrenceManager{
 
 	private $checklistTaxaCnt = 0;
+	#neon edit
+	private $checklistRecordCounts = array();
+	#end neon edit
 
 	public function __construct($type='readonly'){
 		parent::__construct($type);
@@ -17,28 +20,41 @@ class OccurrenceChecklistManager extends OccurrenceManager{
 		return $this->checklistTaxaCnt;
 	}
 
+	#neon edit
+	public function getChecklistRecordCount($family, $sciName){
+		return $this->checklistRecordCounts[$family][$sciName] ?? 0;
+	}
+	#end neon edit
+
 	public function getChecklist($taxonAuthorityId){
 		$returnVec = Array();
 		$this->checklistTaxaCnt = 0;
+		#neon edit
+		$this->checklistRecordCounts = array();
+		#end neon edit
 		$sqlWhere = $this->getSqlWhere();
 		if($sqlWhere){
 			$sql = '';
+			#neon edit
 			if($taxonAuthorityId && is_numeric($taxonAuthorityId)){
-				$sql = 'SELECT DISTINCT ts2.family, t.sciname, t.tid '.
+				$taxonAuthorityId = (int) $taxonAuthorityId;
+				$sql = 'SELECT ts2.family, t.sciname, t.tid, COUNT(DISTINCT o.occid) AS recordcount '.
 					'FROM omoccurrences o INNER JOIN taxstatus ts1 ON o.TidInterpreted = ts1.Tid '.
 					'INNER JOIN taxa t ON ts1.TidAccepted = t.Tid '.
 					'INNER JOIN taxstatus ts2 ON t.tid = ts2.tid '.
 					$this->getTableJoins($sqlWhere).
-					str_ireplace('o.sciname','t.sciname',str_ireplace('o.family','ts.family',$sqlWhere)).
-					' AND ts1.taxauthid = '.$taxonAuthorityId.' AND ts2.taxauthid = '.$taxonAuthorityId.' AND t.RankId > 140 ';
+					$sqlWhere.
+					' AND ts1.taxauthid = '.$taxonAuthorityId.' AND ts2.taxauthid = '.$taxonAuthorityId.
+					' GROUP BY ts2.family, t.sciname, t.tid ';
 			}
 			else{
-				$sql = 'SELECT DISTINCT IFNULL(ts1.family,o.family) AS family, o.sciname, o.tidinterpreted AS tid '.
+				$sql = 'SELECT IFNULL(ts1.family,o.family) AS family, o.sciname, o.tidinterpreted AS tid, COUNT(DISTINCT o.occid) AS recordcount '.
 					'FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.tid '.
-					'LEFT JOIN taxstatus ts1 ON t.tid = ts1.tid '.
+					'LEFT JOIN taxstatus ts1 ON t.tid = ts1.tid AND ts1.taxauthid = 1 '.
 					$this->getTableJoins($sqlWhere).
-					$sqlWhere.' AND ((t.rankid > 140 AND ts1.taxauthid = 1) OR t.tid IS NULL) ';
+					$sqlWhere.' GROUP BY IFNULL(ts1.family,o.family), o.sciname, o.tidinterpreted ';
 			}
+			#end neon edit
 			if (strpos($this->sqlWhere,"early.myaStart")){
 				$sqlWith = $this->getPaleoSqlWith();
 				$sql = $sqlWith . $sql;
@@ -50,10 +66,19 @@ class OccurrenceChecklistManager extends OccurrenceManager{
 				if($family) $family = strtoupper($family);
 				else $family = 'undefined';
 				$sciName = $r->sciname;
-				if($sciName && substr($sciName,-5)!='aceae' && substr($sciName,-4)!='idae'){
-					$returnVec[$family][$sciName] = $r->tid;
-					$this->checklistTaxaCnt++;
+				#neon edit
+				if($sciName){
+					if(!isset($this->checklistRecordCounts[$family][$sciName])){
+						$returnVec[$family][$sciName] = $r->tid;
+						$this->checklistRecordCounts[$family][$sciName] = 0;
+						$this->checklistTaxaCnt++;
+					}
+					elseif($r->tid && $returnVec[$family][$sciName] != $r->tid){
+						$returnVec[$family][$sciName] = null;
+					}
+					$this->checklistRecordCounts[$family][$sciName] += (int) $r->recordcount;
 				}
+				#end neon edit
 			}
 			$result->free();
 		}
