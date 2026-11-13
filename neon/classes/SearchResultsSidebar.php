@@ -3,6 +3,7 @@
 class SearchResultsSidebar {
     private $names;
     private $criteria;
+    private $sampleTypes;
 
     public function __construct($names, $criteria) {
         $this->names = $names;
@@ -22,7 +23,11 @@ class SearchResultsSidebar {
 
     public function removeUrl($clientRoot, $criterion) {
         $criteria = $this->criteria;
-        if ($criterion === 'advanced') {
+        if (strpos($criterion, 'db:') === 0) {
+            $remaining = array_values(array_diff(array_keys($this->sampleTypes()), array(substr($criterion, 3))));
+            if ($remaining) $criteria['db'] = $this->names->encode('db', implode(',', $remaining));
+            else unset($criteria['db']);
+        } elseif ($criterion === 'advanced') {
             foreach (array_keys($criteria) as $key) {
                 if (preg_match('/^q_custom(?:andor|openparen|field|type|value|closeparen)\d+$/', $key)) unset($criteria[$key]);
             }
@@ -36,6 +41,46 @@ class SearchResultsSidebar {
         if ((string) ($criteria['taxontype'] ?? '') === '2') unset($criteria['taxontype']);
         $query = SearchParameterNames::queryString($criteria);
         return rtrim($clientRoot, '/') . '/collections/list.php' . ($query !== '' ? '?'.$query : '');
+    }
+
+    private function sampleTypes() {
+        if ($this->sampleTypes !== null) return $this->sampleTypes;
+        $this->sampleTypes = array();
+        if (!isset($this->criteria['db']) || $this->criteria['db'] === '') return $this->sampleTypes;
+        $entries = $this->names->dictionary('db');
+        $leaves = array();
+        $fallback = array();
+        $allIds = array();
+        foreach ($entries as $entry) {
+            if ($entry['view'] === 'taxonomic') {
+                foreach ($entry['ids'] as $id) $allIds[$id] = $id;
+                if (count($entry['ids']) === 1 && !isset($leaves[$entry['ids'][0]])) $leaves[$entry['ids'][0]] = $entry;
+            } elseif (count($entry['ids']) === 1 && $entry['view'] === '') {
+                $fallback[$entry['ids'][0]] = $this->entryLabel($entry);
+            }
+        }
+        $labelCounts = array_count_values(array_column($leaves, 'label'));
+        $selected = explode(',', $this->names->resolve('db', $this->criteria['db']));
+        if (in_array('all', $selected, true)) $selected = array_merge(array_values($allIds), array_diff($selected, array('all')));
+        foreach (array_unique($selected) as $id) {
+            if (isset($leaves[$id])) {
+                $entry = $leaves[$id];
+                $label = $this->entryLabel($entry);
+                if ($labelCounts[$entry['label']] > 1) {
+                    $path = array();
+                    $parts = explode('/', $entry['token']);
+                    for ($length = 1; $length <= count($parts); $length++) {
+                        $parent = $entries[strtolower(implode('/', array_slice($parts, 0, $length)))] ?? null;
+                        if ($parent) $path[] = $this->entryLabel($parent);
+                    }
+                    $label = implode(' / ', $path);
+                }
+            } else {
+                $label = $fallback[$id] ?? ($id === '0' ? 'No matching selections' : $this->selectionLabel('db', $id));
+            }
+            $this->sampleTypes[$id] = $label;
+        }
+        return $this->sampleTypes;
     }
 
     private function entry($entries, $token, $scope = null) {
@@ -93,10 +138,7 @@ class SearchResultsSidebar {
             if ($flag && !$value) return;
             $chips[$key] = $flag ? $label : $label.': '.(is_array($value) ? implode(', ', $value) : $value);
         };
-        if (!empty($criteria['db'])) {
-            $label = $this->selectionLabel('db', $criteria['db']);
-            $chips['db'] = $criteria['db'] === 'all' ? $label : 'Some Sample Types: '.$label;
-        }
+        foreach ($this->sampleTypes() as $id => $label) $chips['db:'.$id] = 'Sample Type: '.$label;
         unset($criteria['db']);
         $add('taxa', 'Taxa');
         if (isset($criteria['usethes']) && (string) $criteria['usethes'] === '0') $chips['usethes'] = 'Exact Taxon Only';

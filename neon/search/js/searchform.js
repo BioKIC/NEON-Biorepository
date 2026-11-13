@@ -316,25 +316,45 @@ function clearSites() {
   window.dispatchEvent(new Event('neon:clear-sites'));
 }
 
-function getCollsChips(listId, label) {
-  const root = document.getElementById(listId);
-  const labels = [];
-  root?.querySelectorAll('input[type="checkbox"]:checked:enabled[data-ccode]').forEach(input => {
-    // Use the local tree rather than IDs, which may repeat across collection tabs.
-    let parent = input.closest('li')?.parentElement?.closest('li');
-    while (parent && root.contains(parent)) {
-      const group = parent.querySelector(':scope > input.all-selector');
-      if (group?.checked && !group.indeterminate && group.dataset.ccode) return;
-      parent = parent.parentElement?.closest('li');
-    }
-    if (input.dataset.ccode) labels.push(input.dataset.ccode);
+function getSampleTypeLabels() {
+  const entries = window.NEON_SEARCH_PARAMETERS?.db || [];
+  const leaves = new Map();
+  const labels = new Map();
+  entries.forEach(entry => {
+    if (entry.ids.length !== 1) return;
+    const id = String(entry.ids[0]);
+    if (entry.view === 'taxonomic' && !leaves.has(id)) leaves.set(id, entry);
+    else if (entry.view === '') labels.set(id, entry.label);
   });
-  return {
-    id: `chip-some-${listId}-collids`,
-    text: `${label}: ${[...new Set(labels)].join(', ')}`,
+  const counts = new Map();
+  leaves.forEach(entry => counts.set(entry.label, (counts.get(entry.label) || 0) + 1));
+  leaves.forEach((entry, id) => {
+    let label = entry.label;
+    if (counts.get(label) > 1) {
+      const parts = entry.token.split('/');
+      label = parts.map((_, index) => entries.find(parent => parent.token === parts.slice(0, index + 1).join('/'))?.label)
+        .filter(Boolean).join(' / ');
+    }
+    labels.set(id, label);
+  });
+  return labels;
+}
+
+function getCollsChips(listId, labels) {
+  const root = document.getElementById(listId);
+  const selected = new Map();
+  getCollectionInputs(root).filter(input => input.checked).forEach(input => selected.set(input.value, input));
+  return Array.from(selected, ([id, input]) => ({
+    id: `chip-sample-type-${id}`,
+    text: `Sample Type: ${labels.get(id) || input.closest('li')?.querySelector('.leaf-label')?.textContent.trim() || input.dataset.ccode || id}`,
     anchor: collsModal.contains(root) ? allNeon : root,
-    clear: () => uncheckAll(root),
-  };
+    clear: () => {
+      getCollectionInputs(form).forEach(checkbox => {
+        if (checkbox.value === id) checkbox.checked = false;
+      });
+      refreshCollectionSelectors();
+    },
+  }));
 }
 
 function getInputChip(input) {
@@ -519,17 +539,11 @@ function updateChip() {
     next.push({ id: 'chip-some-datasetids', text: `${title}: ${labels.join(', ')}`, anchor: document.getElementById('locality'), clear: clearSites });
   }
 
-  const selectedCollections = getCollectionInputs(getCollectionView()).filter(input => input.checked);
-  if (!allNeon.checked && selectedCollections.length) {
-    next.push(getCollsChips(getCriterionSelected(), 'Some Sample Types'));
-  }
-  [
-    ['neonext-collections-items', 'Some Sample Types at Other Repos'],
-    ['ext-collections-list', 'Some Ext NEON Colls'],
-  ].forEach(([id, label]) => {
-    const inputs = getCollectionInputs(document.getElementById(id));
-    const checked = inputs.filter(input => input.checked).length;
-    if (checked > 0 && checked < inputs.length) next.push(getCollsChips(id, label));
+  const sampleTypeLabels = getSampleTypeLabels();
+  [getCriterionSelected(), 'neonext-collections-items', 'ext-collections-list'].forEach(id => {
+    getCollsChips(id, sampleTypeLabels).forEach(chip => {
+      if (!next.some(existing => existing.id === chip.id)) next.push(chip);
+    });
   });
 
   const rows = getAdvancedRows();
@@ -537,7 +551,7 @@ function updateChip() {
   if (rows.length) next.push(getAdvancedSearchChip(rows));
 
   form.querySelectorAll('input[data-chip], textarea[data-chip], select[data-chip]').forEach(input => {
-    if (input.disabled || input.name === 'db' || input.name === 'datasetid') return;
+    if (input.disabled || input.name === 'db' || input.name === 'datasetid' || input.dataset.formId) return;
     const active = input.type === 'checkbox' ? (input.name === 'usethes' ? !input.checked : input.checked) : input.value.trim() !== '';
     if (active) next.push(getInputChip(input));
   });
