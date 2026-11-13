@@ -395,7 +395,7 @@ $collManager = new OccurrenceManager();
 				<!-- Sample Properties -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="sample" class="accordion-selector"/>
+					<input type="checkbox" id="sample" class="accordion-selector" <?php if ($IS_ADMIN || !empty($USER_RIGHTS['CollAdmin']) || !empty($USER_RIGHTS['CollEditor'])) echo 'checked'; ?>/>
 					<!-- Accordion header -->
 					<label for="sample" class="accordion-header">Sample Properties</label>
 					<!-- Accordion content -->
@@ -543,20 +543,22 @@ $collManager = new OccurrenceManager();
 				?>
 			</div>
 			<!-- Criteria panel -->
-			<div id="criteria-panel">
+			<div id="criteria-panel" class="neon-search-controls">
 				<div class="search-actions">
-					<button type="submit" id="search-btn">
+					<button type="submit" id="search-btn" form="params-form">
 						<span>Search Records</span>
 						<svg class="search-button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg>
 					</button>
-					<button type="reset" id="reset-btn">
+					<button type="reset" id="reset-btn" form="params-form">
 						<span>Reset Form</span>
 						<svg class="search-button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"></path></svg>
 					</button>
 				</div>
-				<h2>Criteria</h2>
-				<div id="chips"></div>
-				<p id="criteria-empty">Nothing selected</p>
+				<div class="selected-criteria">
+					<h3>Selected Criteria</h3>
+					<div id="chips"></div>
+					<p id="criteria-empty">Nothing selected</p>
+				</div>
 			</div>
 		</form>
 

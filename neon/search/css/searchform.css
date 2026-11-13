@@ -1,4 +1,5 @@
 #innertext.neon-search,
+#criteria-panel.neon-search-controls,
 #ui-datepicker-div.neon-search-datepicker {
   --search-blue: #0073cf;
   --search-blue-hover: #005dab;
@@ -29,6 +30,7 @@
 }
 
 #innertext.neon-search #params-form *:not(#domains-sites-modal, #domains-sites-modal *),
+#criteria-panel.neon-search-controls *,
 #innertext.neon-search #error-msgs * {
   box-sizing: border-box;
 }
@@ -258,24 +260,39 @@
   background: var(--search-surface);
 }
 
-#innertext.neon-search #criteria-empty {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) #criteria-empty {
   margin: 0;
   color: var(--search-muted);
 }
 
-#innertext.neon-search .search-actions {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) .search-actions {
   display: grid;
   gap: 8px;
 }
 
-#innertext.neon-search #criteria-panel h2 {
-  margin: 0;
-  font: inherit;
-  font-size: 20px;
-  font-weight: 500;
+#criteria-panel.neon-search-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+  font: 400 14px/1.5 Inter, Helvetica, Arial, sans-serif;
 }
 
-#innertext.neon-search :is(#search-btn, #reset-btn, #neon-modal-close, #domains-sites-modal-close, .advanced-query-add) {
+#criteria-panel.neon-search-controls .selected-criteria {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--search-border);
+}
+
+#criteria-panel.neon-search-controls .selected-criteria h3 {
+  margin: 0;
+  font: inherit;
+  font-weight: 700;
+}
+
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#search-btn, #reset-btn, #neon-modal-close, #domains-sites-modal-close, .advanced-query-add) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -300,7 +317,7 @@
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 
-#innertext.neon-search .search-button-icon {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) .search-button-icon {
   display: block;
   flex: 0 0 18px;
   width: 18px;
@@ -308,30 +325,30 @@
   fill: currentColor;
 }
 
-#innertext.neon-search :is(#search-btn, #neon-modal-close, #domains-sites-modal-close):hover {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#search-btn, #neon-modal-close, #domains-sites-modal-close):hover {
   background: var(--search-blue-hover) !important;
   border-color: var(--search-blue-hover);
 }
 
-#innertext.neon-search :is(#reset-btn, .advanced-query-add) {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#reset-btn, .advanced-query-add) {
   background: transparent;
   color: var(--search-blue);
   box-shadow: none;
 }
 
-#innertext.neon-search :is(#reset-btn, .advanced-query-add):hover {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#reset-btn, .advanced-query-add):hover {
   background: #e8f3fb !important;
   color: var(--search-blue-hover);
 }
 
-#innertext.neon-search #chips {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) #chips {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 8px;
 }
 
-#innertext.neon-search .chip {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) .chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -349,14 +366,14 @@
   text-align: left;
 }
 
-#innertext.neon-search .chip-label {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) .chip-label {
   flex: 1 1 auto;
   min-width: 0;
   overflow-wrap: anywhere;
   white-space: normal;
 }
 
-#innertext.neon-search .chip-remove-btn {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) .chip-remove-btn {
   display: inline-flex;
   flex: 0 0 24px;
   align-items: center;
@@ -377,11 +394,11 @@
   cursor: pointer;
 }
 
-#innertext.neon-search .chip-remove-btn::after {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) .chip-remove-btn::after {
   content: none;
 }
 
-#innertext.neon-search .chip-remove-btn svg {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) .chip-remove-btn svg {
   display: block;
   width: 20px;
   height: 20px;
@@ -389,7 +406,7 @@
   pointer-events: none;
 }
 
-#innertext.neon-search .chip-remove-btn:hover {
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) .chip-remove-btn:hover {
   background: #cdd2d4 !important;
   color: #222;
   box-shadow: none;
@@ -1067,7 +1084,7 @@
   outline-offset: 2px;
 }
 
-#innertext.neon-search :is(button, a, input[type='checkbox']):not(#domains-sites-modal *):focus-visible,
+:is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(button, a, input[type='checkbox']):not(#domains-sites-modal *):focus-visible,
 #innertext.neon-search #domains-sites-modal-close:focus-visible,
 #innertext.neon-search .accordion-selector:focus-visible + label,
 #innertext.neon-search .tab:has(input:focus-visible) {
