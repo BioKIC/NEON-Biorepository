@@ -13,7 +13,7 @@ $collManager = new OccurrenceManager();
 
 <head>
 	<!-- neon edit -->
-	<title>NEON Biorepository | search sample &amp; specimen records</title>
+	<title>NEON Biorepository | Search Sample &amp; Specimen Records</title>
 	<!-- end neon edit -->
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
@@ -144,7 +144,7 @@ $collManager = new OccurrenceManager();
 		<h1 style="
 			margin-bottom: 30px;
 			font-size: 2.3rem;
-		">search sample &amp; specimen records</h1>
+		">Search Sample &amp; Specimen Records</h1>
 		<div id="error-msgs" class="errors" role="alert"></div>
 		<form id="params-form">
 			<!-- Criteria forms -->
@@ -158,6 +158,7 @@ $collManager = new OccurrenceManager();
 					<!-- Accordion content -->
 					<div class="content">
 						<div class="accordion-content-inner"><div class="accordion-content-body">
+						<p class="Mui"><a href="<?= htmlspecialchars($CLIENT_ROOT, ENT_QUOTES, 'UTF-8') ?>/collections/misc/browsecollprofiles.php">Explore sample types</a> to discover samples and specimens collected by NEON.</p>
 						<div id="search-form-colls">
 							<section>
 								<!-- Open NEON Collections modal -->
@@ -545,11 +546,11 @@ $collManager = new OccurrenceManager();
 			<div id="criteria-panel">
 				<div class="search-actions">
 					<button type="submit" id="search-btn">
-						<span>Search</span>
+						<span>Search Records</span>
 						<svg class="search-button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"></path></svg>
 					</button>
 					<button type="reset" id="reset-btn">
-						<span>Reset</span>
+						<span>Reset Form</span>
 						<svg class="search-button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"></path></svg>
 					</button>
 				</div>
