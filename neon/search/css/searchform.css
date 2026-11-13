@@ -897,6 +897,25 @@ html:has(#innertext.neon-search) {
 
 #innertext.neon-search #search-form-sample > div:first-child {
   grid-area: identifiers;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+#innertext.neon-search #search-form-sample > div:first-child > .text-area-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#innertext.neon-search #search-form-sample label[for="catnum"] {
+  flex: 1;
+  display: flex;
+}
+
+#innertext.neon-search #catnum {
+  flex: 1;
+  min-width: 0;
 }
 
 #innertext.neon-search #search-form-sample > .search-switches {

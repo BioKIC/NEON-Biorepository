@@ -14,6 +14,11 @@ const renderedChips = new Map();
 const modalCloseTimers = new WeakMap();
 const modalReturnFocus = new WeakMap();
 let modalBodyOverflow = null;
+let searchFormReady = false;
+let restoringSearchForm = false;
+let searchUrlTimer;
+let searchRestoreTimer;
+let pendingSiteRestore = null;
 
 const paramNames = [
   'db', 'datasetid', 'catnum', 'collector',
@@ -301,6 +306,8 @@ function getAdvancedSearchChip(rows = getAdvancedRows()) {
 
 /** Chips */
 function clearSites() {
+  pendingSiteRestore = null;
+  form.querySelectorAll('[data-restored-site]').forEach(input => input.remove());
   // The map owns its hidden checkboxes. Notify React as well as clearing legacy inputs.
   form.querySelectorAll('input[name="datasetid"]').forEach(input => {
     input.checked = false;
@@ -579,6 +586,7 @@ function updateChip() {
     if (chip.node !== position) chips.insertBefore(chip.node, position);
     position = chip.node.nextSibling;
   });
+  scheduleSearchUrlSync();
 }
 
 /** URL parameters are read from the form on demand, with no mutable parameter cache. */
@@ -682,20 +690,100 @@ function readableSearchValue(name, values) {
   return [...tokens, ...compactSearchSelection([...remaining], entries)].join(',');
 }
 
-function getSearchUrl() {
-  const url = new URL('../../collections/list.php', window.location.href);
+function getSearchParameters(readable = true) {
+  const params = new URLSearchParams();
   paramNames.forEach(name => {
     const value = getParam(name);
     if (Array.isArray(value)) {
-      if (name === 'materialsampletype[]') value.forEach(item => url.searchParams.append(name, item));
-      else if (value.length) url.searchParams.set(name, readableSearchValue(name, value));
+      if (name === 'materialsampletype[]') value.forEach(item => params.append(name, item));
+      else if (value.length) params.set(name, readable ? readableSearchValue(name, value) : value.join(','));
     } else if (value !== '') {
-      url.searchParams.set(name, name === 'taxa' ? readableSearchValue(name, value.split(',').map(term => term.trim())) : value);
+      params.set(name, readable && name === 'taxa' ? readableSearchValue(name, value.split(',').map(term => term.trim())) : value);
     }
   });
   const excludeSynonyms = document.getElementById('usethes');
-  if (excludeSynonyms?.checked) url.searchParams.set('usethes', '0');
+  if (excludeSynonyms?.checked) params.set('usethes', '0');
+  return params;
+}
+
+function getSearchUrl() {
+  const url = new URL('../../collections/list.php', window.location.href);
+  url.search = getSearchParameters().toString();
   return url.href;
+}
+
+function syncSearchUrl() {
+  clearTimeout(searchUrlTimer);
+  if (!searchFormReady || restoringSearchForm) return;
+  const url = new URL(window.location.href);
+  [...paramNames, 'db[]', 'datasetid[]', 'materialsampletype', 'usethes', 'includeothercatnum', 'searchvar'].forEach(name => url.searchParams.delete(name));
+  const params = getSearchParameters();
+  // An explicit empty selection must override the editor's default of all sample types.
+  if (!params.has('db')) params.set('db', '');
+  params.forEach((value, name) => url.searchParams.append(name, value));
+  if (window.NEON_SEARCH_PARAMETERS) window.NEON_SEARCH_PARAMETERS.query = getSearchParameters(false).toString();
+  if (url.href !== window.location.href) window.history.replaceState(window.history.state, '', url.href);
+}
+
+function scheduleSearchUrlSync() {
+  clearTimeout(searchUrlTimer);
+  if (searchFormReady && !restoringSearchForm) searchUrlTimer = setTimeout(syncSearchUrl, 150);
+}
+
+function resolveSearchSelection(name, values) {
+  const entries = window.NEON_SEARCH_PARAMETERS?.[name] || [];
+  let value = values.join(',');
+  if (name === 'db') value = value.split(';')[0];
+  const tokens = value.split(/[,;]+/).map(token => token.trim()).filter(Boolean);
+  const lookup = (token, scope) => {
+    const key = token.toLowerCase();
+    const options = scope ? entries.filter(entry => entry.ids.every(id => scope.includes(id))) : entries;
+    const exact = options.find(entry => entry.token.toLowerCase() === key);
+    if (exact) return exact.ids;
+    const matches = options.filter(entry => entry.short?.toLowerCase() === key
+      || (scope && entry.token.toLowerCase().endsWith(`/${key}`)));
+    if (!matches.length || matches.some(entry => entry.ids.join(',') !== matches[0].ids.join(','))) return null;
+    return matches[0].ids;
+  };
+  const ids = [];
+  for (const token of tokens) {
+    if (/^\d+$/.test(token)) ids.push(String(Number(token)));
+    else if (name === 'db' && ['all', 'allspec', 'allobs'].includes(token)) ids.push(token);
+    else {
+      const [base, ...exclusions] = token.split('!');
+      let selected = lookup(base);
+      if (!selected) return ['0'];
+      const scope = selected;
+      for (const exclusion of exclusions) {
+        const excluded = /^\d+$/.test(exclusion) ? [Number(exclusion)] : lookup(exclusion, scope);
+        if (!excluded?.length || excluded.some(id => !selected.includes(id))) return ['0'];
+        selected = selected.filter(id => !excluded.includes(id));
+      }
+      ids.push(...selected.map(String));
+    }
+  }
+  return ids.length || !tokens.length ? [...new Set(ids)] : ['0'];
+}
+
+function getLocationSearchParameters() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('searchvar')) {
+    const nested = new URLSearchParams(params.get('searchvar').replaceAll('&amp;', '&'));
+    new Set(nested.keys()).forEach(name => {
+      if (!params.has(name)) nested.getAll(name).forEach(value => params.append(name, value));
+    });
+    params.delete('searchvar');
+  }
+  ['db', 'datasetid'].forEach(name => {
+    if (!params.has(name) && !params.has(`${name}[]`)) return;
+    const values = [...params.getAll(name), ...params.getAll(`${name}[]`)];
+    params.delete(`${name}[]`);
+    params.set(name, resolveSearchSelection(name, values).join(','));
+  });
+  if (params.has('taxa')) {
+    params.set('taxa', params.getAll('taxa').join(',').split(',').map(term => window.NEON_SEARCH_PARAMETERS?.taxa?.[term.trim()] || term.trim()).join(','));
+  }
+  return params;
 }
 
 function expandCriterionAccordions(input) {
@@ -722,76 +810,110 @@ function expandCollectionPath(input, root) {
 }
 
 function prefillFromUrl() {
+  clearTimeout(searchUrlTimer);
+  restoringSearchForm = true;
   const config = window.NEON_SEARCH_PARAMETERS;
-  const params = new URLSearchParams(config?.query ?? window.location.search);
-  if (params.has('db')) {
-    const selected = new Set(params.getAll('db').flatMap(value => value.split(',')));
-    collectionViews.forEach(id => {
-      const root = document.getElementById(id);
-      getCollectionInputs(root).forEach(input => {
-        input.checked = selected.has('all') || selected.has(input.value);
-        if (selected.has(input.value)) expandCollectionPath(input, root);
-      });
+  const params = getLocationSearchParameters();
+  const selected = new Set(params.getAll('db').flatMap(value => value.split(',')));
+  collectionViews.forEach(id => {
+    const root = document.getElementById(id);
+    getCollectionInputs(root).forEach(input => {
+      input.checked = params.has('db') ? selected.has('all') || selected.has(input.value) : input.defaultChecked;
+      input.indeterminate = false;
+      if (selected.has(input.value)) expandCollectionPath(input, root);
     });
-    getCollectionInputs(formColls).forEach(input => {
-      input.checked = selected.has(input.value);
-      if (input.checked) expandCriterionAccordions(input);
-    });
-    if (getCollsSelected().length) expandCriterionAccordions(formColls);
-    refreshCollectionRowStripes();
-  }
+  });
+  getCollectionInputs(formColls).forEach(input => {
+    input.checked = params.has('db') ? selected.has(input.value) : input.defaultChecked;
+    input.indeterminate = false;
+    if (params.has('db') && input.checked) expandCriterionAccordions(input);
+  });
+  if (params.has('db') && getCollsSelected().length) expandCriterionAccordions(formColls);
+  refreshCollectionRowStripes();
 
-  // The map owns site checkboxes. Preserve other named datasets outside its selection.
-  form.querySelectorAll('[data-named-dataset]').forEach(input => input.remove());
-  if (config && params.has('datasetid')) {
-    const siteIds = new Set(config.datasetid.filter(entry => entry.view === 'site').flatMap(entry => entry.ids.map(String)));
-    const selectedIds = new Set(params.getAll('datasetid').flatMap(value => value.split(',')));
+  // Hold selected sites until React confirms its restored selection has rendered.
+  form.querySelectorAll('[data-named-dataset], [data-restored-site]').forEach(input => input.remove());
+  const selectedIds = new Set(params.getAll('datasetid').flatMap(value => value.split(',')).filter(Boolean));
+  form.querySelectorAll('input[name="datasetid"]').forEach(input => { input.checked = selectedIds.has(input.value); });
+  if (config) {
     selectedIds.forEach(id => {
-      if (siteIds.has(id)) return;
-      const entry = config.datasetid.find(item => item.view === 'dataset' && item.ids.includes(Number(id)));
+      const site = config.datasetid.find(item => item.view === 'site' && item.ids.includes(Number(id)));
+      const entry = site || config.datasetid.find(item => item.view === 'dataset' && item.ids.includes(Number(id)));
       const input = document.createElement('input');
       input.type = 'checkbox';
       input.name = 'datasetid';
       input.value = id;
       input.checked = true;
       input.hidden = true;
-      input.dataset.namedDataset = 'true';
-      input.dataset.label = entry?.label || `Dataset ${id}`;
+      if (site) input.dataset.restoredSite = 'true';
+      else input.dataset.namedDataset = 'true';
+      input.dataset.label = site?.token || entry?.label || `Dataset ${id}`;
       form.appendChild(input);
     });
   }
   // Only known search controls may be populated; never interpolate URL keys into selectors.
   paramNames.filter(name => name !== 'db' && name !== 'datasetid').forEach(name => {
-    if (!params.has(name)) return;
     const input = form.elements.namedItem(name);
     if (!input) return;
     const values = params.getAll(name);
     if (input.type === 'checkbox') {
-      input.checked = values.some(value => value === '1' || value === 'true' || value === input.value);
-    } else if (input.tagName === 'SELECT' && input.multiple) {
-      Array.from(input.options).forEach(option => { option.selected = values.includes(option.value); });
+      input.checked = params.has(name) ? values.some(value => value === '1' || value === 'true' || value === input.value) : input.defaultChecked;
+      input.indeterminate = false;
+    } else if (input.tagName === 'SELECT') {
+      Array.from(input.options).forEach(option => { option.selected = params.has(name) ? values.includes(option.value) : option.defaultSelected; });
+      if (!params.has(name) && !input.multiple && input.selectedIndex < 0) input.selectedIndex = 0;
       $(input).trigger('change.select2');
     } else {
-      input.value = values[values.length - 1];
+      input.value = params.has(name) ? values[values.length - 1] : input.defaultValue;
     }
     const hasValue = input.type === 'checkbox' ? input.checked : input.value.trim() !== '';
     if (hasValue) expandCriterionAccordions(input);
   });
   const excludeSynonyms = document.getElementById('usethes');
-  if (excludeSynonyms && params.has('usethes')) {
-    excludeSynonyms.checked = params.get('usethes') !== '1';
+  if (excludeSynonyms) {
+    excludeSynonyms.checked = params.get('usethes') === '0';
     if (excludeSynonyms.checked) expandCriterionAccordions(excludeSynonyms);
   }
 
   const rows = getAdvancedRows();
   const lastRow = rows.length ? rows[rows.length - 1].index : 1;
-  for (let index = 1; index <= lastRow; index++) {
+  for (let index = 1; index <= advancedRowCount; index++) {
     const row = document.getElementById(`customdiv${index}`);
-    if (row) row.style.display = 'block';
+    if (row) row.style.display = index <= lastRow ? 'block' : 'none';
   }
+  pendingSiteRestore = params.toString();
+  if (config) config.query = pendingSiteRestore;
+  window.dispatchEvent(new CustomEvent('neon:restore-search', { detail: { query: pendingSiteRestore } }));
   refreshCollectionSelectors();
+  clearValidationErrors();
+  restoringSearchForm = false;
+  searchFormReady = true;
   updateChip();
 }
+
+function restoreSearchFromHistory() {
+  clearTimeout(searchUrlTimer);
+  clearTimeout(searchRestoreTimer);
+  restoringSearchForm = true;
+  // Browsers can restore their own form values after pageshow/popstate dispatch.
+  searchRestoreTimer = setTimeout(prefillFromUrl, 0);
+}
+
+window.addEventListener('neon:sites-restored', event => {
+  if (pendingSiteRestore === null || !Array.isArray(event.detail?.datasetIds)) return;
+  const expected = Array.from(form.querySelectorAll('[data-restored-site]:checked'), input => input.value);
+  const restored = new Set(event.detail.datasetIds.map(String));
+  if (expected.length !== restored.size || expected.some(id => !restored.has(id))) return;
+  pendingSiteRestore = null;
+  form.querySelectorAll('[data-restored-site]').forEach(input => input.remove());
+  updateChip();
+});
+window.addEventListener('pageshow', event => {
+  const navigation = window.performance?.getEntriesByType?.('navigation')[0];
+  if (event.persisted || navigation?.type === 'back_forward') restoreSearchFromHistory();
+});
+window.addEventListener('popstate', restoreSearchFromHistory);
+window.addEventListener('pagehide', syncSearchUrl);
 
 /** Validation */
 function validateForm() {
@@ -860,6 +982,7 @@ function handleValErrors(errors) {
 }
 
 function simpleSearch() {
+  syncSearchUrl();
   document.getElementById('alert-msgs')?.replaceChildren();
   const errors = validateForm();
   if (errors.length) handleValErrors(errors);
@@ -874,6 +997,9 @@ function hideColCheckbox(collid) {
 }
 
 /** Events: one delegated change handler also handles Select2 and dynamic inputs. */
+$(form).on('autocompleteselect.searchForm autocompletechange.searchForm', '#taxa', () => {
+  setTimeout(updateChip, 0);
+});
 $(form).on('input.searchForm', 'input:not([type="checkbox"]):not([type="radio"]), textarea', function () {
   if (this.classList.contains('search-date-range-input')) updateDatesFromSlider(this);
   updateChip();
@@ -951,9 +1077,12 @@ form.querySelectorAll('#neon-modal-open, .neon-modal-open').forEach(opener => {
 form.addEventListener('submit', event => {
   event.preventDefault();
   updateChip();
+  syncSearchUrl();
   if (!document.getElementById('search-btn').disabled) simpleSearch();
 });
 form.addEventListener('reset', () => {
+  restoringSearchForm = true;
+  clearTimeout(searchUrlTimer);
   form.querySelectorAll('.accordion-selector').forEach(input => {
     input.defaultChecked = input.checked;
   });
@@ -967,11 +1096,11 @@ form.addEventListener('reset', () => {
     if (selected) $(selected).trigger('change');
     refreshCollectionSelectors();
     clearValidationErrors();
+    restoringSearchForm = false;
     updateChip();
   }, 0);
 });
 
 refreshCollectionRowStripes();
 $(initMaterialSampleSelect);
-if (document.readyState === 'complete') prefillFromUrl();
-else window.addEventListener('load', prefillFromUrl, { once: true });
+prefillFromUrl();
