@@ -364,8 +364,10 @@ html:has(#innertext.neon-search) {
 }
 
 #biorepo-search-controls #criteria-panel {
+  box-sizing: border-box;
   width: 100%;
   max-width: none;
+  padding: 0;
   gap: 16px;
 }
 
