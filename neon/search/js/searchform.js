@@ -36,6 +36,29 @@ function getCollectionView() {
   return document.getElementById(getCriterionSelected());
 }
 
+function updateCollectionRowStripes(root) {
+  if (!root) return;
+  let index = 0;
+  root.querySelectorAll('li').forEach(row => {
+    let ancestor = row;
+    let visible = true;
+    while (ancestor && ancestor !== root) {
+      if (ancestor.hidden || ancestor.classList.contains('collapsed') ||
+          (ancestor.tagName === 'LI' && ancestor.style.display === 'none')) {
+        visible = false;
+        break;
+      }
+      ancestor = ancestor.parentElement;
+    }
+    row.classList.toggle('collection-row-alt', visible && index++ % 2 === 1);
+  });
+}
+
+function refreshCollectionRowStripes() {
+  collectionViews.forEach(id => updateCollectionRowStripes(document.getElementById(id)));
+  updateCollectionRowStripes(document.getElementById('neonext-collections-items'));
+}
+
 function getCollectionInputs(root) {
   return Array.from(root?.querySelectorAll('input[name="db"]:enabled') || []);
 }
@@ -551,6 +574,7 @@ function hideColCheckbox(collid) {
   getCollectionInputs(collsModal).forEach(input => {
     if (input.value === String(collid)) input.closest('li').style.display = 'none';
   });
+  refreshCollectionRowStripes();
 }
 
 /** Events: one delegated change handler also handles Select2 and dynamic inputs. */
@@ -558,6 +582,7 @@ $(form).on('change.searchForm', 'input, textarea, select', function () {
   if (this.name === 'collChoice' && collsModal.contains(this)) {
     collsModal.querySelectorAll('.box').forEach(box => { box.style.display = box.id === this.value ? 'block' : 'none'; });
     collsModal.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('tab-active', tab.contains(this)));
+    updateCollectionRowStripes(getCollectionView());
     updateGlobalMaster();
   } else if (this === allNeon) {
     setGroupChecked(collsModal, this.checked);
@@ -595,6 +620,7 @@ form.addEventListener('click', event => {
     const branch = $(list).stop(true);
     branch.css('display', branch.css('display'));
     const collapsed = list.classList.toggle('collapsed');
+    updateCollectionRowStripes(li.closest('.box, #neonext-collections-items'));
     branch[collapsed ? 'slideUp' : 'slideDown'](getSearchMotionDuration(), () => {
       list.style.removeProperty('display');
     });
@@ -641,5 +667,6 @@ form.addEventListener('reset', () => {
   }, 0);
 });
 
+refreshCollectionRowStripes();
 if (document.readyState === 'complete') prefillFromUrl();
 else window.addEventListener('load', prefillFromUrl, { once: true });
