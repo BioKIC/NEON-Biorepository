@@ -152,7 +152,7 @@ $collManager = new OccurrenceManager();
 				<!-- Collections -->
 				<section>
 					<!-- Accordion selector -->
-					<input type="checkbox" id="collections" class="accordion-selector" checked=true />
+					<input type="checkbox" id="collections" class="accordion-selector" <?php if (!$IS_ADMIN && empty($USER_RIGHTS['CollAdmin']) && empty($USER_RIGHTS['CollEditor'])) echo 'checked'; ?> />
 					<!-- Accordion header -->
 					<label for="collections" class="accordion-header">Sample Types</label>
 					<!-- Accordion content -->

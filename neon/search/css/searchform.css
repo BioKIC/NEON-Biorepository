@@ -1,3 +1,7 @@
+html:has(#innertext.neon-search) {
+  scrollbar-gutter: stable;
+}
+
 #innertext.neon-search,
 #criteria-panel.neon-search-controls,
 #ui-datepicker-div.neon-search-datepicker {
@@ -339,6 +343,59 @@
 :is(#innertext.neon-search, #criteria-panel.neon-search-controls) :is(#reset-btn, .advanced-query-add):hover {
   background: #e8f3fb !important;
   color: var(--search-blue-hover);
+}
+
+#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn) {
+  width: 100%;
+  min-width: 0;
+  min-height: 1.75rem;
+  padding: 0.4rem 0.5rem;
+  border: 0;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  background: #0073cf;
+  color: #fff;
+  box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px rgb(0 0 0 / 14%), 0 1px 5px rgb(0 0 0 / 12%);
+}
+
+#biorepo-search-controls #criteria-panel {
+  gap: 16px;
+}
+
+#biorepo-search-controls #criteria-panel .selected-criteria {
+  gap: 12px;
+  padding-top: 16px;
+}
+
+#biorepo-search-controls #criteria-panel .selected-criteria h3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+#biorepo-search-controls #criteria-panel #reset-btn {
+  min-height: 1.25rem;
+  padding: 0.45rem 0.375rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+#biorepo-search-controls #criteria-panel :is(#search-btn, #reset-btn):hover {
+  background: #005da8 !important;
+  color: #fff;
+}
+
+#biorepo-search-controls #search-btn .search-button-icon {
+  flex-basis: 0.875rem;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+#biorepo-search-controls #reset-btn .search-button-icon {
+  flex-basis: 0.75rem;
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
 :is(#innertext.neon-search, #criteria-panel.neon-search-controls) #chips {
