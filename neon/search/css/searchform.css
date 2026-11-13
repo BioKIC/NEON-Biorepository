@@ -709,7 +709,7 @@
 #innertext.neon-search #neon-modal-close {
   flex-shrink: 0;
   align-self: center;
-  margin: 0 0 0 auto;
+  margin: 0 0 2px auto;
 }
 
 #innertext.neon-search #domains-sites-modal {
@@ -780,11 +780,14 @@
 #innertext.neon-search .search-tabs {
   display: flex;
   flex-wrap: wrap;
+  min-height: 64px;
   gap: 0;
   border-bottom: 1px solid var(--search-border);
 }
 
 #innertext.neon-search .tab {
+  display: flex;
+  align-items: center;
   position: relative;
   margin: 0;
   padding: 12px 16px;
@@ -831,18 +834,25 @@
   line-height: 1.5;
 }
 
-#innertext.neon-search :is(#colls-modal, #neonext-collections-items) li:has(> .search-info) {
+#innertext.neon-search :is(#colls-modal, #neonext-collections-items) li:has(> .search-profile-link) {
   display: grid;
-  grid-template-columns: 33px minmax(0, auto) 24px;
-  justify-content: start;
+  grid-template-columns: 33px minmax(0, 1fr) max-content;
   align-items: start;
   column-gap: 4px;
 }
 
-#innertext.neon-search :is(#colls-modal, #neonext-collections-items) li:has(> .search-info) > .leaf-label {
+#innertext.neon-search :is(#colls-modal, #neonext-collections-items) li:has(> .search-profile-link) > .leaf-label {
   min-width: 0;
   margin-left: 0;
   overflow-wrap: anywhere;
+}
+
+#innertext.neon-search .search-profile-link {
+  justify-self: end;
+  margin-left: 8px;
+  font-size: 12px;
+  line-height: 21px;
+  white-space: nowrap;
 }
 
 #innertext.neon-search .group-label,

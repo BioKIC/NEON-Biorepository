@@ -74,6 +74,12 @@ $collManager = new OccurrenceManager();
 			. "<svg viewBox='0 0 24 24' focusable='false' aria-hidden='true'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m1 15h-2v-6h2zm0-8h-2V7h2z'></path></svg></a>";
 	}
 
+	function renderSearchProfileLink($collid, $name) {
+		$url = htmlspecialchars('../../collections/misc/neoncollprofiles.php?collid=' . rawurlencode((string) $collid), ENT_QUOTES, 'UTF-8');
+		$label = htmlspecialchars('View profile for ' . $name, ENT_QUOTES, 'UTF-8');
+		return "<a class='search-profile-link' href='{$url}' target='_blank' rel='noopener noreferrer' aria-label='{$label}'>View profile</a>";
+	}
+
 	//function to render sample type tree
 	function renderTree($nodes, $parentId = '') {
 		global $IS_ADMIN, $USER_RIGHTS;
@@ -99,7 +105,7 @@ $collManager = new OccurrenceManager();
 						)
 						. ">";
 				$html .= "<span class='leaf-label ml-1 child'>{$name}</span>";
-				$html .= ' ' . renderSearchInfoLink('../../collections/misc/neoncollprofiles.php?collid=' . $collid, 'View Sample Type Profile');
+				$html .= ' ' . renderSearchProfileLink($collid, $node['name']);
 
 			} 
 			// group node
@@ -206,7 +212,7 @@ $collManager = new OccurrenceManager();
 												  echo "<li class='Mui'>";
 												  echo "<input type='checkbox' name='db' value='{$result["collid"]}' class='child search-checkbox-input' data-ccode='{$result["institutioncode"]} {$result["collectioncode"]}'>";
 												  echo "<span class='leaf-label ml-1 child'>{$result["collectionname"]}</span>";
-												  echo ' ' . renderSearchInfoLink('../../collections/misc/neoncollprofiles.php?collid=' . $result['collid'], 'View Collection Profile');
+												  echo ' ' . renderSearchProfileLink($result['collid'], $result['collectionname']);
 												  echo "</li>";
 												}
 												echo '</ul>';
