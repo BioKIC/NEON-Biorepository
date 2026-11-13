@@ -160,7 +160,7 @@ $collManager = new OccurrenceManager();
 					<!-- Accordion content -->
 					<div class="content">
 						<div class="accordion-content-inner"><div class="accordion-content-body">
-						<p class="Mui"><a href="<?= htmlspecialchars($CLIENT_ROOT, ENT_QUOTES, 'UTF-8') ?>/collections/misc/browsecollprofiles.php">Explore sample types</a> to learn what kinds of samples and specimen NEON collects.</p>
+						<p id="sample-types-intro" class="Mui"><a href="<?= htmlspecialchars($CLIENT_ROOT, ENT_QUOTES, 'UTF-8') ?>/collections/misc/browsecollprofiles.php">Explore sample types</a> to learn what kinds of samples and specimen NEON collects.</p>
 						<div id="search-form-colls">
 							<section>
 								<!-- Open NEON Collections modal -->

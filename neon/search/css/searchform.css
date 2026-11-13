@@ -201,6 +201,10 @@ html:has(#innertext.neon-search) {
   line-height: 1.6;
 }
 
+#innertext.neon-search #params-form p#sample-types-intro {
+  font-size: 16px;
+}
+
 #innertext.neon-search #params-form a:not(.MuiButtonBase-root):not(#domains-sites-modal *) {
   color: var(--search-blue);
   text-decoration: underline;
