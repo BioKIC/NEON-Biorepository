@@ -118,6 +118,7 @@ function openModal(selector) {
   if (wasHidden && modal.matches('[role="dialog"]')) modalReturnFocus.set(modal, document.activeElement);
   if (wasHidden) modal.style.opacity = '0';
   modal.style.display = 'block';
+  if (modal.id === 'domains-sites-modal') document.body.classList.add('neon-search-map-open');
   if (wasHidden) void modal.offsetHeight;
   modal.style.opacity = '1';
   if (wasHidden && modal.matches('[role="dialog"]')) modal.querySelector('button')?.focus({ preventScroll: true });
@@ -132,6 +133,7 @@ function closeModal(selector) {
     modalCloseTimers.delete(modal);
     const restoreFocus = modal.contains(document.activeElement);
     modal.style.display = 'none';
+    if (modal.id === 'domains-sites-modal') document.body.classList.remove('neon-search-map-open');
     const anyOpen = Array.from(form.querySelectorAll('.modal'))
       .some(item => item.style.display === 'block');
     if (!anyOpen && modalBodyOverflow !== null) {
@@ -152,6 +154,7 @@ document.addEventListener('keydown', event => {
   const modal = Array.from(form.querySelectorAll('.modal[role="dialog"]'))
     .find(item => item.style.display === 'block' && item.style.opacity === '1');
   if (!modal) return;
+  if (event.target.closest('.MuiPopover-root, .MuiPopper-root')) return;
   if (event.key === 'Escape') {
     event.preventDefault();
     modal.querySelector('.modal-close')?.click();
@@ -412,6 +415,15 @@ function getSearchUrl() {
   return url.href;
 }
 
+function expandCriterionAccordions(input) {
+  let content = input?.closest('.content');
+  while (content && form.contains(content)) {
+    const selector = content.previousElementSibling?.previousElementSibling;
+    if (selector?.matches('input.accordion-selector')) selector.checked = true;
+    content = content.parentElement.closest('.content');
+  }
+}
+
 function prefillFromUrl() {
   const params = new URLSearchParams(window.location.search);
   if (params.has('db')) {
@@ -421,7 +433,11 @@ function prefillFromUrl() {
         input.checked = selected.has('all') || selected.has(input.value);
       });
     });
-    getCollectionInputs(formColls).forEach(input => { input.checked = selected.has(input.value); });
+    getCollectionInputs(formColls).forEach(input => {
+      input.checked = selected.has(input.value);
+      if (input.checked) expandCriterionAccordions(input);
+    });
+    if (getCollsSelected().length) expandCriterionAccordions(formColls);
   }
 
   // The React map initializes its own site selections from datasetid.
@@ -439,9 +455,14 @@ function prefillFromUrl() {
     } else {
       input.value = values[values.length - 1];
     }
+    const hasValue = input.type === 'checkbox' ? input.checked : input.value.trim() !== '';
+    if (hasValue) expandCriterionAccordions(input);
   });
   const excludeSynonyms = document.getElementById('usethes');
-  if (excludeSynonyms && params.has('usethes')) excludeSynonyms.checked = params.get('usethes') !== '1';
+  if (excludeSynonyms && params.has('usethes')) {
+    excludeSynonyms.checked = params.get('usethes') !== '1';
+    if (excludeSynonyms.checked) expandCriterionAccordions(excludeSynonyms);
+  }
 
   const rows = getAdvancedRows();
   const lastRow = rows.length ? rows[rows.length - 1].index : 1;

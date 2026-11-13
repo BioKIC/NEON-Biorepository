@@ -214,30 +214,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 40px;
-  width: 40px;
-  height: 40px;
-  margin: -8px 0;
-  padding: 7px;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  margin: -2px 0 -1px;
+  padding: 3px;
   border: 1px solid transparent;
   border-radius: 50%;
   background: transparent;
-  color: var(--search-blue);
+  color: var(--search-muted);
   vertical-align: middle;
   text-decoration: none;
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 
 #innertext.neon-search #params-form a.search-info:not(#domains-sites-modal *):is(:hover, :focus-visible) {
-  border-color: #0092e2;
-  background: rgb(0 115 207 / 8%);
-  color: #0092e2;
+  border-color: var(--search-border);
+  background: rgb(86 90 92 / 8%);
+  color: var(--search-muted);
 }
 
 #innertext.neon-search .search-info svg {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   fill: currentColor;
 }
 
@@ -751,19 +751,24 @@
 #innertext.neon-search .search-map-header #domains-sites-modal-close {
   flex: 0 0 auto;
   margin: 0;
-  border-color: #fff;
-  background: #fff;
-  color: var(--search-blue);
+  border-color: #2974d2;
+  background: #2974d2;
+  color: #fff;
 }
 
 #innertext.neon-search .search-map-header #domains-sites-modal-close:hover {
-  background: var(--search-surface);
+  border-color: #438cdd;
+  background: #438cdd !important;
 }
 
 #innertext.neon-search #collection-search-map {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
+}
+
+#innertext.neon-search #collection-search-map [data-selenium='sitemap-content-table'] button:is([aria-label='Show Columns'], [aria-label='Export']) {
+  display: none;
 }
 
 #innertext.neon-search .search-tabs {
@@ -818,6 +823,20 @@
   margin: 6px 0;
   font-size: 14px;
   line-height: 1.5;
+}
+
+#innertext.neon-search :is(#colls-modal, #neonext-collections-items) li:has(> .search-info) {
+  display: grid;
+  grid-template-columns: 33px minmax(0, auto) 24px;
+  justify-content: start;
+  align-items: start;
+  column-gap: 4px;
+}
+
+#innertext.neon-search :is(#colls-modal, #neonext-collections-items) li:has(> .search-info) > .leaf-label {
+  min-width: 0;
+  margin-left: 0;
+  overflow-wrap: anywhere;
 }
 
 #innertext.neon-search .group-label,
@@ -1119,4 +1138,8 @@
   box-shadow: none;
   font: 400 14px/21px Inter, Helvetica, Arial, sans-serif;
   overflow-wrap: anywhere;
+}
+
+body.neon-search-map-open :is(.MuiPopover-root, .MuiPopper-root) {
+  z-index: 4100;
 }
