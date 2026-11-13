@@ -940,21 +940,24 @@ html:has(#innertext.neon-search) {
 
 #innertext.neon-search .material-select-enhanced > label {
   position: absolute;
-  top: 0;
+  top: 50%;
   left: 0;
   z-index: 1;
   max-width: calc(100% - 46px);
   margin: 0;
+  padding: 0;
+  background: transparent;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   pointer-events: none;
-  transform: translate(14px, 16px) scale(1);
+  transform: translate(14px, -50%) scale(1);
   transform-origin: top left;
-  transition: transform 200ms ease, color 200ms ease;
+  transition: top 200ms ease, transform 200ms ease, color 200ms ease;
 }
 
 #innertext.neon-search .material-select-floating > label {
+  top: 0;
   max-width: calc(133% - 32px);
   transform: translate(14px, -9px) scale(0.75);
 }
@@ -1031,6 +1034,10 @@ html:has(#innertext.neon-search) {
 #innertext.neon-search .select2-container {
   max-width: 100%;
   font: inherit;
+}
+
+#innertext.neon-search .material-sample-input > .select2-container {
+  display: block;
 }
 
 #innertext.neon-search .select2-container .select2-selection--multiple {
