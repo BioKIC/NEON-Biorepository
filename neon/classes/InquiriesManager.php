@@ -1439,7 +1439,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
                             m.sampleID AS sampleID, 
                             m.sampleCode AS barcode, 
                             o.catalogNumber AS IGSN, 
-                            CONCAT('https://doi.org/10.58052/',o.catalogNumber) AS IGSN_ID,
+                            CONCAT('https://doi.org/10.58052/',o.catalogNumber) AS occurrenceID,
                             o.sciname AS scientificName
                             FROM  domains e 
                             LEFT JOIN NeonSample m ON e.occid = m.occid
@@ -1475,7 +1475,7 @@ public function addCollectionInquiryLink($requestID, $collections) {
                             m.sampleID AS sampleID, 
                             m.sampleCode AS barcode, 
                             o.catalogNumber AS IGSN, 
-                            CONCAT('https://doi.org/10.58052/',o.catalogNumber) AS IGSN_ID,
+                            CONCAT('https://doi.org/10.58052/',o.catalogNumber) AS occurrenceID,
                             o.sciname AS scientificName
                             FROM  domains e 
                             LEFT JOIN NeonSample m ON e.occid = m.occid

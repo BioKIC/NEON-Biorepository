@@ -1032,15 +1032,16 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							<?php if ($mdArr['category'] == 'Request') { ?>
 								<li class="dataset-citation-step">
 									<div>
-										<h3>List the Physical Samples You Used</h3>
-										<p>Download the table, check that it lists the samples used in your research, and include it in your publication's <strong>main text [preferred] or supplemental information</strong>. Use the occurrenceID or full IGSN ID when referring to individual samples.</p>
+										<h3>List the Physical Samples You Used (if any)</h3>
+										<p>Download the table, check that it lists the samples used in your research, and include it in your publication's <strong>main text [preferred] or supplemental information</strong>.</p>
+										<p>Use the occurrenceID (e.g., <a href="https://doi.org/10.58052/NEON03MVF" target="_blank" rel="noopener noreferrer">https://doi.org/10.58052/NEON03MVF</a>) or full IGSN ID (e.g., <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">igsn:10.58052/NEON0D0YI</a> or <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">igsn:NEON0D0YI</a>) when referring to individual samples in the text.</p>
 										<form action="<?php echo $CLIENT_ROOT; ?>/neon/requests/exporthandler.php" method="post">
 											<input type="hidden" name="pubID" value="<?php echo (int)$datasetId; ?>" />
 											<input type="hidden" name="type" value="dataset" />
 											<input type="hidden" name="exportTask" value="pubtable" />
 											<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button" type="submit">
 												<span>Download Physical Sample Citations Table (CSV)</span>
-												<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg></span>
+												<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg></span>
 											</button>
 										</form>
 									</div>
@@ -1087,7 +1088,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 														href="<?php echo htmlspecialchars($download['href'], ENT_QUOTES, 'UTF-8'); ?>"
 														download="<?php echo htmlspecialchars($download['filename'], ENT_QUOTES, 'UTF-8'); ?>"
 														title="Download this citation as <?php echo $label; ?>">
-														<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>
+														<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
 														Download (<?php echo $label; ?>)
 													</a>
 												<?php } ?>
