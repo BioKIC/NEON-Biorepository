@@ -403,7 +403,7 @@ function getCollsChips(listId, labels) {
     }
   }
   if (root?.id === 'neonext-collections-items') {
-    const other = window.NEON_SEARCH_PARAMETERS?.db?.find(entry => entry.token === 'all-other');
+    const other = window.NEON_SEARCH_PARAMETERS?.db?.find(entry => entry.view === 'other');
     const ids = other?.ids.map(String) || [];
     if (ids.length && ids.every(id => selected.has(id))) {
       selections.push({ key: other.token, ids, label: other.label });
@@ -822,8 +822,9 @@ function resolveSearchSelection(name, values) {
   const tokens = value.split(/[,;]+/).map(token => token.trim()).filter(Boolean);
   const lookup = (token, scope) => {
     const key = token.toLowerCase();
+    const aliases = name === 'db' && ['all-other', 'all-others'].includes(key) ? ['all-other', 'all-others'] : [key];
     const options = scope ? entries.filter(entry => entry.ids.every(id => scope.includes(id))) : entries;
-    const exact = options.find(entry => entry.token.toLowerCase() === key);
+    const exact = options.find(entry => aliases.includes(entry.token.toLowerCase()));
     if (exact) return exact.ids;
     const matches = options.filter(entry => entry.short?.toLowerCase() === key
       || (scope && entry.token.toLowerCase().endsWith(`/${key}`)));
@@ -949,11 +950,21 @@ function prefillFromUrl() {
     });
     if (params.has('db')) expandSelectedCollectionPaths(root);
   });
-  getCollectionInputs(formColls).forEach(input => {
+  const formCollectionInputs = getCollectionInputs(formColls);
+  formCollectionInputs.forEach(input => {
     input.checked = params.has('db') ? selected.has(input.value) : input.defaultChecked;
     input.indeterminate = false;
-    if (params.has('db') && input.checked) expandCriterionAccordions(input);
   });
+  const otherRoot = document.getElementById('neonext-collections-items');
+  const otherInputs = getCollectionInputs(otherRoot);
+  const allOthersSelected = otherInputs.length > 0 && otherInputs.every(input => input.checked);
+  formCollectionInputs.forEach(input => {
+    if (params.has('db') && input.checked && !(allOthersSelected && otherRoot?.contains(input))) expandCriterionAccordions(input);
+  });
+  if (params.has('db') && allOthersSelected) {
+    const otherAccordion = document.getElementById('other-repos');
+    if (otherAccordion) otherAccordion.checked = false;
+  }
   if (params.has('db') && getCollsSelected().length) expandCriterionAccordions(formColls);
   refreshCollectionRowStripes();
 

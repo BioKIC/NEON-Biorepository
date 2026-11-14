@@ -101,7 +101,7 @@ class SearchParameterNames {
         while ($row = $result->fetch_assoc()) $rows[] = $row;
         $result->free();
         $otherIds = array_column(array_filter($rows, function ($row) { return !empty($row['isOtherRepository']); }), 'collid');
-        $this->add('db', 'all-other', $otherIds, 'All NEON Sample Types at Other Repositories', 'other');
+        $this->add('db', 'all-others', $otherIds, 'All NEON Sample Types at Other Repositories', 'other');
         $counts = array_count_values(array_map(function ($row) { return self::slug($row['collectionname']); }, $rows));
         $codeCounts = array_count_values(array_map(function ($row) { return strtolower(trim($row['collectioncode'] ?? '')); }, $rows));
         foreach ($rows as $row) {
@@ -236,6 +236,8 @@ class SearchParameterNames {
 
     private function lookup($entries, $token) {
         $token = strtolower($token);
+        // Keep previously shared URLs working after standardizing the group name.
+        if ($token === 'all-other' && isset($entries['all-others'])) $token = 'all-others';
         if (isset($entries[$token])) return $entries[$token]['ids'];
         $ids = null;
         foreach ($entries as $entry) {
