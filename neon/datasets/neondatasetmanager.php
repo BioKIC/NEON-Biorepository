@@ -512,7 +512,8 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			padding: 12px 20px;
 			background: #f5f6f7;
 			border-bottom: 1px solid #d7d9d9;
-			font: 600 14px/1.5 Inter, Helvetica, Arial, sans-serif;
+			font: 600 18px/1.5 Inter, Helvetica, Arial, sans-serif;
+			text-transform: uppercase;
 		}
 		#innertext .dataset-project-action-row {
 			display: flex;
