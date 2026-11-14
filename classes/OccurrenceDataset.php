@@ -117,6 +117,24 @@ class OccurrenceDataset{
 	}
 
 	//NEON edit start - neon specific functions
+	public function getDatasetCitationCollections($dsid) {
+		$dsid = (int)$dsid;
+		if ($dsid < 1) return array();
+		// Resolve current collection metadata from the records still in this dataset.
+		$sql = 'SELECT DISTINCT c.collid, c.CollectionName AS collectionname,
+			c.CollectionCode AS collectioncode, c.FullDescription AS fulldescription
+			FROM omoccurdatasetlink dl
+			INNER JOIN omoccurrences o ON o.occid = dl.occid
+			INNER JOIN omcollections c ON c.collid = o.collid
+			WHERE dl.datasetid = ' . $dsid . ' ORDER BY c.CollectionName, c.collid';
+		$rs = $this->conn->query($sql);
+		if (!$rs) throw new RuntimeException('Unable to load sample type citations.');
+		$collections = array();
+		while ($row = $rs->fetch_assoc()) $collections[] = $row;
+		$rs->free();
+		return $collections;
+	}
+
 	public function getRequestInquiryMetadata($dsid) {
 		$retArr = array();
 		if ($dsid) {
