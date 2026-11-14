@@ -61,7 +61,7 @@ class OccurrenceDataset{
 				$retArr['sampleTypes'][] = array(
 					'sampleType' => array(
 						'value' => $r->publicName,
-						'link' => GeneralUtil::getDomain() . $CLIENT_ROOT . '/portal/collections/misc/neoncollprofiles.php?collid=' . $r->collid
+						'link' => GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . '/collections/misc/neoncollprofiles.php?collid=' . $r->collid
 					),
 					'sampleCount' => (int)$r->sampleCount
 				);
@@ -200,7 +200,7 @@ class OccurrenceDataset{
 				$retArr[$r->datasetid]['sampleTypes'][] = array(
 					'sampleType' => array(
 						'value' => $r->publicName,
-						'link' => GeneralUtil::getDomain() . $CLIENT_ROOT . '/portal/collections/misc/neoncollprofiles.php?collid=' . $r->collid
+						'link' => GeneralUtil::getDomain() . $GLOBALS['CLIENT_ROOT'] . '/collections/misc/neoncollprofiles.php?collid=' . $r->collid
 					),
 					'sampleCount' => (int)$r->sampleCount
 				);
