@@ -402,6 +402,14 @@ function getCollsChips(listId, labels) {
       });
     }
   }
+  if (root?.id === 'neonext-collections-items') {
+    const other = window.NEON_SEARCH_PARAMETERS?.db?.find(entry => entry.token === 'all-other');
+    const ids = other?.ids.map(String) || [];
+    if (ids.length && ids.every(id => selected.has(id))) {
+      selections.push({ key: other.token, ids, label: other.label });
+      ids.forEach(id => selected.delete(id));
+    }
+  }
   selected.forEach((input, id) => selections.push({ key: id, ids: [id],
     label: labels.get(id) || input.closest('li')?.querySelector('.leaf-label')?.textContent.trim() || input.dataset.ccode || id,
   }));
@@ -721,7 +729,7 @@ function compactSearchSelection(values, entries, view = null) {
     const remaining = new Set(ids);
     const tokens = [];
     options.forEach(entry => {
-      if (view && entry.ids.length > 1 && entry.view !== view) return;
+      if (view && entry.ids.length > 1 && entry.view !== view && entry.view !== 'other') return;
       if (!entry.ids.every(id => remaining.has(id))) return;
       tokens.push(entry.code || entry.short || entry.token);
       entry.ids.forEach(id => remaining.delete(id));
@@ -734,7 +742,7 @@ function compactSearchSelection(values, entries, view = null) {
     let prefix;
     let remainder;
     entries.forEach(entry => {
-      if (view && entry.view !== view) return;
+      if (view && entry.view !== view && entry.view !== 'other') return;
       const selected = entry.ids.filter(id => ids.includes(id));
       const missing = entry.ids.filter(id => !ids.includes(id));
       if (selected.length < 2 || !missing.length) return;
@@ -891,10 +899,9 @@ function expandCollectionPath(input, root) {
   }
 }
 
-function expandSelectedCollectionPaths(root) {
-  root?.querySelectorAll('input.all-selector').forEach(setGroupState);
+function collapseCollectionBranches(root, onlyUnchecked = false) {
   root?.querySelectorAll('input.all-selector.child').forEach(group => {
-    if (group.checked || group.indeterminate) return;
+    if (onlyUnchecked && (group.checked || group.indeterminate)) return;
     const list = getGroupRoot(group)?.querySelector(':scope > ul');
     if (!list) return;
     $(list).stop(true, true);
@@ -903,6 +910,11 @@ function expandSelectedCollectionPaths(root) {
     const icon = list.parentElement.querySelector(':scope > .expansion-icon, :scope > [data-target] .expansion-icon');
     if (icon) icon.textContent = 'add_box';
   });
+}
+
+function expandSelectedCollectionPaths(root) {
+  root?.querySelectorAll('input.all-selector').forEach(setGroupState);
+  collapseCollectionBranches(root, true);
   const targets = new Set();
   getCollectionInputs(root).filter(input => input.checked).forEach(input => {
     let target = input;
@@ -1207,10 +1219,14 @@ form.addEventListener('reset', () => {
     clearSites();
     resetAdvancedSearch();
     form.querySelectorAll('input[type="checkbox"]').forEach(input => { input.indeterminate = false; });
+    refreshCollectionSelectors();
+    if (allNeon.checked) {
+      collectionViews.forEach(id => collapseCollectionBranches(document.getElementById(id)));
+      refreshCollectionRowStripes();
+    }
     $('#materialsampletype').trigger('change.select2');
     const selected = collsModal.querySelector('input[name="collChoice"]:checked');
     if (selected) $(selected).trigger('change');
-    refreshCollectionSelectors();
     clearValidationErrors();
     restoringSearchForm = false;
     updateChip();

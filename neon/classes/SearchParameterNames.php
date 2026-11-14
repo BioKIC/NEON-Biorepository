@@ -92,11 +92,16 @@ class SearchParameterNames {
             $nodes = is_file($path) ? json_decode(file_get_contents($path), true) : array();
             if (is_array($nodes)) $this->tree($nodes, $prefix, $view);
         }
-        $result = $this->conn->query('SELECT collid, collectionname, collectioncode FROM omcollections');
+        $result = $this->conn->query('SELECT c.collid, c.collectionname, c.collectioncode,
+            EXISTS (SELECT 1 FROM omcollcatlink l INNER JOIN omcollcategories cat ON cat.ccpk = l.ccpk
+                WHERE l.collid = c.collid AND cat.category = "Additional NEON Collections") AS isOtherRepository
+            FROM omcollections c');
         if (!$result) return;
         $rows = array();
         while ($row = $result->fetch_assoc()) $rows[] = $row;
         $result->free();
+        $otherIds = array_column(array_filter($rows, function ($row) { return !empty($row['isOtherRepository']); }), 'collid');
+        $this->add('db', 'all-other', $otherIds, 'All NEON Sample Types at Other Repositories', 'other');
         $counts = array_count_values(array_map(function ($row) { return self::slug($row['collectionname']); }, $rows));
         $codeCounts = array_count_values(array_map(function ($row) { return strtolower(trim($row['collectioncode'] ?? '')); }, $rows));
         foreach ($rows as $row) {
@@ -222,7 +227,7 @@ class SearchParameterNames {
                 }
             }
             foreach ($entries as &$entry) {
-                if (count($entry['ids']) === 1 && isset($codes[$entry['ids'][0]])) $entry['code'] = $codes[$entry['ids'][0]];
+                if ($entry['view'] !== 'other' && count($entry['ids']) === 1 && isset($codes[$entry['ids'][0]])) $entry['code'] = $codes[$entry['ids'][0]];
             }
             unset($entry);
         }
@@ -299,7 +304,7 @@ class SearchParameterNames {
             return count($b['ids']) <=> count($a['ids']);
         });
         foreach ($entries as $entry) {
-            if ($view !== null && count($entry['ids']) > 1 && $entry['view'] !== $view) continue;
+            if ($view !== null && count($entry['ids']) > 1 && $entry['view'] !== $view && $entry['view'] !== 'other') continue;
             if (array_diff($entry['ids'], $ids)) continue;
             $tokens[] = $entry['code'] ?? $entry['short'] ?? $entry['token'];
             $ids = array_values(array_diff($ids, $entry['ids']));
@@ -313,7 +318,7 @@ class SearchParameterNames {
         $remainder = null;
         $prefix = null;
         foreach ($entries as $entry) {
-            if ($view !== null && $entry['view'] !== $view) continue;
+            if ($view !== null && $entry['view'] !== $view && $entry['view'] !== 'other') continue;
             $selected = array_values(array_intersect($entry['ids'], $ids));
             $missing = array_values(array_diff($entry['ids'], $ids));
             if (count($selected) < 2 || !$missing) continue;

@@ -73,7 +73,7 @@ class SearchResultsSidebar {
         }
         $view = $this->names->collectionView($this->criteria['db']);
         $groups = array_filter($entries, function ($entry) use ($view) {
-            return count($entry['ids']) > 1 && $entry['view'] === $view;
+            return $entry['view'] === 'other' || (count($entry['ids']) > 1 && $entry['view'] === $view);
         });
         uasort($groups, function ($a, $b) { return count($b['ids']) <=> count($a['ids']); });
         foreach ($groups as $entry) {
