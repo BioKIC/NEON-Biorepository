@@ -1050,7 +1050,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							<li class="dataset-citation-step">
 								<div class="dataset-citations">
 									<h3 id="dataset-citations-heading">Add the Sample Data Citations to Your References</h3>
-									<p>For each sample type used in your research, <strong>copy its citation</strong> into your reference list, or <strong>download BibTeX or RIS</strong> to import it into your reference manager. Choose one format per citation.</p>
+									<p>For each sample type used in your research, <strong>include it in your references</strong>.</p>
 									<?php
 									$citations = array();
 									$citationLoadFailed = false;
@@ -1065,8 +1065,6 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										<p role="alert">Sample data citations could not be loaded. Please reload this page or <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">contact the Biorepository</a>.</p>
 									<?php } elseif (!$citations) { ?>
 										<p>No sample types are linked to this project yet. Add records in the Samples tab to generate their citations.</p>
-									<?php } else { ?>
-										<p>Replace <strong>[date downloaded]</strong> with the date you downloaded the data used in your research.</p>
 									<?php } ?>
 									<?php foreach ($citations as $citation) { ?>
 										<article class="dataset-citation-card">
