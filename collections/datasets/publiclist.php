@@ -1,5 +1,12 @@
 <?php
 include_once('../../config/symbini.php');
+#neon edit - send legacy dataset listings to the NEON public project list.
+$queryString = $_SERVER['QUERY_STRING'] ?? '';
+header('Location: ' . $CLIENT_ROOT . '/neon/datasets/neonpubliclist.php'
+	. ($queryString !== '' ? '?' . $queryString : ''), true, 302);
+exit;
+#end neon edit
+
 include_once($SERVER_ROOT.'/classes/OccurrenceDataset.php');
 include_once($SERVER_ROOT . '/classes/utilities/Language.php');
 
