@@ -30,7 +30,7 @@ class SearchResultsSidebar {
                 if ((string) $key === substr($criterion, 3)) continue;
                 $remaining = array_merge($remaining, $key === 'all' && $wasAll ? array('all') : $selection['ids']);
             }
-            if ($remaining) $criteria['db'] = $this->names->encode('db', implode(',', $remaining));
+            if ($remaining) $criteria['db'] = $this->names->encode('db', implode(',', $remaining), $this->names->collectionView($criteria['db']));
             else unset($criteria['db']);
         } elseif ($criterion === 'advanced') {
             foreach (array_keys($criteria) as $key) {
@@ -71,8 +71,9 @@ class SearchResultsSidebar {
             $this->sampleTypes['all'] = array('ids' => array_values($allIds), 'label' => 'All Sample Types at the Biorepository');
             $selected = array_values(array_diff($selected, $allIds));
         }
-        $groups = array_filter($entries, function ($entry) {
-            return count($entry['ids']) > 1 && in_array($entry['view'], array('taxonomic', 'protocol', 'sampletype'), true);
+        $view = $this->names->collectionView($this->criteria['db']);
+        $groups = array_filter($entries, function ($entry) use ($view) {
+            return count($entry['ids']) > 1 && $entry['view'] === $view;
         });
         uasort($groups, function ($a, $b) { return count($b['ids']) <=> count($a['ids']); });
         foreach ($groups as $entry) {

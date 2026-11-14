@@ -10,6 +10,7 @@ const chips = document.getElementById('chips');
 const advancedForm = document.getElementById('search-form-advanced-search');
 const advancedRowCount = 8;
 const collectionViews = ['taxonomic-cat', 'neon-theme', 'sample-type'];
+const collectionTreeViews = { 'taxonomic-cat': 'taxonomic', 'neon-theme': 'protocol', 'sample-type': 'sampletype' };
 const renderedChips = new Map();
 const modalCloseTimers = new WeakMap();
 const modalReturnFocus = new WeakMap();
@@ -39,6 +40,32 @@ function getCriterionSelected() {
 
 function getCollectionView() {
   return document.getElementById(getCriterionSelected());
+}
+
+function getCollectionGroupingView() {
+  return collectionTreeViews[getCriterionSelected()];
+}
+
+function collectionViewFromParameters(params) {
+  const entries = window.NEON_SEARCH_PARAMETERS?.db || [];
+  const tokens = [...params.getAll('db'), ...params.getAll('db[]')].flatMap(value => value.split(/[,;]+/));
+  for (const token of tokens) {
+    const base = token.split('!')[0].trim().toLowerCase();
+    const entry = entries.find(item => item.token.toLowerCase() === base)
+      || entries.find(item => item.short?.toLowerCase() === base);
+    if (entry?.ids.length > 1 && Object.values(collectionTreeViews).includes(entry.view)) return entry.view;
+  }
+  return null;
+}
+
+function showCollectionView() {
+  const view = getCriterionSelected();
+  collsModal.querySelectorAll('.box').forEach(box => { box.style.display = box.id === view ? 'block' : 'none'; });
+  collsModal.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('tab-active', tab.querySelector('input')?.checked));
+  const root = getCollectionView();
+  expandSelectedCollectionPaths(root);
+  refreshCollectionSelectors();
+  updateCollectionRowStripes(root);
 }
 
 function updateCollectionRowStripes(root) {
@@ -362,8 +389,8 @@ function getCollsChips(listId, labels) {
       selected.clear();
     } else {
       const entries = window.NEON_SEARCH_PARAMETERS?.db;
-      const groups = entries ? entries.filter(entry => entry.ids.length > 1 && ['taxonomic', 'protocol', 'sampletype'].includes(entry.view))
-        : collectionViews.flatMap(view => Array.from(document.getElementById(view)?.querySelectorAll('input.all-selector.child') || [], input => ({
+      const groups = entries ? entries.filter(entry => entry.ids.length > 1 && entry.view === getCollectionGroupingView())
+        : [getCriterionSelected()].flatMap(view => Array.from(document.getElementById(view)?.querySelectorAll('input.all-selector.child') || [], input => ({
           token: input.id, label: input.dataset.ccode,
           ids: [...new Set(getCollectionInputs(getGroupRoot(input)).map(leaf => leaf.value))],
         }))).filter(entry => entry.ids.length > 1);
@@ -656,7 +683,7 @@ function getParam(name) {
   return input.value || '';
 }
 
-function compactSearchSelection(values, entries) {
+function compactSearchSelection(values, entries, view = null) {
   const encodedLength = tokens => encodeURIComponent(tokens.join(',')).replace(/[!'()*]/g, char => `%${char.charCodeAt(0).toString(16)}`).length;
   const ordered = [...entries].sort((a, b) => b.ids.length - a.ids.length);
   const scopedCache = new Map();
@@ -694,6 +721,7 @@ function compactSearchSelection(values, entries) {
     const remaining = new Set(ids);
     const tokens = [];
     options.forEach(entry => {
+      if (view && entry.ids.length > 1 && entry.view !== view) return;
       if (!entry.ids.every(id => remaining.has(id))) return;
       tokens.push(entry.code || entry.short || entry.token);
       entry.ids.forEach(id => remaining.delete(id));
@@ -706,6 +734,7 @@ function compactSearchSelection(values, entries) {
     let prefix;
     let remainder;
     entries.forEach(entry => {
+      if (view && entry.view !== view) return;
       const selected = entry.ids.filter(id => ids.includes(id));
       const missing = entry.ids.filter(id => !ids.includes(id));
       if (selected.length < 2 || !missing.length) return;
@@ -735,7 +764,7 @@ function readableSearchValue(name, values) {
   const remaining = new Set(values.map(String));
   const tokens = [];
   if (remaining.delete('all')) tokens.push('all');
-  return [...tokens, ...compactSearchSelection([...remaining], entries)].join(',');
+  return [...tokens, ...compactSearchSelection([...remaining], entries, name === 'db' ? getCollectionGroupingView() : null)].join(',');
 }
 
 function getSearchParameters(readable = true) {
@@ -822,6 +851,10 @@ function getLocationSearchParameters() {
     });
     params.delete('searchvar');
   }
+  return params;
+}
+
+function resolveSearchParameters(params) {
   ['db', 'datasetid'].forEach(name => {
     if (!params.has(name) && !params.has(`${name}[]`)) return;
     const values = [...params.getAll(name), ...params.getAll(`${name}[]`)];
@@ -860,6 +893,16 @@ function expandCollectionPath(input, root) {
 
 function expandSelectedCollectionPaths(root) {
   root?.querySelectorAll('input.all-selector').forEach(setGroupState);
+  root?.querySelectorAll('input.all-selector.child').forEach(group => {
+    if (group.checked || group.indeterminate) return;
+    const list = getGroupRoot(group)?.querySelector(':scope > ul');
+    if (!list) return;
+    $(list).stop(true, true);
+    list.classList.add('collapsed');
+    list.style.removeProperty('display');
+    const icon = list.parentElement.querySelector(':scope > .expansion-icon, :scope > [data-target] .expansion-icon');
+    if (icon) icon.textContent = 'add_box';
+  });
   const targets = new Set();
   getCollectionInputs(root).filter(input => input.checked).forEach(input => {
     let target = input;
@@ -878,7 +921,13 @@ function prefillFromUrl() {
   clearTimeout(searchUrlTimer);
   restoringSearchForm = true;
   const config = window.NEON_SEARCH_PARAMETERS;
-  const params = getLocationSearchParameters();
+  const locationParams = getLocationSearchParameters();
+  const treeView = collectionViewFromParameters(locationParams);
+  if (treeView) {
+    const tabId = Object.keys(collectionTreeViews).find(id => collectionTreeViews[id] === treeView);
+    collsModal.querySelectorAll('input[name="collChoice"]').forEach(input => { input.checked = input.value === tabId; });
+  }
+  const params = resolveSearchParameters(locationParams);
   const selected = new Set(params.getAll('db').flatMap(value => value.split(',')));
   collectionViews.forEach(id => {
     const root = document.getElementById(id);
@@ -950,6 +999,7 @@ function prefillFromUrl() {
   if (config) config.query = pendingSiteRestore;
   window.dispatchEvent(new CustomEvent('neon:restore-search', { detail: { query: pendingSiteRestore } }));
   refreshCollectionSelectors();
+  showCollectionView();
   clearValidationErrors();
   restoringSearchForm = false;
   searchFormReady = true;
@@ -1071,12 +1121,7 @@ $(form).on('input.searchForm', 'input:not([type="checkbox"]):not([type="radio"])
 });
 $(form).on('change.searchForm', 'input, textarea, select', function () {
   if (this.name === 'collChoice' && collsModal.contains(this)) {
-    collsModal.querySelectorAll('.box').forEach(box => { box.style.display = box.id === this.value ? 'block' : 'none'; });
-    collsModal.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('tab-active', tab.contains(this)));
-    const root = getCollectionView();
-    expandSelectedCollectionPaths(root);
-    refreshCollectionSelectors();
-    updateCollectionRowStripes(root);
+    showCollectionView();
   } else if (this === allNeon) {
     setGroupChecked(collsModal, this.checked);
     refreshCollectionSelectors();

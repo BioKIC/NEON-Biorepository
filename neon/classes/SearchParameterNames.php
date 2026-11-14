@@ -6,12 +6,23 @@ class SearchParameterNames {
     private $root;
     private $entries = array();
     private $collectionCodes = array();
+    private $collectionHint;
     private $taxa = array();
     private $scopes = array();
 
     public function __construct($conn, $root = null) {
         $this->conn = $conn;
         $this->root = $root ?? $GLOBALS['SERVER_ROOT'];
+        foreach (array($_GET ?? array(), $_REQUEST ?? array()) as $request) {
+            if (!isset($request['db']) && isset($request['searchvar']) && is_string($request['searchvar'])) {
+                parse_str(str_replace('&amp;', '&', $request['searchvar']), $nested);
+                $request['db'] = $nested['db'] ?? null;
+            }
+            if (isset($request['db'])) {
+                $this->collectionHint = $request['db'];
+                break;
+            }
+        }
     }
 
     public static function slug($value) {
@@ -261,12 +272,34 @@ class SearchParameterNames {
         return $resolved === '0' || ($tokens && $resolved === '') ? '0,0' : $resolved;
     }
 
-    private function cover($ids, $entries) {
+    public function collectionView($value = null) {
+        $entries = $this->dictionary('db');
+        foreach (array($value, $this->collectionHint) as $selection) {
+            if ($selection === null) continue;
+            foreach ($this->parameterTokens('db', $selection) as $token) {
+                $base = strtolower(explode('!', $token, 2)[0]);
+                $entry = $entries[$base] ?? null;
+                if (!$entry) {
+                    foreach ($entries as $candidate) {
+                        if (strtolower($candidate['short'] ?? $candidate['token']) === $base) {
+                            $entry = $candidate;
+                            break;
+                        }
+                    }
+                }
+                if ($entry && count($entry['ids']) > 1 && in_array($entry['view'], array('taxonomic', 'protocol', 'sampletype'), true)) return $entry['view'];
+            }
+        }
+        return 'taxonomic';
+    }
+
+    private function cover($ids, $entries, $view = null) {
         $tokens = array();
         uasort($entries, function ($a, $b) {
             return count($b['ids']) <=> count($a['ids']);
         });
         foreach ($entries as $entry) {
+            if ($view !== null && count($entry['ids']) > 1 && $entry['view'] !== $view) continue;
             if (array_diff($entry['ids'], $ids)) continue;
             $tokens[] = $entry['code'] ?? $entry['short'] ?? $entry['token'];
             $ids = array_values(array_diff($ids, $entry['ids']));
@@ -274,21 +307,22 @@ class SearchParameterNames {
         return array_merge($tokens, array_map('strval', $ids));
     }
 
-    private function compactSelection($ids, $entries) {
-        $best = $this->cover($ids, $entries);
+    private function compactSelection($ids, $entries, $view = null) {
+        $best = $this->cover($ids, $entries, $view);
         $bestLength = strlen(rawurlencode(implode(',', $best)));
         $remainder = null;
         $prefix = null;
         foreach ($entries as $entry) {
+            if ($view !== null && $entry['view'] !== $view) continue;
             $selected = array_values(array_intersect($entry['ids'], $ids));
             $missing = array_values(array_diff($entry['ids'], $ids));
             if (count($selected) < 2 || !$missing) continue;
             $base = $entry['short'] ?? $entry['token'];
             if (strlen(rawurlencode($base)) + 4 >= $bestLength) continue;
-            $excluded = $this->cover($missing, $this->scopedEntries($entries, $entry['ids']));
+            $excluded = $this->cover($missing, $this->scopedEntries($entries, $entry['ids']), $view);
             $term = $base . '!' . implode('!', $excluded);
             $rest = array_values(array_diff($ids, $selected));
-            $candidate = array_merge(array($term), $this->cover($rest, $entries));
+            $candidate = array_merge(array($term), $this->cover($rest, $entries, $view));
             $length = strlen(rawurlencode(implode(',', $candidate)));
             if ($length >= $bestLength) continue;
             $bestLength = $length;
@@ -296,10 +330,11 @@ class SearchParameterNames {
             $prefix = $term;
             $remainder = $rest;
         }
-        return $remainder === null ? $best : array_merge(array($prefix), $this->compactSelection($remainder, $entries));
+        return $remainder === null ? $best : array_merge(array($prefix), $this->compactSelection($remainder, $entries, $view));
     }
 
-    public function encode($key, $value) {
+    public function encode($key, $value, $view = null) {
+        if ($key === 'db' && $view === null) $view = $this->collectionView($value);
         $tokens = $this->parameterTokens($key, $this->resolve($key, $value));
         $entries = $this->dictionary($key);
         $remaining = array();
@@ -309,7 +344,7 @@ class SearchParameterNames {
             elseif (ctype_digit($token)) $remaining[(int) $token] = true;
             else return '0';
         }
-        $named = array_merge($named, $this->compactSelection(array_keys($remaining), $entries));
+        $named = array_merge($named, $this->compactSelection(array_keys($remaining), $entries, $view));
         return implode(',', array_unique($named));
     }
 
