@@ -3,6 +3,7 @@
 class DatasetCitations {
     public static function fromCollections($collections) {
         $entries = array();
+        $neonCitationAccessDate = '[date downloaded]';
         foreach ($collections as $collData) {
             $id = (int)$collData['collid'];
             if ($id < 1 || isset($entries[$id])) continue;
@@ -31,7 +32,8 @@ class DatasetCitations {
     }
 
     public static function download($entry, $format) {
-        $filename = 'NEON-' . preg_replace('/[^a-zA-Z0-9]+/', '-', $entry['title']) . '-' . $entry['accessDate'];
+        $filename = 'NEON-' . preg_replace('/[^a-zA-Z0-9]+/', '-', $entry['title']);
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $entry['accessDate'])) $filename .= '-' . $entry['accessDate'];
         if ($format === 'bib') {
             $key = preg_replace('/[^a-zA-Z0-9._-]/', '', $entry['collectionCode']) ?: 'NEON' . $entry['collectionId'];
             $fields = array(

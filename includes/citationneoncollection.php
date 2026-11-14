@@ -6,7 +6,9 @@ $neonCitation = array(
     'collectionCode' => $collData['collectioncode'] ?? '',
     'collectionId' => (int) $collData['collid'],
     'url' => 'https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=' . (int) $collData['collid'],
-    'accessDate' => date('Y-m-d'),
+    #neon edit - project citations use a date placeholder; profiles keep today's date.
+    'accessDate' => $neonCitationAccessDate ?? date('Y-m-d'),
+    #end neon edit
     'license' => 'CC BY 4.0',
     'licenseUrl' => 'https://creativecommons.org/licenses/by/4.0/'
 );
