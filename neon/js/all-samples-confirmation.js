@@ -116,7 +116,7 @@
   window.NEONAllSamples = { confirm };
   function confirmLink(event) {
     if (event.defaultPrevented || (event.type === 'auxclick' && event.button !== 1)) return;
-    const anchor = event.target.closest('#biorepo-collections-content a.catalog-record-button[href]');
+    const anchor = event.target.closest('#biorepo-catalog-filters a.catalog-record-button[href]');
     if (!anchor) return;
     const newTab = event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1;
     if (confirm(anchor.href, { target: newTab ? '_blank' : anchor.target || '_self' })) event.preventDefault();
