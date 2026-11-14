@@ -116,6 +116,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
+	<link rel="stylesheet" href="<?php echo htmlspecialchars($CLIENT_ROOT . '/neon/css/dataset-editor.css', ENT_QUOTES, $CHARSET); ?>" />
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript" src="../../js/symb/shared.js"></script>
@@ -380,7 +381,11 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 					forced_root_block: 'div',
 					paste_as_text: true,
 					invalid_styles: { '*': 'font-family' },
-					content_style: 'body { color: #333; background: #fff; font-family: Inter, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; margin: 16px; }',
+					content_css: [
+						<?php echo json_encode($CLIENT_ROOT . '/js/tinymce/skins/content/default/content.min.css'); ?>,
+						<?php echo json_encode($CLIENT_ROOT . '/neon/css/dataset-editor.css'); ?>
+					],
+					content_style: 'body { color: #333; background: #fff; margin: 16px; }',
 					setup: function(editor) {
 						editor.on('init', function() {
 							// Exempt TinyMCE controls from the legacy page button rules.
@@ -421,9 +426,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			margin: 0 0 24px;
 		}
 		#innertext .dataset-info {
-			border: 1px solid #66aaff;
+			border: 1px solid #b8d8f4;
 			border-radius: 3px;
-			background: #e7f1fb;
+			background: #f4f8fd;
 			color: #1a1a1a;
 			padding: 24px;
 			margin: 24px 0;
@@ -433,22 +438,28 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		#innertext .dataset-info-header {
 			display: flex;
 			align-items: center;
-			gap: 20px;
-			border-bottom: 1px solid #ccd6df;
-			padding-bottom: 24px;
-			margin-bottom: 24px;
+			gap: 12px;
+			margin-bottom: 16px;
 		}
 		#innertext .dataset-info-header h4 {
 			margin: 0;
-			font: 600 14px/1.5 Inter, Helvetica, Arial, sans-serif;
+			font: 600 13px/1.5 Inter, Helvetica, Arial, sans-serif;
 			color: inherit;
-			text-transform: none;
+			text-transform: uppercase;
 		}
 		#innertext .dataset-info-icon {
-			flex: 0 0 34px;
-			width: 34px;
-			height: 34px;
-			color: #63a6e6;
+			flex: 0 0 18px;
+			width: 18px;
+			height: 18px;
+			color: #1a1a1a;
+			fill: currentColor;
+		}
+		#innertext .dataset-info-badge {
+			width: 32px;
+			height: 32px;
+			flex-shrink: 0;
+			margin-left: auto;
+			color: #8abfec;
 			fill: currentColor;
 		}
 		#innertext .dataset-info p { margin: 0 0 12px; font: inherit; }
@@ -494,14 +505,26 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		#innertext .dataset-citation-actions .dataset-citation-button svg { width: 16px; height: 16px; margin-right: 8px; }
 		#innertext .dataset-citation-status { margin: 12px 0 0; font-size: 14px; }
 		#innertext .dataset-citation-status:empty { margin: 0; }
-		.dataset-manager-actions {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			justify-content: flex-end;
-			gap: 12px;
-			margin-bottom: 24px;
+		#innertext .dataset-project-nav { margin: -8px 0 16px; }
+		#innertext .dataset-project-actions { border: 1px solid #d7d9d9; border-radius: 3px; margin-bottom: 24px; }
+		#innertext .dataset-project-actions > h2 {
+			margin: 0;
+			padding: 12px 20px;
+			background: #f5f6f7;
+			border-bottom: 1px solid #d7d9d9;
+			font: 600 14px/1.5 Inter, Helvetica, Arial, sans-serif;
 		}
+		#innertext .dataset-project-action-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 16px;
+			padding: 16px 20px;
+		}
+		#innertext .dataset-project-action-row + .dataset-project-action-row { border-top: 1px solid #e4e6e7; }
+		#innertext .dataset-project-action-row h3 { margin: 0 0 4px; font: 600 14px/1.5 Inter, Helvetica, Arial, sans-serif; }
+		#innertext .dataset-project-action-row p { margin: 0; color: #565a5c; font: 400 13px/1.5 Inter, Helvetica, Arial, sans-serif; }
 		#innertext .dataset-manager-button {
 			display: inline-flex;
 			align-items: center;
@@ -522,14 +545,18 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			transition: background-color 150ms ease, box-shadow 150ms ease;
 		}
 		#innertext .dataset-manager-button:hover { background: #0092e2; }
-		#innertext .dataset-manager-actions > .dataset-manager-button {
-			width: 260px;
-			max-width: 100%;
-			min-height: 40px;
-			margin-top: 0;
-			margin-bottom: 0;
+		#innertext .dataset-project-action-row .dataset-manager-button,
+		#innertext .dataset-project-nav .dataset-manager-button {
+			width: auto;
+			min-height: 36px;
+			margin: 0;
+			flex-shrink: 0;
+			font-size: 11.2px;
+			white-space: nowrap;
 		}
-		#innertext .dataset-manager-actions > .dataset-manager-return { margin-right: auto; }
+		#innertext .dataset-project-nav .dataset-manager-return { padding: 8px 0; color: #0073cf; background: transparent; box-shadow: none; }
+		#innertext .dataset-project-nav .dataset-manager-return:hover { color: #0092e2; text-decoration: underline; }
+		#innertext .dataset-project-nav .MuiButton-startIcon { margin-left: 0; }
 		#innertext .dataset-manager-button:focus-visible {
 			outline: 2px solid #005dab;
 			outline-offset: 3px;
@@ -542,6 +569,12 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			box-shadow: none;
 		}
 		#innertext .dataset-manager-button.MuiButton-outlined:hover { background: #e6f3fc; }
+		#innertext .dataset-project-actions .MuiButton-outlined:hover {
+			color: #0092e2;
+			border-color: #0092e2;
+			background: rgba(0, 115, 207, .04);
+			text-decoration: underline;
+		}
 		#innertext .dataset-manager-button .MuiButton-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
 		#innertext .dataset-manager-button .MuiButton-startIcon { margin: 0 8px 0 -4px; }
 		#innertext .dataset-manager-button .MuiButton-endIcon { margin: 0 -4px 0 8px; }
@@ -687,11 +720,15 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			padding-right: 4px;
 		}
 		.view-samples-container {
-			padding-top: 30px;
+			padding-top: 0;
 			padding-bottom: 20px;
 			display: flex;
-			justify-content: flex-end;
+			align-items: center;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 16px;
 		}
+		#innertext .dataset-sample-count { margin: 0; font: 400 14px/1.6 Inter, Helvetica, Arial, sans-serif; }
 	</style>
 </head>
 
@@ -700,86 +737,55 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 	<div role="main" id="innertext">
 		<h1 class="dataset-manager-title">Manage Project</h1>
 		<hr class="dataset-heading-divider" />
+		<?php if ($datasetId && $isEditor && $mdArr['ispublic'] == 1) { ?>
+			<nav class="dataset-project-nav" aria-label="Project navigation">
+				<a class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary dataset-manager-button dataset-manager-return"
+					href="<?php echo htmlspecialchars($CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . (int)$datasetId, ENT_QUOTES, $CHARSET); ?>">
+					<span class="MuiButton-startIcon MuiButton-icon MuiButton-iconSizeMedium"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg></span>
+					View Public Page
+				</a>
+			</nav>
+		<?php } ?>
 		<?php
 		echo '<div class="dataset-project-name">' . $mdArr['name'] . '</div>';
 		?>
 
-		<?php if ($mdArr['category'] == "Request" || ($datasetId && $isEditor && $mdArr['ispublic'] == 1)) { ?>
-		<div class="dataset-manager-actions">
-			<?php if ($datasetId && $isEditor && $mdArr['ispublic'] == 1) {
-			?>
-				<a
-					class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button dataset-manager-return"
-					href="<?php echo htmlspecialchars($CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . (int)$datasetId, ENT_QUOTES, $CHARSET); ?>"
-				>
-					<span class="MuiButton-startIcon MuiButton-icon MuiButton-iconSizeMedium" aria-hidden="true">
-						<svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
-					</span>
-					<span>View Public Page</span>
-				</a>
-			<?php } ?>
-			<?php
-			if ($mdArr['category'] == "Request") {
-				$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
-				if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {
-					?>
-					<button
-						type="button"
-						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
-						onclick="window.open(<?= htmlspecialchars(json_encode($rArr['sampleUseAgreementLink'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, $CHARSET) ?>, '_blank', 'noopener,noreferrer')"
-					>
-						<span>View Sample Use Agreement</span>
-					
-						<span
-							class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"
-							style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
-						>
-							<svg
-								class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
-								focusable="false"
-								aria-hidden="true"
-								viewBox="0 0 24 24"
-								style="display: block;"
-							>
-								<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-							</svg>
-						</span>
-					</button>
-					<?php
-				} else 	echo '<p style="color:#b3261e; margin:0;">No Sample Use Agreement exists for this project.</p>';
-				if ($rArr['id'] && $isEditor == 1) {
-					?>
-					<button
-						type="button"
-						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
-						onclick="window.open('../requests/inquiryform.php?id=<?= urlencode($rArr['id']) ?>', '_blank', 'noopener,noreferrer')"
-					>
-						<span>Manage Request</span>
-					
-						<span
-							class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"
-							style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
-						>
-							<svg
-								class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
-								focusable="false"
-								aria-hidden="true"
-								viewBox="0 0 24 24"
-								style="display: block;"
-							>
-								<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-							</svg>
-						</span>
-					</button>
-					<?php
-				}
-			}
-			?>
-		</div>
+		<?php if ($mdArr['category'] == "Request") {
+			$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
+			$agreementUrl = trim($rArr['sampleUseAgreementLink'] ?? '');
+			$hasSampleUseAgreement = in_array(strtolower(parse_url($agreementUrl, PHP_URL_SCHEME) ?? ''), array('http', 'https'), true)
+				&& strtolower(parse_url($agreementUrl, PHP_URL_HOST) ?? '') === 'drive.google.com';
+		?>
+			<section class="dataset-project-actions" aria-labelledby="dataset-project-actions-heading">
+				<h2 id="dataset-project-actions-heading">Project Actions</h2>
+				<div class="dataset-project-action-row">
+					<div>
+						<h3>Sample Use Agreement</h3>
+						<p><?php echo $hasSampleUseAgreement ? 'Terms for using the samples in this project.' : 'No Sample Use Agreement is available for this project.'; ?></p>
+					</div>
+					<?php if ($hasSampleUseAgreement) { ?>
+						<a class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary dataset-manager-button"
+							href="<?php echo htmlspecialchars($agreementUrl, ENT_QUOTES, $CHARSET); ?>" target="_blank" rel="noopener noreferrer">
+							View Agreement
+							<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path></svg></span>
+						</a>
+					<?php } ?>
+				</div>
+				<?php if (!empty($rArr['id']) && $isEditor == 1) { ?>
+					<div class="dataset-project-action-row">
+						<div>
+							<h3>Sample Request</h3>
+							<p>Review and update the request associated with this project.</p>
+						</div>
+						<a class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
+							href="../requests/inquiryform.php?id=<?php echo urlencode($rArr['id']); ?>" target="_blank" rel="noopener noreferrer">
+							Manage Request
+							<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path></svg></span>
+						</a>
+					</div>
+				<?php } ?>
+			</section>
 		<?php } ?>
-		<div style="padding:0 15px;">
-			<hr class="MuiDivider-root MuiDivider-fullWidth" />
-		</div>
 		<?php
 		if ($statusStr) {
 			$color = 'green';
@@ -848,13 +854,11 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								onsubmit="return validateOccurForm(this)">
 
 								<div class="section" style="margin:15px;">
-									<p class="MuiTypography-root MuiTypography-body1" style="margin-right:10px;">
-										<?php echo $LANG['COUNT'] . ': ' . count($occArr) . ' ' . $LANG['RECORDS']; ?>
-									</p>
 									<section class="dataset-info dataset-info-with-actions" aria-labelledby="dataset-sample-guidance">
 										<div class="dataset-info-header">
-											<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>
+											<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
 											<h4 id="dataset-sample-guidance">Managing Project Samples</h4>
+											<svg class="dataset-info-badge" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
 										</div>
 										<div class="dataset-info-body">
 											<div class="dataset-info-message">
@@ -871,6 +875,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										</div>
 									</section>
 									<div class="view-samples-container">
+										<p class="dataset-sample-count">
+											<?php echo $LANG['COUNT'] . ': ' . count($occArr) . ' ' . $LANG['RECORDS']; ?>
+										</p>
 										<a
 											class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary dataset-manager-button"
 											href="../../collections/list.php?datasetid=<?php echo $datasetId; ?>"
@@ -953,8 +960,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 					<div id="citationtab" class="dataset-tab-content">
 						<section class="dataset-info dataset-info-inset" aria-labelledby="dataset-citation-guidance">
 							<div class="dataset-info-header">
-								<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>
+								<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
 								<h4 id="dataset-citation-guidance">Citing This Project</h4>
+								<svg class="dataset-info-badge" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
 							</div>
 							<div class="dataset-info-body">
 								<p>If you are using <strong>physical samples</strong>, include both the physical sample citations table and the sample data citation(s) provided below.</p>
@@ -1332,8 +1340,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 								<section class="dataset-info" aria-labelledby="dataset-access-guidance">
 									<div class="dataset-info-header">
-										<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>
+										<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
 										<h4 id="dataset-access-guidance">Authorizing User Access</h4>
+										<svg class="dataset-info-badge" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
 									</div>
 									<div class="dataset-info-body">
 										<p>Contact the <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">NEON Biorepository</a> to authorize additional users.</p>
