@@ -1023,7 +1023,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							<div class="dataset-info-body">
 								<p>Your publication needs a citation for <strong>each sample type you used</strong>. Follow the steps below to prepare them.</p>
 								<?php if ($mdArr['category'] == 'Request') { ?>
-									<p><strong>For physical sample use,</strong> include both the sample table and the data citations. <strong>For data-only use,</strong> skip the physical sample table and start with <a href="#dataset-citations-heading">sample data citations</a>.</p>
+									<p><strong>For physical sample use,</strong> include both the sample table and the data citations. <strong>If you used data only,</strong> include the sample data citations in your references.</p>
 								<?php } ?>
 								<p>See <a href="../../misc/cite.php" target="_blank" rel="noopener noreferrer">Acknowledging and Citing the NEON Biorepository</a> for complete requirements, including citations for additional NEON data products and sample images.</p>
 							</div>
