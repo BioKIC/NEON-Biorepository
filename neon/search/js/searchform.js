@@ -344,13 +344,36 @@ function getCollsChips(listId, labels) {
   const root = document.getElementById(listId);
   const selected = new Map();
   getCollectionInputs(root).filter(input => input.checked).forEach(input => selected.set(input.value, input));
-  return Array.from(selected, ([id, input]) => ({
-    id: `chip-sample-type-${id}`,
-    text: `Sample Type: ${labels.get(id) || input.closest('li')?.querySelector('.leaf-label')?.textContent.trim() || input.dataset.ccode || id}`,
+  const selections = [];
+  if (collsModal.contains(root)) {
+    if (allNeon.checked && selected.size) {
+      selections.push({ key: 'all', ids: [...selected.keys()], label: 'All Sample Types at the Biorepository' });
+      selected.clear();
+    } else {
+      const entries = window.NEON_SEARCH_PARAMETERS?.db;
+      const groups = entries ? entries.filter(entry => entry.ids.length > 1 && ['taxonomic', 'protocol', 'sampletype'].includes(entry.view))
+        : collectionViews.flatMap(view => Array.from(document.getElementById(view)?.querySelectorAll('input.all-selector.child') || [], input => ({
+          token: input.id, label: input.dataset.ccode,
+          ids: [...new Set(getCollectionInputs(getGroupRoot(input)).map(leaf => leaf.value))],
+        }))).filter(entry => entry.ids.length > 1);
+      groups.sort((a, b) => b.ids.length - a.ids.length).forEach(entry => {
+        const ids = entry.ids.map(String);
+        if (!ids.every(id => selected.has(id))) return;
+        selections.push({ key: entry.token, ids, label: entry.label });
+        ids.forEach(id => selected.delete(id));
+      });
+    }
+  }
+  selected.forEach((input, id) => selections.push({ key: id, ids: [id],
+    label: labels.get(id) || input.closest('li')?.querySelector('.leaf-label')?.textContent.trim() || input.dataset.ccode || id,
+  }));
+  return selections.map(({ key, ids, label }) => ({
+    id: `chip-sample-type-${key}`,
+    text: `${ids.length > 1 ? 'Sample Types' : 'Sample Type'}: ${label}`,
     anchor: collsModal.contains(root) ? allNeon : root,
     clear: () => {
       getCollectionInputs(form).forEach(checkbox => {
-        if (checkbox.value === id) checkbox.checked = false;
+        if (ids.includes(checkbox.value)) checkbox.checked = false;
       });
       refreshCollectionSelectors();
     },

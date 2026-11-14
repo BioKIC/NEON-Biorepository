@@ -24,7 +24,12 @@ class SearchResultsSidebar {
     public function removeUrl($clientRoot, $criterion) {
         $criteria = $this->criteria;
         if (strpos($criterion, 'db:') === 0) {
-            $remaining = array_values(array_diff(array_keys($this->sampleTypes()), array(substr($criterion, 3))));
+            $remaining = array();
+            $wasAll = in_array('all', explode(',', $this->names->resolve('db', $criteria['db'] ?? '')), true);
+            foreach ($this->sampleTypes() as $key => $selection) {
+                if ((string) $key === substr($criterion, 3)) continue;
+                $remaining = array_merge($remaining, $key === 'all' && $wasAll ? array('all') : $selection['ids']);
+            }
             if ($remaining) $criteria['db'] = $this->names->encode('db', implode(',', $remaining));
             else unset($criteria['db']);
         } elseif ($criterion === 'advanced') {
@@ -62,6 +67,19 @@ class SearchResultsSidebar {
         $labelCounts = array_count_values(array_column($leaves, 'label'));
         $selected = explode(',', $this->names->resolve('db', $this->criteria['db']));
         if (in_array('all', $selected, true)) $selected = array_merge(array_values($allIds), array_diff($selected, array('all')));
+        if ($allIds && !array_diff($allIds, $selected)) {
+            $this->sampleTypes['all'] = array('ids' => array_values($allIds), 'label' => 'All Sample Types at the Biorepository');
+            $selected = array_values(array_diff($selected, $allIds));
+        }
+        $groups = array_filter($entries, function ($entry) {
+            return count($entry['ids']) > 1 && in_array($entry['view'], array('taxonomic', 'protocol', 'sampletype'), true);
+        });
+        uasort($groups, function ($a, $b) { return count($b['ids']) <=> count($a['ids']); });
+        foreach ($groups as $entry) {
+            if (array_diff($entry['ids'], $selected)) continue;
+            $this->sampleTypes[$entry['token']] = array('ids' => $entry['ids'], 'label' => $this->entryLabel($entry));
+            $selected = array_values(array_diff($selected, $entry['ids']));
+        }
         foreach (array_unique($selected) as $id) {
             if (isset($leaves[$id])) {
                 $entry = $leaves[$id];
@@ -78,7 +96,7 @@ class SearchResultsSidebar {
             } else {
                 $label = $fallback[$id] ?? ($id === '0' ? 'No matching selections' : $this->selectionLabel('db', $id));
             }
-            $this->sampleTypes[$id] = $label;
+            $this->sampleTypes[$id] = array('ids' => array($id), 'label' => $label);
         }
         return $this->sampleTypes;
     }
@@ -138,7 +156,9 @@ class SearchResultsSidebar {
             if ($flag && !$value) return;
             $chips[$key] = $flag ? $label : $label.': '.(is_array($value) ? implode(', ', $value) : $value);
         };
-        foreach ($this->sampleTypes() as $id => $label) $chips['db:'.$id] = 'Sample Type: '.$label;
+        foreach ($this->sampleTypes() as $key => $selection) {
+            $chips['db:'.$key] = (count($selection['ids']) > 1 ? 'Sample Types: ' : 'Sample Type: ') . $selection['label'];
+        }
         unset($criteria['db']);
         $add('taxa', 'Taxa');
         if (isset($criteria['usethes']) && (string) $criteria['usethes'] === '0') $chips['usethes'] = 'Exact Taxon Only';
