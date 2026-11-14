@@ -73,7 +73,7 @@ function getCollsSelected() {
     .filter(input => input.checked);
 }
 
-/** Tree state is derived from enabled leaves, never from another tab. */
+/** Each view derives parent state from its enabled leaves. */
 function getGroupRoot(checkbox) {
   return (checkbox.dataset.formId && document.getElementById(checkbox.dataset.formId)) ||
     checkbox.closest('li');
@@ -117,6 +117,17 @@ function setGroupChecked(root, checked) {
 
 function toggleAllSelector() {
   setGroupChecked(getGroupRoot(this), this.checked);
+}
+
+function syncCollectionSelection(checkbox) {
+  const inputs = checkbox.classList.contains('all-selector') ? getCollectionInputs(getGroupRoot(checkbox)) : [checkbox];
+  const ids = new Set(inputs.map(input => input.value));
+  getCollectionInputs(collsModal).forEach(input => {
+    if (!ids.has(input.value)) return;
+    input.checked = checkbox.checked;
+    input.indeterminate = false;
+  });
+  refreshCollectionSelectors();
 }
 
 function uncheckAll(element) {
@@ -835,6 +846,7 @@ function expandCriterionAccordions(input) {
 function expandCollectionPath(input, root) {
   let list = input.closest('ul');
   while (list && root.contains(list)) {
+    $(list).stop(true, true);
     list.classList.remove('collapsed');
     list.style.removeProperty('display');
     const parent = list.parentElement;
@@ -1045,15 +1057,21 @@ $(form).on('change.searchForm', 'input, textarea, select', function () {
   if (this.name === 'collChoice' && collsModal.contains(this)) {
     collsModal.querySelectorAll('.box').forEach(box => { box.style.display = box.id === this.value ? 'block' : 'none'; });
     collsModal.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('tab-active', tab.contains(this)));
-    updateCollectionRowStripes(getCollectionView());
-    updateGlobalMaster();
+    const root = getCollectionView();
+    getCollectionInputs(root).filter(input => input.checked).forEach(input => expandCollectionPath(input, root));
+    refreshCollectionSelectors();
+    updateCollectionRowStripes(root);
   } else if (this === allNeon) {
     setGroupChecked(collsModal, this.checked);
     refreshCollectionSelectors();
   } else if (this.type === 'checkbox' && !this.closest('#collection-search-map')) {
     if (this.classList.contains('all-selector')) toggleAllSelector.call(this);
-    updateAncestors(this);
-    updateGlobalMaster();
+    if (collsModal.contains(this) && (this.name === 'db' || this.classList.contains('all-selector'))) {
+      syncCollectionSelection(this);
+    } else {
+      updateAncestors(this);
+      updateGlobalMaster();
+    }
   }
   updateChip();
 });
