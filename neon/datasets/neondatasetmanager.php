@@ -369,7 +369,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			['name', 'description'].forEach(function(id) {
 				tinymce.init({
 					selector: '#' + id,
-					height: 300,
+					height: id === 'name' ? 150 : 300,
 					plugins: 'link lists image code',
 					menubar: false,
 					toolbar: id === 'name'
