@@ -505,8 +505,8 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		#innertext .dataset-citation-actions .dataset-citation-button svg { width: 16px; height: 16px; margin-right: 8px; }
 		#innertext .dataset-citation-status { margin: 12px 0 0; font-size: 14px; }
 		#innertext .dataset-citation-status:empty { margin: 0; }
-		#innertext .dataset-project-nav { margin: -8px 0 16px; }
-		#innertext .dataset-project-actions { border: 1px solid #d7d9d9; border-radius: 3px; margin-bottom: 24px; }
+		#innertext .dataset-project-nav { margin: 0 10px 8px; }
+		#innertext .dataset-project-actions { border: 1px solid #d7d9d9; border-radius: 3px; margin: 0 10px 24px; }
 		#innertext .dataset-project-actions > h2 {
 			margin: 0;
 			padding: 12px 20px;
@@ -737,6 +737,10 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 	<div role="main" id="innertext">
 		<h1 class="dataset-manager-title">Manage Project</h1>
 		<hr class="dataset-heading-divider" />
+		<?php
+		echo '<div class="dataset-project-name">' . $mdArr['name'] . '</div>';
+		?>
+
 		<?php if ($datasetId && $isEditor && $mdArr['ispublic'] == 1) { ?>
 			<nav class="dataset-project-nav" aria-label="Project navigation">
 				<a class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary dataset-manager-button dataset-manager-return"
@@ -746,9 +750,6 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 				</a>
 			</nav>
 		<?php } ?>
-		<?php
-		echo '<div class="dataset-project-name">' . $mdArr['name'] . '</div>';
-		?>
 
 		<?php if ($mdArr['category'] == "Request") {
 			$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
