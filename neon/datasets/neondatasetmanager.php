@@ -522,6 +522,14 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			transition: background-color 150ms ease, box-shadow 150ms ease;
 		}
 		#innertext .dataset-manager-button:hover { background: #0092e2; }
+		#innertext .dataset-manager-actions > .dataset-manager-button {
+			width: 260px;
+			max-width: 100%;
+			min-height: 40px;
+			margin-top: 0;
+			margin-bottom: 0;
+		}
+		#innertext .dataset-manager-actions > .dataset-manager-return { margin-right: auto; }
 		#innertext .dataset-manager-button:focus-visible {
 			outline: 2px solid #005dab;
 			outline-offset: 3px;
@@ -534,6 +542,8 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			box-shadow: none;
 		}
 		#innertext .dataset-manager-button.MuiButton-outlined:hover { background: #e6f3fc; }
+		#innertext .dataset-manager-button .MuiButton-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
+		#innertext .dataset-manager-button .MuiButton-startIcon { margin: 0 8px 0 -4px; }
 		#innertext .dataset-manager-button .MuiButton-endIcon { margin: 0 -4px 0 8px; }
 		#innertext .dataset-manager-button svg { width: 20px; height: 20px; fill: currentColor; }
 		#innertext .dataset-manager-icon-button {
@@ -558,7 +568,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		}
 		#innertext .dataset-visibility .MuiToggleButton-root:hover { background: #e6f3fc; }
 		#innertext .tinymce-wrapper { margin: 24px 15px; }
-		#innertext .tinymce-wrapper > label { display: block; margin-bottom: 8px; color: #565a5c; }
+		#innertext .tinymce-wrapper > label { display: block; margin-bottom: 8px; color: #000; }
 		#innertext .tinymce-wrapper .tox-tinymce { border-radius: 3px; }
 		.dataset-manager-page .tox svg,
 		.dataset-manager-page .tox .tox-tbtn__select-label { filter: none; }
@@ -696,6 +706,18 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 		<?php if ($mdArr['category'] == "Request" || ($datasetId && $isEditor && $mdArr['ispublic'] == 1)) { ?>
 		<div class="dataset-manager-actions">
+			<?php if ($datasetId && $isEditor && $mdArr['ispublic'] == 1) {
+			?>
+				<a
+					class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button dataset-manager-return"
+					href="<?php echo htmlspecialchars($CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . (int)$datasetId, ENT_QUOTES, $CHARSET); ?>"
+				>
+					<span class="MuiButton-startIcon MuiButton-icon MuiButton-iconSizeMedium" aria-hidden="true">
+						<svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg>
+					</span>
+					<span>View Public Page</span>
+				</a>
+			<?php } ?>
 			<?php
 			if ($mdArr['category'] == "Request") {
 				$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
@@ -752,19 +774,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 					<?php
 				}
 			}
-			if ($datasetId && $isEditor && $mdArr['ispublic'] == 1) {
 			?>
-				<a
-					class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
-					href="<?php echo htmlspecialchars($CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . (int)$datasetId, ENT_QUOTES, $CHARSET); ?>"
-					target="_blank" rel="noopener noreferrer"
-				>
-					<span>View Public Dataset Page</span>
-					<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium" aria-hidden="true">
-						<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
-					</span>
-				</a>
-			<?php } ?>
 		</div>
 		<?php } ?>
 		<div style="padding:0 15px;">
