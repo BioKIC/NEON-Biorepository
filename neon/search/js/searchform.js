@@ -858,6 +858,22 @@ function expandCollectionPath(input, root) {
   }
 }
 
+function expandSelectedCollectionPaths(root) {
+  root?.querySelectorAll('input.all-selector').forEach(setGroupState);
+  const targets = new Set();
+  getCollectionInputs(root).filter(input => input.checked).forEach(input => {
+    let target = input;
+    let row = input.closest('li');
+    while (row && root.contains(row)) {
+      const group = row.querySelector(':scope > input.all-selector, :scope > .accordion-subheader input.all-selector');
+      if (group?.checked) target = group;
+      row = row.parentElement?.closest('li');
+    }
+    targets.add(target);
+  });
+  targets.forEach(target => expandCollectionPath(target, root));
+}
+
 function prefillFromUrl() {
   clearTimeout(searchUrlTimer);
   restoringSearchForm = true;
@@ -869,8 +885,8 @@ function prefillFromUrl() {
     getCollectionInputs(root).forEach(input => {
       input.checked = params.has('db') ? selected.has('all') || selected.has(input.value) : input.defaultChecked;
       input.indeterminate = false;
-      if (selected.has(input.value)) expandCollectionPath(input, root);
     });
+    if (params.has('db')) expandSelectedCollectionPaths(root);
   });
   getCollectionInputs(formColls).forEach(input => {
     input.checked = params.has('db') ? selected.has(input.value) : input.defaultChecked;
@@ -1058,7 +1074,7 @@ $(form).on('change.searchForm', 'input, textarea, select', function () {
     collsModal.querySelectorAll('.box').forEach(box => { box.style.display = box.id === this.value ? 'block' : 'none'; });
     collsModal.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('tab-active', tab.contains(this)));
     const root = getCollectionView();
-    getCollectionInputs(root).filter(input => input.checked).forEach(input => expandCollectionPath(input, root));
+    expandSelectedCollectionPaths(root);
     refreshCollectionSelectors();
     updateCollectionRowStripes(root);
   } else if (this === allNeon) {
