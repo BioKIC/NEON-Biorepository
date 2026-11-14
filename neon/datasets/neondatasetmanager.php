@@ -1023,9 +1023,9 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							<div class="dataset-info-body">
 								<p>Your publication needs a citation for <strong>each sample type you used</strong>. Follow the steps below to prepare them.</p>
 								<?php if ($mdArr['category'] == 'Request') { ?>
-									<p><strong>For physical sample use,</strong> include both the sample table and the data citations. <strong>If you used data only,</strong> include the sample data citations in your references.</p>
+									<p><strong>For physical sample use,</strong> include both the sample table (step 1) and the data citations (step 2). <strong>For data-only use,</strong> skip the physical sample table and start with sample data citations (step 2).</p>
 								<?php } ?>
-								<p>See <a href="../../misc/cite.php" target="_blank" rel="noopener noreferrer">Acknowledging and Citing the NEON Biorepository</a> for complete requirements, including citations for additional NEON data products and sample images.</p>
+								<p>See <a href="../../misc/cite.php" target="_blank" rel="noopener noreferrer">Acknowledging and Citing the NEON Biorepository</a> for complete requirements.</p>
 							</div>
 						</section>
 						<ol class="dataset-citation-steps" role="list">
@@ -1100,7 +1100,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								<div>
 									<h3>Check Your Citations Before Submitting</h3>
 									<ul class="dataset-citation-checklist">
-										<li><strong>Replace [date downloaded]</strong> in each citation with the date you downloaded the data used in your research.</li>
+										<li><strong>Replace [DATE ACCESSED]</strong> in each citation with the date you accessed the data used in your research.</li>
 										<li><strong>Describe any changes to the data.</strong> Edit or omit the filtering and reformatting sentence as appropriate, and remove its bracketed instruction.</li>
 										<li><strong>Replace [your DOI]</strong> with the DOI for your archived data. Archiving the data used in your analysis is recommended; if you have not archived them, follow the <a href="../../misc/cite.php#h.3" target="_blank" rel="noopener noreferrer">citation example for data without an archive</a>.</li>
 										<li><strong>If you used physical samples, add the required acknowledgment</strong> to your publication. <a href="../../misc/cite.php#h.1" target="_blank" rel="noopener noreferrer">Get the acknowledgment text</a>.</li>

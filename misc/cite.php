@@ -21,7 +21,9 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 		.anchor {
 			font-size: 1.675rem !important;
-			scroll-margin-top: 150px;
+			/* #neon edit - allow for the actual sticky header height. */
+			scroll-margin-top: var(--citation-anchor-offset, 174px);
+			/* #end neon edit */
 		}
 
 		table.citation-table {
@@ -84,14 +86,18 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
 				<a href="../collections/misc/neoncollprofiles.php?collid=25" target="_blank">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
-				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). Data were filtered and reformatted for analysis. Data archived at [your DOI].
+				<!-- #neon edit -->
+				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). Data were filtered and reformatted for analysis [edit or omit as appropriate]. Data archived at [your DOI].
+				<!-- #end neon edit -->
 			</blockquote>
 
 			<p><b>For data not saved in an external repository (not recommended), cite each sample type as follows:</b></p>
 			<blockquote>
 				NEON (National Ecological Observatory Network) Biorepository. Mammal Collection (Ear Tissue). Data accessed from
 				<a href="../collections/misc/neoncollprofiles.php?collid=25" target="_blank">https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=25</a>
-				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). No changes were made.
+				<!-- #neon edit -->
+				on [DATE ACCESSED]. Licensed under CC BY 4.0 (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">https://creativecommons.org/licenses/by/4.0/</a>). Data were filtered and reformatted for analysis [edit or omit as appropriate].
+				<!-- #end neon edit -->
 			</blockquote>
 
 			<p>If additional data are obtained directly from the <a href="https://data.neonscience.org/data-products/explore" target="_blank" >NEON Data Portal</a> (e.g., via download, API access, or programmatic tools), the relevant NEON Data Product(s) must also be cited in accordance with NEON data citation guidance, including the appropriate release DOI or provisional data citation.</p>
@@ -248,6 +254,63 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<p><em>Last updated May 19, 2026</em></p>
 		</div>
 	</div>
+	<!-- #neon edit - position direct and in-page anchors after the shared layout is ready. -->
+	<script>
+	(function () {
+		let frame;
+		const headerSelector = '#header, header';
+		const target = () => {
+			let id;
+			try { id = decodeURIComponent(window.location.hash.slice(1)); }
+			catch (error) { return null; }
+			const element = document.getElementById(id);
+			return element && element.matches('#innertext .anchor') ? element : null;
+		};
+		const updateOffset = () => {
+			let offset = 0;
+			document.querySelectorAll(headerSelector).forEach(header => {
+				const style = getComputedStyle(header);
+				const height = header.getBoundingClientRect().height;
+				if (height && ['sticky', 'fixed'].includes(style.position)) {
+					offset = Math.max(offset, height + (parseFloat(style.top) || 0));
+				}
+			});
+			offset += 24;
+			document.documentElement.style.setProperty('--citation-anchor-offset', offset + 'px');
+			return offset;
+		};
+		const alignAnchor = () => {
+			const offset = updateOffset();
+			const anchor = target();
+			if (anchor) window.scrollTo({ top: Math.max(0, window.scrollY + anchor.getBoundingClientRect().top - offset), behavior: 'instant' });
+		};
+		const scheduleAlignment = () => {
+			cancelAnimationFrame(frame);
+			frame = requestAnimationFrame(() => { frame = requestAnimationFrame(alignAnchor); });
+		};
+		const headerResized = () => {
+			const offset = updateOffset();
+			const anchor = target();
+			// Correct a heading obscured by a growing header without interrupting reading farther down.
+			if (anchor && anchor.getBoundingClientRect().top >= 0 && anchor.getBoundingClientRect().top < offset) scheduleAlignment();
+		};
+		const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(headerResized) : null;
+		const layoutReady = () => {
+			if (observer) {
+				observer.disconnect();
+				document.querySelectorAll(headerSelector).forEach(header => observer.observe(header));
+			}
+			scheduleAlignment();
+		};
+		window.addEventListener('hashchange', scheduleAlignment);
+		window.addEventListener('biorepo:neon-page-ready', layoutReady);
+		window.addEventListener('load', layoutReady);
+		window.addEventListener('resize', headerResized);
+		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', layoutReady, { once: true });
+		else layoutReady();
+	})();
+	</script>
+	<!-- #end neon edit -->
 	<?php
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>

@@ -3,7 +3,7 @@
 class DatasetCitations {
     public static function fromCollections($collections) {
         $entries = array();
-        $neonCitationAccessDate = '[date downloaded]';
+        $neonCitationAccessDate = '[DATE ACCESSED]';
         foreach ($collections as $collData) {
             $id = (int)$collData['collid'];
             if ($id < 1 || isset($entries[$id])) continue;
