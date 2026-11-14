@@ -1,41 +1,22 @@
 <?php
 include_once('../../config/symbini.php');
-include_once($SERVER_ROOT.'/classes/OccurrenceDataset.php');
+include_once($SERVER_ROOT.'/config/dbconnection.php');
+include_once($SERVER_ROOT.'/neon/classes/PublicProjectSearch.php');
 include_once($SERVER_ROOT.'/content/lang/collections/datasets/publiclist.'.$LANG_TAG.'.php');
 header('Content-Type: text/html; charset='.$CHARSET);
 
-$datasetManager = new OccurrenceDataset();
-$pArr = $datasetManager->getPublicProjects();
-
-$totalProjects = count($pArr);
-$completedProjects = 0;
-$institutions = array();
-$sampleTypes = array();
-
-foreach ($pArr as $project) {
-    if (!empty($project['completeDate'])) {
-        $completedProjects++;
-    }
-
-    // Ignore blanks and collapse spelling differences in case/whitespace.
-    $institution = trim(preg_replace('/\s+/', ' ', $project['institution'] ?? ''));
-    if ($institution !== '') {
-        $institutions[strtolower($institution)] = true;
-    }
-    foreach ($project['sampleTypes'] ?? array() as $sampleType) {
-        $sampleTypeName = trim(preg_replace('/\s+/', ' ', $sampleType['sampleType']['value'] ?? ''));
-        if ($sampleTypeName !== '') {
-            $sampleTypes[strtolower($sampleTypeName)] = true;
-        }
-    }
+$projectSearchConfig = array('endpoint' => $CLIENT_ROOT . '/neon/datasets/rpc/publicprojects.php');
+try {
+    $projectSearch = new PublicProjectSearch();
+    $projectSearchConfig['filters'] = $projectSearch->filters($_GET);
+    $projectSearchConfig['options'] = $projectSearch->options();
+} catch (InvalidArgumentException $error) {
+    http_response_code(400);
+    $projectSearchConfig['error'] = $error->getMessage();
+} catch (Throwable $error) {
+    error_log('Public project filters failed: ' . $error->getMessage());
+    $projectSearchConfig['error'] = 'Unable to load project filters. Please reload the page.';
 }
-
-$ongoingProjects = $totalProjects - $completedProjects;
-$totalSpecimens = $datasetManager->getProjectSpecimenCount(array_column($pArr, 'datasetid'));
-
-usort($pArr, function ($a, $b) {
-	return strtotime($b['activeDate']) <=> strtotime($a['activeDate']);
-});
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $LANG_TAG ?>">
@@ -154,38 +135,16 @@ usort($pArr, function ($a, $b) {
                 >NEON Biorepository</a>. These projects span a wide range of disciplines, sample types, and research questions, demonstrating the many ways NEON samples and specimens can support new discoveries and extend the scientific value of NEON data.
             </p>
             
-            <section id="project-overview" aria-label="Public research project overview">
-                <dl class="overview-metrics">
-                    <div class="overview-metric">
-                        <dt>Specimens</dt>
-                        <dd><?php echo $totalSpecimens === null ? 'Unavailable' : number_format($totalSpecimens); ?></dd>
-                    </div>
-                    <div class="overview-metric">
-                        <dt>Research projects</dt>
-                        <dd><?php echo number_format($totalProjects); ?></dd>
-                    </div>
-                    <div class="overview-metric">
-                        <dt>Institutions</dt>
-                        <dd><?php echo number_format(count($institutions)); ?></dd>
-                    </div>
-                    <div class="overview-metric">
-                        <dt>Sample types</dt>
-                        <dd><?php echo number_format(count($sampleTypes)); ?></dd>
-                    </div>
-                </dl>
-                <div class="overview-footer">
-                    <p class="overview-note">Across all public projects listed below.</p>
-                </div>
-            </section>
 
 			<!--List Projects in React Table-->
 			<script>
-                window.tableData = <?php echo json_encode(
-                    $pArr ?? array(),
-                    JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+                window.NEON_PROJECT_SEARCH = <?php echo json_encode(
+                    $projectSearchConfig,
+                    JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE
                 ); ?>;
 			</script>
             <div id="neon-project-table"></div>
+            <noscript>Enable JavaScript to search and browse research projects.</noscript>
 		</div>
 	<?php
 	include($SERVER_ROOT . '/includes/footer.php');
