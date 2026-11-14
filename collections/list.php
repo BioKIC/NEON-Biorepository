@@ -23,11 +23,9 @@ $datasetid = array_key_exists('datasetid', $_REQUEST) ? filter_var($_REQUEST['da
 $sortField1 = array_key_exists('sortfield1', $_REQUEST) ? $_REQUEST['sortfield1'] : '';
 $sortField2 = array_key_exists('sortfield2', $_REQUEST) ? $_REQUEST['sortfield2'] : '';
 $sortOrder = !empty($_REQUEST['sortorder']) ? 'desc' : '';
-$comingFrom =  (array_key_exists('comingFrom', $_REQUEST) ? $_REQUEST['comingFrom'] : '');
-if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
-	//If not set via a valid input variable, use setting set within symbini
-	$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
-}
+#neon edit: navigation uses the configured search page, not a URL parameter.
+$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
+#end neon edit
 
 $_SESSION['datasetid'] = $datasetid;
 
@@ -37,10 +35,6 @@ $collManager->getSearchParameterNames()->redirect($CLIENT_ROOT . '/collections/l
 #end neon edit
 $searchVar = $collManager->getQueryTermStr();
 if ($targetTid && array_key_exists('mode', $_REQUEST)) $searchVar .= '&mode=voucher&targettid=' . $targetTid;
-
-//NEON edit start
-//$searchVar .= '&comingFrom=' . $comingFrom;
-//NEON edit end
 
 if ($sortField1) {
 	$searchVar .= '&sortfield1=' . htmlspecialchars($sortField1, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&sortorder=' . $sortOrder;
@@ -311,7 +305,6 @@ $_SESSION['citationvar'] = $searchVar;
 						</span>
 						<span style="margin-right: 8px">
 							<form class="button-form" action="listtabledisplay.php" method="post">
-								<input name="comingFrom" type="hidden" value="<?= $comingFrom; ?>" />
 								<input name="sortfield1" type="hidden" value="<?= htmlspecialchars($sortField1, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortfield2" type="hidden" value="<?= htmlspecialchars($sortField2, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortorder" type="hidden" value="<?= $sortOrder ?>" />

@@ -396,6 +396,7 @@ class SearchParameterNames {
     }
 
     public function normalize($request) {
+        unset($request['comingFrom']);
         $request['includeothercatnum'] = '1';
         $request['usethes'] = in_array($request['usethes'] ?? null, array('0', 0), true) ? '0' : '1';
         foreach (array('db', 'datasetid') as $key) {
@@ -411,7 +412,7 @@ class SearchParameterNames {
     }
 
     public function canonical($request) {
-        unset($request['includeothercatnum']);
+        unset($request['includeothercatnum'], $request['comingFrom']);
         if (in_array($request['usethes'] ?? null, array('0', 0), true)) $request['usethes'] = '0';
         else unset($request['usethes']);
         foreach (array('db', 'datasetid') as $key) {

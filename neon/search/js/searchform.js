@@ -801,7 +801,7 @@ function syncSearchUrl() {
   clearTimeout(searchUrlTimer);
   if (!searchFormReady || restoringSearchForm) return;
   const url = new URL(window.location.href);
-  [...paramNames, 'db[]', 'datasetid[]', 'materialsampletype', 'usethes', 'includeothercatnum', 'searchvar'].forEach(name => url.searchParams.delete(name));
+  [...paramNames, 'db[]', 'datasetid[]', 'materialsampletype', 'usethes', 'includeothercatnum', 'comingFrom', 'searchvar'].forEach(name => url.searchParams.delete(name));
   const params = getSearchParameters();
   // An explicit empty selection must override the editor's default of all sample types.
   if (!params.has('db')) params.set('db', '');
@@ -1124,7 +1124,10 @@ function simpleSearch() {
   document.getElementById('alert-msgs')?.replaceChildren();
   const errors = validateForm();
   if (errors.length) handleValErrors(errors);
-  else window.location.assign(getSearchUrl());
+  else {
+    const url = getSearchUrl();
+    if (!window.NEONAllSamples.confirm(url)) window.location.assign(url);
+  }
 }
 
 function hideColCheckbox(collid) {

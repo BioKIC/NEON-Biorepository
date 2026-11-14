@@ -67,6 +67,7 @@ $searchParameterConfig = $searchParameterNames->clientConfig($_GET);
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" href="../css/app.css?v=<?php echo date('Ymd'); ?>">
 	<link rel="stylesheet" href="css/searchform.css?v=<?= filemtime(__DIR__ . '/css/searchform.css') ?>">
+	<link rel="stylesheet" href="<?= $CLIENT_ROOT ?>/neon/css/all-samples-confirmation.css?v=<?= filemtime($SERVER_ROOT . '/neon/css/all-samples-confirmation.css') ?>">
 </head>
 
 <body>
@@ -589,6 +590,7 @@ $searchParameterConfig = $searchParameterNames->clientConfig($_GET);
 	?>
 
 </body>
+<script src="<?= $CLIENT_ROOT ?>/neon/js/all-samples-confirmation.js?v=<?= filemtime($SERVER_ROOT . '/neon/js/all-samples-confirmation.js') ?>" data-count-url="<?= $CLIENT_ROOT ?>/neon/search/rpc/all-samples-count.php"></script>
 <script src="js/searchform.js?ver=<?= date('Y-m-d H:i:s') ?>" type="text/javascript"></script>
 </html>
 
