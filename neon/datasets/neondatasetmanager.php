@@ -4,6 +4,7 @@ include_once($SERVER_ROOT . '/classes/OccurrenceDataset.php');
 if ($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.en.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
+include_once($SERVER_ROOT.'/neon/classes/DatasetCitations.php');
 
 header("Content-Type: text/html; charset=" . $CHARSET);
 
@@ -342,13 +343,16 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
         if (active) switchDatasetTab(active);
     });
 
-	function copyUrl(url) {
-		navigator.clipboard.writeText(url).then(function() {
-			console.log('URL copied to clipboard');
-		}).catch(function(err) {
-			console.error('Could not copy URL:', err);
-		});
-	};
+		async function copyDatasetCitation(button) {
+			var card = button.closest('.dataset-citation-card');
+			var status = card.querySelector('.dataset-citation-status');
+			try {
+				await navigator.clipboard.writeText(card.querySelector('.dataset-citation-text').textContent);
+				status.textContent = 'Citation copied.';
+			} catch (error) {
+				status.textContent = 'Unable to copy automatically. Select and copy the citation above.';
+			}
+		}
 
 		var datasetEditorsStarted = false;
 		function initializeDatasetEditors() {
@@ -399,7 +403,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 		#innertext .dataset-manager-title {
 			margin: 0 0 16px;
-			font: 300 2.25rem/1.3 Inter, Helvetica, Arial, sans-serif;
+			font: 400 2.25rem/1.3 Inter, Helvetica, Arial, sans-serif;
 			color: #000;
 			text-transform: none;
 		}
@@ -411,10 +415,90 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		}
 		#innertext .dataset-project-name > :first-child { margin-top: 0; }
 		#innertext .dataset-project-name > :last-child { margin-bottom: 0; }
+		#innertext .dataset-heading-divider {
+			border: 0;
+			border-top: 1px solid #d7d9d9;
+			margin: 0 0 24px;
+		}
+		#innertext .dataset-info {
+			border: 1px solid #66aaff;
+			border-radius: 3px;
+			background: #e7f1fb;
+			color: #1a1a1a;
+			padding: 24px;
+			margin: 24px 0;
+			font: 400 14px/1.6 Inter, Helvetica, Arial, sans-serif;
+		}
+		#innertext .dataset-info-inset { margin: 15px; }
+		#innertext .dataset-info-header {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+			border-bottom: 1px solid #ccd6df;
+			padding-bottom: 24px;
+			margin-bottom: 24px;
+		}
+		#innertext .dataset-info-header h4 {
+			margin: 0;
+			font: 600 14px/1.5 Inter, Helvetica, Arial, sans-serif;
+			color: inherit;
+			text-transform: none;
+		}
+		#innertext .dataset-info-icon {
+			flex: 0 0 34px;
+			width: 34px;
+			height: 34px;
+			color: #63a6e6;
+			fill: currentColor;
+		}
+		#innertext .dataset-info p { margin: 0 0 12px; font: inherit; }
+		#innertext .dataset-info p:last-child { margin-bottom: 0; }
+		#innertext .dataset-info a { color: #0073cf; text-decoration: underline; }
+		#innertext .dataset-info-with-actions .dataset-info-body {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 24px;
+		}
+		#innertext .dataset-info-message { flex: 1 1 400px; min-width: 0; }
+		#innertext .dataset-info-actions { margin-left: auto; }
+		#innertext .dataset-citations { margin: 24px 15px; }
+		#innertext .dataset-citations > h4 {
+			font: 400 1.25rem/1.4 Inter, Helvetica, Arial, sans-serif;
+			margin: 0 0 16px;
+			color: #1a1a1a;
+		}
+		#innertext .dataset-citation-card {
+			background: #fff;
+			padding: 24px;
+			margin-bottom: 16px;
+			border: 1px solid #d7d9d9;
+			border-radius: 4px;
+			overflow-wrap: anywhere;
+		}
+		#innertext .dataset-citation-text {
+			margin: 0;
+			color: #1a1a1a;
+			font: 400 .75rem/1.6 monospace;
+		}
+		#innertext .dataset-citation-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin-top: 24px;
+		}
+		#innertext .dataset-citation-actions .dataset-citation-button.MuiButton-outlined {
+			padding: 5px 10px;
+			white-space: nowrap;
+		}
+		#innertext .dataset-citation-actions .dataset-citation-button svg { width: 16px; height: 16px; margin-right: 8px; }
+		#innertext .dataset-citation-status { margin: 12px 0 0; font-size: 14px; }
+		#innertext .dataset-citation-status:empty { margin: 0; }
 		.dataset-manager-actions {
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
+			justify-content: flex-end;
 			gap: 12px;
 			margin-bottom: 24px;
 		}
@@ -605,13 +689,15 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
 		<h1 class="dataset-manager-title">Manage Project</h1>
+		<hr class="dataset-heading-divider" />
 		<?php
 		echo '<div class="dataset-project-name">' . $mdArr['name'] . '</div>';
 		?>
 
-		<?php if ($mdArr['category'] == "Request") { ?>
+		<?php if ($mdArr['category'] == "Request" || ($datasetId && $isEditor && $mdArr['ispublic'] == 1)) { ?>
 		<div class="dataset-manager-actions">
 			<?php
+			if ($mdArr['category'] == "Request") {
 				$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
 				if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {
 					?>
@@ -641,17 +727,6 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 				} else 	echo '<p style="color:#b3261e; margin:0;">No Sample Use Agreement exists for this project.</p>';
 				if ($rArr['id'] && $isEditor == 1) {
 					?>
-					<span>
-						<button
-							type="button"
-							class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
-							onclick="copyUrl(new URL('neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>', window.location.href).href)"
-							aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
-							title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
-						>
-							Copy Dataset Url
-						</button>
-					</span>
 					<button
 						type="button"
 						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
@@ -676,7 +751,20 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 					</button>
 					<?php
 				}
+			}
+			if ($datasetId && $isEditor && $mdArr['ispublic'] == 1) {
 			?>
+				<a
+					class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
+					href="<?php echo htmlspecialchars($CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . (int)$datasetId, ENT_QUOTES, $CHARSET); ?>"
+					target="_blank" rel="noopener noreferrer"
+				>
+					<span>View Public Dataset Page</span>
+					<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium" aria-hidden="true">
+						<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
+					</span>
+				</a>
+			<?php } ?>
 		</div>
 		<?php } ?>
 		<div style="padding:0 15px;">
@@ -745,7 +833,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							$headerArr = ['occid','Domain', 'State','Site','Sample ID','Sample Code','IGSN ID','Scientific Name'];
 							?>
 							<form name="occurform"
-								action="neondatasetmanager.php"
+								action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>"
 								method="post"
 								onsubmit="return validateOccurForm(this)">
 
@@ -753,83 +841,25 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									<p class="MuiTypography-root MuiTypography-body1" style="margin-right:10px;">
 										<?php echo $LANG['COUNT'] . ': ' . count($occArr) . ' ' . $LANG['RECORDS']; ?>
 									</p>
-									<div
-										style="
-											display:flex;
-											align-items:flex-start;
-											gap:16px;
-											margin:15px 0;
-											padding:18px 20px;
-											background:#f3f8fd;
-											border:1px solid #c5ddf4;
-										"
-									>
-										<div
-											style="
-												flex:0 0 auto;
-												width:28px;
-												height:28px;
-												border-radius:50%;
-												background:#0073CF;
-												color:#fff;
-												display:flex;
-												align-items:center;
-												justify-content:center;
-												font-weight:bold;
-												font-family:serif;
-												font-size:20px;
-												line-height:1;
-											"
-											aria-hidden="true"
-										>
-											i
+									<section class="dataset-info dataset-info-with-actions" aria-labelledby="dataset-sample-guidance">
+										<div class="dataset-info-header">
+											<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>
+											<h4 id="dataset-sample-guidance">Managing Project Samples</h4>
 										</div>
-
-										<div
-											style="
-												display:flex;
-												align-items:center;
-												justify-content:space-between;
-												gap:30px;
-												flex:1;
-												min-width:0;
-											"
-										>
-											<p
-												class="MuiTypography-root MuiTypography-body1"
-												style="margin:0; line-height:1.6; flex:1;"
-											>
-												Samples that will not be used for this project may be removed from the list.
-												If additional samples need to be added, please contact the NEON Biorepository. The request will need to be reviewed and the Sample Use Agreement updated before additional samples can be added.
-											</p>
-
-											<div style="flex-shrink:0;">
-												<input
-													name="datasetid"
-													type="hidden"
-													value="<?php echo $datasetId; ?>"
-												/>
-
-												<?php
-												if ($occArr && $isEditor < 3) {
-													?>
-													<button
-														class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
-														type="submit"
-														name="submitaction"
-														value="Remove Selected Samples"
-													>
-														<?php echo $LANG['REM_SEL_OCCS']; ?>
-													</button>
-													<?php
-												}
-												?>
+										<div class="dataset-info-body">
+											<div class="dataset-info-message">
+												<p>Samples that will not be used for this project may be removed from the list.</p>
+												<p>If additional samples need to be added, please contact the NEON Biorepository. The request will need to be reviewed and the Sample Use Agreement updated before additional samples can be added.</p>
+											</div>
+											<div class="dataset-info-actions">
+												<input name="datasetid" type="hidden" value="<?php echo (int)$datasetId; ?>" />
+												<?php if ($occArr && $isEditor < 3) { ?>
+													<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
+														type="submit" name="submitaction" value="Remove Selected Samples"><?php echo $LANG['REM_SEL_OCCS']; ?></button>
+												<?php } ?>
 											</div>
 										</div>
-									</div>
-									<div style="padding: 0 15px;">
-										<hr class="MuiDivider-root MuiDivider-fullWidth" />
-									</div>
+									</section>
 									<div class="view-samples-container">
 										<a
 											class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary dataset-manager-button"
@@ -911,58 +941,17 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 						?>
 					</div>
 					<div id="citationtab" class="dataset-tab-content">
-						<div
-							style="
-								display:flex;
-								align-items:flex-start;
-								gap:16px;
-								margin:15px;
-								padding:18px 20px;
-								background:#f3f8fd;
-								border:1px solid #c5ddf4;
-							"
-						>
-							<div
-								style="
-									flex:0 0 auto;
-									width:28px;
-									height:28px;
-									border-radius:50%;
-									background:#0073CF;
-									color:#fff;
-									display:flex;
-									align-items:center;
-									justify-content:center;
-									font-weight:bold;
-									font-family:serif;
-									font-size:20px;
-									line-height:1;
-								"
-								aria-hidden="true"
-							>
-								i
+						<section class="dataset-info dataset-info-inset" aria-labelledby="dataset-citation-guidance">
+							<div class="dataset-info-header">
+								<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>
+								<h4 id="dataset-citation-guidance">Citing This Project</h4>
 							</div>
-
-							<p
-								class="MuiTypography-root MuiTypography-body1"
-								style="margin:0; line-height:1.6;"
-							>
-								- If you are using <strong>physical samples</strong>, include both the physical sample citations table and the sample data citation(s) provided below.
-								<br>
-								- If you are using <strong>data only</strong>, only the sample data citation(s) are required.
-								<br>
-								- See
-								<a
-									class="MuiTypography-root MuiLink-root MuiLink-underlineAlways MuiTypography-colorPrimary"
-									href="../../misc/cite.php"
-									target="_blank"
-								>Acknowledging and Citing the NEON Biorepository</a>
-								for complete requirements.
-							</p>
-						</div>
-						<div style="padding:0 15px;">
-							<hr class="MuiDivider-root MuiDivider-fullWidth" />
-						</div>
+							<div class="dataset-info-body">
+								<p>If you are using <strong>physical samples</strong>, include both the physical sample citations table and the sample data citation(s) provided below.</p>
+								<p>If you are using <strong>data only</strong>, only the sample data citation(s) are required.</p>
+								<p>See <a href="../../misc/cite.php" target="_blank" rel="noopener noreferrer">Acknowledging and Citing the NEON Biorepository</a> for complete requirements.</p>
+							</div>
+						</section>
 						<?php
 						if ($mdArr['category'] == "Request") {
 							?>
@@ -1004,17 +993,40 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 						<div style="padding:0 15px;">
 							<hr class="MuiDivider-root MuiDivider-fullWidth" />
 						</div>
-						<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
-							<div style="margin:15px;">
-								<h4 class="MuiTypography-root MuiTypography-h4">Sample Data Citation(s)</h4>
-								<div class="MuiTypography-root MuiTypography-body1" style="margin-top:10px;">
-									<?php echo $mdArr['bibliographicCitation']; ?>
-								</div>
-							</div>
-						</form>
+						<section class="dataset-citations" aria-labelledby="dataset-citations-heading">
+							<h4 id="dataset-citations-heading">Sample Data Citations</h4>
+							<?php $citations = DatasetCitations::fromStoredText($mdArr['bibliographicCitation'] ?? ''); ?>
+							<?php if (!$citations) { ?>
+								<p>No sample data citations are available for this project.</p>
+							<?php } ?>
+							<?php foreach ($citations as $citation) { ?>
+								<article class="dataset-citation-card">
+									<p class="dataset-citation-text"><?php echo htmlspecialchars($citation['text'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+									<div class="dataset-citation-actions">
+										<button type="button" class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary dataset-manager-button dataset-citation-button" onclick="copyDatasetCitation(this)"
+											title="Copy this citation to the clipboard">
+											<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"></path></svg>
+											Copy
+										</button>
+										<?php foreach (array('bib' => 'BibTeX', 'ris' => 'RIS') as $format => $label) {
+											$download = DatasetCitations::download($citation, $format);
+										?>
+											<a class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary dataset-manager-button dataset-citation-button"
+												href="<?php echo htmlspecialchars($download['href'], ENT_QUOTES, 'UTF-8'); ?>"
+												download="<?php echo htmlspecialchars($download['filename'], ENT_QUOTES, 'UTF-8'); ?>"
+												title="Download this citation as <?php echo $label; ?>">
+												<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>
+												Download (<?php echo $label; ?>)
+											</a>
+										<?php } ?>
+									</div>
+									<p class="dataset-citation-status" role="status" aria-live="polite"></p>
+								</article>
+							<?php } ?>
+						</section>
 					</div>
 					<div id="admintab" class="dataset-tab-content">
-						<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
+						<form name="editform" action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>" method="post" onsubmit="return validateEditForm(this)">
 
 							<!--Visibility section-->
 							<div style="display:flex; align-items:center; gap:80px; margin:20px 0; padding-left:15px;">
@@ -1076,13 +1088,6 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									<div style="color:#666; font-size:0.9em;">
 										Make this project visible to the public
 									</div>
-								<?php
-								} 
-								elseif ($mdArr['ispublic'] == 1) {
-								?>
-									<a href="<?php echo $CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . $datasetId; ?>"
-									 	target="_blank"
-										><strong>View public dataset page.</strong></a>
 								<?php
 								} 
 								?>
@@ -1191,7 +1196,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								?>
 							</div>
 						</form>
-						<!--<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return confirm('<?php echo $LANG['SURE_DEL_DS_PERM']; ?>')">-->
+						<!--<form name="editform" action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>" method="post" onsubmit="return confirm('<?php echo $LANG['SURE_DEL_DS_PERM']; ?>')">-->
 						<!--	<div style="margin:15px;">-->
 						<!--		<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />-->
 						<!--		<input name="tabindex" type="hidden" value="0" />-->
@@ -1261,7 +1266,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 																<form
 																	name="deluserform"
 																	method="post"
-																	action="neondatasetmanager.php"
+																	action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>"
 																	style="display:inline;"
 																	onsubmit="return confirm('<?php echo $LANG['SURE_REM_USER'] . ' ' . $name . '?'; ?>')"
 																>
@@ -1315,51 +1320,15 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									?>
 								</div>
 
-								<div
-									style="
-										display:flex;
-										align-items:center;
-										gap:16px;
-										padding:18px 20px;
-										margin-bottom:25px;
-										background:#f3f8fd;
-										border:1px solid #c5ddf4;
-									"
-								>
-									<div
-										style="
-											flex:0 0 auto;
-											width:28px;
-											height:28px;
-											border-radius:50%;
-											background:#0073CF;
-											color:#fff;
-											display:flex;
-											align-items:center;
-											justify-content:center;
-											font-weight:bold;
-											font-family:serif;
-											font-size:20px;
-											line-height:1;
-										"
-										aria-hidden="true"
-									>
-										i
+								<section class="dataset-info" aria-labelledby="dataset-access-guidance">
+									<div class="dataset-info-header">
+										<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"></path></svg>
+										<h4 id="dataset-access-guidance">Authorizing User Access</h4>
 									</div>
-
-									<p
-										class="MuiTypography-root MuiTypography-body1"
-										style="margin:0; line-height:1.6;"
-									>
-										Contact the
-										<a
-											class="MuiTypography-root MuiLink-root MuiLink-underlineAlways MuiTypography-colorPrimary"
-											href="https://www.neonscience.org/about/contact-neon-biorepository"
-											target="_blank"
-										>NEON Biorepository</a>
-										to authorize additional users.
-									</p>
-								</div>
+									<div class="dataset-info-body">
+										<p>Contact the <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">NEON Biorepository</a> to authorize additional users.</p>
+									</div>
+								</section>
 								<?php
 								if ($isEditor == 1) {
 									?>
@@ -1405,7 +1374,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 										<form
 											name="addform"
-											action="neondatasetmanager.php"
+											action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>"
 											method="post"
 											onsubmit="return validateUserAddForm(this)"
 										>
@@ -1711,7 +1680,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							if ($isEditor == 1) {
 								?>
 								<div style="padding:0 15px;">
-									<form name="linkdatasetform" action="neondatasetmanager.php" method="post">
+									<form name="linkdatasetform" action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>" method="post">
 										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>"/>
 										<div style="margin-top:15px;">
 											<div style="display:flex; align-items:center; gap:10px; width:100%;">
