@@ -8,7 +8,7 @@ header('Content-Type: text/html; charset='.$CHARSET);
 $projectSearchConfig = array('endpoint' => $CLIENT_ROOT . '/neon/datasets/rpc/publicprojects.php');
 try {
     $projectSearch = new PublicProjectSearch();
-    $projectSearchConfig['filters'] = $projectSearch->filters($_GET);
+    $projectSearchConfig['filters'] = $projectSearch->clientFilters($_GET);
     $projectSearchConfig['options'] = $projectSearch->options();
 } catch (InvalidArgumentException $error) {
     http_response_code(400);
@@ -30,10 +30,21 @@ try {
                 font-size: 2.25rem;
                 line-height: 1.3;
             }
-            #innertext > p.MuiTypography-body1,
-            #innertext > p.MuiTypography-body1 a {
+            #project-introduction {
+                margin: 30px 0;
+                font-family: 'Inter', Helvetica, Arial, sans-serif;
                 font-size: 0.875rem;
+                font-weight: 400;
                 line-height: 1.6;
+            }
+            #project-introduction a {
+                font: inherit;
+                color: #0073cf;
+                text-decoration: underline;
+            }
+            #project-introduction a:hover,
+            #project-introduction a:active {
+                color: #0092e2;
             }
             #project-overview {
                 container: project-overview / inline-size;
@@ -126,10 +137,9 @@ try {
 		<!-- This is inner text! -->
 		<div role="main" id="innertext">
 			<h3 class="MuiTypography-root MuiTypography-h3" style="font-weight: 300;">Biorepository Research Projects</h3>
-            <p class="MuiTypography-root MuiTypography-body1" style="margin:30px 0;">
+            <p id="project-introduction">
                 Each project listed below highlights the breadth of scientific research supported by samples and specimens from the
                 <a
-                    class="MuiTypography-root MuiLink-root MuiLink-underlineAlways MuiTypography-colorPrimary"
                     href="https://www.neonscience.org/samples"
                     target="_blank"
                 >NEON Biorepository</a>. These projects span a wide range of disciplines, sample types, and research questions, demonstrating the many ways NEON samples and specimens can support new discoveries and extend the scientific value of NEON data.

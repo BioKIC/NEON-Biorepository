@@ -41,29 +41,44 @@ class PublicProjectSearch {
 
     public function options() {
         if ($this->catalog !== null) return $this->catalog;
-        $this->catalog = array('db' => array(), 'datasetid' => array(), 'site' => array());
+        $this->catalog = array('db' => array(), 'site' => array());
+        $codes = array();
+        $names = new SearchParameterNames($this->conn);
+        foreach ($names->dictionary('db') as $entry) {
+            if (count($entry['ids']) === 1 && isset($entry['code'])) $codes[$entry['ids'][0]] = $entry['code'];
+        }
         foreach ($this->rows('SELECT collid, COALESCE(NULLIF(publicName, \'\'), collectionname) AS label, collectioncode
             FROM omcollections ORDER BY label, collid') as $row) {
-            $this->catalog['db'][] = array('value' => (string)$row['collid'], 'label' => $this->text($row['label']),
+            $this->catalog['db'][] = array('value' => $codes[$row['collid']] ?? (string)$row['collid'],
+                'collid' => (string)$row['collid'], 'label' => $this->text($row['label']),
                 'code' => $row['collectioncode'] ?? '');
         }
         $path = $GLOBALS['SERVER_ROOT'] . '/neon/config/search-geography.json';
         $geography = is_readable($path) ? json_decode(file_get_contents($path), true) : array();
-        foreach ($this->rows("SELECT d.datasetid, d.name, d.datasetName, d.notes, d.category
-            FROM omoccurdatasets d WHERE d.ispublic = 1
-            AND (d.category IS NULL OR d.category <> 'Request'
-                OR EXISTS (SELECT 1 FROM neonrequest nr WHERE nr.datasetID = d.datasetid AND nr.activeDate IS NOT NULL))
-            ORDER BY COALESCE(d.datasetName, d.name), d.datasetid") as $row) {
-            if ($row['notes'] === 'NEON Site') {
-                $code = strtoupper(trim($row['name']));
-                $siteName = $geography['sites'][$code]['siteName'] ?? $row['datasetName'] ?? $code;
-                $this->catalog['site'][] = array('value' => $code, 'datasetid' => (string)$row['datasetid'],
-                    'label' => $code . ($siteName !== $code ? ' — ' . $this->text($siteName) : ''), 'name' => $siteName);
+        $sites = array();
+        $domains = array();
+        foreach ($this->rows("SELECT d.name, d.datasetName FROM omoccurdatasets d
+            WHERE d.ispublic = 1 AND d.notes = 'NEON Site' ORDER BY d.name") as $row) {
+            $code = strtoupper(trim($row['name']));
+            $site = $geography['sites'][$code] ?? array();
+            $siteName = $site['siteName'] ?? $row['datasetName'] ?? $code;
+            $sites[$code] = array('value' => $code, 'label' => $code . ($siteName !== $code ? ' — ' . $this->text($siteName) : ''),
+                'name' => $siteName, 'group' => 'Sites', 'sites' => array($code));
+            if (!empty($site['domainCode'])) {
+                $domain = $site['domainCode'];
+                if (!isset($domains[$domain])) {
+                    $domainName = $site['domainName'] ?? $domain;
+                    $domains[$domain] = array('value' => $domain, 'label' => $domain . ' — ' . $this->text($domainName),
+                        'name' => $domainName, 'group' => 'Domains', 'sites' => array());
+                }
+                $domains[$domain]['sites'][$code] = $code;
             }
-            $this->catalog['datasetid'][] = array('value' => (string)$row['datasetid'],
-                'label' => $this->text($row['datasetName'] ?: $row['name']), 'category' => $row['category'] ?? '');
         }
-        usort($this->catalog['site'], function ($a, $b) { return strcmp($a['value'], $b['value']); });
+        foreach ($domains as &$domain) $domain['sites'] = array_values($domain['sites']);
+        unset($domain);
+        ksort($domains);
+        ksort($sites);
+        $this->catalog['site'] = array_merge(array_values($domains), array_values($sites));
         return $this->catalog;
     }
 
@@ -91,8 +106,6 @@ class PublicProjectSearch {
             $collections = array_values(array_unique(array_map('strval', array_filter($collections, 'is_numeric'))));
             if (!$collections) $collections = array('0');
         }
-        $datasets = $this->tokens($input['datasetid'] ?? '');
-        if ($datasets) $datasets = array_values(array_unique(explode(',', $names->resolve('datasetid', $datasets))));
         $sites = $this->tokens($input['site'] ?? $input['sitename'] ?? '');
         $options = $this->options();
         $sites = array_map(function ($site) use ($options) {
@@ -107,9 +120,16 @@ class PublicProjectSearch {
         $page = $input['page'] ?? 1;
         $pageSize = $input['pagesize'] ?? 25;
         if (!is_scalar($page) || !is_scalar($pageSize)) throw new InvalidArgumentException('Invalid project page.');
-        return array('db' => $collections, 'datasetid' => $datasets, 'site' => array_values(array_unique($sites)),
+        return array('db' => $collections, 'site' => array_values(array_unique($sites)),
             'q' => trim((string)$q), 'page' => max(1, min(1000000, (int)$page)),
             'pageSize' => in_array((int)$pageSize, array(10, 25, 50, 100), true) ? (int)$pageSize : 25);
+    }
+
+    public function clientFilters($input) {
+        $filters = $this->filters($input);
+        $codes = array_column($this->options()['db'], 'value', 'collid');
+        $filters['db'] = array_map(function ($id) use ($codes) { return $codes[$id] ?? $id; }, $filters['db']);
+        return $filters;
     }
 
     private function baseFrom() {
@@ -143,15 +163,14 @@ class PublicProjectSearch {
             }
             $parts[] = '(' . implode(' OR ', $collections) . ')';
         }
-        if ($filters['datasetid']) {
-            // Dataset IDs, including site datasets, match shared records.
-            $parts[] = 'EXISTS (SELECT 1 FROM omoccurdatasetlink dl INNER JOIN omoccurdatasets d ON d.datasetid = dl.datasetid
-                WHERE dl.occid = o.occid AND d.ispublic = 1 AND ' . $this->inList('d.datasetid', $filters['datasetid'], $values) . ')';
-        }
         if ($filters['site']) {
+            $siteCodes = array();
+            foreach ($this->options()['site'] as $option) {
+                if (in_array($option['value'], $filters['site'], true)) $siteCodes = array_merge($siteCodes, $option['sites']);
+            }
             $parts[] = "EXISTS (SELECT 1 FROM omoccurdatasetlink sl INNER JOIN omoccurdatasets s ON s.datasetid = sl.datasetid
                 WHERE sl.occid = o.occid AND s.ispublic = 1 AND s.notes = 'NEON Site' AND "
-                . $this->inList('s.name', $filters['site'], $values) . ')';
+                . $this->inList('s.name', array_values(array_unique($siteCodes)), $values) . ')';
         }
         return 'EXISTS (SELECT 1 FROM omoccurdatasetlink projectLink INNER JOIN omoccurrences o ON o.occid = projectLink.occid
             WHERE ' . implode(' AND ', $parts) . ')';
@@ -170,15 +189,8 @@ class PublicProjectSearch {
                 foreach ($fields as $field) $values[] = $term;
             }
         }
-        if ($filters['db'] || $filters['datasetid'] || $filters['site']) {
-            $recordValues = array();
-            $records = $this->recordWhere($filters, $recordValues);
-            // Selecting a project's own dataset also finds it when it has no linked records yet.
-            if ($filters['datasetid'] && !$filters['db'] && !$filters['site']) {
-                $records = '(' . $this->inList('od.datasetid', $filters['datasetid'], $values) . ' OR ' . $records . ')';
-            }
-            $values = array_merge($values, $recordValues);
-            $where .= ' AND ' . $records;
+        if ($filters['db'] || $filters['site']) {
+            $where .= ' AND ' . $this->recordWhere($filters, $values);
         }
         $from = $this->baseFrom() . ' WHERE ' . $where;
         $total = (int)$this->rows('SELECT COUNT(*) AS total' . $from, $values)[0]['total'];
