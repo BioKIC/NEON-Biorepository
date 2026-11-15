@@ -254,10 +254,10 @@ html:has(#innertext.neon-search) {
 #innertext.neon-search #criteria-panel {
   flex: 1 1 240px;
   position: sticky;
-  top: 180px;
+  top: calc(var(--neon-header-offset, 0px) + 40px);
   min-height: 50vh;
   height: auto;
-  max-height: calc(100vh - 200px);
+  max-height: calc(100dvh - var(--neon-header-offset, 0px) - 64px);
   overflow: auto;
   display: flex;
   flex-direction: column;

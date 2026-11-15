@@ -21,9 +21,6 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 		.anchor {
 			font-size: 1.675rem !important;
-			/* #neon edit - allow for the actual sticky header height. */
-			scroll-margin-top: var(--citation-anchor-offset, 174px);
-			/* #end neon edit */
 		}
 
 		table.citation-table {
@@ -254,63 +251,6 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 			<p><em>Last updated May 19, 2026</em></p>
 		</div>
 	</div>
-	<!-- #neon edit - position direct and in-page anchors after the shared layout is ready. -->
-	<script>
-	(function () {
-		let frame;
-		const headerSelector = '#header, header';
-		const target = () => {
-			let id;
-			try { id = decodeURIComponent(window.location.hash.slice(1)); }
-			catch (error) { return null; }
-			const element = document.getElementById(id);
-			return element && element.matches('#innertext .anchor') ? element : null;
-		};
-		const updateOffset = () => {
-			let offset = 0;
-			document.querySelectorAll(headerSelector).forEach(header => {
-				const style = getComputedStyle(header);
-				const height = header.getBoundingClientRect().height;
-				if (height && ['sticky', 'fixed'].includes(style.position)) {
-					offset = Math.max(offset, height + (parseFloat(style.top) || 0));
-				}
-			});
-			offset += 24;
-			document.documentElement.style.setProperty('--citation-anchor-offset', offset + 'px');
-			return offset;
-		};
-		const alignAnchor = () => {
-			const offset = updateOffset();
-			const anchor = target();
-			if (anchor) window.scrollTo({ top: Math.max(0, window.scrollY + anchor.getBoundingClientRect().top - offset), behavior: 'instant' });
-		};
-		const scheduleAlignment = () => {
-			cancelAnimationFrame(frame);
-			frame = requestAnimationFrame(() => { frame = requestAnimationFrame(alignAnchor); });
-		};
-		const headerResized = () => {
-			const offset = updateOffset();
-			const anchor = target();
-			// Correct a heading obscured by a growing header without interrupting reading farther down.
-			if (anchor && anchor.getBoundingClientRect().top >= 0 && anchor.getBoundingClientRect().top < offset) scheduleAlignment();
-		};
-		const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(headerResized) : null;
-		const layoutReady = () => {
-			if (observer) {
-				observer.disconnect();
-				document.querySelectorAll(headerSelector).forEach(header => observer.observe(header));
-			}
-			scheduleAlignment();
-		};
-		window.addEventListener('hashchange', scheduleAlignment);
-		window.addEventListener('biorepo:neon-page-ready', layoutReady);
-		window.addEventListener('load', layoutReady);
-		window.addEventListener('resize', headerResized);
-		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', layoutReady, { once: true });
-		else layoutReady();
-	})();
-	</script>
-	<!-- #end neon edit -->
 	<?php
 	include($SERVER_ROOT . '/includes/footer.php');
 	?>
