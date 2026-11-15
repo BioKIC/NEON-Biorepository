@@ -3,6 +3,7 @@ include_once('../../config/symbini.php');
 include_once($SERVER_ROOT . '/neon/classes/CollectionMetadata.php');
 include_once($SERVER_ROOT . '/neon/classes/DatasetsMetadata.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceManager.php');
+include_once($SERVER_ROOT . '/neon/classes/SampleTypeUrls.php');
 header("Content-Type: text/html; charset=" . $CHARSET);
 
 $collData = new CollectionMetadata();
@@ -82,7 +83,8 @@ $searchParameterConfig = $searchParameterNames->clientConfig($_GET);
 	}
 
 	function renderSearchProfileLink($collid, $name) {
-		$url = htmlspecialchars('../../collections/misc/neoncollprofiles.php?collid=' . rawurlencode((string) $collid), ENT_QUOTES, 'UTF-8');
+		global $CLIENT_ROOT;
+		$url = htmlspecialchars(SampleTypeUrls::profileUrl($collid, $CLIENT_ROOT), ENT_QUOTES, 'UTF-8');
 		$label = htmlspecialchars('View profile for ' . $name, ENT_QUOTES, 'UTF-8');
 		return "<a class='search-profile-link' href='{$url}' target='_blank' rel='noopener noreferrer' aria-label='{$label}'>View profile</a>";
 	}

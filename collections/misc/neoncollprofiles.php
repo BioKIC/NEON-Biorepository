@@ -1,5 +1,6 @@
 <?php
-include_once('../../config/symbini.php');
+include_once(__DIR__ . '/../../config/symbini.php');
+include_once($SERVER_ROOT . '/neon/classes/SampleTypeUrls.php');
 include_once($SERVER_ROOT . '/content/lang/collections/misc/collprofiles.' . $LANG_TAG . '.php');
 include_once($SERVER_ROOT . '/classes/OccurrenceCollectionProfile.php');
 header('Content-Type: text/html; charset=' . $CHARSET);
@@ -11,8 +12,22 @@ $collid = isset($_REQUEST['collid']) ? $collManager->sanitizeInt($_REQUEST['coll
 $action = array_key_exists('action', $_REQUEST) ? $_REQUEST['action'] : '';
 $eMode = array_key_exists('emode', $_REQUEST) ? $collManager->sanitizeInt($_REQUEST['emode']) : 0;
 
+// Resolve old links before rendering or executing editing actions.
+$canonicalProfileUrl = SampleTypeUrls::profileUrl($collid, $CLIENT_ROOT);
+try {
+    $sampleTypeUrls = SampleTypeUrls::shared();
+    $profileRedirect = $sampleTypeUrls->redirectTarget($collid, $CLIENT_ROOT, $_GET, $_SERVER['REQUEST_URI'] ?? '');
+    if ($profileRedirect) {
+        $redirectStatus = in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', array('GET', 'HEAD'), true) ? 301 : 307;
+        header('Location: ' . $profileRedirect, true, $redirectStatus);
+        exit;
+    }
+} catch (Throwable $error) {
+    error_log('Sample type profile redirect: ' . $error->getMessage());
+}
+
 if ($eMode && !$SYMB_UID) {
-    header('Location: ../../profile/index.php?refurl=' . rawurlencode('../collections/misc/neoncollprofiles.php?' . ($_SERVER['QUERY_STRING'] ?? '')));
+    header('Location: ' . $CLIENT_ROOT . '/profile/index.php?refurl=' . rawurlencode($_SERVER['REQUEST_URI'] ?? $canonicalProfileUrl));
     exit;
 }
 
@@ -37,6 +52,7 @@ if ($SYMB_UID) {
 <head>
     <title><?php echo htmlspecialchars('NEON Biorepository | ' . (($collData[$collid]['publicname'] ?? '') ?: ($collData[$collid]['collectionname'] ?? 'Sample Types')), ENT_QUOTES); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php if ($collid) { ?><link rel="canonical" href="<?php echo htmlspecialchars($canonicalProfileUrl, ENT_QUOTES, 'UTF-8'); ?>"><?php } ?>
     <?php include_once($SERVER_ROOT . '/includes/head.php'); ?>
     <script>
         function toggleById(target) {
@@ -52,8 +68,8 @@ if ($SYMB_UID) {
     include($SERVER_ROOT . '/includes/header.php');
     ?>
     <div class="navpath">
-        <a href="../../index.php">Home</a> &gt;
-        <a href="../index.php">Sample types</a> &gt; Sample type profile
+        <a href="<?php echo $CLIENT_ROOT; ?>/index.php">Home</a> &gt;
+        <a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/browsecollprofiles.php">Sample types</a> &gt; Sample type profile
     </div>
     <div id="innertext">
         <?php
@@ -67,7 +83,7 @@ if ($SYMB_UID) {
 		if ($editCode && $collid) {
 		?>
 			<div style="float:right;margin:3px;cursor:pointer;" onclick="toggleById('controlpanel');" title="<?php echo (isset($LANG['TOGGLE_MAN']) ? $LANG['TOGGLE_MAN'] : 'Toggle Manager\'s Control Panel'); ?>">
-				<img style='border:0px;' src='../../images/edit.png' alt='Open editing controls' />
+				<img style='border:0px;' src='<?php echo $CLIENT_ROOT; ?>/images/edit.png' alt='Open editing controls' />
 			</div>
 			<?php
 		}
@@ -82,7 +98,7 @@ if ($SYMB_UID) {
 						<fieldset style="float:right;margin:5px;min-inline-size:0;padding:0.35em 0.625em 0.75em;" title="Quick Search">
 							<legend><b><?php echo (isset($LANG['QUICK_SEARCH']) ? $LANG['QUICK_SEARCH'] : 'Quick Search'); ?></b></legend>
 							<b><?php echo (isset($LANG['CAT_NUM']) ? $LANG['CAT_NUM'] : 'Catalog Number'); ?></b><br />
-							<form name="quicksearch" action="../editor/occurrenceeditor.php" method="post">
+							<form name="quicksearch" action="<?php echo $CLIENT_ROOT; ?>/collections/editor/occurrenceeditor.php" method="post">
 								<input name="q_catalognumber" type="text" style="border:1px solid #d0d0d0 !important;"/>
 								<input name="collid" type="hidden" value="<?php echo $collid; ?>" />
 								<input name="occindex" type="hidden" value="0" />
@@ -93,7 +109,7 @@ if ($SYMB_UID) {
 							if (stripos($collData['colltype'], 'observation') !== false) {
 							?>
 								<li>
-									<a href="../editor/observationsubmit.php?collid=<?php echo $collid; ?>">
+									<a href="<?php echo $CLIENT_ROOT; ?>/collections/editor/observationsubmit.php?collid=<?php echo $collid; ?>">
 										<?php echo (isset($LANG['SUBMIT_IMAGE_V']) ? $LANG['SUBMIT_IMAGE_V'] : 'Submit an Image Voucher (observation supported by a photo)'); ?>
 									</a>
 								</li>
@@ -101,19 +117,19 @@ if ($SYMB_UID) {
 							}
 							?>
 							<li>
-								<a href="../editor/occurrenceeditor.php?gotomode=1&collid=<?php echo $collid; ?>">
+								<a href="<?php echo $CLIENT_ROOT; ?>/collections/editor/occurrenceeditor.php?gotomode=1&collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['ADD_NEW_OCCUR']) ? $LANG['ADD_NEW_OCCUR'] : 'Add New Occurrence Record'); ?>
 								</a>
 							</li>
 
 							<li>
-								<a href="../editor/occurrencetabledisplay.php?displayquery=1&collid=<?php echo $collid; ?>">
+								<a href="<?php echo $CLIENT_ROOT; ?>/collections/editor/occurrencetabledisplay.php?displayquery=1&collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['EDIT_EXISTING']) ? $LANG['EDIT_EXISTING'] : 'Edit Existing Occurrence Records'); ?>
 								</a>
 							</li>
 
 							<li>
-								<a href="../reports/labelmanager.php?collid=<?php echo $collid; ?>">
+								<a href="<?php echo $CLIENT_ROOT; ?>/collections/reports/labelmanager.php?collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['PRINT_LABELS']) ? $LANG['PRINT_LABELS'] : 'Print Specimen Labels'); ?>
 								</a>
 							</li>
@@ -122,7 +138,7 @@ if ($SYMB_UID) {
 							if ($collData['colltype'] == 'Preserved Specimens') {
 							?>
 								<li>
-									<a href="../loans/index.php?collid=<?php echo $collid; ?>">
+									<a href="<?php echo $CLIENT_ROOT; ?>/collections/loans/index.php?collid=<?php echo $collid; ?>">
 										<?php echo (isset($LANG['LOAN_MANAGEMENT']) ? $LANG['LOAN_MANAGEMENT'] : 'Loan Management'); ?>
 									</a>
 								</li>
@@ -139,18 +155,18 @@ if ($SYMB_UID) {
 							<ul>
 
 								<li>
-									<a href="collmetadata.php?collid=<?php echo $collid; ?>">
+									<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/collmetadata.php?collid=<?php echo $collid; ?>">
 										<?php echo (isset($LANG['EDIT_META']) ? $LANG['EDIT_META'] : 'Edit Metadata'); ?>
 									</a>
 								</li>
 
 								<li>
-									<a href="collpermissions.php?collid=<?php echo $collid; ?>">
+									<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/collpermissions.php?collid=<?php echo $collid; ?>">
 										<?php echo (isset($LANG['MANAGE_PERMISSIONS']) ? $LANG['MANAGE_PERMISSIONS'] : 'Manage Permissions'); ?>
 									</a>
 								</li>
 								<li>
-									<a href='../../neon/editor/neoneditor.php'>NEON Occurrence (Skeletal) and Extended Data Editor</a>
+									<a href='<?php echo $CLIENT_ROOT; ?>/neon/editor/neoneditor.php'>NEON Occurrence (Skeletal) and Extended Data Editor</a>
 								</li>
 
 								<?php
@@ -158,12 +174,12 @@ if ($SYMB_UID) {
 									if ($collData['managementtype'] != 'Aggregate') {
 								?>
 										<li>
-											<a href="../specprocessor/index.php?collid=<?php echo $collid; ?>">
+											<a href="<?php echo $CLIENT_ROOT; ?>/collections/specprocessor/index.php?collid=<?php echo $collid; ?>">
 												<?php echo (isset($LANG['PROCESSING_TOOLBOX']) ? $LANG['PROCESSING_TOOLBOX'] : 'Processing Toolbox'); ?>
 											</a>
 										</li>
 										<li>
-											<a href="../datasets/datapublisher.php?collid=<?php echo $collid; ?>">
+											<a href="<?php echo $CLIENT_ROOT; ?>/collections/datasets/datapublisher.php?collid=<?php echo $collid; ?>">
 												<?php echo (isset($LANG['DARWIN_CORE_PUB']) ? $LANG['DARWIN_CORE_PUB'] : 'Darwin Core Archive Publishing'); ?>
 											</a>
 										</li>
@@ -171,7 +187,7 @@ if ($SYMB_UID) {
 									}
 									?>
 									<li>
-										<a href="../editor/editreviewer.php?collid=<?php echo $collid; ?>">
+										<a href="<?php echo $CLIENT_ROOT; ?>/collections/editor/editreviewer.php?collid=<?php echo $collid; ?>">
 											<?php echo (isset($LANG['REVIEW_SPEC_EDITS']) ? $LANG['REVIEW_SPEC_EDITS'] : 'Review/Verify Occurrence Edits'); ?>
 										</a>
 									</li>
@@ -181,7 +197,7 @@ if ($SYMB_UID) {
 								if (!empty($ACTIVATE_DUPLICATES)) {
 								?>
 									<li>
-										<a href="../datasets/duplicatemanager.php?collid=<?php echo $collid; ?>">
+										<a href="<?php echo $CLIENT_ROOT; ?>/collections/datasets/duplicatemanager.php?collid=<?php echo $collid; ?>">
 											<?php echo (isset($LANG['DUP_CLUSTER']) ? $LANG['DUP_CLUSTER'] : 'Duplicate Clustering'); ?>
 										</a>
 									</li>
@@ -195,14 +211,14 @@ if ($SYMB_UID) {
 								if ($collData['colltype'] != 'General Observations') {
 								?>
 									<li style="margin-left:10px;">
-									<a href="../cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">
+									<a href="<?php echo $CLIENT_ROOT; ?>/collections/cleaning/index.php?obsuid=0&collid=<?php echo $collid; ?>">
 									<?php echo (isset($LANG['DATA_CLEANING']) ? $LANG['DATA_CLEANING'] : 'Data Cleaning Tools'); ?>
                                     </a></li>
 								<?php
 								}
 								?>
 								<li style="margin-left:10px;">
-									<a href="#" onclick="newWindow = window.open('collbackup.php?collid=<?php echo $collid; ?>','bucollid','scrollbars=1,toolbar=0,resizable=1,width=600,height=250,left=20,top=20');">
+									<a href="#" onclick="newWindow = window.open('<?php echo $CLIENT_ROOT; ?>/collections/misc/collbackup.php?collid=<?php echo $collid; ?>','bucollid','scrollbars=1,toolbar=0,resizable=1,width=600,height=250,left=20,top=20');">
 										<?php echo (isset($LANG['BACKUP_DATA_FILE']) ? $LANG['BACKUP_DATA_FILE'] : 'Download Backup Data File'); ?>
 									</a>
 								</li>
@@ -210,7 +226,7 @@ if ($SYMB_UID) {
 								if ($collData['managementtype'] == 'Live Data') {
 								?>
 									<li style="margin-left:10px;">
-										<a href="../admin/restorebackup.php?collid=<?php echo $collid; ?>">
+										<a href="<?php echo $CLIENT_ROOT; ?>/collections/admin/restorebackup.php?collid=<?php echo $collid; ?>">
 											<?php echo (isset($LANG['RESTORE_BACKUP']) ? $LANG['RESTORE_BACKUP'] : 'Restore Backup File'); ?>
 										</a>
 									</li>
@@ -219,7 +235,7 @@ if ($SYMB_UID) {
 								?>
 
 								<li style="margin-left:10px;">
-									<a href="neoncollprofiles.php?collid=<?php echo $collid; ?>&action=UpdateStatistics">
+									<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/neoncollprofiles.php?collid=<?php echo $collid; ?>&action=UpdateStatistics">
 										<?php echo (isset($LANG['UPDATE_STATS']) ? $LANG['UPDATE_STATS'] : 'Update Statistics'); ?>
 									</a>
 								</li>
@@ -371,7 +387,7 @@ if ($SYMB_UID) {
                     $bytes = filesize($archiveFile);
                     if ($bytes !== false) $archiveSize = $bytes;
                 }
-                $returnUrl = $CLIENT_ROOT . '/collections/misc/neoncollprofiles.php?collid=' . $collid . '#data-downloads';
+                $returnUrl = $canonicalProfileUrl . '#data-downloads';
                 // Use the Biorepository session, not a client-side login flag.
                 $additionalResources[] = [
                     'kind' => 'dwca',
@@ -385,7 +401,7 @@ if ($SYMB_UID) {
                     'openInNewTab' => !empty($SYMB_UID),
                 ];
             }
-            $additionalResources[] = ['kind' => 'eml', 'title' => 'Collection metadata', 'description' => 'Ecological Metadata Language (EML)', 'url' => '../datasets/emlhandler.php?collid=' . $collid, 'action' => 'View'];
+            $additionalResources[] = ['kind' => 'eml', 'title' => 'Collection metadata', 'description' => 'Ecological Metadata Language (EML)', 'url' => $CLIENT_ROOT . '/collections/datasets/emlhandler.php?collid=' . $collid, 'action' => 'View'];
             if (!empty($collData['publishtogbif']) && $datasetKey) $additionalResources[] = ['title' => 'GBIF dataset', 'url' => 'https://www.gbif.org/dataset/' . $datasetKey];
             $dynamicProps = $decodeArray($collData['dynamicproperties'] ?? '');
             if (!empty($dynamicProps['edi']) && is_string($dynamicProps['edi'])) $additionalResources[] = ['title' => 'EDI dataset', 'url' => 'https://doi.org/' . preg_replace('/^doi:/i', '', $dynamicProps['edi'])];
@@ -430,6 +446,15 @@ if ($SYMB_UID) {
                 $profile['collections'][] = ['id' => (int) $cid, 'title' => $collection['publicname'] ?: $collection['collectionname'], 'code' => $collection['collectioncode'] ?? ''];
             }
         } ?>
+        <?php
+        if (isset($sampleTypeUrls)) {
+            $profileIds = array_merge(array((int) $collid, (int) ($profile['identificationCollectionId'] ?? 0)),
+                array_keys((array) ($profile['related'] ?? array())),
+                array_column($profile['bulkSampleCollections'] ?? array(), 'id'),
+                array_column($profile['collections'] ?? array(), 'id'));
+            $profile['urls'] = (object) $sampleTypeUrls->urls($profileIds, $CLIENT_ROOT);
+        }
+        ?>
         <script id="neon-collection-profile-data" type="application/json"><?php
             echo json_encode(['profile' => $profile, 'clientRoot' => $CLIENT_ROOT, 'language' => $LANG_TAG], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE);
         ?></script>
@@ -440,3 +465,4 @@ if ($SYMB_UID) {
     <?php include($SERVER_ROOT . '/includes/footer.php'); ?>
 </body>
 </html>
+

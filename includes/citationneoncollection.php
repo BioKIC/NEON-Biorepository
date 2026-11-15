@@ -1,11 +1,14 @@
 <?php
+#neon edit
+require_once __DIR__ . '/../neon/classes/SampleTypeUrls.php';
+#end neon edit
 // Keep the displayed citation and downloadable metadata together.
 $neonCitation = array(
     'author' => 'NEON (National Ecological Observatory Network) Biorepository',
     'title' => $collData['collectionname'],
     'collectionCode' => $collData['collectioncode'] ?? '',
     'collectionId' => (int) $collData['collid'],
-    'url' => 'https://biorepo.neonscience.org/portal/collections/misc/neoncollprofiles.php?collid=' . (int) $collData['collid'],
+    'url' => SampleTypeUrls::profileUrl((int) $collData['collid'], 'https://biorepo.neonscience.org/portal'),
     #neon edit - project citations use a date placeholder; profiles keep today's date.
     'accessDate' => $neonCitationAccessDate ?? date('Y-m-d'),
     #end neon edit
