@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="<?= $CLIENT_ROOT ?>/neon/css/header-controls.css?v=20261115">
 <?php if (empty($DEACTIVATE_REACT)): ?>
 <style>
   html.biorepo-layout-pending #innertext,
@@ -307,7 +308,7 @@ if ($isNeonEditor) {
     const BUTTON_CLASSES = 'MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeSmall MuiButton-sizeSmall';
     const BUTTON_STYLES = {
         color: '#0073cf', fontSize: '0.55rem', fontWeight: '600',
-        lineHeight: '1.75', whiteSpace: 'nowrap', textTransform: 'uppercase',
+        lineHeight: '1.75', whiteSpace: 'normal', textTransform: 'uppercase',
         borderWidth: '1px', borderStyle: 'solid', borderRadius: '0',
         borderColor: '#0073cf', padding: '5px 10px', display: 'inline-flex',
         alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box'
@@ -315,7 +316,7 @@ if ($isNeonEditor) {
 
     const createHeaderButton = ([label, url]) => {
         const button = element('button', {
-            className: BUTTON_CLASSES,
+            className: `${BUTTON_CLASSES} biorepo-header-button`,
             type: 'button',
             tabindex: '0',
             'data-selenium': 'neon-menu.data-management-button',
@@ -336,24 +337,12 @@ if ($isNeonEditor) {
     
         hamburger.before(container);
     
-        Object.assign(actions.style, {
-            display: 'flex',
-            alignItems: 'stretch',
-            justifyContent: 'flex-end'
-        });
-    
-        Object.assign(container.style, {
-            position: 'static',
-            margin: '0',
-            padding: '0',
-            display: 'flex',
-            alignItems: 'stretch',
-            gap: '0',
-            zIndex: 'auto'
-        });
-    
         const buttons = <?= json_encode($headerButtons, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
-    
+        actions.classList.add('biorepo-header-actions');
+        container.classList.add('biorepo-auth-buttons');
+        container.style.setProperty('--header-button-count', buttons.length);
+        actions.closest('.header__inner')?.classList.toggle('biorepo-account-header', buttons.length > 1);
+
         buttons.map(createHeaderButton).forEach(button => container.prepend(button));
     };
 

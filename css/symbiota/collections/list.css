@@ -1,73 +1,303 @@
 .checkbox-elem {
-	margin: 5px;
-	padding: 5px;
-	border: 1px dashed orange;
+  margin: 5px;
+  padding: 5px;
+  border: 1px dashed orange;
 }
 
-.ui-tabs .ui-tabs-nav li {
-	/*width: 32%;*/
-	/*NEON edits*/
-	width: 19%;
-	/*end NEON edits*/
+#innertext.neon-record-results,
+.neon-record-results #tabs,
+.neon-record-results #queryrecords {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
-.ui-tabs .ui-tabs-nav li a {
-	/*NEON edits*/
-	/*margin-left: 10px;*/
-	/*end NEON edits*/
-}
-/*neon edit*/
-.ui-tabs-anchor {
-	white-space: nowrap;
-	max-width: 75%;
-	overflow: hidden;
-	text-overflow: ellipsis;
- }
-/*end neon edit*/
-#tabs {
-	width:95%;
+.neon-record-results #tabs > .ui-tabs-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
 }
 
-.button-form{
-	display: inline;
-	margin: 0px;
-	padding: 0px;
+.neon-record-results #tabs > .ui-tabs-nav::before,
+.neon-record-results #tabs > .ui-tabs-nav::after { display: none; }
+
+.neon-record-results #tabs > .ui-tabs-nav li {
+  flex: 1 1 5rem;
+  float: none;
+  min-width: 0;
+  width: auto;
+  margin: 0;
 }
 
-.icon-button{
-	/*NEON edits*/
-	display: inline !important;
-	/*end NEON edits*/
-	margin: 5px;
-    padding: 5px;
+.neon-record-results #tabs > .ui-tabs-nav .ui-tabs-anchor {
+  display: block;
+  float: none;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  padding: 12px 8px;
+  text-align: center;
+  white-space: normal;
 }
 
-
-#sort-div {  
+.neon-record-results #tabs > .ui-tabs-panel {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 16px 0;
+  overflow-wrap: anywhere;
 }
 
-#sort-inner-div { 
-	display: flex; 
-	flex-wrap: wrap;
+.neon-record-results .results-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 16px;
 }
 
-#sort-inner-div div { 
-	margin-right: 10px; 
+.neon-record-results .results-action,
+.neon-record-results .button-form {
+  display: block;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
-#sort-div label { 
-	display: block; 
+.neon-record-results .results-action .MuiButton-root {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  height: 100%;
+  white-space: normal;
 }
 
-#sort-div button { 
-	margin: 15px 
+.neon-record-results .icon-button {
+  display: inline-flex !important;
+  margin: 5px;
+  padding: 5px;
 }
 
+.neon-record-results .results-sort { margin: 24px 0 16px; }
 
-#omlisttable {
-    width: 90%;
+.neon-record-results #sort-inner-div {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 12px;
+  align-items: end;
 }
 
-#omlisttable img {
-    border: medium double #990000;
+.neon-record-results #sort-inner-div > div { min-width: 0; }
+.neon-record-results #sort-div label { display: block; }
+
+.neon-record-results #sort-div select,
+.neon-record-results #dataset-tools select {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
 }
+
+.neon-record-results #sort-div button {
+  min-height: 44px;
+  width: 100%;
+  margin: 0;
+}
+
+.neon-record-results .results-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 0;
+  margin: 16px 0;
+  border-top: 1px solid #d7d9d9;
+  border-bottom: 1px solid #d7d9d9;
+}
+
+.neon-record-results .results-page-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.neon-record-results .results-page-links .pagination,
+.neon-record-results .results-page-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 44px;
+}
+
+.neon-record-results .results-page-count { overflow-wrap: anywhere; }
+
+.neon-record-results #omlisttable {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.neon-record-results #omlisttable td {
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.neon-record-results #omlisttable .record-collection {
+  width: 72px;
+  text-align: center;
+}
+
+.neon-record-results .record-selection { margin-top: 10px; }
+
+.neon-record-results .record-identifiers,
+.neon-record-results .record-collector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin: 4px;
+}
+
+.neon-record-results .record-identifiers > span,
+.neon-record-results .record-collector > span {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.neon-record-results .record-thumbnail {
+  float: right;
+  max-width: 40%;
+  margin: 5px 16px;
+}
+
+.neon-record-results #omlisttable img {
+  max-width: 100%;
+  object-fit: contain;
+  border: medium double #990000;
+}
+
+.neon-record-results #dataset-tools fieldset,
+.neon-record-results #maps fieldset {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.neon-record-results #dataset-tools legend {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.neon-record-results #dataset-tools fieldset > div {
+  float: none !important;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.neon-record-results #dataset-tools fieldset > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.neon-record-results #dataset-tools fieldset > div:last-child > div {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.neon-record-results #dataset-tools button {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  white-space: normal;
+}
+
+.neon-record-results #biorepo-search-metrics {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.neon-record-results #maps iframe { max-width: 100%; }
+
+.neon-record-results .results-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+  gap: 24px 16px;
+  min-width: 0;
+}
+
+.neon-record-results .results-gallery-grid .tndiv {
+  float: none;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  overflow-wrap: anywhere;
+}
+
+.neon-record-results .results-gallery-grid .tnimg {
+  box-sizing: border-box;
+  width: 100%;
+  height: 160px;
+}
+
+.neon-record-results .results-gallery-grid .tnimg a {
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+
+.neon-record-results .results-gallery-grid .tnimg img {
+  position: static;
+  max-width: 100%;
+  max-height: 160px;
+  margin: 0;
+}
+
+@media (max-width: 599px) {
+  #biorepo-page [data-selenium="neon-page.content"]:has(> .neon-record-results) {
+    padding: 24px 16px 48px;
+  }
+
+  .neon-record-results #omlisttable,
+  .neon-record-results #omlisttable tbody,
+  .neon-record-results #omlisttable tr,
+  .neon-record-results #omlisttable td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .neon-record-results #omlisttable .record-collection {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    padding: 8px 0;
+  }
+
+  .neon-record-results .record-selection { margin: 0 0 0 auto; }
+
+  .neon-record-results .record-thumbnail {
+    float: none;
+    display: inline-block;
+    max-width: calc(100% - 8px);
+    margin: 8px 4px;
+  }
+
+  .neon-record-results .record-identifiers,
+  .neon-record-results .record-collector {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .neon-record-results .results-page-count { flex-basis: 100%; }
+}
+

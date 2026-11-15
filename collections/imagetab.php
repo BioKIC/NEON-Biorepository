@@ -21,7 +21,7 @@ $searchVar .= '&tabindex=3';
 			$startPage = ($imagePageNumber > 4?$imagePageNumber - 4:1);
 			$endPage = ($lastPage > $startPage + 9?$startPage + 9:$lastPage);
 			$url = $CLIENT_ROOT . '/collections/list.php?' . $searchVar;
-			$pageBar = '<div style="float:left" >';
+			$pageBar = '<div class="results-page-links">';
 			if($startPage > 1){
 				$pageBar .= '<span class="pagination" style="margin-right:5px;"><a href="'.$url.'&imagepage=1">First</a></span>';
 				$pageBar .= '<span class="pagination" style="margin-right:5px;"><a href="'.$url.'&imagepage='.(($imagePageNumber - 10) < 1 ?1:$imagePageNumber - 10).'">&lt;&lt;</a></span>';
@@ -38,15 +38,15 @@ $searchVar .= '&tabindex=3';
 				$pageBar .= '<span class="pagination" style="margin-left:5px;"><a href="'.$url.'&imagepage='.(($imagePageNumber + 10) > $lastPage?$lastPage:($imagePageNumber + 10)).'">&gt;&gt;</a></span>';
 				if($recordCnt < 10000) $pageBar .= '<span class="pagination" style="margin-left:5px;"><a href="'.$url.'&imagepage='.$lastPage.'">Last</a></span>';
 			}
-			$pageBar .= '</div><div style="float:right;margin-top:4px;margin-bottom:8px;">';
+			$pageBar .= '</div><div class="results-page-count">';
 			$beginNum = ($imagePageNumber - 1)*$cntPerPage + 1;
 			$endNum = $beginNum + $cntPerPage - 1;
 			if($endNum > $recordCnt) $endNum = $recordCnt;
 			$pageBar .= 'Page ' . $imagePageNumber . ', records ' . number_format($beginNum) . '-' . number_format($endNum) . ' of ' . number_format($recordCnt) . '</div>';
 			$paginationStr = $pageBar;
-			echo '<div style="width:100%;">'.$paginationStr.'</div>';
+			echo '<nav class="results-pagination" aria-label="Image pages">'.$paginationStr.'</nav>';
 			echo '<div style="clear:both;margin:5 0 5 0;"><hr /></div>';
-			echo '<div style="width:98%;margin-left:auto;margin-right:auto;">';
+			echo '<div class="results-gallery-grid">';
 			foreach($imageArr as $imgArr){
 				$imgId = $imgArr['mediaID'];
 				$imgUrl = $imgArr['url'];
@@ -82,7 +82,7 @@ $searchVar .= '&tabindex=3';
 			echo '</div>';
 			if($lastPage > $startPage){
 				echo "<div style='clear:both;margin:5 0 5 0;'><hr /></div>";
-				echo '<div style="width:100%;">'.$paginationStr.'</div>';
+				echo '<nav class="results-pagination" aria-label="Image pages">'.$paginationStr.'</nav>';
 			}
 			?>
 			<div style="clear:both;"></div>
@@ -94,3 +94,4 @@ $searchVar .= '&tabindex=3';
 		?>
 	</div>
 </div>
+
