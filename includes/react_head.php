@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?= $CLIENT_ROOT ?>/neon/css/header-controls.css?v=20261115">
+<link rel="stylesheet" href="<?= $CLIENT_ROOT ?>/neon/css/header-controls.css?v=<?= date('Ymd') ?>">
 <?php if (empty($DEACTIVATE_REACT)): ?>
 <style>
   html.biorepo-layout-pending #innertext,

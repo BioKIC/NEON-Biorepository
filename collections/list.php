@@ -224,7 +224,9 @@ $_SESSION['citationvar'] = $searchVar;
 	}
 	?>
 	<!-- This is inner text! -->
+	<!-- NEON edit start - scope responsive results styling -->
 	<div role="main" id="innertext" class="neon-record-results">
+	<!-- NEON edit end -->
 		<?php
 		#neon edit
 		include($SERVER_ROOT . '/neon/search/includes/results-sidebar.php');
@@ -268,6 +270,7 @@ $_SESSION['citationvar'] = $searchVar;
 			<div id="speclist">
 				<div id="biorepo-coll-type"></div>
 				<div id="queryrecords">
+					<!-- NEON edit start - responsive results actions -->
 					<div class="results-actions">
 						<?php
 						if ($SYMB_UID) {
@@ -353,6 +356,7 @@ $_SESSION['citationvar'] = $searchVar;
 						</span>
 						NEON edit end -->
 					</div>
+					<!-- NEON edit end -->
 					<div style="margin:5px;">
 						<?php
 						$collSearchStr = $collManager->getCollectionSearchStr();
@@ -388,7 +392,9 @@ $_SESSION['citationvar'] = $searchVar;
 						?>
 					</div>
 					<div id="sort-div" style="display:<?= ($sortField1 ? 'block' : 'none') ?>">
+						<!-- NEON edit start - responsive sort controls -->
 						<section class="results-sort">
+						<!-- NEON edit end -->
 							<form name="sortform" action="list.php" method="post">
 								<div id="sort-inner-div">
 									<div>
@@ -458,6 +464,7 @@ $_SESSION['citationvar'] = $searchVar;
 					</div>
 					<div style="clear:both;"></div>
 					<?php
+					//NEON edit start - wrapping pagination controls
 					$paginationStr = '<nav class="results-pagination" aria-label="Record pages"><div class="results-page-links">';
 					$lastPage = (int)($collManager->getRecordCnt() / $cntPerPage) + 1;
 					$startPage = ($pageNumber > 5 ? $pageNumber - 5 : 1);
@@ -486,6 +493,7 @@ $_SESSION['citationvar'] = $searchVar;
 					$paginationStr .= $pageBar;
 					$paginationStr .= '</div></nav>';
 					echo $paginationStr;
+					//NEON edit end
 
 					//Add search return
 					if ($occurArr) {
@@ -507,6 +515,7 @@ $_SESSION['citationvar'] = $searchVar;
 									$cultivarEpithet = !empty($splitSciname['cultivarEpithet']) ? ($taxonEditorObj->standardizeCultivarEpithet($splitSciname['cultivarEpithet'])) . ' ' : '';
 									$tradeName = !empty($splitSciname['tradeName']) ? ($taxonEditorObj->standardizeTradeName($splitSciname['tradeName']) . ' ') : '';
 									$nonItalicizedScinameComponent = $author . $cultivarEpithet . $tradeName;
+									//NEON edit start - responsive record and collection containers
 									echo '<tr class="result-record"><td class="record-collection">';
 									echo '<a href="misc/collprofiles.php?collid=' . $fieldArr['collid'] . '" target="_blank">';
 									if ($fieldArr["icon"]) {
@@ -521,6 +530,7 @@ $_SESSION['citationvar'] = $searchVar;
 									echo '</div>';
 									echo '<div class="record-selection"><span class="dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span></div>';
 									echo '</td><td class="record-details">';
+									//NEON edit end
 									if ($IS_ADMIN || in_array($fieldArr['collid'], $permissionArr) || ($SYMB_UID && $SYMB_UID == $fieldArr['obsuid'])) {
 										echo '<div style="float:right;" title="' . $LANG['OCCUR_EDIT_TITLE'] . '">';
 										echo '<a href="editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">';
@@ -535,7 +545,9 @@ $_SESSION['citationvar'] = $searchVar;
 											$thumbnail = $MEDIA_DOMAIN . $fieldArr['media']['thumbnail'];
 										}
 										else $thumbnail = $fieldArr['media']['thumbnail'];
+										//NEON edit start - responsive record thumbnail
 										echo '<div class="record-thumbnail">';
+										//NEON edit end
 										echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
 										echo '<img src="' . $thumbnail . '" style="height:70px" alt="' . (isset($LANG['IMG_OCC']) ? $LANG['IMG_OCC'] : 'Image Associated With the Occurrence') . '"
 											onerror="this.onerror=null; this.src=\'' . $CLIENT_ROOT . '/images/image-icon.svg\';" />';
@@ -547,7 +559,9 @@ $_SESSION['citationvar'] = $searchVar;
 										echo '<img src="../images/voucheradd.png" style="border:solid 1px gray;height:1.3em;margin-right:5px;" alt="' . $LANG['IMG_ADD_VOUCHER'] . '"/></a></div>';
 									}
 									if (isset($fieldArr['media']) && isset($fieldArr['media']['thumbnailurl'])) {
+										//NEON edit start - responsive record thumbnail
 										echo '<div class="record-thumbnail">';
+										//NEON edit end
 										// NEON edit start
 										//echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
 										echo '<a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
@@ -567,9 +581,9 @@ $_SESSION['citationvar'] = $searchVar;
 										echo $sciStr;
 									}
 									echo '</div>';
+									//NEON edit start - wrapping identifiers and collector details
 									echo '<div class="record-identifiers">';
 									echo '<span>' . $fieldArr["catnum"] . '</span>';
-									//NEON edit start
 									if (isset($fieldArr['sampleID'])) {
 										echo '<span>' . $fieldArr["sampleID"] . '</span>';
 									}
@@ -578,8 +592,8 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									echo '</div><div class="record-collector">';
 									echo '<span>' . $fieldArr["collector"] . '&nbsp;&nbsp;&nbsp;' . (isset($fieldArr["collnum"]) ? $fieldArr["collnum"] : '') . '</span>';
-									//NEON edit end
 									if (isset($fieldArr["date"])) echo '<span>' . $fieldArr["date"] . '</span>';
+									//NEON edit end
 									echo '</div><div style="margin:4px">';
 									$localStr = '';
 									if ($fieldArr["country"]) $localStr .= $fieldArr["country"];

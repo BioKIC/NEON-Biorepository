@@ -4,6 +4,7 @@
   border: 1px dashed orange;
 }
 
+/* NEON edit start - responsive record results, controls, and gallery */
 #innertext.neon-record-results,
 .neon-record-results #tabs,
 .neon-record-results #queryrecords {
@@ -300,4 +301,4 @@
 
   .neon-record-results .results-page-count { flex-basis: 100%; }
 }
-
+/* NEON edit end */
