@@ -105,11 +105,13 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 
 			<p>Sample uses can be non-invasive, invasive, consumptive, or destructive. Non-invasive use does not materially affect the condition or future availability of a sample; invasive alters a sample in a manner that may affect subsequent applications; consumptive use depletes a portion of a sample; and destructive use renders a sample unavailable for further use.</p>
 
-			<p>While any type of use is permissible, requests involving substantial destructive or consumptive use require additional review as a part of the approval process. All requests are evaluated on a case-by-case basis; however, each sample type is subject to guidelines regarding the amount of destructive and consumptive use that can be supported for a single project and the minimum number of samples that must be retained for long-term archive. Requests that involve destructive or significant consumptive use exceeding those guidelines require strong justification and may be subject to external review. Pilots to demonstrate likely success of projects involving destructive use are highly encouraged.</p>
+			<p>While any type of use is permissible, sample type-specific rules dictate the amount of destructive and consumptive use that can be supported for a single project and the minimum number of samples that must be retained by the NEON Biorepository for long-term archive. For highly requested sample types, such as small mammal blood, proposed uses may be subject to additional review to ensure that the research methods provide sufficient scientific value relative to the amount and availability of material requested. Preference is given to approaches that maximize the information generated from each sample, such as broad-scale or multi-target analyses, over approaches that produce limited information. Pilots to demonstrate likely success of projects involving destructive use are highly encouraged.</p>
 
-			<p>Other considerations relevant to sample use approval include: species rarity; physical condition of a requested specimen; suitability of requested samples to proposed application; significance relative to NEON’s <a href="https://www.neonscience.org/about/visionandmanagement" target="_blank" rel="noopener">mission</a> to enable continental-scale ecology; prior adherence to the NEON Sample Use Policy; and U.S. National Park Service policies, where relevant.</p>
+			<!-- <p>Other considerations relevant to sample use approval include: species rarity; physical condition of a requested specimen; suitability of requested samples to proposed application; significance relative to NEON’s <a href="https://www.neonscience.org/about/visionandmanagement" target="_blank" rel="noopener">mission</a> to enable continental-scale ecology; prior adherence to the NEON Sample Use Policy; and U.S. National Park Service policies, where relevant.</p> -->
 
-			<p>In cases where overlapping requests require destructive, consumptive, or invasive use of samples, priority will be research sponsored by the NSF Biological Sciences Directorate, followed by other NSF-sponsored research and finally non-NSF funded research, outreach, or education uses.</p>
+			<p>In cases where overlapping requests require destructive, consumptive, or invasive use of samples, priority will be given to research sponsored by the NSF Biological Sciences Directorate, followed by other NSF-sponsored research and finally non-NSF funded research, outreach, or education uses.</p>
+
+			<p>Other considerations relevant to sample use approval include U.S. National Park Service policies, where relevant, and prior adherence to the <a href="samplepolicy.php" target="_blank">NEON Sample Use Policy</a>.</p>
 
 			<p>Loans are typically approved for 6-12 months. Extensions requested before the current loan period expires will generally be approved except when the samples have been requested by other researchers. Failure to return samples within the approved loan period or to maintain communication regarding their status may affect eligibility for future sample requests. Ordinarily, not more than one-half of the samples from a given sample type, NEON site, year, and taxon may be borrowed at any one time. The remainder may be requested upon the return of the first loan.</p>
 		</article>
@@ -123,7 +125,7 @@ header("Content-Type: text/html; charset=" . $CHARSET);
 		</article>
 
 		<div style="margin-top: 70px;">
-			<p><em>Last updated May 19, 2026</em></p>
+			<p><em>Last updated November 16, 2026</em></p>
 		</div>
 	</div>
 	<?php
