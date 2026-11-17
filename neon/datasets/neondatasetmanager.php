@@ -264,7 +264,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		}
 
 		function openIndPopup(occid) {
-			openPopup("../individual/index.php?occid=" + occid);
+			openPopup("../../collections/individual/index.php?occid=" + occid);
 		}
 
 		function openPopup(urlStr) {
@@ -920,7 +920,11 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										<div class="dataset-info-body">
 											<div class="dataset-info-message">
 												<p>Samples that will not be used for this project may be removed from the list.</p>
-												<p>If additional samples need to be added, please contact the NEON Biorepository. The request will need to be reviewed and the Sample Use Agreement updated before additional samples can be added.</p>
+												<?php if ($mdArr['category'] == 'Request') { ?>
+													<p>If additional samples need to be added, please contact the NEON Biorepository. The request will need to be reviewed and the Sample Use Agreement updated before additional samples can be added.</p>
+												<?php } else { ?>
+													<p>Additional samples can be added with the Dataset Management tool on the results from a <a href="<?php echo $CLIENT_ROOT; ?>/neon/search/index.php" target="_blank">Sample Search</a>.</p>
+												<?php } ?>
 											</div>
 											<div class="dataset-info-actions">
 												<input name="datasetid" type="hidden" value="<?php echo (int)$datasetId; ?>" />
@@ -1069,10 +1073,10 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									<?php foreach ($citations as $citation) { ?>
 										<article class="dataset-citation-card">
 											<div class="dataset-citation-card-header">
-												<h4><?php echo htmlspecialchars($citation['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h4>
+												<h4><?php echo htmlspecialchars($citation['title'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h4>
 												<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/neoncollprofiles.php?collid=<?php echo (int)$citation['collectionId']; ?>" target="_blank" rel="noopener noreferrer">View Sample Type Profile</a>
 											</div>
-											<p class="dataset-citation-text"><?php echo htmlspecialchars($citation['text'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+											<p class="dataset-citation-text"><?php echo htmlspecialchars($citation['text'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
 											<div class="dataset-citation-actions">
 												<button type="button" class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary dataset-manager-button dataset-citation-button" onclick="copyDatasetCitation(this)"
 													title="Copy this citation to the clipboard">
@@ -1103,7 +1107,11 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 										<li><strong>Replace [DATE ACCESSED]</strong> in each citation with the date you accessed the data used in your research.</li>
 										<li><strong>Describe any changes to the data.</strong> Edit or omit the filtering and reformatting sentence as appropriate, and remove its bracketed instruction.</li>
 										<li><strong>Replace [your DOI]</strong> with the DOI for your archived data. Archiving the data used in your analysis is recommended; if you have not archived them, follow the <a href="../../misc/cite.php#h.3" target="_blank" rel="noopener noreferrer">citation example for data without an archive</a>.</li>
-										<li><strong>If you used physical samples, add the required acknowledgment</strong> to your publication. <a href="../../misc/cite.php#h.1" target="_blank" rel="noopener noreferrer">Get the acknowledgment text</a>.</li>
+										<?php if ($mdArr['category'] == "Request") { ?>
+											<li><strong>Add the required acknowledgment</strong> to your publication. <a href="../../misc/cite.php#h.1" target="_blank" rel="noopener noreferrer">Get the acknowledgment text</a>.</li>
+										<?php } else { ?>
+											<li><strong>If you used physical samples, additional policies apply.</strong> See the dataset link provided in your Sample Use Agreement and the <a href="../../misc/cite.php" target="_blank" rel="noopener noreferrer">Acknowledging and Citing the NEON Biorepository</a> page for details.</li>
+										<?php } ?>
 									</ul>
 								</div>
 							</li>
@@ -1113,77 +1121,94 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 						<form name="editform" action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>" method="post" onsubmit="return validateEditForm(this)">
 
 							<!--Visibility section-->
-							<div style="display:flex; align-items:center; gap:80px; margin:20px 0; padding-left:15px;">
-								<div style="font-weight:bold;">
-									Visibility
-								</div>
-
-								<div class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal dataset-visibility"
-									 role="group" aria-label="Dataset visibility">
-								
-									<input type="hidden" name="ispublic" id="ispublic"
-										   value="<?php echo ($mdArr['ispublic'] ? '1' : '0'); ?>" />
-								
-									<!-- PUBLIC -->
-									<button
-										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton<?php echo ($mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
-										type="button" value="1"
-										tabindex="<?php echo ($mdArr['ispublic'] ? '0' : '-1'); ?>"
-										aria-pressed="<?php echo ($mdArr['ispublic'] ? 'true' : 'false'); ?>"
-										onclick="
-											var group=this.closest('.MuiToggleButtonGroup-root');
-											group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
-												b.classList.remove('Mui-selected');
-												b.setAttribute('aria-pressed','false');
-												b.setAttribute('tabindex','-1');
-											});
-											this.classList.add('Mui-selected');
-											this.setAttribute('aria-pressed','true');
-											this.setAttribute('tabindex','0');
-											group.querySelector('input[name=ispublic]').value=this.value;
-										">
-										Public
-									</button>
-								
-									<!-- PRIVATE -->
-									<button
-										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton<?php echo (!$mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
-										type="button" value="0"
-										tabindex="<?php echo (!$mdArr['ispublic'] ? '0' : '-1'); ?>"
-										aria-pressed="<?php echo (!$mdArr['ispublic'] ? 'true' : 'false'); ?>"
-										onclick="
-											var group=this.closest('.MuiToggleButtonGroup-root');
-											group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
-												b.classList.remove('Mui-selected');
-												b.setAttribute('aria-pressed','false');
-												b.setAttribute('tabindex','-1');
-											});
-											this.classList.add('Mui-selected');
-											this.setAttribute('aria-pressed','true');
-											this.setAttribute('tabindex','0');
-											group.querySelector('input[name=ispublic]').value=this.value;
-										">
-										Private
-									</button>
-								</div>
-								<?php
-								if ($mdArr['ispublic'] == 0) {
-								?>
-									<div style="color:#666; font-size:0.9em;">
-										Make this project visible to the public
+							<?php if ($mdArr['category'] == 'Request') { ?>
+								<div style="display:flex; align-items:center; gap:80px; margin:20px 0; padding-left:15px;">
+									<div style="font-weight:bold;">
+										Visibility
 									</div>
-								<?php
-								} 
-								?>
 
-							</div>
+									<div class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal dataset-visibility"
+										role="group" aria-label="Dataset visibility">
+									
+										<input type="hidden" name="ispublic" id="ispublic"
+											value="<?php echo ($mdArr['ispublic'] ? '1' : '0'); ?>" />
+									
+										<!-- PUBLIC -->
+										<button
+											class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton<?php echo ($mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
+											type="button" value="1"
+											tabindex="<?php echo ($mdArr['ispublic'] ? '0' : '-1'); ?>"
+											aria-pressed="<?php echo ($mdArr['ispublic'] ? 'true' : 'false'); ?>"
+											onclick="
+												var group=this.closest('.MuiToggleButtonGroup-root');
+												group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
+													b.classList.remove('Mui-selected');
+													b.setAttribute('aria-pressed','false');
+													b.setAttribute('tabindex','-1');
+												});
+												this.classList.add('Mui-selected');
+												this.setAttribute('aria-pressed','true');
+												this.setAttribute('tabindex','0');
+												group.querySelector('input[name=ispublic]').value=this.value;
+											">
+											Public
+										</button>
+									
+										<!-- PRIVATE -->
+										<button
+											class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton<?php echo (!$mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
+											type="button" value="0"
+											tabindex="<?php echo (!$mdArr['ispublic'] ? '0' : '-1'); ?>"
+											aria-pressed="<?php echo (!$mdArr['ispublic'] ? 'true' : 'false'); ?>"
+											onclick="
+												var group=this.closest('.MuiToggleButtonGroup-root');
+												group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
+													b.classList.remove('Mui-selected');
+													b.setAttribute('aria-pressed','false');
+													b.setAttribute('tabindex','-1');
+												});
+												this.classList.add('Mui-selected');
+												this.setAttribute('aria-pressed','true');
+												this.setAttribute('tabindex','0');
+												group.querySelector('input[name=ispublic]').value=this.value;
+											">
+											Private
+										</button>
+									</div>
+									<?php
+									if ($mdArr['ispublic'] == 0) {
+									?>
+										<div style="color:#666; font-size:0.9em;">
+											Make this project visible to the public
+										</div>
+									<?php
+									} 
+									?>
+
+								</div>
+							<?php } else { ?>
+								<div style="padding:0 15px;">
+									<section class="dataset-info dataset-info-with-actions" aria-labelledby="dataset-sample-guidance">
+										<div class="dataset-info-header">
+											<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+											<h4 id="dataset-sample-guidance">Request Samples</h4>
+											<svg class="dataset-info-badge" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+										</div>
+										<div class="dataset-info-body">
+											<div class="dataset-info-message">
+												<p>Contact the <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">NEON Biorepository</a> to request samples based on this dataset.</p>
+											</div>
+										</div>
+									</section>
+								</div>
+							<?php } ?>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root MuiDivider-fullWidth" />
 							</div>
 							<!--Title Section-->
 							<div class="tinymce-wrapper">
 								<label for="name">Title</label>
-								<textarea name="name" id="name" rows="3" style="width:100%; box-sizing:border-box;" aria-label="<?php echo $LANG['NAME']; ?>"><?php echo htmlspecialchars($mdArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
+								<textarea name="name" id="name" rows="3" style="width:100%; box-sizing:border-box;" aria-label="<?php echo $LANG['NAME']; ?>"><?php echo htmlspecialchars($mdArr['name'] ?? '', ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root MuiDivider-fullWidth" />
@@ -1232,7 +1257,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 											label.style.backgroundColor = '';
 										}
 									"
-								><?php echo htmlspecialchars($mdArr['notes'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
+								><?php echo htmlspecialchars($mdArr['notes'] ?? '', ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root MuiDivider-fullWidth" />
@@ -1240,7 +1265,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							<!--Description Section-->
 							<div class="tinymce-wrapper">
 								<label for="description">Description</label>
-								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo htmlspecialchars($mdArr['description'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
+								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo htmlspecialchars($mdArr['description'] ?? '', ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="margin:15px; text-align:right;">
 								<input name="tabindex" type="hidden" value="0" />
@@ -1353,7 +1378,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 															"
 														>
 															<span class="MuiTypography-root MuiTypography-body1">
-																<?php echo htmlspecialchars($name); ?>
+																<?php echo htmlspecialchars($name ?? ''); ?>
 															</span>
 															<?php
 															if ($isEditor == 1) {
@@ -1630,7 +1655,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
                     role="option"
                     aria-selected="false"
                     tabindex="-1"
-                    data-value="<?php echo htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>"
+                    data-value="<?= htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8') ?>"
                     style="cursor:pointer; padding:6px 16px; min-height:36px;"
 
                     onmouseenter="this.style.background='rgba(0,0,0,0.04)'"
@@ -1671,7 +1696,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
                         input.dispatchEvent(new Event('change',{bubbles:true}));
                         select.focus();
                     "
-                ><?php echo htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); ?></li>
+                ><?php echo htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8'); ?></li>
             <?php endforeach; ?>
 
         </ul>
@@ -1752,7 +1777,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 												<div class="MuiListItemText-root">
 													<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
-														<?php echo htmlspecialchars(strip_tags($ad['name'])); ?>
+														<?php echo htmlspecialchars(strip_tags($ad['name']) ?? ''); ?>
 													</span>
 												</div>
 
@@ -1846,7 +1871,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 																	<li class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters" role="option" aria-selected="false"
 																		data-value="<?php echo $assocDatasetID; ?>"
 																		style="cursor:pointer;padding:6px 16px;min-height:36px;"
-																		onmouseenter="this.style.background='rgba(0,0,0,.04)'" onmouseleave="this.style.background=''"><?php echo htmlspecialchars($assocDatasetName, ENT_QUOTES, 'UTF-8'); ?></li>
+																		onmouseenter="this.style.background='rgba(0,0,0,.04)'" onmouseleave="this.style.background=''"><?php echo htmlspecialchars($assocDatasetName ?? '', ENT_QUOTES, 'UTF-8'); ?></li>
 																	<?php
 																}
 															}
