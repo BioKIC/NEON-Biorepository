@@ -7,6 +7,7 @@ class PublicProjectSearch {
     private $conn;
     private $ownsConnection;
     private $catalog;
+    private $siteCatalog;
 
     public function __construct($conn = null) {
         $this->ownsConnection = $conn === null;
@@ -39,51 +40,67 @@ class PublicProjectSearch {
         return trim(html_entity_decode(strip_tags($value ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     }
 
-    private function projectRecordExists($match) {
-        return 'EXISTS (SELECT 1 FROM omoccurdatasetlink projectLink
-            INNER JOIN omoccurrences o ON o.occid = projectLink.occid
-            INNER JOIN omoccurdatasets od ON od.datasetid = projectLink.datasetid
-            WHERE ' . $this->baseWhere() . ' AND EXISTS (SELECT 1 FROM neonrequest nr
-                WHERE nr.datasetID = od.datasetid AND nr.activeDate IS NOT NULL)
-            AND (' . $match . '))';
-    }
-
     public function options() {
         if ($this->catalog !== null) return $this->catalog;
         $this->catalog = array('db' => array(), 'site' => array());
+        // Restrict association lookups to listed projects before touching occurrence links.
+        $projectIds = array_column($this->rows('SELECT DISTINCT od.datasetid FROM omoccurdatasets od
+            INNER JOIN neonrequest nr ON nr.datasetID = od.datasetid
+            WHERE ' . $this->baseWhere() . ' AND nr.activeDate IS NOT NULL'), 'datasetid');
+        if (!$projectIds) return $this->catalog;
+        $values = array();
+        $projectFilter = $this->inList('projectLink.datasetid', $projectIds, $values);
+        $records = ' FROM omoccurdatasetlink projectLink
+            INNER JOIN omoccurrences o ON o.occid = projectLink.occid ';
+        $available = array_fill_keys(array_column($this->rows('SELECT DISTINCT o.collid' . $records
+            . ' WHERE ' . $projectFilter, $values), 'collid'), true);
+
+        // Check every virtual tissue type in one pass over project-linked mammal samples.
+        $types = NeonMaterialSampleCollections::TYPES;
+        foreach ($types as $id => $pattern) unset($available[$id]);
+        if (array_intersect(array(17, 19, 28), array_keys($available))) {
+            $columns = array();
+            foreach ($types as $id => $pattern) $columns[] = 'MAX(ms.sampleType LIKE ?) AS tissue_' . $id;
+            $tissues = $this->rows('SELECT ' . implode(', ', $columns) . $records
+                . ' INNER JOIN ommaterialsample ms ON ms.occid = o.occid
+                WHERE ' . $projectFilter . ' AND o.collid IN (17,19,28)',
+                array_merge(array_values($types), $values))[0];
+            foreach ($types as $id => $pattern) if (!empty($tissues['tissue_' . $id])) $available[$id] = true;
+        }
+
         $codes = array();
         $names = new SearchParameterNames($this->conn);
         foreach ($names->dictionary('db') as $entry) {
             if (count($entry['ids']) === 1 && isset($entry['code'])) $codes[$entry['ids'][0]] = $entry['code'];
         }
-        // Tissue collections are backed by material samples, not their own occurrence rows.
-        $types = NeonMaterialSampleCollections::TYPES;
-        $values = array();
-        $tissueMatches = array();
-        foreach ($types as $id => $pattern) {
-            $tissueMatches[] = '(c.collid = ? AND ms.sampleType LIKE ?)';
-            $values[] = $id;
-            $values[] = $pattern;
-        }
-        $collectionMatch = '(o.collid = c.collid AND c.collid NOT IN (' . implode(',', array_keys($types)) . '))
-            OR (o.collid IN (17,19,28) AND EXISTS (SELECT 1 FROM ommaterialsample ms
-                WHERE ms.occid = o.occid AND (' . implode(' OR ', $tissueMatches) . ')))';
-        foreach ($this->rows('SELECT c.collid, COALESCE(NULLIF(c.publicName, \'\'), c.collectionname) AS label, c.collectioncode
-            FROM omcollections c WHERE ' . $this->projectRecordExists($collectionMatch)
-            . ' ORDER BY label, c.collid', $values) as $row) {
+        foreach ($this->rows('SELECT collid, COALESCE(NULLIF(publicName, \'\'), collectionname) AS label, collectioncode
+            FROM omcollections ORDER BY label, collid') as $row) {
+            if (!isset($available[$row['collid']])) continue;
             $this->catalog['db'][] = array('value' => $codes[$row['collid']] ?? (string)$row['collid'],
                 'collid' => (string)$row['collid'], 'label' => $this->text($row['label']),
                 'code' => $row['collectioncode'] ?? '');
         }
+
+        $availableSites = array_column($this->rows('SELECT DISTINCT s.name' . $records
+            . " INNER JOIN omoccurdatasetlink siteLink ON siteLink.occid = o.occid
+            INNER JOIN omoccurdatasets s ON s.datasetid = siteLink.datasetid
+            WHERE s.ispublic = 1 AND s.notes = 'NEON Site' AND " . $projectFilter, $values), 'name');
+        $availableSites = array_map(function ($site) { return strtoupper(trim($site)); }, $availableSites);
+        foreach ($this->siteOptions() as $option) {
+            $option['sites'] = array_values(array_intersect($option['sites'], $availableSites));
+            if ($option['sites']) $this->catalog['site'][] = $option;
+        }
+        return $this->catalog;
+    }
+
+    private function siteOptions() {
+        if ($this->siteCatalog !== null) return $this->siteCatalog;
         $path = $GLOBALS['SERVER_ROOT'] . '/neon/config/search-geography.json';
         $geography = is_readable($path) ? json_decode(file_get_contents($path), true) : array();
         $sites = array();
         $domains = array();
         foreach ($this->rows("SELECT d.name, d.datasetName FROM omoccurdatasets d
-            WHERE d.ispublic = 1 AND d.notes = 'NEON Site' AND "
-            . $this->projectRecordExists('EXISTS (SELECT 1 FROM omoccurdatasetlink siteLink
-                WHERE siteLink.datasetid = d.datasetid AND siteLink.occid = o.occid)')
-            . ' ORDER BY d.name') as $row) {
+            WHERE d.ispublic = 1 AND d.notes = 'NEON Site' ORDER BY d.name") as $row) {
             $code = strtoupper(trim($row['name']));
             $site = $geography['sites'][$code] ?? array();
             $siteName = $site['siteName'] ?? $row['datasetName'] ?? $code;
@@ -103,8 +120,8 @@ class PublicProjectSearch {
         unset($domain);
         ksort($domains);
         ksort($sites);
-        $this->catalog['site'] = array_merge(array_values($domains), array_values($sites));
-        return $this->catalog;
+        $this->siteCatalog = array_merge(array_values($domains), array_values($sites));
+        return $this->siteCatalog;
     }
 
     private function tokens($value) {
@@ -132,9 +149,9 @@ class PublicProjectSearch {
             if (!$collections) $collections = array('0');
         }
         $sites = $this->tokens($input['site'] ?? $input['sitename'] ?? '');
-        $options = $this->options();
+        $options = $sites ? $this->siteOptions() : array();
         $sites = array_map(function ($site) use ($options) {
-            foreach ($options['site'] as $option) {
+            foreach ($options as $option) {
                 if (strcasecmp($site, $option['value']) === 0 || strcasecmp($site, $option['name']) === 0
                     || strcasecmp($site, $option['label']) === 0) return $option['value'];
             }
@@ -190,7 +207,7 @@ class PublicProjectSearch {
         }
         if ($filters['site']) {
             $siteCodes = array();
-            foreach ($this->options()['site'] as $option) {
+            foreach ($this->siteOptions() as $option) {
                 if (in_array($option['value'], $filters['site'], true)) $siteCodes = array_merge($siteCodes, $option['sites']);
             }
             $parts[] = "EXISTS (SELECT 1 FROM omoccurdatasetlink sl INNER JOIN omoccurdatasets s ON s.datasetid = sl.datasetid
