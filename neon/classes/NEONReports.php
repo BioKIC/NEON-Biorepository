@@ -106,6 +106,42 @@
 
     }
 
+    // gbif download count
+    public function gbifDownloads(){
+        $baseUrl = 'https://api.gbif.org/v1/occurrence/download/statistics';
+        $orgKey = 'e794e60e-e558-4549-99f8-cfb241cdce24';
+
+        $limit = 200;
+        $offset = 0;
+        $gbifCount = 0;
+
+        do {
+            $gbifUrl = $baseUrl
+                . '?publishingOrgKey=' . urlencode($orgKey)
+                . '&limit=' . $limit
+                . '&offset=' . $offset;
+
+            $ch = curl_init($gbifUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $data = json_decode($response, true);
+
+            if (!empty($data['results'])) {
+                foreach ($data['results'] as $result) {
+                    $gbifCount += (int)($result['numberDownloads'] ?? 0);
+                }
+            }
+
+            $offset += $limit;
+
+        } while (!($data['endOfRecords'] ?? true));
+
+        return $gbifCount;
+    }
+
     // get google scholar stats
     function getScholarProfileStats() {
         $url = "https://scholar.google.com/citations?user=MGg_jIcAAAAJ&hl=en";
@@ -168,6 +204,7 @@
         $errorsql = 'SELECT COUNT(*) AS errors FROM NeonSample WHERE errorMessage IS NOT NULL AND acceptedForAnalysis = 1';
         $gbifCount = $this->gbifCount();
         $gbifLit = $this->gbifLit();
+        $gbifDownloads = $this->gbifDownloads();
         $scholarData = $this->getScholarProfileStats();
         $googleScholarLit = $scholarData['total_citations'];
         $googleScholarHindex = $scholarData['h_index'];
@@ -190,6 +227,7 @@
             'harvesting errors' => $errorsql,
             'GBIF records' => $gbifCount,
             'GBIF citations' => $gbifLit,
+            'GBIF downloads' => $gbifDownloads,
             'Google Scholar citations' => $googleScholarLit,
             'Google Scholar H index' => $googleScholarHindex,
             'Google Scholar I10 index' => $googleScholarI10index,
