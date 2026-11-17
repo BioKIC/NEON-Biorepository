@@ -280,7 +280,7 @@ $_SESSION['citationvar'] = $searchVar;
 									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 									type="button"
 									onclick="displayDatasetTools()"
-									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+									style="display:inline-flex;align-items:center;justify-content:center;"
 								>
 									<i class="fa-solid fa-table-cells-large" style="font-size:0.75rem;margin-right:12px;"></i>
 									Dataset Management
@@ -297,7 +297,7 @@ $_SESSION['citationvar'] = $searchVar;
 								class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 								type="button"
 								onclick="toggleElement('#sort-div', 'block')"
-								style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+								style="display:inline-flex;align-items:center;justify-content:center;"
 							>
 								<i class="fa-solid fa-sort" style="font-size:0.75rem;margin-right:12px;"></i>
 								Sort
@@ -315,7 +315,7 @@ $_SESSION['citationvar'] = $searchVar;
 								<button
 									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 									type="submit"
-									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+									style="display:inline-flex;align-items:center;justify-content:center;"
 								>
 									<i class="fa-solid fa-table" style="font-size:0.75rem;margin-right:12px;"></i>
 									Table Display
@@ -332,7 +332,7 @@ $_SESSION['citationvar'] = $searchVar;
 								<button
 									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 									type="submit"
-									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+									style="display:inline-flex;align-items:center;justify-content:center;"
 								>
 									<i class="fa-solid fa-download" style="font-size:0.75rem;margin-right:12px;"></i>
 									Download Records
@@ -448,15 +448,16 @@ $_SESSION['citationvar'] = $searchVar;
 									</div>
 									<div>
 										<input name="searchvar" type="hidden" value="<?= $searchVar ?>">
+										<!-- NEON edit start - match the sidebar button appearance -->
 										<button
 											name="formsubmit"
 											class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 											type="submit"
-											style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+											style="display:inline-flex;align-items:center;justify-content:center;"
 										>
 											Sort
-											<!-- NEON edit end -->
 										</button>
+										<!-- NEON edit end -->
 									</div>
 								</div>
 							</form>
@@ -631,7 +632,8 @@ $_SESSION['citationvar'] = $searchVar;
 										echo implode(', ', array_unique($sampleDisplayArr));
 										echo '</div>';
 									}
-									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" target="_blank">' . $LANG['FULL_DETAILS'] . '</a></b>';
+									echo '</div><div class="record-footer">';
+									echo '<a class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary record-details-button" href="individual/index.php?occid=' . $occid . '&clid=0" target="_blank" rel="noopener">' . $LANG['FULL_DETAILS'] . '</a>';
 									//end edit
 									//NEON edit start - record body and divider controlled by the record cell
 									echo '</div></div></td></tr>';

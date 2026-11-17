@@ -184,6 +184,62 @@
   padding-left: 12px;
 }
 
+.neon-record-results .record-footer {
+  clear: both;
+  display: flex;
+  justify-content: flex-end;
+  margin: 16px 4px 4px;
+}
+
+#innertext.neon-record-results .results-action .MuiButton-root,
+#innertext.neon-record-results #sort-div button,
+#innertext.neon-record-results #dataset-tools button,
+#innertext.neon-record-results .record-details-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 2px;
+  font: 600 11px/1.25 Inter, Helvetica, Arial, sans-serif;
+  letter-spacing: .04em;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: normal;
+  color: #fff;
+  background: #2974d2;
+  cursor: pointer;
+  box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px rgb(0 0 0 / 14%), 0 1px 5px rgb(0 0 0 / 12%);
+}
+
+#innertext.neon-record-results .results-action .MuiButton-root:hover:not(:disabled),
+#innertext.neon-record-results #sort-div button:hover:not(:disabled),
+#innertext.neon-record-results #dataset-tools button:hover:not(:disabled),
+#innertext.neon-record-results .record-details-button:hover { background: #438cdd; }
+
+#innertext.neon-record-results .results-action .MuiButton-root:focus-visible,
+#innertext.neon-record-results #sort-div button:focus-visible,
+#innertext.neon-record-results #dataset-tools button:focus-visible,
+#innertext.neon-record-results .record-details-button:focus-visible {
+  outline: 2px solid #005dab;
+  outline-offset: 3px;
+}
+
+#innertext.neon-record-results .results-action .MuiButton-root:disabled,
+#innertext.neon-record-results #sort-div button:disabled,
+#innertext.neon-record-results #dataset-tools button:disabled {
+  background: #e3e6e8;
+  color: #9fa4a6;
+  box-shadow: none;
+  cursor: default;
+}
+
 .neon-record-results .record-heading {
   display: flex;
   flex-wrap: wrap;
