@@ -4,6 +4,7 @@ include_once($SERVER_ROOT . '/classes/OccurrenceDataset.php');
 if ($LANG_TAG != 'en' && file_exists($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.' . $LANG_TAG . '.php')) include_once($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.' . $LANG_TAG . '.php');
 else include_once($SERVER_ROOT . '/content/lang/collections/datasets/datasetmanager.en.php');
 include_once($SERVER_ROOT.'/neon/classes/Utilities.php');
+include_once($SERVER_ROOT.'/neon/classes/DatasetCitations.php');
 
 header("Content-Type: text/html; charset=" . $CHARSET);
 
@@ -110,11 +111,12 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=<?php echo $CHARSET; ?>">
-	<title>Manage Project</title>
+	<title>NEON Biorepository | Manage Project</title>
 
 	<?php
 	include_once($SERVER_ROOT . '/includes/head.php');
 	?>
+	<link rel="stylesheet" href="<?php echo htmlspecialchars($CLIENT_ROOT . '/neon/css/dataset-editor.css', ENT_QUOTES, $CHARSET); ?>" />
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-3.7.1.min.js" type="text/javascript"></script>
 	<script src="<?php echo $CLIENT_ROOT; ?>/js/jquery-ui.min.js" type="text/javascript"></script>
 	<script type="text/javascript" src="../../js/symb/shared.js"></script>
@@ -170,20 +172,23 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 				});
 			}
 
-			$('#tabs').tabs({
-				active: <?php echo $tabIndex; ?>,
-				beforeLoad: function(event, ui) {
-					$(ui.panel).html("<p><?php echo $LANG['LOADING']; ?>...</p>");
-				}
-			});
-
 			$("#userinput").autocomplete({
 				source: "../../collections/rpc/getuserlist.php",
 				minLength: 3,
 				autoFocus: true,
+				appendTo: "body",
+				position: { my: "left top+4", at: "left bottom", collision: "flipfit" },
+				create: function() {
+					$(this).autocomplete("widget").addClass("dataset-user-menu");
+				},
 				select: function(event, ui) {
 					$('#uid-add').val(ui.item.id);
+				},
+				change: function(event, ui) {
+					if (!ui.item) $('#uid-add').val('');
 				}
+			}).on('input', function() {
+				$('#uid-add').val('');
 			});
 
 		});
@@ -221,7 +226,8 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		}
 
 		function validateEditForm(f) {
-			if (f.name.value == '') {
+			if (window.tinymce) tinymce.triggerSave();
+			if (f.elements.namedItem('name').value.trim() == '') {
 				alert("<?php echo $LANG['DS_NOT_NULL']; ?>");
 				return false;
 			}
@@ -258,7 +264,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 		}
 
 		function openIndPopup(occid) {
-			openPopup("../individual/index.php?occid=" + occid);
+			openPopup("../../collections/individual/index.php?occid=" + occid);
 		}
 
 		function openPopup(urlStr) {
@@ -331,6 +337,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 	
 		indicator.style.left = (tabRect.left - scrollerRect.left + scroller.scrollLeft) + 'px';
 		indicator.style.width = tabRect.width + 'px';
+		if (button.dataset.tab === 'admintab') initializeDatasetEditors();
 	}
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -340,114 +347,323 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
         if (active) switchDatasetTab(active);
     });
 
-	function copyUrl(url) {
-		navigator.clipboard.writeText(url).then(function() {
-			console.log('URL copied to clipboard');
-		}).catch(function(err) {
-			console.error('Could not copy URL:', err);
-		});
-	};
+		async function copyDatasetCitation(button) {
+			var card = button.closest('.dataset-citation-card');
+			var status = card.querySelector('.dataset-citation-status');
+			try {
+				await navigator.clipboard.writeText(card.querySelector('.dataset-citation-text').textContent);
+				status.textContent = 'Citation copied.';
+			} catch (error) {
+				status.textContent = 'Unable to copy automatically. Select and copy the citation above.';
+			}
+		}
 
-			// Adds WYSIWYG editor to fields
-		window.addEventListener('load', function () {
+		var datasetEditorsStarted = false;
+		function initializeDatasetEditors() {
+			var panel = document.getElementById('admintab');
+			if (datasetEditorsStarted || !window.tinymce || !panel || panel.style.display !== 'block') return;
 
-			tinymce.init({
-				selector: '#description',
-				height: 300,
-				plugins: 'link lists image code',
-				menubar: '',
-				toolbar: ['undo redo | bold italic underline | link | alignleft aligncenter alignright | bullist numlist | indent outdent | blockquote | code'],
-				branding: false,
-				default_link_target: "_blank",
-				forced_root_block: 'div',
-				paste_as_text: true,
-				invalid_styles: {
-					'*': 'font-family'
-				},
-				setup: function(editor) {
-					editor.on('init', function() {
-						var container = editor.getContainer();
+			// Moving an initialized iframe into the React layout clears its visible document.
+			// Keep the textareas available until the page is in its final location.
+			var usesReactLayout = <?php echo empty($DEACTIVATE_REACT) ? 'true' : 'false'; ?>;
+			var content = document.querySelector('div[data-selenium="neon-page.content"]');
+			if (usesReactLayout && (!content || !content.contains(document.getElementById('innertext')))) return;
+			datasetEditorsStarted = true;
 
-						container.querySelectorAll('button').forEach(function(button) {
-							button.classList.add('Mui');
-							button.style.filter = 'none';
-
-							button.querySelectorAll('*').forEach(function(element) {
-								element.style.filter = 'none';
+			['name', 'description'].forEach(function(id) {
+				tinymce.init({
+					selector: '#' + id,
+					height: id === 'name' ? 150 : 300,
+					plugins: 'link lists image code',
+					menubar: false,
+					toolbar: id === 'name'
+						? 'undo redo | bold italic underline | code'
+						: 'undo redo | bold italic underline | link | alignleft aligncenter alignright | bullist numlist | indent outdent | blockquote | code',
+					branding: false,
+					default_link_target: '_blank',
+					forced_root_block: 'div',
+					paste_as_text: true,
+					invalid_styles: { '*': 'font-family' },
+					content_css: [
+						<?php echo json_encode($CLIENT_ROOT . '/js/tinymce/skins/content/default/content.min.css'); ?>,
+						<?php echo json_encode($CLIENT_ROOT . '/neon/css/dataset-editor.css'); ?>
+					],
+					content_style: 'body { color: #333; background: #fff; margin: 16px; }',
+					setup: function(editor) {
+						editor.on('init', function() {
+							// Exempt TinyMCE controls from the legacy page button rules.
+							editor.getContainer().querySelectorAll('button').forEach(function(button) {
+								button.classList.add('Mui');
 							});
 						});
-					});
-				}
+					}
+				});
 			});
-			tinymce.init({
-				selector: '#name',
-				height: 300,
-				plugins: 'link lists image code',
-				menubar: '',
-				toolbar: ['undo redo | bold italic underline | code'],
-				branding: false,
-				forced_root_block: 'div',
-				default_link_target: "_blank",
-				paste_as_text: true,
-				invalid_styles: {
-					'*': 'font-family'
-				},
-				setup: function(editor) {
-					editor.on('init', function() {
-						var container = editor.getContainer();
-
-						container.querySelectorAll('button').forEach(function(button) {
-							button.classList.add('Mui');
-							button.style.filter = 'none';
-
-							button.querySelectorAll('*').forEach(function(element) {
-								element.style.filter = 'none';
-							});
-						});
-					});
-				}
-			});
+		}
+		window.addEventListener('load', initializeDatasetEditors);
+		window.addEventListener('biorepo:neon-page-ready', function() {
+			// Run after all layout-ready listeners, regardless of their registration order.
+			requestAnimationFrame(initializeDatasetEditors);
 		});
 
 	</script>
 	<style>
 
-		.tinymce-wrapper {
-			width: 70%;
-			margin: 25px 10px;
+		#innertext .dataset-manager-title {
+			margin: 0 0 16px;
+			font: 400 2.25rem/1.3 Inter, Helvetica, Arial, sans-serif;
+			color: #000;
+			text-transform: none;
 		}
-
-		.tinymce-wrapper .tox-tinymce {
-			width: 100% !important;
-			border: 1px solid #bbb !important;
-			border-radius: 3px !important;
+		#innertext .dataset-project-name {
+			margin: 0 0 24px;
+			font: 400 1.5rem/1.4 Inter, Helvetica, Arial, sans-serif;
+			color: #333;
+			overflow-wrap: anywhere;
+		}
+		#innertext .dataset-project-name > :first-child { margin-top: 0; }
+		#innertext .dataset-project-name > :last-child { margin-bottom: 0; }
+		#innertext .dataset-heading-divider {
+			border: 0;
+			border-top: 1px solid #d7d9d9;
+			margin: 0 0 24px;
+		}
+		#innertext .dataset-info {
+			border: 1px solid #b8d8f4;
+			border-radius: 3px;
+			background: #f4f8fd;
+			color: #1a1a1a;
+			padding: 24px;
+			margin: 24px 0;
+			font: 400 14px/1.6 Inter, Helvetica, Arial, sans-serif;
+		}
+		#innertext .dataset-info-inset { margin: 15px; }
+		#innertext .dataset-info-header {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			margin-bottom: 16px;
+		}
+		#innertext .dataset-info-header h4 {
+			margin: 0;
+			font: 600 13px/1.5 Inter, Helvetica, Arial, sans-serif;
+			color: inherit;
+			text-transform: uppercase;
+		}
+		#innertext .dataset-info-icon {
+			flex: 0 0 18px;
+			width: 18px;
+			height: 18px;
+			color: #1a1a1a;
+			fill: currentColor;
+		}
+		#innertext .dataset-info-badge {
+			width: 32px;
+			height: 32px;
+			flex-shrink: 0;
+			margin-left: auto;
+			color: #8abfec;
+			fill: currentColor;
+		}
+		#innertext .dataset-info p { margin: 0 0 12px; font: inherit; }
+		#innertext .dataset-info p:last-child { margin-bottom: 0; }
+		#innertext .dataset-info a { color: #0073cf; text-decoration: underline; }
+		#innertext .dataset-info-with-actions .dataset-info-body {
+			display: flex;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 24px;
+		}
+		#innertext .dataset-info-message { flex: 1 1 400px; min-width: 0; }
+		#innertext .dataset-info-actions { margin-left: auto; }
+		#innertext .dataset-citation-guidance { background: #f7f3ef; border-color: #b18c70; }
+		#innertext .dataset-citation-guidance .dataset-info-header { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #d7d9d9; }
+		#innertext .dataset-citation-guidance .dataset-info-header h4 { font-size: 14px; text-transform: none; }
+		#innertext .dataset-citation-guidance .dataset-info-icon { width: 32px; height: 32px; flex-basis: 32px; color: #b18c70; }
+		#innertext .dataset-citation-steps { margin: 24px 15px; padding: 0; list-style: none; counter-reset: citation-step; }
+		#innertext .dataset-citation-step { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 16px; padding: 24px 0; border-bottom: 1px solid #d7d9d9; counter-increment: citation-step; }
+		#innertext .dataset-citation-step:first-child { padding-top: 0; }
+		#innertext .dataset-citation-step:last-child { border-bottom: 0; }
+		#innertext .dataset-citation-step::before { content: counter(citation-step); display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: #0073cf; background: #e6f3fc; font: 600 16px/1 Inter, Helvetica, Arial, sans-serif; }
+		#innertext .dataset-citation-step h3 { margin: 2px 0 12px; color: #1a1a1a; font: 400 20px/1.4 Inter, Helvetica, Arial, sans-serif; }
+		#innertext .dataset-citation-step p,
+		#innertext .dataset-citation-step li { font: 400 14px/1.65 Inter, Helvetica, Arial, sans-serif; }
+		#innertext .dataset-citation-step p { margin: 0 0 16px; }
+		#innertext .dataset-citation-step form { margin: 20px 0 0; }
+		#innertext .dataset-citation-checklist { margin: 0 0 20px; padding-left: 20px; }
+		#innertext .dataset-citation-checklist li + li { margin-top: 12px; }
+		#innertext .dataset-citation-card-header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; margin-bottom: 16px; }
+		#innertext .dataset-citation-card-header h4 { margin: 0; font: 600 15px/1.5 Inter, Helvetica, Arial, sans-serif; color: #1a1a1a; }
+		#innertext .dataset-citation-card-header a { font-size: 14px; white-space: nowrap; }
+		#innertext .dataset-citation-card {
+			background: #fff;
+			padding: 24px;
+			margin-bottom: 16px;
+			border: 1px solid #d7d9d9;
+			border-radius: 4px;
+			overflow-wrap: anywhere;
+		}
+		#innertext .dataset-citation-step .dataset-citation-text {
+			margin: 0;
+			color: #1a1a1a;
+			font: 400 .75rem/1.6 monospace;
+		}
+		#innertext .dataset-citation-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			margin-top: 24px;
+		}
+		#innertext .dataset-citation-actions .dataset-citation-button.MuiButton-outlined {
+			padding: 5px 10px;
+			font-size: .75rem;
+			white-space: nowrap;
+		}
+		#innertext .dataset-citation-actions .dataset-citation-button svg { width: 16px; height: 16px; margin-right: 8px; }
+		#innertext .dataset-citation-status { margin: 12px 0 0; font-size: 14px; }
+		#innertext .dataset-citation-status:empty { margin: 0; }
+		#innertext .dataset-project-nav { margin: 0 10px 8px; }
+		#innertext .dataset-project-actions { border: 1px solid #d7d9d9; border-radius: 3px; margin: 0 10px 24px; }
+		#innertext .dataset-project-actions > h2 {
+			margin: 0;
+			padding: 12px 20px;
+			background: #2f78cf;
+			border-bottom: 1px solid #2464ad;
+			color: #fff;
+			font: 600 14px/1.5 Inter, Helvetica, Arial, sans-serif;
+			text-transform: uppercase;
+			letter-spacing: .06em;
+		}
+		#innertext .dataset-project-action-row {
+			display: flex;
+			background: #fff;
+			align-items: center;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 16px;
+			padding: 16px 20px;
+		}
+		#innertext .dataset-project-action-row + .dataset-project-action-row { border-top: 1px solid #e4e6e7; }
+		#innertext .dataset-project-action-row:nth-child(odd) { background: #f5f6f7; }
+		#innertext .dataset-project-action-row h3 { margin: 0 0 4px; font: 600 14px/1.5 Inter, Helvetica, Arial, sans-serif; }
+		#innertext .dataset-project-action-row p { margin: 0; color: #565a5c; font: 400 13px/1.5 Inter, Helvetica, Arial, sans-serif; }
+		#innertext .dataset-manager-button {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
 			box-sizing: border-box;
+			min-width: 64px;
+			padding: 8px 16px;
+			border: 0;
+			border-radius: 2px;
+			font: 600 .7rem/1.75 Inter, Helvetica, Arial, sans-serif;
+			letter-spacing: .06em;
+			text-transform: uppercase;
+			text-decoration: none;
+			color: #fff;
+			background: #0073cf;
+			box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px rgb(0 0 0 / 14%), 0 1px 5px rgb(0 0 0 / 12%);
+			cursor: pointer;
+			transition: background-color 150ms ease, box-shadow 150ms ease;
+		}
+		#innertext .dataset-manager-button:hover { background: #0092e2; }
+		#innertext .dataset-project-action-row .dataset-manager-button,
+		#innertext .dataset-project-nav .dataset-manager-button {
+			width: auto;
+			min-height: 36px;
+			margin: 0;
+			flex-shrink: 0;
+			font-size: 11.2px;
+			white-space: nowrap;
+		}
+		#innertext .dataset-project-nav .dataset-manager-return { padding: 8px 0; color: #0073cf; background: transparent; box-shadow: none; }
+		#innertext .dataset-project-nav .dataset-manager-return:hover { color: #0092e2; text-decoration: underline; }
+		#innertext .dataset-project-nav .MuiButton-startIcon { margin-left: 0; }
+		#innertext .dataset-manager-button:focus-visible {
+			outline: 2px solid #005dab;
+			outline-offset: 3px;
+		}
+		#innertext .dataset-manager-button.MuiButton-outlined {
+			padding: 7px 15px;
+			border: 1px solid #0073cf;
+			color: #0073cf;
+			background: transparent;
+			box-shadow: none;
+		}
+		#innertext .dataset-manager-button.MuiButton-outlined:hover { background: #e6f3fc; }
+		#innertext .dataset-project-actions .MuiButton-outlined:hover {
+			color: #0092e2;
+			border-color: #0092e2;
+			background: rgba(0, 115, 207, .04);
+			text-decoration: underline;
+		}
+		#innertext .dataset-manager-button .MuiButton-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
+		#innertext .dataset-manager-button .MuiButton-startIcon { margin: 0 8px 0 -4px; }
+		#innertext .dataset-manager-button .MuiButton-endIcon { margin: 0 -4px 0 8px; }
+		#innertext .dataset-manager-button svg { width: 20px; height: 20px; fill: currentColor; }
+		#innertext .dataset-manager-icon-button {
+			color: #0073cf;
+			background: transparent;
+			border: 0;
+			cursor: pointer;
+		}
+		#innertext .dataset-manager-icon-button:hover { background: #e6f3fc; }
+		#innertext .dataset-manager-icon-button svg { width: 20px; height: 20px; fill: currentColor; }
+		#innertext .dataset-visibility .MuiToggleButton-root {
+			padding: 8px 16px;
+			border: 1px solid #bbb;
+			font: 600 .7rem/1.75 Inter, Helvetica, Arial, sans-serif;
+			color: #565a5c;
+			background: #fff;
+			cursor: pointer;
+		}
+		#innertext .dataset-visibility .MuiToggleButton-root.Mui-selected {
+			color: #0073cf;
+			background: #e6f3fc;
+		}
+		#innertext .dataset-visibility .MuiToggleButton-root:hover { background: #e6f3fc; }
+		#innertext .tinymce-wrapper { margin: 24px 15px; }
+		#innertext .tinymce-wrapper > label { display: block; margin-bottom: 8px; color: #000; }
+		#innertext .tinymce-wrapper .tox-tinymce { border-radius: 3px; }
+		.dataset-manager-page .tox svg,
+		.dataset-manager-page .tox .tox-tbtn__select-label { filter: none; }
+		@media (prefers-reduced-motion: reduce) {
+			#innertext .dataset-manager-button { transition: none; }
 		}
 
-		.tinymce-wrapper .tox-editor-header {
-			background: #f5f5f5 !important;
-			border-bottom: 1px solid #ccc !important;
-			padding: 4px !important;
+		.dataset-manager-page .dataset-user-menu {
+			position: absolute;
+			z-index: 1500;
+			box-sizing: border-box;
+			max-height: 280px;
+			overflow-y: auto;
+			overflow-x: hidden;
+			margin: 0;
+			padding: 4px 0;
+			list-style: none;
+			border: 1px solid #b8c8d8;
+			border-radius: 3px;
+			background: #fff;
+			box-shadow: 0 4px 12px rgb(0 0 0 / 16%);
+			font: 400 14px/1.5 Inter, Helvetica, Arial, sans-serif;
 		}
-
-		.tinymce-wrapper .tox-toolbar,
-		.tinymce-wrapper .tox-toolbar__primary {
-			background: #f5f5f5 !important;
+		.dataset-manager-page .dataset-user-menu .ui-menu-item { margin: 0; padding: 0; list-style: none; cursor: pointer; }
+		.dataset-manager-page .dataset-user-menu .ui-menu-item-wrapper {
+			display: block;
+			box-sizing: border-box;
+			min-height: 44px;
+			margin: 0;
+			padding: 12px 16px;
+			border: 0;
+			color: #1a1a1a;
+			font: inherit;
+			text-decoration: none;
+			white-space: normal;
 		}
-
-		.tinymce-wrapper .tox-tbtn {
-			margin: 1px !important;
-			color: white !important;
-
-		}
-
-		.tinymce-wrapper .tox-edit-area {
-			border: 0 !important;
-		}
-
-		.tinymce-wrapper > div {
-			width: 100%;
-		}
+		.dataset-manager-page .dataset-user-menu .ui-menu-item + .ui-menu-item { border-top: 1px solid #edf0f2; }
+		.dataset-manager-page .dataset-user-menu .ui-menu-item-wrapper.ui-state-active,
+		.dataset-manager-page .dataset-user-menu .ui-menu-item-wrapper:hover { color: #005dab; background: #e6f3fc; }
+		.dataset-manager-page .ui-helper-hidden-accessible { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 		.contact-box {
 			float: right;
@@ -559,146 +775,74 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 			padding-left: 4px;
 			padding-right: 4px;
 		}
-		.view-samples-button {
-			display: inline-flex;
-			align-items: center;
-			gap: 14px;
-			background-color: #fff;
-			border: 2px solid #0073CF;
-			border-radius: 3px;
-			color: #0073CF;
-			font-size: 13px;
-			font-weight: bold;
-			letter-spacing: 0.12em;
-			text-transform: uppercase;
-			text-decoration: none;
-			padding: 10px 20px;
-			cursor: pointer;
-			font-family: Inter, Helvetica, Arial, sans-serif;
-		}
-
-		.view-samples-button .button-arrow {
-			display: inline-block;
-			font-size: 26px;
-			font-weight: bold;
-			line-height: 1;
-		}
-
-		.view-samples-button:hover {
-			color: #0095D9;
-			border-color: #0095D9;
-		}
-
-		.view-samples-button:hover .button-arrow {
-			transform: translateX(3px);
-		}
-
-		.view-samples-button:hover {
-			text-decoration: none;
-			color: #0095D9;
-		}
-
-		.view-samples-button:hover .button-text {
-			text-decoration: underline;
-		}
-
-		.view-samples-button .button-arrow {
-			text-decoration: none;
-		}
-
 		.view-samples-container {
-			padding-top: 30px;
+			padding-top: 0;
 			padding-bottom: 20px;
 			display: flex;
-			justify-content: flex-end;
+			align-items: center;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			gap: 16px;
 		}
+		#innertext .dataset-sample-count { margin: 0; font: 400 14px/1.6 Inter, Helvetica, Arial, sans-serif; }
 	</style>
 </head>
 
-<body>
+<body class="dataset-manager-page">
 	<!-- This is inner text! -->
 	<div role="main" id="innertext">
-		<h3 class="MuiTypography-root MuiTypography-h3">Manage Project</h3>
+		<h1 class="dataset-manager-title">Manage Project</h1>
+		<hr class="dataset-heading-divider" />
 		<?php
-		echo '<h5 class="MuiTypography-root MuiTypography-h5" style="padding-top:16px; margin-left:10px;">' . $mdArr['name'] . '</h5>';
+		echo '<div class="dataset-project-name">' . $mdArr['name'] . '</div>';
 		?>
 
-		<div>
-			<?php
-			if ($mdArr['category'] == "Request") {
-				$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
-				if ($rArr['sampleUseAgreementLink'] && str_contains($rArr['sampleUseAgreementLink'], 'drive.google.com') !== false) {
-					?>
-					<button
-						type="button"
-						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
-						onclick="window.open(<?= htmlspecialchars(json_encode($rArr['sampleUseAgreementLink'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, $CHARSET) ?>, '_blank', 'noopener,noreferrer')"
-						style="font-size: 1em; text-decoration: none; margin: 25px 10px; color: white; display: inline-flex; align-items: center; justify-content: center;"
-					>
-						<span>View Sample Use Agreement</span>
-					
-						<span
-							class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeLarge"
-							style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
-						>
-							<svg
-								class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
-								focusable="false"
-								aria-hidden="true"
-								viewBox="0 0 24 24"
-								style="display: block;"
-							>
-								<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-							</svg>
-						</span>
-					</button>
-					<?php
-				} else 	echo '<h5 class="MuiTypography-root MuiTypography-h5" style="color:red; padding:16px 0; margin-left:10px;">No Sample Use Agreement exists for this project.</h5>';
-				if ($rArr['id'] && $isEditor == 1) {
-					?>
-					<span>
-						<button
-							type="button"
-							class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
-							onclick="copyUrl(window.location.origin + '/portal/neon/datasets/neondatasetmanager.php?datasetid=<?= (int)$datasetId ?>')"
-							style="font-size: 1em; text-decoration: none; margin: 25px 10px; color: white;"
-							aria-label="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
-							title="<?= $LANG['COPY_TO_CLIPBOARD'] ?>"
-						>
-							Copy Dataset Url
-						</button>
-					</span>
-					<button
-						type="button"
-						class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary"
-						onclick="window.open('../requests/inquiryform.php?id=<?= urlencode($rArr['id']) ?>', '_blank', 'noopener,noreferrer')"
-						style="font-size: 1em; text-decoration: none; margin: 25px 10px; color: white; display: inline-flex; align-items: center; justify-content: center;"
-					>
-						<span>Manage Request</span>
-					
-						<span
-							class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"
-							style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
-						>
-							<svg
-								class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
-								focusable="false"
-								aria-hidden="true"
-								viewBox="0 0 24 24"
-								style="display: block;"
-							>
-								<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
-							</svg>
-						</span>
-					</button>
-					<?php
-				}
-			}
-			?>
-		</div>
-		<div style="padding:0 15px;">
-			<hr class="MuiDivider-root MuiDivider-fullWidth" />
-		</div>
+		<?php if ($datasetId && $isEditor && $mdArr['ispublic'] == 1) { ?>
+			<nav class="dataset-project-nav" aria-label="Project navigation">
+				<a class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-colorPrimary dataset-manager-button dataset-manager-return"
+					href="<?php echo htmlspecialchars($CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . (int)$datasetId, ENT_QUOTES, $CHARSET); ?>">
+					<span class="MuiButton-startIcon MuiButton-icon MuiButton-iconSizeMedium"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path></svg></span>
+					View Public Page
+				</a>
+			</nav>
+		<?php } ?>
+
+		<?php if ($mdArr['category'] == "Request") {
+			$rArr = $datasetManager->getRequestInquiryMetadata($datasetId);
+			$agreementUrl = trim($rArr['sampleUseAgreementLink'] ?? '');
+			$hasSampleUseAgreement = in_array(strtolower(parse_url($agreementUrl, PHP_URL_SCHEME) ?? ''), array('http', 'https'), true)
+				&& strtolower(parse_url($agreementUrl, PHP_URL_HOST) ?? '') === 'drive.google.com';
+		?>
+			<section class="dataset-project-actions" aria-labelledby="dataset-project-actions-heading">
+				<h2 id="dataset-project-actions-heading">Project Actions</h2>
+				<div class="dataset-project-action-row">
+					<div>
+						<h3>Sample Use Agreement</h3>
+						<p><?php echo $hasSampleUseAgreement ? 'Terms for using the samples in this project.' : 'No Sample Use Agreement is available for this project.'; ?></p>
+					</div>
+					<?php if ($hasSampleUseAgreement) { ?>
+						<a class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary dataset-manager-button"
+							href="<?php echo htmlspecialchars($agreementUrl, ENT_QUOTES, $CHARSET); ?>" target="_blank" rel="noopener noreferrer">
+							View Agreement
+							<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path></svg></span>
+						</a>
+					<?php } ?>
+				</div>
+				<?php if (!empty($rArr['id']) && $isEditor == 1) { ?>
+					<div class="dataset-project-action-row">
+						<div>
+							<h3>Sample Request</h3>
+							<p>Review and update the request associated with this project.</p>
+						</div>
+						<a class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
+							href="../requests/inquiryform.php?id=<?php echo urlencode($rArr['id']); ?>" target="_blank" rel="noopener noreferrer">
+							Manage Request
+							<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path></svg></span>
+						</a>
+					</div>
+				<?php } ?>
+			</section>
+		<?php } ?>
 		<?php
 		if ($statusStr) {
 			$color = 'green';
@@ -762,100 +906,46 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							$headerArr = ['occid','Domain', 'State','Site','Sample ID','Sample Code','IGSN ID','Scientific Name'];
 							?>
 							<form name="occurform"
-								action="neondatasetmanager.php"
+								action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>"
 								method="post"
 								onsubmit="return validateOccurForm(this)">
 
 								<div class="section" style="margin:15px;">
-									<p class="MuiTypography-root MuiTypography-body1" style="margin-right:10px;">
-										<?php echo $LANG['COUNT'] . ': ' . count($occArr) . ' ' . $LANG['RECORDS']; ?>
-									</p>
-									<div
-										style="
-											display:flex;
-											align-items:flex-start;
-											gap:16px;
-											margin:15px 0;
-											padding:18px 20px;
-											background:#f3f8fd;
-											border:1px solid #c5ddf4;
-										"
-									>
-										<div
-											style="
-												flex:0 0 auto;
-												width:28px;
-												height:28px;
-												border-radius:50%;
-												background:#0073CF;
-												color:#fff;
-												display:flex;
-												align-items:center;
-												justify-content:center;
-												font-weight:bold;
-												font-family:serif;
-												font-size:20px;
-												line-height:1;
-											"
-											aria-hidden="true"
-										>
-											i
+									<section class="dataset-info dataset-info-with-actions" aria-labelledby="dataset-sample-guidance">
+										<div class="dataset-info-header">
+											<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+											<h4 id="dataset-sample-guidance">Managing Project Samples</h4>
+											<svg class="dataset-info-badge" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
 										</div>
-
-										<div
-											style="
-												display:flex;
-												align-items:center;
-												justify-content:space-between;
-												gap:30px;
-												flex:1;
-												min-width:0;
-											"
-										>
-											<p
-												class="MuiTypography-root MuiTypography-body1"
-												style="margin:0; line-height:1.6; flex:1;"
-											>
-												Samples that will not be used for this project may be removed from the list.
-												If additional samples need to be added, please contact the NEON Biorepository. The request will need to be reviewed and the Sample Use Agreement updated before additional samples can be added.
-											</p>
-
-											<div style="flex-shrink:0;">
-												<input
-													name="datasetid"
-													type="hidden"
-													value="<?php echo $datasetId; ?>"
-												/>
-
-												<?php
-												if ($occArr && $isEditor < 3) {
-													?>
-													<button
-														class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
-														type="submit"
-														name="submitaction"
-														value="Remove Selected Samples"
-														style="font-size: 0.7em; display: inline-flex; align-items: center; justify-content: center;"
-													>
-														<?php echo $LANG['REM_SEL_OCCS']; ?>
-													</button>
-													<?php
-												}
-												?>
+										<div class="dataset-info-body">
+											<div class="dataset-info-message">
+												<p>Samples that will not be used for this project may be removed from the list.</p>
+												<?php if ($mdArr['category'] == 'Request') { ?>
+													<p>If additional samples need to be added, please contact the NEON Biorepository. The request will need to be reviewed and the Sample Use Agreement updated before additional samples can be added.</p>
+												<?php } else { ?>
+													<p>Additional samples can be added with the Dataset Management tool on the results from a <a href="<?php echo $CLIENT_ROOT; ?>/neon/search/index.php" target="_blank">Sample Search</a>.</p>
+												<?php } ?>
+											</div>
+											<div class="dataset-info-actions">
+												<input name="datasetid" type="hidden" value="<?php echo (int)$datasetId; ?>" />
+												<?php if ($occArr && $isEditor < 3) { ?>
+													<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
+														type="submit" name="submitaction" value="Remove Selected Samples"><?php echo $LANG['REM_SEL_OCCS']; ?></button>
+												<?php } ?>
 											</div>
 										</div>
-									</div>
-									<div style="padding: 0 15px;">
-										<hr class="MuiDivider-root MuiDivider-fullWidth" />
-									</div>
+									</section>
 									<div class="view-samples-container">
+										<p class="dataset-sample-count">
+											<?php echo $LANG['COUNT'] . ': ' . count($occArr) . ' ' . $LANG['RECORDS']; ?>
+										</p>
 										<a
-											class="Mui view-samples-button"
+											class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary dataset-manager-button"
 											href="../../collections/list.php?datasetid=<?php echo $datasetId; ?>"
 											target="_blank"
 										>
 											<span class="button-text">Explore Samples</span>
-											<span class="button-arrow">›</span>
+											<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></span>
 										</a>
 									</div>
 									<table id="sampleTable" class="Mui sample-table">
@@ -929,228 +1019,196 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 						?>
 					</div>
 					<div id="citationtab" class="dataset-tab-content">
-						<div
-							style="
-								display:flex;
-								align-items:flex-start;
-								gap:16px;
-								margin:15px;
-								padding:18px 20px;
-								background:#f3f8fd;
-								border:1px solid #c5ddf4;
-							"
-						>
-							<div
-								style="
-									flex:0 0 auto;
-									width:28px;
-									height:28px;
-									border-radius:50%;
-									background:#0073CF;
-									color:#fff;
-									display:flex;
-									align-items:center;
-									justify-content:center;
-									font-weight:bold;
-									font-family:serif;
-									font-size:20px;
-									line-height:1;
-								"
-								aria-hidden="true"
-							>
-								i
+						<section class="dataset-info dataset-info-inset dataset-citation-guidance" aria-labelledby="dataset-citation-guidance">
+							<div class="dataset-info-header">
+								<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"></path></svg>
+								<h4 id="dataset-citation-guidance">Citing This Project</h4>
 							</div>
-
-							<p
-								class="MuiTypography-root MuiTypography-body1"
-								style="margin:0; line-height:1.6;"
-							>
-								- If you are using <strong>physical samples</strong>, include both the physical sample citations table and the sample data citation(s) provided below.
-								<br>
-								- If you are using <strong>data only</strong>, only the sample data citation(s) are required.
-								<br>
-								- See
-								<a
-									class="MuiTypography-root MuiLink-root MuiLink-underlineAlways MuiTypography-colorPrimary"
-									href="../../misc/cite.php"
-									target="_blank"
-								>Acknowledging and Citing the NEON Biorepository</a>
-								for complete requirements.
-							</p>
-						</div>
-						<div style="padding:0 15px;">
-							<hr class="MuiDivider-root MuiDivider-fullWidth" />
-						</div>
-						<?php
-						if ($mdArr['category'] == "Request") {
-							?>
-							<div style="margin:15px;">
-							<?php
-							$type = 'dataset';
-							$pubID = $datasetId;
-							?>
-							<form action="<?php echo $CLIENT_ROOT; ?>/neon/requests/exporthandler.php" method="post">
-								<input type="hidden" name="pubID" value="<?php echo $pubID; ?>" />
-								<input type="hidden" name="type" value="<?php echo $type; ?>" />
-								<input type="hidden" name="exportTask" value="pubtable" />
-								<button
-									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
-									type="submit"
-									style="font-size: 0.7em; display: inline-flex; align-items: center; justify-content: center;"
-								>
-									<span>Download Physical Sample Citations Table</span>
-								
-									<span
-										class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeLarge"
-										style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
-									>
-										<svg
-											class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium"
-											focusable="false"
-											aria-hidden="true"
-											viewBox="0 0 24 24"
-											style="display: block;"
-										>
-											<path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path>
-										</svg>
-									</span>
-								</button>
-							</form>
+							<div class="dataset-info-body">
+								<p>Your publication needs a citation for <strong>each sample type you used</strong>. Follow the steps below to prepare them.</p>
+								<?php if ($mdArr['category'] == 'Request') { ?>
+									<p><strong>For physical sample use,</strong> include both the sample table (step 1) and the data citations (step 2). <strong>For data-only use,</strong> skip the physical sample table and start with sample data citations (step 2).</p>
+								<?php } ?>
+								<p>See <a href="../../misc/cite.php" target="_blank" rel="noopener noreferrer">Acknowledging and Citing the NEON Biorepository</a> for complete requirements.</p>
 							</div>
-							<?php
-						};
-						?>
-						<div style="padding:0 15px;">
-							<hr class="MuiDivider-root MuiDivider-fullWidth" />
-						</div>
-						<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
-							<div style="margin:15px;">
-								<h4 class="MuiTypography-root MuiTypography-h4">Sample Data Citation(s)</h4>
-								<div class="MuiTypography-root MuiTypography-body1" style="margin-top:10px;">
-									<?php echo $mdArr['bibliographicCitation']; ?>
+						</section>
+						<ol class="dataset-citation-steps" role="list">
+							<?php if ($mdArr['category'] == 'Request') { ?>
+								<li class="dataset-citation-step">
+									<div>
+										<h3>List the Physical Samples You Used (if any)</h3>
+										<p>Download the table, check that it lists the samples used in your research, and include it in your publication's <strong>main text [preferred] or supplemental information</strong>.</p>
+										<p>Use the occurrenceID (e.g., <a href="https://doi.org/10.58052/NEON03MVF" target="_blank" rel="noopener noreferrer">https://doi.org/10.58052/NEON03MVF</a>) or full IGSN ID (e.g., <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">igsn:10.58052/NEON0D0YI</a> or <a href="https://doi.org/10.58052/NEON0D0YI" target="_blank" rel="noopener noreferrer">igsn:NEON0D0YI</a>) when referring to individual samples in the text.</p>
+										<form action="<?php echo $CLIENT_ROOT; ?>/neon/requests/exporthandler.php" method="post">
+											<input type="hidden" name="pubID" value="<?php echo (int)$datasetId; ?>" />
+											<input type="hidden" name="type" value="dataset" />
+											<input type="hidden" name="exportTask" value="pubtable" />
+											<button class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button" type="submit">
+												<span>Download Physical Sample Citations Table (CSV)</span>
+												<span class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg></span>
+											</button>
+										</form>
+									</div>
+								</li>
+							<?php } ?>
+							<li class="dataset-citation-step">
+								<div class="dataset-citations">
+									<h3 id="dataset-citations-heading">Add the Sample Data Citations to Your References</h3>
+									<p>For each sample type used in your research, <strong>include it in your references</strong>.</p>
+									<?php
+									$citations = array();
+									$citationLoadFailed = false;
+									try {
+										$citations = DatasetCitations::fromCollections($datasetManager->getDatasetCitationCollections($datasetId));
+									} catch (RuntimeException $error) {
+										$citationLoadFailed = true;
+										error_log($error->getMessage());
+									}
+									?>
+									<?php if ($citationLoadFailed) { ?>
+										<p role="alert">Sample data citations could not be loaded. Please reload this page or <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">contact the Biorepository</a>.</p>
+									<?php } elseif (!$citations) { ?>
+										<p>No sample types are linked to this project yet. Add records in the Samples tab to generate their citations.</p>
+									<?php } ?>
+									<?php foreach ($citations as $citation) { ?>
+										<article class="dataset-citation-card">
+											<div class="dataset-citation-card-header">
+												<h4><?php echo htmlspecialchars($citation['title'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h4>
+												<a href="<?php echo $CLIENT_ROOT; ?>/collections/misc/neoncollprofiles.php?collid=<?php echo (int)$citation['collectionId']; ?>" target="_blank" rel="noopener noreferrer">View Sample Type Profile</a>
+											</div>
+											<p class="dataset-citation-text"><?php echo htmlspecialchars($citation['text'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+											<div class="dataset-citation-actions">
+												<button type="button" class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary dataset-manager-button dataset-citation-button" onclick="copyDatasetCitation(this)"
+													title="Copy this citation to the clipboard">
+													<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"></path></svg>
+													Copy
+												</button>
+												<?php foreach (array('bib' => 'BibTeX', 'ris' => 'RIS') as $format => $label) {
+													$download = DatasetCitations::download($citation, $format);
+												?>
+													<a class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-colorPrimary dataset-manager-button dataset-citation-button"
+														href="<?php echo htmlspecialchars($download['href'], ENT_QUOTES, 'UTF-8'); ?>"
+														download="<?php echo htmlspecialchars($download['filename'], ENT_QUOTES, 'UTF-8'); ?>"
+														title="Download this citation as <?php echo $label; ?>">
+														<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7zm-6 .67 2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"></path></svg>
+														Download (<?php echo $label; ?>)
+													</a>
+												<?php } ?>
+											</div>
+											<p class="dataset-citation-status" role="status" aria-live="polite"></p>
+										</article>
+									<?php } ?>
 								</div>
-							</div>
-						</form>
+							</li>
+							<li class="dataset-citation-step">
+								<div>
+									<h3>Check Your Citations Before Submitting</h3>
+									<ul class="dataset-citation-checklist">
+										<li><strong>Replace [DATE ACCESSED]</strong> in each citation with the date you accessed the data used in your research.</li>
+										<li><strong>Describe any changes to the data.</strong> Edit or omit the filtering and reformatting sentence as appropriate, and remove its bracketed instruction.</li>
+										<li><strong>Replace [your DOI]</strong> with the DOI for your archived data. Archiving the data used in your analysis is recommended; if you have not archived them, follow the <a href="../../misc/cite.php#h.3" target="_blank" rel="noopener noreferrer">citation example for data without an archive</a>.</li>
+										<?php if ($mdArr['category'] == "Request") { ?>
+											<li><strong>Add the required acknowledgment</strong> to your publication. <a href="../../misc/cite.php#h.1" target="_blank" rel="noopener noreferrer">Get the acknowledgment text</a>.</li>
+										<?php } else { ?>
+											<li><strong>If you used physical samples, additional policies apply.</strong> See the dataset link provided in your Sample Use Agreement and the <a href="../../misc/cite.php" target="_blank" rel="noopener noreferrer">Acknowledging and Citing the NEON Biorepository</a> page for details.</li>
+										<?php } ?>
+									</ul>
+								</div>
+							</li>
+						</ol>
 					</div>
 					<div id="admintab" class="dataset-tab-content">
-						<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return validateEditForm(this)">
+						<form name="editform" action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>" method="post" onsubmit="return validateEditForm(this)">
 
 							<!--Visibility section-->
-							<div style="display:flex; align-items:center; gap:80px; margin:20px 0; padding-left:15px;">
-								<div style="font-weight:bold;">
-									Visibility
-								</div>
-
-								<div class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal"
-									 role="group" aria-label="Dataset visibility">
-								
-									<input type="hidden" name="ispublic" id="ispublic"
-										   value="<?php echo ($mdArr['ispublic'] ? '1' : '0'); ?>" />
-								
-									<!-- PUBLIC -->
-									<button
-										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton<?php echo ($mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
-										type="button" value="1"
-										tabindex="<?php echo ($mdArr['ispublic'] ? '0' : '-1'); ?>"
-										aria-pressed="<?php echo ($mdArr['ispublic'] ? 'true' : 'false'); ?>"
-										style="font-size:0.7em;"
-										onclick="
-											var group=this.closest('.MuiToggleButtonGroup-root');
-											group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
-												b.classList.remove('Mui-selected');
-												b.setAttribute('aria-pressed','false');
-												b.setAttribute('tabindex','-1');
-											});
-											this.classList.add('Mui-selected');
-											this.setAttribute('aria-pressed','true');
-											this.setAttribute('tabindex','0');
-											group.querySelector('input[name=ispublic]').value=this.value;
-										">
-										Public
-									</button>
-								
-									<!-- PRIVATE -->
-									<button
-										class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton<?php echo (!$mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
-										type="button" value="0"
-										tabindex="<?php echo (!$mdArr['ispublic'] ? '0' : '-1'); ?>"
-										aria-pressed="<?php echo (!$mdArr['ispublic'] ? 'true' : 'false'); ?>"
-										style="font-size:0.7em;"
-										onclick="
-											var group=this.closest('.MuiToggleButtonGroup-root');
-											group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
-												b.classList.remove('Mui-selected');
-												b.setAttribute('aria-pressed','false');
-												b.setAttribute('tabindex','-1');
-											});
-											this.classList.add('Mui-selected');
-											this.setAttribute('aria-pressed','true');
-											this.setAttribute('tabindex','0');
-											group.querySelector('input[name=ispublic]').value=this.value;
-										">
-										Private
-									</button>
-								</div>
-								<?php
-								if ($mdArr['ispublic'] == 0) {
-								?>
-									<div style="color:#666; font-size:0.9em;">
-										Make this project visible to the public
+							<?php if ($mdArr['category'] == 'Request') { ?>
+								<div style="display:flex; align-items:center; gap:80px; margin:20px 0; padding-left:15px;">
+									<div style="font-weight:bold;">
+										Visibility
 									</div>
-								<?php
-								} 
-								elseif ($mdArr['ispublic'] == 1) {
-								?>
-									<a href="<?php echo $CLIENT_ROOT . '/neon/datasets/neonpublic.php?datasetid=' . $datasetId; ?>"
-									 	target="_blank"
-										><strong>View public dataset page.</strong></a>
-								<?php
-								} 
-								?>
 
-							</div>
+									<div class="MuiToggleButtonGroup-root MuiToggleButtonGroup-horizontal dataset-visibility"
+										role="group" aria-label="Dataset visibility">
+									
+										<input type="hidden" name="ispublic" id="ispublic"
+											value="<?php echo ($mdArr['ispublic'] ? '1' : '0'); ?>" />
+									
+										<!-- PUBLIC -->
+										<button
+											class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-firstButton<?php echo ($mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
+											type="button" value="1"
+											tabindex="<?php echo ($mdArr['ispublic'] ? '0' : '-1'); ?>"
+											aria-pressed="<?php echo ($mdArr['ispublic'] ? 'true' : 'false'); ?>"
+											onclick="
+												var group=this.closest('.MuiToggleButtonGroup-root');
+												group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
+													b.classList.remove('Mui-selected');
+													b.setAttribute('aria-pressed','false');
+													b.setAttribute('tabindex','-1');
+												});
+												this.classList.add('Mui-selected');
+												this.setAttribute('aria-pressed','true');
+												this.setAttribute('tabindex','0');
+												group.querySelector('input[name=ispublic]').value=this.value;
+											">
+											Public
+										</button>
+									
+										<!-- PRIVATE -->
+										<button
+											class="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButton-root MuiToggleButton-sizeMedium MuiToggleButton-standard MuiToggleButtonGroup-grouped MuiToggleButtonGroup-lastButton<?php echo (!$mdArr['ispublic'] ? ' Mui-selected' : ''); ?>"
+											type="button" value="0"
+											tabindex="<?php echo (!$mdArr['ispublic'] ? '0' : '-1'); ?>"
+											aria-pressed="<?php echo (!$mdArr['ispublic'] ? 'true' : 'false'); ?>"
+											onclick="
+												var group=this.closest('.MuiToggleButtonGroup-root');
+												group.querySelectorAll('.MuiToggleButton-root').forEach(function(b){
+													b.classList.remove('Mui-selected');
+													b.setAttribute('aria-pressed','false');
+													b.setAttribute('tabindex','-1');
+												});
+												this.classList.add('Mui-selected');
+												this.setAttribute('aria-pressed','true');
+												this.setAttribute('tabindex','0');
+												group.querySelector('input[name=ispublic]').value=this.value;
+											">
+											Private
+										</button>
+									</div>
+									<?php
+									if ($mdArr['ispublic'] == 0) {
+									?>
+										<div style="color:#666; font-size:0.9em;">
+											Make this project visible to the public
+										</div>
+									<?php
+									} 
+									?>
+
+								</div>
+							<?php } else { ?>
+								<div style="padding:0 15px;">
+									<section class="dataset-info dataset-info-with-actions" aria-labelledby="dataset-sample-guidance">
+										<div class="dataset-info-header">
+											<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+											<h4 id="dataset-sample-guidance">Request Samples</h4>
+											<svg class="dataset-info-badge" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+										</div>
+										<div class="dataset-info-body">
+											<div class="dataset-info-message">
+												<p>Contact the <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">NEON Biorepository</a> to request samples based on this dataset.</p>
+											</div>
+										</div>
+									</section>
+								</div>
+							<?php } ?>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root MuiDivider-fullWidth" />
 							</div>
 							<!--Title Section-->
-							<div class="MuiFormControl-root MuiTextField-root" style="width:98%; margin:25px 10px;">
-								<span class="MuiTypography-root MuiTypography-caption">Title</span>
-
-								<textarea
-									name="name"
-									id="name"
-									aria-label="<?php echo $LANG['NAME']; ?>"
-									class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMultiline MuiOutlinedInput-inputMultiline"
-									rows="3"
-									style="border:1px solid rgba(0, 0, 0, 0.23); outline:none; width:100%; box-sizing:border-box; padding:18.5px 14px;"
-									onfocus="
-										var label = this.previousElementSibling;
-
-										label.classList.add('MuiInputLabel-shrink', 'Mui-focused');
-										label.setAttribute('data-shrink', 'true');
-										label.style.backgroundColor = '#fff';
-
-										this.style.borderColor = '#0073CF';
-										this.style.borderWidth = '2px';
-									"
-									onblur="
-										var label = this.previousElementSibling;
-
-										label.classList.remove('Mui-focused');
-
-										this.style.borderColor = 'rgba(0, 0, 0, 0.23)';
-										this.style.borderWidth = '1px';
-
-										if (this.value !== '') {
-											label.classList.add('MuiInputLabel-shrink', 'MuiFormLabel-filled');
-											label.setAttribute('data-shrink', 'true');
-										} else {
-											label.classList.remove('MuiInputLabel-shrink', 'MuiFormLabel-filled');
-											label.setAttribute('data-shrink', 'false');
-											label.style.backgroundColor = '';
-										}
-									"
-								><?php echo htmlspecialchars($mdArr['name'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
+							<div class="tinymce-wrapper">
+								<label for="name">Title</label>
+								<textarea name="name" id="name" rows="3" style="width:100%; box-sizing:border-box;" aria-label="<?php echo $LANG['NAME']; ?>"><?php echo htmlspecialchars($mdArr['name'] ?? '', ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root MuiDivider-fullWidth" />
@@ -1199,15 +1257,15 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 											label.style.backgroundColor = '';
 										}
 									"
-								><?php echo htmlspecialchars($mdArr['notes'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
+								><?php echo htmlspecialchars($mdArr['notes'] ?? '', ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="padding:0 15px;">
 								<hr class="MuiDivider-root MuiDivider-fullWidth" />
 							</div>
 							<!--Description Section-->
-							<div style="margin:15px;">
-								<span class="MuiTypography-root MuiTypography-caption">Description</span>
-								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo htmlspecialchars($mdArr['description'], ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
+							<div class="tinymce-wrapper">
+								<label for="description">Description</label>
+								<textarea name="description" id="description" cols="100" rows="10" style="width: 100%;" aria-label="<?php echo $LANG['DESCRIPTION']; ?>"><?php echo htmlspecialchars($mdArr['description'] ?? '', ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?></textarea>
 							</div>
 							<div style="margin:15px; text-align:right;">
 								<input name="tabindex" type="hidden" value="0" />
@@ -1218,12 +1276,11 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									?>
 
 									<button
-										class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeMedium MuiButton-colorPrimary"
+										class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
 										tabindex="0"
 										name="submitaction"
 										type="submit"
 										value="Save Edits"
-										style="font-size: 0.7em; display: inline-flex; align-items: center; justify-content: center;"
 									>
 										<span><?php echo $LANG['SAVE_EDITS']; ?></span>
 									
@@ -1248,7 +1305,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 								?>
 							</div>
 						</form>
-						<!--<form name="editform" action="neondatasetmanager.php" method="post" onsubmit="return confirm('<?php echo $LANG['SURE_DEL_DS_PERM']; ?>')">-->
+						<!--<form name="editform" action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>" method="post" onsubmit="return confirm('<?php echo $LANG['SURE_DEL_DS_PERM']; ?>')">-->
 						<!--	<div style="margin:15px;">-->
 						<!--		<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>" />-->
 						<!--		<input name="tabindex" type="hidden" value="0" />-->
@@ -1270,6 +1327,17 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									'DatasetReader' => 'Read Only Users'
 								);
 								?>
+
+								<section class="dataset-info" aria-labelledby="dataset-access-guidance">
+									<div class="dataset-info-header">
+										<svg class="dataset-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+										<h4 id="dataset-access-guidance">Authorizing User Access</h4>
+										<svg class="dataset-info-badge" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path></svg>
+									</div>
+									<div class="dataset-info-body">
+										<p>Contact the <a href="https://www.neonscience.org/about/contact-neon-biorepository" target="_blank" rel="noopener noreferrer">NEON Biorepository</a> to authorize additional users.</p>
+									</div>
+								</section>
 
 								<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-bottom:25px;">
 									<?php
@@ -1310,7 +1378,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 															"
 														>
 															<span class="MuiTypography-root MuiTypography-body1">
-																<?php echo htmlspecialchars($name); ?>
+																<?php echo htmlspecialchars($name ?? ''); ?>
 															</span>
 															<?php
 															if ($isEditor == 1) {
@@ -1318,7 +1386,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 																<form
 																	name="deluserform"
 																	method="post"
-																	action="neondatasetmanager.php"
+																	action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>"
 																	style="display:inline;"
 																	onsubmit="return confirm('<?php echo $LANG['SURE_REM_USER'] . ' ' . $name . '?'; ?>')"
 																>
@@ -1330,7 +1398,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 <button
     type="submit"
-    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall"
+    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall dataset-manager-icon-button"
     title="Remove Access"
     aria-label="Remove Access"
     style="padding: 8px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;"
@@ -1372,51 +1440,6 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 									?>
 								</div>
 
-								<div
-									style="
-										display:flex;
-										align-items:center;
-										gap:16px;
-										padding:18px 20px;
-										margin-bottom:25px;
-										background:#f3f8fd;
-										border:1px solid #c5ddf4;
-									"
-								>
-									<div
-										style="
-											flex:0 0 auto;
-											width:28px;
-											height:28px;
-											border-radius:50%;
-											background:#0073CF;
-											color:#fff;
-											display:flex;
-											align-items:center;
-											justify-content:center;
-											font-weight:bold;
-											font-family:serif;
-											font-size:20px;
-											line-height:1;
-										"
-										aria-hidden="true"
-									>
-										i
-									</div>
-
-									<p
-										class="MuiTypography-root MuiTypography-body1"
-										style="margin:0; line-height:1.6;"
-									>
-										Contact the
-										<a
-											class="MuiTypography-root MuiLink-root MuiLink-underlineAlways MuiTypography-colorPrimary"
-											href="https://www.neonscience.org/about/contact-neon-biorepository"
-											target="_blank"
-										>NEON Biorepository</a>
-										to authorize additional users.
-									</p>
-								</div>
 								<?php
 								if ($isEditor == 1) {
 									?>
@@ -1462,7 +1485,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 										<form
 											name="addform"
-											action="neondatasetmanager.php"
+											action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>"
 											method="post"
 											onsubmit="return validateUserAddForm(this)"
 										>
@@ -1632,7 +1655,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
                     role="option"
                     aria-selected="false"
                     tabindex="-1"
-                    data-value="<?php echo htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>"
+                    data-value="<?= htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8') ?>"
                     style="cursor:pointer; padding:6px 16px; min-height:36px;"
 
                     onmouseenter="this.style.background='rgba(0,0,0,0.04)'"
@@ -1673,7 +1696,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
                         input.dispatchEvent(new Event('change',{bubbles:true}));
                         select.focus();
                     "
-                ><?php echo htmlspecialchars($text, ENT_QUOTES, 'UTF-8'); ?></li>
+                ><?php echo htmlspecialchars($text ?? '', ENT_QUOTES, 'UTF-8'); ?></li>
             <?php endforeach; ?>
 
         </ul>
@@ -1689,16 +1712,15 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 												<input type="hidden" name="datasetid" value="<?php echo $datasetId; ?>" />
 
 												<button
-													class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
+													class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorPrimary dataset-manager-button"
 													type="submit"
 													name="submitaction"
 													value="addUser"
-													style="font-size: 0.7em; display: inline-flex; align-items: center; justify-content: center;"
 												>
 													<span><?php echo $LANG['ADD_USER']; ?></span>
 												
 													<span
-														class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeLarge"
+														class="MuiButton-endIcon MuiButton-icon MuiButton-iconSizeMedium"
 														style="display: inline-flex; align-items: center; justify-content: center; margin-top: 0; margin-bottom: 0;"
 													>
 														<svg
@@ -1755,7 +1777,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 
 												<div class="MuiListItemText-root">
 													<span class="MuiTypography-root MuiListItemText-primary MuiTypography-body1 MuiTypography-displayBlock">
-														<?php echo htmlspecialchars(strip_tags($ad['name'])); ?>
+														<?php echo htmlspecialchars(strip_tags($ad['name']) ?? ''); ?>
 													</span>
 												</div>
 
@@ -1769,7 +1791,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 							if ($isEditor == 1) {
 								?>
 								<div style="padding:0 15px;">
-									<form name="linkdatasetform" action="neondatasetmanager.php" method="post">
+									<form name="linkdatasetform" action="neondatasetmanager.php?datasetid=<?php echo (int)$datasetId; ?>" method="post">
 										<input name="datasetid" type="hidden" value="<?php echo $datasetId; ?>"/>
 										<div style="margin-top:15px;">
 											<div style="display:flex; align-items:center; gap:10px; width:100%;">
@@ -1849,7 +1871,7 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 																	<li class="MuiButtonBase-root MuiMenuItem-root MuiMenuItem-gutters" role="option" aria-selected="false"
 																		data-value="<?php echo $assocDatasetID; ?>"
 																		style="cursor:pointer;padding:6px 16px;min-height:36px;"
-																		onmouseenter="this.style.background='rgba(0,0,0,.04)'" onmouseleave="this.style.background=''"><?php echo htmlspecialchars($assocDatasetName, ENT_QUOTES, 'UTF-8'); ?></li>
+																		onmouseenter="this.style.background='rgba(0,0,0,.04)'" onmouseleave="this.style.background=''"><?php echo htmlspecialchars($assocDatasetName ?? '', ENT_QUOTES, 'UTF-8'); ?></li>
 																	<?php
 																}
 															}
@@ -1859,12 +1881,12 @@ $adArr = $datasetManager->getAssociatedDatasets($datasetId);
 												</div>
 
 												<button
-													class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-sizeMedium MuiButton-colorPrimary"
+													class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorPrimary dataset-manager-button"
 													tabindex="0"
 													name="submitaction"
 													type="submit"
 													value="Link Dataset"
-													style="font-size:0.8rem; display:inline-flex; align-items:center; justify-content:center; margin-left:auto; flex-shrink:0;"
+													style="margin-left:auto; flex-shrink:0;"
 												>
 													Link
 												</button>

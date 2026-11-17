@@ -102,12 +102,13 @@ for($x=1; $x<9; $x++){
 	if($x == 1 || $cValue != '' || $cTerm == 'IS_NULL' || $cTerm == 'NOT_NULL') $divDisplay = 'block';
 	?>
 
-	<div id="customdiv<?php echo $x; ?>" class="fieldGroupDiv" style="display:<?php echo $divDisplay; ?>;">
+	<div id="customdiv<?php echo $x; ?>" class="advanced-query-row" role="group" aria-label="Condition <?php echo $x; ?>" style="display:<?php echo $divDisplay; ?>;">
+		<div class="advanced-query-fields">
 		<?php
 		if($x > 1){
 			?>
-			<div class="select-container" style="width: 7%; display: inline-block;">
-				<select name="q_customandor<?php echo $x; ?>" style="height:30px;">
+			<div class="select-container advanced-query-join">
+				<select aria-label="Join conditions, condition <?php echo $x; ?>" name="q_customandor<?php echo $x; ?>">
 					<option value="">---</option>
 					<option value="AND"><?php echo $LANG['AND']; ?></option>
 					<option <?php echo ($cAndOr == 'OR' ? 'SELECTED' : ''); ?> value="OR"><?php echo $LANG['OR']; ?></option>
@@ -116,22 +117,20 @@ for($x=1; $x<9; $x++){
 			<?php
 		}
 		?>
-		<div class="select-container" style="width: 5%; display: inline-block;">
-			<select name="q_customopenparen<?php echo $x; ?>" style="height:30px;">
+		<div class="select-container advanced-query-open">
+			<select aria-label="Opening parentheses, condition <?php echo $x; ?>" name="q_customopenparen<?php echo $x; ?>">
 				<option value="">---</option>
 				<?php
-				echo '<option '.($cOpenParen == '(' ? 'SELECTED' : '').' value="(">(</option>';
-				if($x < 7) echo '<option '.($cOpenParen == '((' ? 'SELECTED' : '').' value="((">((</option>';
-				if($x < 8) echo '<option '.($cOpenParen == '(((' ? 'SELECTED' : '').' value="(((">(((</option>';
+				foreach (array('(', '((', '(((') as $parentheses) {
+					echo '<option '.($cOpenParen == $parentheses ? 'SELECTED' : '').' value="'.$parentheses.'">'.$parentheses.'</option>';
+				}
 				?>
 			</select>
-			<!--<span class="assistive-text">Parentheses for advanced searches</span>-->
 		</div>
 
-		<div class="select-container" style="width: 25%; display: inline-block;">
-			<select name="q_customfield<?php echo $x; ?>" style="height:30px;">
+		<div class="select-container advanced-query-field">
+			<select aria-label="Field, condition <?php echo $x; ?>" name="q_customfield<?php echo $x; ?>">
 				<option value=""><?php echo $LANG['SELECT_FIELD_NAME']; ?></option>
-				<option value="">---------------------------------</option>
 				<?php
 				foreach($customFieldArr as $k => $v){
 					echo '<option value="'.$k.'" '.($k == $cField ? 'SELECTED' : '').'>'.$v.'</option>';
@@ -139,10 +138,9 @@ for($x=1; $x<9; $x++){
 				?>
 			</select>
 		</div>
-		<div class="select-container" style="width: 21%; display: inline-block;">
-			<select name="q_customtype<?php echo $x; ?>" style="height:30px;">
+		<div class="select-container advanced-query-statement">
+			<select aria-label="Statement, condition <?php echo $x; ?>" name="q_customtype<?php echo $x; ?>">
 				<option value="">Select Statement</option>
-				<option value="">---------------------------------</option>
 				<?php
 				foreach($customTermArr as $term){
 					echo '<option '.($cTerm == $term ? 'SELECTED' : '').' value="'.$term.'">'.$LANG[$term].'</option>';
@@ -150,83 +148,34 @@ for($x=1; $x<9; $x++){
 				?>
 			</select>
 		</div>
-		<div class="input-text-container" style="width: 30%; display: inline-block;">
-			<label for="customvalue" class="input-text--outlined">
-				<input name="q_customvalue<?php echo $x; ?>" type="text" value="<?php echo $cValue; ?>" style="height:30px" />
-				<!--<span data-label="State"></span></label>-->
+		<div class="input-text-container advanced-query-value">
+			<label for="customvalue<?php echo $x; ?>" class="input-text--outlined input-text--floating">
+				<input id="customvalue<?php echo $x; ?>" aria-label="Value, condition <?php echo $x; ?>" name="q_customvalue<?php echo $x; ?>" type="text" placeholder=" " value="<?php echo $cValue; ?>" />
+				<span class="search-field-label">Value</span>
+			</label>
 		</div>
-		<div class="select-container" style="width: 5%; display: inline-block;">
-			<select name="q_customcloseparen<?php echo $x; ?>" style="height:30px;">
+		<div class="select-container advanced-query-close">
+			<select aria-label="Closing parentheses, condition <?php echo $x; ?>" name="q_customcloseparen<?php echo $x; ?>">
 				<option value="">---</option>
 				<?php
-				echo '<option '.($cCloseParen == ')' ? 'SELECTED' : '').' value=")">)</option>';
-				if($x > 1) echo '<option '.($cCloseParen == '))' ? 'SELECTED' : '').' value="))">))</option>';
-				if($x > 2) echo '<option '.($cCloseParen == ')))' ? 'SELECTED' : '').' value=")))">)))</option>';
+				foreach (array(')', '))', ')))') as $parentheses) {
+					echo '<option '.($cCloseParen == $parentheses ? 'SELECTED' : '').' value="'.$parentheses.'">'.$parentheses.'</option>';
+				}
 				?>
 			</select>
 		</div>
-		<div style="display: inline-block;">
-			<a href="#" onclick="toggleCustomDiv(<?php echo ($x+1); ?>);return false;">
-				<img class="editimg" src="../../images/editplus.png" />
-			</a>
+		<div class="advanced-query-actions">
+			<?php if ($x > 1) { ?>
+			<button type="button" class="advanced-query-remove" aria-label="Remove condition <?php echo $x; ?>" onclick="removeCustomRow(<?php echo $x; ?>)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 13H5v-2h14z"></path></svg></button>
+			<?php } ?>
+			<?php if ($x < 8) { ?>
+			<button type="button" class="advanced-query-add" aria-label="Add condition <?php echo ($x+1); ?>" aria-controls="customdiv<?php echo ($x+1); ?>" onclick="toggleCustomDiv(<?php echo ($x+1); ?>)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"></path></svg></button>
+			<?php } ?>
 		</div>
-	<div>
-		<span class="assistive-text"><?php echo $LANG['CUSTOM_FIELD'].' '.$x; ?></span>
-	</div>
-
+		</div>
 	</div>
 	<?php
 }
 ?>
 
-<script>
-
-	function toggleCustomDiv(x){
-		resetCustomElements(x);
-		$('#customdiv'+x).toggle();
-		if(x < 8){
-			y = x + 1;
-			resetCustomElements(y);
-			document.getElementById('customdiv'+y).style.display = "none";
-		}
-	}
-
-	function resetCustomElements(x){
-		var f = document.getElementById("search-form-advanced-search");
-		if(x < 9 && f.querySelector["q_customvalue" + x] && f.querySelector["q_customvalue" + x] != undefined){
-			if(x > 1) f.querySelector["q_customandor" + x].options[0].selected = true;
-			f.querySelector["q_customopenparen" + x].options[0].selected = true;
-			f.querySelector["q_customfield" + x].options[0].selected = true;
-			f.querySelector["q_customtype" + x].options[0].selected = true;
-			f.querySelector["q_customvalue" + x].value = "";
-			f.querySelector["q_customcloseparen" + x].options[0].selected = true;
-		}
-	}
-
-
-	const advancedInputs = document.querySelectorAll('#search-form-advanced-search select, #search-form-advanced-search input[type=text]');
-	const advancedHasBeenChangedCheckbox = document.getElementById('AdvancedHasBeenChanged');
-
-	advancedInputs.forEach((advancedInput) => {
-		advancedInput.addEventListener('change', function(){
-			let allDefault = true;
-
-			advancedInputs.forEach((input) => {
-				if (input.tagName === 'SELECT') {
-					if (input.selectedIndex !== 0) {
-						allDefault = false;
-					}
-				} else if (input.type === 'text') {
-					if (input.value.trim() !== "") {
-						allDefault = false;
-					}
-				}
-			});
-
-			advancedHasBeenChangedCheckbox.checked = !allDefault;
-		});
-	});
-
-
-
-</script>
+<!-- Advanced search events and row helpers are defined in js/searchform.js. -->

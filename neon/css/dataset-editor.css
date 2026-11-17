@@ -1,0 +1,27 @@
+@font-face {
+    font-family: Inter;
+    src: url('../fonts/Inter-400.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: Inter;
+    src: url('../fonts/Inter-700.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+body.mce-content-body,
+#innertext #name,
+#innertext #description,
+#innertext #notes {
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: normal;
+    font-feature-settings: 'ss04' 1, 'zero' 0;
+}

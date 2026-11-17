@@ -4,6 +4,9 @@ include_once('OccurrenceManager.php');
 class OccurrenceChecklistManager extends OccurrenceManager{
 
 	private $checklistTaxaCnt = 0;
+	#neon edit
+	private $checklistRecordCounts = array();
+	#end neon edit
 
 	public function __construct($type='readonly'){
 		parent::__construct($type);
@@ -17,28 +20,107 @@ class OccurrenceChecklistManager extends OccurrenceManager{
 		return $this->checklistTaxaCnt;
 	}
 
+	#neon edit
+	public function getChecklistRecordCount($family, $sciName){
+		return $this->checklistRecordCounts[$family][$sciName] ?? 0;
+	}
+
+	public function getRankedChecklist($taxonAuthorityId){
+		$checklist = $this->getChecklist($taxonAuthorityId);
+		$ids = array();
+		$names = array();
+		foreach($checklist as $taxa){
+			foreach($taxa as $name => $tid){
+				if($tid) $ids[(int) $tid] = (int) $tid;
+				else $names[$name] = '"'.$this->cleanInStr($name).'"';
+			}
+		}
+		$conditions = array();
+		if($ids) $conditions[] = 'tid IN('.implode(',', $ids).')';
+		if($names) $conditions[] = 'sciname IN('.implode(',', $names).')';
+		$taxaById = array();
+		$taxaByName = array();
+		if($conditions){
+			$result = $this->conn->query('SELECT tid, sciname, rankid, kingdomname FROM taxa WHERE '.implode(' OR ', $conditions));
+			while($taxon = $result->fetch_assoc()){
+				$taxaById[$taxon['tid']] = $taxon;
+				$taxaByName[strtolower(trim($taxon['sciname']))][$taxon['tid']] = $taxon;
+			}
+			$result->free();
+		}
+		$rankNames = array();
+		if($taxaById){
+			$result = $this->conn->query('SELECT rankid, rankname, kingdomname FROM taxonunits ORDER BY rankid, rankname');
+			while($rank = $result->fetch_assoc()){
+				$rankNames[$rank['rankid']][strtolower((string) $rank['kingdomname'])] = $rank['rankname'];
+			}
+			$result->free();
+		}
+		$entries = array();
+		foreach($checklist as $family => $taxa){
+			foreach($taxa as $name => $tid){
+				$taxon = $taxaById[$tid] ?? null;
+				$nameKey = strtolower(trim($name));
+				if(!$taxon && isset($taxaByName[$nameKey]) && count($taxaByName[$nameKey]) === 1){
+					$taxon = reset($taxaByName[$nameKey]);
+				}
+				$key = $taxon ? 'tid:'.$taxon['tid'] : 'name:'.$nameKey;
+				if(!isset($entries[$key])){
+					$rankId = isset($taxon['rankid']) ? (int) $taxon['rankid'] : null;
+					$labels = $rankNames[$rankId] ?? array();
+					$kingdom = strtolower((string) ($taxon['kingdomname'] ?? ''));
+					$rankName = $labels[$kingdom] ?? (count(array_unique($labels)) === 1 ? reset($labels) : null);
+					$entries[$key] = array(
+						'tid' => $taxon['tid'] ?? null,
+						'sciname' => $taxon['sciname'] ?? $name,
+						'rankid' => $rankId,
+						'rankname' => $rankName ? ucfirst($rankName) : ($rankId ? 'Other ranks' : 'Unranked taxa'),
+						'recordcount' => 0
+					);
+				}
+				$entries[$key]['recordcount'] += $this->getChecklistRecordCount($family, $name);
+			}
+		}
+		$this->checklistTaxaCnt = count($entries);
+		usort($entries, function($a, $b){
+			$rankOrder = ($a['rankid'] ?? PHP_INT_MAX) <=> ($b['rankid'] ?? PHP_INT_MAX);
+			return $rankOrder ?: strnatcasecmp($a['sciname'], $b['sciname']);
+		});
+		$groups = array();
+		foreach($entries as $entry) $groups[$entry['rankname']][] = $entry;
+		return $groups;
+	}
+	#end neon edit
+
 	public function getChecklist($taxonAuthorityId){
 		$returnVec = Array();
 		$this->checklistTaxaCnt = 0;
+		#neon edit
+		$this->checklistRecordCounts = array();
+		#end neon edit
 		$sqlWhere = $this->getSqlWhere();
 		if($sqlWhere){
 			$sql = '';
+			#neon edit
 			if($taxonAuthorityId && is_numeric($taxonAuthorityId)){
-				$sql = 'SELECT DISTINCT ts2.family, t.sciname, t.tid '.
+				$taxonAuthorityId = (int) $taxonAuthorityId;
+				$sql = 'SELECT ts2.family, t.sciname, t.tid, COUNT(DISTINCT o.occid) AS recordcount '.
 					'FROM omoccurrences o INNER JOIN taxstatus ts1 ON o.TidInterpreted = ts1.Tid '.
 					'INNER JOIN taxa t ON ts1.TidAccepted = t.Tid '.
 					'INNER JOIN taxstatus ts2 ON t.tid = ts2.tid '.
 					$this->getTableJoins($sqlWhere).
-					str_ireplace('o.sciname','t.sciname',str_ireplace('o.family','ts.family',$sqlWhere)).
-					' AND ts1.taxauthid = '.$taxonAuthorityId.' AND ts2.taxauthid = '.$taxonAuthorityId.' AND t.RankId > 140 ';
+					$sqlWhere.
+					' AND ts1.taxauthid = '.$taxonAuthorityId.' AND ts2.taxauthid = '.$taxonAuthorityId.
+					' GROUP BY ts2.family, t.sciname, t.tid ';
 			}
 			else{
-				$sql = 'SELECT DISTINCT IFNULL(ts1.family,o.family) AS family, o.sciname, o.tidinterpreted AS tid '.
+				$sql = 'SELECT IFNULL(ts1.family,o.family) AS family, o.sciname, o.tidinterpreted AS tid, COUNT(DISTINCT o.occid) AS recordcount '.
 					'FROM omoccurrences o LEFT JOIN taxa t ON o.tidinterpreted = t.tid '.
-					'LEFT JOIN taxstatus ts1 ON t.tid = ts1.tid '.
+					'LEFT JOIN taxstatus ts1 ON t.tid = ts1.tid AND ts1.taxauthid = 1 '.
 					$this->getTableJoins($sqlWhere).
-					$sqlWhere.' AND ((t.rankid > 140 AND ts1.taxauthid = 1) OR t.tid IS NULL) ';
+					$sqlWhere.' GROUP BY IFNULL(ts1.family,o.family), o.sciname, o.tidinterpreted ';
 			}
+			#end neon edit
 			if (strpos($this->sqlWhere,"early.myaStart")){
 				$sqlWith = $this->getPaleoSqlWith();
 				$sql = $sqlWith . $sql;
@@ -50,10 +132,19 @@ class OccurrenceChecklistManager extends OccurrenceManager{
 				if($family) $family = strtoupper($family);
 				else $family = 'undefined';
 				$sciName = $r->sciname;
-				if($sciName && substr($sciName,-5)!='aceae' && substr($sciName,-4)!='idae'){
-					$returnVec[$family][$sciName] = $r->tid;
-					$this->checklistTaxaCnt++;
+				#neon edit
+				if($sciName){
+					if(!isset($this->checklistRecordCounts[$family][$sciName])){
+						$returnVec[$family][$sciName] = $r->tid;
+						$this->checklistRecordCounts[$family][$sciName] = 0;
+						$this->checklistTaxaCnt++;
+					}
+					elseif($r->tid && $returnVec[$family][$sciName] != $r->tid){
+						$returnVec[$family][$sciName] = null;
+					}
+					$this->checklistRecordCounts[$family][$sciName] += (int) $r->recordcount;
 				}
+				#end neon edit
 			}
 			$result->free();
 		}

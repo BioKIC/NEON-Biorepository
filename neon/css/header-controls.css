@@ -1,0 +1,82 @@
+#header .biorepo-header-actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#header #header__authentication-ui.biorepo-auth-buttons {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: flex-end;
+  min-width: 0;
+  max-width: 100%;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  z-index: auto;
+}
+
+#header .biorepo-header-button {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+  #header .header__inner.biorepo-account-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px 12px;
+    height: auto;
+    min-height: 60px;
+    padding: 12px 16px;
+    box-sizing: border-box;
+  }
+
+  #header .biorepo-account-header .header__right,
+  #header .biorepo-account-header .biorepo-header-actions {
+    display: contents;
+  }
+
+  #header .biorepo-account-header .header__logo {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #header .biorepo-account-header .nav__hamburger {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  #header .biorepo-account-header #header__authentication-ui.biorepo-auth-buttons {
+    display: grid;
+    grid-template-columns: repeat(var(--header-button-count, 2), minmax(0, 1fr));
+    grid-column: 1 / -1;
+    grid-row: 2;
+    gap: 4px;
+    width: 100%;
+  }
+
+  #header .biorepo-account-header .biorepo-header-button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 0.625rem !important;
+  }
+
+  #header .biorepo-account-header .header__site-navigation {
+    top: var(--neon-header-offset, 60px);
+  }
+}
+
+@media (max-width: 479px) {
+  #header .biorepo-account-header #header__authentication-ui.biorepo-auth-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="<?= $CLIENT_ROOT ?>/neon/css/header-controls.css?v=<?= date('Ymd') ?>">
 <?php if (empty($DEACTIVATE_REACT)): ?>
 <style>
   html.biorepo-layout-pending #innertext,
@@ -28,8 +29,8 @@
   window.NEON_CLIENT_ROOT = <?php echo json_encode($CLIENT_ROOT); ?>;
 </script>
 <!-- NEON REACT ASSETS START -->
-<!-- React last updated: 11/11/2026, 8:40:30 AM -->
-<meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ymln80vc0rl-.js"/><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0twqply_6k3_c.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2muonxtzu2a3r.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/turbopack-2sizzcrnxfbym.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3zvhjwj_-f0kc.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/21rlsv26vr1ze.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/41fn0gajlkoat.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/30p-lgr3l8qvh.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2dq_z_y8msev9.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0cxzcb7w6_mo2.js"></script><link rel="preload" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css" as="style"/><link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style"/><title>NEON | Portal Core Components</title><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>
+<!-- React last updated: 11/17/2026, 12:59:33 PM -->
+<meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3mqb6uwcgv5_z.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ymln80vc0rl-.js"/><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0twqply_6k3_c.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2muonxtzu2a3r.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/turbopack-2sizzcrnxfbym.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/3k_88bu8p7c4g.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1ec_6_1cmp7st.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/0fwm4b-l004-p.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/41fn0gajlkoat.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/30p-lgr3l8qvh.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/2dq_z_y8msev9.js"></script><script src="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/_next/static/chunks/1xgxqlj9w-gpj.js"></script><link rel="preload" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css" as="style"/><link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons" as="style"/><title>NEON | Portal Core Components</title><meta name="theme-color" content="#000000"/><link rel="manifest" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/manifest.json"/><link rel="shortcut icon" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/favicon.ico?v=201912"/><link rel="preconnect" href="https://www.neonscience.org" crossorigin="anonymous"/><link rel="stylesheet" data-meta="drupal-theme" href="<?php echo $CLIENT_ROOT; ?>/neon-react/core-components/assets/css/drupal-theme.0f92f17cfceb72295f216c13baa45da4.min.css"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script><script>
               let gaInitialized = false;
               let interactionTracked = false;
               window.pendingGAEvents = [];
@@ -149,7 +150,7 @@
     {
     otherChunks: [
       'static/chunks/1ymln80vc0rl-.js', // script in body
-      'static/chunks/0cxzcb7w6_mo2.js' // last script before Drupal CSS
+      'static/chunks/1xgxqlj9w-gpj.js' // last script before Drupal CSS
     ],
       runtimeModuleIds: [94469] //number in script above by BIOREPO
     }
@@ -307,7 +308,7 @@ if ($isNeonEditor) {
     const BUTTON_CLASSES = 'MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-outlinedSizeSmall MuiButton-sizeSmall';
     const BUTTON_STYLES = {
         color: '#0073cf', fontSize: '0.55rem', fontWeight: '600',
-        lineHeight: '1.75', whiteSpace: 'nowrap', textTransform: 'uppercase',
+        lineHeight: '1.75', whiteSpace: 'normal', textTransform: 'uppercase',
         borderWidth: '1px', borderStyle: 'solid', borderRadius: '0',
         borderColor: '#0073cf', padding: '5px 10px', display: 'inline-flex',
         alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box'
@@ -315,7 +316,7 @@ if ($isNeonEditor) {
 
     const createHeaderButton = ([label, url]) => {
         const button = element('button', {
-            className: BUTTON_CLASSES,
+            className: `${BUTTON_CLASSES} biorepo-header-button`,
             type: 'button',
             tabindex: '0',
             'data-selenium': 'neon-menu.data-management-button',
@@ -336,24 +337,12 @@ if ($isNeonEditor) {
     
         hamburger.before(container);
     
-        Object.assign(actions.style, {
-            display: 'flex',
-            alignItems: 'stretch',
-            justifyContent: 'flex-end'
-        });
-    
-        Object.assign(container.style, {
-            position: 'static',
-            margin: '0',
-            padding: '0',
-            display: 'flex',
-            alignItems: 'stretch',
-            gap: '0',
-            zIndex: 'auto'
-        });
-    
         const buttons = <?= json_encode($headerButtons, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
-    
+        actions.classList.add('biorepo-header-actions');
+        container.classList.add('biorepo-auth-buttons');
+        container.style.setProperty('--header-button-count', buttons.length);
+        actions.closest('.header__inner')?.classList.toggle('biorepo-account-header', buttons.length > 1);
+
         buttons.map(createHeaderButton).forEach(button => container.prepend(button));
     };
 

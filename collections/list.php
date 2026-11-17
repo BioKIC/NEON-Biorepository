@@ -23,21 +23,18 @@ $datasetid = array_key_exists('datasetid', $_REQUEST) ? filter_var($_REQUEST['da
 $sortField1 = array_key_exists('sortfield1', $_REQUEST) ? $_REQUEST['sortfield1'] : '';
 $sortField2 = array_key_exists('sortfield2', $_REQUEST) ? $_REQUEST['sortfield2'] : '';
 $sortOrder = !empty($_REQUEST['sortorder']) ? 'desc' : '';
-$comingFrom =  (array_key_exists('comingFrom', $_REQUEST) ? $_REQUEST['comingFrom'] : '');
-if ($comingFrom != 'harvestparams' && $comingFrom != 'newsearch') {
-	//If not set via a valid input variable, use setting set within symbini
-	$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
-}
+#neon edit: navigation uses the configured search page, not a URL parameter.
+$comingFrom = !empty($SHOULD_USE_HARVESTPARAMS) ? 'harvestparams' : 'newsearch';
+#end neon edit
 
 $_SESSION['datasetid'] = $datasetid;
 
 $collManager = new OccurrenceListManager();
+#neon edit
+$collManager->getSearchParameterNames()->redirect($CLIENT_ROOT . '/collections/list.php');
+#end neon edit
 $searchVar = $collManager->getQueryTermStr();
 if ($targetTid && array_key_exists('mode', $_REQUEST)) $searchVar .= '&mode=voucher&targettid=' . $targetTid;
-
-//NEON edit start
-//$searchVar .= '&comingFrom=' . $comingFrom;
-//NEON edit end
 
 if ($sortField1) {
 	$searchVar .= '&sortfield1=' . htmlspecialchars($sortField1, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE) . '&sortorder=' . $sortOrder;
@@ -144,6 +141,9 @@ $_SESSION['citationvar'] = $searchVar;
 	<!-- NEON edit end -->
 
 	<link href="<?= $CSS_BASE_PATH; ?>/symbiota/collections/list.css?ver=<?= date('YmdHis'); ?>" type="text/css" rel="stylesheet" />
+	<!-- #neon edit -->
+	<link href="<?= $CLIENT_ROOT; ?>/neon/search/css/searchform.css?ver=<?= date('YmdHis'); ?>" type="text/css" rel="stylesheet" />
+	<!-- #end neon edit -->
 	<link href="<?php echo $CSS_BASE_PATH; ?>/jquery-ui.min.css" type="text/css" rel="stylesheet">
 	<link rel="stylesheet"
 		  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -224,7 +224,14 @@ $_SESSION['citationvar'] = $searchVar;
 	}
 	?>
 	<!-- This is inner text! -->
-	<div role="main" id="innertext">
+	<!-- NEON edit start - scope responsive results styling -->
+	<div role="main" id="innertext" class="neon-record-results">
+	<!-- NEON edit end -->
+		<?php
+		#neon edit
+		include($SERVER_ROOT . '/neon/search/includes/results-sidebar.php');
+		#end neon edit
+		?>
 		<h1 class="page-heading screen-reader-only"><?php echo $LANG['SEARCH_RES_LIST']; ?></h1>
 		<div id="tabs" class="top-breathing-room-rel" style="margin-bottom: 1rem">
 			<ul>
@@ -263,16 +270,17 @@ $_SESSION['citationvar'] = $searchVar;
 			<div id="speclist">
 				<div id="biorepo-coll-type"></div>
 				<div id="queryrecords">
-					<div style="display:flex; justify-content: flex-end; margin-top:16px;"> <!--buttons div-->
+					<!-- NEON edit start - responsive results actions -->
+					<div class="results-actions">
 						<?php
 						if ($SYMB_UID) {
 						?>
-							<span style="margin-right: 8px">
+							<span class="results-action">
 								<button
 									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 									type="button"
 									onclick="displayDatasetTools()"
-									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+									style="display:inline-flex;align-items:center;justify-content:center;"
 								>
 									<i class="fa-solid fa-table-cells-large" style="font-size:0.75rem;margin-right:12px;"></i>
 									Dataset Management
@@ -284,12 +292,12 @@ $_SESSION['citationvar'] = $searchVar;
 						<?php
 						}
 						?>
-						<span style="margin-right: 8px">
+						<span class="results-action">
 							<button
 								class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 								type="button"
 								onclick="toggleElement('#sort-div', 'block')"
-								style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+								style="display:inline-flex;align-items:center;justify-content:center;"
 							>
 								<i class="fa-solid fa-sort" style="font-size:0.75rem;margin-right:12px;"></i>
 								Sort
@@ -298,9 +306,8 @@ $_SESSION['citationvar'] = $searchVar;
 								</span>
 							</button>
 						</span>
-						<span style="margin-right: 8px">
+						<span class="results-action">
 							<form class="button-form" action="listtabledisplay.php" method="post">
-								<input name="comingFrom" type="hidden" value="<?= $comingFrom; ?>" />
 								<input name="sortfield1" type="hidden" value="<?= htmlspecialchars($sortField1, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortfield2" type="hidden" value="<?= htmlspecialchars($sortField2, ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE); ?>" />
 								<input name="sortorder" type="hidden" value="<?= $sortOrder ?>" />
@@ -308,7 +315,7 @@ $_SESSION['citationvar'] = $searchVar;
 								<button
 									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 									type="submit"
-									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+									style="display:inline-flex;align-items:center;justify-content:center;"
 								>
 									<i class="fa-solid fa-table" style="font-size:0.75rem;margin-right:12px;"></i>
 									Table Display
@@ -318,14 +325,14 @@ $_SESSION['citationvar'] = $searchVar;
 								</button>
 							</form>
 						</span>
-						<span>
+						<span class="results-action">
 							<!--NEON edit single line: modify action target -->
 							<form class="button-form" action="download/neonindex.php" method="post" onsubmit="targetPopup(this)">
 							<!--end neon edit-->
 								<button
 									class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 									type="submit"
-									style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+									style="display:inline-flex;align-items:center;justify-content:center;"
 								>
 									<i class="fa-solid fa-download" style="font-size:0.75rem;margin-right:12px;"></i>
 									Download Records
@@ -349,6 +356,7 @@ $_SESSION['citationvar'] = $searchVar;
 						</span>
 						NEON edit end -->
 					</div>
+					<!-- NEON edit end -->
 					<div style="margin:5px;">
 						<?php
 						$collSearchStr = $collManager->getCollectionSearchStr();
@@ -384,7 +392,9 @@ $_SESSION['citationvar'] = $searchVar;
 						?>
 					</div>
 					<div id="sort-div" style="display:<?= ($sortField1 ? 'block' : 'none') ?>">
-						<section style="margin: 2rem 0 1rem 1rem;">
+						<!-- NEON edit start - responsive sort controls -->
+						<section class="results-sort">
+						<!-- NEON edit end -->
 							<form name="sortform" action="list.php" method="post">
 								<div id="sort-inner-div">
 									<div>
@@ -438,15 +448,16 @@ $_SESSION['citationvar'] = $searchVar;
 									</div>
 									<div>
 										<input name="searchvar" type="hidden" value="<?= $searchVar ?>">
+										<!-- NEON edit start - match the sidebar button appearance -->
 										<button
 											name="formsubmit"
 											class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeLarge MuiButton-colorPrimary"
 											type="submit"
-											style="display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;"
+											style="display:inline-flex;align-items:center;justify-content:center;"
 										>
 											Sort
-											<!-- NEON edit end -->
 										</button>
+										<!-- NEON edit end -->
 									</div>
 								</div>
 							</form>
@@ -454,7 +465,8 @@ $_SESSION['citationvar'] = $searchVar;
 					</div>
 					<div style="clear:both;"></div>
 					<?php
-					$paginationStr = '<div><div style="clear:both;"><hr/></div><div style="float:left;margin:5px;">';
+					//NEON edit start - wrapping pagination controls
+					$paginationStr = '<nav class="results-pagination" aria-label="Record pages"><div class="results-page-links">';
 					$lastPage = (int)($collManager->getRecordCnt() / $cntPerPage) + 1;
 					$startPage = ($pageNumber > 5 ? $pageNumber - 5 : 1);
 					$endPage = ($lastPage > $startPage + 10 ? $startPage + 10 : $lastPage);
@@ -465,23 +477,24 @@ $_SESSION['citationvar'] = $searchVar;
 					}
 					for ($x = $startPage; $x <= $endPage; $x++) {
 						if ($pageNumber != $x) {
-							$pageBar .= '<span class="pagination" style="margin-right:3px;margin-right:3px;"><a href="list.php?' . $searchVar . '&page=' . $x . '">' . $x . '</a></span>';
+							$pageBar .= '<span class="pagination"><a href="list.php?' . $searchVar . '&page=' . $x . '">' . $x . '</a></span>';
 						} else {
-							$pageBar .= '<span class="pagination" style="margin-right:3px;margin-right:3px;font-weight:bold;">' . $x . '</span>';
+							$pageBar .= '<span class="pagination" aria-current="page" style="font-weight:bold;">' . $x . '</span>';
 						}
 					}
 					if (($lastPage - $startPage) >= 10) {
 						$pageBar .= '<span class="pagination" style="margin-left:5px;"><a href="list.php?' . $searchVar . '&page=' . (($pageNumber + 10) > $lastPage ? $lastPage : ($pageNumber + 10)) . '">&gt;&gt;</a></span>';
 						$pageBar .= '<span class="pagination" style="margin-left:5px;"><a href="list.php?' . $searchVar . '&page=' . $lastPage . '">Last</a></span>';
 					}
-					$pageBar .= '</div><div style="float:right;margin:5px;">';
+					$pageBar .= '</div><div class="results-page-count">';
 					$beginNum = ($pageNumber - 1) * $cntPerPage + 1;
 					$endNum = $beginNum + $cntPerPage - 1;
 					if ($endNum > $collManager->getRecordCnt()) $endNum = $collManager->getRecordCnt();
 					$pageBar .= $LANG['PAGINATION_PAGE'] . ' ' . $pageNumber . ', ' . $beginNum . '-' . $endNum . ' ' . $LANG['PAGINATION_OF'] . ' ' . $collManager->getRecordCnt();
 					$paginationStr .= $pageBar;
-					$paginationStr .= '</div><div style="clear:both;"><hr/></div></div>';
+					$paginationStr .= '</div></nav>';
 					echo $paginationStr;
+					//NEON edit end
 
 					//Add search return
 					if ($occurArr) {
@@ -503,25 +516,17 @@ $_SESSION['citationvar'] = $searchVar;
 									$cultivarEpithet = !empty($splitSciname['cultivarEpithet']) ? ($taxonEditorObj->standardizeCultivarEpithet($splitSciname['cultivarEpithet'])) . ' ' : '';
 									$tradeName = !empty($splitSciname['tradeName']) ? ($taxonEditorObj->standardizeTradeName($splitSciname['tradeName']) . ' ') : '';
 									$nonItalicizedScinameComponent = $author . $cultivarEpithet . $tradeName;
-									echo '<tr><td width="60" valign="top" align="center">';
-									echo '<a href="misc/collprofiles.php?collid=' . $fieldArr['collid'] . '" target="_blank">';
-									if ($fieldArr["icon"]) {
-										$icon = (substr($fieldArr["icon"], 0, 6) == 'images' ? '../' : '') . $fieldArr["icon"];
-										echo '<img align="bottom" src="' . $icon . '" style="width:35px;border:0px;" />';
-									}
-									echo '</a>';
-									echo '<div style="font-weight:bold;font-size:75%;">';
-									$instCode = $fieldArr["instcode"];
-									if ($fieldArr["collcode"]) $instCode .= ":" . $fieldArr["collcode"];
-									echo $instCode;
-									echo '</div>';
-									echo '<div style="margin-top:10px"><span class="dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span></div>';
-									echo '</td><td>';
+									//NEON edit start - collection name above full-width record details
+									echo '<tr class="result-record"><td class="record-details"><div class="record-heading">';
+									echo '<a class="record-collection" href="misc/collprofiles.php?collid=' . $fieldArr['collid'] . '" target="_blank">';
+									echo htmlspecialchars($fieldArr['collectionname'], ENT_QUOTES | ENT_SUBSTITUTE, $CHARSET, false) . '</a>';
+									echo '<span class="record-selection dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span>';
 									if ($IS_ADMIN || in_array($fieldArr['collid'], $permissionArr) || ($SYMB_UID && $SYMB_UID == $fieldArr['obsuid'])) {
-										echo '<div style="float:right;" title="' . $LANG['OCCUR_EDIT_TITLE'] . '">';
-										echo '<a href="editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">';
-										echo '<img src="../images/edit.png" style="width:1.3em" alt="' . $LANG['IMG_EDIT_OCC'] . '" /></a></div>';
+										echo '<a class="record-edit" href="editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank" rel="noopener" title="' . $LANG['OCCUR_EDIT_TITLE'] . '">';
+										echo '<img src="../images/edit.png" style="width:1.3em" alt="' . $LANG['IMG_EDIT_OCC'] . '" /></a>';
 									}
+									echo '</div><div class="record-body">';
+									//NEON edit end
 									if (isset($fieldArr['has_audio']) && $fieldArr['has_audio']) {
 										echo '<div style="float:right; padding-right: 0.5rem"><img style="width:1.3rem; border: 0" src="' . $CLIENT_ROOT . '/images/speaker_thumbnail.png' . '"/></div>';
 									}
@@ -531,7 +536,9 @@ $_SESSION['citationvar'] = $searchVar;
 											$thumbnail = $MEDIA_DOMAIN . $fieldArr['media']['thumbnail'];
 										}
 										else $thumbnail = $fieldArr['media']['thumbnail'];
-										echo '<div style="float:right;margin:5px 25px;">';
+										//NEON edit start - responsive record thumbnail
+										echo '<div class="record-thumbnail">';
+										//NEON edit end
 										echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
 										echo '<img src="' . $thumbnail . '" style="height:70px" alt="' . (isset($LANG['IMG_OCC']) ? $LANG['IMG_OCC'] : 'Image Associated With the Occurrence') . '"
 											onerror="this.onerror=null; this.src=\'' . $CLIENT_ROOT . '/images/image-icon.svg\';" />';
@@ -543,7 +550,9 @@ $_SESSION['citationvar'] = $searchVar;
 										echo '<img src="../images/voucheradd.png" style="border:solid 1px gray;height:1.3em;margin-right:5px;" alt="' . $LANG['IMG_ADD_VOUCHER'] . '"/></a></div>';
 									}
 									if (isset($fieldArr['media']) && isset($fieldArr['media']['thumbnailurl'])) {
-										echo '<div style="float:right;margin:5px 25px;">';
+										//NEON edit start - responsive record thumbnail
+										echo '<div class="record-thumbnail">';
+										//NEON edit end
 										// NEON edit start
 										//echo '<a href="#" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
 										echo '<a href="individual/index.php?occid=' . $occid . '&clid=0" onclick="return openIndPU(' . $occid . ',' . ($targetClid ? $targetClid : "0") . ');">';
@@ -563,19 +572,19 @@ $_SESSION['citationvar'] = $searchVar;
 										echo $sciStr;
 									}
 									echo '</div>';
-									echo '<div style="margin:4px">';
-									echo '<span style="width:150px;">' . $fieldArr["catnum"] . '</span>';
-									//NEON edit start
+									//NEON edit start - wrapping identifiers and collector details
+									echo '<div class="record-identifiers">';
+									echo '<span>' . $fieldArr["catnum"] . '</span>';
 									if (isset($fieldArr['sampleID'])) {
-										echo '<span style="width:150px;margin-left:30px;">' . $fieldArr["sampleID"] . '</span>';
+										echo '<span>' . $fieldArr["sampleID"] . '</span>';
 									}
 									if (isset($fieldArr['sampleCode'])) {
-										echo '<span style="width:150px;margin-left:30px;">' . $fieldArr["sampleCode"] . '</span>';
+										echo '<span>' . $fieldArr["sampleCode"] . '</span>';
 									}
-									echo '</div><div style="margin:4px">';
-									echo '<span style="width:200px;">' . $fieldArr["collector"] . '&nbsp;&nbsp;&nbsp;' . (isset($fieldArr["collnum"]) ? $fieldArr["collnum"] : '') . '</span>';
+									echo '</div><div class="record-collector">';
+									echo '<span>' . $fieldArr["collector"] . '&nbsp;&nbsp;&nbsp;' . (isset($fieldArr["collnum"]) ? $fieldArr["collnum"] : '') . '</span>';
+									if (isset($fieldArr["date"])) echo '<span>' . $fieldArr["date"] . '</span>';
 									//NEON edit end
-									if (isset($fieldArr["date"])) echo '<span style="margin-left:30px;">' . $fieldArr["date"] . '</span>';
 									echo '</div><div style="margin:4px">';
 									$localStr = '';
 									if ($fieldArr["country"]) $localStr .= $fieldArr["country"];
@@ -623,16 +632,20 @@ $_SESSION['citationvar'] = $searchVar;
 										echo implode(', ', array_unique($sampleDisplayArr));
 										echo '</div>';
 									}
-									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" target="_blank">' . $LANG['FULL_DETAILS'] . '</a></b>';
+									echo '</div><div class="record-footer">';
+									echo '<a class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPrimary record-details-button" href="individual/index.php?occid=' . $occid . '&clid=0" target="_blank" rel="noopener">' . $LANG['FULL_DETAILS'] . '</a>';
 									//end edit
-									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
+									//NEON edit start - record body and divider controlled by the record cell
+									echo '</div></div></td></tr>';
+									//NEON edit end
 								}
 								?>
 							</table>
 						</form>
 					<?php
+						//NEON edit start - pagination supplies its own divider lines
 						echo $paginationStr;
-						echo '<hr/>';
+						//NEON edit end
 					} else {
 						echo '<div><h3>' . $LANG['NO_RESULTS'] . '</h3>';
 						$tn = $collManager->getTaxaSearchStr();
@@ -663,7 +676,7 @@ $_SESSION['citationvar'] = $searchVar;
 			</div>
 			<!-- NEON edit start - remove map tab div and add metrics tab div -->
 			<div id="metricsdiv">
-				<div id="biorepo-search-metrics"></div>
+				<div id="biorepo-search-metrics" role="region" aria-label="Sample availability by site and date" tabindex="0"></div>
 			</div>
 			<!-- NEON edit end -->
 		</div>
