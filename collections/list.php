@@ -520,13 +520,13 @@ $_SESSION['citationvar'] = $searchVar;
 									echo '<tr class="result-record"><td class="record-details"><div class="record-heading">';
 									echo '<a class="record-collection" href="misc/collprofiles.php?collid=' . $fieldArr['collid'] . '" target="_blank">';
 									echo htmlspecialchars($fieldArr['collectionname'], ENT_QUOTES | ENT_SUBSTITUTE, $CHARSET, false) . '</a>';
-									echo '<span class="record-selection dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span></div><div class="record-body">';
-									//NEON edit end
+									echo '<span class="record-selection dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span>';
 									if ($IS_ADMIN || in_array($fieldArr['collid'], $permissionArr) || ($SYMB_UID && $SYMB_UID == $fieldArr['obsuid'])) {
-										echo '<div style="float:right;" title="' . $LANG['OCCUR_EDIT_TITLE'] . '">';
-										echo '<a href="editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank">';
-										echo '<img src="../images/edit.png" style="width:1.3em" alt="' . $LANG['IMG_EDIT_OCC'] . '" /></a></div>';
+										echo '<a class="record-edit" href="editor/occurrenceeditor.php?occid=' . $occid . '" target="_blank" rel="noopener" title="' . $LANG['OCCUR_EDIT_TITLE'] . '">';
+										echo '<img src="../images/edit.png" style="width:1.3em" alt="' . $LANG['IMG_EDIT_OCC'] . '" /></a>';
 									}
+									echo '</div><div class="record-body">';
+									//NEON edit end
 									if (isset($fieldArr['has_audio']) && $fieldArr['has_audio']) {
 										echo '<div style="float:right; padding-right: 0.5rem"><img style="width:1.3rem; border: 0" src="' . $CLIENT_ROOT . '/images/speaker_thumbnail.png' . '"/></div>';
 									}
@@ -643,8 +643,9 @@ $_SESSION['citationvar'] = $searchVar;
 							</table>
 						</form>
 					<?php
+						//NEON edit start - pagination supplies its own divider lines
 						echo $paginationStr;
-						echo '<hr/>';
+						//NEON edit end
 					} else {
 						echo '<div><h3>' . $LANG['NO_RESULTS'] . '</h3>';
 						$tn = $collManager->getTaxaSearchStr();

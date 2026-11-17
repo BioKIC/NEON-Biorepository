@@ -178,6 +178,10 @@
   padding-top: 0;
 }
 
+.neon-record-results #omlisttable .result-record:last-child .record-details {
+  border-bottom: 0;
+}
+
 .neon-record-results .record-body {
   display: flow-root;
   min-width: 0;
@@ -206,7 +210,7 @@
   padding: 8px 16px;
   border: 0;
   border-radius: 2px;
-  font: 600 11px/1.25 Inter, Helvetica, Arial, sans-serif;
+  font: 600 13px/1.25 Inter, Helvetica, Arial, sans-serif;
   letter-spacing: .04em;
   text-align: center;
   text-transform: uppercase;
@@ -216,6 +220,10 @@
   background: #2974d2;
   cursor: pointer;
   box-shadow: 0 3px 1px -2px rgb(0 0 0 / 20%), 0 2px 2px rgb(0 0 0 / 14%), 0 1px 5px rgb(0 0 0 / 12%);
+}
+
+#innertext.neon-record-results .record-details-button {
+  width: 240px;
 }
 
 #innertext.neon-record-results .results-action .MuiButton-root:hover:not(:disabled),
@@ -242,10 +250,19 @@
 
 .neon-record-results .record-heading {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-wrap: nowrap;
+  align-items: flex-start;
   gap: 8px 16px;
   margin: 4px 4px 12px;
+}
+
+.neon-record-results .record-edit {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
 }
 
 .neon-record-results .record-collection {
