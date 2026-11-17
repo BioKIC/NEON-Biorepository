@@ -992,6 +992,10 @@ class OccurrenceHarvester{
 							if(preg_match('/\.\d{4}\.\d{1,2}\.([A-Z]{2,15}\d{0,2})\./', $sampleArr['sampleID'], $m)){
 								$taxonCode = $m[1];
 								$taxonRemarks = 'Identification source: parsed from NEON sampleID';
+								$identArr['identifiedBy'] = array( 
+									'identifiedBy' => $$this->translatePersonnel($sampleArr['recorded_by']),
+									'dateIdentified' => $sampleArr['collectDate']
+								);
 							}
 						}
 						// elseif(!in_array($dwcArr['collid'], array(22,50,57))){
@@ -1538,21 +1542,25 @@ class OccurrenceHarvester{
 							// use dataset name of destination collection, if it exists, otherwise it will just maintain the parent datasetName
 							$dwcArrClone['verbatimAttributes'] = $datasetName;
 						}
+
+						$occid = null;
 							//Load subsample into database
 						if (!empty($dwcArrClone['identifications'][0]['sciname']) 
 							&& strtolower($dwcArrClone['identifications'][0]['sciname']) !== 'undefined') {
 							$occid = $this->loadOccurrenceRecord($dwcArrClone, $existingOccid); // create or update the clone record
 						}
-						if(!$existingOccid && $occid){ 
-							//Add association to parent record if the subsample did not already exist
-							$associationArr[] = array('relationship' => 'originatingSampleOf', 'occidAssociate' => $occid);
-							$allSubOccids[] = $occid;
+						
+						if ($occid) {
+    						if (!$existingOccid) {
+								//Add association to parent record if the subsample did not already exist
+								$associationArr[] = array('relationship' => 'originatingSampleOf', 'occidAssociate' => $occid);
+								$allSubOccids[] = $occid;
+							}
+							
+							$createdKeys[$comboKey] = true; // mark id so that duplication is prevented 
+
 						}
 
-						// mark id so that duplication is prevented 
-						if ($occid) {
-							$createdKeys[$comboKey] = true;
-						}
 					}
 
 						//Add associations between subsamples
@@ -2379,7 +2387,7 @@ class OccurrenceHarvester{
 			if($collid != 75){
 			$sql = 'INSERT IGNORE INTO omoccurassociations(occid, occidAssociate, associationType, verbatimSciname, tid, relationship, createdUid) VALUES(?, ?, "internalOccurrence", ?, ?, ?, 50)';
 			}
-			if($collid = 75){
+			if($collid == 75){
 			$sql = 'INSERT IGNORE INTO omoccurassociations(occid, occidAssociate, associationType, verbatimSciname, tid, relationship, createdUid) VALUES(?, ?, "observational", ?, ?, ?, 50)';
 			}
 			if($stmt = $this->conn->prepare($sql)) {
