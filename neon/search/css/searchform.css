@@ -1348,7 +1348,7 @@ html:has(#innertext.neon-search) {
 #innertext.neon-search :is(#colls-modal, #neonext-collections-items) li {
   --collection-row-background: #fff;
   display: grid;
-  grid-template-columns: 33px 16px minmax(0, 1fr) max-content;
+  grid-template-columns: 33px 20px minmax(0, 1fr) max-content;
   align-items: start;
   column-gap: 4px;
   position: relative;
@@ -1383,7 +1383,7 @@ html:has(#innertext.neon-search) {
   grid-column: 2 / 4;
   grid-row: 1;
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
+  grid-template-columns: 20px minmax(0, 1fr);
   align-items: start;
   column-gap: 4px;
   min-width: 0;
