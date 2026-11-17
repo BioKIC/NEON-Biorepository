@@ -64,7 +64,6 @@ class SearchResultsSidebar {
                 $fallback[$entry['ids'][0]] = $this->entryLabel($entry);
             }
         }
-        $labelCounts = array_count_values(array_column($leaves, 'label'));
         $selected = explode(',', $this->names->resolve('db', $this->criteria['db']));
         if (in_array('all', $selected, true)) $selected = array_merge(array_values($allIds), array_diff($selected, array('all')));
         if ($allIds && !array_diff($allIds, $selected)) {
@@ -83,17 +82,7 @@ class SearchResultsSidebar {
         }
         foreach (array_unique($selected) as $id) {
             if (isset($leaves[$id])) {
-                $entry = $leaves[$id];
-                $label = $this->entryLabel($entry);
-                if ($labelCounts[$entry['label']] > 1) {
-                    $path = array();
-                    $parts = explode('/', $entry['token']);
-                    for ($length = 1; $length <= count($parts); $length++) {
-                        $parent = $entries[strtolower(implode('/', array_slice($parts, 0, $length)))] ?? null;
-                        if ($parent) $path[] = $this->entryLabel($parent);
-                    }
-                    $label = implode(' / ', $path);
-                }
+                $label = $this->entryLabel($leaves[$id]);
             } else {
                 $label = $fallback[$id] ?? ($id === '0' ? 'No matching selections' : $this->selectionLabel('db', $id));
             }

@@ -364,17 +364,7 @@ function getSampleTypeLabels() {
     if (entry.view === 'taxonomic' && !leaves.has(id)) leaves.set(id, entry);
     else if (entry.view === '') labels.set(id, entry.label);
   });
-  const counts = new Map();
-  leaves.forEach(entry => counts.set(entry.label, (counts.get(entry.label) || 0) + 1));
-  leaves.forEach((entry, id) => {
-    let label = entry.label;
-    if (counts.get(label) > 1) {
-      const parts = entry.token.split('/');
-      label = parts.map((_, index) => entries.find(parent => parent.token === parts.slice(0, index + 1).join('/'))?.label)
-        .filter(Boolean).join(' / ');
-    }
-    labels.set(id, label);
-  });
+  leaves.forEach((entry, id) => labels.set(id, entry.label));
   return labels;
 }
 
