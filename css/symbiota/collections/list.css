@@ -123,7 +123,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   min-width: 0;
   max-width: 100%;
 }
@@ -133,8 +133,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  min-height: 44px;
+  min-width: 24px;
+  min-height: 32px;
+}
+
+@media (pointer: coarse) {
+  .neon-record-results .results-page-links .pagination,
+  .neon-record-results .results-page-links a {
+    min-width: 32px;
+    min-height: 44px;
+  }
 }
 
 .neon-record-results .results-page-count {
@@ -155,12 +163,26 @@
   overflow-wrap: anywhere;
 }
 
-.neon-record-results #omlisttable .record-collection {
-  width: 72px;
-  text-align: center;
+.neon-record-results .record-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 4px 4px 12px;
 }
 
-.neon-record-results .record-selection { margin-top: 10px; }
+.neon-record-results .record-collection {
+  flex: 1 1 14rem;
+  min-width: 0;
+  max-width: 100%;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.neon-record-results .record-selection {
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
+}
 
 .neon-record-results .record-identifiers,
 .neon-record-results .record-collector {
@@ -279,18 +301,6 @@
     width: 100%;
     box-sizing: border-box;
   }
-
-  .neon-record-results #omlisttable .record-collection {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    text-align: left;
-    padding: 8px 0;
-  }
-
-  .neon-record-results .record-selection { margin: 0 0 0 auto; }
 
   .neon-record-results .record-thumbnail {
     float: none;

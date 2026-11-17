@@ -515,21 +515,11 @@ $_SESSION['citationvar'] = $searchVar;
 									$cultivarEpithet = !empty($splitSciname['cultivarEpithet']) ? ($taxonEditorObj->standardizeCultivarEpithet($splitSciname['cultivarEpithet'])) . ' ' : '';
 									$tradeName = !empty($splitSciname['tradeName']) ? ($taxonEditorObj->standardizeTradeName($splitSciname['tradeName']) . ' ') : '';
 									$nonItalicizedScinameComponent = $author . $cultivarEpithet . $tradeName;
-									//NEON edit start - responsive record and collection containers
-									echo '<tr class="result-record"><td class="record-collection">';
-									echo '<a href="misc/collprofiles.php?collid=' . $fieldArr['collid'] . '" target="_blank">';
-									if ($fieldArr["icon"]) {
-										$icon = (substr($fieldArr["icon"], 0, 6) == 'images' ? '../' : '') . $fieldArr["icon"];
-										echo '<img align="bottom" src="' . $icon . '" style="width:35px;border:0px;" />';
-									}
-									echo '</a>';
-									echo '<div class="record-collection-code" style="font-weight:bold;font-size:75%;">';
-									$instCode = $fieldArr["instcode"];
-									if ($fieldArr["collcode"]) $instCode .= ":" . $fieldArr["collcode"];
-									echo $instCode;
-									echo '</div>';
-									echo '<div class="record-selection"><span class="dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span></div>';
-									echo '</td><td class="record-details">';
+									//NEON edit start - collection name above full-width record details
+									echo '<tr class="result-record"><td class="record-details"><div class="record-heading">';
+									echo '<a class="record-collection" href="misc/collprofiles.php?collid=' . $fieldArr['collid'] . '" target="_blank">';
+									echo htmlspecialchars($fieldArr['collectionname'], ENT_QUOTES | ENT_SUBSTITUTE, $CHARSET, false) . '</a>';
+									echo '<span class="record-selection dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span></div>';
 									//NEON edit end
 									if ($IS_ADMIN || in_array($fieldArr['collid'], $permissionArr) || ($SYMB_UID && $SYMB_UID == $fieldArr['obsuid'])) {
 										echo '<div style="float:right;" title="' . $LANG['OCCUR_EDIT_TITLE'] . '">';
@@ -643,7 +633,9 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" target="_blank">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									//end edit
-									echo '</div></td></tr><tr><td colspan="2"><hr/></td></tr>';
+									//NEON edit start - single-column record separator
+									echo '</div></td></tr><tr><td><hr/></td></tr>';
+									//NEON edit end
 								}
 								?>
 							</table>

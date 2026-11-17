@@ -63,6 +63,9 @@ class OccurrenceListManager extends OccurrenceManager{
 				if($isSecuredReader) $securityClearance = true;
 				elseif(in_array($row->collid,$securityCollArr)) $securityClearance = true;
 				$retArr[$row->occid]['collid'] = $row->collid;
+				//NEON edit start - collection name in the record heading
+				$retArr[$row->occid]['collectionname'] = $this->cleanOutStr($row->collectionname);
+				//NEON edit end
 				$retArr[$row->occid]['instcode'] = $this->cleanOutStr($row->institutioncode);
 				if($row->instcodeoverride){
 					if(!$retArr[$row->occid]['instcode']) $retArr[$row->occid]['instcode'] = $row->instcodeoverride;
