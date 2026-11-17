@@ -519,7 +519,7 @@ $_SESSION['citationvar'] = $searchVar;
 									echo '<tr class="result-record"><td class="record-details"><div class="record-heading">';
 									echo '<a class="record-collection" href="misc/collprofiles.php?collid=' . $fieldArr['collid'] . '" target="_blank">';
 									echo htmlspecialchars($fieldArr['collectionname'], ENT_QUOTES | ENT_SUBSTITUTE, $CHARSET, false) . '</a>';
-									echo '<span class="record-selection dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span></div>';
+									echo '<span class="record-selection dataset-div checkbox-elem" style="display:none;"><input name="occid[]" type="checkbox" value="' . $occid . '" /></span></div><div class="record-body">';
 									//NEON edit end
 									if ($IS_ADMIN || in_array($fieldArr['collid'], $permissionArr) || ($SYMB_UID && $SYMB_UID == $fieldArr['obsuid'])) {
 										echo '<div style="float:right;" title="' . $LANG['OCCUR_EDIT_TITLE'] . '">';
@@ -633,8 +633,8 @@ $_SESSION['citationvar'] = $searchVar;
 									}
 									echo '<b><a href="individual/index.php?occid=' . $occid . '&clid=0" target="_blank">' . $LANG['FULL_DETAILS'] . '</a></b>';
 									//end edit
-									//NEON edit start - single-column record separator
-									echo '</div></td></tr><tr><td><hr/></td></tr>';
+									//NEON edit start - record body and divider controlled by the record cell
+									echo '</div></div></td></tr>';
 									//NEON edit end
 								}
 								?>

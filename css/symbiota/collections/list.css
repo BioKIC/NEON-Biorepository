@@ -50,6 +50,12 @@
   overflow-wrap: anywhere;
 }
 
+.neon-record-results #queryrecords,
+.neon-record-results #tabs > .ui-tabs-panel:not(#speclist) {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
 .neon-record-results .results-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
@@ -161,6 +167,21 @@
 .neon-record-results #omlisttable td {
   vertical-align: top;
   overflow-wrap: anywhere;
+}
+
+.neon-record-results #omlisttable .record-details {
+  padding: 12px 0;
+  border-bottom: 1px solid #d7d9d9;
+}
+
+.neon-record-results #omlisttable .result-record:first-child .record-details {
+  padding-top: 0;
+}
+
+.neon-record-results .record-body {
+  display: flow-root;
+  min-width: 0;
+  padding-left: 12px;
 }
 
 .neon-record-results .record-heading {
@@ -291,6 +312,12 @@
 @media (max-width: 599px) {
   #biorepo-page [data-selenium="neon-page.content"]:has(> .neon-record-results) {
     padding: 24px 16px 48px;
+  }
+
+  .neon-record-results #queryrecords,
+  .neon-record-results #tabs > .ui-tabs-panel:not(#speclist) {
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   .neon-record-results #omlisttable,
