@@ -107,7 +107,7 @@
   margin: 0;
 }
 
-.neon-record-results .results-pagination {
+#innertext.neon-record-results .results-pagination {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -137,7 +137,13 @@
   min-height: 44px;
 }
 
-.neon-record-results .results-page-count { overflow-wrap: anywhere; }
+.neon-record-results .results-page-count {
+  min-width: 0;
+  max-width: 100%;
+  margin-left: auto;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
 
 .neon-record-results #omlisttable {
   table-layout: fixed;
