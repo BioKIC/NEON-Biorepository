@@ -55,18 +55,8 @@ class PublicProjectSearch {
         $available = array_fill_keys(array_column($this->rows('SELECT DISTINCT o.collid' . $records
             . ' WHERE ' . $projectFilter, $values), 'collid'), true);
 
-        // Check every virtual tissue type in one pass over project-linked mammal samples.
-        $types = NeonMaterialSampleCollections::TYPES;
-        foreach ($types as $id => $pattern) unset($available[$id]);
-        if (array_intersect(array(17, 19, 28), array_keys($available))) {
-            $columns = array();
-            foreach ($types as $id => $pattern) $columns[] = 'MAX(ms.sampleType LIKE ?) AS tissue_' . $id;
-            $tissues = $this->rows('SELECT ' . implode(', ', $columns) . $records
-                . ' INNER JOIN ommaterialsample ms ON ms.occid = o.occid
-                WHERE ' . $projectFilter . ' AND o.collid IN (17,19,28)',
-                array_merge(array_values($types), $values))[0];
-            foreach ($types as $id => $pattern) if (!empty($tissues['tissue_' . $id])) $available[$id] = true;
-        }
+        // Projects identify parent occurrences, not which tissues were used.
+        foreach (array_keys(NeonMaterialSampleCollections::TYPES) as $id) unset($available[$id]);
 
         $codes = array();
         $names = new SearchParameterNames($this->conn);
