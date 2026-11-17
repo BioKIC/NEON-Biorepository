@@ -39,6 +39,15 @@ class PublicProjectSearch {
         return trim(html_entity_decode(strip_tags($value ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     }
 
+    private function projectRecordExists($match) {
+        return 'EXISTS (SELECT 1 FROM omoccurdatasetlink projectLink
+            INNER JOIN omoccurrences o ON o.occid = projectLink.occid
+            INNER JOIN omoccurdatasets od ON od.datasetid = projectLink.datasetid
+            WHERE ' . $this->baseWhere() . ' AND EXISTS (SELECT 1 FROM neonrequest nr
+                WHERE nr.datasetID = od.datasetid AND nr.activeDate IS NOT NULL)
+            AND (' . $match . '))';
+    }
+
     public function options() {
         if ($this->catalog !== null) return $this->catalog;
         $this->catalog = array('db' => array(), 'site' => array());
@@ -47,8 +56,21 @@ class PublicProjectSearch {
         foreach ($names->dictionary('db') as $entry) {
             if (count($entry['ids']) === 1 && isset($entry['code'])) $codes[$entry['ids'][0]] = $entry['code'];
         }
-        foreach ($this->rows('SELECT collid, COALESCE(NULLIF(publicName, \'\'), collectionname) AS label, collectioncode
-            FROM omcollections ORDER BY label, collid') as $row) {
+        // Tissue collections are backed by material samples, not their own occurrence rows.
+        $types = NeonMaterialSampleCollections::TYPES;
+        $values = array();
+        $tissueMatches = array();
+        foreach ($types as $id => $pattern) {
+            $tissueMatches[] = '(c.collid = ? AND ms.sampleType LIKE ?)';
+            $values[] = $id;
+            $values[] = $pattern;
+        }
+        $collectionMatch = '(o.collid = c.collid AND c.collid NOT IN (' . implode(',', array_keys($types)) . '))
+            OR (o.collid IN (17,19,28) AND EXISTS (SELECT 1 FROM ommaterialsample ms
+                WHERE ms.occid = o.occid AND (' . implode(' OR ', $tissueMatches) . ')))';
+        foreach ($this->rows('SELECT c.collid, COALESCE(NULLIF(c.publicName, \'\'), c.collectionname) AS label, c.collectioncode
+            FROM omcollections c WHERE ' . $this->projectRecordExists($collectionMatch)
+            . ' ORDER BY label, c.collid', $values) as $row) {
             $this->catalog['db'][] = array('value' => $codes[$row['collid']] ?? (string)$row['collid'],
                 'collid' => (string)$row['collid'], 'label' => $this->text($row['label']),
                 'code' => $row['collectioncode'] ?? '');
@@ -58,7 +80,10 @@ class PublicProjectSearch {
         $sites = array();
         $domains = array();
         foreach ($this->rows("SELECT d.name, d.datasetName FROM omoccurdatasets d
-            WHERE d.ispublic = 1 AND d.notes = 'NEON Site' ORDER BY d.name") as $row) {
+            WHERE d.ispublic = 1 AND d.notes = 'NEON Site' AND "
+            . $this->projectRecordExists('EXISTS (SELECT 1 FROM omoccurdatasetlink siteLink
+                WHERE siteLink.datasetid = d.datasetid AND siteLink.occid = o.occid)')
+            . ' ORDER BY d.name') as $row) {
             $code = strtoupper(trim($row['name']));
             $site = $geography['sites'][$code] ?? array();
             $siteName = $site['siteName'] ?? $row['datasetName'] ?? $code;
