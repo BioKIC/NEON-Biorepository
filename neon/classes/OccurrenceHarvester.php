@@ -2656,7 +2656,7 @@ class OccurrenceHarvester{
 
 	private function getTaxonArr($sciname){
 		if(substr($sciname, -4) == ' sp.') $sciname = trim(substr($sciname, 0, strlen($sciname) - 4));
-		elseif(substr($sciname, -4) == ' spp.') $sciname = trim(substr($sciname, 0, strlen($sciname) - 5));
+		elseif(substr($sciname, -5) == ' spp.') $sciname = trim(substr($sciname, 0, strlen($sciname) - 5));
 		$retArr = $this->getTaxon($sciname);
 		if(!$retArr){
 			//Parse name in case author is inbedded within taxon
